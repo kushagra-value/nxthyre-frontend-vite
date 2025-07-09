@@ -230,7 +230,7 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="text-center mb-6">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Mail className="w-8 h-8 bg-blue-500" />
+                <Mail className="w-8 h-8 text-blue-500" />
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
                 Invite Team Members

@@ -91,7 +91,9 @@ class OrganizationService {
     workspaceId: number
   ): Promise<JoinRequestResponse> {
     try {
-      const response = await apiClient.post(`/workspaces/${workspaceId}/join/`);
+      const response = await apiClient.post(
+        `/workspaces/${workspaceId}/join-request/`
+      );
       return response.data;
     } catch (error: any) {
       throw new Error(
@@ -120,7 +122,7 @@ class OrganizationService {
   ): Promise<ManageRequestResponse> {
     try {
       const response = await apiClient.post(
-        `/organization/${organizationId}/workspaces/${workspaceId}/requests/${requestId}/manage/`,
+        `/organization/organizations/${organizationId}/workspaces/${workspaceId}/requests/${requestId}/manage/`,
         { action }
       );
       return response.data;
