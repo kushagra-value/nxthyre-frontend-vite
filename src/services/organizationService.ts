@@ -55,7 +55,7 @@ class OrganizationService {
   // Create organization
   async createOrganization(name: string): Promise<CreateOrganizationResponse> {
     try {
-      const response = await apiClient.post("/organizations/create/", {
+      const response = await apiClient.post("/organization/create/", {
         name,
       });
       return response.data;
@@ -73,7 +73,7 @@ class OrganizationService {
   ): Promise<CreateWorkspaceResponse> {
     try {
       const response = await apiClient.post(
-        `/organizations/${organizationId}/workspaces/create/`,
+        `/organization/${organizationId}/workspaces/create/`,
         {
           name,
         }
@@ -120,7 +120,7 @@ class OrganizationService {
   ): Promise<ManageRequestResponse> {
     try {
       const response = await apiClient.post(
-        `/organizations/${organizationId}/workspaces/${workspaceId}/requests/${requestId}/manage/`,
+        `/organization/${organizationId}/workspaces/${workspaceId}/requests/${requestId}/manage/`,
         { action }
       );
       return response.data;

@@ -75,7 +75,7 @@ class AuthService {
   // Verify OTP
   async verifyOTP(email: string, otp: string): Promise<OTPVerifyResponse> {
     try {
-      const response = await apiClient.post("/auth/verify-email-otp/", {
+      const response = await apiClient.post("/auth/otp/verify/", {
         email,
         otp,
       });
@@ -88,7 +88,7 @@ class AuthService {
   // LinkedIn callback
   async linkedInCallback(code: string): Promise<LinkedInCallbackResponse> {
     try {
-      const response = await apiClient.post("/auth/login/linkedin-callback/", {
+      const response = await apiClient.post("/auth/linkedin/callback/", {
         code,
       });
       return response.data;
@@ -102,7 +102,7 @@ class AuthService {
   // Update company email
   async updateCompanyEmail(email: string): Promise<UpdateCompanyEmailResponse> {
     try {
-      const response = await apiClient.post("api/auth/update-company-email/", {
+      const response = await apiClient.post("/auth/update-company-email/", {
         email,
       });
       return response.data;
