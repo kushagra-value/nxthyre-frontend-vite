@@ -1,0 +1,522 @@
+import React, { useState } from 'react';
+import { X, Upload, FileText, ChevronDown, RotateCcw, ArrowLeft, ArrowRight, Info } from 'lucide-react';
+import { showToast } from '../utils/toast';
+
+interface CreateJobRoleModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, onClose }) => {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState({
+    allowInbound: true,
+    keepPrivate: false,
+    title: '',
+    skills: [] as string[],
+    location: '',
+    hybrid: false,
+    seniority: '',
+    department: '',
+    aiInterviews: false,
+    minExp: '',
+    maxExp: '',
+    minSalary: '',
+    maxSalary: '',
+    confidential: false,
+    jobDescription: '',
+    uploadType: 'paste' as 'paste' | 'upload',
+    shareThirdParty: false
+  });
+
+  const [skillInput, setSkillInput] = useState('');
+  const [refinementInput, setRefinementInput] = useState('');
+  const [showTooltip, setShowTooltip] = useState<string | null>(null);
+
+  const seniorityOptions = ['Intern', 'Fresher', 'Junior', 'Senior', 'Mid', 'Manager', 'Senior Manager', 'Leadership'];
+  const departmentOptions = ['Marketing', 'Finance', 'Sales', 'Ops', 'Engineering', 'Admin', 'Others'];
+
+  const dummyJD = `We are seeking a talented Head of Finance to join our dynamic team. The ideal candidate will have extensive experience in financial planning, analysis, and strategic decision-making.
+
+Key Responsibilities:
+• Lead financial planning and budgeting processes
+• Oversee financial reporting and compliance
+• Manage cash flow and investment strategies
+• Collaborate with senior leadership on strategic initiatives
+• Ensure regulatory compliance and risk management
+
+Requirements:
+• Bachelor's degree in Finance, Accounting, or related field
+• 8+ years of progressive finance experience
+• Strong analytical and leadership skills
+• Experience with financial software and ERP systems
+• Excellent communication and presentation abilities
+
+We offer competitive compensation, comprehensive benefits, and opportunities for professional growth in a collaborative environment.`;
+
+  const keyCompetencies = [
+    'Financial Planning', 'Budget Management', 'Risk Assessment', 'Strategic Analysis', 
+    'Team Leadership', 'Regulatory Compliance', 'Cash Flow Management', 'Investment Strategy'
+  ];
+
+  const [competencies, setCompetencies] = useState(keyCompetencies);
+  const [editableJD, setEditableJD] = useState(dummyJD); // State for editable job description
+
+  const handleSkillAdd = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && skillInput.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        skills: [...prev.skills, skillInput.trim()]
+      }));
+      setSkillInput('');
+    }
+  };
+
+  const removeSkill = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      skills: prev.skills.filter((_, i) => i !== index)
+    }));
+  };
+
+  const removeCompetency = (index: number) => {
+    setCompetencies(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleNext = () => {
+    setCurrentStep(2);
+  };
+
+  const handleBack = () => {
+    setCurrentStep(1);
+  };
+
+  const handleCreate = () => {
+    showToast.success('Job role created successfully!');
+    onClose();
+  };
+
+  const handleCreateAndPublish = () => {
+    showToast.success('Job role created and published successfully!');
+    onClose();
+  };
+
+  const handleRegenerate = () => {
+    showToast.info('Job description regenerated!');
+  };
+
+  const handleUpdate = () => {
+    showToast.success('Job description updated!');
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-gray-200">
+          <div className="flex justify-between">
+            <h2></h2>
+            {/* Progress Indicator */}
+            <div className="flex ml-8 mb-4 justify-center items-center space-x-3">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                currentStep >= 1 ? 'bg-blue-400 text-white' : 'bg-gray-200 text-gray-600'
+              }`}>
+                1 
+              </div>
+              <span>Basic Details</span>
+              <div className={`w-20 h-[1px] mt-1 ${currentStep >= 2 ? 'bg-blue-400' : 'bg-gray-900'}`}></div>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                currentStep >= 2 ? 'bg-blue-400 text-white' : 'bg-gray-200 text-gray-600'
+              }`}>
+                2
+              </div>
+              <span>Update & Refine JD</span>
+            </div>
+            <div>
+              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center">
+            <h2 className="text-xl font-bold text-gray-900">CREATE JOB ROLE</h2>
+          </div>
+        </div>
+
+        <div className="p-6">
+          {currentStep === 1 ? (
+            <div className="space-y-6">
+              <div className="flex space-x-6">
+                <div className="relative">
+                  <label 
+                    className="flex items-center cursor-pointer"
+                    onMouseEnter={() => setShowTooltip('inbound')}
+                    onMouseLeave={() => setShowTooltip(null)}
+                  >
+                    <input
+                      type="radio"
+                      name="privacy"
+                      value="inbound"
+                      checked={formData.allowInbound}
+                      onChange={() => setFormData(prev => ({ ...prev, allowInbound: true, keepPrivate: false }))}
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm font-medium text-gray-700">ALLOW INBOUND APPLICATIONS</span>
+                  </label>
+                  {showTooltip === 'inbound' && (
+                    <div className="absolute top-full left-0 mt-2 w-80 p-3 bg-gray-900 text-white text-sm rounded-lg shadow-lg z-10">
+                      NxtHyre can post your jobs on social sites like LinkedIn to get high number of job applicants (along with your LinkedIn as hiring POC)
+                    </div>
+                  )}
+                </div>
+                
+                <div className="relative">
+                  <label 
+                    className="flex items-center cursor-pointer"
+                    onMouseEnter={() => setShowTooltip('private')}
+                    onMouseLeave={() => setShowTooltip(null)}
+                  >
+                    <input
+                      type="radio"
+                      name="privacy"
+                      value="private"
+                      checked={formData.keepPrivate}
+                      onChange={() => setFormData(prev => ({ ...prev, allowInbound: false, keepPrivate: true }))}
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm font-medium text-gray-700">KEEP IT PRIVATE</span>
+                  </label>
+                  {showTooltip === 'private' && (
+                    <div className="absolute top-full left-0 mt-2 w-80 p-3 bg-gray-900 text-white text-sm rounded-lg shadow-lg z-10">
+                      NxtHyre will not post LinkedIn on NxtHyre job portal
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Title */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                <input
+                  type="text"
+                  placeholder="Job title"
+                  value={formData.title}
+                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              {/* Skills, Location, Hybrid */}
+              <div className="grid grid-cols-12 gap-4">
+                <div className="col-span-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Skills</label>
+                  <input
+                    type="text"
+                    placeholder="Enter skills and press Enter"
+                    value={skillInput}
+                    onChange={(e) => setSkillInput(e.target.value)}
+                    onKeyPress={handleSkillAdd}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <div className="flex flex-wrap gap-2 mt-2 max-h-20 overflow-hidden">
+                    {formData.skills.map((skill, index) => (
+                      <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center">
+                        {skill}
+                        <button onClick={() => removeSkill(index)} className="ml-1 text-blue-600 hover:text-blue-800">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="col-span-5">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                  <div className="flex">
+                    <input
+                      type="text"
+                      placeholder="Enter location"
+                      value={formData.location}
+                      onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                <div className="col-span-1 pt-5">
+                      <span className="text-xs text-gray-700 font-semibold ml-3">Hybrid</span>
+                      <div className="flex justify-end">
+                        <button
+                        onClick={() => setFormData(prev => ({ ...prev, hybrid: !prev.hybrid }))}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          formData.hybrid ? 'bg-blue-500' : 'bg-gray-300'
+                        }`}
+                        role="switch"
+                        aria-checked={formData.hybrid}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            formData.hybrid ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                      </div>
+                    </div>
+              </div>
+
+              {/* Seniority and Department */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Seniority</label>
+                  <select
+                    value={formData.seniority}
+                    onChange={(e) => setFormData(prev => ({ ...prev, seniority: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mr-3"
+                  >
+                    <option value="">Select seniority</option>
+                    {seniorityOptions.map(option => (
+                      <option key={option} value={option}>{option}</option>
+                    ))} 
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                  <select
+                    value={formData.department}
+                    onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select department</option>
+                    {departmentOptions.map(option => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* AI Interviews */}
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">AI Interviews</span>
+                  <button
+                    onClick={() => setFormData(prev => ({ ...prev, aiInterviews: !prev.aiInterviews }))}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      formData.aiInterviews ? 'bg-blue-600' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        formData.aiInterviews ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Turning on this feature will enable AI interview, as a initial screening round</p>
+              </div>
+
+              {/* Experience Range, Salary Range, Confidential */}
+              <div className="grid grid-cols-12 gap-4">
+                <div className="col-span-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Enter Exp Range</label>
+                  <div className="flex space-x-2">
+                    <input
+                      type="number"
+                      placeholder="Min exp"
+                      value={formData.minExp}
+                      onChange={(e) => setFormData(prev => ({ ...prev, minExp: e.target.value }))}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Max exp"
+                      value={formData.maxExp}
+                      onChange={(e) => setFormData(prev => ({ ...prev, maxExp: e.target.value }))}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                <div className="col-span-6">
+                  <label className="block flex justify-between text-sm font-medium text-gray-700 mb-2">
+                    Enter Salary Range
+                    <div className="flex items-end">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.confidential}
+                          onChange={(e) => setFormData(prev => ({ ...prev, confidential: e.target.checked }))}
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <span className="ml-1 text-sm text-gray-700">Keep it confidential</span>
+                      </label>
+                    </div>
+                  </label>
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      placeholder="Min salary"
+                      value={formData.minSalary}
+                      onChange={(e) => setFormData(prev => ({ ...prev, minSalary: e.target.value }))}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Max salary"
+                      value={formData.maxSalary}
+                      onChange={(e) => setFormData(prev => ({ ...prev, maxSalary: e.target.value }))}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Job Description Upload/Paste */}
+              <div>
+                <div className="flex items-center space-x-4 mb-3">
+                  <span className="text-sm font-medium text-gray-700">Job Description</span>
+                  <div className="flex bg-gray-100 rounded-lg p-1">
+                    <button
+                      onClick={() => setFormData(prev => ({ ...prev, uploadType: 'paste' }))}
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                        formData.uploadType === 'paste' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'
+                      }`}
+                    >
+                      Paste Text
+                    </button>
+                    <button
+                      onClick={() => setFormData(prev => ({ ...prev, uploadType: 'upload' }))}
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                        formData.uploadType === 'upload' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'
+                      }`}
+                    >
+                      Upload File
+                    </button>
+                  </div>
+                </div>
+
+                {formData.uploadType === 'paste' ? (
+                  <textarea
+                    placeholder="Paste your job description here..."
+                    value={formData.jobDescription}
+                    onChange={(e) => setFormData(prev => ({ ...prev, jobDescription: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-32 resize-none"
+                  />
+                ) : (
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
+                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">Drag and drop your job description file here</p>
+                    <p className="text-xs text-gray-500 mt-1">or click to browse</p>
+                    <input type="file" className="hidden" accept=".pdf,.doc,.docx,.txt" />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-between">
+                {/* Cancel Button */}
+                <div className="flex justify-end">
+                  <button
+                    onClick={onClose}
+                    className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Cancel
+                  </button>
+                </div>
+                
+                {/* Next Button */}
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleNext}
+                    className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                  >
+                    Next
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </button>
+                </div>
+              </div>
+              
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* AI Generated JD */}
+              <div className="bg-gray-100 p-6 rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-gray-900">AI-Generated Job Description</h3>
+                  <button
+                    onClick={handleRegenerate}
+                    className="px-3 py-1.5 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors flex items-center text-sm"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-1" />
+                    Regenerate
+                  </button>
+                </div>
+                <div className="bg-white rounded-lg p-4 max-h-60 overflow-y-auto">
+                  <pre
+                    className="text-sm text-gray-700 whitespace-pre-wrap font-sans outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    contentEditable="true"
+                    onInput={(e) => setEditableJD(e.currentTarget.innerText)}
+                    suppressContentEditableWarning={true}
+                  >
+                    {editableJD}
+                  </pre>
+                </div>
+              </div>
+
+              {/* Key Competencies */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Key Competencies</h3>
+                <div className="flex flex-wrap gap-2">
+                  {competencies.map((competency, index) => (
+                    <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center">
+                      {competency}
+                      <button onClick={() => removeCompetency(index)} className="ml-2 text-blue-600 hover:text-blue-800">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Refinement Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Refine JD (e.g. 'Add remote work details')</label>
+                <div className="flex justify-between">
+                  <textarea
+                    placeholder="Enter refinement instructions..."
+                    value={refinementInput}
+                    onChange={(e) => setRefinementInput(e.target.value)}
+                    className="w-[87%] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-11 resize-none"
+                  />
+                  <button
+                    onClick={handleUpdate}
+                    className="px-[20px] py-[9px] bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Update
+                  </button>
+                </div>
+              </div>
+ 
+              {/* Action Buttons */}
+              <div className="flex justify-between pt-4 border-t border-gray-200">
+                <button
+                  onClick={handleBack}
+                  className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back
+                </button>
+                <button
+                  onClick={formData.shareThirdParty ? handleCreateAndPublish : handleCreate}
+                  className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  {formData.shareThirdParty ? 'Create & Publish' : 'Create'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CreateJobRoleModal;
