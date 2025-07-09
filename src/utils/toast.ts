@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 export const showToast = {
   success: (message: string) => toast.success(message, {
     duration: 4000,
-    position: 'top-right',
+    position: 'bottom-right',
     style: {
       background: '#10B981',
       color: '#fff',
@@ -13,7 +13,7 @@ export const showToast = {
   
   error: (message: string) => toast.error(message, {
     duration: 4000,
-    position: 'top-right',
+    position: 'bottom-right',
     style: {
       background: '#EF4444',
       color: '#fff',
@@ -22,7 +22,7 @@ export const showToast = {
   }),
   
   loading: (message: string) => toast.loading(message, {
-    position: 'top-right',
+    position: 'bottom-right',
     style: {
       background: '#3B82F6',
       color: '#fff',
@@ -32,7 +32,7 @@ export const showToast = {
   
   info: (message: string) => toast(message, {
     duration: 4000,
-    position: 'top-right',
+    position: 'bottom-right',
     icon: 'ℹ️',
     style: {
       background: '#3B82F6',
@@ -51,7 +51,7 @@ export const showToast = {
       error: string;
     }
   ) => toast.promise(promise, msgs, {
-    position: 'top-right',
+    position: 'bottom-right',
     style: {
       fontWeight: '500',
     },

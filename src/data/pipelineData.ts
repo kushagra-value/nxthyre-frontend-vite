@@ -302,6 +302,655 @@ export const pipelineCandidates: Record<string, PipelineCandidate[]> = {
         }
       }
     },
+   {
+      id: '1',
+      firstName: 'Sunny',
+      lastName: 'Humbro',
+      fullName: 'Sunny Humbro',
+      publicIdentifier: 'sunny-humbro',
+      headline: 'Senior Seller Performance Support Analyst at Amazon',
+      summary: 'Experienced analyst with expertise in data analysis and seller support',
+      profilePicture: {
+        displayImageUrl: 'https://tse4.mm.bing.net/th/id/OIP.audMX4ZGbvT2_GJTx2c4GgHaHw?pid=Api&P=0&h=220',
+        artifacts: []
+      },
+      location: {
+        country: 'India',
+        city: 'Mumbai'
+      },
+      industry: 'E-commerce',
+      email: 'sunny.humbro@gmail.com',
+      phone: {
+        type: 'mobile',
+        number: '+91 9876543210'
+      },
+      positions: [{
+        title: 'Senior Seller Performance Support Analyst',
+        companyName: 'Amazon',
+        companyUrn: 'amazon',
+        startDate: { month: 1, year: 2022 },
+        isCurrent: true,
+        location: 'Mumbai, Maharashtra, India',
+        description: 'Supporting seller performance through data analysis'
+      }],
+      educations: [{
+        schoolName: 'Indian Institute of Foreign Trade',
+        degreeName: 'Post Graduate Diploma',
+        fieldOfStudy: 'Business',
+        startDate: { year: 2018 },
+        endDate: { year: 2020 },
+        activities: '',
+        description: ''
+      }],
+      certifications: [],
+      skills: [
+        { name: 'Python', endorsementCount: 20 },
+        { name: 'Data Analysis', endorsementCount: 18 },
+        { name: 'SQL', endorsementCount: 15 },
+        { name: 'Excel', endorsementCount: 12 }
+      ],
+      endorsements: [],
+      recommendations: { received: [], given: [] },
+      visibility: { profile: 'PUBLIC', email: true, phone: true },
+      connections: [],
+      meta: {
+        fetchedAt: '2025-07-04',
+        dataCompleteness: 'partial',
+        source: 'Manual Entry',
+        scopesGranted: []
+      },
+      stageData: {
+        uncontacted: {
+          notes: ['Expert in data analysis', 'Potential for senior analyst role']
+        }
+      }
+    }, {
+      id: '5',
+      firstName: 'Arjun',
+      lastName: 'Kumar',
+      fullName: 'Arjun Kumar',
+      publicIdentifier: 'arjun-kumar-ios',
+      headline: 'iOS Developer at Swiggy',
+      summary: 'iOS developer with expertise in Swift and UIKit',
+      profilePicture: {
+        displayImageUrl: '',
+        artifacts: []
+      },
+      location: {
+        country: 'India',
+        city: 'Bangalore'
+      },
+      industry: 'Technology',
+      email: 'arjun.kumar@gmail.com',
+      phone: {
+        type: 'mobile',
+        number: '+91 9876543214'
+      },
+      positions: [{
+        title: 'iOS Developer',
+        companyName: 'Swiggy',
+        companyUrn: 'swiggy',
+        startDate: { month: 1, year: 2022 },
+        isCurrent: true,
+        location: 'Bangalore, Karnataka, India',
+        description: 'Developing iOS applications for food delivery platform'
+      }],
+      educations: [{
+        schoolName: 'National Institute of Technology, Karnataka',
+        degreeName: 'B.Tech',
+        fieldOfStudy: 'Computer Science',
+        startDate: { year: 2016 },
+        endDate: { year: 2020 },
+        activities: '',
+        description: ''
+      }],
+      certifications: [],
+      skills: [
+        { name: 'iOS', endorsementCount: 15 },
+        { name: 'Swift', endorsementCount: 12 },
+        { name: 'Objective-C', endorsementCount: 10 },
+        { name: 'UIKit', endorsementCount: 8 }
+      ],
+      endorsements: [],
+      recommendations: { received: [], given: [] },
+      visibility: { profile: 'PUBLIC', email: true, phone: true },
+      connections: [],
+      meta: {
+        fetchedAt: '2025-07-04',
+        dataCompleteness: 'partial',
+        source: 'Manual Entry',
+        scopesGranted: []
+      },
+      stageData: {
+        uncontacted: {
+          notes: ['Intermediate iOS skills', 'Good fit for mobile dev role']
+        }
+      }
+    },{
+      id: '6',
+      firstName: 'Neha',
+      lastName: 'Singh',
+      fullName: 'Neha Singh',
+      publicIdentifier: 'neha-singh-android',
+      headline: 'Android Developer at Paytm',
+      summary: 'Android developer with expertise in Kotlin and Firebase',
+      profilePicture: {
+        displayImageUrl: '',
+        artifacts: []
+      },
+      location: {
+        country: 'India',
+        city: 'Noida'
+      },
+      industry: 'Fintech',
+      email: 'neha.singh@gmail.com',
+      phone: {
+        type: 'mobile',
+        number: '+91 9876543215'
+      },
+      positions: [{
+        title: 'Android Developer',
+        companyName: 'Paytm',
+        companyUrn: 'paytm',
+        startDate: { month: 1, year: 2021 },
+        isCurrent: true,
+        location: 'Noida, Uttar Pradesh, India',
+        description: 'Developing Android applications for payment platform'
+      }],
+      educations: [{
+        schoolName: 'Delhi Technological University',
+        degreeName: 'B.Tech',
+        fieldOfStudy: 'Computer Science',
+        startDate: { year: 2016 },
+        endDate: { year: 2020 },
+        activities: '',
+        description: ''
+      }],
+      certifications: [],
+      skills: [
+        { name: 'Android', endorsementCount: 15 },
+        { name: 'Kotlin', endorsementCount: 12 },
+        { name: 'Java', endorsementCount: 10 },
+        { name: 'Firebase', endorsementCount: 8 }
+      ],
+      endorsements: [],
+      recommendations: { received: [], given: [] },
+      visibility: { profile: 'PUBLIC', email: true, phone: true },
+      connections: [],
+      meta: {
+        fetchedAt: '2025-07-04',
+        dataCompleteness: 'partial',
+        source: 'Manual Entry',
+        scopesGranted: []
+      },
+      stageData: {
+        uncontacted: {
+          notes: ['Intermediate Android skills', 'Potential for fintech role']
+        }
+      }
+    },{
+      id: '2',
+      firstName: 'Samina',
+      lastName: 'Haque',
+      fullName: 'Samina Haque',
+      publicIdentifier: 'samina-haque',
+      headline: 'Software Engineer at Razorpay',
+      summary: 'Software engineer with expertise in full-stack development',
+      profilePicture: {
+        displayImageUrl: '',
+        artifacts: []
+      },
+      location: {
+        country: 'India',
+        city: 'Bangalore'
+      },
+      industry: 'Fintech',
+      email: 'samina.haque@gmail.com',
+      phone: {
+        type: 'mobile',
+        number: '+91 9876543211'
+      },
+      positions: [{
+        title: 'Software Engineer',
+        companyName: 'Razorpay',
+        companyUrn: 'razorpay',
+        startDate: { month: 1, year: 2021 },
+        isCurrent: true,
+        location: 'Bangalore, Karnataka, India',
+        description: 'Developing full-stack applications for payment platform'
+      }],
+      educations: [{
+        schoolName: 'Indian Institute of Technology, Hyderabad',
+        degreeName: 'Masters',
+        fieldOfStudy: 'Computer Science',
+        startDate: { year: 2018 },
+        endDate: { year: 2020 },
+        activities: '',
+        description: ''
+      }],
+      certifications: [],
+      skills: [
+        { name: 'React', endorsementCount: 18 },
+        { name: 'Node.js', endorsementCount: 15 },
+        { name: 'MongoDB', endorsementCount: 12 },
+        { name: 'JavaScript', endorsementCount: 10 }
+      ],
+      endorsements: [],
+      recommendations: { received: [], given: [] },
+      visibility: { profile: 'PUBLIC', email: true, phone: true },
+      connections: [],
+      meta: {
+        fetchedAt: '2025-07-04',
+        dataCompleteness: 'partial',
+        source: 'Manual Entry',
+        scopesGranted: []
+      },
+      stageData: {
+        invitesSent: {
+          currentStatus: 'Pending Response',
+          notes: ['Invite sent via email', 'Follow up in 3 days'],
+          dateSent: '2025-07-01',
+          responseStatus: 'No Response'
+        }
+      }
+    },{
+      id: '8',
+      firstName: 'Anita',
+      lastName: 'Desai',
+      fullName: 'Anita Desai',
+      publicIdentifier: 'anita-desai-designer',
+      headline: 'Designer at Zomato',
+      summary: 'UI/UX designer with expertise in user-centric design',
+      profilePicture: {
+        displayImageUrl: '',
+        artifacts: []
+      },
+      location: {
+        country: 'India',
+        city: 'Gurgaon'
+      },
+      industry: 'Design',
+      email: 'anita.desai@gmail.com',
+      phone: {
+        type: 'mobile',
+        number: '+91 9876543217'
+      },
+      positions: [{
+        title: 'Designer',
+        companyName: 'Zomato',
+        companyUrn: 'zomato',
+        startDate: { month: 1, year: 2020 },
+        isCurrent: true,
+        location: 'Gurgaon, Haryana, India',
+        description: 'Designing user interfaces for food delivery platform'
+      }],
+      educations: [{
+        schoolName: 'National Institute of Design',
+        degreeName: 'Bachelor of Design',
+        fieldOfStudy: 'Design',
+        startDate: { year: 2015 },
+        endDate: { year: 2019 },
+        activities: '',
+        description: ''
+      }],
+      certifications: [],
+      skills: [
+        { name: 'UI/UX Design', endorsementCount: 20 },
+        { name: 'Figma', endorsementCount: 18 },
+        { name: 'Adobe Creative Suite', endorsementCount: 15 },
+        { name: 'Prototyping', endorsementCount: 12 }
+      ],
+      endorsements: [],
+      recommendations: { received: [], given: [] },
+      visibility: { profile: 'PUBLIC', email: true, phone: true },
+      connections: [],
+      meta: {
+        fetchedAt: '2025-07-04',
+        dataCompleteness: 'partial',
+        source: 'Manual Entry',
+        scopesGranted: []
+      },
+      stageData: {
+        invitesSent: {
+          currentStatus: 'Responded - Interested',
+          notes: ['Positive response received', 'Scheduling initial call'],
+          dateSent: '2025-06-30',
+          responseStatus: 'Interested'
+        }
+      }
+    },{
+      id: '4',
+      firstName: 'Priya',
+      lastName: 'Patel',
+      fullName: 'Priya Patel',
+      publicIdentifier: 'priya-patel-ml',
+      headline: 'Machine Learning Engineer at Google',
+      summary: 'Expert in machine learning and deep learning models',
+      profilePicture: {
+        displayImageUrl: '',
+        artifacts: []
+      },
+      location: {
+        country: 'India',
+        city: 'Hyderabad'
+      },
+      industry: 'Technology',
+      email: 'priya.patel@gmail.com',
+      phone: {
+        type: 'mobile',
+        number: '+91 9876543213'
+      },
+      positions: [{
+        title: 'Machine Learning Engineer',
+        companyName: 'Google',
+        companyUrn: 'google',
+        startDate: { month: 1, year: 2019 },
+        isCurrent: true,
+        location: 'Hyderabad, Telangana, India',
+        description: 'Developing machine learning solutions for enterprise applications'
+      }],
+      educations: [{
+        schoolName: 'IIT Delhi',
+        degreeName: 'PhD',
+        fieldOfStudy: 'Computer Science',
+        startDate: { year: 2014 },
+        endDate: { year: 2019 },
+        activities: '',
+        description: ''
+      }],
+      certifications: [],
+      skills: [
+        { name: 'Machine Learning', endorsementCount: 30 },
+        { name: 'Python', endorsementCount: 25 },
+        { name: 'TensorFlow', endorsementCount: 20 },
+        { name: 'Deep Learning', endorsementCount: 18 }
+      ],
+      endorsements: [],
+      recommendations: { received: [], given: [] },
+      visibility: { profile: 'PUBLIC', email: true, phone: true },
+      connections: [],
+      meta: {
+        fetchedAt: '2025-07-04',
+        dataCompleteness: 'partial',
+        source: 'Manual Entry',
+        scopesGranted: []
+      },
+      stageData: {
+        applied: {
+          appliedDate: '2025-06-28',
+          resumeScore: 92,
+          skillsMatch: '90%',
+          experienceMatch: '85%',
+          highlights: 'Machine Learning, Python, TensorFlow',
+          notes: ['Expert in ML', 'Strong academic background']
+        }
+      }
+    },{
+      id: '10',
+      firstName: 'Deepika',
+      lastName: 'Agarwal',
+      fullName: 'Deepika Agarwal',
+      publicIdentifier: 'deepika-agarwal-operations',
+      headline: 'Operations Manager at Ola',
+      summary: 'Operations manager with expertise in process optimization',
+      profilePicture: {
+        displayImageUrl: '',
+        artifacts: []
+      },
+      location: {
+        country: 'India',
+        city: 'Bangalore'
+      },
+      industry: 'Transportation',
+      email: 'deepika.agarwal@gmail.com',
+      phone: {
+        type: 'mobile',
+        number: '+91 9876543219'
+      },
+      positions: [{
+        title: 'Operations Manager',
+        companyName: 'Ola',
+        companyUrn: 'ola',
+        startDate: { month: 1, year: 2021 },
+        isCurrent: true,
+        location: 'Bangalore, Karnataka, India',
+        description: 'Optimizing operations for ride-sharing platform'
+      }],
+      educations: [{
+        schoolName: 'Vellore Institute of Technology',
+        degreeName: 'B.Tech',
+        fieldOfStudy: 'Engineering',
+        startDate: { year: 2016 },
+        endDate: { year: 2020 },
+        activities: '',
+        description: ''
+      }],
+      certifications: [],
+      skills: [
+        { name: 'Operations', endorsementCount: 25 },
+        { name: 'Process Optimization', endorsementCount: 20 },
+        { name: 'Analytics', endorsementCount: 15 },
+        { name: 'Project Management', endorsementCount: 12 }
+      ],
+      endorsements: [],
+      recommendations: { received: [], given: [] },
+      visibility: { profile: 'PUBLIC', email: true, phone: true },
+      connections: [],
+      meta: {
+        fetchedAt: '2025-07-04',
+        dataCompleteness: 'partial',
+        source: 'Manual Entry',
+        scopesGranted: []
+      },
+      stageData: {
+        applied: {
+          appliedDate: '2025-07-02',
+          resumeScore: 88,
+          skillsMatch: '80%',
+          experienceMatch: '75%',
+          highlights: 'Operations, Analytics',
+          notes: ['Strong operations skills', 'Good fit for process improvement']
+        }
+      }
+    },{
+      id: '9',
+      firstName: 'Karthik',
+      lastName: 'Iyer',
+      fullName: 'Karthik Iyer',
+      publicIdentifier: 'karthik-iyer-sales',
+      headline: 'Sales Manager at Salesforce',
+      summary: 'Sales professional with expertise in CRM and lead generation',
+      profilePicture: {
+        displayImageUrl: '',
+        artifacts: []
+      },
+      location: {
+        country: 'India',
+        city: 'Mumbai'
+      },
+      industry: 'Software',
+      email: 'karthik.iyer@gmail.com',
+      phone: {
+        type: 'mobile',
+        number: '+91 9876543218'
+      },
+      positions: [{
+        title: 'Sales Manager',
+        companyName: 'Salesforce',
+        companyUrn: 'salesforce',
+        startDate: { month: 1, year: 2019 },
+        isCurrent: true,
+        location: 'Mumbai, Maharashtra, India',
+        description: 'Managing sales operations and client relationships'
+      }],
+      educations: [{
+        schoolName: 'XLRI Jamshedpur',
+        degreeName: 'MBA',
+        fieldOfStudy: 'Business Administration',
+        startDate: { year: 2016 },
+        endDate: { year: 2018 },
+        activities: '',
+        description: ''
+      }],
+      certifications: [],
+      skills: [
+        { name: 'Sales', endorsementCount: 25 },
+        { name: 'CRM', endorsementCount: 20 },
+        { name: 'Lead Generation', endorsementCount: 18 },
+        { name: 'Client Management', endorsementCount: 15 }
+      ],
+      endorsements: [],
+      recommendations: { received: [], given: [] },
+      visibility: { profile: 'PUBLIC', email: true, phone: true },
+      connections: [],
+      meta: {
+        fetchedAt: '2025-07-04',
+        dataCompleteness: 'partial',
+        source: 'Manual Entry',
+        scopesGranted: []
+      },
+      stageData: {
+        firstInterview: {
+          followups: ['Schedule technical discussion', 'Client case study review'],
+          interviewNotes: ['Strong sales experience', 'Good communication skills'],
+          interviewDate: '2025-07-03',
+          interviewerName: 'Emma Brown',
+          interviewerEmail: 'emma.brown@company.com'
+        }
+      }
+    }, {
+      id: '3',
+      firstName: 'Rahul',
+      lastName: 'Sharma',
+      fullName: 'Rahul Sharma',
+      publicIdentifier: 'rahul-sharma-pm',
+      headline: 'Product Manager at Flipkart',
+      summary: 'Product manager with expertise in strategy and analytics',
+      profilePicture: {
+        displayImageUrl: '',
+        artifacts: []
+      },
+      location: {
+        country: 'India',
+        city: 'Bangalore'
+      },
+      industry: 'E-commerce',
+      email: 'rahul.sharma@gmail.com',
+      phone: {
+        type: 'mobile',
+        number: '+91 9876543212'
+      },
+      positions: [{
+        title: 'Product Manager',
+        companyName: 'Flipkart',
+        companyUrn: 'flipkart',
+        startDate: { month: 1, year: 2020 },
+        isCurrent: true,
+        location: 'Bangalore, Karnataka, India',
+        description: 'Leading product strategy and development'
+      }],
+      educations: [{
+        schoolName: 'Indian Institute of Management, Bangalore',
+        degreeName: 'MBA',
+        fieldOfStudy: 'Business Administration',
+        startDate: { year: 2018 },
+        endDate: { year: 2020 },
+        activities: '',
+        description: ''
+      }],
+      certifications: [],
+      skills: [
+        { name: 'Product Strategy', endorsementCount: 25 },
+        { name: 'Analytics', endorsementCount: 20 },
+        { name: 'Leadership', endorsementCount: 18 },
+        { name: 'Agile', endorsementCount: 15 }
+      ],
+      endorsements: [],
+      recommendations: { received: [], given: [] },
+      visibility: { profile: 'PUBLIC', email: true, phone: true },
+      connections: [],
+      meta: {
+        fetchedAt: '2025-07-04',
+        dataCompleteness: 'partial',
+        source: 'Manual Entry',
+        scopesGranted: []
+      },
+      stageData: {
+        hrRound: {
+          followups: ['Salary discussion', 'Background check'],
+          interviewNotes: ['Strong product management skills', 'Good leadership potential'],
+          interviewDate: '2025-07-02',
+          interviewerName: 'John Doe',
+          interviewerEmail: 'john.doe@company.com'
+        }
+      }
+    },{
+      id: '7',
+      firstName: 'Vikram',
+      lastName: 'Reddy',
+      fullName: 'Vikram Reddy',
+      publicIdentifier: 'vikram-reddy-em',
+      headline: 'Engineering Manager at Microsoft',
+      summary: 'Engineering manager with expertise in team leadership and system design',
+      profilePicture: {
+        displayImageUrl: '',
+        artifacts: []
+      },
+      location: {
+        country: 'India',
+        city: 'Hyderabad'
+      },
+      industry: 'Technology',
+      email: 'vikram.reddy@gmail.com',
+      phone: {
+        type: 'mobile',
+        number: '+91 9876543216'
+      },
+      positions: [{
+        title: 'Engineering Manager',
+        companyName: 'Microsoft',
+        companyUrn: 'microsoft',
+        startDate: { month: 1, year: 2018 },
+        isCurrent: true,
+        location: 'Hyderabad, Telangana, India',
+        description: 'Leading engineering teams and system design'
+      }],
+      educations: [{
+        schoolName: 'Indian Institute of Science, Bangalore',
+        degreeName: 'M.Tech',
+        fieldOfStudy: 'Computer Science',
+        startDate: { year: 2012 },
+        endDate: { year: 2014 },
+        activities: '',
+        description: ''
+      }],
+      certifications: [],
+      skills: [
+        { name: 'Engineering Management', endorsementCount: 30 },
+        { name: 'Team Leadership', endorsementCount: 25 },
+        { name: 'System Design', endorsementCount: 20 },
+        { name: 'Mentoring', endorsementCount: 18 }
+      ],
+      endorsements: [],
+      recommendations: { received: [], given: [] },
+      visibility: { profile: 'PUBLIC', email: true, phone: true },
+      connections: [],
+      meta: {
+        fetchedAt: '2025-07-04',
+        dataCompleteness: 'partial',
+        source: 'Manual Entry',
+        scopesGranted: []
+      },
+      stageData: {
+        hrRound: {
+          followups: ['Final approval', 'Offer preparation'],
+          interviewNotes: ['Strong leadership skills', 'Expert in system design'],
+          interviewDate: '2025-07-01',
+          interviewerName: 'Jane Smith',
+          interviewerEmail: 'jane.smith@company.com'
+        }
+      }
+    },
     {
       id: 'uc2',
       firstName: 'Priya',

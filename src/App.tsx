@@ -15,6 +15,7 @@ import AuthApp from './components/AuthApp';
 import Settings from './components/Settings';
 import SharePipelinesLoader from './components/SharePipelinesLoader';
 import SharePipelinesModal from './components/SharePipelinesModal';
+import ShareableProfile from './components/ShareableProfile';
 import PipelineSharePage from './components/PipelineSharePage';
 import { candidates, Candidate } from './data/candidates';
 import { ChevronDown, MoreHorizontal, Edit, Mail, Archive, Trash2, LogOut, Share2 } from "lucide-react";
@@ -33,6 +34,11 @@ function App() {
   // Pipeline share page state
   const [showPipelineSharePage, setShowPipelineSharePage] = useState(false);
   const [currentPipelineId, setCurrentPipelineId] = useState('');
+
+    // Shareable profile state
+  const [showShareableProfile, setShowShareableProfile] = useState(false);
+  const [currentCandidateId, setCurrentCandidateId] = useState('');
+
 
   // Existing state
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
@@ -154,9 +160,14 @@ function App() {
   useEffect(() => {
     const path = window.location.pathname;
     const pipelineMatch = path.match(/^\/pipelines\/(.+)$/);
+    const candidateMatch = path.match(/^\/candidate-profiles\/(.+)$/);
+
     if (pipelineMatch) {
       setCurrentPipelineId(pipelineMatch[1]);
       setShowPipelineSharePage(true);
+    } else if (candidateMatch) {
+      setCurrentCandidateId(candidateMatch[1]);
+      setShowShareableProfile(true);
     }
   }, []);
 
@@ -292,6 +303,25 @@ function App() {
     setCurrentPipelineId('');
     window.history.pushState({}, '', '/');
   };
+
+  const handleBackFromShareableProfile = () => {
+    setShowShareableProfile(false);
+    setCurrentCandidateId('');
+    window.history.pushState({}, '', '/');
+  };
+
+  // Show shareable profile page
+  if (showShareableProfile) {
+    return (
+      <>
+        <Toaster />
+        <ShareableProfile 
+          candidateId={currentCandidateId}
+          onBack={handleBackFromShareableProfile}
+        />
+      </>
+    );
+  }
 
   // Non-Hook Variables
   const categories = [

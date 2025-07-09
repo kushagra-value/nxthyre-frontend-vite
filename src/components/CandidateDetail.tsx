@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Phone, Copy, MapPin, Calendar, Award, Briefcase, GraduationCap, Send, Star, Plus, User, Users, FileText, TrendingUp, MessageCircle, X } from 'lucide-react';
+import { Mail, Phone, Copy, MapPin, Calendar, Award, Briefcase, GraduationCap, Send, Star, Plus, User, Users, FileText, TrendingUp, MessageCircle, X, Share2 } from 'lucide-react';
 import { Candidate } from '../data/candidates';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
@@ -122,6 +122,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
     }
   };
 
+  const handleShareProfile = () => {
+    // Navigate to shareable profile page
+    window.open(`/candidate-profiles/${candidate.id}`, '_blank');
+  };
+
   const getAvatarColor = (name: string) => {
     return 'bg-blue-500';
   };
@@ -143,6 +148,13 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
             <p className="text-sm text-gray-500">{displayCandidate.city},</p>
             <p className="text-sm text-gray-500 ml-1">{displayCandidate.country}</p>
           </div>
+        </div>
+        <div className="text-xs text-gray-400 absolute right-6 top-4">
+        <button onClick={handleShareProfile}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Share Profile">
+          <Share2 className="w-4 h-4 "/> 
+        </button>
         </div>
       </div>
 

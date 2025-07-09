@@ -478,8 +478,17 @@ const getDaysAgo = (date: Date) => {
         <div className="bg-white border-b border-gray-200 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              
+              <button onClick={handleGoToDashboard}><ArrowLeft className="w-10 h-5"/></button>
               <h1 className="text-xl font-semibold text-gray-900">{currentPipeline.title}'s Pipeline</h1>
+            </div>
+            <div className="flex gap-2 items-center"><p className="text-xs text-gray-500">Share Using:</p>  
+            <button
+              onClick={() => setShowAccessModal(true)}
+              className="p-1 px-4 border border-blue-500 text-blue-500 text-sm font-medium rounded-lg hover:bg-blue-500 hover:text-white transition-colors flex items-center space-x-2"
+            > 
+              <Mail className="w-4 h-4" />
+              <span>Email</span>
+            </button>
             </div>
           </div>
         </div>
@@ -490,15 +499,7 @@ const getDaysAgo = (date: Date) => {
             <div className="flex items-center space-x-4">
               <span className="text-sm font-medium text-gray-700"></span>
             </div>
-            <div className="flex gap-2 items-center"><p className="text-xs text-gray-500">Share Using:</p>  
-            <button
-              onClick={() => setShowAccessModal(true)}
-              className="p-1 px-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
-            > 
-              <Mail className="w-4 h-4" />
-              <span>Email</span>
-            </button>
-            </div>
+            
           </div>
         </div>
 
