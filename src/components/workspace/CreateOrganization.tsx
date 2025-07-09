@@ -132,6 +132,10 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
     handleCreateNew();
   };
 
+  const handleGoToDashboard = () => {
+    window.location.href = "/";
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -139,7 +143,7 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16">
             <button
-              onClick={() => onNavigate("dashboard")}
+              onClick={handleGoToDashboard}
               className="flex items-center text-gray-600 hover:text-gray-800 mr-4"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -340,7 +344,7 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
             {!showSimilar && (
               <div className="flex space-x-4">
                 <button
-                  onClick={() => onNavigate("dashboard")}
+                  onClick={handleGoToDashboard}
                   className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors"
                 >
                   Cancel
