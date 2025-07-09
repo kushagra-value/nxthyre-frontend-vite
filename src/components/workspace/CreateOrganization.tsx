@@ -160,8 +160,8 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Building2 className="w-8 h-8 text-green-600" />
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Building2 className="w-8 h-8 text-blue-500" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
               Create New Organization
@@ -332,7 +332,7 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
                   </button>
                   <button
                     onClick={handleConfirmNew}
-                    className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"
+                    className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
                   >
                     Create New Anyway
                   </button>
@@ -352,7 +352,7 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
                 <button
                   onClick={handleCreateNew}
                   disabled={isLoading}
-                  className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
                     <div className="flex items-center justify-center">

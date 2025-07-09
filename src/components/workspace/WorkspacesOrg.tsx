@@ -1,8 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Users, Building2, Settings, Search, User, ChevronDown, MoreHorizontal, LogOut, Home, Edit, Trash2 } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
-import { organizationService } from '../../services/organizationService';
-import { showToast } from '../../utils/toast';
+import React, { useState, useEffect } from "react";
+import {
+  Plus,
+  Users,
+  Building2,
+  Settings,
+  Search,
+  User,
+  ChevronDown,
+  MoreHorizontal,
+  LogOut,
+  Home,
+  Edit,
+  Trash2,
+} from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
+import { organizationService } from "../../services/organizationService";
+import { showToast } from "../../utils/toast";
 
 interface WorkspacesOrgProps {
   onNavigate: (flow: string, data?: any) => void;
@@ -13,26 +26,39 @@ interface WorkspacesOrgProps {
   onCreateRole?: () => void;
 }
 
-const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({ 
-  onNavigate, 
-  user, 
-  onLogout, 
-  searchTerm: propSearchTerm, 
-  setSearchTerm: propSetSearchTerm, 
-  onCreateRole: propOnCreateRole 
+const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
+  onNavigate,
+  user,
+  onLogout,
+  searchTerm: propSearchTerm,
+  setSearchTerm: propSetSearchTerm,
+  onCreateRole: propOnCreateRole,
 }) => {
-  const [activeTab, setActiveTab] = useState('workspaces');
+  const [activeTab, setActiveTab] = useState("workspaces");
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [localSearchTerm, setLocalSearchTerm] = useState(propSearchTerm || '');
-  const [showDeleteModal, setShowDeleteModal] = useState<{type: 'org' | 'workspace', id: string, name: string} | null>(null);
-  const [showEditModal, setShowEditModal] = useState<{type: 'org' | 'workspace', item: any} | null>(null);
+  const [localSearchTerm, setLocalSearchTerm] = useState(propSearchTerm || "");
+  const [showDeleteModal, setShowDeleteModal] = useState<{
+    type: "org" | "workspace";
+    id: string;
+    name: string;
+  } | null>(null);
+  const [showEditModal, setShowEditModal] = useState<{
+    type: "org" | "workspace";
+    item: any;
+  } | null>(null);
   const [editFormData, setEditFormData] = useState<any>({});
-  
-  const { user: firebaseUser, userStatus, isAuthenticated, refreshUserStatus } = useAuth();
+
+  const {
+    user: firebaseUser,
+    userStatus,
+    isAuthenticated,
+    refreshUserStatus,
+  } = useAuth();
   const [onboardingStatus, setOnboardingStatus] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  
-  const searchTerm = propSearchTerm !== undefined ? propSearchTerm : localSearchTerm;
+
+  const searchTerm =
+    propSearchTerm !== undefined ? propSearchTerm : localSearchTerm;
   const setSearchTerm = propSetSearchTerm || setLocalSearchTerm;
 
   useEffect(() => {
@@ -42,8 +68,8 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
           const status = await organizationService.getOnboardingStatus();
           setOnboardingStatus(status);
         } catch (error: any) {
-          console.error('Error fetching onboarding status:', error);
-          showToast.error('Failed to load workspace data');
+          console.error("Error fetching onboarding status:", error);
+          showToast.error("Failed to load workspace data");
         } finally {
           setLoading(false);
         }
@@ -55,28 +81,29 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
 
   // Provide default values if user data is missing
   const safeUser = {
-    id: firebaseUser?.uid || 'temp-user',
-    fullName: userStatus?.full_name || user?.fullName || 'User',
-    email: userStatus?.email || user?.email || 'user@example.com',
-    role: userStatus?.roles?.[0]?.name?.toLowerCase() || user?.role || 'team',
-    organizationId: userStatus?.organization?.id?.toString() || user?.organizationId || null,
+    id: firebaseUser?.uid || "temp-user",
+    fullName: userStatus?.full_name || user?.fullName || "User",
+    email: userStatus?.email || user?.email || "user@example.com",
+    role: userStatus?.roles?.[0]?.name?.toLowerCase() || user?.role || "team",
+    organizationId:
+      userStatus?.organization?.id?.toString() || user?.organizationId || null,
     workspaceIds: user?.workspaceIds || [],
-    ...user
+    ...user,
   };
 
   // TODO: Replace with actual workspace data from backend
   // For now using dummy data - PLEASE REPLACE THIS
   const userWorkspaces = [
     {
-      id: '1',
-      name: 'Engineering Team',
+      id: "1",
+      name: "Engineering Team",
       organizationId: safeUser.organizationId,
       ownerId: safeUser.id,
       members: [safeUser.id],
-      createdAt: new Date().toISOString()
-    }
+      createdAt: new Date().toISOString(),
+    },
   ];
-  
+
   const userOrganization = userStatus?.organization || null;
 
   if (loading) {
@@ -90,54 +117,71 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
     );
   }
 
-  const handleCreateWorkspace = () => onNavigate('workspace-creation');
-  const handleJoinWorkspace = () => onNavigate('workspace-joining');
-  const handleCreateOrganization = () => onNavigate('create-organization');
+  const handleCreateWorkspace = () => onNavigate("workspace-creation");
+  const handleJoinWorkspace = () => onNavigate("workspace-joining");
+  const handleCreateOrganization = () => onNavigate("create-organization");
   const handleGoToDashboard = () => {
-    window.location.href = '/';
+    window.location.href = "/";
   };
-  
-  const onCreateRole = propOnCreateRole || (() => showToast.info('Create Role clicked - implement this in the parent component'));
+
+  const onCreateRole =
+    propOnCreateRole ||
+    (() =>
+      showToast.info(
+        "Create Role clicked - implement this in the parent component"
+      ));
 
   const handleDeleteConfirm = async () => {
     if (!showDeleteModal) return;
-    
+
     const { type, id, name } = showDeleteModal;
-    
+
     try {
       // TODO: Implement actual delete API calls
-      showToast.success(`${type === 'org' ? 'Organization' : 'Workspace'} "${name}" deleted successfully`);
+      showToast.success(
+        `${
+          type === "org" ? "Organization" : "Workspace"
+        } "${name}" deleted successfully`
+      );
       await refreshUserStatus();
     } catch (error) {
       showToast.error(`Failed to delete ${type}`);
     }
-    
+
     setShowDeleteModal(null);
   };
 
   const handleEditSubmit = async () => {
     if (!showEditModal) return;
-    
+
     const { type, item } = showEditModal;
-    
+
     try {
       // TODO: Implement actual update API calls
-      showToast.success(`${type === 'org' ? 'Organization' : 'Workspace'} "${editFormData.name}" updated successfully`);
+      showToast.success(
+        `${type === "org" ? "Organization" : "Workspace"} "${
+          editFormData.name
+        }" updated successfully`
+      );
       await refreshUserStatus();
     } catch (error) {
       showToast.error(`Failed to update ${type}`);
     }
-    
+
     setShowEditModal(null);
     setEditFormData({});
   };
 
-  const openEditModal = (type: 'org' | 'workspace', item: any) => {
+  const openEditModal = (type: "org" | "workspace", item: any) => {
     setShowEditModal({ type, item });
     setEditFormData({ ...item });
   };
 
-  const openDeleteModal = (type: 'org' | 'workspace', id: string, name: string) => {
+  const openDeleteModal = (
+    type: "org" | "workspace",
+    id: string,
+    name: string
+  ) => {
     setShowDeleteModal({ type, id, name });
   };
 
@@ -149,7 +193,10 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
           <div className="w-full px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center">
-                <h1 className="text-2xl font-bold text-blue-600 cursor-pointer" onClick={handleGoToDashboard}>
+                <h1
+                  className="text-2xl font-bold text-blue-600 cursor-pointer"
+                  onClick={handleGoToDashboard}
+                >
                   NxtHyre
                 </h1>
               </div>
@@ -180,15 +227,21 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                     <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                       <User className="w-4 h-4 text-white" />
                     </div>
-                    <span className="text-sm font-medium text-gray-700">{safeUser.fullName}</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      {safeUser.fullName}
+                    </span>
                     <ChevronDown className="w-4 h-4 text-gray-400" />
                   </button>
                   {showUserMenu && (
                     <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                       <div className="py-1">
                         <div className="px-4 py-2 border-b border-gray-100">
-                          <p className="text-sm font-medium text-gray-900">{safeUser.fullName}</p>
-                          <p className="text-xs text-gray-500">{safeUser.email}</p>
+                          <p className="text-sm font-medium text-gray-900">
+                            {safeUser.fullName}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {safeUser.email}
+                          </p>
                         </div>
                         <button
                           onClick={handleGoToDashboard}
@@ -226,21 +279,21 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
           <div className="border-b border-gray-200 mb-6">
             <nav className="-mb-px flex space-x-8">
               <button
-                onClick={() => setActiveTab('workspaces')}
+                onClick={() => setActiveTab("workspaces")}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'workspaces'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  activeTab === "workspaces"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
                 Workspaces
               </button>
               <button
-                onClick={() => setActiveTab('organizations')}
+                onClick={() => setActiveTab("organizations")}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'organizations'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  activeTab === "organizations"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
                 Organizations
@@ -248,7 +301,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
             </nav>
           </div>
 
-          {activeTab === 'workspaces' && (
+          {activeTab === "workspaces" && (
             <div className="space-y-6">
               <div className="flex space-x-4">
                 <button
@@ -272,7 +325,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                     const organization = userOrganization;
                     const memberCount = workspace.members?.length || 1;
                     const isOwner = workspace.ownerId === safeUser.id;
-                    
+
                     return (
                       <div
                         key={workspace.id}
@@ -289,14 +342,22 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                               </button>
                               <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10 opacity-0 hover:opacity-100 transition-opacity">
                                 <button
-                                  onClick={() => openEditModal('workspace', workspace)}
+                                  onClick={() =>
+                                    openEditModal("workspace", workspace)
+                                  }
                                   className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
                                 >
                                   <Edit className="w-3 h-3 mr-2" />
                                   Edit
                                 </button>
                                 <button
-                                  onClick={() => openDeleteModal('workspace', workspace.id, workspace.name)}
+                                  onClick={() =>
+                                    openDeleteModal(
+                                      "workspace",
+                                      workspace.id,
+                                      workspace.name
+                                    )
+                                  }
                                   className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
                                 >
                                   <Trash2 className="w-3 h-3 mr-2" />
@@ -306,12 +367,16 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                             </div>
                           )}
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{workspace.name}</h3>
-                        <p className="text-sm text-gray-600 mb-4">{organization?.name || 'No Organization'}</p>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          {workspace.name}
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                          {organization?.name || "No Organization"}
+                        </p>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center text-sm text-gray-500">
                             <Users className="w-4 h-4 mr-1" />
-                            {memberCount} member{memberCount !== 1 ? 's' : ''}
+                            {memberCount} member{memberCount !== 1 ? "s" : ""}
                           </div>
                           <button
                             onClick={handleGoToDashboard}
@@ -326,8 +391,12 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                 ) : (
                   <div className="col-span-full text-center py-12">
                     <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No workspaces yet</h3>
-                    <p className="text-gray-600 mb-4">Create your first workspace or join an existing one</p>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No workspaces yet
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      Create your first workspace or join an existing one
+                    </p>
                     <div className="flex justify-center space-x-4">
                       <button
                         onClick={handleCreateWorkspace}
@@ -348,7 +417,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
             </div>
           )}
 
-          {activeTab === 'organizations' && (
+          {activeTab === "organizations" && (
             <div className="space-y-6">
               <div className="flex space-x-4">
                 <button
@@ -363,8 +432,8 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                 {userOrganization ? (
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                     <div className="flex items-start justify-between mb-4">
-                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <Building2 className="w-6 h-6 text-green-600" />
+                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <Building2 className="w-6 h-6 text-blue-500" />
                       </div>
                       {safeUser.id === userOrganization.ownerId && (
                         <div className="relative group">
@@ -373,14 +442,22 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                           </button>
                           <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
-                              onClick={() => openEditModal('org', userOrganization)}
+                              onClick={() =>
+                                openEditModal("org", userOrganization)
+                              }
                               className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
                             >
                               <Edit className="w-3 h-3 mr-2" />
                               Edit
                             </button>
                             <button
-                              onClick={() => openDeleteModal('org', userOrganization.id, userOrganization.name)}
+                              onClick={() =>
+                                openDeleteModal(
+                                  "org",
+                                  userOrganization.id,
+                                  userOrganization.name
+                                )
+                              }
                               className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
                             >
                               <Trash2 className="w-3 h-3 mr-2" />
@@ -390,12 +467,17 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                         </div>
                       )}
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{userOrganization.name}</h3>
-                    <p className="text-sm text-gray-600 mb-4">@{userOrganization.domain || 'unknown'}</p>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      {userOrganization.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      @{userOrganization.domain || "unknown"}
+                    </p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center text-sm text-gray-500">
                         <Users className="w-4 h-4 mr-1" />
-                        {userWorkspaces.length} workspace{userWorkspaces.length !== 1 ? 's' : ''}
+                        {userWorkspaces.length} workspace
+                        {userWorkspaces.length !== 1 ? "s" : ""}
                       </div>
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                         Owner
@@ -405,8 +487,12 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                 ) : (
                   <div className="col-span-full text-center py-12">
                     <Building2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No organizations exist</h3>
-                    <p className="text-gray-600 mb-4">Please create one to get started</p>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No organizations exist
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      Please create one to get started
+                    </p>
                     <button
                       onClick={handleCreateOrganization}
                       className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
@@ -430,10 +516,12 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                 <Trash2 className="w-6 h-6 text-red-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Delete {showDeleteModal.type === 'org' ? 'Organization' : 'Workspace'}
+                Delete{" "}
+                {showDeleteModal.type === "org" ? "Organization" : "Workspace"}
               </h3>
               <p className="text-gray-600 mb-6">
-                Are you sure you want to delete "{showDeleteModal.name}"? This action cannot be undone.
+                Are you sure you want to delete "{showDeleteModal.name}"? This
+                action cannot be undone.
               </p>
               <div className="flex space-x-3">
                 <button
@@ -460,44 +548,73 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900">
-                Edit {showEditModal.type === 'org' ? 'Organization' : 'Workspace'}
+                Edit{" "}
+                {showEditModal.type === "org" ? "Organization" : "Workspace"}
               </h3>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Name
+                </label>
                 <input
                   type="text"
-                  value={editFormData.name || ''}
-                  onChange={(e) => setEditFormData(prev => ({ ...prev, name: e.target.value }))}
+                  value={editFormData.name || ""}
+                  onChange={(e) =>
+                    setEditFormData((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }))
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
-              {showEditModal.type === 'org' && (
+              {showEditModal.type === "org" && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Industry
+                    </label>
                     <input
                       type="text"
-                      value={editFormData.industry || ''}
-                      onChange={(e) => setEditFormData(prev => ({ ...prev, industry: e.target.value }))}
+                      value={editFormData.industry || ""}
+                      onChange={(e) =>
+                        setEditFormData((prev) => ({
+                          ...prev,
+                          industry: e.target.value,
+                        }))
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Website
+                    </label>
                     <input
                       type="url"
-                      value={editFormData.website || ''}
-                      onChange={(e) => setEditFormData(prev => ({ ...prev, website: e.target.value }))}
+                      value={editFormData.website || ""}
+                      onChange={(e) =>
+                        setEditFormData((prev) => ({
+                          ...prev,
+                          website: e.target.value,
+                        }))
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
                     <textarea
-                      value={editFormData.description || ''}
-                      onChange={(e) => setEditFormData(prev => ({ ...prev, description: e.target.value }))}
+                      value={editFormData.description || ""}
+                      onChange={(e) =>
+                        setEditFormData((prev) => ({
+                          ...prev,
+                          description: e.target.value,
+                        }))
+                      }
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />

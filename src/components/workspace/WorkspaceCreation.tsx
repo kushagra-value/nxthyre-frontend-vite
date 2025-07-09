@@ -1,34 +1,37 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Users, Mail, Copy, Check, X, Plus } from 'lucide-react';
-import { organizationService } from '../../services/organizationService';
-import { showToast } from '../../utils/toast';
+import React, { useState } from "react";
+import { ArrowLeft, Users, Mail, Copy, Check, X, Plus } from "lucide-react";
+import { organizationService } from "../../services/organizationService";
+import { showToast } from "../../utils/toast";
 
 interface WorkspaceCreationProps {
   onNavigate: (flow: string, data?: any) => void;
   user: any;
 }
 
-const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({ onNavigate, user }) => {
+const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
+  onNavigate,
+  user,
+}) => {
   const [step, setStep] = useState(1);
-  const [workspaceName, setWorkspaceName] = useState('');
+  const [workspaceName, setWorkspaceName] = useState("");
   const [inviteEmails, setInviteEmails] = useState<string[]>([]);
-  const [currentEmail, setCurrentEmail] = useState('');
-  const [error, setError] = useState('');
+  const [currentEmail, setCurrentEmail] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [inviteLink] = useState('https://nxthyre.com/invite/abc123def456');
+  const [inviteLink] = useState("https://nxthyre.com/invite/abc123def456");
   const [copiedLink, setCopiedLink] = useState(false);
 
   const handleNext = () => {
     if (!workspaceName.trim()) {
-      setError('Workspace title required');
+      setError("Workspace title required");
       return;
     }
-    setError('');
+    setError("");
     setStep(2);
   };
 
   const handleAddEmail = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ',') {
+    if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
       addEmail();
     }
@@ -39,56 +42,59 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({ onNavigate, user 
     if (!email) return;
 
     if (!isValidEmail(email)) {
-      setError('Please enter a valid email address');
+      setError("Please enter a valid email address");
       return;
     }
 
     if (inviteEmails.includes(email)) {
-      setError('Email already added');
+      setError("Email already added");
       return;
     }
 
-    setInviteEmails(prev => [...prev, email]);
-    setCurrentEmail('');
-    setError('');
+    setInviteEmails((prev) => [...prev, email]);
+    setCurrentEmail("");
+    setError("");
   };
 
   const removeEmail = (emailToRemove: string) => {
-    setInviteEmails(prev => prev.filter(email => email !== emailToRemove));
+    setInviteEmails((prev) => prev.filter((email) => email !== emailToRemove));
   };
 
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(inviteLink);
       setCopiedLink(true);
-      showToast.success('Invite link copied to clipboard');
+      showToast.success("Invite link copied to clipboard");
       setTimeout(() => setCopiedLink(false), 2000);
     } catch (err) {
-      console.error('Failed to copy link');
-      showToast.error('Failed to copy link');
+      console.error("Failed to copy link");
+      showToast.error("Failed to copy link");
     }
   };
 
   const handleSendInvites = async () => {
     setIsLoading(true);
-    
+
     try {
       // Create workspace
-      const organizationId = parseInt(user.organizationId || '1');
+      const organizationId = parseInt(user.organizationId || "1");
       await organizationService.createWorkspace(organizationId, workspaceName);
-      
-      showToast.success('Workspace created successfully!');
-      
+
+      showToast.success("Workspace created successfully!");
+
       // TODO: Send invites if any emails were added
       if (inviteEmails.length > 0) {
-        showToast.info(`Invites sent to ${inviteEmails.length} email${inviteEmails.length > 1 ? 's' : ''}`);
+        showToast.info(
+          `Invites sent to ${inviteEmails.length} email${
+            inviteEmails.length > 1 ? "s" : ""
+          }`
+        );
       }
-      
-      onNavigate('workspaces-org');
-      
+
+      onNavigate("workspaces-org");
     } catch (error: any) {
-      console.error('Create workspace error:', error);
-      showToast.error(error.message || 'Failed to create workspace');
+      console.error("Create workspace error:", error);
+      showToast.error(error.message || "Failed to create workspace");
     } finally {
       setIsLoading(false);
     }
@@ -100,7 +106,7 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({ onNavigate, user 
   };
 
   const handleCancel = () => {
-    onNavigate('workspaces-org');
+    onNavigate("workspaces-org");
   };
 
   return (
@@ -110,13 +116,17 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({ onNavigate, user 
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16">
             <button
-              onClick={() => step === 1 ? onNavigate('workspaces-org') : setStep(1)}
+              onClick={() =>
+                step === 1 ? onNavigate("workspaces-org") : setStep(1)
+              }
               className="flex items-center text-gray-600 hover:text-gray-800 mr-4"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </button>
-            <h1 className="text-xl font-semibold text-gray-900">Create Workspace</h1>
+            <h1 className="text-xl font-semibold text-gray-900">
+              Create Workspace
+            </h1>
           </div>
         </div>
       </div>
@@ -126,15 +136,27 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({ onNavigate, user 
         {/* Progress Steps */}
         <div className="mb-8">
           <div className="flex items-center">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-              step >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
-            }`}>
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                step >= 1
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-600"
+              }`}
+            >
               1
             </div>
-            <div className={`flex-1 h-1 mx-4 ${step >= 2 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-              step >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
-            }`}>
+            <div
+              className={`flex-1 h-1 mx-4 ${
+                step >= 2 ? "bg-blue-600" : "bg-gray-200"
+              }`}
+            ></div>
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                step >= 2
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-600"
+              }`}
+            >
               2
             </div>
           </div>
@@ -151,8 +173,12 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({ onNavigate, user 
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-blue-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Create Your Workspace</h2>
-              <p className="text-gray-600">Give your workspace a name that represents your team</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Create Your Workspace
+              </h2>
+              <p className="text-gray-600">
+                Give your workspace a name that represents your team
+              </p>
             </div>
 
             <div className="space-y-4">
@@ -165,10 +191,10 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({ onNavigate, user 
                   value={workspaceName}
                   onChange={(e) => {
                     setWorkspaceName(e.target.value);
-                    setError('');
+                    setError("");
                   }}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                    error ? 'border-red-500' : 'border-gray-300'
+                    error ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="e.g., Marketing Team, Engineering, HR Department"
                   autoFocus
@@ -203,11 +229,15 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({ onNavigate, user 
         {step === 2 && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Mail className="w-8 h-8 text-green-600" />
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Mail className="w-8 h-8 bg-blue-500" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Invite Team Members</h2>
-              <p className="text-gray-600">Add team members to "{workspaceName}" workspace</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Invite Team Members
+              </h2>
+              <p className="text-gray-600">
+                Add team members to "{workspaceName}" workspace
+              </p>
             </div>
 
             <div className="space-y-6">
@@ -223,11 +253,11 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({ onNavigate, user 
                       value={currentEmail}
                       onChange={(e) => {
                         setCurrentEmail(e.target.value);
-                        setError('');
+                        setError("");
                       }}
                       onKeyDown={handleAddEmail}
                       className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                        error ? 'border-red-500' : 'border-gray-300'
+                        error ? "border-red-500" : "border-gray-300"
                       }`}
                       placeholder="Enter email address and press Enter"
                     />
@@ -283,8 +313,8 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({ onNavigate, user 
                     onClick={handleCopyLink}
                     className={`px-4 py-2 rounded-lg transition-colors flex items-center ${
                       copiedLink
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? "bg-blue-100 text-blue-600"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
                     {copiedLink ? (
@@ -313,7 +343,7 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({ onNavigate, user 
                 <button
                   onClick={handleSendInvites}
                   disabled={isLoading}
-                  className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
                     <div className="flex items-center justify-center">
@@ -321,7 +351,7 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({ onNavigate, user 
                       Creating...
                     </div>
                   ) : (
-                    'Create Workspace'
+                    "Create Workspace"
                   )}
                 </button>
               </div>
