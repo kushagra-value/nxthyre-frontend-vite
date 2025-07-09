@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Building2, Search, Check, X } from 'lucide-react';
-import { organizationService } from '../../services/organizationService';
-import { showToast } from '../../utils/toast';
+import React, { useState } from "react";
+import { ArrowLeft, Building2, Search, Check, X } from "lucide-react";
+import { organizationService } from "../../services/organizationService";
+import { showToast } from "../../utils/toast";
 
 interface CreateOrganizationProps {
   onNavigate: (flow: string, data?: any) => void;
@@ -9,13 +9,17 @@ interface CreateOrganizationProps {
   onComplete?: (user: any) => void;
 }
 
-const CreateOrganization: React.FC<CreateOrganizationProps> = ({ onNavigate, user, onComplete }) => {
+const CreateOrganization: React.FC<CreateOrganizationProps> = ({
+  onNavigate,
+  user,
+  onComplete,
+}) => {
   const [formData, setFormData] = useState({
-    organizationName: '',
-    industry: '',
-    companySize: '',
-    website: '',
-    description: ''
+    organizationName: "",
+    industry: "",
+    companySize: "",
+    website: "",
+    description: "",
   });
   const [similarOrgs, setSimilarOrgs] = useState<any[]>([]);
   const [showSimilar, setShowSimilar] = useState(false);
@@ -23,19 +27,31 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({ onNavigate, use
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const industries = [
-    'Technology', 'Healthcare', 'Finance', 'Education', 'Manufacturing',
-    'Retail', 'Consulting', 'Media', 'Real Estate', 'Other'
+    "Technology",
+    "Healthcare",
+    "Finance",
+    "Education",
+    "Manufacturing",
+    "Retail",
+    "Consulting",
+    "Media",
+    "Real Estate",
+    "Other",
   ];
 
   const companySizes = [
-    '1-10 employees', '11-50 employees', '51-200 employees', 
-    '201-500 employees', '501-1000 employees', '1000+ employees'
+    "1-10 employees",
+    "11-50 employees",
+    "51-200 employees",
+    "201-500 employees",
+    "501-1000 employees",
+    "1000+ employees",
   ];
 
   const handleNameChange = (value: string) => {
-    setFormData(prev => ({ ...prev, organizationName: value }));
-    setErrors(prev => ({ ...prev, organizationName: '' }));
-    
+    setFormData((prev) => ({ ...prev, organizationName: value }));
+    setErrors((prev) => ({ ...prev, organizationName: "" }));
+
     // TODO: Implement organization search API
     // For now, we'll skip the similar organizations check
     setShowSimilar(false);
@@ -46,13 +62,13 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({ onNavigate, use
     const newErrors: Record<string, string> = {};
 
     if (!formData.organizationName.trim()) {
-      newErrors.organizationName = 'Organization name is required';
+      newErrors.organizationName = "Organization name is required";
     }
     if (!formData.industry) {
-      newErrors.industry = 'Industry is required';
+      newErrors.industry = "Industry is required";
     }
     if (!formData.companySize) {
-      newErrors.companySize = 'Company size is required';
+      newErrors.companySize = "Company size is required";
     }
 
     setErrors(newErrors);
@@ -71,26 +87,41 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({ onNavigate, use
     if (!validateForm()) return;
 
     setIsLoading(true);
-    
+
     try {
-      const response = await organizationService.createOrganization(formData.organizationName);
-      
-      showToast.success('Organization created successfully!');
-      
+      const status = await organizationService.getOnboardingStatus();
+      if (status.status === "ONBOARDED") {
+        showToast.error("Already in an organization");
+        setIsLoading(false);
+        return;
+      }
+    } catch (error: any) {
+      console.error("Error checking onboarding status:", error);
+      showToast.error("Failed to check onboarding status");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await organizationService.createOrganization(
+        formData.organizationName
+      );
+
+      showToast.success("Organization created successfully!");
+
       // Update user with organization
       const updatedUser = {
         ...user,
-        organizationId: response.id.toString()
+        organizationId: response.id.toString(),
       };
-      
+
       if (onComplete) {
         onComplete(updatedUser);
       }
-      
     } catch (error: any) {
-      console.error('Create organization error:', error);
-      setErrors({ general: error.message || 'Failed to create organization' });
-      showToast.error('Failed to create organization');
+      console.error("Create organization error:", error);
+      setErrors({ general: error.message || "Failed to create organization" });
+      showToast.error(error.message || "Failed to create organization");
     } finally {
       setIsLoading(false);
     }
@@ -108,13 +139,15 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({ onNavigate, use
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16">
             <button
-              onClick={() => onNavigate('login')}
+              onClick={() => onNavigate("dashboard")}
               className="flex items-center text-gray-600 hover:text-gray-800 mr-4"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Login
+              Dashboard
             </button>
-            <h1 className="text-xl font-semibold text-gray-900">Create Organization</h1>
+            <h1 className="text-xl font-semibold text-gray-900">
+              Create Organization
+            </h1>
           </div>
         </div>
       </div>
@@ -126,8 +159,12 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({ onNavigate, use
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Building2 className="w-8 h-8 text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Create New Organization</h2>
-            <p className="text-gray-600">Set up your organization to manage teams and workspaces</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Create New Organization
+            </h2>
+            <p className="text-gray-600">
+              Set up your organization to manage teams and workspaces
+            </p>
           </div>
 
           <div className="space-y-6">
@@ -142,7 +179,9 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({ onNavigate, use
                   value={formData.organizationName}
                   onChange={(e) => handleNameChange(e.target.value)}
                   className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                    errors.organizationName ? 'border-red-500' : 'border-gray-300'
+                    errors.organizationName
+                      ? "border-red-500"
+                      : "border-gray-300"
                   }`}
                   placeholder="Enter your organization name"
                   autoFocus
@@ -164,14 +203,18 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({ onNavigate, use
               </label>
               <select
                 value={formData.industry}
-                onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, industry: e.target.value }))
+                }
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                  errors.industry ? 'border-red-500' : 'border-gray-300'
+                  errors.industry ? "border-red-500" : "border-gray-300"
                 }`}
               >
                 <option value="">Select industry</option>
-                {industries.map(industry => (
-                  <option key={industry} value={industry}>{industry}</option>
+                {industries.map((industry) => (
+                  <option key={industry} value={industry}>
+                    {industry}
+                  </option>
                 ))}
               </select>
               {errors.industry && (
@@ -189,14 +232,21 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({ onNavigate, use
               </label>
               <select
                 value={formData.companySize}
-                onChange={(e) => setFormData(prev => ({ ...prev, companySize: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    companySize: e.target.value,
+                  }))
+                }
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                  errors.companySize ? 'border-red-500' : 'border-gray-300'
+                  errors.companySize ? "border-red-500" : "border-gray-300"
                 }`}
               >
                 <option value="">Select company size</option>
-                {companySizes.map(size => (
-                  <option key={size} value={size}>{size}</option>
+                {companySizes.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
                 ))}
               </select>
               {errors.companySize && (
@@ -215,7 +265,9 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({ onNavigate, use
               <input
                 type="url"
                 value={formData.website}
-                onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, website: e.target.value }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 placeholder="https://www.example.com"
               />
@@ -228,7 +280,12 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({ onNavigate, use
               </label>
               <textarea
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 placeholder="Brief description of your organization"
@@ -243,9 +300,14 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({ onNavigate, use
                 </h3>
                 <div className="space-y-2">
                   {similarOrgs.map((org) => (
-                    <div key={org.id} className="flex items-center justify-between bg-white rounded-lg p-3 border border-yellow-200">
+                    <div
+                      key={org.id}
+                      className="flex items-center justify-between bg-white rounded-lg p-3 border border-yellow-200"
+                    >
                       <div>
-                        <h4 className="font-medium text-gray-900">{org.name}</h4>
+                        <h4 className="font-medium text-gray-900">
+                          {org.name}
+                        </h4>
                         <p className="text-sm text-gray-600">@{org.domain}</p>
                       </div>
                       <button
@@ -278,7 +340,7 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({ onNavigate, use
             {!showSimilar && (
               <div className="flex space-x-4">
                 <button
-                  onClick={() => onNavigate('login')}
+                  onClick={() => onNavigate("dashboard")}
                   className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors"
                 >
                   Cancel
@@ -294,7 +356,7 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({ onNavigate, use
                       Creating...
                     </div>
                   ) : (
-                    'Create Organization'
+                    "Create Organization"
                   )}
                 </button>
               </div>
@@ -302,12 +364,22 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({ onNavigate, use
 
             {/* Info Box */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-blue-900 mb-2">What happens next?</h4>
+              <h4 className="text-sm font-medium text-blue-900 mb-2">
+                What happens next?
+              </h4>
               <ul className="text-sm text-blue-800 space-y-1">
-                <li>• Your organization will be created with you as the owner</li>
+                <li>
+                  • Your organization will be created with you as the owner
+                </li>
                 <li>• You can create workspaces within this organization</li>
-                <li>• Team members with matching email domains can join automatically</li>
-                <li>• You'll have full control over organization settings and permissions</li>
+                <li>
+                  • Team members with matching email domains can join
+                  automatically
+                </li>
+                <li>
+                  • You'll have full control over organization settings and
+                  permissions
+                </li>
               </ul>
             </div>
           </div>
