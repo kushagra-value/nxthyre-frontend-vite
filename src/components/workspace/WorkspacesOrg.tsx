@@ -17,6 +17,23 @@ import { useAuth } from "../../hooks/useAuth";
 import { organizationService } from "../../services/organizationService";
 import { showToast } from "../../utils/toast";
 
+interface Organization {
+  id: string;
+  name: string;
+  domain: string | null;
+  ownerId: string;
+  createdAt: string;
+}
+
+interface Workspace {
+  id: string;
+  name: string;
+  organizationId: string;
+  ownerId: string;
+  members: string[];
+  createdAt: string;
+}
+
 interface WorkspacesOrgProps {
   onNavigate: (flow: string, data?: any) => void;
   user: any;
@@ -47,7 +64,8 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
     item: any;
   } | null>(null);
   const [editFormData, setEditFormData] = useState<any>({});
-
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const {
     user: firebaseUser,
     userStatus,
@@ -66,6 +84,31 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
       if (isAuthenticated) {
         try {
           const status = await organizationService.getOnboardingStatus();
+          const orgResponse = await organizationService.getOrganizations();
+          const fetchedOrganizations: Organization[] = orgResponse.map((org: any) => ({
+            id: org.id.toString(),
+            name: org.name,
+            domain: org.domain || null,
+            ownerId: org.ownerId || "",
+            createdAt: org.createdAt || new Date().toISOString(),
+          }));
+          setOrganizations(fetchedOrganizations);
+
+          const userOrgId = userStatus?.organization?.id;
+
+          if (userOrgId !== undefined && userOrgId !== null) {
+            const workspaceResponse = await organizationService.getWorkspaces(Number(userOrgId));
+            const fetchedWorkspaces: Workspace[] = workspaceResponse.map((ws: any) => ({
+              id: ws.id.toString(),
+              name: ws.name,
+              organizationId: ws.organizationId.toString(),
+              ownerId: ws.ownerId || "",
+              members: ws.members || [],
+              createdAt: ws.createdAt || new Date().toISOString(),
+            }));
+            setWorkspaces(fetchedWorkspaces);
+          }
+
           setOnboardingStatus(status);
         } catch (error: any) {
           console.error("Error fetching onboarding status:", error);

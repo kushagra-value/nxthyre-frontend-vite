@@ -23,6 +23,23 @@ export interface CreateOrganizationResponse {
   domain: string;
 }
 
+export interface Organization {
+  id: number;
+  name: string;
+  domain: string | null;
+  ownerId: string;
+  createdAt: string;
+}
+
+export interface Workspace {
+  id: number;
+  name: string;
+  organizationId: number;
+  ownerId: string;
+  members: string[];
+  createdAt: string;
+}
+
 export interface CreateWorkspaceResponse {
   status: string;
   message: string;
@@ -48,6 +65,43 @@ class OrganizationService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error || "Failed to get onboarding status"
+      );
+    }
+  }
+
+  async getOrganizations(): Promise<Organization[]> {
+    try {
+      const response = await apiClient.get("/organization/organizations/");
+      return response.data.map((org: any) => ({
+        id: org.id,
+        name: org.name,
+        domain: org.domain || null,
+        ownerId: org.ownerId || "",
+        createdAt: org.createdAt || new Date().toISOString(),
+      }));
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch organizations"
+      );
+    }
+  }
+
+  async getWorkspaces(organizationId: number): Promise<Workspace[]> {
+    try {
+      const response = await apiClient.get(
+        `/organization/organizations/${organizationId}/workspaces/`
+      );
+      return response.data.map((ws: any) => ({
+        id: ws.id,
+        name: ws.name,
+        organizationId: ws.organizationId,
+        ownerId: ws.ownerId || "",
+        members: ws.members || [],
+        createdAt: ws.createdAt || new Date().toISOString(),
+      }));
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch workspaces"
       );
     }
   }
