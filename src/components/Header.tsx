@@ -1,12 +1,23 @@
 import React, { useState } from 'react';
 import { Search, Home, User, ChevronDown, Settings, LogOut, Building2 } from 'lucide-react';
 
+interface User {
+  id: string | undefined;
+  fullName: string;
+  email: string;
+  role: string;
+  organizationId: string | undefined;
+  workspaceIds: string[];
+  isVerified: boolean;
+  createdAt: string;
+}
+
 interface HeaderProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   onCreateRole: () => void;
   isAuthenticated?: boolean;
-  user?: any;
+  user?: User | null;
   onLogin?: () => void;
   onSignup?: () => void;
   onLogout?: () => void;

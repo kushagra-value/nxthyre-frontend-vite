@@ -78,6 +78,7 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({ onNavigate, onLogin, 
       
       setError('');
       showToast.success('Email verified successfully!');
+      window.location.href='/';
       
       if (data?.type === 'signup') {
         // After successful verification, user should login
@@ -234,14 +235,6 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({ onNavigate, onLogin, 
                   <RefreshCw className="w-3 h-3 mr-1" />
                   Resend Code
                 </button>
-              </div>
-
-              {/* Help Text */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-700 text-center">
-                  <CheckCircle className="w-4 h-4 inline mr-1" />
-                  For demo purposes, use OTP: <span className="font-semibold">543210</span>
-                </p>
               </div>
             </div>
 

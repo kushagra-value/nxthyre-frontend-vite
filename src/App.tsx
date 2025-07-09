@@ -19,14 +19,25 @@ import ShareableProfile from './components/ShareableProfile';
 import PipelineSharePage from './components/PipelineSharePage';
 import { candidates, Candidate } from './data/candidates';
 import { ChevronDown, MoreHorizontal, Edit, Mail, Archive, Trash2, LogOut, Share2 } from "lucide-react";
-import { showToast } from './utils/toast'; 
+import { showToast } from './utils/toast';
+
+interface User {
+  id: string | undefined;
+  fullName: string;
+  email: string;
+  role: string;
+  organizationId: string | undefined;
+  workspaceIds: string[];
+  isVerified: boolean;
+  createdAt: string;
+}
 
 function App() {
   // All Hooks at the Top
   const { user: firebaseUser, userStatus, isAuthenticated, isOnboarded, loading: authLoading } = useAuth();
 
   // Authentication state
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showAuthApp, setShowAuthApp] = useState(false);
   const [authFlow, setAuthFlow] = useState('login'); // 'login' or 'signup'
   const [showSettings, setShowSettings] = useState(false);
@@ -143,17 +154,17 @@ function App() {
 
   useEffect(() => {
     if (isAuthenticated && userStatus) {
-      const user = {
-        id: firebaseUser?.uid,
-        fullName: userStatus.full_name,
-        email: userStatus.email,
-        role: userStatus.roles.length > 0 ? userStatus.roles[0].name.toLowerCase() : 'team',
-        organizationId: userStatus.organization?.id?.toString(),
-        workspaceIds: [],
-        isVerified: firebaseUser?.emailVerified || true,
-        createdAt: firebaseUser?.metadata.creationTime || new Date().toISOString()
-      };
-      setCurrentUser(user);
+      const user: User = {
+      id: firebaseUser?.uid,
+      fullName: userStatus.full_name || 'Unknown User', // Fallback if full_name is undefined
+      email: userStatus.email || 'Unknown@user.com', // Fallback if email is undefined
+      role: userStatus.roles?.length > 0 ? userStatus.roles[0].name.toLowerCase() : 'team',
+      organizationId: userStatus.organization?.id?.toString(),
+      workspaceIds: [], // Update this if you have workspace IDs
+      isVerified: firebaseUser?.emailVerified ?? true,
+      createdAt: firebaseUser?.metadata.creationTime || new Date().toISOString(),
+    };
+    setCurrentUser(user);
     }
   }, [isAuthenticated, userStatus, firebaseUser]);
 
