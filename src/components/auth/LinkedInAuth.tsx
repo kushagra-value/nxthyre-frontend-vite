@@ -34,11 +34,12 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
           }&state=${state}&scope=${scope}`;
 
           window.location.href = linkedInAuthUrl;
+
           return;
         }
 
         // Exchange code for tokens
-        const response = await authService.linkedInCallback(code);
+        const response = await authService.linkedInCallback(code, state);
 
         // Sign in with custom Firebase token
         await authService.signInWithCustomToken(response.firebase_token);
