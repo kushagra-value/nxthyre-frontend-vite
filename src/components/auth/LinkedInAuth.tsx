@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { CheckCircle, XCircle, Sparkles } from "lucide-react";
 import { authService } from "../../services/authService";
 import { showToast } from "../../utils/toast";
+import { useNavigate } from "react-router-dom";
 
 interface LinkedInAuthProps {
   onNavigate: (flow: string, data?: any) => void;
@@ -13,11 +14,11 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
   const [authStatus, setAuthStatus] = useState<"loading" | "success" | "error">(
     "loading"
   );
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleLinkedInCallback = async () => {
       try {
-        // Get authorization code from URL params
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get("code");
         const state = Math.random().toString(36).substring(2);
@@ -25,26 +26,23 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
         const scope = "openid profile email";
 
         if (!code) {
-          // Redirect to LinkedIn OAuth
+          // Initiate LinkedIn OAuth flow
           const linkedInAuthUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${
             import.meta.env.VITE_LINKEDIN_CLIENT_ID
           }&redirect_uri=${
             import.meta.env.VITE_LINKEDIN_REDIRECT_URI
           }&state=${state}&scope=${scope}`;
-
           window.location.href = linkedInAuthUrl;
           return;
         }
 
-        // Exchange code for tokens
+        // Exchange code for tokens (similar to linkedin-callback.html)
         const response = await authService.linkedInCallback(code, state);
 
-        // Sign in with custom Firebase token
+        // Sign in with Firebase using the custom token
         await authService.signInWithCustomToken(response.firebase_token);
 
-        setAuthStatus("success");
-
-        // Create user object for compatibility
+        // Create user object for application state
         const linkedInUser = {
           id: response.recruiter_id,
           fullName: response.full_name,
@@ -56,12 +54,15 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
           createdAt: new Date().toISOString(),
         };
 
-        // Set user state and navigate immediately
+        // Update application state with the user
         onLogin(linkedInUser);
+        setAuthStatus("success");
+
+        // Redirect based on onboarding status (mimicking linkedin-callback.html redirection)
         if (response.is_onboarded) {
-          onNavigate("/"); // Navigate to dashboard route
+          navigate("/"); // Redirect to dashboard
         } else {
-          onNavigate("workspaces-org");
+          onNavigate("workspaces-org"); // Redirect to onboarding flow
         }
       } catch (error: any) {
         console.error("LinkedIn auth error:", error);
@@ -72,9 +73,8 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
       }
     };
 
-    const timer = setTimeout(handleLinkedInCallback, 1000);
-    return () => clearTimeout(timer);
-  }, [onNavigate, onLogin]);
+    handleLinkedInCallback();
+  }, [navigate, onNavigate, onLogin]);
 
   const handleRetry = () => {
     setIsLoading(true);
@@ -84,10 +84,13 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 relative overflow-hidden">
-      {/* UI remains unchanged */}
+      {/* Background decorative elements */}
       <div className="absolute inset-0 bg-black/20"></div>
       <div className="absolute top-20 left-20 w-2 h-2 bg-white/30 rounded-full"></div>
       <div className="absolute top-40 right-32 w-1 h-1 bg-white/40 rounded-full"></div>
+      <div className="absolute bottom-32 left-40 w-1.5 h-1.5 bg-white/25 rounded-full"></div>
+      <div className="absolute top-60 right-20 w-1 h-1 bg-white/35 rounded-full"></div>
+      <div className="absolute bottom-60 right-60 w-2 h-2 bg-white/20 rounded-full"></div>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center p-8">
         <div className="w-full max-w-md">
@@ -135,6 +138,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
                 </svg>
               </div>
 
+              {/* Status Content */}
               {authStatus === "loading" && (
                 <div className="space-y-4">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
@@ -200,7 +204,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
                   <div className="space-y-3">
                     <button
                       onClick={handleRetry}
-                      className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg _rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                      className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
                     >
                       Try Again
                     </button>
@@ -215,6 +219,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
               )}
             </div>
 
+            {/* Legal */}
             <div className="text-center mt-8">
               <p className="text-xs text-gray-500">
                 © 2024 NxtHyre. All rights reserved.
