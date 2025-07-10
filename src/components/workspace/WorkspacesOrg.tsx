@@ -79,6 +79,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
       if (isAuthenticated) {
         try {
           const status = await organizationService.getOnboardingStatus();
+          setOnboardingStatus(status);
           const orgResponse = await organizationService.getOrganizations();
           const fetchedOrganizations: Organization[] = orgResponse.map((org: any) => ({
           id: org.id,
@@ -86,19 +87,21 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
           domain: org.domain || null,
         }));
           setOrganizations(fetchedOrganizations);
+          console.log("Fetched Organizations:", fetchedOrganizations);
 
-          const userOrgId = userStatus?.organization?.id;
-        if (userOrgId) {
-          const workspaceResponse = await organizationService.getWorkspaces(userOrgId);
-          const fetchedWorkspaces: Workspace[] = workspaceResponse.map((ws: any) => ({
+          const workspacePromises = fetchedOrganizations.map(async (org) => {
+          const workspaceResponse = await organizationService.getWorkspaces(org.id);
+          return workspaceResponse.map((ws: any) => ({
             id: ws.id,
             name: ws.name,
-            organization: ws.organization, // Matches backend response
+            organization: ws.organization,
           }));
-          setWorkspaces(fetchedWorkspaces);
-          }
+        });
+        const allWorkspaces = (await Promise.all(workspacePromises)).flat();
+        setWorkspaces(allWorkspaces);
+        console.log("Fetched Workspaces:", allWorkspaces);
 
-          setOnboardingStatus(status);
+          
         } catch (error: any) {
           console.error("Error fetching onboarding status:", error);
           showToast.error("Failed to load workspace data");
