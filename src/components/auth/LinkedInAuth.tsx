@@ -15,7 +15,6 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
   );
 
   useEffect(() => {
-    // Handle LinkedIn OAuth callback
     const handleLinkedInCallback = async () => {
       try {
         // Get authorization code from URL params
@@ -34,7 +33,6 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
           }&state=${state}&scope=${scope}`;
 
           window.location.href = linkedInAuthUrl;
-
           return;
         }
 
@@ -58,15 +56,13 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
           createdAt: new Date().toISOString(),
         };
 
-        setTimeout(() => {
-          onLogin(linkedInUser);
-
-          if (response.is_onboarded) {
-            window.location.href = "/";
-          } else {
-            onNavigate("workspaces-org");
-          }
-        }, 2000);
+        // Set user state and navigate immediately
+        onLogin(linkedInUser);
+        if (response.is_onboarded) {
+          onNavigate("/"); // Navigate to dashboard route
+        } else {
+          onNavigate("workspaces-org");
+        }
       } catch (error: any) {
         console.error("LinkedIn auth error:", error);
         setAuthStatus("error");
@@ -83,19 +79,15 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
   const handleRetry = () => {
     setIsLoading(true);
     setAuthStatus("loading");
-    // Restart LinkedIn OAuth flow
     window.location.reload();
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 relative overflow-hidden">
-      {/* Background decorative elements */}
+      {/* UI remains unchanged */}
       <div className="absolute inset-0 bg-black/20"></div>
       <div className="absolute top-20 left-20 w-2 h-2 bg-white/30 rounded-full"></div>
       <div className="absolute top-40 right-32 w-1 h-1 bg-white/40 rounded-full"></div>
-      <div className="absolute bottom-32 left-40 w-1.5 h-1.5 bg-white/25 rounded-full"></div>
-      <div className="absolute top-60 right-20 w-1 h-1 bg-white/35 rounded-full"></div>
-      <div className="absolute bottom-60 right-60 w-2 h-2 bg-white/20 rounded-full"></div>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center p-8">
         <div className="w-full max-w-md">
@@ -143,7 +135,6 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
                 </svg>
               </div>
 
-              {/* Status Content */}
               {authStatus === "loading" && (
                 <div className="space-y-4">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
@@ -209,7 +200,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
                   <div className="space-y-3">
                     <button
                       onClick={handleRetry}
-                      className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                      className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg _rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
                     >
                       Try Again
                     </button>
@@ -224,7 +215,6 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
               )}
             </div>
 
-            {/* Legal */}
             <div className="text-center mt-8">
               <p className="text-xs text-gray-500">
                 © 2024 NxtHyre. All rights reserved.
