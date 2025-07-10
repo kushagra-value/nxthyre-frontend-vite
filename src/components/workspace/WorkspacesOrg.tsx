@@ -109,7 +109,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
     };
 
     fetchOnboardingStatus();
-  }, [isAuthenticated]);
+  }, [isAuthenticated,userStatus]);
 
   // Provide default values if user data is missing
   const safeUser = {
@@ -123,20 +123,6 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
     ...user,
   };
 
-  // TODO: Replace with actual workspace data from backend
-  // For now using dummy data - PLEASE REPLACE THIS
-  const userWorkspaces = [
-    {
-      id: "1",
-      name: "Engineering Team",
-      organizationId: safeUser.organizationId,
-      ownerId: safeUser.id,
-      members: [safeUser.id],
-      createdAt: new Date().toISOString(),
-    },
-  ];
-
-  const userOrganization = userStatus?.organization || null;
 
   if (loading) {
     return (
@@ -468,18 +454,6 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {activeTab === "organizations" && (
-            <div className="space-y-6">
-              <div className="flex space-x-4">
-                <button
-                  onClick={handleCreateOrganization}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Organization
-                </button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {organizations.length > 0 ? (
                   organizations.map((org) => {
                     const isOwner = userStatus?.roles?.some(
@@ -492,7 +466,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                     return (
                       <div
                         key={org.id}
-                        className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                        className="w-full bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
                       >
                         <div className="flex items-start justify-between mb-4">
                           <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -568,12 +542,9 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                 )}
               </div>
                   </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+            )}
+          </div>
+          </div>
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
