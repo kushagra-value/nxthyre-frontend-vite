@@ -18,20 +18,15 @@ import { organizationService } from "../../services/organizationService";
 import { showToast } from "../../utils/toast";
 
 interface Organization {
-  id: string;
+  id: number;
   name: string;
   domain: string | null;
-  ownerId: string;
-  createdAt: string;
 }
 
 interface Workspace {
-  id: string;
+  id: number;
   name: string;
-  organizationId: string;
-  ownerId: string;
-  members: string[];
-  createdAt: string;
+  organization: number;
 }
 
 interface WorkspacesOrgProps {
@@ -86,27 +81,21 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
           const status = await organizationService.getOnboardingStatus();
           const orgResponse = await organizationService.getOrganizations();
           const fetchedOrganizations: Organization[] = orgResponse.map((org: any) => ({
-            id: org.id.toString(),
-            name: org.name,
-            domain: org.domain || null,
-            ownerId: org.ownerId || "",
-            createdAt: org.createdAt || new Date().toISOString(),
-          }));
+          id: org.id,
+          name: org.name,
+          domain: org.domain || null,
+        }));
           setOrganizations(fetchedOrganizations);
 
           const userOrgId = userStatus?.organization?.id;
-
-          if (userOrgId !== undefined && userOrgId !== null) {
-            const workspaceResponse = await organizationService.getWorkspaces(Number(userOrgId));
-            const fetchedWorkspaces: Workspace[] = workspaceResponse.map((ws: any) => ({
-              id: ws.id.toString(),
-              name: ws.name,
-              organizationId: ws.organizationId.toString(),
-              ownerId: ws.ownerId || "",
-              members: ws.members || [],
-              createdAt: ws.createdAt || new Date().toISOString(),
-            }));
-            setWorkspaces(fetchedWorkspaces);
+        if (userOrgId) {
+          const workspaceResponse = await organizationService.getWorkspaces(userOrgId);
+          const fetchedWorkspaces: Workspace[] = workspaceResponse.map((ws: any) => ({
+            id: ws.id,
+            name: ws.name,
+            organization: ws.organization, // Matches backend response
+          }));
+          setWorkspaces(fetchedWorkspaces);
           }
 
           setOnboardingStatus(status);
@@ -363,11 +352,17 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {userWorkspaces.length > 0 ? (
-                  userWorkspaces.map((workspace) => {
-                    const organization = userOrganization;
-                    const memberCount = workspace.members?.length || 1;
-                    const isOwner = workspace.ownerId === safeUser.id;
+                {workspaces.length > 0 ? (
+                  workspaces.map((workspace) => {
+                    const organization = organizations.find(
+                      (org) => org.id === workspace.organization
+                    );
+                    const isOwner = userStatus?.roles?.some(
+                      (role: any) =>
+                        role.name === "ADMIN" &&
+                        role.scope === "WORKSPACE" &&
+                        role.workspace_id === workspace.id
+                    );
 
                     return (
                       <div
@@ -397,7 +392,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                                   onClick={() =>
                                     openDeleteModal(
                                       "workspace",
-                                      workspace.id,
+                                      workspace.id.toString(),
                                       workspace.name
                                     )
                                   }
@@ -419,7 +414,8 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                         <div className="flex items-center justify-between">
                           <div className="flex items-center text-sm text-gray-500">
                             <Users className="w-4 h-4 mr-1" />
-                            {memberCount} member{memberCount !== 1 ? "s" : ""}
+                            0 member
+                            {/* {memberCount} member{memberCount !== 1 ? "s" : ""} */}
                           </div>
                           <button
                             onClick={handleGoToDashboard}
@@ -472,61 +468,87 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {userOrganization ? (
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Building2 className="w-6 h-6 text-blue-500" />
-                      </div>
-                      {safeUser.id === userOrganization.ownerId && (
-                        <div className="relative group">
-                          <button className="p-1 text-gray-400 hover:text-gray-600 rounded">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </button>
-                          <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button
-                              onClick={() =>
-                                openEditModal("org", userOrganization)
-                              }
-                              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                            >
-                              <Edit className="w-3 h-3 mr-2" />
-                              Edit
-                            </button>
-                            <button
-                              onClick={() =>
-                                openDeleteModal(
-                                  "org",
-                                  userOrganization.id,
-                                  userOrganization.name
-                                )
-                              }
-                              className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
-                            >
-                              <Trash2 className="w-3 h-3 mr-2" />
-                              Delete
-                            </button>
+                {activeTab === "organizations" && (
+            <div className="space-y-6">
+              <div className="flex space-x-4">
+                <button
+                  onClick={handleCreateOrganization}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Organization
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {organizations.length > 0 ? (
+                  organizations.map((org) => {
+                    const isOwner = userStatus?.roles?.some(
+                      (role: any) =>
+                        role.name === "OWNER" &&
+                        role.scope === "ORGANIZATION" &&
+                        role.organization_id === org.id
+                    );
+
+                    return (
+                      <div
+                        key={org.id}
+                        className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <Building2 className="w-6 h-6 text-blue-500" />
                           </div>
+                          {isOwner && (
+                            <div className="relative group">
+                              <button className="p-1 text-gray-400 hover:text-gray-600 rounded">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </button>
+                              <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  onClick={() => openEditModal("org", org)}
+                                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                >
+                                  <Edit className="w-3 h-3 mr-2" />
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    openDeleteModal(
+                                      "org",
+                                      org.id.toString(),
+                                      org.name
+                                    )
+                                  }
+                                  className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                                >
+                                  <Trash2 className="w-3 h-3 mr-2" />
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      {userOrganization.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      @{userOrganization.domain || "unknown"}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Users className="w-4 h-4 mr-1" />
-                        {userWorkspaces.length} workspace
-                        {userWorkspaces.length !== 1 ? "s" : ""}
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          {org.name}
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                          @{org.domain || "unknown"}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center text-sm text-gray-500">
+                            <Users className="w-4 h-4 mr-1" />
+                            {workspaces.filter((ws) => ws.organization === org.id).length} workspace
+                            {workspaces.filter((ws) => ws.organization === org.id).length !== 1 ? "s" : ""}
+                          </div>
+                          {isOwner && (
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                              Owner
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                        Owner
-                      </span>
-                    </div>
-                  </div>
+                    );
+                  })
                 ) : (
                   <div className="col-span-full text-center py-12">
                     <Building2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -542,6 +564,9 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                     >
                       Create Organization
                     </button>
+                  </div>
+                )}
+              </div>
                   </div>
                 )}
               </div>
