@@ -404,9 +404,9 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">
                           {workspace.name}
                         </h3>
-                        <p className="text-sm text-gray-600 mb-4">
+                        {/* <p className="text-sm text-gray-600 mb-4">
                           {organization?.name || "No Organization"}
-                        </p>
+                        </p> */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center text-sm text-gray-500">
                             <Users className="w-4 h-4 mr-1" />
