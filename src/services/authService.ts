@@ -88,7 +88,7 @@ class AuthService {
   // LinkedIn callback
   async linkedInCallback(code: string): Promise<LinkedInCallbackResponse> {
     try {
-      const response = await apiClient.post("/auth/linkedin/callback/", {
+      const response = await apiClient.post("/auth/linkedin-callback/", {
         code,
       });
       return response.data;

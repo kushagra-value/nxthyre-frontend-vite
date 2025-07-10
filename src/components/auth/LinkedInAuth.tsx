@@ -21,6 +21,9 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
         // Get authorization code from URL params
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get("code");
+        const state = Math.random().toString(36).substring(2);
+        sessionStorage.setItem("linkedin_oauth_state", state);
+        const scope = "openid profile email";
 
         if (!code) {
           // Redirect to LinkedIn OAuth
@@ -28,7 +31,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
             import.meta.env.VITE_LINKEDIN_CLIENT_ID
           }&redirect_uri=${
             import.meta.env.VITE_LINKEDIN_REDIRECT_URI
-          }&scope=r_liteprofile%20r_emailaddress`;
+          }&state=${state}&scope=${scope}`;
 
           window.location.href = linkedInAuthUrl;
           return;
