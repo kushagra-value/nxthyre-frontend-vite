@@ -75,44 +75,51 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   const setSearchTerm = propSetSearchTerm || setLocalSearchTerm;
 
   useEffect(() => {
-    const fetchOnboardingStatus = async () => {
-      if (isAuthenticated) {
-        try {
-          const status = await organizationService.getOnboardingStatus();
-          setOnboardingStatus(status);
-          const orgResponse = await organizationService.getOrganizations();
-          const fetchedOrganizations: Organization[] = orgResponse.map((org: any) => ({
-          id: org.id,
-          name: org.name,
-          domain: org.domain || null,
+  const fetchData = async () => {
+    if (!isAuthenticated || !userStatus) return;
+
+    try {
+      setLoading(true);
+
+      // Fetch onboarding status
+      const status = await organizationService.getOnboardingStatus();
+      setOnboardingStatus(status);
+
+      // Fetch organizations
+      const orgResponse = await organizationService.getOrganizations();
+      const fetchedOrganizations: Organization[] = orgResponse.map((org: any) => ({
+        id: org.id,
+        name: org.name,
+        domain: org.domain || null,
+      }));
+      setOrganizations(fetchedOrganizations);
+      console.log("Fetched Organizations:", fetchedOrganizations);
+
+      // Fetch workspaces for all organizations
+      const workspacePromises = fetchedOrganizations.map(async (org) => {
+        const workspaceResponse = await organizationService.getWorkspaces(org.id);
+        console.log("Raw Workspace Response for org", org.id, ":", workspaceResponse);
+
+        // Map the workspace response directly since it’s an array
+        return workspaceResponse.map((ws: any) => ({
+          id: ws.id,
+          name: ws.name,
+          organization: ws.organization, // This should now retain the value
         }));
-          setOrganizations(fetchedOrganizations);
-          console.log("Fetched Organizations:", fetchedOrganizations);
+      });
+      const allWorkspaces = (await Promise.all(workspacePromises)).flat();
+      setWorkspaces(allWorkspaces);
+      console.log("Fetched Workspaces:", allWorkspaces);
+    } catch (error: any) {
+      console.error("Error fetching data:", error);
+      showToast.error("Failed to load organizations and workspaces");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-          const workspacePromises = fetchedOrganizations.map(async (org) => {
-          const workspaceResponse = await organizationService.getWorkspaces(org.id);
-          return workspaceResponse.map((ws: any) => ({
-            id: ws.id,
-            name: ws.name,
-            organization: ws.organization,
-          }));
-        });
-        const allWorkspaces = (await Promise.all(workspacePromises)).flat();
-        setWorkspaces(allWorkspaces);
-        console.log("Fetched Workspaces:", allWorkspaces);
-
-          
-        } catch (error: any) {
-          console.error("Error fetching onboarding status:", error);
-          showToast.error("Failed to load workspace data");
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchOnboardingStatus();
-  }, [isAuthenticated,userStatus]);
+  fetchData();
+}, [isAuthenticated, userStatus]);
 
   // Provide default values if user data is missing
   const safeUser = {
