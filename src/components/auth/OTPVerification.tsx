@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { XCircle, CheckCircle, RefreshCw, Sparkles } from 'lucide-react';
-import { authService } from '../../services/authService';
-import { showToast } from '../../utils/toast';
+import React, { useState, useEffect } from "react";
+import { XCircle, CheckCircle, RefreshCw, Sparkles } from "lucide-react";
+import { authService } from "../../services/authService";
+import { showToast } from "../../utils/toast";
 
 interface OTPVerificationProps {
   onNavigate: (flow: string, data?: any) => void;
@@ -9,10 +9,14 @@ interface OTPVerificationProps {
   data?: any;
 }
 
-const OTPVerification: React.FC<OTPVerificationProps> = ({ onNavigate, onLogin, data }) => {
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+const OTPVerification: React.FC<OTPVerificationProps> = ({
+  onNavigate,
+  onLogin,
+  data,
+}) => {
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [attempts, setAttempts] = useState(3);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
 
@@ -33,16 +37,16 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({ onNavigate, onLogin, 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) return;
-    
+
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-    setError('');
+    setError("");
 
     // Auto-focus next input
     if (value && index < 5) {
@@ -51,66 +55,71 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({ onNavigate, onLogin, 
     }
 
     // Auto-submit when all fields are filled
-    if (newOtp.every(digit => digit !== '') && newOtp.join('').length === 6) {
-      handleVerify(newOtp.join(''));
+    if (newOtp.every((digit) => digit !== "") && newOtp.join("").length === 6) {
+      handleVerify(newOtp.join(""));
     }
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
       const prevInput = document.getElementById(`otp-${index - 1}`);
       prevInput?.focus();
     }
   };
 
   const handleVerify = async (otpValue?: string) => {
-    const otpToVerify = otpValue || otp.join('');
-    
+    const otpToVerify = otpValue || otp.join("");
+
     if (otpToVerify.length !== 6) {
-      setError('Please enter all 6 digits');
+      setError("Please enter all 6 digits");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const response = await authService.verifyOTP(data?.email || '', otpToVerify);
-      
-      setError('');
-      showToast.success('Email verified successfully!');
-      window.location.href='/';
-      
-      if (data?.type === 'signup') {
-        // After successful verification, user should login
-        if (response.next_step === 'login_then_onboard') {
-          onNavigate('login');
-        } else if (response.next_step === 'login_then_provide_company_email') {
-          onNavigate('login');
+      const response = await authService.verifyOTP(
+        data?.email || "",
+        otpToVerify
+      );
+
+      setError("");
+      showToast.success("Email verified successfully!");
+
+      if (data?.type === "forgot-password") {
+        // Pass both email and the verified OTP to reset-password
+        onNavigate("reset-password", { email: data.email, otp: otpToVerify });
+      } else if (data?.type === "signup") {
+        // Handle signup flow
+        if (
+          response.next_step === "login_then_onboard" ||
+          response.next_step === "login_then_provide_company_email"
+        ) {
+          onNavigate("login");
+        } else {
+          window.location.href = "/";
         }
-      } else if (data?.type === 'forgot-password') {
-        onNavigate('reset-password', { email: data.email });
       } else {
-        onNavigate('login');
+        onNavigate("login");
       }
-      
     } catch (error: any) {
-      console.error('OTP verification error:', error);
-      
-      if (error.message.includes('expired')) {
-        setError('OTP has expired. Please request a new one.');
+      console.error("OTP verification error:", error);
+
+      if (error.message.includes("expired")) {
+        setError("OTP has expired. Please request a new one.");
       } else {
         const newAttempts = attempts - 1;
         setAttempts(newAttempts);
-        
+
         if (newAttempts === 0) {
-          setError('Maximum attempts reached. Please try again later.');
+          setError("Maximum attempts reached. Please try again later.");
         } else {
           setError(`${error.message}. ${newAttempts} attempts remaining.`);
         }
       }
-      
-      setOtp(['', '', '', '', '', '']);
-      document.getElementById('otp-0')?.focus();
+
+      setOtp(["", "", "", "", "", ""]);
+      document.getElementById("otp-0")?.focus();
     } finally {
       setIsLoading(false);
     }
@@ -118,17 +127,18 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({ onNavigate, onLogin, 
 
   const handleResend = () => {
     if (data?.email) {
-      authService.resendOTP(data.email)
+      authService
+        .resendOTP(data.email)
         .then(() => {
           setTimeLeft(300);
           setAttempts(3);
-          setError('');
-          setOtp(['', '', '', '', '', '']);
-          showToast.success('OTP resent successfully!');
+          setError("");
+          setOtp(["", "", "", "", "", ""]);
+          showToast.success("OTP resent successfully!");
         })
         .catch((error) => {
-          console.error('Resend OTP error:', error);
-          showToast.error('Failed to resend OTP');
+          console.error("Resend OTP error:", error);
+          showToast.error("Failed to resend OTP");
         });
     }
   };
@@ -147,23 +157,38 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({ onNavigate, onLogin, 
         <div className="w-full max-w-md">
           <div className="bg-white rounded-2xl p-8 shadow-2xl">
             <button
-              onClick={() => onNavigate(data?.type === 'signup' ? 'signup' : 'forgot-password')}
+              onClick={() =>
+                onNavigate(
+                  data?.type === "signup" ? "signup" : "forgot-password"
+                )
+              }
               className="flex items-center text-gray-600 hover:text-gray-800 mb-6 transition-colors"
             >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
               Back
             </button>
 
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                Verify Your Email <Sparkles className="w-6 h-6 ml-2 text-yellow-400" />
+                Verify Your Email{" "}
+                <Sparkles className="w-6 h-6 ml-2 text-yellow-400" />
               </h2>
             </div>
-            
+
             <p className="text-gray-600 mb-8">
-              We've sent a 6-digit code to {data?.email || 'your email'}
+              We've sent a 6-digit code to {data?.email || "your email"}
             </p>
 
             <div className="space-y-6">
@@ -183,7 +208,7 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({ onNavigate, onLogin, 
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(index, e)}
                       className={`w-12 h-12 text-center text-lg font-semibold bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                        error ? 'border-red-500' : ''
+                        error ? "border-red-500" : ""
                       }`}
                       disabled={isLoading || attempts === 0}
                     />
@@ -204,14 +229,21 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({ onNavigate, onLogin, 
               {/* Timer */}
               <div className="text-center">
                 <p className="text-sm text-gray-600">
-                  Code expires in: <span className="font-semibold text-blue-600">{formatTime(timeLeft)}</span>
+                  Code expires in:{" "}
+                  <span className="font-semibold text-blue-600">
+                    {formatTime(timeLeft)}
+                  </span>
                 </p>
               </div>
 
               {/* Verify Button */}
               <button
                 onClick={() => handleVerify()}
-                disabled={isLoading || attempts === 0 || otp.some(digit => digit === '')}
+                disabled={
+                  isLoading ||
+                  attempts === 0 ||
+                  otp.some((digit) => digit === "")
+                }
                 className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
@@ -220,13 +252,15 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({ onNavigate, onLogin, 
                     Verifying...
                   </div>
                 ) : (
-                  'Verify Code'
+                  "Verify Code"
                 )}
               </button>
 
               {/* Resend */}
               <div className="text-center">
-                <span className="text-sm text-gray-600">Didn't receive the code? </span>
+                <span className="text-sm text-gray-600">
+                  Didn't receive the code?{" "}
+                </span>
                 <button
                   onClick={handleResend}
                   disabled={timeLeft > 0 || isLoading}

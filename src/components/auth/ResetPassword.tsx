@@ -28,6 +28,10 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ onNavigate, data }) => {
 
   // Ensure required data is present
   if (!data?.email || !data?.otp) {
+    setTimeout(() => {
+      showToast.error("Missing required data. Please start the process again.");
+      onNavigate("forgot-password");
+    }, 5000);
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="bg-white rounded-2xl p-8 shadow-2xl">
