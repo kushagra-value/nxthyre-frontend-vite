@@ -26,6 +26,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1); 
   const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
   const candidatesPerPage = 10; 
   const [filteredCandidates, setFilteredCandidates] = useState<CandidateListItem[]>([]);
 
@@ -39,12 +40,15 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
   useEffect(() => {
     const fetchCandidates = async () => {
+      setLoading(true);
       try {
         const { results, count } = await candidateService.getCandidates(currentPage, candidatesPerPage, activeTab);
         setFilteredCandidates(results);
         setTotalPages(Math.ceil(count / candidatesPerPage));
       } catch (error) {
         console.error("Error fetching candidates:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchCandidates();
@@ -52,6 +56,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
   const debouncedFetchCandidates = useCallback(
     debounce(async (filters: any) => {
+      setLoading(true);
       try {
         const { results, count } = await candidateService.searchCandidates({
           ...filters,
@@ -63,6 +68,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         setTotalPages(Math.ceil(count / candidatesPerPage));
       } catch (error) {
         console.error("Error fetching filtered candidates:", error);
+      } finally {
+        setLoading(false);
       }
     }, 300),
     [currentPage, activeTab]
@@ -86,6 +93,15 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     );
   };
 
+  const handleSelectAll = (checked: boolean) => {
+    setSelectAll(checked);
+    if (checked) {
+      setSelectedCandidates(currentCandidates.map((candidate) => candidate.id));
+    } else {
+      setSelectedCandidates([]);
+    }
+  };
+
   // const filteredCandidates = candidates.filter(candidate =>
   //   candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
   //   candidate.currentRole.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -94,9 +110,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
   // Pagination logic
   // const totalPages = Math.ceil(filteredCandidates.length / candidatesPerPage);
-  const startIndex = (currentPage - 1) * candidatesPerPage;
-  const endIndex = startIndex + candidatesPerPage;
-  const currentCandidates = filteredCandidates.slice(startIndex, endIndex);
+
+  const currentCandidates = filteredCandidates.slice(
+    (currentPage - 1) * candidatesPerPage,
+    currentPage * candidatesPerPage
+  );
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -111,6 +129,15 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     const sum = skill.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return (sum % 5) + 1; // Returns a number between 1 and 5
   };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="text-gray-600 mt-2">Loading candidates...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -332,14 +359,14 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             
               <div className="mt-3 flex items-center justify-between space-x-2 flex-wrap gap-2">
                 <div className="mt-3 flex flex-wrap gap-1">
-                  {/* {candidate.skills_list.slice(0, 3).map((skill, index) => (
+                  {candidate.skills_list.slice(0, 3).map((skill, index) => (
                     <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
                       {skill}
                       {Array.from({ length: getStarCount(skill) }).map((_, i) => (
                         <Star key={i} size={11} className="inline-block ml-1 mb-1 text-blue-600" />
                       ))}
                     </span>
-                  ))} */}
+                  ))}
                 </div>
                 
                 <div className="rounded-md flex space-x-2 rounde-lg border border-blue-400 hover:border-blue-600 transition-colors">
