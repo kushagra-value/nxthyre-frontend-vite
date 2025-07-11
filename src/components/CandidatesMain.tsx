@@ -102,6 +102,22 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     }
   };
 
+  // const filteredCandidates = candidates.filter(candidate =>
+  //   candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //   candidate.currentRole.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //   candidate.company.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
+
+  // Pagination logic
+  // const totalPages = Math.ceil(filteredCandidates.length / candidatesPerPage);
+  if (filteredCandidates.length >= 20) {
+  var currentCandidates = filteredCandidates.slice(
+    (currentPage - 1) * candidatesPerPage,
+    currentPage * candidatesPerPage
+  );
+  } else { 
+    var currentCandidates = filteredCandidates; 
+  } 
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
