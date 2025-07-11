@@ -188,6 +188,37 @@ class AuthService {
     }
   }
 
+  // Private method to map Firebase errors to user-friendly messages
+  private getFriendlyFirebaseError(error: any): string {
+    if (error.code) {
+      switch (error.code) {
+        case "auth/invalid-email":
+          return "The email address is not valid.";
+        case "auth/user-disabled":
+          return "This user account has been disabled.";
+        case "auth/user-not-found":
+          return "No user found with this email.";
+        case "auth/wrong-password":
+          return "Incorrect password.";
+        case "auth/invalid-credential":
+          return "Invalid email or password.";
+        case "auth/email-already-in-use":
+          return "This email is already in use.";
+        case "auth/weak-password":
+          return "The password is too weak.";
+        case "auth/operation-not-allowed":
+          return "This sign-in method is not allowed.";
+        case "auth/too-many-requests":
+          return "Too many attempts. Please try again later.";
+        case "auth/network-request-failed":
+          return "Network error. Please check your connection.";
+        default:
+          return "An authentication error occurred.";
+      }
+    }
+    return "An unexpected error occurred.";
+  }
+
   // Firebase authentication methods
   async signInWithEmail(
     email: string,
@@ -201,7 +232,7 @@ class AuthService {
       );
       return userCredential.user;
     } catch (error: any) {
-      throw new Error(error.message || "Firebase sign in failed");
+      throw new Error(this.getFriendlyFirebaseError(error));
     }
   }
 
@@ -210,7 +241,7 @@ class AuthService {
       const userCredential = await signInWithCustomToken(auth, token);
       return userCredential.user;
     } catch (error: any) {
-      throw new Error(error.message || "Custom token sign in failed");
+      throw new Error(this.getFriendlyFirebaseError(error));
     }
   }
 
@@ -218,7 +249,7 @@ class AuthService {
     try {
       await firebaseSignOut(auth);
     } catch (error: any) {
-      throw new Error(error.message || "Sign out failed");
+      throw new Error("Failed to sign out. Please try again.");
     }
   }
 
