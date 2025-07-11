@@ -110,14 +110,10 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
   // Pagination logic
   // const totalPages = Math.ceil(filteredCandidates.length / candidatesPerPage);
-  if (filteredCandidates.length >= 20) {
-  var currentCandidates = filteredCandidates.slice(
+  const currentCandidates = (filteredCandidates || []).slice(
     (currentPage - 1) * candidatesPerPage,
     currentPage * candidatesPerPage
-  );
-  } else { 
-    var currentCandidates = filteredCandidates; 
-  } 
+ ); 
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -391,7 +387,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       <div className="p-3 lg:p-4 flex items-center justify-between border-t border-gray-200">
         <div className="text-sm text-gray-600">
           Showing {(currentPage - 1) * candidatesPerPage + 1} to{" "}
-          {Math.min(currentPage * candidatesPerPage, filteredCandidates.length)} of {filteredCandidates.length}{" "}
+          {Math.min(currentPage * candidatesPerPage, (filteredCandidates || []).length)} of {(filteredCandidates || []).length}{" "}
           candidates
         </div>
         <div className="flex space-x-2">
