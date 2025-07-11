@@ -17,7 +17,6 @@ import SharePipelinesLoader from './components/SharePipelinesLoader';
 import SharePipelinesModal from './components/SharePipelinesModal';
 import ShareableProfile from './components/ShareableProfile';
 import PipelineSharePage from './components/PipelineSharePage';
-import { candidates, Candidate } from './data/candidates';
 import { ChevronDown, MoreHorizontal, Edit, Mail, Archive, Trash2, LogOut, Share2 } from "lucide-react";
 import { showToast } from './utils/toast';
 
@@ -30,6 +29,30 @@ interface User {
   workspaceIds: string[];
   isVerified: boolean;
   createdAt: string;
+}
+
+interface Candidate {
+  id: string;
+  name: string;
+  avatar: string;
+  company: string;
+  currentRole: string;
+  skillLevel: string;
+  city: string;
+  verified: boolean;
+  status: string;
+  experience: string;
+  education: string;
+  noticePeriod: string;
+  skills: string[];
+  headline: string;
+  currentCompanyExperience: string;
+  linkedInUrl?: string;
+  githubUrl?: string;
+  portfolioUrl?: string;
+  resumeUrl?: string;
+  graduationYears:string;
+  location?: string;
 }
 
 function App() {
@@ -104,53 +127,104 @@ function App() {
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [activeCategory, setActiveCategory] = useState('Head Of Finance');
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
 
-  const filteredCandidates = useMemo(() => {
-    if (!isAuthenticated) return [];
+  useEffect(() => {
+    if (isAuthenticated) {
+      const fetchInitialCandidates = async () => {
+        try {
+          const response = await fetch('/candidates/?page=1&page_size=20', {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          });
+          const data = await response.json();
+          const mappedCandidates = data.results.map((candidate: any) => ({
+            id: candidate.id,
+            name: candidate.full_name,
+            avatar: candidate.full_name
+              .split(' ')
+              .map((n: string) => n[0])
+              .join('')
+              .toUpperCase()
+              .slice(0, 2),
+            company: candidate.experience?.find((exp: any) => exp.is_current)?.company || 'Unknown',
+            currentRole: candidate.experience?.find((exp: any) => exp.is_current)?.job_title || 'Unknown',
+            skillLevel: candidate.skills_data?.skills_mentioned?.length > 0 ? 'Expert' : 'Unknown',
+            city: candidate.location?.split(',')[0] || 'Unknown',
+            country: candidate.location?.split(',')[1]?.trim() || 'Unknown',
+            verified: candidate.is_background_verified || false,
+            status: candidate.status || 'Unknown',
+            experience: `${candidate.total_experience} years`,
+            education: candidate.education?.[0]?.institution || 'Unknown',
+            noticePeriod: candidate.notice_period_days ? `${candidate.notice_period_days} days` : 'Unknown',
+            skills: candidate.skills_data?.skills_mentioned?.map((s: any) => s.skill) || [],
+            headline: candidate.headline || '',
+            email: candidate.email || 'Unknown',
+            phone: candidate.phone || 'Unknown',
+            linkedin_url: candidate.linkedin_url,
+            github_url: candidate.github_url,
+            twitter_url: candidate.twitter_url,
+            portfolio_url: candidate.portfolio_url,
+          }));
+          setCandidates(mappedCandidates);
+          // Set initial selected candidate only if none is selected
+          if (!selectedCandidate && mappedCandidates.length > 0) {
+            setSelectedCandidate(mappedCandidates[0]);
+          }
+        } catch (error) {
+          console.error('Error fetching initial candidates:', error);
+          showToast.error('Failed to load candidates');
+        }
+      };
+      fetchInitialCandidates();
+    }
+  }, [isAuthenticated]);
+  
+  // const filteredCandidates = useMemo(() => {
+  //   if (!isAuthenticated) return [];
     
-    return candidates.filter(candidate => {
-      const matchesSearch = !searchTerm || 
-        candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        candidate.currentRole.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        candidate.company.toLowerCase().includes(searchTerm.toLowerCase());
+  //   return candidates.filter(candidate => {
+  //     const matchesSearch = !searchTerm || 
+  //       candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //       candidate.currentRole.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //       candidate.company.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesKeywords = !filters.keywords || 
-        candidate.name.toLowerCase().includes(filters.keywords.toLowerCase()) ||
-        candidate.currentRole.toLowerCase().includes(filters.keywords.toLowerCase()) ||
-        candidate.skills.some(skill => skill.toLowerCase().includes(filters.keywords.toLowerCase()));
+  //     const matchesKeywords = !filters.keywords || 
+  //       candidate.name.toLowerCase().includes(filters.keywords.toLowerCase()) ||
+  //       candidate.currentRole.toLowerCase().includes(filters.keywords.toLowerCase()) ||
+  //       candidate.skills.some(skill => skill.toLowerCase().includes(filters.keywords.toLowerCase()));
 
-      const matchesCategories = filters.selectedCategories.length === 0 ||
-        filters.selectedCategories.some(category => 
-          candidate.currentRole.toLowerCase().includes(category.toLowerCase()) ||
-          candidate.skills.some(skill => skill.toLowerCase().includes(category.toLowerCase()))
-        );
+  //     const matchesCategories = filters.selectedCategories.length === 0 ||
+  //       filters.selectedCategories.some(category => 
+  //         candidate.currentRole.toLowerCase().includes(category.toLowerCase()) ||
+  //         candidate.skills.some(skill => skill.toLowerCase().includes(category.toLowerCase()))
+  //       );
 
-      const matchesCurrentExp = (!filters.minExperience || candidate.currentCompanyExperience >= parseInt(filters.minExperience)) &&
-        (!filters.maxExperience || candidate.currentCompanyExperience <= parseInt(filters.maxExperience));
+  //     const matchesCurrentExp = (!filters.minExperience || candidate.currentCompanyExperience >= parseInt(filters.minExperience)) &&
+  //       (!filters.maxExperience || candidate.currentCompanyExperience <= parseInt(filters.maxExperience));
 
-      const matchesTotalExp = (!filters.minTotalExp || candidate.totalExperience >= parseInt(filters.minTotalExp)) &&
-        (!filters.maxTotalExp || candidate.totalExperience <= parseInt(filters.maxTotalExp));
+  //     const matchesTotalExp = (!filters.minTotalExp || candidate.totalExperience >= parseInt(filters.minTotalExp)) &&
+  //       (!filters.maxTotalExp || candidate.totalExperience <= parseInt(filters.maxTotalExp));
 
-      const matchesCity = !filters.city || candidate.city.toLowerCase().includes(filters.city.toLowerCase());
-      const matchesCountry = !filters.country || candidate.country.toLowerCase().includes(filters.country.toLowerCase());
-      const matchesLocation = !filters.location || candidate.location.toLowerCase().includes(filters.location.toLowerCase());
+  //     const matchesCity = !filters.city || candidate.city.toLowerCase().includes(filters.city.toLowerCase());
+  //     const matchesCountry = !filters.country || candidate.country.toLowerCase().includes(filters.country.toLowerCase());
+  //     const matchesLocation = !filters.location || candidate.location.toLowerCase().includes(filters.location.toLowerCase());
 
-      const matchesSkills = filters.selectedSkills.length === 0 ||
-        filters.selectedSkills.some(skill => 
-          candidate.skills.some(candidateSkill => 
-            candidateSkill.toLowerCase().includes(skill.toLowerCase())
-          )
-        );
+  //     const matchesSkills = filters.selectedSkills.length === 0 ||
+  //       filters.selectedSkills.some(skill => 
+  //         candidate.skills.some(candidateSkill => 
+  //           candidateSkill.toLowerCase().includes(skill.toLowerCase())
+  //         )
+  //       );
 
-      const matchesSkillLevel = !filters.skillLevel || candidate.skillLevel === filters.skillLevel;
-      const matchesNoticePeriod = !filters.noticePeriod || candidate.noticePeriod === filters.noticePeriod;
-      const matchesCompanies = !filters.companies || candidate.company.toLowerCase().includes(filters.companies.toLowerCase());
+  //     const matchesSkillLevel = !filters.skillLevel || candidate.skillLevel === filters.skillLevel;
+  //     const matchesNoticePeriod = !filters.noticePeriod || candidate.noticePeriod === filters.noticePeriod;
+  //     const matchesCompanies = !filters.companies || candidate.company.toLowerCase().includes(filters.companies.toLowerCase());
 
-      return matchesSearch && matchesKeywords && matchesCategories && matchesCurrentExp && 
-             matchesTotalExp && matchesCity && matchesCountry && matchesLocation && 
-             matchesSkills && matchesSkillLevel && matchesNoticePeriod && matchesCompanies;
-    });
-  }, [searchTerm, filters, isAuthenticated]);
+  //     return matchesSearch && matchesKeywords && matchesCategories && matchesCurrentExp && 
+  //            matchesTotalExp && matchesCity && matchesCountry && matchesLocation && 
+  //            matchesSkills && matchesSkillLevel && matchesNoticePeriod && matchesCompanies;
+  //   });
+  // }, [searchTerm, filters, isAuthenticated]);
 
   useEffect(() => {
     if (isAuthenticated && userStatus) {
@@ -181,12 +255,6 @@ function App() {
       setShowShareableProfile(true);
     }
   }, []);
-
-  useEffect(() => {
-    if (filteredCandidates.length > 0 && !selectedCandidate) {
-      setSelectedCandidate(filteredCandidates[0]);
-    }
-  }, [filteredCandidates, selectedCandidate]);
 
   // Handler Functions
   const handleLogoutRequest = () => {
@@ -528,7 +596,7 @@ function App() {
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-full">
             <div className="lg:col-span-3 order-2 lg:order-1 sticky top-16 self-start will-change-transform">
-              <FiltersSidebar filters={filters} onFiltersChange={setFilters} />
+              <FiltersSidebar filters={filters} onFiltersChange={setFilters} setCandidates={setCandidates} />
             </div>
             <div className="lg:col-span-6 order-1 lg:order-2">
               <CandidatesMain 
@@ -537,7 +605,7 @@ function App() {
                 selectedCandidate={selectedCandidate}
                 setSelectedCandidate={setSelectedCandidate}
                 searchTerm={searchTerm}
-                candidates={filteredCandidates}
+                candidates={candidates}
                 onPipelinesClick={handlePipelinesClick}
               />
             </div>
@@ -550,7 +618,7 @@ function App() {
               ) : (
                 <CandidateDetail 
                   candidate={selectedCandidate} 
-                  candidates={filteredCandidates}
+                  candidates={candidates}
                   onSendInvite={handleSendInvite}
                 />
               )}
