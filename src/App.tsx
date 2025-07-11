@@ -136,7 +136,7 @@ function App() {
     if (isAuthenticated) {
       const fetchInitialCandidates = async () => {
         try {
-          const response = await fetch('/candidates/?page=1&page_size=20', {
+          const response = await fetch('/api/candidates/', {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
           });
           const data = await response.json();
