@@ -112,7 +112,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
     if (displayCandidate?.id) {
       setLoading(true);
       setError(null);
-      fetch(`/candidates/${displayCandidate.id}/`, {
+      fetch(`/api/candidates/${displayCandidate.id}/`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       })
         .then((response) => {
