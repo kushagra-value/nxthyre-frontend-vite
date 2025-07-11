@@ -3,6 +3,30 @@ import { ChevronDown, Bold, Italic, Link, List, MoreHorizontal, ArrowLeft, Mail,
 import { showToast } from '../utils/toast';
 import { CandidateListItem } from '../services/candidateService';
 
+interface Candidate {
+  id: string;
+  name: string;
+  avatar: string;
+  company: string;
+  currentRole: string;
+  skillLevel: string;
+  city: string;
+  verified: boolean;
+  status: string;
+  experience: string;
+  education: string;
+  noticePeriod: string;
+  skills: string[];
+  headline: string;
+  currentCompanyExperience: string;
+  linkedInUrl?: string;
+  githubUrl?: string;
+  portfolioUrl?: string;
+  resumeUrl?: string;
+  graduationYears:string;
+  location?: string;
+}
+
 interface TemplateSelectorProps {
   candidate: CandidateListItem;
   onBack: () => void;

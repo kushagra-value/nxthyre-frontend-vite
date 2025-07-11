@@ -319,8 +319,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         </span>
                       </div>
                     )}
-                    {/* FIX: Use optional chaining for safer access */}
-                   <span className={`mt-1 px-2 py-1 text-xs rounded-full ${candidate.experience_years?.includes("Available") ? "bg-blue-100 text-blue-800" : "bg-blue-100 text-blue-800"}`}>{candidate.experience_years}</span>
+                    <span className={`mt-1 px-2 py-1 text-xs rounded-full ${
+                      candidate.status === 'Available' ? 'bg-blue-100 text-blue-800' : 'bg-blue-100 text-blue-800'
+                    }`}>
+                       {candidate.experience}
+                    </span>
                   </div>
                   <div className="flex items-center space-x-1">
                      {/* FIX: Safer rendering with optional chaining */}
