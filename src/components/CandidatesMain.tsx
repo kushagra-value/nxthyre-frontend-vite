@@ -111,10 +111,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   // Pagination logic
   // const totalPages = Math.ceil(filteredCandidates.length / candidatesPerPage);
 
-  const currentCandidates = filteredCandidates.slice(
-    (currentPage - 1) * candidatesPerPage,
-    currentPage * candidatesPerPage
-  );
+  const currentCandidates = filteredCandidates;
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
