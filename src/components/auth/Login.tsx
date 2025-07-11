@@ -1,7 +1,15 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, XCircle, Sparkles, Mic, MessageCircle, Volume2 } from 'lucide-react';
-import { authService } from '../../services/authService';
-import { showToast } from '../../utils/toast';
+import React, { useState } from "react";
+import {
+  Eye,
+  EyeOff,
+  XCircle,
+  Sparkles,
+  Mic,
+  MessageCircle,
+  Volume2,
+} from "lucide-react";
+import { authService } from "../../services/authService";
+import { showToast } from "../../utils/toast";
 
 interface LoginProps {
   onNavigate: (flow: string, data?: any) => void;
@@ -10,9 +18,9 @@ interface LoginProps {
 
 const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    rememberMe: false
+    email: "",
+    password: "",
+    rememberMe: false,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -22,13 +30,13 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!validateEmail(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = "Please enter a valid email address";
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     }
 
     setErrors(newErrors);
@@ -37,43 +45,49 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setIsLoading(true);
-    
+
     try {
       // Sign in with Firebase
-      const firebaseUser = await authService.signInWithEmail(formData.email, formData.password);
-      
+      const firebaseUser = await authService.signInWithEmail(
+        formData.email,
+        formData.password
+      );
+
       // Get user status from backend
       const userStatus = await authService.getUserStatus();
-      
+
       // Create user object for compatibility with existing code
       const user = {
         id: firebaseUser.uid,
         fullName: userStatus.full_name,
         email: userStatus.email,
-        role: userStatus.roles.length > 0 ? userStatus.roles[0].name.toLowerCase() : 'team',
+        role:
+          userStatus.roles.length > 0
+            ? userStatus.roles[0].name.toLowerCase()
+            : "team",
         organizationId: userStatus.organization?.id?.toString(),
         workspaceIds: [],
         isVerified: firebaseUser.emailVerified,
-        createdAt: firebaseUser.metadata.creationTime || new Date().toISOString()
+        createdAt:
+          firebaseUser.metadata.creationTime || new Date().toISOString(),
       };
-      
+
       onLogin(user);
-      
+
       if (userStatus.is_onboarded) {
         // User is fully onboarded, go to main dashboard
-        window.location.href = '/';
+        window.location.href = "/";
       } else {
         // User needs onboarding
-        onNavigate('workspaces-org');
+        onNavigate("workspaces-org");
       }
-      
     } catch (error: any) {
-      console.error('Login error:', error);
-      setErrors({ general: error.message || 'Login failed' });
+      console.error("Login error:", error);
+      setErrors({ general: error.message || "Login failed" });
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +110,6 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
 
       <div className="relative z-10 min-h-screen flex items-center justify-center p-8">
         <div className="w-full max-w-7xl flex items-center gap-16">
-          
           {/* Left Side - Branding Content */}
           <div className="flex-1 text-white">
             {/* Logo */}
@@ -148,7 +161,9 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                     <div className="w-12 h-12 bg-blue-500/30 rounded-lg flex items-center justify-center mr-4">
                       <Volume2 className="w-6 h-6" />
                     </div>
-                    <h3 className="text-xl font-semibold">Team Collaboration</h3>
+                    <h3 className="text-xl font-semibold">
+                      Team Collaboration
+                    </h3>
                   </div>
                   <p className="text-blue-100 text-sm">
                     Seamless workflow management for hiring teams
@@ -159,7 +174,10 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
               {/* Contact */}
               <div className="mt-16">
                 <p className="text-blue-200 text-sm">
-                  Facing any issue? <button className="underline hover:text-white">Contact Us</button>
+                  Facing any issue?{" "}
+                  <button className="underline hover:text-white">
+                    Contact Us
+                  </button>
                 </p>
               </div>
             </div>
@@ -171,10 +189,11 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
             <div className="bg-white rounded-2xl p-8 shadow-2xl">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                  Welcome Back <Sparkles className="w-6 h-6 ml-2 text-yellow-400" />
+                  Welcome Back{" "}
+                  <Sparkles className="w-6 h-6 ml-2 text-yellow-400" />
                 </h2>
               </div>
-              
+
               <p className="text-gray-600 mb-8">
                 Sign in to your NxtHyre account to continue
               </p>
@@ -196,9 +215,11 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                   <input
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
                     className={`w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${
-                      errors.email ? 'border-red-500' : ''
+                      errors.email ? "border-red-500" : ""
                     }`}
                     placeholder="Enter your email address"
                   />
@@ -214,11 +235,13 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                 <div>
                   <div className="relative">
                     <input
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, password: e.target.value })
+                      }
                       className={`w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${
-                        errors.password ? 'border-red-500' : ''
+                        errors.password ? "border-red-500" : ""
                       }`}
                       placeholder="Enter your password"
                     />
@@ -227,7 +250,11 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
                   {errors.password && (
@@ -244,14 +271,21 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                     <input
                       type="checkbox"
                       checked={formData.rememberMe}
-                      onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          rememberMe: e.target.checked,
+                        })
+                      }
                       className="w-4 h-4 text-blue-600 bg-gray-50 border-gray-300 rounded focus:ring-blue-500"
                     />
-                    <span className="ml-2 text-sm text-gray-700">Remember me</span>
+                    <span className="ml-2 text-sm text-gray-700">
+                      Remember me
+                    </span>
                   </label>
                   <button
                     type="button"
-                    onClick={() => onNavigate('forgot-password')}
+                    onClick={() => onNavigate("forgot-password")}
                     className="text-sm text-blue-600 hover:text-blue-500"
                   >
                     Forgot password?
@@ -270,7 +304,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                       Signing in...
                     </div>
                   ) : (
-                    'Sign In'
+                    "Sign In"
                   )}
                 </button>
 
@@ -280,18 +314,24 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                     <div className="w-full border-t border-gray-300" />
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                    <span className="px-2 bg-white text-gray-500">
+                      Or continue with
+                    </span>
                   </div>
                 </div>
 
                 {/* LinkedIn Auth */}
                 <button
                   type="button"
-                  onClick={() => onNavigate('linkedin-auth')}
+                  onClick={() => onNavigate("linkedin-auth")}
                   className="w-full bg-gray-100 text-gray-900 py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center border border-gray-300"
                 >
-                  <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                  <svg
+                    className="w-5 h-5 mr-3"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                   </svg>
                   Continue with LinkedIn
                 </button>
@@ -299,10 +339,10 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                 {/* Sign Up Link */}
                 <div className="text-center mt-6">
                   <span className="text-sm text-gray-600">
-                    Don't have an account?{' '}
+                    Don't have an account?{" "}
                     <button
                       type="button"
-                      onClick={() => onNavigate('signup')}
+                      onClick={() => onNavigate("signup")}
                       className="text-blue-600 hover:text-blue-500 font-medium underline"
                     >
                       Create a new account here
@@ -313,10 +353,14 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                 {/* Legal */}
                 <div className="text-center mt-6">
                   <p className="text-xs text-gray-500">
-                    By logging in you agree to our{' '}
-                    <button className="text-blue-600 hover:underline">Terms and Conditions</button>
-                    {' '}and{' '}
-                    <button className="text-blue-600 hover:underline">Privacy Policy</button>
+                    By logging in you agree to our{" "}
+                    <button className="text-blue-600 hover:underline">
+                      Terms and Conditions
+                    </button>{" "}
+                    and{" "}
+                    <button className="text-blue-600 hover:underline">
+                      Privacy Policy
+                    </button>
                   </p>
                 </div>
               </form>

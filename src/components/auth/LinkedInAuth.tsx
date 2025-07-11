@@ -122,7 +122,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
         <div className="w-full max-w-md">
           <div className="bg-white rounded-2xl p-8 shadow-2xl">
             <button
-              onClick={() => onNavigate("login")}
+              onClick={() => onNavigate("/")}
               className="flex items-center text-gray-600 hover:text-gray-800 mb-6 transition-colors"
             >
               <svg
@@ -245,7 +245,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
                       Try Again
                     </button>
                     <button
-                      onClick={() => onNavigate("login")}
+                      onClick={() => onNavigate("/")}
                       className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
                     >
                       Back to Login

@@ -1,7 +1,16 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, CheckCircle, XCircle, Sparkles, Mic, MessageCircle, Volume2 } from 'lucide-react';
-import { authService } from '../../services/authService';
-import { showToast } from '../../utils/toast';
+import React, { useState } from "react";
+import {
+  Eye,
+  EyeOff,
+  CheckCircle,
+  XCircle,
+  Sparkles,
+  Mic,
+  MessageCircle,
+  Volume2,
+} from "lucide-react";
+import { authService } from "../../services/authService";
+import { showToast } from "../../utils/toast";
 
 interface SignUpProps {
   onNavigate: (flow: string, data?: any) => void;
@@ -9,11 +18,11 @@ interface SignUpProps {
 
 const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    agreeToTerms: false
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    agreeToTerms: false,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -24,54 +33,76 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required';
+      newErrors.fullName = "Full name is required";
     }
 
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!validateEmail(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = "Please enter a valid email address";
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     } else if (!validatePassword(formData.password)) {
-      newErrors.password = 'Password must be at least 8 characters with uppercase, lowercase, and number';
+      newErrors.password =
+        "Password must be at least 8 characters with uppercase, lowercase, and number";
     }
 
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
     if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = 'You must agree to the terms and privacy policy';
+      newErrors.agreeToTerms = "You must agree to the terms and privacy policy";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const validateFullName = (fullName: string): boolean => {
+    // Allow only letters (a-z, A-Z) and spaces
+    const nameRegex = /^[a-zA-Z\s]*$/;
+    return nameRegex.test(fullName);
+  };
+
+  const handleFullNameChange = (value: string) => {
+    // Optionally filter input in real-time to prevent invalid characters
+    if (validateFullName(value) || value === "") {
+      setFormData({ ...formData, fullName: value });
+      setErrors({ ...errors, fullName: "" });
+    } else {
+      setErrors({
+        ...errors,
+        fullName: "Full name can only contain letters and spaces",
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setIsLoading(true);
-    
+
     try {
       await authService.signUpWithEmail(formData.email, formData.password);
-      showToast.success('Sign-up successful! Please check your email for verification.');
-      onNavigate('otp-verification', { 
-        email: formData.email, 
-        type: 'signup',
-        userData: formData 
+      showToast.success(
+        "Sign-up successful! Please check your email for verification."
+      );
+      onNavigate("otp-verification", {
+        email: formData.email,
+        type: "signup",
+        userData: formData,
       });
     } catch (error: any) {
-      console.error('Sign up error:', error);
-      if (error.message.includes('already exists')) {
-        setErrors({ email: 'Email already in use' });
+      console.error("Sign up error:", error);
+      if (error.message.includes("already exists")) {
+        setErrors({ email: "Email already in use" });
       } else {
-        setErrors({ general: error.message || 'Sign up failed' });
+        setErrors({ general: error.message || "Sign up failed" });
       }
     } finally {
       setIsLoading(false);
@@ -84,13 +115,15 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
   };
 
   const validatePassword = (password: string): boolean => {
-    return password.length >= 8 && /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password);
+    return (
+      password.length >= 8 && /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)
+    );
   };
 
   const getPasswordStrength = () => {
     const password = formData.password;
-    if (!password) return { strength: 0, text: '' };
-    
+    if (!password) return { strength: 0, text: "" };
+
     let strength = 0;
     if (password.length >= 8) strength++;
     if (/[a-z]/.test(password)) strength++;
@@ -98,13 +131,13 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
     if (/\d/.test(password)) strength++;
     if (/[^a-zA-Z\d]/.test(password)) strength++;
 
-    const strengthTexts = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
-    const colors = ['#ef4444', '#f97316', '#eab308', '#3b82f6', '#10b981'];
-    
-    return { 
-      strength: (strength / 5) * 100, 
-      text: strengthTexts[strength - 1] || '',
-      color: colors[strength - 1] || '#6b7280'
+    const strengthTexts = ["Very Weak", "Weak", "Fair", "Good", "Strong"];
+    const colors = ["#ef4444", "#f97316", "#eab308", "#3b82f6", "#10b981"];
+
+    return {
+      strength: (strength / 5) * 100,
+      text: strengthTexts[strength - 1] || "",
+      color: colors[strength - 1] || "#6b7280",
     };
   };
 
@@ -122,7 +155,6 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
 
       <div className="relative z-10 min-h-screen flex items-center justify-center p-8">
         <div className="w-full max-w-7xl flex items-center gap-16">
-          
           {/* Left Side - Branding Content */}
           <div className="flex-1 text-white">
             {/* Logo */}
@@ -174,7 +206,9 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                     <div className="w-12 h-12 bg-blue-500/30 rounded-lg flex items-center justify-center mr-4">
                       <Volume2 className="w-6 h-6" />
                     </div>
-                    <h3 className="text-xl font-semibold">Team Collaboration</h3>
+                    <h3 className="text-xl font-semibold">
+                      Team Collaboration
+                    </h3>
                   </div>
                   <p className="text-blue-100 text-sm">
                     Seamless workflow management for hiring teams
@@ -185,7 +219,10 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
               {/* Contact */}
               <div className="mt-16">
                 <p className="text-blue-200 text-sm">
-                  Facing any issue? <button className="underline hover:text-white">Contact Us</button>
+                  Facing any issue?{" "}
+                  <button className="underline hover:text-white">
+                    Contact Us
+                  </button>
                 </p>
               </div>
             </div>
@@ -200,7 +237,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                   Welcome <Sparkles className="w-6 h-6 ml-2 text-yellow-400" />
                 </h2>
               </div>
-              
+
               <p className="text-gray-600 mb-8">
                 Sign up with your work email to enjoy a free trial
               </p>
@@ -212,9 +249,9 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                   <input
                     type="text"
                     value={formData.fullName}
-                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                    onChange={(e) => handleFullNameChange(e.target.value)}
                     className={`w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${
-                      errors.fullName ? 'border-red-500' : ''
+                      errors.fullName ? "border-red-500" : ""
                     }`}
                     placeholder="Enter your full name"
                   />
@@ -231,9 +268,11 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                   <input
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
                     className={`w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${
-                      errors.email ? 'border-red-500' : ''
+                      errors.email ? "border-red-500" : ""
                     }`}
                     placeholder="Enter your work email address"
                   />
@@ -249,11 +288,13 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                 <div>
                   <div className="relative">
                     <input
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, password: e.target.value })
+                      }
                       className={`w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${
-                        errors.password ? 'border-red-500' : ''
+                        errors.password ? "border-red-500" : ""
                       }`}
                       placeholder="Create a strong password"
                     />
@@ -262,10 +303,14 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
-                  
+
                   {/* Password Strength Indicator */}
                   {formData.password && (
                     <div className="mt-2">
@@ -275,7 +320,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                             className="h-2 rounded-full transition-all duration-300"
                             style={{
                               width: `${passwordStrength.strength}%`,
-                              backgroundColor: passwordStrength.color
+                              backgroundColor: passwordStrength.color,
                             }}
                           />
                         </div>
@@ -285,7 +330,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                       </div>
                     </div>
                   )}
-                  
+
                   {errors.password && (
                     <p className="mt-1 text-sm text-red-500 flex items-center">
                       <XCircle className="w-4 h-4 mr-1" />
@@ -298,28 +343,40 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                 <div>
                   <div className="relative">
                     <input
-                      type={showConfirmPassword ? 'text' : 'password'}
+                      type={showConfirmPassword ? "text" : "password"}
                       value={formData.confirmPassword}
-                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          confirmPassword: e.target.value,
+                        })
+                      }
                       className={`w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${
-                        errors.confirmPassword ? 'border-red-500' : ''
+                        errors.confirmPassword ? "border-red-500" : ""
                       }`}
                       placeholder="Confirm your password"
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showConfirmPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
-                  {formData.confirmPassword && formData.password === formData.confirmPassword && (
-                    <p className="mt-1 text-sm text-green-600 flex items-center">
-                      <CheckCircle className="w-4 h-4 mr-1" />
-                      Passwords match
-                    </p>
-                  )}
+                  {formData.confirmPassword &&
+                    formData.password === formData.confirmPassword && (
+                      <p className="mt-1 text-sm text-green-600 flex items-center">
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Passwords match
+                      </p>
+                    )}
                   {errors.confirmPassword && (
                     <p className="mt-1 text-sm text-red-500 flex items-center">
                       <XCircle className="w-4 h-4 mr-1" />
@@ -334,16 +391,27 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                     <input
                       type="checkbox"
                       checked={formData.agreeToTerms}
-                      onChange={(e) => setFormData({ ...formData, agreeToTerms: e.target.checked })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          agreeToTerms: e.target.checked,
+                        })
+                      }
                       className="mt-1 w-4 h-4 text-blue-600 bg-gray-50 border-gray-300 rounded focus:ring-blue-500"
                     />
                     <span className="text-sm text-gray-600">
-                      I agree to the{' '}
-                      <button type="button" className="text-blue-600 hover:text-blue-500 underline">
+                      I agree to the{" "}
+                      <button
+                        type="button"
+                        className="text-blue-600 hover:text-blue-500 underline"
+                      >
                         Terms of Service
-                      </button>{' '}
-                      and{' '}
-                      <button type="button" className="text-blue-600 hover:text-blue-500 underline">
+                      </button>{" "}
+                      and{" "}
+                      <button
+                        type="button"
+                        className="text-blue-600 hover:text-blue-500 underline"
+                      >
                         Privacy Policy
                       </button>
                     </span>
@@ -368,7 +436,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                       Creating Account...
                     </div>
                   ) : (
-                    'Create Account'
+                    "Create Account"
                   )}
                 </button>
 
@@ -378,18 +446,24 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                     <div className="w-full border-t border-gray-300" />
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                    <span className="px-2 bg-white text-gray-500">
+                      Or continue with
+                    </span>
                   </div>
                 </div>
 
                 {/* LinkedIn Auth */}
                 <button
                   type="button"
-                  onClick={() => onNavigate('linkedin-auth')}
+                  onClick={() => onNavigate("linkedin-auth")}
                   className="w-full bg-gray-100 text-gray-900 py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center border border-gray-300"
                 >
-                  <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                  <svg
+                    className="w-5 h-5 mr-3"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                   </svg>
                   Continue with LinkedIn
                 </button>
@@ -397,10 +471,10 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                 {/* Login Link */}
                 <div className="text-center mt-6">
                   <span className="text-sm text-gray-600">
-                    Already have an account?{' '}
+                    Already have an account?{" "}
                     <button
                       type="button"
-                      onClick={() => onNavigate('login')}
+                      onClick={() => onNavigate("login")}
                       className="text-blue-600 hover:text-blue-500 font-medium underline"
                     >
                       Sign in here
@@ -411,10 +485,14 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                 {/* Legal */}
                 <div className="text-center mt-6">
                   <p className="text-xs text-gray-500">
-                    By creating an account you agree to our{' '}
-                    <button className="text-blue-600 hover:underline">Terms and Conditions</button>
-                    {' '}and{' '}
-                    <button className="text-blue-600 hover:underline">Privacy Policy</button>
+                    By creating an account you agree to our{" "}
+                    <button className="text-blue-600 hover:underline">
+                      Terms and Conditions
+                    </button>{" "}
+                    and{" "}
+                    <button className="text-blue-600 hover:underline">
+                      Privacy Policy
+                    </button>
                   </p>
                 </div>
               </form>

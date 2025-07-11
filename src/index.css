@@ -2,15 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 @layer base {
   body {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: "Inter", system-ui, sans-serif;
     line-height: 1.6;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     line-height: 1.2;
   }
 }
@@ -29,7 +34,7 @@
   }
 
   .input-field {
-    @apply px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-coral-500 focus:border-coral-500 transition-colors duration-200;
+    @apply px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200;
   }
 }
 
@@ -66,7 +71,10 @@
 }
 
 /* Smooth transitions for interactive elements */
-button, input, select, textarea {
+button,
+input,
+select,
+textarea {
   transition: all 0.2s ease-in-out;
 }
 
@@ -75,6 +83,6 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid #ff6b6b;
+  outline: 2px;
   outline-offset: 2px;
 }
