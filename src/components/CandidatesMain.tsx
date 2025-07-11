@@ -332,14 +332,14 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             
               <div className="mt-3 flex items-center justify-between space-x-2 flex-wrap gap-2">
                 <div className="mt-3 flex flex-wrap gap-1">
-                  {candidate.skills_list.slice(0, 3).map((skill, index) => (
+                  {/* {candidate.skills_list.slice(0, 3).map((skill, index) => (
                     <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
                       {skill}
                       {Array.from({ length: getStarCount(skill) }).map((_, i) => (
                         <Star key={i} size={11} className="inline-block ml-1 mb-1 text-blue-600" />
                       ))}
                     </span>
-                  ))}
+                  ))} */}
                 </div>
                 
                 <div className="rounded-md flex space-x-2 rounde-lg border border-blue-400 hover:border-blue-600 transition-colors">
