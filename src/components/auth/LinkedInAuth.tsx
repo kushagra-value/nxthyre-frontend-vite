@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { CheckCircle, XCircle, Sparkles } from "lucide-react";
 import { authService } from "../../services/authService";
 import { showToast } from "../../utils/toast";
@@ -9,6 +10,8 @@ interface LinkedInAuthProps {
 }
 
 const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [authStatus, setAuthStatus] = useState<
     "idle" | "loading" | "success" | "error"
@@ -16,19 +19,19 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
 
   useEffect(() => {
     const handleLinkedInCallback = async () => {
-      const urlParams = new URLSearchParams(window.location.search);
+      const urlParams = new URLSearchParams(location.search);
       const code = urlParams.get("code");
       const stateFromUrl = urlParams.get("state");
 
       if (!code || !stateFromUrl) {
-        return; // Do nothing if no code/state, wait for user to initiate login
+        return; // Wait for user to initiate login
       }
 
       setIsLoading(true);
       setAuthStatus("loading");
 
       try {
-        // Validate state against stored state for CSRF protection
+        // Validate state for CSRF protection
         const storedState = sessionStorage.getItem("linkedin_oauth_state");
         if (!storedState || stateFromUrl !== storedState) {
           throw new Error("State mismatch. Possible CSRF attack.");
@@ -57,13 +60,16 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
 
         setAuthStatus("success");
 
-        // Simulate redirect delay as in original
+        // Clean URL parameters to prevent re-processing
+        navigate("/linkedin-auth", { replace: true });
+
+        // Simulate redirect delay
         setTimeout(() => {
           onLogin(linkedInUser);
           if (response.is_onboarded) {
-            window.location.href = "/"; // Redirect to dashboard
+            navigate("/"); // Redirect to dashboard
           } else {
-            onNavigate("workspaces-org"); // Redirect to onboarding
+            onNavigate("workspaces-org");
           }
         }, 2000);
       } catch (error: any) {
@@ -76,7 +82,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
     };
 
     handleLinkedInCallback();
-  }, [onNavigate, onLogin]);
+  }, [navigate, onNavigate, onLogin, location.search]);
 
   const handleLinkedInLogin = () => {
     setIsLoading(true);
@@ -100,12 +106,11 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
   const handleRetry = () => {
     setIsLoading(true);
     setAuthStatus("loading");
-    window.location.reload();
+    navigate("/linkedin-auth", { replace: true });
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 relative overflow-hidden">
-      {/* Background decorative elements */}
       <div className="absolute inset-0 bg-black/20"></div>
       <div className="absolute top-20 left-20 w-2 h-2 bg-white/30 rounded-full"></div>
       <div className="absolute top-40 right-32 w-1 h-1 bg-white/40 rounded-full"></div>
@@ -148,7 +153,6 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
             </p>
 
             <div className="text-center space-y-6">
-              {/* LinkedIn Logo */}
               <div className="w-16 h-16 bg-blue-700 rounded-lg flex items-center justify-center mx-auto">
                 <svg
                   className="w-10 h-10 text-white"
@@ -159,7 +163,6 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
                 </svg>
               </div>
 
-              {/* Status Content */}
               {authStatus === "idle" && (
                 <div className="space-y-4">
                   <button
@@ -252,7 +255,6 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
               )}
             </div>
 
-            {/* Legal */}
             <div className="text-center mt-8">
               <p className="text-xs text-gray-500">
                 © 2024 NxtHyre. All rights reserved.
