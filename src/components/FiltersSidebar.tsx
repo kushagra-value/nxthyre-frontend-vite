@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, Briefcase, Building2, Clock10, MapPin, GraduationCap, ChevronDown, ChevronUp, Filter, DollarSign, Award, Users, Star, History, ChevronLeft, ChevronRight, CircleEllipsis } from 'lucide-react';
+import { debounce } from 'lodash';
 
 interface FiltersSidebarProps {
   filters: {
@@ -36,6 +37,7 @@ interface FiltersSidebarProps {
     hasPortfolio: boolean;
   };
   onFiltersChange: (filters: any) => void;
+  setCandidates: (candidates: any[]) => void;
 }
 
 const JobTitlesSlider: React.FC = () => {
@@ -103,14 +105,19 @@ const JobTitlesSlider: React.FC = () => {
   );
 };
 
-const FilterMenu = ({ filters, updateFilters }) => {
+interface FilterMenuProps {
+  filters: FiltersSidebarProps['filters'];
+  updateFilters: (key: string, value: any) => void;
+}
+
+const FilterMenu: React.FC<FilterMenuProps> = ({ filters, updateFilters }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event:any) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsMenuOpen(false);
       }
@@ -171,7 +178,7 @@ const FilterMenu = ({ filters, updateFilters }) => {
   );
 };
 
-const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChange }) => {
+const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChange, setCandidates }) => {
   const [expandedSections, setExpandedSections] = useState({
     keywords: true,
     experience: false,
@@ -185,6 +192,83 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
     spotlight: false,
     moreFilters: false
   });
+
+  const [jobTitles, setJobTitles] = useState<string[]>([]);
+
+  // Map backend candidate data to frontend format
+  const mapCandidate = (data: any) => ({
+    id: data.id,
+    name: data.full_name,
+    avatar: data.full_name
+      .split(' ')
+      .map((n: string) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2),
+    company: data.experience?.find((exp: any) => exp.is_current)?.company || 'Unknown',
+    currentRole: data.experience?.find((exp: any) => exp.is_current)?.job_title || 'Unknown',
+    skillLevel: data.skills_data?.skills_mentioned?.length > 0 ? 'Expert' : 'Unknown',
+    city: data.location?.split(',')[0] || 'Unknown',
+    verified: data.is_background_verified || false,
+    status: data.status || 'Unknown',
+    experience: `${data.total_experience} years`,
+    education: data.education?.[0]?.institution || 'Unknown',
+    noticePeriod: data.notice_period_days ? `${data.notice_period_days} days` : 'Unknown',
+    skills: data.skills_data?.skills_mentioned?.map((s: any) => s.skill) || []
+  });
+
+  // Debounced filter function
+  const debouncedFetchCandidates = useCallback(
+    debounce(async (filterParams: any) => {
+      try {
+        const response = await fetch('/candidates/search/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify(filterParams)
+        });
+        const data = await response.json();
+        const mappedCandidates = data.results.map(mapCandidate);
+        setCandidates(mappedCandidates);
+      } catch (error) {
+        console.error('Error fetching filtered candidates:', error);
+      }
+    }, 300),
+    [setCandidates]
+  );
+
+  // Apply filters when they change
+  useEffect(() => {
+    const filterParams: any = {
+      page: 1,
+      page_size: 10
+    };
+    if (filters.keywords) filterParams.q = filters.keywords;
+    if (filters.minTotalExp) filterParams.experience_min = filters.minTotalExp;
+    if (filters.maxTotalExp) filterParams.experience_max = filters.maxTotalExp;
+    if (filters.topTierUniversities) filterParams.is_top_tier_college = filters.topTierUniversities;
+    if (filters.hasCertification) filterParams.has_certification = filters.hasCertification;
+    if (filters.city) filterParams.city = filters.city;
+    if (filters.country) filterParams.country = filters.country;
+    if (filters.location) filterParams.location = filters.location;
+    if (filters.selectedSkills.length > 0) filterParams.skills = filters.selectedSkills.join(',');
+    if (filters.companies) filterParams.company = filters.companies;
+    if (filters.industries) filterParams.industry = filters.industries;
+    if (filters.minSalary) filterParams.salary_min = filters.minSalary;
+    if (filters.maxSalary) filterParams.salary_max = filters.maxSalary;
+    if (filters.colleges) filterParams.college = filters.colleges;
+    if (filters.showFemaleCandidates) filterParams.gender = 'Female';
+    if (filters.recentlyPromoted) filterParams.is_recently_promoted = filters.recentlyPromoted;
+    if (filters.backgroundVerified) filterParams.is_background_verified = filters.backgroundVerified;
+    if (filters.hasLinkedIn) filterParams.has_linkedin = filters.hasLinkedIn;
+    if (filters.hasTwitter) filterParams.has_twitter = filters.hasTwitter;
+    if (filters.hasPortfolio) filterParams.has_portfolio = filters.hasPortfolio;
+    if (filters.noticePeriod) filterParams.notice_period = filters.noticePeriod;
+
+    debouncedFetchCandidates(filterParams);
+  }, [filters, debouncedFetchCandidates]);
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({
@@ -699,7 +783,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
         {/* Apply Filters */}
         <div className="mt-2 border border-blue-400 rounded-lg">
           <button 
-            onClick={clearAllFilters}
+            onClick={() => debouncedFetchCandidates(filters)}
             className="w-full px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center justify-center"
           >
             <Filter className="w-4 h-4 mr-2" />

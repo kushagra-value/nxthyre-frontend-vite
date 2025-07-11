@@ -1,36 +1,24 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
-import { useAuth } from "./hooks/useAuth";
-import { authService } from "./services/authService";
-import Header from "./components/Header";
-import FiltersSidebar from "./components/FiltersSidebar";
-import CandidatesMain from "./components/CandidatesMain";
-import CandidateDetail from "./components/CandidateDetail";
-import TemplateSelector from "./components/TemplateSelector";
-import CreateJobRoleModal from "./components/CreateJobRoleModal";
-import EditTemplateModal from "./components/EditTemplateModal";
-import CategoryDropdown from "./components/CategoryDropdown";
-import PipelineStages from "./components/PipelineStages";
-import AuthApp from "./components/AuthApp";
-import LinkedInAuth from "./components/auth/LinkedInAuth"; // Import LinkedInAuth
-import Settings from "./components/Settings";
-import SharePipelinesLoader from "./components/SharePipelinesLoader";
-import SharePipelinesModal from "./components/SharePipelinesModal";
-import ShareableProfile from "./components/ShareableProfile";
-import PipelineSharePage from "./components/PipelineSharePage";
-import { candidates, Candidate } from "./data/candidates";
-import {
-  ChevronDown,
-  MoreHorizontal,
-  Edit,
-  Mail,
-  Archive,
-  Trash2,
-  LogOut,
-  Share2,
-} from "lucide-react";
-import { showToast } from "./utils/toast";
+import React, { useState, useMemo, useEffect } from 'react';
+import { Toaster } from 'react-hot-toast';
+import { useAuth } from './hooks/useAuth';
+import { authService } from './services/authService';
+import Header from './components/Header';
+import FiltersSidebar from './components/FiltersSidebar';
+import CandidatesMain from './components/CandidatesMain';
+import CandidateDetail from './components/CandidateDetail';
+import TemplateSelector from './components/TemplateSelector';
+import CreateJobRoleModal from './components/CreateJobRoleModal';
+import EditTemplateModal from './components/EditTemplateModal';
+import CategoryDropdown from './components/CategoryDropdown';
+import PipelineStages from './components/PipelineStages';
+import AuthApp from './components/AuthApp';
+import Settings from './components/Settings';
+import SharePipelinesLoader from './components/SharePipelinesLoader';
+import SharePipelinesModal from './components/SharePipelinesModal';
+import ShareableProfile from './components/ShareableProfile';
+import PipelineSharePage from './components/PipelineSharePage';
+import { ChevronDown, MoreHorizontal, Edit, Mail, Archive, Trash2, LogOut, Share2 } from "lucide-react";
+import { showToast } from './utils/toast';
 
 interface User {
   id: string | undefined;
@@ -43,15 +31,33 @@ interface User {
   createdAt: string;
 }
 
-function MainApp() {
-  const navigate = useNavigate();
-  const {
-    user: firebaseUser,
-    userStatus,
-    isAuthenticated,
-    isOnboarded,
-    loading: authLoading,
-  } = useAuth();
+interface Candidate {
+  id: string;
+  name: string;
+  avatar: string;
+  company: string;
+  currentRole: string;
+  skillLevel: string;
+  city: string;
+  verified: boolean;
+  status: string;
+  experience: string;
+  education: string;
+  noticePeriod: string;
+  skills: string[];
+  headline: string;
+  currentCompanyExperience: string;
+  linkedInUrl?: string;
+  githubUrl?: string;
+  portfolioUrl?: string;
+  resumeUrl?: string;
+  graduationYears:string;
+  location?: string;
+}
+
+function App() {
+  // All Hooks at the Top
+  const { user: firebaseUser, userStatus, isAuthenticated, isOnboarded, loading: authLoading } = useAuth();
 
   // Authentication state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -123,112 +129,105 @@ function MainApp() {
   });
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [activeCategory, setActiveCategory] = useState("Head Of Finance");
+  const [activeCategory, setActiveCategory] = useState('Head Of Finance');
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
 
-  // Example categories data; replace with your actual data source as needed
-  const categories = [
-    { name: "Head Of Finance", count: 12 },
-    { name: "Engineering Manager", count: 8 },
-    { name: "Product Designer", count: 5 },
-    { name: "Marketing Lead", count: 7 },
-    // Add more categories as needed
-  ];
+  useEffect(() => {
+    if (isAuthenticated) {
+      const fetchInitialCandidates = async () => {
+        try {
+          const response = await fetch('/candidates/?page=1&page_size=20', {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          });
+          const data = await response.json();
+          const mappedCandidates = data.results.map((candidate: any) => ({
+            id: candidate.id,
+            name: candidate.full_name,
+            avatar: candidate.full_name
+              .split(' ')
+              .map((n: string) => n[0])
+              .join('')
+              .toUpperCase()
+              .slice(0, 2),
+            company: candidate.experience?.find((exp: any) => exp.is_current)?.company || 'Unknown',
+            currentRole: candidate.experience?.find((exp: any) => exp.is_current)?.job_title || 'Unknown',
+            skillLevel: candidate.skills_data?.skills_mentioned?.length > 0 ? 'Expert' : 'Unknown',
+            city: candidate.location?.split(',')[0] || 'Unknown',
+            country: candidate.location?.split(',')[1]?.trim() || 'Unknown',
+            verified: candidate.is_background_verified || false,
+            status: candidate.status || 'Unknown',
+            experience: `${candidate.total_experience} years`,
+            education: candidate.education?.[0]?.institution || 'Unknown',
+            noticePeriod: candidate.notice_period_days ? `${candidate.notice_period_days} days` : 'Unknown',
+            skills: candidate.skills_data?.skills_mentioned?.map((s: any) => s.skill) || [],
+            headline: candidate.headline || '',
+            email: candidate.email || 'Unknown',
+            phone: candidate.phone || 'Unknown',
+            linkedin_url: candidate.linkedin_url,
+            github_url: candidate.github_url,
+            twitter_url: candidate.twitter_url,
+            portfolio_url: candidate.portfolio_url,
+          }));
+          setCandidates(mappedCandidates);
+          // Set initial selected candidate only if none is selected
+          if (!selectedCandidate && mappedCandidates.length > 0) {
+            setSelectedCandidate(mappedCandidates[0]);
+          }
+        } catch (error) {
+          console.error('Error fetching initial candidates:', error);
+          showToast.error('Failed to load candidates');
+        }
+      };
+      fetchInitialCandidates();
+    }
+  }, [isAuthenticated]);
+  
+  // const filteredCandidates = useMemo(() => {
+  //   if (!isAuthenticated) return [];
+    
+  //   return candidates.filter(candidate => {
+  //     const matchesSearch = !searchTerm || 
+  //       candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //       candidate.currentRole.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //       candidate.company.toLowerCase().includes(searchTerm.toLowerCase());
 
-  const filteredCandidates = useMemo(() => {
-    if (!isAuthenticated) return [];
+  //     const matchesKeywords = !filters.keywords || 
+  //       candidate.name.toLowerCase().includes(filters.keywords.toLowerCase()) ||
+  //       candidate.currentRole.toLowerCase().includes(filters.keywords.toLowerCase()) ||
+  //       candidate.skills.some(skill => skill.toLowerCase().includes(filters.keywords.toLowerCase()));
 
-    return candidates.filter((candidate) => {
-      const matchesSearch =
-        !searchTerm ||
-        candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        candidate.currentRole
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        candidate.company.toLowerCase().includes(searchTerm.toLowerCase());
+  //     const matchesCategories = filters.selectedCategories.length === 0 ||
+  //       filters.selectedCategories.some(category => 
+  //         candidate.currentRole.toLowerCase().includes(category.toLowerCase()) ||
+  //         candidate.skills.some(skill => skill.toLowerCase().includes(category.toLowerCase()))
+  //       );
 
-      const matchesKeywords =
-        !filters.keywords ||
-        candidate.name.toLowerCase().includes(filters.keywords.toLowerCase()) ||
-        candidate.currentRole
-          .toLowerCase()
-          .includes(filters.keywords.toLowerCase()) ||
-        candidate.skills.some((skill) =>
-          skill.toLowerCase().includes(filters.keywords.toLowerCase())
-        );
+  //     const matchesCurrentExp = (!filters.minExperience || candidate.currentCompanyExperience >= parseInt(filters.minExperience)) &&
+  //       (!filters.maxExperience || candidate.currentCompanyExperience <= parseInt(filters.maxExperience));
 
-      const matchesCategories =
-        filters.selectedCategories.length === 0 ||
-        filters.selectedCategories.some(
-          (category) =>
-            candidate.currentRole
-              .toLowerCase()
-              .includes(category.toLowerCase()) ||
-            candidate.skills.some((skill) =>
-              skill.toLowerCase().includes(category.toLowerCase())
-            )
-        );
+  //     const matchesTotalExp = (!filters.minTotalExp || candidate.totalExperience >= parseInt(filters.minTotalExp)) &&
+  //       (!filters.maxTotalExp || candidate.totalExperience <= parseInt(filters.maxTotalExp));
 
-      const matchesCurrentExp =
-        (!filters.minExperience ||
-          candidate.currentCompanyExperience >=
-            parseInt(filters.minExperience)) &&
-        (!filters.maxExperience ||
-          candidate.currentCompanyExperience <=
-            parseInt(filters.maxExperience));
+  //     const matchesCity = !filters.city || candidate.city.toLowerCase().includes(filters.city.toLowerCase());
+  //     const matchesCountry = !filters.country || candidate.country.toLowerCase().includes(filters.country.toLowerCase());
+  //     const matchesLocation = !filters.location || candidate.location.toLowerCase().includes(filters.location.toLowerCase());
 
-      const matchesTotalExp =
-        (!filters.minTotalExp ||
-          candidate.totalExperience >= parseInt(filters.minTotalExp)) &&
-        (!filters.maxTotalExp ||
-          candidate.totalExperience <= parseInt(filters.maxTotalExp));
+  //     const matchesSkills = filters.selectedSkills.length === 0 ||
+  //       filters.selectedSkills.some(skill => 
+  //         candidate.skills.some(candidateSkill => 
+  //           candidateSkill.toLowerCase().includes(skill.toLowerCase())
+  //         )
+  //       );
 
-      const matchesCity =
-        !filters.city ||
-        candidate.city.toLowerCase().includes(filters.city.toLowerCase());
-      const matchesCountry =
-        !filters.country ||
-        candidate.country.toLowerCase().includes(filters.country.toLowerCase());
-      const matchesLocation =
-        !filters.location ||
-        candidate.location
-          .toLowerCase()
-          .includes(filters.location.toLowerCase());
+  //     const matchesSkillLevel = !filters.skillLevel || candidate.skillLevel === filters.skillLevel;
+  //     const matchesNoticePeriod = !filters.noticePeriod || candidate.noticePeriod === filters.noticePeriod;
+  //     const matchesCompanies = !filters.companies || candidate.company.toLowerCase().includes(filters.companies.toLowerCase());
 
-      const matchesSkills =
-        filters.selectedSkills.length === 0 ||
-        filters.selectedSkills.some((skill) =>
-          candidate.skills.some((candidateSkill) =>
-            candidateSkill.toLowerCase().includes(skill.toLowerCase())
-          )
-        );
-
-      const matchesSkillLevel =
-        !filters.skillLevel || candidate.skillLevel === filters.skillLevel;
-      const matchesNoticePeriod =
-        !filters.noticePeriod ||
-        candidate.noticePeriod === filters.noticePeriod;
-      const matchesCompanies =
-        !filters.companies ||
-        candidate.company
-          .toLowerCase()
-          .includes(filters.companies.toLowerCase());
-
-      return (
-        matchesSearch &&
-        matchesKeywords &&
-        matchesCategories &&
-        matchesCurrentExp &&
-        matchesTotalExp &&
-        matchesCity &&
-        matchesCountry &&
-        matchesLocation &&
-        matchesSkills &&
-        matchesSkillLevel &&
-        matchesNoticePeriod &&
-        matchesCompanies
-      );
-    });
-  }, [searchTerm, filters, isAuthenticated]);
+  //     return matchesSearch && matchesKeywords && matchesCategories && matchesCurrentExp && 
+  //            matchesTotalExp && matchesCity && matchesCountry && matchesLocation && 
+  //            matchesSkills && matchesSkillLevel && matchesNoticePeriod && matchesCompanies;
+  //   });
+  // }, [searchTerm, filters, isAuthenticated]);
 
   useEffect(() => {
     if (isAuthenticated && userStatus) {
@@ -263,12 +262,6 @@ function MainApp() {
       setShowShareableProfile(true);
     }
   }, []);
-
-  useEffect(() => {
-    if (filteredCandidates.length > 0 && !selectedCandidate) {
-      setSelectedCandidate(filteredCandidates[0]);
-    }
-  }, [filteredCandidates, selectedCandidate]);
 
   // Handler Functions
   const handleLogoutRequest = () => {
@@ -430,251 +423,209 @@ function MainApp() {
     );
   }
 
+  if (showPipelineSharePage) {
+    return (
+      <>
+        <Toaster />
+        <PipelineSharePage 
+          pipelineId={currentPipelineId}
+          onBack={handleBackFromPipelineShare}
+        />
+      </>
+    );
+  }
+
+  if (showSettings) {
+    return (
+      <>
+        <Toaster />
+        <Settings 
+          onBack={() => setShowSettings(false)}
+          user={currentUser}
+        />
+      </>
+    );
+  }
+
+  if (showAuthApp) {
+    return (
+      <>
+        <Toaster />
+        <AuthApp
+          key={authFlow}
+          initialFlow={authFlow}
+          initialUser={isAuthenticated ? currentUser : null}
+          onAuthSuccess={handleAuthSuccess}
+          onClose={() => setShowAuthApp(false)}
+          onLogout={handleLogout}
+        />
+      </>
+    );
+  } else if (!isAuthenticated) {
+    return (
+      <>
+        <Toaster />
+        <AuthApp
+          initialFlow="login"
+          onAuthSuccess={handleAuthSuccess}
+        />
+      </>
+    );
+  }
+
+  if (showPipelineStages) {
+    return (
+      <>
+        <Toaster />
+        <PipelineStages 
+          onBack={handleBackFromPipelines}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
+      </>
+    );
+  }
+
+  // Main UI
   return (
-    <Routes>
-      <Route
-        path="/linkedin-auth"
-        element={
-          <LinkedInAuth
-            onNavigate={(flow: string) => {
-              setAuthFlow(flow);
-              navigate(`/${flow}`);
-            }}
-            onLogin={handleLinkedInAuthSuccess}
-          />
-        }
-      />
-      <Route
-        path="/pipelines/:pipelineId"
-        element={
-          <PipelineSharePage
-            pipelineId={currentPipelineId}
-            onBack={handleBackFromPipelineShare}
-          />
-        }
-      />
-      <Route
-        path="/candidate-profiles/:candidateId"
-        element={
-          <ShareableProfile
-            candidateId={currentCandidateId}
-            onBack={handleBackFromShareableProfile}
-          />
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <Settings
-            onBack={() => {
-              setShowSettings(false);
-              navigate("/");
-            }}
+    <>
+      <Toaster />
+      <div className="bg-gray-50 min-h-screen">
+        <div className="sticky top-0 z-20 bg-white will-change-transform">
+          <Header
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            onCreateRole={handleCreateJobRole}
+            isAuthenticated={isAuthenticated}
             user={currentUser}
-          />
-        }
-      />
-      <Route
-        path="/workspaces-org"
-        element={
-          <AuthApp
-            initialFlow="workspaces-org"
-            initialUser={isAuthenticated ? currentUser : null}
-            onAuthSuccess={handleAuthSuccess}
-            onClose={() => {
-              setShowAuthApp(false);
-              navigate("/");
-            }}
+            onLogin={handleLogin}
+            onSignup={handleSignup}
             onLogout={handleLogout}
+            onWorkspacesOrg={handleWorkspacesOrg}
+            onSettings={handleSettingsClick}
+            onShowLogoutModal={handleLogoutRequest}
           />
-        }
-      />
-      <Route
-        path="/"
-        element={
-          isAuthenticated ? (
-            showPipelineStages ? (
-              <>
-                <Toaster />
-                <PipelineStages
-                  onBack={handleBackFromPipelines}
-                  activeTab={activeTab}
-                  setActiveTab={setActiveTab}
+        </div>
+        
+        <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3">
+          <div className="mb-4">
+            <div className="hidden md:flex items-center space-x-2">
+              {categories.map((category) => (
+                <div
+                  key={category.name}
+                  className="relative"
+                  onMouseEnter={() => setHoveredCategory(category.name)}
+                  onMouseLeave={() => setHoveredCategory(null)}
+                >
+                  <button
+                    onClick={() => setActiveCategory(category.name)}
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                      activeCategory === category.name
+                        ? 'bg-blue-100 text-blue-700 shadow-sm'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    {category.name}
+                    <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                      activeCategory === category.name
+                        ? 'bg-blue-200 text-blue-800'
+                        : 'bg-gray-200 text-gray-600'
+                    }`}>
+                      {category.count}
+                    </span>
+                  </button>
+                  {hoveredCategory === category.name && (
+                    <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                      <div className="py-1">
+                        <button
+                          onClick={() => handleCategoryAction('edit-job', category.name)}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          Edit Job Role
+                        </button>
+                        <button
+                          onClick={() => handleCategoryAction('edit-template', category.name)}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                        >
+                          <Mail className="w-4 h-4 mr-2" />
+                          Edit Email Template
+                        </button>
+                        <button
+                          onClick={() => handleCategoryAction('share-pipelines', category.name)}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                        >
+                          <Share2 className="w-4 h-4 mr-2" />
+                          Share Pipelines
+                        </button>
+                        <button
+                          onClick={() => handleCategoryAction('archive', category.name)}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                        >
+                          <Archive className="w-4 h-4 mr-2" />
+                          Archive
+                        </button>
+                        <button
+                          onClick={() => handleCategoryAction('delete', category.name)}
+                          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete Job
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+              <div className="relative">
+                <button 
+                  onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                  className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
+                >
+                  +12 more
+                  <ChevronDown className="ml-1 w-4 h-4" />
+                </button>
+                <CategoryDropdown
+                  isOpen={showCategoryDropdown}
+                  onClose={() => setShowCategoryDropdown(false)}
+                  onEditJobRole={handleEditJobRole}
+                  onEditTemplate={handleEditTemplate}
                 />
-              </>
-            ) : (
-              <>
-                <Toaster />
-                <div className="bg-gray-50 min-h-screen">
-                  <div className="sticky top-0 z-20 bg-white will-change-transform">
-                    <Header
-                      searchTerm={searchTerm}
-                      setSearchTerm={setSearchTerm}
-                      onCreateRole={handleCreateJobRole}
-                      isAuthenticated={isAuthenticated}
-                      user={currentUser}
-                      onLogin={handleLogin}
-                      onSignup={handleSignup}
-                      onLogout={handleLogout}
-                      onWorkspacesOrg={handleWorkspacesOrg}
-                      onSettings={handleSettingsClick}
-                      onShowLogoutModal={handleLogoutRequest}
-                    />
-                  </div>
-
-                  <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3">
-                    <div className="mb-4">
-                      <div className="hidden md:flex items-center space-x-2">
-                        {categories.map((category) => (
-                          <div
-                            key={category.name}
-                            className="relative"
-                            onMouseEnter={() =>
-                              setHoveredCategory(category.name)
-                            }
-                            onMouseLeave={() => setHoveredCategory(null)}
-                          >
-                            <button
-                              onClick={() => setActiveCategory(category.name)}
-                              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                                activeCategory === category.name
-                                  ? "bg-blue-100 text-blue-700 shadow-sm"
-                                  : "text-gray-600 hover:bg-gray-100"
-                              }`}
-                            >
-                              {category.name}
-                              <span
-                                className={`ml-2 px-2 py-1 rounded-full text-xs ${
-                                  activeCategory === category.name
-                                    ? "bg-blue-200 text-blue-800"
-                                    : "bg-gray-200 text-gray-600"
-                                }`}
-                              >
-                                {category.count}
-                              </span>
-                            </button>
-                            {hoveredCategory === category.name && (
-                              <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                                <div className="py-1">
-                                  <button
-                                    onClick={() =>
-                                      handleCategoryAction(
-                                        "edit-job",
-                                        category.name
-                                      )
-                                    }
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                  >
-                                    <Edit className="w-4 h-4 mr-2" />
-                                    Edit Job Role
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleCategoryAction(
-                                        "edit-template",
-                                        category.name
-                                      )
-                                    }
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                  >
-                                    <Mail className="w-4 h-4 mr-2" />
-                                    Edit Email Template
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleCategoryAction(
-                                        "share-pipelines",
-                                        category.name
-                                      )
-                                    }
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                  >
-                                    <Share2 className="w-4 h-4 mr-2" />
-                                    Share Pipelines
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleCategoryAction(
-                                        "archive",
-                                        category.name
-                                      )
-                                    }
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                  >
-                                    <Archive className="w-4 h-4 mr-2" />
-                                    Archive
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleCategoryAction(
-                                        "delete",
-                                        category.name
-                                      )
-                                    }
-                                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
-                                  >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Delete Job
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                        <div className="relative">
-                          <button
-                            onClick={() =>
-                              setShowCategoryDropdown(!showCategoryDropdown)
-                            }
-                            className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
-                          >
-                            +12 more
-                            <ChevronDown className="ml-1 w-4 h-4" />
-                          </button>
-                          <CategoryDropdown
-                            isOpen={showCategoryDropdown}
-                            onClose={() => setShowCategoryDropdown(false)}
-                            onEditJobRole={handleEditJobRole}
-                            onEditTemplate={handleEditTemplate}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-full">
-                      <div className="lg:col-span-3 order-2 lg:order-1 sticky top-16 self-start will-change-transform">
-                        <FiltersSidebar
-                          filters={filters}
-                          onFiltersChange={setFilters}
-                        />
-                      </div>
-                      <div className="lg:col-span-6 order-1 lg:order-2">
-                        <CandidatesMain
-                          activeTab={activeTab}
-                          setActiveTab={setActiveTab}
-                          selectedCandidate={selectedCandidate}
-                          setSelectedCandidate={setSelectedCandidate}
-                          searchTerm={searchTerm}
-                          candidates={filteredCandidates}
-                          onPipelinesClick={handlePipelinesClick}
-                        />
-                      </div>
-                      <div className="lg:col-span-3 order-3 sticky top-16 self-start will-change-transform">
-                        {showTemplateSelector && selectedCandidate ? (
-                          <TemplateSelector
-                            candidate={selectedCandidate}
-                            onBack={handleBackFromTemplate}
-                          />
-                        ) : (
-                          <CandidateDetail
-                            candidate={selectedCandidate}
-                            candidates={filteredCandidates}
-                            onSendInvite={handleSendInvite}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-full">
+            <div className="lg:col-span-3 order-2 lg:order-1 sticky top-16 self-start will-change-transform">
+              <FiltersSidebar filters={filters} onFiltersChange={setFilters} setCandidates={setCandidates} />
+            </div>
+            <div className="lg:col-span-6 order-1 lg:order-2">
+              <CandidatesMain 
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                selectedCandidate={selectedCandidate}
+                setSelectedCandidate={setSelectedCandidate}
+                searchTerm={searchTerm}
+                candidates={candidates}
+                onPipelinesClick={handlePipelinesClick}
+              />
+            </div>
+            <div className="lg:col-span-3 order-3 sticky top-16 self-start will-change-transform">
+              {showTemplateSelector && selectedCandidate ? (
+                <TemplateSelector 
+                  candidate={selectedCandidate} 
+                  onBack={handleBackFromTemplate}
+                />
+              ) : (
+                <CandidateDetail 
+                  candidate={selectedCandidate} 
+                  candidates={candidates}
+                  onSendInvite={handleSendInvite}
+                />
+              )}
+            </div>
+          </div>
+        </div>
 
                   <CreateJobRoleModal
                     isOpen={showCreateJobRole}
