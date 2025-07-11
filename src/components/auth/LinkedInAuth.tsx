@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { CheckCircle, XCircle, Sparkles } from "lucide-react";
 import { authService } from "../../services/authService";
 import { showToast } from "../../utils/toast";
-import { useNavigate } from "react-router-dom";
 
 interface LinkedInAuthProps {
   onNavigate: (flow: string, data?: any) => void;
@@ -14,11 +13,12 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
   const [authStatus, setAuthStatus] = useState<"loading" | "success" | "error">(
     "loading"
   );
-  const navigate = useNavigate();
 
   useEffect(() => {
+    // Handle LinkedIn OAuth callback
     const handleLinkedInCallback = async () => {
       try {
+        // Get authorization code from URL params
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get("code");
         const state = Math.random().toString(36).substring(2);
@@ -26,23 +26,27 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
         const scope = "openid profile email";
 
         if (!code) {
-          // Initiate LinkedIn OAuth flow
+          // Redirect to LinkedIn OAuth
           const linkedInAuthUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${
             import.meta.env.VITE_LINKEDIN_CLIENT_ID
           }&redirect_uri=${
             import.meta.env.VITE_LINKEDIN_REDIRECT_URI
           }&state=${state}&scope=${scope}`;
+
           window.location.href = linkedInAuthUrl;
+
           return;
         }
 
-        // Exchange code for tokens (similar to linkedin-callback.html)
+        // Exchange code for tokens
         const response = await authService.linkedInCallback(code, state);
 
-        // Sign in with Firebase using the custom token
+        // Sign in with custom Firebase token
         await authService.signInWithCustomToken(response.firebase_token);
 
-        // Create user object for application state
+        setAuthStatus("success");
+
+        // Create user object for compatibility
         const linkedInUser = {
           id: response.recruiter_id,
           fullName: response.full_name,
@@ -54,16 +58,15 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
           createdAt: new Date().toISOString(),
         };
 
-        // Update application state with the user
-        onLogin(linkedInUser);
-        setAuthStatus("success");
+        setTimeout(() => {
+          onLogin(linkedInUser);
 
-        // Redirect based on onboarding status (mimicking linkedin-callback.html redirection)
-        if (response.is_onboarded) {
-          navigate("/"); // Redirect to dashboard
-        } else {
-          onNavigate("workspaces-org"); // Redirect to onboarding flow
-        }
+          if (response.is_onboarded) {
+            window.location.href = "/";
+          } else {
+            onNavigate("workspaces-org");
+          }
+        }, 2000);
       } catch (error: any) {
         console.error("LinkedIn auth error:", error);
         setAuthStatus("error");
@@ -73,12 +76,14 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
       }
     };
 
-    handleLinkedInCallback();
-  }, [navigate, onNavigate, onLogin]);
+    const timer = setTimeout(handleLinkedInCallback, 1000);
+    return () => clearTimeout(timer);
+  }, [onNavigate, onLogin]);
 
   const handleRetry = () => {
     setIsLoading(true);
     setAuthStatus("loading");
+    // Restart LinkedIn OAuth flow
     window.location.reload();
   };
 
