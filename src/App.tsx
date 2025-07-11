@@ -19,7 +19,7 @@ import SharePipelinesLoader from "./components/SharePipelinesLoader";
 import SharePipelinesModal from "./components/SharePipelinesModal";
 import ShareableProfile from "./components/ShareableProfile";
 import PipelineSharePage from "./components/PipelineSharePage";
-import { candidates, Candidate } from "./data/candidates";
+import { CandidateListItem, candidateService} from './services/candidateService';
 import {
   ChevronDown,
   MoreHorizontal,
@@ -68,7 +68,7 @@ function MainApp() {
   const [currentCandidateId, setCurrentCandidateId] = useState("");
 
   // Existing state
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
+  const [selectedCandidate, setSelectedCandidate] = useState<CandidateListItem | null>(
     null
   );
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
@@ -124,6 +124,8 @@ function MainApp() {
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [activeCategory, setActiveCategory] = useState("Head Of Finance");
+  const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
+  
 
   // Example categories data; replace with your actual data source as needed
   const categories = [
@@ -134,101 +136,70 @@ function MainApp() {
     // Add more categories as needed
   ];
 
-  const filteredCandidates = useMemo(() => {
-    if (!isAuthenticated) return [];
+  useEffect(() => {
+      if (isAuthenticated) {
+        const fetchInitialCandidates = async () => {
+          try {
+            const { results } = await candidateService.getCandidates(1, 10, activeTab);
+            setCandidates(results);
+            if (!selectedCandidate && results.length > 0) {
+              setSelectedCandidate(results[0]);
+            }
+          } catch (error: any) {
+            console.error("Error fetching initial candidates:", error);
+            showToast.error("Failed to load candidates");
+          }
+        };
+        fetchInitialCandidates();
+      }
+    }, [isAuthenticated, activeTab]);
 
-    return candidates.filter((candidate) => {
-      const matchesSearch =
-        !searchTerm ||
-        candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        candidate.currentRole
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        candidate.company.toLowerCase().includes(searchTerm.toLowerCase());
+      // const filteredCandidates = useMemo(() => {
+  //   if (!isAuthenticated) return [];
+    
+  //   return candidates.filter(candidate => {
+  //     const matchesSearch = !searchTerm || 
+  //       candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //       candidate.currentRole.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //       candidate.company.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesKeywords =
-        !filters.keywords ||
-        candidate.name.toLowerCase().includes(filters.keywords.toLowerCase()) ||
-        candidate.currentRole
-          .toLowerCase()
-          .includes(filters.keywords.toLowerCase()) ||
-        candidate.skills.some((skill) =>
-          skill.toLowerCase().includes(filters.keywords.toLowerCase())
-        );
+  //     const matchesKeywords = !filters.keywords || 
+  //       candidate.name.toLowerCase().includes(filters.keywords.toLowerCase()) ||
+  //       candidate.currentRole.toLowerCase().includes(filters.keywords.toLowerCase()) ||
+  //       candidate.skills.some(skill => skill.toLowerCase().includes(filters.keywords.toLowerCase()));
 
-      const matchesCategories =
-        filters.selectedCategories.length === 0 ||
-        filters.selectedCategories.some(
-          (category) =>
-            candidate.currentRole
-              .toLowerCase()
-              .includes(category.toLowerCase()) ||
-            candidate.skills.some((skill) =>
-              skill.toLowerCase().includes(category.toLowerCase())
-            )
-        );
+  //     const matchesCategories = filters.selectedCategories.length === 0 ||
+  //       filters.selectedCategories.some(category => 
+  //         candidate.currentRole.toLowerCase().includes(category.toLowerCase()) ||
+  //         candidate.skills.some(skill => skill.toLowerCase().includes(category.toLowerCase()))
+  //       );
 
-      const matchesCurrentExp =
-        (!filters.minExperience ||
-          candidate.currentCompanyExperience >=
-            parseInt(filters.minExperience)) &&
-        (!filters.maxExperience ||
-          candidate.currentCompanyExperience <=
-            parseInt(filters.maxExperience));
+  //     const matchesCurrentExp = (!filters.minExperience || candidate.currentCompanyExperience >= parseInt(filters.minExperience)) &&
+  //       (!filters.maxExperience || candidate.currentCompanyExperience <= parseInt(filters.maxExperience));
 
-      const matchesTotalExp =
-        (!filters.minTotalExp ||
-          candidate.totalExperience >= parseInt(filters.minTotalExp)) &&
-        (!filters.maxTotalExp ||
-          candidate.totalExperience <= parseInt(filters.maxTotalExp));
+  //     const matchesTotalExp = (!filters.minTotalExp || candidate.totalExperience >= parseInt(filters.minTotalExp)) &&
+  //       (!filters.maxTotalExp || candidate.totalExperience <= parseInt(filters.maxTotalExp));
 
-      const matchesCity =
-        !filters.city ||
-        candidate.city.toLowerCase().includes(filters.city.toLowerCase());
-      const matchesCountry =
-        !filters.country ||
-        candidate.country.toLowerCase().includes(filters.country.toLowerCase());
-      const matchesLocation =
-        !filters.location ||
-        candidate.location
-          .toLowerCase()
-          .includes(filters.location.toLowerCase());
+  //     const matchesCity = !filters.city || candidate.city.toLowerCase().includes(filters.city.toLowerCase());
+  //     const matchesCountry = !filters.country || candidate.country.toLowerCase().includes(filters.country.toLowerCase());
+  //     const matchesLocation = !filters.location || candidate.location.toLowerCase().includes(filters.location.toLowerCase());
 
-      const matchesSkills =
-        filters.selectedSkills.length === 0 ||
-        filters.selectedSkills.some((skill) =>
-          candidate.skills.some((candidateSkill) =>
-            candidateSkill.toLowerCase().includes(skill.toLowerCase())
-          )
-        );
+  //     const matchesSkills = filters.selectedSkills.length === 0 ||
+  //       filters.selectedSkills.some(skill => 
+  //         candidate.skills.some(candidateSkill => 
+  //           candidateSkill.toLowerCase().includes(skill.toLowerCase())
+  //         )
+  //       );
 
-      const matchesSkillLevel =
-        !filters.skillLevel || candidate.skillLevel === filters.skillLevel;
-      const matchesNoticePeriod =
-        !filters.noticePeriod ||
-        candidate.noticePeriod === filters.noticePeriod;
-      const matchesCompanies =
-        !filters.companies ||
-        candidate.company
-          .toLowerCase()
-          .includes(filters.companies.toLowerCase());
+  //     const matchesSkillLevel = !filters.skillLevel || candidate.skillLevel === filters.skillLevel;
+  //     const matchesNoticePeriod = !filters.noticePeriod || candidate.noticePeriod === filters.noticePeriod;
+  //     const matchesCompanies = !filters.companies || candidate.company.toLowerCase().includes(filters.companies.toLowerCase());
 
-      return (
-        matchesSearch &&
-        matchesKeywords &&
-        matchesCategories &&
-        matchesCurrentExp &&
-        matchesTotalExp &&
-        matchesCity &&
-        matchesCountry &&
-        matchesLocation &&
-        matchesSkills &&
-        matchesSkillLevel &&
-        matchesNoticePeriod &&
-        matchesCompanies
-      );
-    });
-  }, [searchTerm, filters, isAuthenticated]);
+  //     return matchesSearch && matchesKeywords && matchesCategories && matchesCurrentExp && 
+  //            matchesTotalExp && matchesCity && matchesCountry && matchesLocation && 
+  //            matchesSkills && matchesSkillLevel && matchesNoticePeriod && matchesCompanies;
+  //   });
+  // }, [searchTerm, filters, isAuthenticated]);
 
   useEffect(() => {
     if (isAuthenticated && userStatus) {
@@ -264,11 +235,11 @@ function MainApp() {
     }
   }, []);
 
-  useEffect(() => {
-    if (filteredCandidates.length > 0 && !selectedCandidate) {
-      setSelectedCandidate(filteredCandidates[0]);
-    }
-  }, [filteredCandidates, selectedCandidate]);
+  // useEffect(() => {
+  //   if (filteredCandidates.length > 0 && !selectedCandidate) {
+  //     setSelectedCandidate(filteredCandidates[0]);
+  //   }
+  // }, [filteredCandidates, selectedCandidate]);
 
   // Handler Functions
   const handleLogoutRequest = () => {
@@ -363,7 +334,8 @@ function MainApp() {
   };
 
   const handleSharePipelines = (categoryName: string) => {
-    setShowShareLoader(true);
+    const pipelineId = categoryName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    window.location.href = `/pipelines/${pipelineId}` 
   };
 
   const handleShareLoaderComplete = () => {
@@ -646,6 +618,7 @@ function MainApp() {
                         <FiltersSidebar
                           filters={filters}
                           onFiltersChange={setFilters}
+                          setCandidates={setCandidates}
                         />
                       </div>
                       <div className="lg:col-span-6 order-1 lg:order-2">
@@ -655,7 +628,7 @@ function MainApp() {
                           selectedCandidate={selectedCandidate}
                           setSelectedCandidate={setSelectedCandidate}
                           searchTerm={searchTerm}
-                          candidates={filteredCandidates}
+                          candidates={candidates}
                           onPipelinesClick={handlePipelinesClick}
                         />
                       </div>
@@ -668,7 +641,7 @@ function MainApp() {
                         ) : (
                           <CandidateDetail
                             candidate={selectedCandidate}
-                            candidates={filteredCandidates}
+                            candidates={candidates}
                             onSendInvite={handleSendInvite}
                           />
                         )}

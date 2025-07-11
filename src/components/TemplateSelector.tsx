@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { ChevronDown, Bold, Italic, Link, List, MoreHorizontal, ArrowLeft, Mail, MessageSquare, Phone, Bot, Eye, Settings, Send, X } from 'lucide-react';
-import { Candidate } from '../data/candidates';
 import { showToast } from '../utils/toast';
+import { CandidateListItem } from '../services/candidateService';
 
 interface TemplateSelectorProps {
-  candidate: Candidate;
+  candidate: CandidateListItem;
   onBack: () => void;
 }
 
@@ -75,7 +75,7 @@ Looking forward to hearing from you.`
     if (template) {
       setSelectedTemplate(templateId);
       setSubject(template.subject);
-      setBody(template.body.replace('[candidatename]', candidate.name));
+      setBody(template.body.replace('[candidatename]', candidate.full_name));
     }
   };
 
@@ -102,7 +102,7 @@ Looking forward to hearing from you.`
       showToast.error('Please select a template or enter email content');
       return;
     }
-    showToast.success(`Invite sent to ${candidate.name} via ${selectedChannel}`);
+    showToast.success(`Invite sent to ${candidate.full_name} via ${selectedChannel}`);
     onBack();
   };
 
