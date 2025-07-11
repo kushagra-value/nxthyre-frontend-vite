@@ -95,7 +95,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   useEffect(() => {
     const fetchCandidates = async () => {
       try {
-        const response = await fetch(`/api/candidates/`, {
+        const response = await fetch(`/api/candidates/candidates/`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } // Adjust for your auth method
         });
         const data = await response.json();
@@ -112,7 +112,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const debouncedFetchCandidates = useCallback(
     debounce(async (filters: any) => {
       try {
-        const response = await fetch('/api/candidates/search/', {
+        const response = await fetch('/api/candidates/candidates/search/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -143,7 +143,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       // Reset to unfiltered list when searchTerm is cleared
       const fetchCandidates = async () => {
         try {
-          const response = await fetch(`/api/candidates/`, {
+          const response = await fetch(`/api/candidates/candidates/`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           });
           const data = await response.json();
