@@ -1,23 +1,30 @@
-import React, { useState } from "react";
-import {
-  ChevronDown,
-  Bold,
-  Italic,
-  Link,
-  List,
-  MoreHorizontal,
-  ArrowLeft,
-  Mail,
-  MessageSquare,
-  Phone,
-  Bot,
-  Eye,
-  Settings,
-  Send,
-  X,
-} from "lucide-react";
-import { Candidate } from "../data/candidates";
-import { showToast } from "../utils/toast";
+import React, { useState } from 'react';
+import { ChevronDown, Bold, Italic, Link, List, MoreHorizontal, ArrowLeft, Mail, MessageSquare, Phone, Bot, Eye, Settings, Send, X } from 'lucide-react';
+import { showToast } from '../utils/toast';
+
+interface Candidate {
+  id: string;
+  name: string;
+  avatar: string;
+  company: string;
+  currentRole: string;
+  skillLevel: string;
+  city: string;
+  verified: boolean;
+  status: string;
+  experience: string;
+  education: string;
+  noticePeriod: string;
+  skills: string[];
+  headline: string;
+  currentCompanyExperience: string;
+  linkedInUrl?: string;
+  githubUrl?: string;
+  portfolioUrl?: string;
+  resumeUrl?: string;
+  graduationYears:string;
+  location?: string;
+}
 
 interface TemplateSelectorProps {
   candidate: Candidate;

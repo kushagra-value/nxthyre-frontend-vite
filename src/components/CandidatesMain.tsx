@@ -1,6 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Filter, ChevronDown, MapPin, Bookmark, Eye, Star, Link, File, Github, Linkedin, Twitter, EyeOff, Mail, Phone, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Candidate } from '../data/candidates';
+// import { Candidate } from '../data/candidates';
+import { debounce } from 'lodash';
+
+interface Candidate {
+  id: string;
+  name: string;
+  avatar: string;
+  company: string;
+  currentRole: string;
+  skillLevel: string;
+  city: string;
+  verified: boolean;
+  status: string;
+  experience: string;
+  education: string;
+  noticePeriod: string;
+  skills: string[];
+  headline: string;
+  currentCompanyExperience: string;
+  linkedInUrl?: string;
+  githubUrl?: string;
+  portfolioUrl?: string;
+  resumeUrl?: string;
+  graduationYears:string;
+  location?: string;
+}
 
 interface CandidatesMainProps {
   activeTab: string;
@@ -23,8 +48,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const candidatesPerPage = 5;
+  const [currentPage, setCurrentPage] = useState(1); 
+  const [totalPages, setTotalPages] = useState(1);
+  const candidatesPerPage = 10; 
+  const [filteredCandidates, setFilteredCandidates] = useState<Candidate[]>([]);
+
 
   const tabs = [
     { id: 'outbound', label: 'Outbound', count: candidates.length },
@@ -32,6 +60,103 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     { id: 'inbound', label: 'Inbound', count: 2034 },
     { id: 'prevetted', label: 'Prevetted', count: 2034 }
   ];
+
+  // Map backend candidate data to frontend format
+  const mapCandidate = (data: any): Candidate => ({
+    id: data.id,
+    name: data.full_name,
+    avatar: data.full_name
+      .split(' ')
+      .map((n: string) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2),
+    company: data.experience?.find((exp: any) => exp.is_current)?.company || 'Unknown',
+    currentRole: data.experience?.find((exp: any) => exp.is_current)?.job_title || 'Unknown',
+    skillLevel: data.skills_data?.skills_mentioned?.length > 0 ? 'Expert' : 'Unknown',
+    city: data.location?.split(',')[0] || 'Unknown',
+    verified: data.is_background_verified || false,
+    status: data.status || 'Unknown',
+    experience: `${data.total_experience} years`,
+    education: data.education?.[0]?.institution || 'Unknown',
+    noticePeriod: data.notice_period_days ? `${data.notice_period_days} days` : 'Unknown',
+    skills: data.skills_data?.skills_mentioned?.map((s: any) => s.skill) || [],
+    headline: data.headline || 'No headline available',
+    currentCompanyExperience: data.experience?.find((exp: any) => exp.is_current)?.years_of_experience || 'Unknown',
+    linkedInUrl: data.social_links?.linkedIn || '',
+    githubUrl: data.social_links?.github || '',
+    portfolioUrl: data.social_links?.portfolio || '',
+    resumeUrl: data.resume_url || '',
+    graduationYears: data.education?.map((edu: any) => `${new Date(edu.start_date).getFullYear()}-${new Date(edu.end_date).getFullYear()}`).join(', ') || 'Unknown',
+    location: data.location || 'Unknown',
+  });
+
+  // Fetch candidates from backend
+  useEffect(() => {
+    const fetchCandidates = async () => {
+      try {
+        const response = await fetch(`/candidates/?page=${currentPage}&page_size=${candidatesPerPage}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } // Adjust for your auth method
+        });
+        const data = await response.json();
+        const mappedCandidates = data.results.map(mapCandidate);
+        setFilteredCandidates(mappedCandidates);
+        setTotalPages(Math.ceil(data.count / candidatesPerPage));
+      } catch (error) {
+        console.error('Error fetching candidates:', error);
+      }
+    };
+    fetchCandidates();
+  }, [currentPage]);
+
+  const debouncedFetchCandidates = useCallback(
+    debounce(async (filters: any) => {
+      try {
+        const response = await fetch('/candidates/search/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}` // Adjust for your auth method
+          },
+          body: JSON.stringify({
+            ...filters,
+            page: currentPage,
+            page_size: candidatesPerPage
+          })
+        });
+        const data = await response.json();
+        const mappedCandidates = data.results.map(mapCandidate);
+        setFilteredCandidates(mappedCandidates);
+        setTotalPages(Math.ceil(data.count / candidatesPerPage));
+      } catch (error) {
+        console.error('Error fetching filtered candidates:', error);
+      }
+    }, 300),
+    [currentPage]
+  );
+
+  // Apply filters when searchTerm or activeTab changes
+  useEffect(() => {
+    if (searchTerm) {
+      debouncedFetchCandidates({ q: searchTerm });
+    } else {
+      // Reset to unfiltered list when searchTerm is cleared
+      const fetchCandidates = async () => {
+        try {
+          const response = await fetch(`/candidates/?page=${currentPage}&page_size=${candidatesPerPage}`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          });
+          const data = await response.json();
+          const mappedCandidates = data.results.map(mapCandidate);
+          setFilteredCandidates(mappedCandidates);
+          setTotalPages(Math.ceil(data.count / candidatesPerPage));
+        } catch (error) {
+          console.error('Error fetching candidates:', error);
+        }
+      };
+      fetchCandidates();
+    }
+  }, [searchTerm, activeTab, currentPage, debouncedFetchCandidates]);
 
   const handleCandidateSelect = (candidateId: string) => {
     setSelectedCandidates(prev => 
@@ -41,14 +166,14 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     );
   };
 
-  const filteredCandidates = candidates.filter(candidate =>
-    candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    candidate.currentRole.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    candidate.company.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // const filteredCandidates = candidates.filter(candidate =>
+  //   candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //   candidate.currentRole.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //   candidate.company.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
 
   // Pagination logic
-  const totalPages = Math.ceil(filteredCandidates.length / candidatesPerPage);
+  // const totalPages = Math.ceil(filteredCandidates.length / candidatesPerPage);
   const startIndex = (currentPage - 1) * candidatesPerPage;
   const endIndex = startIndex + candidatesPerPage;
   const currentCandidates = filteredCandidates.slice(startIndex, endIndex);
@@ -62,7 +187,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     return 'bg-blue-500'; // Single blue color for all profiles
   };
 
-  const getStarCount = (skill) => {
+  const getStarCount = (skill: string) => {
     const sum = skill.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return (sum % 5) + 1; // Returns a number between 1 and 5
   };
@@ -224,7 +349,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     <span className={`mt-1 px-2 py-1 text-xs rounded-full ${
                       candidate.status === 'Available' ? 'bg-blue-100 text-blue-800' : 'bg-blue-100 text-blue-800'
                     }`}>
-                      2+ years exp
+                       {candidate.experience}
                     </span>
                   </div>
                   
@@ -275,7 +400,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     <span className="text-gray-500 mr-[5px]">Education</span>
                     <p className="text-gray-900 truncate">{candidate.education}</p>
                   </div>
-                  <p className="text-gray-900 truncate">2016-2020</p>
+                  <p className="text-gray-900 truncate">{candidate.graduationYears}</p>
                 </div>
                 <div className="flex space-x-6">
                     <span className="text-gray-500 mr-[5px]">Notice Period</span>
