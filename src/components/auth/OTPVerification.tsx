@@ -78,29 +78,32 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     setIsLoading(true);
 
     try {
-      const response = await authService.verifyOTP(
-        data?.email || "",
-        otpToVerify
-      );
-
-      setError("");
-      showToast.success("Email verified successfully!");
-
+      let response;
       if (data?.type === "forgot-password") {
-        // Pass both email and the verified OTP to reset-password
+        // Use password reset OTP verification for forgot-password flow
+        response = await authService.verifyPasswordResetOTP(
+          data?.email || "",
+          otpToVerify
+        );
+        showToast.success("OTP verified successfully!");
         onNavigate("reset-password", { email: data.email, otp: otpToVerify });
-      } else if (data?.type === "signup") {
-        // Handle signup flow
-        if (
-          response.next_step === "login_then_onboard" ||
-          response.next_step === "login_then_provide_company_email"
-        ) {
-          onNavigate("login");
-        } else {
-          window.location.href = "/";
-        }
       } else {
-        onNavigate("login");
+        // Use regular OTP verification for signup flow
+        response = await authService.verifyOTP(data?.email || "", otpToVerify);
+        showToast.success("Email verified successfully!");
+
+        if (data?.type === "signup") {
+          if (
+            response.next_step === "login_then_onboard" ||
+            response.next_step === "login_then_provide_company_email"
+          ) {
+            onNavigate("login");
+          } else {
+            window.location.href = "/";
+          }
+        } else {
+          onNavigate("login");
+        }
       }
     } catch (error: any) {
       console.error("OTP verification error:", error);
@@ -127,8 +130,11 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
 
   const handleResend = () => {
     if (data?.email) {
-      authService
-        .resendOTP(data.email)
+      const resendMethod =
+        data?.type === "forgot-password"
+          ? authService.sendPasswordResetOTP
+          : authService.resendOTP;
+      resendMethod(data.email)
         .then(() => {
           setTimeLeft(300);
           setAttempts(3);
@@ -145,7 +151,6 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 relative overflow-hidden">
-      {/* Background decorative elements */}
       <div className="absolute inset-0 bg-black/20"></div>
       <div className="absolute top-20 left-20 w-2 h-2 bg-white/30 rounded-full"></div>
       <div className="absolute top-40 right-32 w-1 h-1 bg-white/40 rounded-full"></div>
@@ -192,7 +197,6 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
             </p>
 
             <div className="space-y-6">
-              {/* OTP Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3 text-center">
                   Enter verification code
@@ -216,7 +220,6 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
                 </div>
               </div>
 
-              {/* Error Message */}
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                   <p className="text-sm text-red-600 flex items-center justify-center">
@@ -226,7 +229,6 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
                 </div>
               )}
 
-              {/* Timer */}
               <div className="text-center">
                 <p className="text-sm text-gray-600">
                   Code expires in:{" "}
@@ -236,7 +238,6 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
                 </p>
               </div>
 
-              {/* Verify Button */}
               <button
                 onClick={() => handleVerify()}
                 disabled={
@@ -256,7 +257,6 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
                 )}
               </button>
 
-              {/* Resend */}
               <div className="text-center">
                 <span className="text-sm text-gray-600">
                   Didn't receive the code?{" "}
@@ -272,7 +272,6 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
               </div>
             </div>
 
-            {/* Legal */}
             <div className="text-center mt-6">
               <p className="text-xs text-gray-500">
                 © 2024 NxtHyre. All rights reserved.

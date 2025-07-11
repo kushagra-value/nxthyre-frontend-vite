@@ -199,7 +199,6 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ onNavigate, data }) => {
                   <div className="mt-2">
                     <div className="flex items-center space-x-2">
                       <div className="flex-1 bg-gray-200 rounded-full h-2">
-                        18{" "}
                         <div
                           className="h-2 rounded-full transition-all duration-300"
                           style={{
