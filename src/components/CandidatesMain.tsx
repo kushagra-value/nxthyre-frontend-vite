@@ -32,7 +32,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
 
   const tabs = [
-    { id: 'outbound', label: 'Outbound', count: 2034},
+    { id: 'outbound', label: 'Outbound', count: candidates.length },
     { id: 'active', label: 'Active', count: 2034 },
     { id: 'inbound', label: 'Inbound', count: 2034 },
     { id: 'prevetted', label: 'Prevetted', count: 2034 }
