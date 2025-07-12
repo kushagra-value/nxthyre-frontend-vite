@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, Briefcase, Building2, Clock10, MapPin, GraduationCap, ChevronDown, ChevronUp, Filter, DollarSign, Award, Users, Star, History, ChevronLeft, ChevronRight, CircleEllipsis } from 'lucide-react';
 import { debounce } from 'lodash';
+import { candidateService, CandidateListItem } from "../services/candidateService";
 
 interface FiltersSidebarProps {
   filters: {
@@ -37,7 +38,7 @@ interface FiltersSidebarProps {
     hasPortfolio: boolean;
   };
   onFiltersChange: (filters: any) => void;
-  setCandidates: (candidates: any[]) => void;
+  setCandidates: (candidates: CandidateListItem[]) => void;
 }
 
 const JobTitlesSlider: React.FC = () => {
@@ -178,8 +179,21 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ filters, updateFilters }) => {
   );
 };
 
+type SectionKey =
+  | 'keywords'
+  | 'experience'
+  | 'totalExp'
+  | 'location'
+  | 'companies'
+  | 'salary'
+  | 'skills'
+  | 'notice'
+  | 'colleges'
+  | 'spotlight'
+  | 'moreFilters';
+
 const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChange, setCandidates }) => {
-  const [expandedSections, setExpandedSections] = useState({
+  const [expandedSections, setExpandedSections] = useState<Record<SectionKey, boolean>>({
     keywords: true,
     experience: false,
     totalExp: true,
@@ -194,46 +208,16 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
   });
 
   const [jobTitles, setJobTitles] = useState<string[]>([]);
-
-  // Map backend candidate data to frontend format
-  const mapCandidate = (data: any) => ({
-    id: data.id,
-    name: data.full_name,
-    avatar: data.full_name
-      .split(' ')
-      .map((n: string) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2),
-    company: data.experience?.find((exp: any) => exp.is_current)?.company || 'Unknown',
-    currentRole: data.experience?.find((exp: any) => exp.is_current)?.job_title || 'Unknown',
-    skillLevel: data.skills_data?.skills_mentioned?.length > 0 ? 'Expert' : 'Unknown',
-    city: data.location?.split(',')[0] || 'Unknown',
-    verified: data.is_background_verified || false,
-    status: data.status || 'Unknown',
-    experience: `${data.total_experience} years`,
-    education: data.education?.[0]?.institution || 'Unknown',
-    noticePeriod: data.notice_period_days ? `${data.notice_period_days} days` : 'Unknown',
-    skills: data.skills_data?.skills_mentioned?.map((s: any) => s.skill) || []
-  });
+  
 
   // Debounced filter function
   const debouncedFetchCandidates = useCallback(
     debounce(async (filterParams: any) => {
       try {
-        const response = await fetch('/candidates/search/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify(filterParams)
-        });
-        const data = await response.json();
-        const mappedCandidates = data.results.map(mapCandidate);
-        setCandidates(mappedCandidates);
+        const { results } = await candidateService.searchCandidates(filterParams);
+        setCandidates(results);
       } catch (error) {
-        console.error('Error fetching filtered candidates:', error);
+        console.error("Error fetching filtered candidates:", error);
       }
     }, 300),
     [setCandidates]
@@ -248,29 +232,41 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
     if (filters.keywords) filterParams.q = filters.keywords;
     if (filters.minTotalExp) filterParams.experience_min = filters.minTotalExp;
     if (filters.maxTotalExp) filterParams.experience_max = filters.maxTotalExp;
+    if (filters.minExperience) filterParams.exp_in_current_company_min = filters.minExperience;
     if (filters.topTierUniversities) filterParams.is_top_tier_college = filters.topTierUniversities;
     if (filters.hasCertification) filterParams.has_certification = filters.hasCertification;
-    if (filters.city) filterParams.city = filters.city;
-    if (filters.country) filterParams.country = filters.country;
+    if (filters.city || filters.country) filterParams.location = `${filters.city}${filters.city && filters.country ? ", " : ""}${filters.country}`;
     if (filters.location) filterParams.location = filters.location;
-    if (filters.selectedSkills.length > 0) filterParams.skills = filters.selectedSkills.join(',');
-    if (filters.companies) filterParams.company = filters.companies;
-    if (filters.industries) filterParams.industry = filters.industries;
+    if (filters.selectedSkills.length > 0) filterParams.skills = filters.selectedSkills.join(",");
+    if (filters.companies) filterParams.companies = filters.companies.split(",").map((c: string) => c.trim());
+    if (filters.industries) filterParams.industries = filters.industries.split(",").map((i: string) => i.trim());
     if (filters.minSalary) filterParams.salary_min = filters.minSalary;
     if (filters.maxSalary) filterParams.salary_max = filters.maxSalary;
-    if (filters.colleges) filterParams.college = filters.colleges;
-    if (filters.showFemaleCandidates) filterParams.gender = 'Female';
-    if (filters.recentlyPromoted) filterParams.is_recently_promoted = filters.recentlyPromoted;
-    if (filters.backgroundVerified) filterParams.is_background_verified = filters.backgroundVerified;
-    if (filters.hasLinkedIn) filterParams.has_linkedin = filters.hasLinkedIn;
-    if (filters.hasTwitter) filterParams.has_twitter = filters.hasTwitter;
-    if (filters.hasPortfolio) filterParams.has_portfolio = filters.hasPortfolio;
-    if (filters.noticePeriod) filterParams.notice_period = filters.noticePeriod;
-
+    if (filters.colleges) filterParams.colleges = filters.colleges.split(",").map((c: string) => c.trim());
+    if (filters.showFemaleCandidates) filterParams.is_female_only = true;
+    if (filters.recentlyPromoted) filterParams.is_recently_promoted = true;
+    if (filters.backgroundVerified) filterParams.is_background_verified = true;
+    if (filters.hasLinkedIn) filterParams.has_linkedin = true;
+    if (filters.hasTwitter) filterParams.has_twitter = true;
+    if (filters.hasPortfolio) filterParams.has_portfolio = true;
+    if (filters.computerScienceGraduates) filterParams.is_cs_graduate = true;
+    if (filters.hasResearchPaper) filterParams.has_research_paper = true;
+    if (filters.hasBehance) filterParams.has_behance = true;
+    if (filters.noticePeriod) {
+      const days = {
+        "15 days": 15,
+        "30 days": 30,
+        "45 days": 45,
+        "60 days": 60,
+        "90 days": 90,
+        Immediate: 0,
+      }[filters.noticePeriod];
+      if (days !== undefined) filterParams.notice_period_max_days = days;
+    }
     debouncedFetchCandidates(filterParams);
   }, [filters, debouncedFetchCandidates]);
 
-  const toggleSection = (section: string) => {
+  const toggleSection = (section: SectionKey) => {
     setExpandedSections(prev => ({
       ...prev,
       [section]: !prev[section]
@@ -317,26 +313,26 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
 
   const clearAllFilters = () => {
     onFiltersChange({
-      keywords: '',
+      keywords: "",
       booleanSearch: false,
       semanticSearch: false,
       selectedCategories: [],
-      minExperience: '',
-      maxExperience: '',
+      minExperience: "",
+      maxExperience: "",
       funInCurrentCompany: false,
-      minTotalExp: '',
-      maxTotalExp: '',
-      city: '',
-      country: '',
-      location: '',
+      minTotalExp: "",
+      maxTotalExp: "",
+      city: "",
+      country: "",
+      location: "",
       selectedSkills: [],
-      skillLevel: '',
-      noticePeriod: '',
-      companies: '',
-      industries: '',
-      minSalary: '',
-      maxSalary: '',
-      colleges: '',
+      skillLevel: "",
+      noticePeriod: "",
+      companies: "",
+      industries: "",
+      minSalary: "",
+      maxSalary: "",
+      colleges: "",
       topTierUniversities: false,
       computerScienceGraduates: false,
       showFemaleCandidates: false,
@@ -347,7 +343,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
       hasLinkedIn: false,
       hasBehance: false,
       hasTwitter: false,
-      hasPortfolio: false
+      hasPortfolio: false,
     });
   };
 

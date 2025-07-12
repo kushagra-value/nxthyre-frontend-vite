@@ -21,7 +21,7 @@ import SharePipelinesModal from "./components/SharePipelinesModal";
 import ShareableProfile from "./components/ShareableProfile";
 import PipelineSharePage from "./components/PipelineSharePage";
 import { User } from "./types/auth"; // Adjust path
-import { candidates, Candidate } from "./data/candidates";
+import { CandidateListItem, candidateService} from './services/candidateService';
 import {
   ChevronDown,
   MoreHorizontal,
@@ -56,11 +56,12 @@ function MainApp() {
   const [currentPipelineId, setCurrentPipelineId] = useState("");
 
   // Shareable profile state
+  // Shareable profile state
   const [showShareableProfile, setShowShareableProfile] = useState(false);
   const [currentCandidateId, setCurrentCandidateId] = useState("");
 
   // Existing state
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
+  const [selectedCandidate, setSelectedCandidate] = useState<CandidateListItem | null>(
     null
   );
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
@@ -80,11 +81,15 @@ function MainApp() {
   const [showShareLoader, setShowShareLoader] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
 
+
   const [filters, setFilters] = useState({
+    keywords: "",
     keywords: "",
     booleanSearch: false,
     semanticSearch: false,
     selectedCategories: [] as string[],
+    minExperience: "",
+    maxExperience: "",
     minExperience: "",
     maxExperience: "",
     funInCurrentCompany: false,
@@ -93,7 +98,19 @@ function MainApp() {
     city: "",
     country: "",
     location: "",
+    minTotalExp: "",
+    maxTotalExp: "",
+    city: "",
+    country: "",
+    location: "",
     selectedSkills: [] as string[],
+    skillLevel: "",
+    noticePeriod: "",
+    companies: "",
+    industries: "",
+    minSalary: "",
+    maxSalary: "",
+    colleges: "",
     skillLevel: "",
     noticePeriod: "",
     companies: "",
@@ -112,63 +129,24 @@ function MainApp() {
     hasBehance: false,
     hasTwitter: false,
     hasPortfolio: false,
+    hasPortfolio: false,
   });
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [activeCategory, setActiveCategory] = useState('Head Of Finance');
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      const fetchInitialCandidates = async () => {
-        try {
-          const response = await fetch('/api/candidates/candidates/', {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-          });
-          const data = await response.json();
-          const mappedCandidates = data.results.map((candidate: any) => ({
-            id: candidate.id,
-            name: candidate.full_name,
-            avatar: candidate.full_name
-              .split(' ')
-              .map((n: string) => n[0])
-              .join('')
-              .toUpperCase()
-              .slice(0, 2),
-            company: candidate.experience?.find((exp: any) => exp.is_current)?.company || 'Unknown',
-            currentRole: candidate.experience?.find((exp: any) => exp.is_current)?.job_title || 'Unknown',
-            skillLevel: candidate.skills_data?.skills_mentioned?.length > 0 ? 'Expert' : 'Unknown',
-            city: candidate.location?.split(',')[0] || 'Unknown',
-            country: candidate.location?.split(',')[1]?.trim() || 'Unknown',
-            verified: candidate.is_background_verified || false,
-            status: candidate.status || 'Unknown',
-            experience: `${candidate.total_experience} years`,
-            education: candidate.education?.[0]?.institution || 'Unknown',
-            noticePeriod: candidate.notice_period_days ? `${candidate.notice_period_days} days` : 'Unknown',
-            skills: candidate.skills_data?.skills_mentioned?.map((s: any) => s.skill) || [],
-            headline: candidate.headline || '',
-            email: candidate.email || 'Unknown',
-            phone: candidate.phone || 'Unknown',
-            linkedin_url: candidate.linkedin_url,
-            github_url: candidate.github_url,
-            twitter_url: candidate.twitter_url,
-            portfolio_url: candidate.portfolio_url,
-          }));
-          setCandidates(mappedCandidates);
-          // Set initial selected candidate only if none is selected
-          if (!selectedCandidate && mappedCandidates.length > 0) {
-            setSelectedCandidate(mappedCandidates[0]);
-          }
-        } catch (error) {
-          console.error('Error fetching initial candidates:', error);
-          showToast.error('Failed to load candidates');
-        }
-      };
-      fetchInitialCandidates();
-    }
-  }, [isAuthenticated]);
+  const [activeCategory, setActiveCategory] = useState("Head Of Finance");
+  const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
   
-  // const filteredCandidates = useMemo(() => {
+
+  // Example categories data; replace with your actual data source as needed
+  const categories = [
+    { name: "Head Of Finance", count: 12 },
+    { name: "Engineering Manager", count: 8 },
+    { name: "Product Designer", count: 5 },
+    { name: "Marketing Lead", count: 7 },
+    // Add more categories as needed
+  ];
+
+      // const filteredCandidates = useMemo(() => {
   //   if (!isAuthenticated) return [];
     
   //   return candidates.filter(candidate => {
@@ -249,6 +227,12 @@ function MainApp() {
     }
   }, []);
 
+  // useEffect(() => {
+  //   if (filteredCandidates.length > 0 && !selectedCandidate) {
+  //     setSelectedCandidate(filteredCandidates[0]);
+  //   }
+  // }, [filteredCandidates, selectedCandidate]);
+
   // Handler Functions
   // const handleLogoutRequest = () => {
   //   setShowLogoutModal(true);
@@ -258,11 +242,7 @@ function MainApp() {
     setShowLogoutModal(true);
   };
 
-  const handleCloseLogoutModal = () => {
-    setShowLogoutModal(false);
-  };
-
-  const handleLogoutConfirm = async () => {
+  const handleLogoutConfirm = async() => {
     setShowLogoutModal(false);
     try {
       await signOut();
@@ -321,6 +301,7 @@ function MainApp() {
   };
 
   // const handleLogin = () => {
+  //  setAuthFlow("login");
   //   setAuthFlow("login");
   //   setShowAuthApp(true);
   // };
@@ -333,7 +314,7 @@ function MainApp() {
   const handleAuthSuccess = (user: any) => {
     setCurrentUser(user);
     setShowAuthApp(false);
-    navigate("/"); // Redirect to dashboard after auth...
+    navigate("/"); // Redirect to dashboard after auth
   };
 
   const handleLinkedInAuthSuccess = (user: any) => {
@@ -379,7 +360,8 @@ function MainApp() {
   };
 
   const handleSharePipelines = (categoryName: string) => {
-    setShowShareLoader(true);
+    const pipelineId = categoryName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    window.location.href = `/pipelines/${pipelineId}` 
   };
 
   const handleShareLoaderComplete = () => {
@@ -388,6 +370,7 @@ function MainApp() {
       .toLowerCase()
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9-]/g, "");
+
     setCurrentPipelineId(pipelineId);
     setShowPipelineSharePage(true);
     window.history.pushState({}, "", `/pipelines/${pipelineId}`);
@@ -430,6 +413,8 @@ function MainApp() {
 
   const handleBackFromShareableProfile = () => {
     setShowShareableProfile(false);
+    setCurrentCandidateId("");
+    window.history.pushState({}, "", "/");
     setCurrentCandidateId("");
     window.history.pushState({}, "", "/");
   };
