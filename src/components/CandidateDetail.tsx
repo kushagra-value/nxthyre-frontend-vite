@@ -3,135 +3,42 @@ import { Mail, Phone, Copy, MapPin, Calendar, Award, Briefcase, GraduationCap, S
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { showToast } from '../utils/toast';
-
-interface Candidate {
-  id: string;
-  name: string;
-  avatar: string;
-  company: string;
-  currentRole: string;
-  skillLevel: string;
-  city: string;
-  verified: boolean;
-  status: string;
-  experience: string;
-  education: string;
-  noticePeriod: string;
-  skills: string[];
-  headline: string;
-  currentCompanyExperience: string;
-  linkedInUrl?: string;
-  githubUrl?: string;
-  portfolioUrl?: string;
-  resumeUrl?: string;
-  graduationYears:string;
-  location?: string;
-}
+import { candidateService, CandidateDetailData, CandidateListItem } from "../services/candidateService";
 
 interface CandidateDetailProps {
-  candidate: Candidate | null;
-  candidates?: Candidate[];
-  onSendInvite?: () => void;
-}
-
-interface Experience {
-  job_title: string;
-  company: string;
-  location: string;
-  start_date: string;
-  end_date: string | null;
-  description: string;
-  is_current: boolean;
-}
-
-interface Education {
-  institution: string;
-  degree: string;
-  specialization: string;
-  start_date: string;
-  end_date: string;
-}
-
-interface Certification {
-  name: string;
-  issuer: string;
-  issued_date: string;
-}
-
-interface Recommendation {
-  recommender_name: string;
-  recommender_title: string;
-  recommender_company: string;
-  feedback: string;
-  date_received: string;
-}
-
-interface Note {
-  noteId: string;
-  content: string;
-  postedBy: string | null;
-  posted_at: string;
-  organisation: { orgId: string; orgName: string };
-}
-
-interface CandidateData {
-  id: string;
-  full_name: string;
-  headline: string;
-  location: string;
-  email: string;
-  phone: string;
-  linkedin_url?: string;
-  github_url?: string;
-  twitter_url?: string;
-  portfolio_url?: string;
-  experience: Experience[];
-  education: Education[];
-  certifications: Certification[];
-  recommendations: Recommendation[];
-  notes: Note[];
-  skills_data: {
-    skills_mentioned: { skill: string; number_of_endorsements: number }[];
-    endorsements: { skill_endorsed: string; endorser_name: string; endorser_title: string; endorser_company: string }[];
-  };
+  candidate: CandidateListItem | null;
+  candidates: CandidateListItem[];
+  onSendInvite: () => void;
 }
 
 const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates = [], onSendInvite }) => {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
-
-  const [candidateData, setCandidateData] = useState<CandidateData | null>(null);
+  const [detailedCandidate, setDetailedCandidate] = useState<CandidateDetailData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Use the first candidate if no candidate is selected but candidates are available
-  const displayCandidate = candidate || (candidates.length > 0 ? candidates[0] : null);
+  // // Use the first candidate if no candidate is selected but candidates are available
+  // const displayCandidate = candidate || (candidates.length > 0 ? candidates[0] : null);
 
 // Fetch candidate details dynamically
   useEffect(() => {
-    if (displayCandidate?.id) {
-      setLoading(true);
-      setError(null);
-      fetch(`/api/candidates/candidates/${displayCandidate.id}/`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error('Failed to fetch candidate details');
-          }
-          return response.json();
-        })
-        .then((data) => {
-          setCandidateData(data);
+    if (candidate?.id) {
+      const fetchCandidateDetails = async () => {
+        setLoading(true);
+        try {
+          const data = await candidateService.getCandidateDetails(candidate.id);
+          setDetailedCandidate(data);
+        } catch (error) {
+          console.error("Error fetching candidate details:", error);
+        } finally {
           setLoading(false);
-        })
-        .catch((err) => {
-          setError(err.message);
-          setLoading(false);
-          showToast.error('Failed to load candidate details');
-        });
+        }
+      };
+      fetchCandidateDetails();
     }
-  }, [displayCandidate?.id]);
+  }, [candidate?.id]);
+
 
   useEffect(() => {
     if (showComments) {
@@ -155,7 +62,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
     );
   }
 
-  if (!displayCandidate) {
+  if (!candidate) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-4">
         <div className="text-center text-gray-500 mt-6">
@@ -169,92 +76,92 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
     );
   }
 
-  if (error || !candidateData || !displayCandidate) {
+  if (error || !detailedCandidate) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-4">
         <div className="text-center text-gray-500 mt-6">
           <div className="w-12 h-12 bg-gray-100 rounded-full mx-auto mb-3 flex items-center justify-center">
             <Briefcase className="w-6 h-6 text-gray-400" />
           </div>
-          <p className="text-base font-medium">No candidate selected</p>
+          <p className="text-base font-medium">Unable to Load candidate details</p>
           <p className="text-sm mt-1">{error || 'Please select a candidate to view details'}</p>
         </div>
       </div>
     );
   }
 
-  const experiences = [
-    {
-      title: displayCandidate.currentRole,
-      company: `${displayCandidate.company} | ${displayCandidate.location}`,
-      period: displayCandidate.experience,
-      duration: `${displayCandidate.currentCompanyExperience} yr`,
-      description: 'Conducted in-depth data analysis on performance metrics, and inventory data using various tools. Streamlined the team workflow for increased efficiency.'
-    },
-    {
-      title: 'Previous Role',
-      company: 'Previous Company | Location',
-      period: '2019 - 2022',
-      duration: '3 yr',
-      description: 'Mentored team members and implemented KPIs. Mediated various processes and contributed to organizational growth.'
-    }
-  ];
+  // const experiences = [
+  //   {
+  //     title: displayCandidate.currentRole,
+  //     company: `${displayCandidate.company} | ${displayCandidate.location}`,
+  //     period: displayCandidate.experience,
+  //     duration: `${displayCandidate.currentCompanyExperience} yr`,
+  //     description: 'Conducted in-depth data analysis on performance metrics, and inventory data using various tools. Streamlined the team workflow for increased efficiency.'
+  //   },
+  //   {
+  //     title: 'Previous Role',
+  //     company: 'Previous Company | Location',
+  //     period: '2019 - 2022',
+  //     duration: '3 yr',
+  //     description: 'Mentored team members and implemented KPIs. Mediated various processes and contributed to organizational growth.'
+  //   }
+  // ];
 
-  const education = [
-    {
-      degree: displayCandidate.education,
-      field: 'Specialized Field',
-      period: '2017 - 2019',
-      location: displayCandidate.city
-    }
-  ];
+  // const education = [
+  //   {
+  //     degree: displayCandidate.education,
+  //     field: 'Specialized Field',
+  //     period: '2017 - 2019',
+  //     location: displayCandidate.city
+  //   }
+  // ];
 
-  const certifications = [
-    {
-      name: 'Certified Python Developer',
-      issuer: 'Python Institute',
-      date: 'January 2023'
-    },
-    {
-      name: 'AWS Certified Solutions Architect',
-      issuer: 'Amazon Web Services',
-      date: 'June 2022'
-    }
-  ];
+  // const certifications = [
+  //   {
+  //     name: 'Certified Python Developer',
+  //     issuer: 'Python Institute',
+  //     date: 'January 2023'
+  //   },
+  //   {
+  //     name: 'AWS Certified Solutions Architect',
+  //     issuer: 'Amazon Web Services',
+  //     date: 'June 2022'
+  //   }
+  // ];
 
-  const recommendations = [
-    {
-      name: 'Sarah Lee',
-      role: 'Project Manager at Innovations Inc.',
-      company: 'Innovations Inc.',
-      text: 'Alex is a fantastic team player with exceptional technical skills.',
-      date: 'Received March 2024'
-    }
-  ];
+  // const recommendations = [
+  //   {
+  //     name: 'Sarah Lee',
+  //     role: 'Project Manager at Innovations Inc.',
+  //     company: 'Innovations Inc.',
+  //     text: 'Alex is a fantastic team player with exceptional technical skills.',
+  //     date: 'Received March 2024'
+  //   }
+  // ];
 
-  const existingComments = [
-    {
-      id: 1,
-      text: 'Great candidate with strong technical background. Very responsive during initial screening.',
-      author: 'John Doe',
-      date: '2 days ago',
-      avatar: 'J'
-    },
-    {
-      id: 2,
-      text: 'Excellent communication skills. Would be a good fit for senior roles.',
-      author: 'Jane Smith',
-      date: '1 week ago',
-      avatar: 'J'
-    },
-    {
-      id: 3,
-      text: 'Had a great conversation about their experience with Python and data analysis. Very knowledgeable.',
-      author: 'Mike Johnson',
-      date: '3 days ago',
-      avatar: 'M'
-    }
-  ];
+  // const existingComments = [
+  //   {
+  //     id: 1,
+  //     text: 'Great candidate with strong technical background. Very responsive during initial screening.',
+  //     author: 'John Doe',
+  //     date: '2 days ago',
+  //     avatar: 'J'
+  //   },
+  //   {
+  //     id: 2,
+  //     text: 'Excellent communication skills. Would be a good fit for senior roles.',
+  //     author: 'Jane Smith',
+  //     date: '1 week ago',
+  //     avatar: 'J'
+  //   },
+  //   {
+  //     id: 3,
+  //     text: 'Had a great conversation about their experience with Python and data analysis. Very knowledgeable.',
+  //     author: 'Mike Johnson',
+  //     date: '3 days ago',
+  //     avatar: 'M'
+  //   }
+  // ];
 
   const handleAddComment = () => {
     if (newComment.trim()) {
@@ -265,7 +172,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
 
   const handleShareProfile = () => {
     // Navigate to shareable profile page
-    window.open(`/candidate-profiles/${candidateData.id}`, '_blank');
+    window.open(`/candidate-profiles/${detailedCandidate.id}`, '_blank');
   };
 
   const getAvatarColor = (name: string) => {
@@ -276,16 +183,16 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-3 space-y-6 min-h-[81vh] relative overflow-hidden">
       {/* Header */}
       <div className="flex space-x-3 items-center mt-1">
-        <div className={`w-12 h-12 ${getAvatarColor(candidateData.full_name)} rounded-full flex items-center justify-center text-white`}>
+        <div className={`w-12 h-12 ${getAvatarColor(detailedCandidate.full_name)} rounded-full flex items-center justify-center text-white`}>
           <User className="w-6 h-6" />
         </div>
         <div>
-          <h2 className="text-base lg:text-lg font-bold text-gray-900">{candidateData.full_name}</h2>
+          <h2 className="text-base lg:text-lg font-bold text-gray-900">{detailedCandidate.full_name}</h2>
           <div className="flex">
-            <p className="text-sm text-gray-500 ml-1 max-w-[28ch] truncate">{candidateData.headline}</p>
+            <p className="text-sm text-gray-500 ml-1 max-w-[28ch] truncate">{detailedCandidate.headline}</p>
           </div>
           <div className="flex">
-            <p className="text-sm text-gray-500 ml-1">{candidateData.location}</p>
+            <p className="text-sm text-gray-500 ml-1">{detailedCandidate.location}</p>
           </div>
         </div>
         <div className="text-xs text-gray-400 absolute right-6 top-4">
@@ -302,7 +209,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
-            <span className="text-sm text-gray-700 truncate">{candidateData.email}</span>
+            <span className="text-sm text-gray-700 truncate">{detailedCandidate.email}</span>
           </div>
           <button className="flex space-x-2 ml-auto p-1 text-gray-400 hover:text-gray-600 flex-shrink-0">
             <Copy className="w-4 h-4" />
@@ -311,7 +218,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
-            <span className="text-sm text-gray-700">{candidateData.phone}</span>
+            <span className="text-sm text-gray-700">{detailedCandidate.phone}</span>
           </div>
           <button className="flex space-x-2 ml-auto p-1 text-gray-400 hover:text-gray-600 flex-shrink-0">
             <FontAwesomeIcon icon={faWhatsapp} />
@@ -347,12 +254,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
           Experience
         </h3>
         <div className="ml-2">
-          {candidateData.experience.map((exp, index) => (
+          {detailedCandidate.experience.map((exp, index) => (
             <div key={index} className="border-l-2 border-gray-200 pl-4 relative pb-2">
               <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
               <h4 className="font-medium text-gray-900 text-sm">{exp.job_title}</h4>
               <p className="text-sm text-gray-600">{`${exp.company} | ${exp.location}`}</p>
-              <p className="text-sm text-gray-500">{`${new Date(exp.start_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} - ${exp.end_date ? new Date(exp.end_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Present'}`}</p>
+              <p className="text-sm text-gray-500">{exp.start_date} - {exp.end_date || "Present"}</p>
               <p className="text-sm text-gray-700 mt-1">{exp.description}</p>
             </div>
           ))}
@@ -366,12 +273,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
           Education
         </h3>
         <div className="ml-2">
-          {candidateData.education.map((edu, index) => (
+          {detailedCandidate.education.map((edu, index) => (
             <div key={index} className="border-l-2 border-gray-200 pl-4 relative pb-2">
               <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
               <h4 className="font-medium text-gray-900 text-sm">{edu.degree}</h4>
               <p className="text-sm text-gray-600">{edu.specialization}</p>
-              <p className="text-sm text-gray-500">{`${new Date(edu.start_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} - ${new Date(edu.end_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`}</p>
+              <p className="text-sm text-gray-500">{edu.start_date} - {edu.end_date}</p>
               {edu.institution && (
                 <p className="text-sm text-gray-500">{edu.institution}</p>
               )}
@@ -387,12 +294,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
           Certifications
         </h3>
         <div className="ml-2">
-          {candidateData.certifications.map((cert, index) => (
+          {detailedCandidate.certifications.map((cert, index) => (
             <div key={index} className="border-l-2 border-gray-200 pl-4 relative pb-2">
               <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
               <h4 className="font-medium text-gray-900 text-sm">{cert.name}</h4>
               <p className="text-sm text-gray-600">{cert.issuer}</p>
-              <p className="text-sm text-gray-500">{new Date(cert.issued_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</p>
+              <p className="text-sm text-gray-500">{cert.issued_date}</p>
             </div>
           ))}
         </div>
@@ -405,9 +312,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
           Skills
         </h3>
         <div className="flex flex-wrap gap-2">
-          {candidateData.skills_data.skills_mentioned.map((skill, index) => (
-            <span key={index} className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">
-              {skill.skill} <span className="text-gray-600 font-medium ml-2">{skill.number_of_endorsements}+</span>
+          {detailedCandidate.skills_data.skills_mentioned.map((skill, index) => (
+            <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+              {skill.skill} ({skill.number_of_endorsements} endorsements)
             </span>
           ))}
         </div>
@@ -420,7 +327,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
           Recommendations
         </h3>
         <div className="space-y-2">
-          {candidateData.recommendations.map((rec, index) => (
+          {detailedCandidate.recommendations.map((rec, index) => (
             <div key={index} className="bg-gray-50 rounded-lg p-3">
               <div className="flex items-start space-x-2">
                 <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
@@ -430,7 +337,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
                   <h4 className="font-medium text-gray-900 text-sm">{rec.recommender_name}</h4>
                   <p className="text-xs text-gray-700">{rec.recommender_title}</p>
                   <p className="text-sm text-gray-800 mt-1">"{rec.feedback}"</p>
-                  <p className="text-xs text-gray-600 mt-1">{new Date(rec.date_received).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</p>
+                  <p className="text-xs text-gray-600 mt-1">{rec.date_received}</p>
                 </div>
               </div>
             </div>
@@ -455,7 +362,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
             </button>
           </div>
           <div className="flex-1 overflow-y-auto space-y-4">
-            {candidateData.notes.map((note) => (
+            {detailedCandidate.notes.map((note) => (
               <div key={note.noteId} className="flex space-x-3">
                 <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
                   {note.postedBy?.[0] || note.organisation.orgName[0]}
