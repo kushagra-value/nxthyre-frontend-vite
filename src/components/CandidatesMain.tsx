@@ -79,9 +79,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     if (searchTerm) {
       debouncedFetchCandidates({ q: searchTerm });
     } else {
-      const safeCandidates = candidates || [];
-      setFilteredCandidates(safeCandidates);
-      setTotalPages(Math.ceil(safeCandidates.length / candidatesPerPage) ||1);
+      setFilteredCandidates(candidates);
+      setTotalPages(Math.ceil(candidates.length / candidatesPerPage));
     }
   }, [searchTerm, candidates, debouncedFetchCandidates]);
 
