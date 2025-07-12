@@ -209,46 +209,16 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
 
   // Apply filters when they change
   const [jobTitles, setJobTitles] = useState<string[]>([]);
-
-  // Map backend candidate data to frontend format
-  const mapCandidate = (data: any) => ({
-    id: data.id,
-    name: data.full_name,
-    avatar: data.full_name
-      .split(' ')
-      .map((n: string) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2),
-    company: data.experience?.find((exp: any) => exp.is_current)?.company || 'Unknown',
-    currentRole: data.experience?.find((exp: any) => exp.is_current)?.job_title || 'Unknown',
-    skillLevel: data.skills_data?.skills_mentioned?.length > 0 ? 'Expert' : 'Unknown',
-    city: data.location?.split(',')[0] || 'Unknown',
-    verified: data.is_background_verified || false,
-    status: data.status || 'Unknown',
-    experience: `${data.total_experience} years`,
-    education: data.education?.[0]?.institution || 'Unknown',
-    noticePeriod: data.notice_period_days ? `${data.notice_period_days} days` : 'Unknown',
-    skills: data.skills_data?.skills_mentioned?.map((s: any) => s.skill) || []
-  });
+  
 
   // Debounced filter function
   const debouncedFetchCandidates = useCallback(
     debounce(async (filterParams: any) => {
       try {
-        const response = await fetch('/candidates/search/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify(filterParams)
-        });
-        const data = await response.json();
-        const mappedCandidates = data.results.map(mapCandidate);
-        setCandidates(mappedCandidates);
+        const { results } = await candidateService.searchCandidates(filterParams);
+        setCandidates(results);
       } catch (error) {
-        console.error('Error fetching filtered candidates:', error);
+        console.error("Error fetching filtered candidates:", error);
       }
     }, 300),
     [setCandidates]
