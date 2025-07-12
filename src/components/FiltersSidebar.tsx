@@ -38,7 +38,6 @@ interface FiltersSidebarProps {
     hasPortfolio: boolean;
   };
   onFiltersChange: (filters: any) => void;
-  setCandidates: (candidates: CandidateListItem[]) => void;
 }
 
 const JobTitlesSlider: React.FC = () => {
@@ -192,7 +191,7 @@ type SectionKey =
   | 'spotlight'
   | 'moreFilters';
 
-const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChange, setCandidates }) => {
+const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChange}) => {
   const [expandedSections, setExpandedSections] = useState<Record<SectionKey, boolean>>({
     keywords: true,
     experience: false,
@@ -208,63 +207,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
   });
 
   const [jobTitles, setJobTitles] = useState<string[]>([]);
-  
-
-  // Debounced filter function
-  const debouncedFetchCandidates = useCallback(
-    debounce(async (filterParams: any) => {
-      try {
-        const { results } = await candidateService.searchCandidates(filterParams);
-        setCandidates(results);
-      } catch (error) {
-        console.error("Error fetching filtered candidates:", error);
-      }
-    }, 300),
-    [setCandidates]
-  );
-
-  // Apply filters when they change
-  useEffect(() => {
-    const filterParams: any = {
-      page: 1,
-      page_size: 10
-    };
-    if (filters.keywords) filterParams.q = filters.keywords;
-    if (filters.minTotalExp) filterParams.experience_min = filters.minTotalExp;
-    if (filters.maxTotalExp) filterParams.experience_max = filters.maxTotalExp;
-    if (filters.minExperience) filterParams.exp_in_current_company_min = filters.minExperience;
-    if (filters.topTierUniversities) filterParams.is_top_tier_college = filters.topTierUniversities;
-    if (filters.hasCertification) filterParams.has_certification = filters.hasCertification;
-    if (filters.city || filters.country) filterParams.location = `${filters.city}${filters.city && filters.country ? ", " : ""}${filters.country}`;
-    if (filters.location) filterParams.location = filters.location;
-    if (filters.selectedSkills.length > 0) filterParams.skills = filters.selectedSkills.join(",");
-    if (filters.companies) filterParams.companies = filters.companies.split(",").map((c: string) => c.trim());
-    if (filters.industries) filterParams.industries = filters.industries.split(",").map((i: string) => i.trim());
-    if (filters.minSalary) filterParams.salary_min = filters.minSalary;
-    if (filters.maxSalary) filterParams.salary_max = filters.maxSalary;
-    if (filters.colleges) filterParams.colleges = filters.colleges.split(",").map((c: string) => c.trim());
-    if (filters.showFemaleCandidates) filterParams.is_female_only = true;
-    if (filters.recentlyPromoted) filterParams.is_recently_promoted = true;
-    if (filters.backgroundVerified) filterParams.is_background_verified = true;
-    if (filters.hasLinkedIn) filterParams.has_linkedin = true;
-    if (filters.hasTwitter) filterParams.has_twitter = true;
-    if (filters.hasPortfolio) filterParams.has_portfolio = true;
-    if (filters.computerScienceGraduates) filterParams.is_cs_graduate = true;
-    if (filters.hasResearchPaper) filterParams.has_research_paper = true;
-    if (filters.hasBehance) filterParams.has_behance = true;
-    if (filters.noticePeriod) {
-      const days = {
-        "15 days": 15,
-        "30 days": 30,
-        "45 days": 45,
-        "60 days": 60,
-        "90 days": 90,
-        Immediate: 0,
-      }[filters.noticePeriod];
-      if (days !== undefined) filterParams.notice_period_max_days = days;
-    }
-    debouncedFetchCandidates(filterParams);
-  }, [filters, debouncedFetchCandidates]);
 
   const toggleSection = (section: SectionKey) => {
     setExpandedSections(prev => ({
@@ -779,7 +721,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
         {/* Apply Filters */}
         <div className="mt-2 border border-blue-400 rounded-lg">
           <button 
-            onClick={() => debouncedFetchCandidates(filters)}
+            onClick={() => onFiltersChange(filters)}
             className="w-full px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center justify-center"
           >
             <Filter className="w-4 h-4 mr-2" />
