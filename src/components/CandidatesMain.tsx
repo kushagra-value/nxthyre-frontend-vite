@@ -1,15 +1,14 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { Filter, ChevronDown, MapPin, Bookmark, Eye, Star, Link, File, Github, Linkedin, Twitter, EyeOff, Mail, Phone, ChevronLeft, ChevronRight } from 'lucide-react';
-import { candidateService, CandidateListItem } from "../services/candidateService";
-import { debounce } from 'lodash';
+import { Candidate } from '../data/candidates';
 
 interface CandidatesMainProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  selectedCandidate: CandidateListItem | null;
-  setSelectedCandidate: (candidate: CandidateListItem | null) => void;
+  selectedCandidate: Candidate | null;
+  setSelectedCandidate: (candidate: Candidate | null) => void;
   searchTerm: string;
-  candidates: CandidateListItem[];
+  candidates: Candidate[];
   onPipelinesClick?: () => void;
 }
 
@@ -24,11 +23,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(1); 
-  const [totalPages, setTotalPages] = useState(1);
-  const candidatesPerPage = 10; 
-  const [filteredCandidates, setFilteredCandidates] = useState<CandidateListItem[]>([]);
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const candidatesPerPage = 5;
 
   const tabs = [
     { id: 'outbound', label: 'Outbound', count: candidates.length },
@@ -36,47 +32,6 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     { id: 'inbound', label: 'Inbound', count: 2034 },
     { id: 'prevetted', label: 'Prevetted', count: 2034 }
   ];
-
-  useEffect(() => {
-    const fetchCandidates = async () => {
-      try {
-        const { results, count } = await candidateService.getCandidates(currentPage, candidatesPerPage, activeTab);
-        setFilteredCandidates(results);
-        setTotalPages(Math.ceil(count / candidatesPerPage));
-      } catch (error) {
-        console.error("Error fetching candidates:", error);
-      }
-    };
-    fetchCandidates();
-  }, [currentPage, activeTab]);
-
-  const debouncedFetchCandidates = useCallback(
-    debounce(async (filters: any) => {
-      try {
-        const { results, count } = await candidateService.searchCandidates({
-          ...filters,
-          page: currentPage,
-          page_size: candidatesPerPage,
-          tab: activeTab,
-        });
-        setFilteredCandidates(results);
-        setTotalPages(Math.ceil(count / candidatesPerPage));
-      } catch (error) {
-        console.error("Error fetching filtered candidates:", error);
-      }
-    }, 300),
-    [currentPage, activeTab]
-  );
-
-  useEffect(() => {
-    if (searchTerm) {
-      debouncedFetchCandidates({ q: searchTerm });
-    } else {
-      setFilteredCandidates(candidates);
-      setTotalPages(Math.ceil(candidates.length / candidatesPerPage));
-    }
-  }, [searchTerm, candidates, debouncedFetchCandidates]);
-
 
   const handleCandidateSelect = (candidateId: string) => {
     setSelectedCandidates(prev => 
@@ -86,14 +41,14 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     );
   };
 
-  // const filteredCandidates = candidates.filter(candidate =>
-  //   candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //   candidate.currentRole.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //   candidate.company.toLowerCase().includes(searchTerm.toLowerCase())
-  // );
+  const filteredCandidates = candidates.filter(candidate =>
+    candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    candidate.currentRole.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    candidate.company.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Pagination logic
-  // const totalPages = Math.ceil(filteredCandidates.length / candidatesPerPage);
+  const totalPages = Math.ceil(filteredCandidates.length / candidatesPerPage);
   const startIndex = (currentPage - 1) * candidatesPerPage;
   const endIndex = startIndex + candidatesPerPage;
   const currentCandidates = filteredCandidates.slice(startIndex, endIndex);
@@ -107,7 +62,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     return 'bg-blue-500'; // Single blue color for all profiles
   };
 
-  const getStarCount = (skill: string) => {
+  const getStarCount = (skill) => {
     const sum = skill.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return (sum % 5) + 1; // Returns a number between 1 and 5
   };
@@ -199,15 +154,15 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 onClick={(e) => e.stopPropagation()}
               />
               
-              <div className={`w-14 h-14 ${getAvatarColor(candidate.full_name)} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
+              <div className={`w-14 h-14 ${getAvatarColor(candidate.name)} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
                 {candidate.avatar}
               </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center space-x-2 flex-wrap">
-                    <h3 className="text-base font-semibold text-gray-900">{candidate.full_name}</h3>
-                    {candidate.is_background_verified && (
+                    <h3 className="text-base font-semibold text-gray-900">{candidate.name}</h3>
+                    {candidate.verified && (
                       <div className="flex space-x-1">
                         <span className="mt-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
                           <svg
@@ -266,42 +221,40 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         </span>
                       </div>
                     )}
-                   <span className={`mt-1 px-2 py-1 text-xs rounded-full ${candidate.experience_years.includes("Available") ? "bg-blue-100 text-blue-800" : "bg-blue-100 text-blue-800"}`}>{candidate.experience_years}</span>
+                    <span className={`mt-1 px-2 py-1 text-xs rounded-full ${
+                      candidate.status === 'Available' ? 'bg-blue-100 text-blue-800' : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      2+ years exp
+                    </span>
                   </div>
-
+                  
                   <div className="flex items-center space-x-1">
-                    {candidate.social_links.github && (
-                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
+                    <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
                       <Github className="w-4 h-4" />
                     </button>
-                    )}
-                    {candidate.social_links.linkedin && (
-                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
+                    <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
                       <Linkedin className="w-4 h-4" />
                     </button>
-                    )}
-                    {candidate.social_links.resume && (
-                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
+                    <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
                       <File className="w-4 h-4" />
                     </button>
-                    )}
-                    {candidate.social_links.portfolio && (
-                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
+                    
+                    <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
                       <Link  className="w-4 h-4" />
                     </button>
-                    )}
                   </div>
                 </div>
 
                 <div className="flex space-x-1">
-                  <p className="text-sm text-gray-600 mt-1">{candidate.experience_summary.title} |</p>
-                  <p className="text-sm text-gray-600 mt-1">{candidate.headline} |</p>
+                  <p className="text-sm text-gray-600 mt-1">{candidate.company} |</p>
+                  <p className="text-sm text-gray-600 mt-1">{candidate.currentRole} |</p>
+                  <p className="text-sm text-gray-600 mt-1">{candidate.skillLevel}</p>
                 </div>
 
                 <div className="flex space-x-1">
                   <p className="flex text-sm text-gray-600 mt-1">
-                    <MapPin className="mt-1 w-4 h-3 ml-[-3px]" />
-                    {candidate.location.split(",")[0]}
+                    <MapPin className="mt-1 w-4 h-3 ml-[-3px]"/>
+                    {candidate.city} 
                   </p>
                   {/* <p className="text-sm text-gray-600 mt-1">{candidate.lastActive}</p> */}
                 </div>
@@ -313,30 +266,30 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 <div className="flex justify-between">
                   <div className="flex space-x-12">
                     <span className="text-gray-500">Experience</span>
-                    <p className="text-gray-900">{candidate.experience_summary.title}</p>
+                    <p className="text-gray-900">{candidate.currentRole}</p>
                   </div> 
-                  <p className="text-gray-900">{candidate.experience_summary.date_range}</p>
+                  <p className="text-gray-900">{candidate.experience}</p>
                 </div>
                 <div className="flex justify-between">
                   <div className="flex space-x-12">
                     <span className="text-gray-500 mr-[5px]">Education</span>
-                    <p className="text-gray-900 truncate">{candidate.education_summary.title}</p>
+                    <p className="text-gray-900 truncate">{candidate.education}</p>
                   </div>
-                  <p className="text-gray-900 truncate">{candidate.education_summary.date_range}</p>
+                  <p className="text-gray-900 truncate">2016-2020</p>
                 </div>
                 <div className="flex space-x-6">
                     <span className="text-gray-500 mr-[5px]">Notice Period</span>
-                  <p className="text-gray-900">{candidate.notice_period_summary}</p>
+                  <p className="text-gray-900">{candidate.noticePeriod}</p>
                 </div>
               </div>
             
               <div className="mt-3 flex items-center justify-between space-x-2 flex-wrap gap-2">
                 <div className="mt-3 flex flex-wrap gap-1">
-                  {candidate.skills_list.slice(0, 3).map((skill, index) => (
+                  {candidate.skills.slice(0,3).map((skill, index) => (
                     <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
                       {skill}
                       {Array.from({ length: getStarCount(skill) }).map((_, i) => (
-                        <Star key={i} size={11} className="inline-block ml-1 mb-1 text-blue-600" />
+                        <Star key={i} size={11} className="inline-block ml-1 mb-1 text-blue-600 text-[3px]" />
                       ))}
                     </span>
                   ))}
@@ -358,31 +311,46 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       </div>
 
       {/* Pagination */}
-      <div className="p-3 lg:p-4 flex items-center justify-between border-t border-gray-200">
-        <div className="text-sm text-gray-600">
-          Showing {(currentPage - 1) * candidatesPerPage + 1} to{" "}
-          {Math.min(currentPage * candidatesPerPage, filteredCandidates.length)} of {filteredCandidates.length}{" "}
-          candidates
+      {totalPages > 1 && (
+        <div className="p-3 lg:p-4 border-t border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Showing {startIndex + 1} to {Math.min(endIndex, filteredCandidates.length)} of {filteredCandidates.length} candidates
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                    currentPage === page
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Previous
-          </button>
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-          >
-            Next
-            <ChevronRight className="w-4 h-4 ml-1" />
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

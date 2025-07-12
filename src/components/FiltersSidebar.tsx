@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, Briefcase, Building2, Clock10, MapPin, GraduationCap, ChevronDown, ChevronUp, Filter, DollarSign, Award, Users, Star, History, ChevronLeft, ChevronRight, CircleEllipsis } from 'lucide-react';
-import { debounce } from 'lodash';
-import { candidateService, CandidateListItem } from "../services/candidateService";
 
 interface FiltersSidebarProps {
   filters: {
@@ -38,7 +36,6 @@ interface FiltersSidebarProps {
     hasPortfolio: boolean;
   };
   onFiltersChange: (filters: any) => void;
-  setCandidates: (candidates: CandidateListItem[]) => void;
 }
 
 const JobTitlesSlider: React.FC = () => {
@@ -106,19 +103,14 @@ const JobTitlesSlider: React.FC = () => {
   );
 };
 
-interface FilterMenuProps {
-  filters: FiltersSidebarProps['filters'];
-  updateFilters: (key: string, value: any) => void;
-}
-
-const FilterMenu: React.FC<FilterMenuProps> = ({ filters, updateFilters }) => {
+const FilterMenu = ({ filters, updateFilters }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   useEffect(() => {
-    const handleClickOutside = (event:any) => {
+    const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsMenuOpen(false);
       }
@@ -179,21 +171,8 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ filters, updateFilters }) => {
   );
 };
 
-type SectionKey =
-  | 'keywords'
-  | 'experience'
-  | 'totalExp'
-  | 'location'
-  | 'companies'
-  | 'salary'
-  | 'skills'
-  | 'notice'
-  | 'colleges'
-  | 'spotlight'
-  | 'moreFilters';
-
-const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChange, setCandidates }) => {
-  const [expandedSections, setExpandedSections] = useState<Record<SectionKey, boolean>>({
+const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChange }) => {
+  const [expandedSections, setExpandedSections] = useState({
     keywords: true,
     experience: false,
     totalExp: true,
@@ -207,66 +186,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
     moreFilters: false
   });
 
-  const [jobTitles, setJobTitles] = useState<string[]>([]);
-  
-
-  // Debounced filter function
-  const debouncedFetchCandidates = useCallback(
-    debounce(async (filterParams: any) => {
-      try {
-        const { results } = await candidateService.searchCandidates(filterParams);
-        setCandidates(results);
-      } catch (error) {
-        console.error("Error fetching filtered candidates:", error);
-      }
-    }, 300),
-    [setCandidates]
-  );
-
-  // Apply filters when they change
-  useEffect(() => {
-    const filterParams: any = {
-      page: 1,
-      page_size: 10
-    };
-    if (filters.keywords) filterParams.q = filters.keywords;
-    if (filters.minTotalExp) filterParams.experience_min = filters.minTotalExp;
-    if (filters.maxTotalExp) filterParams.experience_max = filters.maxTotalExp;
-    if (filters.minExperience) filterParams.exp_in_current_company_min = filters.minExperience;
-    if (filters.topTierUniversities) filterParams.is_top_tier_college = filters.topTierUniversities;
-    if (filters.hasCertification) filterParams.has_certification = filters.hasCertification;
-    if (filters.city || filters.country) filterParams.location = `${filters.city}${filters.city && filters.country ? ", " : ""}${filters.country}`;
-    if (filters.location) filterParams.location = filters.location;
-    if (filters.selectedSkills.length > 0) filterParams.skills = filters.selectedSkills.join(",");
-    if (filters.companies) filterParams.companies = filters.companies.split(",").map((c: string) => c.trim());
-    if (filters.industries) filterParams.industries = filters.industries.split(",").map((i: string) => i.trim());
-    if (filters.minSalary) filterParams.salary_min = filters.minSalary;
-    if (filters.maxSalary) filterParams.salary_max = filters.maxSalary;
-    if (filters.colleges) filterParams.colleges = filters.colleges.split(",").map((c: string) => c.trim());
-    if (filters.showFemaleCandidates) filterParams.is_female_only = true;
-    if (filters.recentlyPromoted) filterParams.is_recently_promoted = true;
-    if (filters.backgroundVerified) filterParams.is_background_verified = true;
-    if (filters.hasLinkedIn) filterParams.has_linkedin = true;
-    if (filters.hasTwitter) filterParams.has_twitter = true;
-    if (filters.hasPortfolio) filterParams.has_portfolio = true;
-    if (filters.computerScienceGraduates) filterParams.is_cs_graduate = true;
-    if (filters.hasResearchPaper) filterParams.has_research_paper = true;
-    if (filters.hasBehance) filterParams.has_behance = true;
-    if (filters.noticePeriod) {
-      const days = {
-        "15 days": 15,
-        "30 days": 30,
-        "45 days": 45,
-        "60 days": 60,
-        "90 days": 90,
-        Immediate: 0,
-      }[filters.noticePeriod];
-      if (days !== undefined) filterParams.notice_period_max_days = days;
-    }
-    debouncedFetchCandidates(filterParams);
-  }, [filters, debouncedFetchCandidates]);
-
-  const toggleSection = (section: SectionKey) => {
+  const toggleSection = (section: string) => {
     setExpandedSections(prev => ({
       ...prev,
       [section]: !prev[section]
@@ -313,26 +233,26 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
 
   const clearAllFilters = () => {
     onFiltersChange({
-      keywords: "",
+      keywords: '',
       booleanSearch: false,
       semanticSearch: false,
       selectedCategories: [],
-      minExperience: "",
-      maxExperience: "",
+      minExperience: '',
+      maxExperience: '',
       funInCurrentCompany: false,
-      minTotalExp: "",
-      maxTotalExp: "",
-      city: "",
-      country: "",
-      location: "",
+      minTotalExp: '',
+      maxTotalExp: '',
+      city: '',
+      country: '',
+      location: '',
       selectedSkills: [],
-      skillLevel: "",
-      noticePeriod: "",
-      companies: "",
-      industries: "",
-      minSalary: "",
-      maxSalary: "",
-      colleges: "",
+      skillLevel: '',
+      noticePeriod: '',
+      companies: '',
+      industries: '',
+      minSalary: '',
+      maxSalary: '',
+      colleges: '',
       topTierUniversities: false,
       computerScienceGraduates: false,
       showFemaleCandidates: false,
@@ -343,7 +263,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
       hasLinkedIn: false,
       hasBehance: false,
       hasTwitter: false,
-      hasPortfolio: false,
+      hasPortfolio: false
     });
   };
 
@@ -779,7 +699,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
         {/* Apply Filters */}
         <div className="mt-2 border border-blue-400 rounded-lg">
           <button 
-            onClick={() => debouncedFetchCandidates(filters)}
+            onClick={clearAllFilters}
             className="w-full px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center justify-center"
           >
             <Filter className="w-4 h-4 mr-2" />
