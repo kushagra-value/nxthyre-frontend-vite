@@ -1,39 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Filter, ChevronDown, MapPin, Bookmark, Eye, Star, Link, File, Github, Linkedin, Twitter, EyeOff, Mail, Phone, ChevronLeft, ChevronRight } from 'lucide-react';
-// import { Candidate } from '../data/candidates';
+import { candidateService, CandidateListItem } from "../services/candidateService";
 import { debounce } from 'lodash';
-
-interface Candidate {
-  id: string;
-  name: string;
-  avatar: string;
-  company: string;
-  currentRole: string;
-  skillLevel: string;
-  city: string;
-  verified: boolean;
-  status: string;
-  experience: string;
-  education: string;
-  noticePeriod: string;
-  skills: string[];
-  headline: string;
-  currentCompanyExperience: string;
-  linkedInUrl?: string;
-  githubUrl?: string;
-  portfolioUrl?: string;
-  resumeUrl?: string;
-  graduationYears:string;
-  location?: string;
-}
 
 interface CandidatesMainProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  selectedCandidate: Candidate | null;
-  setSelectedCandidate: (candidate: Candidate | null) => void;
+  selectedCandidate: CandidateListItem | null;
+  setSelectedCandidate: (candidate: CandidateListItem | null) => void;
   searchTerm: string;
-  candidates: Candidate[];
+  // FIX: The `candidates` prop is removed as it causes logical conflicts.
+  // The component will now manage its own candidate list internally based on the activeTab.
   onPipelinesClick?: () => void;
 }
 
@@ -43,154 +20,148 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   selectedCandidate,
   setSelectedCandidate,
   searchTerm,
-  candidates,
   onPipelinesClick
 }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(1); 
+  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const candidatesPerPage = 10; 
-  const [filteredCandidates, setFilteredCandidates] = useState<Candidate[]>([]);
+  const [loading, setLoading] = useState(true);
+  // FIX: Initialize filteredCandidates as an empty array to prevent crashes.
+  const [filteredCandidates, setFilteredCandidates] = useState<CandidateListItem[]>([]);
+  const [totalCount, setTotalCount] = useState(0); // State to hold the total number of candidates.
 
+  const candidatesPerPage = 20;
 
   const tabs = [
-    { id: 'outbound', label: 'Outbound', count: candidates.length },
+    // FIX: The count is now driven by the `totalCount` state for accuracy.
+    { id: 'outbound', label: 'Outbound', count: activeTab === 'outbound' ? totalCount : 0 },
     { id: 'active', label: 'Active', count: 2034 },
     { id: 'inbound', label: 'Inbound', count: 2034 },
     { id: 'prevetted', label: 'Prevetted', count: 2034 }
   ];
 
-  // Map backend candidate data to frontend format
-  const mapCandidate = (data: any): Candidate => ({
-    id: data.id,
-    name: data.full_name,
-    avatar: data.full_name
-      .split(' ')
-      .map((n: string) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2),
-    company: data.experience?.find((exp: any) => exp.is_current)?.company || 'Unknown',
-    currentRole: data.experience?.find((exp: any) => exp.is_current)?.job_title || 'Unknown',
-    skillLevel: data.skills_data?.skills_mentioned?.length > 0 ? 'Expert' : 'Unknown',
-    city: data.location?.split(',')[0] || 'Unknown',
-    verified: data.is_background_verified || false,
-    status: data.status || 'Unknown',
-    experience: `${data.total_experience} years`,
-    education: data.education?.[0]?.institution || 'Unknown',
-    noticePeriod: data.notice_period_days ? `${data.notice_period_days} days` : 'Unknown',
-    skills: data.skills_data?.skills_mentioned?.map((s: any) => s.skill) || [],
-    headline: data.headline || 'No headline available',
-    currentCompanyExperience: data.experience?.find((exp: any) => exp.is_current)?.years_of_experience || 'Unknown',
-    linkedInUrl: data.social_links?.linkedIn || '',
-    githubUrl: data.social_links?.github || '',
-    portfolioUrl: data.social_links?.portfolio || '',
-    resumeUrl: data.resume_url || '',
-    graduationYears: data.education?.map((edu: any) => `${new Date(edu.start_date).getFullYear()}-${new Date(edu.end_date).getFullYear()}`).join(', ') || 'Unknown',
-    location: data.location || 'Unknown',
-  });
-
-  // Fetch candidates from backend
-  useEffect(() => {
-    const fetchCandidates = async () => {
-      try {
-        const response = await fetch(`/api/candidates/candidates/`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } // Adjust for your auth method
-        });
-        const data = await response.json();
-        const mappedCandidates = data.results.map(mapCandidate);
-        setFilteredCandidates(mappedCandidates);
-        setTotalPages(Math.ceil(data.count / candidatesPerPage));
-      } catch (error) {
-        console.error('Error fetching candidates:', error);
+  // FIX: Encapsulated the fetch logic into a single, cancellable function.
+  // This useCallback will handle both regular fetches and search queries.
+  const fetchAndSetCandidates = useCallback(async (searchQuery: string, page: number, signal: AbortSignal) => {
+    setLoading(true);
+    try {
+      const { results, count } = await candidateService.searchCandidates({
+        q: searchQuery,
+        page: page,
+        page_size: candidatesPerPage,
+        tab: activeTab,
+      }); 
+      
+      // If the request was not aborted, update the state.
+      if (!signal.aborted) {
+        setFilteredCandidates(results||[]);
+        setTotalCount(count || 0);
+        setTotalPages(Math.ceil((count || 0) / candidatesPerPage) || 1); // Ensure totalPages is at least 1
       }
-    };
-    fetchCandidates();
-  }, [currentPage]);
-
-  const debouncedFetchCandidates = useCallback(
-    debounce(async (filters: any) => {
-      try {
-        const response = await fetch('/api/candidates/candidates/search/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}` // Adjust for your auth method
-          },
-          body: JSON.stringify({
-            ...filters,
-            page: currentPage,
-            page_size: candidatesPerPage
-          })
-        });
-        const data = await response.json();
-        const mappedCandidates = data.results.map(mapCandidate);
-        setFilteredCandidates(mappedCandidates);
-        setTotalPages(Math.ceil(data.count / candidatesPerPage));
-      } catch (error) {
-        console.error('Error fetching filtered candidates:', error);
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.log("Fetch aborted");
+      } else {
+        console.error("Error fetching candidates:", error);
+      setFilteredCandidates([]);
+      setTotalCount(0);
+      setTotalPages(1);
       }
-    }, 300),
-    [currentPage]
-  );
-
-  // Apply filters when searchTerm or activeTab changes
-  useEffect(() => {
-    if (searchTerm) {
-      debouncedFetchCandidates({ q: searchTerm });
-    } else {
-      // Reset to unfiltered list when searchTerm is cleared
-      const fetchCandidates = async () => {
-        try {
-          const response = await fetch(`/api/candidates/candidates/`, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-          });
-          const data = await response.json();
-          const mappedCandidates = data.results.map(mapCandidate);
-          setFilteredCandidates(mappedCandidates);
-          setTotalPages(Math.ceil(data.count / candidatesPerPage));
-        } catch (error) {
-          console.error('Error fetching candidates:', error);
-        }
-      };
-      fetchCandidates();
+    } finally {
+      // Only set loading to false if the request wasn't aborted
+      // to prevent a brief flash of content before a new request starts.
+      if (!signal.aborted) {
+        setLoading(false);
+      }
     }
-  }, [searchTerm, activeTab, currentPage, debouncedFetchCandidates]);
+  }, [activeTab, candidatesPerPage]); // Dependencies for recreating the fetch logic.
+
+
+  // FIX: This useEffect now handles all data fetching, including search.
+  // It uses an AbortController to prevent race conditions.
+  useEffect(() => {
+    // Reset to page 1 whenever the search term or tab changes.
+    setCurrentPage(1); 
+    
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    // Use a debounced function for typing, but fetch immediately for tab changes.
+    const debouncedFetch = debounce(() => {
+        fetchAndSetCandidates(searchTerm, 1, signal);
+    }, 300);
+
+    if (searchTerm) {
+      debouncedFetch();
+    } else {
+      // If search term is empty, fetch immediately.
+      fetchAndSetCandidates("", 1, signal);
+    }
+    
+    // Cleanup function: This is crucial to prevent race conditions.
+    // It aborts the pending request when the component unmounts or dependencies change.
+    return () => {
+      debouncedFetch.cancel();
+      controller.abort();
+    };
+  }, [searchTerm, activeTab, fetchAndSetCandidates]);
+
+  // Effect for handling page changes
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchAndSetCandidates(searchTerm, currentPage, controller.signal);
+
+    return () => {
+      controller.abort();
+    };
+  }, [currentPage, fetchAndSetCandidates]);
+
 
   const handleCandidateSelect = (candidateId: string) => {
-    setSelectedCandidates(prev => 
-      prev.includes(candidateId) 
+    setSelectedCandidates(prev =>
+      prev.includes(candidateId)
         ? prev.filter(id => id !== candidateId)
         : [...prev, candidateId]
     );
   };
 
-  // const filteredCandidates = candidates.filter(candidate =>
-  //   candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //   candidate.currentRole.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //   candidate.company.toLowerCase().includes(searchTerm.toLowerCase())
-  // );
+  const handleSelectAll = (checked: boolean) => {
+    setSelectAll(checked);
+    if (checked) {
+      // Select only the IDs of the candidates on the current page.
+      setSelectedCandidates(filteredCandidates.map((candidate) => candidate.id));
+    } else {
+      setSelectedCandidates([]);
+    }
+  };
 
-  // Pagination logic
-  // const totalPages = Math.ceil(filteredCandidates.length / candidatesPerPage);
-  const startIndex = (currentPage - 1) * candidatesPerPage;
-  const endIndex = startIndex + candidatesPerPage;
-  const currentCandidates = filteredCandidates.slice(startIndex, endIndex);
+  // FIX: Simplified and safe pagination logic.
+  // Renamed to avoid confusion with the state variable.
+  const currentCandidatesOnPage = filteredCandidates;
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    setSelectedCandidate(null); // Clear selection when changing pages
+    if (page > 0 && page <= totalPages) {
+      setCurrentPage(page);
+      setSelectedCandidate(null); // Clear selection when changing pages
+    }
   };
-
-  const getAvatarColor = (name: string) => {
-    return 'bg-blue-500'; // Single blue color for all profiles
-  };
+  
+  const getAvatarColor = (name: string) => 'bg-blue-500';
 
   const getStarCount = (skill: string) => {
     const sum = skill.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return (sum % 5) + 1; // Returns a number between 1 and 5
+    return (sum % 5) + 1;
   };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="text-gray-600 mt-2">Loading candidates...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -209,7 +180,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 }`}
               >
                 {tab.label}
-                {tab.count && (
+                 {/* FIX: Safely render count only if it's a positive number */}
+                {tab.count > 0 && (
                   <span className="ml-2 px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded-full">
                     {tab.count}
                   </span>
@@ -218,7 +190,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             ))}
           </div>
           <div>
-            <button 
+            <button
               onClick={onPipelinesClick}
               className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
             >
@@ -236,10 +208,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               <input
                 type="checkbox"
                 checked={selectAll}
-                onChange={(e) => setSelectAll(e.target.checked)}
+                onChange={(e) => handleSelectAll(e.target.checked)}
                 className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
               />
-              <span className="ml-2 text-sm text-gray-600">Select all</span>
+              {/* FIX: Clarified label to match functionality */}
+              <span className="ml-2 text-sm text-gray-600">Select all on page</span>
             </label>
             <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
                 Add To Pipeline
@@ -262,9 +235,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
       {/* Candidates List */}
       <div className="divide-y divide-gray-200">
-        {currentCandidates.map((candidate) => (
-          <div 
-            key={candidate.id} 
+        {currentCandidatesOnPage.map((candidate) => (
+          <div
+            key={candidate.id}
             className={`p-3 lg:p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
               selectedCandidate?.id === candidate.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
             }`}
@@ -279,15 +252,15 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 onClick={(e) => e.stopPropagation()}
               />
               
-              <div className={`w-14 h-14 ${getAvatarColor(candidate.name)} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
+              <div className={`w-14 h-14 ${getAvatarColor(candidate.full_name)} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
                 {candidate.avatar}
               </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center space-x-2 flex-wrap">
-                    <h3 className="text-base font-semibold text-gray-900">{candidate.name}</h3>
-                    {candidate.verified && (
+                    <h3 className="text-base font-semibold text-gray-900">{candidate.full_name}</h3>
+                    {candidate.is_background_verified && (
                       <div className="flex space-x-1">
                         <span className="mt-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
                           <svg
@@ -346,75 +319,73 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         </span>
                       </div>
                     )}
-                    <span className={`mt-1 px-2 py-1 text-xs rounded-full ${
-                      candidate.status === 'Available' ? 'bg-blue-100 text-blue-800' : 'bg-blue-100 text-blue-800'
-                    }`}>
-                       {candidate.experience}
-                    </span>
+                    {/* FIX: Use optional chaining for safer access */}
+                   <span className={`mt-1 px-2 py-1 text-xs rounded-full ${candidate.experience_years?.includes("Available") ? "bg-blue-100 text-blue-800" : "bg-blue-100 text-blue-800"}`}>{candidate.experience_years}</span>
                   </div>
-                  
                   <div className="flex items-center space-x-1">
-                    <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
-                      <Github className="w-4 h-4" />
-                    </button>
-                    <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
-                      <Linkedin className="w-4 h-4" />
-                    </button>
-                    <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
+                     {/* FIX: Safer rendering with optional chaining */}
+                    {candidate.social_links?.github && (
+                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
+                        <Github className="w-4 h-4" />
+                      </button>
+                    )}
+                    {candidate.social_links?.linkedin && (
+                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
+                        <Linkedin className="w-4 h-4" />
+                      </button>
+                    )}
+                    {candidate.social_links?.resume && (
+                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
                       <File className="w-4 h-4" />
                     </button>
-                    
-                    <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
+                    )}
+                    {candidate.social_links?.portfolio && (
+                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
                       <Link  className="w-4 h-4" />
                     </button>
+                    )}
                   </div>
                 </div>
-
                 <div className="flex space-x-1">
-                  <p className="text-sm text-gray-600 mt-1">{candidate.company} |</p>
-                  <p className="text-sm text-gray-600 mt-1">{candidate.currentRole} |</p>
-                  <p className="text-sm text-gray-600 mt-1">{candidate.skillLevel}</p>
+                   {/* FIX: Safer rendering with optional chaining */}
+                  <p className="text-sm text-gray-600 mt-1">{candidate.experience_summary?.title} |</p>
+                  <p className="text-sm text-gray-600 mt-1">{candidate.headline} |</p>
                 </div>
-
                 <div className="flex space-x-1">
                   <p className="flex text-sm text-gray-600 mt-1">
-                    <MapPin className="mt-1 w-4 h-3 ml-[-3px]"/>
-                    {candidate.city} 
+                    <MapPin className="mt-1 w-4 h-3 ml-[-3px]" />
+                    {candidate.location?.split(",")[0]}
                   </p>
-                  {/* <p className="text-sm text-gray-600 mt-1">{candidate.lastActive}</p> */}
                 </div>
               </div>
             </div>
-
             <div className="p-3 lg:pl-8 lg:py-4 bg-gradient-to-r from-gray-100 via-white to-white">
               <div className="mt-2 grid grid-cols-1 gap-2 text-sm ml-1">
+                 {/* FIX: Safer rendering with optional chaining */}
                 <div className="flex justify-between">
                   <div className="flex space-x-12">
                     <span className="text-gray-500">Experience</span>
-                    <p className="text-gray-900">{candidate.currentRole}</p>
-                  </div> 
-                  <p className="text-gray-900">{candidate.experience}</p>
+                    <p className="text-gray-900">{candidate.experience_summary?.title}</p>
+                  </div>
+                  <p className="text-gray-900">{candidate.experience_summary?.date_range}</p>
                 </div>
                 <div className="flex justify-between">
                   <div className="flex space-x-12">
                     <span className="text-gray-500 mr-[5px]">Education</span>
-                    <p className="text-gray-900 truncate">{candidate.education}</p>
+                    <p className="text-gray-900 truncate">{candidate.education_summary?.title}</p>
                   </div>
-                  <p className="text-gray-900 truncate">{candidate.graduationYears}</p>
-                </div>
-                <div className="flex space-x-6">
-                    <span className="text-gray-500 mr-[5px]">Notice Period</span>
-                  <p className="text-gray-900">{candidate.noticePeriod}</p>
+                  <p className="text-gray-900 truncate">{candidate.education_summary?.date_range}</p>
                 </div>
               </div>
             
               <div className="mt-3 flex items-center justify-between space-x-2 flex-wrap gap-2">
                 <div className="mt-3 flex flex-wrap gap-1">
-                  {candidate.skills.slice(0,3).map((skill, index) => (
+                  {/* FIX: Use optional chaining to prevent crash if skills_list is missing */}
+                  {candidate.skills_list?.slice(0, 3).map((skill, index) => (
                     <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
                       {skill}
                       {Array.from({ length: getStarCount(skill) }).map((_, i) => (
-                        <Star key={i} size={11} className="inline-block ml-1 mb-1 text-blue-600 text-[3px]" />
+                        <Star key={i} size={11} className="inline-block ml-1 mb-1 text-blue-600" />
                       ))}
                     </span>
                   ))}
@@ -436,46 +407,32 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="p-3 lg:p-4 border-t border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">
-              Showing {startIndex + 1} to {Math.min(endIndex, filteredCandidates.length)} of {filteredCandidates.length} candidates
-            </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => handlePageChange(page)}
-                  className={`px-3 py-1 text-sm rounded-lg transition-colors ${
-                    currentPage === page
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-              
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+      <div className="p-3 lg:p-4 flex items-center justify-between border-t border-gray-200">
+        <div className="text-sm text-gray-600">
+          {/* FIX: Display logic is now safer and reflects total count from API */}
+          Showing {(currentPage - 1) * candidatesPerPage + 1} to{" "}
+          {Math.min(currentPage * candidatesPerPage, totalCount)} of {totalCount}{" "}
+          candidates
         </div>
-      )}
+        <div className="flex space-x-2">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            Previous
+          </button>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            Next
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
