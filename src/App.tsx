@@ -136,6 +136,24 @@ function MainApp() {
     // Add more categories as needed
   ];
 
+  useEffect(() => {
+      if (isAuthenticated) {
+        const fetchInitialCandidates = async () => {
+          try {
+            const { results } = await candidateService.getCandidates(1, 10, activeTab);
+            setCandidates(results);
+            if (!selectedCandidate && results.length > 0) {
+              setSelectedCandidate(results[0]);
+            }
+          } catch (error: any) {
+            console.error("Error fetching initial candidates:", error);
+            showToast.error("Failed to load candidates");
+          }
+        };
+        fetchInitialCandidates();
+      }
+    }, [isAuthenticated, activeTab]);
+
       // const filteredCandidates = useMemo(() => {
   //   if (!isAuthenticated) return [];
     
@@ -599,10 +617,7 @@ function MainApp() {
                       <div className="lg:col-span-3 order-2 lg:order-1 sticky top-16 self-start will-change-transform">
                         <FiltersSidebar
                           filters={filters}
-                          onFiltersChange={(newFilters) => {
-                            setFilters(newFilters);
-                            setSearchTerm(newFilters.keywords); // Sync keywords with searchTerm
-                          }}
+                          onFiltersChange={setFilters}
                           setCandidates={setCandidates}
                         />
                       </div>
