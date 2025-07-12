@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Filter, ChevronDown, MapPin, Bookmark, Eye, Star, Link, File, Github, Linkedin, Twitter, EyeOff, Mail, Phone, ChevronLeft, ChevronRight } from 'lucide-react';
-import { CandidateListItem } from "../services/candidateService";
+import { candidateService, CandidateListItem } from "../services/candidateService";
+import { debounce } from 'lodash';
 
 interface CandidatesMainProps {
   activeTab: string;
@@ -11,12 +12,6 @@ interface CandidatesMainProps {
   // FIX: The `candidates` prop is removed as it causes logical conflicts.
   // The component will now manage its own candidate list internally based on the activeTab.
   onPipelinesClick?: () => void;
-
-  candidates: CandidateListItem[];
-  loading: boolean;
-  totalCount: number;
-  currentPage: number;
-  onPageChange: (page: number) => void;
 }
 
 const CandidatesMain: React.FC<CandidatesMainProps> = ({
@@ -25,26 +20,103 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   selectedCandidate,
   setSelectedCandidate,
   searchTerm,
-  onPipelinesClick,
-  candidates,
-  loading,
-  totalCount,
-  currentPage,
-  onPageChange,
+  onPipelinesClick
 }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
-  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  // FIX: Initialize filteredCandidates as an empty array to prevent crashes.
+  const [filteredCandidates, setFilteredCandidates] = useState<CandidateListItem[]>([]);
+  const [totalCount, setTotalCount] = useState(0); // State to hold the total number of candidates.
+
   const candidatesPerPage = 20;
-  const totalPages = Math.ceil(totalCount / candidatesPerPage) || 1;
 
   const tabs = [
     // FIX: The count is now driven by the `totalCount` state for accuracy.
     { id: 'outbound', label: 'Outbound', count: activeTab === 'outbound' ? totalCount : 0 },
-    { id: 'active', label: 'Active', count: activeTab === 'active' ? totalCount : 0 },
-    { id: 'inbound', label: 'Inbound',count: activeTab === 'inbound' ? totalCount : 0 },
-    { id: 'prevetted', label: 'Prevetted', count: activeTab === 'prevetted' ? totalCount : 0 },
-  ]; 
+    { id: 'active', label: 'Active', count: 2034 },
+    { id: 'inbound', label: 'Inbound', count: 2034 },
+    { id: 'prevetted', label: 'Prevetted', count: 2034 }
+  ];
+
+  // FIX: Encapsulated the fetch logic into a single, cancellable function.
+  // This useCallback will handle both regular fetches and search queries.
+  const fetchAndSetCandidates = useCallback(async (searchQuery: string, page: number, signal: AbortSignal) => {
+    setLoading(true);
+    try {
+      const { results, count } = await candidateService.searchCandidates({
+        q: searchQuery,
+        page: page,
+        page_size: candidatesPerPage,
+        tab: activeTab,
+      }); 
+      
+      // If the request was not aborted, update the state.
+      if (!signal.aborted) {
+        setFilteredCandidates(results||[]);
+        setTotalCount(count || 0);
+        setTotalPages(Math.ceil((count || 0) / candidatesPerPage) || 1); // Ensure totalPages is at least 1
+      }
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.log("Fetch aborted");
+      } else {
+        console.error("Error fetching candidates:", error);
+      setFilteredCandidates([]);
+      setTotalCount(0);
+      setTotalPages(1);
+      }
+    } finally {
+      // Only set loading to false if the request wasn't aborted
+      // to prevent a brief flash of content before a new request starts.
+      if (!signal.aborted) {
+        setLoading(false);
+      }
+    }
+  }, [activeTab, candidatesPerPage]); // Dependencies for recreating the fetch logic.
+
+
+  // FIX: This useEffect now handles all data fetching, including search.
+  // It uses an AbortController to prevent race conditions.
+  useEffect(() => {
+    // Reset to page 1 whenever the search term or tab changes.
+    setCurrentPage(1); 
+    
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    // Use a debounced function for typing, but fetch immediately for tab changes.
+    const debouncedFetch = debounce(() => {
+        fetchAndSetCandidates(searchTerm, 1, signal);
+    }, 300);
+
+    if (searchTerm) {
+      debouncedFetch();
+    } else {
+      // If search term is empty, fetch immediately.
+      fetchAndSetCandidates("", 1, signal);
+    }
+    
+    // Cleanup function: This is crucial to prevent race conditions.
+    // It aborts the pending request when the component unmounts or dependencies change.
+    return () => {
+      debouncedFetch.cancel();
+      controller.abort();
+    };
+  }, [searchTerm, activeTab, fetchAndSetCandidates]);
+
+  // Effect for handling page changes
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchAndSetCandidates(searchTerm, currentPage, controller.signal);
+
+    return () => {
+      controller.abort();
+    };
+  }, [currentPage, fetchAndSetCandidates]);
+
 
   const handleCandidateSelect = (candidateId: string) => {
     setSelectedCandidates(prev =>
@@ -58,7 +130,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     setSelectAll(checked);
     if (checked) {
       // Select only the IDs of the candidates on the current page.
-      setSelectedCandidates(candidates.map((candidate) => candidate.id));
+      setSelectedCandidates(filteredCandidates.map((candidate) => candidate.id));
     } else {
       setSelectedCandidates([]);
     }
@@ -66,13 +138,12 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
   // FIX: Simplified and safe pagination logic.
   // Renamed to avoid confusion with the state variable.
-  const currentCandidatesOnPage = candidates;
+  const currentCandidatesOnPage = filteredCandidates;
 
   const handlePageChange = (page: number) => {
-    // Inform the parent about the page change
     if (page > 0 && page <= totalPages) {
-      onPageChange(page);
-      setSelectedCandidate(null);
+      setCurrentPage(page);
+      setSelectedCandidate(null); // Clear selection when changing pages
     }
   };
   

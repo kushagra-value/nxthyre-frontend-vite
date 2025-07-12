@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback} from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./hooks/useAuth";
@@ -12,7 +12,6 @@ import CreateJobRoleModal from "./components/CreateJobRoleModal";
 import EditTemplateModal from "./components/EditTemplateModal";
 import CategoryDropdown from "./components/CategoryDropdown";
 import PipelineStages from "./components/PipelineStages";
-import { debounce } from 'lodash';
 import AuthApp from "./components/AuthApp";
 import LinkedInAuth from "./components/auth/LinkedInAuth"; // Import LinkedInAuth
 import Settings from "./components/Settings";
@@ -84,9 +83,6 @@ function MainApp() {
   const [showCategoryActions, setShowCategoryActions] = useState<string | null>(
     null
   );
-  const [totalCount, setTotalCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
 
   // Share Pipelines state
   const [showShareLoader, setShowShareLoader] = useState(false);
@@ -126,80 +122,10 @@ function MainApp() {
     hasPortfolio: false,
   });
 
-  const debouncedFetchCandidates = useCallback(
-    debounce(async (allFilters:any, page:any) => {
-      setLoading(true);
-      // Construct the filter parameters from all state sources
-      const filterParams: any = {
-        page: page,
-        page_size: 20, // Match the page size in CandidatesMain
-        q: allFilters.keywords || searchTerm,
-        tab: activeTab,
-      };
-      if (filters.keywords) filterParams.q = filters.keywords;
-      if (filters.minTotalExp) filterParams.experience_min = filters.minTotalExp;
-      if (filters.maxTotalExp) filterParams.experience_max = filters.maxTotalExp;
-      if (filters.minExperience) filterParams.exp_in_current_company_min = filters.minExperience;
-      if (filters.topTierUniversities) filterParams.is_top_tier_college = filters.topTierUniversities;
-      if (filters.hasCertification) filterParams.has_certification = filters.hasCertification;
-      if (filters.city || filters.country) filterParams.location = `${filters.city}${filters.city && filters.country ? ", " : ""}${filters.country}`;
-      if (filters.location) filterParams.location = filters.location;
-      if (filters.selectedSkills.length > 0) filterParams.skills = filters.selectedSkills.join(",");
-      if (filters.companies) filterParams.companies = filters.companies.split(",").map((c: string) => c.trim());
-      if (filters.industries) filterParams.industries = filters.industries.split(",").map((i: string) => i.trim());
-      if (filters.minSalary) filterParams.salary_min = filters.minSalary;
-      if (filters.maxSalary) filterParams.salary_max = filters.maxSalary;
-      if (filters.colleges) filterParams.colleges = filters.colleges.split(",").map((c: string) => c.trim());
-      if (filters.showFemaleCandidates) filterParams.is_female_only = true;
-      if (filters.recentlyPromoted) filterParams.is_recently_promoted = true;
-      if (filters.backgroundVerified) filterParams.is_background_verified = true;
-      if (filters.hasLinkedIn) filterParams.has_linkedin = true;
-      if (filters.hasTwitter) filterParams.has_twitter = true;
-      if (filters.hasPortfolio) filterParams.has_portfolio = true;
-      if (filters.computerScienceGraduates) filterParams.is_cs_graduate = true;
-      if (filters.hasResearchPaper) filterParams.has_research_paper = true;
-      if (filters.hasBehance) filterParams.has_behance = true;
-      if (filters.noticePeriod) {
-        const days = {
-          "15 days": 15,
-          "30 days": 30,
-          "45 days": 45,
-          "60 days": 60,
-          "90 days": 90,
-          Immediate: 0,
-        }[filters.noticePeriod];
-        if (days !== undefined) filterParams.notice_period_max_days = days;
-      try {
-        const { results, count } = await candidateService.searchCandidates(filterParams);
-        setCandidates(results || []);
-        setTotalCount(count || 0);
-      } catch (error) {
-        console.error("Error fetching filtered candidates:", error);
-        setCandidates([]); // Reset on error
-        setTotalCount(0);
-      } finally {
-        setLoading(false);
-      }
-    }
-    }, 300),
-    [searchTerm, activeTab] // Recreate debounce if top-level filters change
-  );
-
-  useEffect(() => {
-    // This effect now triggers on any filter change, search term, or tab change.
-    // We also reset to page 1 whenever the filters change.
-    setCurrentPage(1); 
-    debouncedFetchCandidates(filters, 1);
-  }, [filters, searchTerm, activeTab, debouncedFetchCandidates]);
-  
-  useEffect(() => {
-    // This separate effect handles pagination changes without resetting filters.
-    debouncedFetchCandidates(filters, currentPage);
-  }, [currentPage]);
-
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [activeCategory, setActiveCategory] = useState("Head Of Finance");
   const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
+  
 
   // Example categories data; replace with your actual data source as needed
   const categories = [
@@ -673,7 +599,11 @@ function MainApp() {
                       <div className="lg:col-span-3 order-2 lg:order-1 sticky top-16 self-start will-change-transform">
                         <FiltersSidebar
                           filters={filters}
-                          onFiltersChange={setFilters}
+                          onFiltersChange={(newFilters) => {
+                            setFilters(newFilters);
+                            setSearchTerm(newFilters.keywords); // Sync keywords with searchTerm
+                          }}
+                          setCandidates={setCandidates}
                         />
                       </div>
                       <div className="lg:col-span-6 order-1 lg:order-2">
@@ -684,11 +614,6 @@ function MainApp() {
                           setSelectedCandidate={setSelectedCandidate}
                           searchTerm={searchTerm}
                           onPipelinesClick={handlePipelinesClick}
-                          candidates={candidates}
-                          loading={loading}
-                          totalCount={totalCount}
-                          currentPage={currentPage}
-                          onPageChange={setCurrentPage}
                         />
                       </div>
                       <div className="lg:col-span-3 order-3 sticky top-16 self-start will-change-transform">
