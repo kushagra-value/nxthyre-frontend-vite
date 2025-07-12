@@ -55,18 +55,15 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       
       // If the request was not aborted, update the state.
       if (!signal.aborted) {
-        setFilteredCandidates(results||[]);
-        setTotalCount(count || 0);
-        setTotalPages(Math.ceil((count || 0) / candidatesPerPage) || 1); // Ensure totalPages is at least 1
+        setFilteredCandidates(results);
+        setTotalCount(count);
+        setTotalPages(Math.ceil(count / candidatesPerPage) || 1); // Ensure totalPages is at least 1
       }
     } catch (error: any) {
       if (error.name === 'AbortError') {
         console.log("Fetch aborted");
       } else {
         console.error("Error fetching candidates:", error);
-      setFilteredCandidates([]);
-      setTotalCount(0);
-      setTotalPages(1);
       }
     } finally {
       // Only set loading to false if the request wasn't aborted
