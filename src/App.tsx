@@ -613,6 +613,7 @@ function MainApp() {
                           selectedCandidate={selectedCandidate}
                           setSelectedCandidate={setSelectedCandidate}
                           searchTerm={searchTerm}
+                          candidates={candidates}
                           onPipelinesClick={handlePipelinesClick}
                         />
                       </div>
