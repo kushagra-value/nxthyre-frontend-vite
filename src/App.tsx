@@ -57,15 +57,12 @@ function MainApp() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showAuthApp, setShowAuthApp] = useState(false);
   const [authFlow, setAuthFlow] = useState("login");
-  const [authFlow, setAuthFlow] = useState("login");
   const [showSettings, setShowSettings] = useState(false);
 
   // Pipeline share page state
   const [showPipelineSharePage, setShowPipelineSharePage] = useState(false);
   const [currentPipelineId, setCurrentPipelineId] = useState("");
-  const [currentPipelineId, setCurrentPipelineId] = useState("");
 
-  // Shareable profile state
   // Shareable profile state
   const [showShareableProfile, setShowShareableProfile] = useState(false);
   const [currentCandidateId, setCurrentCandidateId] = useState("");
@@ -82,14 +79,7 @@ function MainApp() {
   const [editingTemplate, setEditingTemplate] = useState<string>("");
   const [activeTab, setActiveTab] = useState("outbound");
   const [searchTerm, setSearchTerm] = useState("");
-  const [editingTemplate, setEditingTemplate] = useState<string>("");
-  const [activeTab, setActiveTab] = useState("outbound");
-  const [searchTerm, setSearchTerm] = useState("");
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
-  const [showCategoryActions, setShowCategoryActions] = useState<string | null>(
-    null
-  );
-
   const [showCategoryActions, setShowCategoryActions] = useState<string | null>(
     null
   );
@@ -98,15 +88,11 @@ function MainApp() {
   const [showShareLoader, setShowShareLoader] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
 
-
   const [filters, setFilters] = useState({
-    keywords: "",
     keywords: "",
     booleanSearch: false,
     semanticSearch: false,
     selectedCategories: [] as string[],
-    minExperience: "",
-    maxExperience: "",
     minExperience: "",
     maxExperience: "",
     funInCurrentCompany: false,
@@ -115,19 +101,7 @@ function MainApp() {
     city: "",
     country: "",
     location: "",
-    minTotalExp: "",
-    maxTotalExp: "",
-    city: "",
-    country: "",
-    location: "",
     selectedSkills: [] as string[],
-    skillLevel: "",
-    noticePeriod: "",
-    companies: "",
-    industries: "",
-    minSalary: "",
-    maxSalary: "",
-    colleges: "",
     skillLevel: "",
     noticePeriod: "",
     companies: "",
@@ -145,7 +119,6 @@ function MainApp() {
     hasLinkedIn: false,
     hasBehance: false,
     hasTwitter: false,
-    hasPortfolio: false,
     hasPortfolio: false,
   });
 
@@ -227,20 +200,6 @@ function MainApp() {
           firebaseUser?.metadata.creationTime || new Date().toISOString(),
       };
       setCurrentUser(user);
-        id: firebaseUser?.uid,
-        fullName: userStatus.full_name || "Unknown User",
-        email: userStatus.email || "Unknown@user.com",
-        role:
-          userStatus.roles?.length > 0
-            ? userStatus.roles[0].name.toLowerCase()
-            : "team",
-        organizationId: userStatus.organization?.id?.toString(),
-        workspaceIds: [],
-        isVerified: firebaseUser?.emailVerified ?? true,
-        createdAt:
-          firebaseUser?.metadata.creationTime || new Date().toISOString(),
-      };
-      setCurrentUser(user);
     }
   }, [isAuthenticated, userStatus, firebaseUser]);
 
@@ -269,19 +228,16 @@ function MainApp() {
     setShowLogoutModal(true);
   };
 
-
   const handleLogoutConfirm = () => {
     setShowLogoutModal(false);
     handleLogout();
   };
-
 
   const handleLogoutCancel = () => {
     setShowLogoutModal(false);
   };
 
   const handleLogin = () => {
-    setAuthFlow("login");
     setAuthFlow("login");
     setShowAuthApp(true);
   };
@@ -320,12 +276,7 @@ function MainApp() {
       setSearchTerm("");
       showToast.success("Successfully logged out");
       navigate("/"); // Redirect to root after logout
-      setSearchTerm("");
-      showToast.success("Successfully logged out");
-      navigate("/"); // Redirect to root after logout
     } catch (error: any) {
-      console.error("Logout error:", error);
-      showToast.error("Failed to logout");
       console.error("Logout error:", error);
       showToast.error("Failed to logout");
     }
@@ -333,8 +284,6 @@ function MainApp() {
 
   const handleWorkspacesOrg = () => {
     setShowAuthApp(true);
-    setAuthFlow("workspaces-org");
-    navigate("/workspaces-org");
     setAuthFlow("workspaces-org");
     navigate("/workspaces-org");
   };
@@ -377,13 +326,8 @@ function MainApp() {
       .toLowerCase()
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9-]/g, "");
-    const pipelineId = activeCategory
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9-]/g, "");
     setCurrentPipelineId(pipelineId);
     setShowPipelineSharePage(true);
-    window.history.pushState({}, "", `/pipelines/${pipelineId}`);
     window.history.pushState({}, "", `/pipelines/${pipelineId}`);
   };
 
@@ -391,22 +335,17 @@ function MainApp() {
     setShowCategoryActions(null);
     switch (action) {
       case "edit-job":
-      case "edit-job":
         handleEditJobRole(categoryName);
         break;
-      case "edit-template":
       case "edit-template":
         handleEditTemplate(categoryName);
         break;
       case "share-pipelines":
-      case "share-pipelines":
         handleSharePipelines(categoryName);
         break;
       case "archive":
-      case "archive":
         showToast.success(`Archived ${categoryName}`);
         break;
-      case "delete":
       case "delete":
         showToast.success(`Deleted ${categoryName}`);
         break;
@@ -429,8 +368,6 @@ function MainApp() {
 
   const handleBackFromShareableProfile = () => {
     setShowShareableProfile(false);
-    setCurrentCandidateId("");
-    window.history.pushState({}, "", "/");
     setCurrentCandidateId("");
     window.history.pushState({}, "", "/");
   };
@@ -696,68 +633,6 @@ function MainApp() {
                     </div>
                   </div>
 
-                  <CreateJobRoleModal
-                    isOpen={showCreateJobRole}
-                    onClose={() => setShowCreateJobRole(false)}
-                  />
-                  <EditTemplateModal
-                    isOpen={showEditTemplate}
-                    onClose={() => setShowEditTemplate(false)}
-                    templateName={editingTemplate}
-                  />
-                  <SharePipelinesLoader
-                    isOpen={showShareLoader}
-                    onComplete={handleShareLoaderComplete}
-                  />
-                  <SharePipelinesModal
-                    isOpen={showShareModal}
-                    onClose={() => setShowShareModal(false)}
-                    jobRole={activeCategory}
-                  />
-                  {showLogoutModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
-                      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-                        <div className="text-center">
-                          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <LogOut className="w-6 h-6 text-red-600" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            Confirm Logout
-                          </h3>
-                          <p className="text-gray-600 mb-6">
-                            Are you sure you want to sign out? You'll need to
-                            log in again to access your account.
-                          </p>
-                          <div className="flex space-x-3">
-                            <button
-                              onClick={handleLogoutCancel}
-                              className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              onClick={handleLogoutConfirm}
-                              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                            >
-                              Sign Out
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </>
-            )
-          ) : (
-            <>
-              <Toaster />
-              <AuthApp initialFlow="login" onAuthSuccess={handleAuthSuccess} />
-            </>
-          )
-        }
-      />
-    </Routes>
                   <CreateJobRoleModal
                     isOpen={showCreateJobRole}
                     onClose={() => setShowCreateJobRole(false)}
