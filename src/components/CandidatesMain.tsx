@@ -9,8 +9,7 @@ interface CandidatesMainProps {
   selectedCandidate: CandidateListItem | null;
   setSelectedCandidate: (candidate: CandidateListItem | null) => void;
   searchTerm: string;
-  // FIX: The `candidates` prop is removed as it causes logical conflicts.
-  // The component will now manage its own candidate list internally based on the activeTab.
+  candidates: CandidateListItem[];
   onPipelinesClick?: () => void;
 }
 
@@ -20,6 +19,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   selectedCandidate,
   setSelectedCandidate,
   searchTerm,
+  candidates,
   onPipelinesClick
 }) => {
   const [selectAll, setSelectAll] = useState(false);
@@ -27,85 +27,52 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
-  // FIX: Initialize filteredCandidates as an empty array to prevent crashes.
   const [filteredCandidates, setFilteredCandidates] = useState<CandidateListItem[]>([]);
   const [totalCount, setTotalCount] = useState(0); // State to hold the total number of candidates.
 
   const candidatesPerPage = 20;
 
   const tabs = [
-    // FIX: The count is now driven by the `totalCount` state for accuracy.
     { id: 'outbound', label: 'Outbound', count: activeTab === 'outbound' ? totalCount : 0 },
-    { id: 'active', label: 'Active', count: 2034 },
-    { id: 'inbound', label: 'Inbound', count: 2034 },
-    { id: 'prevetted', label: 'Prevetted', count: 2034 }
+    { id: 'active', label: 'Active', count: activeTab === 'active' ? totalCount : 0},
+    { id: 'inbound', label: 'Inbound', count: activeTab === 'inbound' ? totalCount : 0 },
+    { id: 'prevetted', label: 'Prevetted', count: activeTab === 'prevetted' ? totalCount : 0}
   ];
 
   // FIX: Encapsulated the fetch logic into a single, cancellable function.
   // This useCallback will handle both regular fetches and search queries.
-  const fetchAndSetCandidates = useCallback(async (searchQuery: string, page: number, signal: AbortSignal) => {
-    setLoading(true);
-    try {
-      const { results, count } = await candidateService.searchCandidates({
-        q: searchQuery,
-        page: page,
-        page_size: candidatesPerPage,
-        tab: activeTab,
-      }); 
-      
-      // If the request was not aborted, update the state.
-      if (!signal.aborted) {
-        setFilteredCandidates(results||[]);
-        setTotalCount(count || 0);
-        setTotalPages(Math.ceil((count || 0) / candidatesPerPage) || 1); // Ensure totalPages is at least 1
+  const fetchAndSetCandidates = useCallback(
+    debounce(async (searchQuery: string, page: number, signal: AbortSignal) => {
+      setLoading(true);
+      try {
+        const { results, count } = searchQuery
+          ? await candidateService.searchCandidates({
+              q: searchQuery,
+              page,
+              page_size: candidatesPerPage,
+              tab: activeTab,
+            })
+          : await candidateService.getCandidates(page, candidatesPerPage, activeTab);
+        if (!signal.aborted) {
+          setTotalCount(count || results.length);
+          setTotalPages(Math.ceil((count || results.length) / candidatesPerPage) || 1);
+          // Update parent candidates state to sync with FiltersSidebar
+          setSelectedCandidate(results.length > 0 ? results[0] : null);
+        }
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          console.error("Error fetching candidates:", error);
+          setTotalCount(0);
+          setTotalPages(1);
+        }
+      } finally {
+        if (!signal.aborted) {
+          setLoading(false);
+        }
       }
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
-        console.log("Fetch aborted");
-      } else {
-        console.error("Error fetching candidates:", error);
-      setFilteredCandidates([]);
-      setTotalCount(0);
-      setTotalPages(1);
-      }
-    } finally {
-      // Only set loading to false if the request wasn't aborted
-      // to prevent a brief flash of content before a new request starts.
-      if (!signal.aborted) {
-        setLoading(false);
-      }
-    }
-  }, [activeTab, candidatesPerPage]); // Dependencies for recreating the fetch logic.
-
-
-  // FIX: This useEffect now handles all data fetching, including search.
-  // It uses an AbortController to prevent race conditions.
-  useEffect(() => {
-    // Reset to page 1 whenever the search term or tab changes.
-    setCurrentPage(1); 
-    
-    const controller = new AbortController();
-    const signal = controller.signal;
-
-    // Use a debounced function for typing, but fetch immediately for tab changes.
-    const debouncedFetch = debounce(() => {
-        fetchAndSetCandidates(searchTerm, 1, signal);
-    }, 300);
-
-    if (searchTerm) {
-      debouncedFetch();
-    } else {
-      // If search term is empty, fetch immediately.
-      fetchAndSetCandidates("", 1, signal);
-    }
-    
-    // Cleanup function: This is crucial to prevent race conditions.
-    // It aborts the pending request when the component unmounts or dependencies change.
-    return () => {
-      debouncedFetch.cancel();
-      controller.abort();
-    };
-  }, [searchTerm, activeTab, fetchAndSetCandidates]);
+    }, 300),
+    [activeTab, candidatesPerPage, setSelectedCandidate]
+  );
 
   // Effect for handling page changes
   useEffect(() => {
@@ -115,7 +82,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     return () => {
       controller.abort();
     };
-  }, [currentPage, fetchAndSetCandidates]);
+  }, [searchTerm, activeTab, currentPage, fetchAndSetCandidates]);
 
 
   const handleCandidateSelect = (candidateId: string) => {
@@ -136,10 +103,6 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     }
   };
 
-  // FIX: Simplified and safe pagination logic.
-  // Renamed to avoid confusion with the state variable.
-  const currentCandidatesOnPage = filteredCandidates;
-
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= totalPages) {
       setCurrentPage(page);
@@ -155,13 +118,215 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   };
 
   if (loading) {
-    return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center">
+    return (<div className="bg-white rounded-xl shadow-sm border border-gray-200">
+    {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <div className="flex items-center justify-between p-3 lg:p-4 pb-0">
+          <div className="flex space-x-1 overflow-x-auto">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-3 py-2 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'text-blue-600 border-b-2 border-blue-500 bg-blue-50'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                {tab.label}
+                 {/* FIX: Safely render count only if it's a positive number */}
+                {tab.count > 0 && (
+                  <span className="ml-2 px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded-full">
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+          <div>
+            <button
+              onClick={onPipelinesClick}
+              className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+            >
+              Pipelines
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters Bar */}
+      <div className="p-3 lg:p-4 border-b border-gray-200">
+        <div className="mt-0 flex items-center justify-between flex-wrap gap-2">
+          <div className="flex space-x-3">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={selectAll}
+                onChange={(e) => handleSelectAll(e.target.checked)}
+                className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
+              />
+              {/* FIX: Clarified label to match functionality */}
+              <span className="ml-2 text-sm text-gray-600">Select all on page</span>
+            </label>
+            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
+                Add To Pipeline
+            </button>
+            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
+                Export Candidates
+            </button>
+            
+          </div>
+          <div className="flex space-x-2">
+            
+            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
+                Sort By - <span className="text-blue-600 font-semibold ml-1 mr-1">Relevance</span>
+              <ChevronDown className="w-4 h-4 mt-1" />
+            </button>
+            
+          </div>
+        </div>
+      </div>
+      <div className="bg-white  p-4 text-center">
+        
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
         <p className="text-gray-600 mt-2">Loading candidates...</p>
       </div>
+      {/* Pagination */}
+      <div className="p-3 lg:p-4 flex items-center justify-between border-t border-gray-200">
+        <div className="text-sm text-gray-600">
+          {/* FIX: Display logic is now safer and reflects total count from API */}
+          Showing {(currentPage - 1) * candidatesPerPage + 1} to{" "}
+          {Math.min(currentPage * candidatesPerPage, totalCount)} of {totalCount}{" "}
+          candidates
+        </div>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            Previous
+          </button>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            Next
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </button>
+        </div>
+      </div>
+      </div>
     );
   }
+
+
+  if (candidates.length === 0) {
+    return (<div className="bg-white rounded-xl shadow-sm border border-gray-200">
+    {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <div className="flex items-center justify-between p-3 lg:p-4 pb-0">
+          <div className="flex space-x-1 overflow-x-auto">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-3 py-2 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'text-blue-600 border-b-2 border-blue-500 bg-blue-50'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                {tab.label}
+                 {/* FIX: Safely render count only if it's a positive number */}
+                {tab.count > 0 && (
+                  <span className="ml-2 px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded-full">
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+          <div>
+            <button
+              onClick={onPipelinesClick}
+              className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+            >
+              Pipelines
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters Bar */}
+      <div className="p-3 lg:p-4 border-b border-gray-200">
+        <div className="mt-0 flex items-center justify-between flex-wrap gap-2">
+          <div className="flex space-x-3">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={selectAll}
+                onChange={(e) => handleSelectAll(e.target.checked)}
+                className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
+              />
+              {/* FIX: Clarified label to match functionality */}
+              <span className="ml-2 text-sm text-gray-600">Select all on page</span>
+            </label>
+            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
+                Add To Pipeline
+            </button>
+            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
+                Export Candidates
+            </button>
+            
+          </div>
+          <div className="flex space-x-2">
+            
+            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
+                Sort By - <span className="text-blue-600 font-semibold ml-1 mr-1">Relevance</span>
+              <ChevronDown className="w-4 h-4 mt-1" />
+            </button>
+            
+          </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center">
+        <p className="text-base font-medium">No candidates found</p>
+        <p className="text-sm text-gray-500 mt-1">Try adjusting your filters or search term.</p>
+      </div>
+      {/* Pagination */}
+      <div className="p-3 lg:p-4 flex items-center justify-between border-t border-gray-200">
+        <div className="text-sm text-gray-600">
+          {/* FIX: Display logic is now safer and reflects total count from API */}
+          Showing {(currentPage - 1) * candidatesPerPage + 1} to{" "}
+          {Math.min(currentPage * candidatesPerPage, totalCount)} of {totalCount}{" "}
+          candidates
+        </div>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            Previous
+          </button>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            Next
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </button>
+        </div>
+      </div>
+      </div>
+    );
+  }
+
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -235,7 +400,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
       {/* Candidates List */}
       <div className="divide-y divide-gray-200">
-        {currentCandidatesOnPage.map((candidate) => (
+        {candidates.map((candidate) => (
           <div
             key={candidate.id}
             className={`p-3 lg:p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
