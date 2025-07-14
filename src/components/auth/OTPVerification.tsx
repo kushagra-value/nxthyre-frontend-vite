@@ -92,6 +92,8 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
         response = await authService.verifyOTP(data?.email || "", otpToVerify);
         showToast.success("Email verified successfully!");
 
+        await authService.signUpWithEmail(data?.email, data?.formData.password);
+
         if (data?.type === "signup") {
           if (
             response.next_step === "login_then_onboard" ||
