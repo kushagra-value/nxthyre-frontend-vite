@@ -80,6 +80,17 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
     }
   };
 
+  const handleEmailChange = (value: string) => {
+    setFormData({ ...formData, email: value });
+    if (value === "") {
+      setErrors({ ...errors, email: "" });
+    } else if (!validateEmail(value)) {
+      setErrors({ ...errors, email: "Please enter a valid email" });
+    } else {
+      setErrors({ ...errors, email: "" });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -110,7 +121,9 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
   };
 
   const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Stricter email regex: allows letters, numbers, dots, hyphens in local part;
+    // domain must have valid structure with known TLDs
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return emailRegex.test(email);
   };
 
@@ -268,9 +281,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                   <input
                     type="email"
                     value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
+                    onChange={(e) => handleEmailChange(e.target.value)}
                     className={`w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${
                       errors.email ? "border-red-500" : ""
                     }`}
