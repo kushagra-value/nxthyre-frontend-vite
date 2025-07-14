@@ -62,11 +62,13 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
   };
 
   const validateFullName = (fullName: string): boolean => {
+    // Allow only letters (a-z, A-Z) and spaces
     const nameRegex = /^[a-zA-Z\s]*$/;
     return nameRegex.test(fullName);
   };
 
   const handleFullNameChange = (value: string) => {
+    // Optionally filter input in real-time to prevent invalid character
     if (validateFullName(value) || value === "") {
       setFormData({ ...formData, fullName: value });
       setErrors({ ...errors, fullName: "" });
@@ -86,18 +88,29 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
     setIsLoading(true);
 
     try {
-      // Send OTP without creating account
-      await authService.resendOTP(formData.email);
-      showToast.success("OTP sent! Please check your email for verification.");
+      await authService.signUpWithEmail(formData.email, formData.password);
+      showToast.success(
+        "Sign-up successful! Please check your email for verification."
+      );
       onNavigate("otp-verification", {
         email: formData.email,
         type: "signup",
         userData: formData,
       });
     } catch (error: any) {
-      console.error("Error sending OTP:", error);
-      setErrors({ general: error.message || "Failed to send OTP" });
-      showToast.error("Failed to send OTP. Please try again.");
+      console.error("Sign up error:", error);
+      if (error.message.includes("already exists")) {
+        setErrors({ email: "Email already in use" });
+        showToast.error("Email already in use. Please try logging in.");
+      } else if (error.message.includes("personal email")) {
+        setErrors({ email: "Please use your organization email" });
+        showToast.error(
+          "Please use your organization email, not a personal email."
+        );
+      } else {
+        setErrors({ general: error.message || "Sign up failed" });
+        showToast.error("Sign up failed. Please try again later.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -139,6 +152,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 relative overflow-hidden">
+      {/* Background decorative elements */}
       <div className="absolute inset-0 bg-black/20"></div>
       <div className="absolute top-20 left-20 w-2 h-2 bg-white/30 rounded-full"></div>
       <div className="absolute top-40 right-32 w-1 h-1 bg-white/40 rounded-full"></div>
@@ -148,13 +162,17 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
 
       <div className="relative z-10 min-h-screen flex items-center justify-center p-8">
         <div className="w-full max-w-7xl flex items-center gap-16">
+          {/* Left Side - Branding Content */}
           <div className="flex-1 text-white">
+            {/* Logo */}
             <div className="flex items-center mb-16">
               <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mr-3">
                 <Sparkles className="w-6 h-6" />
               </div>
               <span className="text-2xl font-bold">NxtHyre</span>
             </div>
+
+            {/* Main Content */}
             <div className="max-w-4xl">
               <div className="flex items-center mb-6">
                 <h1 className="text-5xl font-bold mr-4">JOIN THE</h1>
@@ -163,6 +181,8 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
               <h2 className="text-5xl font-bold mb-8 bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
                 Hiring Revolution
               </h2>
+
+              {/* Feature Cards - Side by Side */}
               <div className="flex gap-6 mb-12">
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 flex-1">
                   <div className="flex items-center mb-3">
@@ -175,6 +195,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                     Intelligent candidate matching in 60+ industries
                   </p>
                 </div>
+
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 flex-1">
                   <div className="flex items-center mb-3">
                     <div className="w-12 h-12 bg-blue-500/30 rounded-lg flex items-center justify-center mr-4">
@@ -186,6 +207,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                     Automated interviews and skill assessments
                   </p>
                 </div>
+
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 flex-1">
                   <div className="flex items-center mb-3">
                     <div className="w-12 h-12 bg-blue-500/30 rounded-lg flex items-center justify-center mr-4">
@@ -200,6 +222,8 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                   </p>
                 </div>
               </div>
+
+              {/* Contact */}
               <div className="mt-16">
                 <p className="text-blue-200 text-sm">
                   Facing any issue?{" "}
@@ -210,17 +234,24 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
               </div>
             </div>
           </div>
+
+          {/* Right Side - Auth Form */}
           <div className="w-[480px]">
+            {/* Auth Card */}
             <div className="bg-white rounded-2xl p-8 shadow-2xl">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 flex items-center">
                   Welcome <Sparkles className="w-6 h-6 ml-2 text-yellow-400" />
                 </h2>
               </div>
+
               <p className="text-gray-600 mb-8">
                 Sign up with your work email to enjoy a free trial
               </p>
+
+              {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Full Name */}
                 <div>
                   <input
                     type="text"
@@ -238,6 +269,8 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                     </p>
                   )}
                 </div>
+
+                {/* Email */}
                 <div>
                   <input
                     type="email"
@@ -257,6 +290,8 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                     </p>
                   )}
                 </div>
+
+                {/* Password */}
                 <div>
                   <div className="relative">
                     <input
@@ -282,6 +317,8 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                       )}
                     </button>
                   </div>
+
+                  {/* Password Strength Indicator */}
                   {formData.password && (
                     <div className="mt-2">
                       <div className="flex items-center space-x-2">
@@ -294,12 +331,13 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                             }}
                           />
                         </div>
-                        <span className="text-xs Westwood-medium text-gray-600">
+                        <span className="text-xs font-medium text-gray-600">
                           {passwordStrength.text}
                         </span>
                       </div>
                     </div>
                   )}
+
                   {errors.password && (
                     <p className="mt-1 text-sm text-red-500 flex items-center">
                       <XCircle className="w-4 h-4 mr-1" />
@@ -307,6 +345,8 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                     </p>
                   )}
                 </div>
+
+                {/* Confirm Password */}
                 <div>
                   <div className="relative">
                     <input
@@ -351,6 +391,8 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                     </p>
                   )}
                 </div>
+
+                {/* Terms and Privacy */}
                 <div>
                   <label className="flex items-start space-x-3">
                     <input
@@ -388,6 +430,8 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                     </p>
                   )}
                 </div>
+
+                {/* Submit Button */}
                 <button
                   type="submit"
                   disabled={isLoading}
@@ -396,12 +440,14 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                   {isLoading ? (
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Sending OTP...
+                      Creating Account...
                     </div>
                   ) : (
-                    "Send OTP"
+                    "Create Account"
                   )}
                 </button>
+
+                {/* Divider */}
                 <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-gray-300" />
@@ -412,6 +458,8 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                     </span>
                   </div>
                 </div>
+
+                {/* LinkedIn Auth */}
                 <button
                   type="button"
                   onClick={() => onNavigate("linkedin-auth")}
@@ -426,6 +474,8 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                   </svg>
                   Continue with LinkedIn
                 </button>
+
+                {/* Login Link */}
                 <div className="text-center mt-6">
                   <span className="text-sm text-gray-600">
                     Already have an account?{" "}
@@ -434,10 +484,12 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                       onClick={() => onNavigate("login")}
                       className="text-blue-600 hover:text-blue-500 font-medium underline"
                     >
-                      淘 Sign in here
+                      Sign in here
                     </button>
                   </span>
                 </div>
+
+                {/* Legal */}
                 <div className="text-center mt-6">
                   <p className="text-xs text-gray-500">
                     By creating an account you agree to our{" "}
