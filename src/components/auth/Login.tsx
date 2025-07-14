@@ -210,7 +210,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                   </div>
                 )}
 
-                {/* Email */}
+                {/* Email Field*/}
                 <div>
                   <input
                     type="email"

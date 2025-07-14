@@ -127,7 +127,7 @@ class AuthService {
     }
   }
 
-  // Password reset flow
+  // Password reset flow here
   async sendPasswordResetOTP(email: string): Promise<{ message: string }> {
     try {
       const response = await apiClient.post("/auth/password-reset/send-otp/", {

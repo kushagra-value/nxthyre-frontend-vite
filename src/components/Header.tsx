@@ -1,5 +1,13 @@
-import React, { useState } from 'react';
-import { Search, Home, User, ChevronDown, Settings, LogOut, Building2 } from 'lucide-react';
+import React, { useState } from "react";
+import {
+  Search,
+  Home,
+  User,
+  ChevronDown,
+  Settings,
+  LogOut,
+  Building2,
+} from "lucide-react";
 
 interface User {
   id: string | undefined;
@@ -26,9 +34,9 @@ interface HeaderProps {
   onShowLogoutModal: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ 
-  searchTerm, 
-  setSearchTerm, 
+const Header: React.FC<HeaderProps> = ({
+  searchTerm,
+  setSearchTerm,
   onCreateRole,
   isAuthenticated = false,
   user = null,
@@ -37,7 +45,7 @@ const Header: React.FC<HeaderProps> = ({
   onLogout,
   onWorkspacesOrg,
   onSettings,
-  onShowLogoutModal
+  onShowLogoutModal,
 }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -47,8 +55,8 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   const handleGoToDashboard = () => {
-    // Navigate back to main dashboard
-    window.location.href = '/';
+    // Navigate back to main dashboard...
+    window.location.href = "/";
   };
 
   return (
@@ -57,8 +65,9 @@ const Header: React.FC<HeaderProps> = ({
         <div className="max-w-full mx-auto px-7 py-1.5">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <div className="flex items-center" >
-              <h1 className="text-xl lg:text-2xl font-bold text-blue-600 cursor-pointer" 
+            <div className="flex items-center">
+              <h1
+                className="text-xl lg:text-2xl font-bold text-blue-600 cursor-pointer"
                 onClick={handleGoToDashboard}
               >
                 NxtHyre
@@ -83,7 +92,7 @@ const Header: React.FC<HeaderProps> = ({
 
               {/* Create Role Button - Only show when authenticated */}
               {isAuthenticated && (
-                <button 
+                <button
                   onClick={onCreateRole}
                   className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
                 >
@@ -103,8 +112,12 @@ const Header: React.FC<HeaderProps> = ({
                       <User className="w-4 h-4 text-white" />
                     </div>
                     <div className="hidden sm:block text-left">
-                      <p className="text-sm font-medium text-gray-700">{user.fullName || 'User'}</p>
-                      <p className="text-xs text-gray-500">{user.role || 'Member'}</p>
+                      <p className="text-sm font-medium text-gray-700">
+                        {user.fullName || "User"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {user.role || "Member"}
+                      </p>
                     </div>
                     <ChevronDown className="w-4 h-4 text-gray-400" />
                   </button>
@@ -114,12 +127,16 @@ const Header: React.FC<HeaderProps> = ({
                       <div className="py-1">
                         {/* User Info */}
                         <div className="px-4 py-3 border-b border-gray-100">
-                          <p className="text-sm font-medium text-gray-900">{user.fullName || 'User'}</p>
-                          <p className="text-xs text-gray-500">{user.email || 'user@example.com'}</p>
+                          <p className="text-sm font-medium text-gray-900">
+                            {user.fullName || "User"}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {user.email || "user@example.com"}
+                          </p>
                         </div>
-                        
+
                         {/* Workspace & Organization */}
-                        <button 
+                        <button
                           onClick={() => {
                             setShowUserMenu(false);
                             onWorkspacesOrg?.();
@@ -129,9 +146,9 @@ const Header: React.FC<HeaderProps> = ({
                           <Building2 className="w-4 h-4 mr-3" />
                           Workspaces & Organizations
                         </button>
-                        
+
                         {/* Settings */}
-                        <button 
+                        <button
                           onClick={() => {
                             setShowUserMenu(false);
                             onSettings?.();
@@ -141,9 +158,9 @@ const Header: React.FC<HeaderProps> = ({
                           <Settings className="w-4 h-4 mr-3" />
                           Settings
                         </button>
-                        
+
                         {/* Logout */}
-                        <button 
+                        <button
                           onClick={handleLogoutClick}
                           className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center transition-colors"
                         >
@@ -175,7 +192,6 @@ const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </header>
-
     </>
   );
 };

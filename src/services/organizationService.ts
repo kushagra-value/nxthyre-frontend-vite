@@ -57,7 +57,7 @@ export interface ManageRequestResponse {
 }
 
 class OrganizationService {
-  // Get onboarding status
+  // Get onboarding status...
   async getOnboardingStatus(): Promise<OnboardingStatusResponse> {
     try {
       const response = await apiClient.get("/organization/onboarding-status/");

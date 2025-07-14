@@ -297,7 +297,7 @@ function MainApp() {
   const handleAuthSuccess = (user: any) => {
     setCurrentUser(user);
     setShowAuthApp(false);
-    navigate("/"); // Redirect to dashboard after auth
+    navigate("/"); // Redirect to dashboard after auth...
   };
 
   const handleLinkedInAuthSuccess = (user: any) => {

@@ -1,5 +1,5 @@
-import React from 'react';
-import { ArrowLeft, Sparkles, Mic, MessageCircle, Volume2 } from 'lucide-react';
+import React from "react";
+import { ArrowLeft, Sparkles, Mic, MessageCircle, Volume2 } from "lucide-react";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -9,12 +9,12 @@ interface AuthLayoutProps {
   onBack?: () => void;
 }
 
-const AuthLayout: React.FC<AuthLayoutProps> = ({ 
-  children, 
-  title, 
-  subtitle, 
-  showBackButton = false, 
-  onBack 
+const AuthLayout: React.FC<AuthLayoutProps> = ({
+  children,
+  title,
+  subtitle,
+  showBackButton = false,
+  onBack,
 }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 relative overflow-hidden">
@@ -28,8 +28,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
 
       <div className="relative z-10 min-h-screen flex items-center justify-center p-8">
         <div className="w-full max-w-7xl flex items-center gap-16">
-          
-          {/* Left Side - Branding Content */}
+          {/* Left Side - Branding Content... */}
           <div className="flex-1 text-white">
             {/* Logo */}
             <div className="flex items-center mb-16">
@@ -80,18 +79,21 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
                     <div className="w-12 h-12 bg-blue-500/30 rounded-lg flex items-center justify-center mr-4">
                       <Volume2 className="w-6 h-6" />
                     </div>
-                    <h3 className="text-xl font-semibold">Team Collaboration</h3>
+                    <h3 className="text-xl font-semibold">
+                      Team Collaboration
+                    </h3>
                   </div>
-                  <p className="text-blue-100 text-sm">
-                    S
-                  </p>
+                  <p className="text-blue-100 text-sm">S</p>
                 </div>
               </div>
 
               {/* Contact */}
               <div className="mt-16">
                 <p className="text-blue-200 text-sm">
-                  Facing any issue? <button className="underline hover:text-white">Contact Us</button>
+                  Facing any issue?{" "}
+                  <button className="underline hover:text-white">
+                    Contact Us
+                  </button>
                 </p>
               </div>
             </div>
@@ -116,10 +118,8 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
                   {title} <Sparkles className="w-6 h-6 ml-2 text-yellow-400" />
                 </h2>
               </div>
-              
-              {subtitle && (
-                <p className="text-gray-600 mb-8">{subtitle}</p>
-              )}
+
+              {subtitle && <p className="text-gray-600 mb-8">{subtitle}</p>}
 
               {children}
 

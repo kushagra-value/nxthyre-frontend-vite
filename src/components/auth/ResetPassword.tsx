@@ -26,7 +26,7 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ onNavigate, data }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Ensure required data is present
+  // Ensure required data is present here
   if (!data?.email || !data?.otp) {
     setTimeout(() => {
       showToast.error("Missing required data. Please start the process again.");

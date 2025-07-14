@@ -88,7 +88,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
     setIsLoading(true);
     setAuthStatus("loading");
 
-    // Generate and store state for CSRF protection
+    // Generate and store state for CSRF protection here
     const state = Math.random().toString(36).substring(2);
     sessionStorage.setItem("linkedin_oauth_state", state);
     const scope = "openid profile email";

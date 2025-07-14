@@ -68,7 +68,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
   };
 
   const handleFullNameChange = (value: string) => {
-    // Optionally filter input in real-time to prevent invalid characters
+    // Optionally filter input in real-time to prevent invalid character
     if (validateFullName(value) || value === "") {
       setFormData({ ...formData, fullName: value });
       setErrors({ ...errors, fullName: "" });

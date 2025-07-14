@@ -80,7 +80,7 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     try {
       let response;
       if (data?.type === "forgot-password") {
-        // Use password reset OTP verification for forgot-password flow
+        // Use password reset OTP verification for forgot-password flow here
         response = await authService.verifyPasswordResetOTP(
           data?.email || "",
           otpToVerify
