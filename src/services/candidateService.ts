@@ -100,13 +100,14 @@ class CandidateService {
   async searchCandidates(filters: any): Promise<{ results: CandidateListItem[]; count: number }> {
     try {
       const response = await apiClient.post("/candidates/search/", filters);
-      return response.data;
+     
       if (Array.isArray(response.data)) {
         return {
           results: response.data,
           count: response.data.length,
         };
       }
+       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to search candidates");
     }
