@@ -88,7 +88,10 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
     setIsLoading(true);
 
     try {
-      showToast.success("Otp Sent! Please check your email for verification.");
+      await authService.signUpWithEmail(formData.email, formData.password);
+      showToast.success(
+        "Sign-up successful! Please check your email for verification."
+      );
       onNavigate("otp-verification", {
         email: formData.email,
         type: "signup",
