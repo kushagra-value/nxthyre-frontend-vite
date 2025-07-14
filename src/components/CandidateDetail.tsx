@@ -254,7 +254,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
           Experience
         </h3>
         <div className="ml-2">
-          {detailedCandidate.experience.map((exp, index) => (
+          {detailedCandidate.experience?.length > 0 ? (
+          detailedCandidate.experience.map((exp, index) => (
             <div key={index} className="border-l-2 border-gray-200 pl-4 relative pb-2">
               <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
               <h4 className="font-medium text-gray-900 text-sm">{exp.job_title}</h4>
@@ -262,7 +263,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
               <p className="text-sm text-gray-500">{exp.start_date} - {exp.end_date || "Present"}</p>
               <p className="text-sm text-gray-700 mt-1">{exp.description}</p>
             </div>
-          ))}
+          ))
+            ):(<p className="text-sm text-gray-500">No experience details available</p>)}
         </div>
       </div>
 
@@ -273,7 +275,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
           Education
         </h3>
         <div className="ml-2">
-          {detailedCandidate.education.map((edu, index) => (
+          {detailedCandidate.education?.length > 0 ? (
+          detailedCandidate.education.map((edu, index) => (
             <div key={index} className="border-l-2 border-gray-200 pl-4 relative pb-2">
               <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
               <h4 className="font-medium text-gray-900 text-sm">{edu.degree}</h4>
@@ -283,7 +286,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
                 <p className="text-sm text-gray-500">{edu.institution}</p>
               )}
             </div>
-          ))}
+          ))):(<p className="text-sm text-gray-500">No education details available</p>)}
         </div>
       </div>
 
@@ -294,14 +297,18 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
           Certifications
         </h3>
         <div className="ml-2">
-          {detailedCandidate.certifications.map((cert, index) => (
+          {detailedCandidate.certifications?.length > 0 ? (
+          detailedCandidate.certifications.map((cert, index) => (
             <div key={index} className="border-l-2 border-gray-200 pl-4 relative pb-2">
               <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
               <h4 className="font-medium text-gray-900 text-sm">{cert.name}</h4>
               <p className="text-sm text-gray-600">{cert.issuer}</p>
               <p className="text-sm text-gray-500">{cert.issued_date}</p>
             </div>
-          ))}
+          ))
+          ) : (
+          <p className="text-sm text-gray-500">No certifications available</p>
+          )}
         </div>
       </div>
 
@@ -311,12 +318,15 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
           <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
           Skills
         </h3>
-        <div className="flex flex-wrap gap-2">
-          {detailedCandidate.skills_data.skills_mentioned.map((skill, index) => (
+        <div className="flex flex-wrap gap-2">{detailedCandidate.skills_data?.skills_mentioned?.length > 0 ? (
+          detailedCandidate.skills_data.skills_mentioned.map((skill, index) => (
             <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
               {skill.skill} ({skill.number_of_endorsements} endorsements)
             </span>
-          ))}
+          ))
+          ) : (
+            <p className="text-sm text-gray-500">No skills listed</p>
+          )}
         </div>
       </div>
 
@@ -326,8 +336,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
           <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
           Recommendations
         </h3>
-        <div className="space-y-2">
-          {detailedCandidate.recommendations.map((rec, index) => (
+        <div className="space-y-2">{detailedCandidate.recommendations?.length > 0 ? (
+          detailedCandidate.recommendations.map((rec, index) => (
             <div key={index} className="bg-gray-50 rounded-lg p-3">
               <div className="flex items-start space-x-2">
                 <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
@@ -341,7 +351,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
                 </div>
               </div>
             </div>
-          ))}
+          ))
+          ) : (
+            <p className="text-sm text-gray-500">No recommendations available</p>
+          )}
         </div>
       </div>
 
@@ -361,8 +374,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
               <X className="w-5 h-5 text-gray-500" /> 
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto space-y-4">
-            {detailedCandidate.notes.map((note) => (
+          <div className="flex-1 overflow-y-auto space-y-4">{detailedCandidate.notes?.length > 0 ? (
+            detailedCandidate.notes.map((note) => (
               <div key={note.noteId} className="flex space-x-3">
                 <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
                   {note.postedBy?.[0] || note.organisation.orgName[0]}
@@ -375,7 +388,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
                   <p className="text-xs text-gray-500 mt-1 ml-4">{new Date(note.posted_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                 </div>
               </div>
-            ))}
+            ))
+              ) : (
+                <p className="text-sm text-gray-500">No notes available</p>
+              )}
           </div>
           <div className="mt-4">
             <div className="flex space-x-3">
