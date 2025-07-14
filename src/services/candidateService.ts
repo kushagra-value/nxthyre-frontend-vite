@@ -85,6 +85,12 @@ class CandidateService {
       const response = await apiClient.get("/candidates/", {
         params: { page, page_size: pageSize, tab },
       });
+      if (Array.isArray(response.data)) {
+        return {
+          results: response.data,
+          count: response.data.length,
+        };
+      }
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to fetch candidates");
@@ -95,6 +101,12 @@ class CandidateService {
     try {
       const response = await apiClient.post("/candidates/search/", filters);
       return response.data;
+      if (Array.isArray(response.data)) {
+        return {
+          results: response.data,
+          count: response.data.length,
+        };
+      }
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to search candidates");
     }

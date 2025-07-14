@@ -39,6 +39,7 @@ interface FiltersSidebarProps {
   };
   onFiltersChange: (filters: any) => void;
   setCandidates: (candidates: CandidateListItem[]) => void;
+  candidates: CandidateListItem[];
 }
 
 const JobTitlesSlider: React.FC = () => {
@@ -192,7 +193,7 @@ type SectionKey =
   | 'spotlight'
   | 'moreFilters';
 
-const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChange, setCandidates }) => {
+const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChange, setCandidates, candidates }) => {
   const [expandedSections, setExpandedSections] = useState<Record<SectionKey, boolean>>({
     keywords: true,
     experience: false,
@@ -219,6 +220,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
         setCandidates(results);
       } catch (error) {
         console.error("Error fetching filtered candidates:", error);
+        setCandidates([]);
       }
     }, 300),
     [setCandidates]

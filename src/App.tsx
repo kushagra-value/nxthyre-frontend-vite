@@ -135,7 +135,7 @@ function MainApp() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [activeCategory, setActiveCategory] = useState("Head Of Finance");
   const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
-  
+  const [loadingCandidates, setLoadingCandidates] = useState(true);
 
   // Example categories data; replace with your actual data source as needed
   const categories = [
@@ -192,6 +192,27 @@ function MainApp() {
   //            matchesSkills && matchesSkillLevel && matchesNoticePeriod && matchesCompanies;
   //   });
   // }, [searchTerm, filters, isAuthenticated]);
+
+  useEffect(() => {
+    if (isAuthenticated && !searchTerm && !Object.values(filters).some(val => val)) {
+      const fetchInitialCandidates = async () => {
+        setLoadingCandidates(true);
+        try {
+          const { results } = await candidateService.getCandidates(1, 10, activeTab);
+          setCandidates(results);
+          if (results.length > 0 && !selectedCandidate) {
+            setSelectedCandidate(results[0]);
+          }
+        } catch (error) {
+          console.error("Error fetching initial candidates:", error);
+          showToast.error("Failed to load initial candidates");
+        } finally {
+          setLoadingCandidates(false);
+        }
+      };
+      fetchInitialCandidates();
+    }
+  }, [isAuthenticated, activeTab, selectedCandidate]);
 
   useEffect(() => {
     if (isAuthenticated && userStatus) {
