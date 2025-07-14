@@ -18,7 +18,7 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
   const [attempts, setAttempts] = useState(3);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
+  const [timeLeft, setTimeLeft] = useState(300);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -48,13 +48,11 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     setOtp(newOtp);
     setError("");
 
-    // Auto-focus next input
     if (value && index < 5) {
       const nextInput = document.getElementById(`otp-${index + 1}`);
       nextInput?.focus();
     }
 
-    // Auto-submit when all fields are filled
     if (newOtp.every((digit) => digit !== "") && newOtp.join("").length === 6) {
       handleVerify(newOtp.join(""));
     }
@@ -80,7 +78,6 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     try {
       let response;
       if (data?.type === "forgot-password") {
-        // Use password reset OTP verification for forgot-password flow here
         response = await authService.verifyPasswordResetOTP(
           data?.email || "",
           otpToVerify
@@ -88,11 +85,16 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
         showToast.success("OTP verified successfully!");
         onNavigate("reset-password", { email: data.email, otp: otpToVerify });
       } else {
-        // Use regular OTP verification for signup flow
         response = await authService.verifyOTP(data?.email || "", otpToVerify);
         showToast.success("Email verified successfully!");
 
         if (data?.type === "signup") {
+          // Create account after OTP verification
+          await authService.signUpWithEmail(
+            data.userData.email,
+            data.userData.password
+          );
+          showToast.success("Account created successfully!");
           if (
             response.next_step === "login_then_onboard" ||
             response.next_step === "login_then_provide_company_email"
@@ -184,18 +186,15 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
               </svg>
               Back
             </button>
-
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-900 flex items-center">
                 Verify Your Email{" "}
                 <Sparkles className="w-6 h-6 ml-2 text-yellow-400" />
               </h2>
             </div>
-
             <p className="text-gray-600 mb-8">
               We've sent a 6-digit code to {data?.email || "your email"}
             </p>
-
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3 text-center">
@@ -219,7 +218,6 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
                   ))}
                 </div>
               </div>
-
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                   <p className="text-sm text-red-600 flex items-center justify-center">
@@ -228,7 +226,6 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
                   </p>
                 </div>
               )}
-
               <div className="text-center">
                 <p className="text-sm text-gray-600">
                   Code expires in:{" "}
@@ -237,7 +234,6 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
                   </span>
                 </p>
               </div>
-
               <button
                 onClick={() => handleVerify()}
                 disabled={
@@ -256,7 +252,6 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
                   "Verify Code"
                 )}
               </button>
-
               <div className="text-center">
                 <span className="text-sm text-gray-600">
                   Didn't receive the code?{" "}
@@ -271,7 +266,6 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
                 </button>
               </div>
             </div>
-
             <div className="text-center mt-6">
               <p className="text-xs text-gray-500">
                 © 2024 NxtHyre. All rights reserved.
