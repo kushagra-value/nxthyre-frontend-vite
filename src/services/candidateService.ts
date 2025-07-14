@@ -80,7 +80,7 @@ export interface CandidateDetailData {
 }
 
 class CandidateService {
-  async getCandidates(page: number = 1, pageSize: number = 10, tab: string = "outbound"): Promise<{ results: CandidateListItem[]; count: number }> {
+  async getCandidates(page: number = 1, pageSize: number = 20, tab: string = "outbound"): Promise<{ results: CandidateListItem[]; count: number }> {
     try {
       const response = await apiClient.get("/candidates/", {
         params: { page, page_size: pageSize, tab },

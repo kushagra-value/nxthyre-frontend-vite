@@ -223,7 +223,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   }
 
 
-  if (!candidates ||candidates?.length === 0) {
+  if (!candidates || candidates?.length === 0) {
     return (<div className="bg-white rounded-xl shadow-sm border border-gray-200">
     {/* Tabs */}
       <div className="border-b border-gray-200">
