@@ -101,8 +101,15 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
       console.error("Sign up error:", error);
       if (error.message.includes("already exists")) {
         setErrors({ email: "Email already in use" });
+        showToast.error("Email already in use. Please try logging in.");
+      } else if (error.message.includes("personal email")) {
+        setErrors({ email: "Please use your organization email" });
+        showToast.error(
+          "Please use your organization email, not a personal email."
+        );
       } else {
         setErrors({ general: error.message || "Sign up failed" });
+        showToast.error("Sign up failed. Please try again later.");
       }
     } finally {
       setIsLoading(false);

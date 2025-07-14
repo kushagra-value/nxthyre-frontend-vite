@@ -84,6 +84,7 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ onNavigate, data }) => {
     } catch (error: any) {
       console.error("Password reset error:", error);
       setErrors({ general: error.message || "Password reset failed" });
+      showToast.error("Password reset failed. Please try again later.");
     } finally {
       setIsLoading(false);
     }

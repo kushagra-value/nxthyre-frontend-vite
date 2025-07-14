@@ -88,6 +88,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
     } catch (error: any) {
       console.error("Login error:", error);
       setErrors({ general: error.message || "Login failed" });
+      showToast.error("Login failed. Please try again later.");
     } finally {
       setIsLoading(false);
     }
