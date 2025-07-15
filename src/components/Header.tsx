@@ -120,21 +120,7 @@ const Header: React.FC<HeaderProps> = ({
                 >
                   Create Role
                 </button>
-              )}
-
-              {isAuthenticated && (
-                <div className="flex items-center space-x-2">
-                  {loadingCredits ? (
-                    <span className="text-sm text-gray-600">Loading credits...</span>
-                  ) : creditBalance !== null ? (
-                    <span className="text-sm text-gray-600">
-                      Credits: {creditBalance}
-                    </span>
-                  ) : (
-                    <span className="text-sm text-gray-600">Credits: N/A</span>
-                  )}
-                </div>
-              )}
+              )}    
 
               {/* Authentication Section */}
               {isAuthenticated && user ? (
@@ -169,6 +155,17 @@ const Header: React.FC<HeaderProps> = ({
                           <p className="text-xs text-gray-500">
                             {user.email || "user@example.com"}
                           </p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {loadingCredits ? (
+                            <span className="text-xs text-gray-500 animate-pulse">Loading credits...</span>
+                          ) : creditBalance !== null ? (
+                            <span className="text-xs text-gray-500">
+                              {creditBalance} credit remaining
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-500">oops!! no credit </span>
+                          )}
                         </div>
 
                         {/* Workspace & Organization */}
