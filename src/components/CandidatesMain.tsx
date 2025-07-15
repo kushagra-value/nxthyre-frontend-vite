@@ -39,8 +39,6 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     { id: 'prevetted', label: 'Prevetted', count: activeTab === 'prevetted' ? totalCount : 0}
   ];
 
-  // FIX: Encapsulated the fetch logic into a single, cancellable function.
-  // This useCallback will handle both regular fetches and search queries.
   const fetchAndSetCandidates = useCallback(
     debounce(async (searchQuery: string, page: number, signal: AbortSignal) => {
       setLoading(true);
@@ -52,7 +50,12 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               page_size: candidatesPerPage,
               tab: activeTab,
             })
-          : await candidateService.getCandidates(page, candidatesPerPage, activeTab);
+          : await candidateService.getCandidates(
+            {
+              page,
+              page_size: candidatesPerPage,
+              tab: activeTab
+            });
         if (!signal.aborted) {
           setTotalCount(count || results.length);
           setTotalPages(Math.ceil((count || results.length) / candidatesPerPage) || 1);
@@ -541,6 +544,10 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   </div>
                   <p className="text-gray-900 truncate">{candidate.education_summary?.date_range}</p>
                 </div>
+              </div>
+              <div className="flex space-x-6">
+                  <span className="text-gray-500 mr-[5px]">Notice Period</span>
+                <p className="text-gray-900">{candidate.notice_period_summary}</p>
               </div>
             
               <div className="mt-3 flex items-center justify-between space-x-2 flex-wrap gap-2">

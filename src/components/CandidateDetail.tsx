@@ -172,7 +172,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
 
   const handleShareProfile = () => {
     // Navigate to shareable profile page
-    window.open(`/candidate-profiles/${detailedCandidate.id}`, '_blank');
+    window.open(`/candidate-profiles/${detailedCandidate.candidate.id}`, '_blank');
   };
 
   const getAvatarColor = (name: string) => {
@@ -183,16 +183,16 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-3 space-y-6 min-h-[81vh] relative overflow-hidden">
       {/* Header */}
       <div className="flex space-x-3 items-center mt-1">
-        <div className={`w-12 h-12 ${getAvatarColor(detailedCandidate?.full_name)} rounded-full flex items-center justify-center text-white`}>
+        <div className={`w-12 h-12 ${getAvatarColor(detailedCandidate?.candidate?.full_name)} rounded-full flex items-center justify-center text-white`}>
           <User className="w-6 h-6" />
         </div>
         <div>
-          <h2 className="text-base lg:text-lg font-bold text-gray-900">{detailedCandidate?.full_name}</h2>
+          <h2 className="text-base lg:text-lg font-bold text-gray-900">{detailedCandidate?.candidate?.full_name}</h2>
           <div className="flex">
-            <p className="text-sm text-gray-500 ml-1 max-w-[28ch] truncate">{detailedCandidate?.headline}</p>
+            <p className="text-sm text-gray-500 ml-1 max-w-[28ch] truncate">{detailedCandidate?.candidate?.headline}</p>
           </div>
           <div className="flex">
-            <p className="text-sm text-gray-500 ml-1">{detailedCandidate?.location}</p>
+            <p className="text-sm text-gray-500 ml-1">{detailedCandidate?.candidate?.location}</p>
           </div>
         </div>
         <div className="text-xs text-gray-400 absolute right-6 top-4">
@@ -209,7 +209,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
-            <span className="text-sm text-gray-700 truncate">{detailedCandidate?.email}</span>
+            <span className="text-sm text-gray-700 truncate">{detailedCandidate?.candidate?.full_name?.slice(0,2)}***************.****</span>
           </div>
           <button className="flex space-x-2 ml-auto p-1 text-gray-400 hover:text-gray-600 flex-shrink-0">
             <Copy className="w-4 h-4" />
@@ -218,7 +218,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
-            <span className="text-sm text-gray-700">{detailedCandidate?.phone}</span>
+            <span className="text-sm text-gray-700">+91-**********</span>
           </div>
           <button className="flex space-x-2 ml-auto p-1 text-gray-400 hover:text-gray-600 flex-shrink-0">
             <FontAwesomeIcon icon={faWhatsapp} />
@@ -254,8 +254,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
           Experience
         </h3>
         <div className="ml-2">
-          {detailedCandidate.experience?.length > 0 ? (
-          detailedCandidate.experience.map((exp, index) => (
+          {detailedCandidate?.candidate?.experience?.length > 0 ? (
+          detailedCandidate?.candidate?.experience.map((exp, index) => (
             <div key={index} className="border-l-2 border-gray-200 pl-4 relative pb-2">
               <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
               <h4 className="font-medium text-gray-900 text-sm">{exp?.job_title}</h4>
@@ -275,8 +275,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
           Education
         </h3>
         <div className="ml-2">
-          {detailedCandidate.education?.length > 0 ? (
-          detailedCandidate.education.map((edu, index) => (
+          {detailedCandidate?.candidate?.education?.length > 0 ? (
+          detailedCandidate?.candidate?.education.map((edu, index) => (
             <div key={index} className="border-l-2 border-gray-200 pl-4 relative pb-2">
               <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
               <h4 className="font-medium text-gray-900 text-sm">{edu?.degree}</h4>
@@ -297,8 +297,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
           Certifications
         </h3>
         <div className="ml-2">
-          {detailedCandidate.certifications?.length > 0 ? (
-          detailedCandidate.certifications.map((cert, index) => (
+          {detailedCandidate?.candidate?.certifications?.length > 0 ? (
+          detailedCandidate?.candidate?.certifications.map((cert, index) => (
             <div key={index} className="border-l-2 border-gray-200 pl-4 relative pb-2">
               <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
               <h4 className="font-medium text-gray-900 text-sm">{cert?.name}</h4>
@@ -318,8 +318,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
           <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
           Skills
         </h3>
-        <div className="flex flex-wrap gap-2">{detailedCandidate.skills_data?.skills_mentioned?.length > 0 ? (
-          detailedCandidate.skills_data.skills_mentioned.map((skill, index) => (
+        <div className="flex flex-wrap gap-2">{detailedCandidate?.candidate?.skills_data?.skills_mentioned?.length > 0 ? (
+          detailedCandidate?.candidate?.skills_data.skills_mentioned.map((skill, index) => (
             <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
               {skill?.skill} ({skill?.number_of_endorsements} endorsements)
             </span>
@@ -336,8 +336,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
           <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
           Recommendations
         </h3>
-        <div className="space-y-2">{detailedCandidate.recommendations?.length > 0 ? (
-          detailedCandidate.recommendations.map((rec, index) => (
+        <div className="space-y-2">{detailedCandidate?.candidate?.recommendations?.length > 0 ? (
+          detailedCandidate?.candidate?.recommendations.map((rec, index) => (
             <div key={index} className="bg-gray-50 rounded-lg p-3">
               <div className="flex items-start space-x-2">
                 <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
@@ -374,15 +374,15 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
               <X className="w-5 h-5 text-gray-500" /> 
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto space-y-4">{detailedCandidate.notes?.length > 0 ? (
-            detailedCandidate.notes.map((note) => (
+          <div className="flex-1 overflow-y-auto space-y-4">{detailedCandidate?.candidate?.notes?.length > 0 ? (
+            detailedCandidate?.candidate?.notes.map((note) => (
               <div key={note.noteId} className="flex space-x-3">
                 <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-                  {note?.postedBy?.[0] || note?.organisation?.orgName[0]}
+                  {note?.postedBy?.userName[0] || note?.organisation?.orgName[0]}
                 </div>
                 <div className="flex-1">
                   <div className="bg-gray-100 rounded-2xl px-4 py-2 mr-2">
-                    <p className="font-medium text-sm text-gray-900">{note?.postedBy || note?.organisation?.orgName}</p>
+                    <p className="font-medium text-sm text-gray-900">{note?.postedBy?.userName || note?.organisation?.orgName}</p>
                     <p className="text-sm text-gray-800 mt-1">{note?.content}</p>
                   </div>
                   <p className="text-xs text-gray-500 mt-1 ml-4">{new Date(note?.posted_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
