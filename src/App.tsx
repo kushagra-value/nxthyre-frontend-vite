@@ -152,7 +152,7 @@ function MainApp() {
       const fetchInitialCandidates = async () => {
         setLoadingCandidates(true);
         try {
-          const { results, count } = await candidateService.getCandidates(1, 10, activeTab);
+          const { results, count } = await candidateService.getCandidates(1, 5, activeTab);
           console.log("Fetched initial candidates:", results);
           setCandidates(results);
           showToast.error("Initial candidates loaded successfully");
