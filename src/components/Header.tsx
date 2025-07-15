@@ -158,8 +158,7 @@ const Header: React.FC<HeaderProps> = ({
                           <p className="text-xs\ text-gray-500">
                             {user.email || "user@example.com"}
                           </p>
-                        </div>
-                        <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-2">
                           {loadingCredits ? (
                             <span className="text-xs text-gray-500 animate-pulse">Loading credits...</span>
                           ) : creditBalance !== null ? (
@@ -171,6 +170,8 @@ const Header: React.FC<HeaderProps> = ({
                           )}
                         </div>
 
+                        </div>
+                        
                         {/* Workspace & Organization */}
                         <button
                           onClick={() => {
