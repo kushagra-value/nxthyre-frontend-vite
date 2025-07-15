@@ -30,7 +30,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const [filteredCandidates, setFilteredCandidates] = useState<CandidateListItem[]>([]);
   const [totalCount, setTotalCount] = useState(0); // State to hold the total number of candidates.
 
-  const candidatesPerPage = 20;
+  const candidatesPerPage = 5;
 
   const tabs = [
     { id: 'outbound', label: 'Outbound', count: activeTab === 'outbound' ? totalCount : 0 },
