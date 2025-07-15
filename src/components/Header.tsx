@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   Home,
@@ -8,6 +8,8 @@ import {
   LogOut,
   Building2,
 } from "lucide-react";
+import { creditService } from '../services/creditService';
+import { showToast } from '../utils/toast';
 
 interface User {
   id: string | undefined;
@@ -21,7 +23,6 @@ interface User {
 }
 
 interface HeaderProps {
-  searchTerm: string;
   setSearchTerm: (term: string) => void;
   onCreateRole: () => void;
   isAuthenticated?: boolean;
@@ -35,8 +36,6 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({
-  searchTerm,
-  setSearchTerm,
   onCreateRole,
   isAuthenticated = false,
   user = null,
@@ -48,6 +47,9 @@ const Header: React.FC<HeaderProps> = ({
   onShowLogoutModal,
 }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const [loadingCredits, setLoadingCredits] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("linkedin contact finder");
 
   const handleLogoutClick = () => {
     onShowLogoutModal();
@@ -58,6 +60,26 @@ const Header: React.FC<HeaderProps> = ({
     // Navigate back to main dashboard...
     window.location.href = "/";
   };
+
+  useEffect(() => {
+    const fetchCreditBalance = async () => {
+      if (isAuthenticated && user) {
+        setLoadingCredits(true);
+        try {
+          const balanceData = await creditService.getCreditBalance();
+          setCreditBalance(balanceData.credit_balance);
+        } catch (error) {
+          setCreditBalance(null);
+          showToast.error('Failed to load credit balance');
+        }
+        setLoadingCredits(false);
+      } else {
+        setCreditBalance(null);
+      }
+    };
+
+    fetchCreditBalance();
+  }, [isAuthenticated, user]);
 
   return (
     <>
@@ -98,6 +120,20 @@ const Header: React.FC<HeaderProps> = ({
                 >
                   Create Role
                 </button>
+              )}
+
+              {isAuthenticated && (
+                <div className="flex items-center space-x-2">
+                  {loadingCredits ? (
+                    <span className="text-sm text-gray-600">Loading credits...</span>
+                  ) : creditBalance !== null ? (
+                    <span className="text-sm text-gray-600">
+                      Credits: {creditBalance}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-600">Credits: N/A</span>
+                  )}
+                </div>
               )}
 
               {/* Authentication Section */}
