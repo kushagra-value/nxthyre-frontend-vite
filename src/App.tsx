@@ -145,14 +145,19 @@ function MainApp() {
     { name: "Marketing Lead", count: 7 },
     // Add more categories as needed
   ];
-
+  const page=1;
+  const candidatesPerPage= 5;
 
   useEffect(() => {
     if (isAuthenticated && !searchTerm && !Object.values(filters).some(val => val)) {
       const fetchInitialCandidates = async () => {
         setLoadingCandidates(true);
         try {
-          const { results, count } = await candidateService.getCandidates(1, 5, activeTab);
+          const { results, count } = await candidateService.getCandidates({
+              page,
+              page_size: candidatesPerPage,
+              tab: activeTab,
+            });
           console.log("Fetched initial candidates:", results);
           setCandidates(results);
           showToast.error("Initial candidates loaded successfully");
