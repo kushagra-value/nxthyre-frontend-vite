@@ -22,6 +22,7 @@ import ShareableProfile from "./components/ShareableProfile";
 import PipelineSharePage from "./components/PipelineSharePage";
 import { User } from "./types/auth"; // Adjust path
 import { CandidateListItem, candidateService} from './services/candidateService';
+import { creditService } from "./services/creditService";
 import {
   ChevronDown,
   MoreHorizontal,
@@ -136,6 +137,9 @@ function MainApp() {
   const [activeCategory, setActiveCategory] = useState("Head Of Finance");
   const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
   const [loadingCandidates, setLoadingCandidates] = useState(true);
+  // Credit balance state
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const [loadingCredits, setLoadingCredits] = useState(false);
 
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -150,6 +154,28 @@ function MainApp() {
   ];
   const page=1;
   const candidatesPerPage= 5;
+
+  // Fetch initial credit balance when user is authenticated
+  useEffect(() => {
+    const fetchCreditBalance = async () => {
+      if (isAuthenticated && userStatus) {
+        setLoadingCredits(true);
+        try {
+          const balanceData = await creditService.getCreditBalance();
+          setCreditBalance(balanceData.credit_balance);
+        } catch (error) {
+          setCreditBalance(null);
+          showToast.error('Failed to load credit balance');
+        } finally {
+          setLoadingCredits(false);
+        }
+      } else {
+        setCreditBalance(null);
+      }
+    };
+
+    fetchCreditBalance();
+  }, [isAuthenticated, userStatus]);
 
   useEffect(() => {
     if (isAuthenticated && !searchTerm && !Object.values(filters).some(val => val)) {

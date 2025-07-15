@@ -17,16 +17,22 @@ interface HeaderProps {
   setSearchTerm: (term: string) => void;
   onCreateRole: () => void;
   onOpenLogoutModal: () => void;
+  creditBalance: number | null;
+  loadingCredits: boolean;
+  setCreditBalance: (balance: number | null) => void;
+  setLoadingCredits: (loading: boolean) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
   onCreateRole,
   onOpenLogoutModal, // Destructure new prop
+  creditBalance,
+  loadingCredits,
+  setCreditBalance,
+  setLoadingCredits,
 }) => {
   const { isAuthenticated, user, signOut } = useAuthContext();
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [creditBalance, setCreditBalance] = useState<number | null>(null);
-  const [loadingCredits, setLoadingCredits] = useState(false);
   const [searchTerm, setSearchTerm] = useState("linkedin contact finder");
   const navigate = useNavigate();
 
