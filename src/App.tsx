@@ -146,52 +146,6 @@ function MainApp() {
     // Add more categories as needed
   ];
 
-      // const filteredCandidates = useMemo(() => {
-  //   if (!isAuthenticated) return [];
-    
-  //   return candidates.filter(candidate => {
-  //     const matchesSearch = !searchTerm || 
-  //       candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //       candidate.currentRole.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //       candidate.company.toLowerCase().includes(searchTerm.toLowerCase());
-
-  //     const matchesKeywords = !filters.keywords || 
-  //       candidate.name.toLowerCase().includes(filters.keywords.toLowerCase()) ||
-  //       candidate.currentRole.toLowerCase().includes(filters.keywords.toLowerCase()) ||
-  //       candidate.skills.some(skill => skill.toLowerCase().includes(filters.keywords.toLowerCase()));
-
-  //     const matchesCategories = filters.selectedCategories.length === 0 ||
-  //       filters.selectedCategories.some(category => 
-  //         candidate.currentRole.toLowerCase().includes(category.toLowerCase()) ||
-  //         candidate.skills.some(skill => skill.toLowerCase().includes(category.toLowerCase()))
-  //       );
-
-  //     const matchesCurrentExp = (!filters.minExperience || candidate.currentCompanyExperience >= parseInt(filters.minExperience)) &&
-  //       (!filters.maxExperience || candidate.currentCompanyExperience <= parseInt(filters.maxExperience));
-
-  //     const matchesTotalExp = (!filters.minTotalExp || candidate.totalExperience >= parseInt(filters.minTotalExp)) &&
-  //       (!filters.maxTotalExp || candidate.totalExperience <= parseInt(filters.maxTotalExp));
-
-  //     const matchesCity = !filters.city || candidate.city.toLowerCase().includes(filters.city.toLowerCase());
-  //     const matchesCountry = !filters.country || candidate.country.toLowerCase().includes(filters.country.toLowerCase());
-  //     const matchesLocation = !filters.location || candidate.location.toLowerCase().includes(filters.location.toLowerCase());
-
-  //     const matchesSkills = filters.selectedSkills.length === 0 ||
-  //       filters.selectedSkills.some(skill => 
-  //         candidate.skills.some(candidateSkill => 
-  //           candidateSkill.toLowerCase().includes(skill.toLowerCase())
-  //         )
-  //       );
-
-  //     const matchesSkillLevel = !filters.skillLevel || candidate.skillLevel === filters.skillLevel;
-  //     const matchesNoticePeriod = !filters.noticePeriod || candidate.noticePeriod === filters.noticePeriod;
-  //     const matchesCompanies = !filters.companies || candidate.company.toLowerCase().includes(filters.companies.toLowerCase());
-
-  //     return matchesSearch && matchesKeywords && matchesCategories && matchesCurrentExp && 
-  //            matchesTotalExp && matchesCity && matchesCountry && matchesLocation && 
-  //            matchesSkills && matchesSkillLevel && matchesNoticePeriod && matchesCompanies;
-  //   });
-  // }, [searchTerm, filters, isAuthenticated]);
 
   useEffect(() => {
     if (isAuthenticated && !searchTerm && !Object.values(filters).some(val => val)) {
@@ -202,9 +156,9 @@ function MainApp() {
           console.log("Fetched initial candidates:", results);
           setCandidates(results);
           showToast.error("Initial candidates loaded successfully");
-          console.log("Total candidates fetched:", results.length);
+          console.log("Total candidates fetched:", count);
           console.log("Candidates fetched:", candidates);
-          if (results.length > 0 && !selectedCandidate) {
+          if (count > 0 && !selectedCandidate) {
             setSelectedCandidate(results[0]);
           }
         } catch (error) {
