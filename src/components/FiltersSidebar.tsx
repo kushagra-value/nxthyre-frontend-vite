@@ -222,7 +222,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
         console.error("Error fetching filtered candidates:", error);
         setCandidates([]);
       }
-    }, 300),
+    }, 1000),
     [setCandidates]
   );
   
