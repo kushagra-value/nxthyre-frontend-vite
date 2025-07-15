@@ -137,6 +137,9 @@ function MainApp() {
   const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
   const [loadingCandidates, setLoadingCandidates] = useState(true);
 
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+
   // Example categories data; replace with your actual data source as needed
   const categories = [
     { name: "Head Of Finance", count: 12 },
@@ -160,6 +163,8 @@ function MainApp() {
             });
           console.log("Fetched initial candidates:", results);
           setCandidates(results);
+          setTotalCount(count || results.length)
+          setTotalPages(Math.ceil((count || results.length) / candidatesPerPage) || 1);
           showToast.error("Initial candidates loaded successfully");
           console.log("Total candidates fetched:", count);
           console.log("Candidates fetched:", candidates);

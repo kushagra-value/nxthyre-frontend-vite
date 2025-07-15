@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   Home,
@@ -8,25 +8,26 @@ import {
   LogOut,
   Building2,
 } from "lucide-react";
+import { creditService } from '../services/creditService';
 import { useAuthContext } from "../context/AuthContext"; // Adjust path
 import { useNavigate } from "react-router-dom";
 import { showToast } from "../utils/toast";
 
 interface HeaderProps {
-  searchTerm: string;
   setSearchTerm: (term: string) => void;
   onCreateRole: () => void;
   onOpenLogoutModal: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
-  searchTerm,
-  setSearchTerm,
   onCreateRole,
   onOpenLogoutModal, // Destructure new prop
 }) => {
   const { isAuthenticated, user, signOut } = useAuthContext();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const [loadingCredits, setLoadingCredits] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("linkedin contact finder");
   const navigate = useNavigate();
 
   const handleLogin = () => {
@@ -57,8 +58,29 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   const handleGoToDashboard = () => {
-    navigate("/");
+    // Navigate back to main dashboard...
+     navigate("/");
   };
+
+  useEffect(() => {
+    const fetchCreditBalance = async () => {
+      if (isAuthenticated && user) {
+        setLoadingCredits(true);
+        try {
+          const balanceData = await creditService.getCreditBalance();
+          setCreditBalance(balanceData.credit_balance);
+        } catch (error) {
+          setCreditBalance(null);
+          showToast.error('Failed to load credit balance');
+        }
+        setLoadingCredits(false);
+      } else {
+        setCreditBalance(null);
+      }
+    };
+
+    fetchCreditBalance();
+  }, [isAuthenticated, user]);
 
   return (
     <>
@@ -99,6 +121,20 @@ const Header: React.FC<HeaderProps> = ({
                 >
                   Create Role
                 </button>
+              )}
+
+              {isAuthenticated && (
+                <div className="flex items-center space-x-2">
+                  {loadingCredits ? (
+                    <span className="text-sm text-gray-600">Loading credits...</span>
+                  ) : creditBalance !== null ? (
+                    <span className="text-sm text-gray-600">
+                      Credits: {creditBalance}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-600">Credits: N/A</span>
+                  )}
+                </div>
               )}
 
               {/* Authentication Section */}

@@ -10,6 +10,10 @@ interface CandidatesMainProps {
   setSelectedCandidate: (candidate: CandidateListItem | null) => void;
   searchTerm: string;
   candidates: CandidateListItem[];
+  totalCount: number;
+  totalPages: number;
+  setTotalCount: (count: number) => void;
+  setTotalPages: (pages: number) => void;
   onPipelinesClick?: () => void;
 }
 
@@ -20,15 +24,17 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   setSelectedCandidate,
   searchTerm,
   candidates,
+  totalCount,
+  totalPages,
+  setTotalCount,
+  setTotalPages,
   onPipelinesClick
 }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [filteredCandidates, setFilteredCandidates] = useState<CandidateListItem[]>([]);
-  const [totalCount, setTotalCount] = useState(0); // State to hold the total number of candidates.
 
   const candidatesPerPage = 20;
 
