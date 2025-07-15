@@ -209,7 +209,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
-            <span className="text-sm text-gray-700 truncate">{detailedCandidate?.candidate?.full_name?.slice(0,2)}***************.com</span>
+            <span className="text-sm text-gray-700 truncate">{detailedCandidate?.candidate?.full_name?.slice(0,2)}***************.****</span>
           </div>
           <button className="flex space-x-2 ml-auto p-1 text-gray-400 hover:text-gray-600 flex-shrink-0">
             <Copy className="w-4 h-4" />
