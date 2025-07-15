@@ -33,6 +33,10 @@ interface HeaderProps {
   onWorkspacesOrg?: () => void;
   onSettings?: () => void;
   onShowLogoutModal: () => void;
+  creditBalance: number | null;
+  loadingCredits: boolean;
+  setCreditBalance: (balance: number | null) => void;
+  setLoadingCredits: (loading: boolean) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -45,10 +49,12 @@ const Header: React.FC<HeaderProps> = ({
   onWorkspacesOrg,
   onSettings,
   onShowLogoutModal,
+  creditBalance,
+  loadingCredits,
+  setCreditBalance,
+  setLoadingCredits,
 }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [creditBalance, setCreditBalance] = useState<number | null>(null);
-  const [loadingCredits, setLoadingCredits] = useState(false);
   const [searchTerm, setSearchTerm] = useState("linkedin contact finder");
 
   const handleLogoutClick = () => {
