@@ -69,8 +69,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
           <div className="w-12 h-12 bg-gray-100 rounded-full mx-auto mb-3 flex items-center justify-center">
             <Briefcase className="w-6 h-6 text-gray-400" />
           </div>
-          <p className="text-base font-medium">No candidates available</p>
-          <p className="text-sm mt-1">No candidate data is available to display</p>
+          <p className="text-base font-medium">No candidates Selected</p>
+          <p className="text-sm mt-1">Click and view the candidates information</p>
         </div>
       </div>
     );

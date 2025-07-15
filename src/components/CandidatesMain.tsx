@@ -515,9 +515,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   </div>
                 </div>
                 <div className="flex space-x-1">
-                   {/* FIX: Safer rendering with optional chaining */}
-                  <p className="text-sm text-gray-600 mt-1">{candidate.experience_summary?.title} |</p>
-                  <p className="text-sm text-gray-600 mt-1">{candidate.headline} |</p>
+                  <p className="text-sm text-gray-600 mt-1 max-w-[58ch] truncate">{candidate.headline} |</p>
                 </div>
                 <div className="flex space-x-1">
                   <p className="flex text-sm text-gray-600 mt-1">
@@ -544,11 +542,12 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   </div>
                   <p className="text-gray-900 truncate">{candidate.education_summary?.date_range}</p>
                 </div>
-              </div>
-              <div className="flex space-x-6">
+                <div className="flex space-x-6">
                   <span className="text-gray-500 mr-[5px]">Notice Period</span>
-                <p className="text-gray-900">{candidate.notice_period_summary}</p>
+                  <p className="text-gray-900">{candidate.notice_period_summary}</p>
+                  </div>
               </div>
+              
             
               <div className="mt-3 flex items-center justify-between space-x-2 flex-wrap gap-2">
                 <div className="mt-3 flex flex-wrap gap-1">
