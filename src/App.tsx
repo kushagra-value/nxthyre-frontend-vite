@@ -155,7 +155,7 @@ function MainApp() {
               page_size: candidatesPerPage,
               tab: activeTab,
             });
-          console.log("Fetched initial candidates:", results);
+          console.error("Fetched initial candidates:", results);
           setCandidates(results);
           setTotalCount(count || results.length)
           setTotalPages(Math.ceil((count || results.length) / candidatesPerPage) || 1);
