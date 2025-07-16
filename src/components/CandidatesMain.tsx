@@ -80,8 +80,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
           setLoading(false);
         }
       }
-    }, 300),
-    [activeTab]
+    }, 1000),
+    []
   );
 
   // Effect for handling page changes
@@ -93,7 +93,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     return () => {
       controller.abort();
     };
-  }, [searchTerm, activeTab, currentPage, fetchAndSetCandidates]);
+  }, []);
 
 
   const handleCandidateSelect = (candidateId: string) => {
