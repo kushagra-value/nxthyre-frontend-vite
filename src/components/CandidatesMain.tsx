@@ -67,6 +67,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
           setTotalPages(Math.ceil((count || results.length) / candidatesPerPage) || 1);
           // Update parent candidates state to sync with FiltersSidebar
           setSelectedCandidate(results.length > 0 ? results[0] : null);
+          console.log("Fetched candidates:", results);
         }
       } catch (error: any) {
         if (error.name !== 'AbortError') {
@@ -85,6 +86,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
   // Effect for handling page changes
   useEffect(() => {
+    console.log(searchTerm, activeTab, currentPage, fetchAndSetCandidates);
     const controller = new AbortController();
     fetchAndSetCandidates(searchTerm, currentPage, controller.signal);
 
