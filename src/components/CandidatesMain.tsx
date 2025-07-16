@@ -81,7 +81,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         }
       }
     }, 300),
-    [candidatesPerPage, setSelectedCandidate]
+    [activeTab]
   );
 
   // Effect for handling page changes
