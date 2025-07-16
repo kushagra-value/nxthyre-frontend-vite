@@ -30,7 +30,6 @@ interface Candidate {
 interface TemplateSelectorProps {
   candidate: CandidateListItem;
   onBack: () => void;
-  onInviteSuccess: (email: string, phone: string, newBalance: number) => void;
 }
 
 interface Template {
@@ -124,19 +123,13 @@ Looking forward to hearing from you.`,
     showToast.success(`Test email sent to ${testEmail}`);
   };
 
-  const handleSendInvite = async () => {
+  const handleSendInvite = () => {
     if (!selectedTemplate && !body) {
       showToast.error("Please select a template or enter email content");
       return;
     }
     showToast.success(`Invite sent to ${candidate.full_name} via ${selectedChannel}`);
     onBack();
-      onInviteSuccess(response.email, response.phone, response.new_balance);
-      onBack();
-    } catch (error: any) {
-      showToast.error(error.message);
-    }
-    
   };
 
   return (

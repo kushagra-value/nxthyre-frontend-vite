@@ -355,11 +355,6 @@ function MainApp() {
     setShowTemplateSelector(true);
   };
 
-  const handleInviteSuccess = (email: string, phone: string, newBalance: number) => {
-    setCreditBalance(newBalance);
-    setShowTemplateSelector(false);
-  };
-
   const handleBackFromTemplate = () => {
     setShowTemplateSelector(false);
   };
