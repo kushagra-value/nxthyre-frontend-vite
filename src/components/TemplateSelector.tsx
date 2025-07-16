@@ -2,12 +2,10 @@ import React, { useState } from 'react';
 import { ChevronDown, Bold, Italic, Link, List, MoreHorizontal, ArrowLeft, Mail, MessageSquare, Phone, Bot, Eye, Settings, Send, X } from 'lucide-react';
 import { showToast } from '../utils/toast';
 import { CandidateListItem } from '../services/candidateService';
-import { creditService } from '../services/creditService';
 
 interface TemplateSelectorProps {
   candidate: CandidateListItem;
   onBack: () => void;
-  onInviteSuccess: (email: string, phone: string, newBalance: number) => void;
 }
 
 interface Template {
@@ -17,7 +15,7 @@ interface Template {
   body: string;
 }
 
-const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, onInviteSuccess}) => {
+const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack }) => {
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [templateName, setTemplateName] = useState('');
   const [subject, setSubject] = useState('');
@@ -99,25 +97,13 @@ Looking forward to hearing from you.`
     showToast.success(`Test email sent to ${testEmail}`);
   };
 
-  const handleSendInvite = async () => {
+  const handleSendInvite = () => {
     if (!selectedTemplate && !body) {
       showToast.error('Please select a template or enter email content');
       return;
     }
-    if (!subject.trim()) {
-      showToast.error('Please enter an email subject');
-      return;
-    }
-    try {
-      const response = await creditService.inviteCandidate(1, candidate.id, subject, body); // Assuming job_pk = 1
-      showToast.success(`Invite sent to ${candidate.full_name} via ${selectedChannel} ${response.message}`);
+    showToast.success(`Invite sent to ${candidate.full_name} via ${selectedChannel}`);
     onBack();
-      onInviteSuccess(response.email, response.phone, response.new_balance);
-      onBack();
-    } catch (error: any) {
-      showToast.error(error.message);
-    }
-    
   };
 
   return (

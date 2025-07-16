@@ -304,11 +304,6 @@ function MainApp() {
     setShowTemplateSelector(true);
   };
 
-  const handleInviteSuccess = (email: string, phone: string, newBalance: number) => {
-    setCreditBalance(newBalance);
-    setShowTemplateSelector(false);
-  };
-
   const handleBackFromTemplate = () => {
     setShowTemplateSelector(false);
   };
@@ -647,7 +642,6 @@ function MainApp() {
                           <TemplateSelector
                             candidate={selectedCandidate}
                             onBack={handleBackFromTemplate}
-                            onInviteSuccess={handleInviteSuccess}
                           />
                         ) : (
                           <CandidateDetail
