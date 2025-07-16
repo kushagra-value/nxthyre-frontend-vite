@@ -30,13 +30,25 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   setTotalPages,
   onPipelinesClick
 }) => {
+  console.log('Component rendered or re-rendered');
+
   const [selectAll, setSelectAll] = useState(false);
+  console.log('selectAll state:', selectAll);
+
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
+  console.log('selectedCandidates state:', selectedCandidates);
+
   const [currentPage, setCurrentPage] = useState(1);
+  console.log('currentPage state:', currentPage);
+
   const [loading, setLoading] = useState(true);
+  console.log('loading state:', loading);
+
   const [filteredCandidates, setFilteredCandidates] = useState<CandidateListItem[]>([]);
+  console.log('filteredCandidates state:', filteredCandidates);
 
   const candidatesPerPage = 20;
+  console.log('candidatesPerPage:', candidatesPerPage);
 
   const tabs = [
     { id: 'outbound', label: 'Outbound', count: activeTab === 'outbound' ? totalCount : 0 },
@@ -44,11 +56,15 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     { id: 'inbound', label: 'Inbound', count: activeTab === 'inbound' ? totalCount : 0 },
     { id: 'prevetted', label: 'Prevetted', count: activeTab === 'prevetted' ? totalCount : 0}
   ];
+  console.log('tabs:', tabs);
 
   const fetchAndSetCandidates = useCallback(
     debounce(async (searchQuery: string, page: number, signal: AbortSignal) => {
+      console.log('fetchAndSetCandidates called with:', { searchQuery, page });
       setLoading(true);
+      console.log('setLoading to true');
       try {
+        console.log('API call initiated');
         const { results, count } = searchQuery
           ? await candidateService.searchCandidates({
               q: searchQuery,
@@ -62,41 +78,54 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               page_size: candidatesPerPage,
               tab: activeTab
             });
+        
+        console.log('API call successful');
         if (!signal.aborted) {
+          console.log('Setting state after API call');
           setTotalCount(count || results.length);
           setTotalPages(Math.ceil((count || results.length) / candidatesPerPage) || 1);
           // Update parent candidates state to sync with FiltersSidebar
           setSelectedCandidate(results.length > 0 ? results[0] : null);
           console.error("Fetched candidates:", results);
+        } else {
+            console.log('Signal aborted, state not set');
         }
       } catch (error: any) {
         if (error.name !== 'AbortError') {
           console.error("Error fetching candidates:", error);
           setTotalCount(0);
           setTotalPages(1);
+        } else {
+            console.log('Fetch aborted');
         }
       } finally {
         if (!signal.aborted) {
           setLoading(false);
+          console.log('setLoading to false');
         }
       }
     }, 1000),
-    []
+    [activeTab] // Dependency added to recreate debounce if activeTab changes
   );
 
   // Effect for handling page changes
   useEffect(() => {
+    console.log('useEffect triggered');
     console.error(searchTerm, activeTab, currentPage, fetchAndSetCandidates);
     const controller = new AbortController();
+    console.log('Calling fetchAndSetCandidates from useEffect');
     fetchAndSetCandidates(searchTerm, currentPage, controller.signal);
 
     return () => {
+      console.log('useEffect cleanup');
       controller.abort();
+      console.log('Request aborted');
     };
-  }, []);
+  }, [searchTerm, activeTab, currentPage, fetchAndSetCandidates]);
 
 
   const handleCandidateSelect = (candidateId: string) => {
+    console.log('handleCandidateSelect called with id:', candidateId);
     setSelectedCandidates(prev =>
       prev.includes(candidateId)
         ? prev.filter(id => id !== candidateId)
@@ -105,29 +134,37 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   };
 
   const handleSelectAll = (checked: boolean) => {
+    console.log('handleSelectAll called with checked:', checked);
     setSelectAll(checked);
     if (checked) {
+      console.log('Selecting all candidates on the current page');
       // Select only the IDs of the candidates on the current page.
       setSelectedCandidates(filteredCandidates.map((candidate) => candidate.id));
     } else {
+      console.log('Deselecting all candidates');
       setSelectedCandidates([]);
     }
   };
 
   const handlePageChange = (page: number) => {
+    console.log('handlePageChange called with page:', page);
     if (page > 0 && page <= totalPages) {
       setCurrentPage(page);
       setSelectedCandidate(null); // Clear selection when changing pages
+      console.log('setCurrentPage to:', page);
     }
   };
   
-  const getAvatarColor = (name: string) => 'bg-blue-500';
+  const getAvatarColor = (name: string) => {
+      console.log('getAvatarColor called for:', name);
+      return 'bg-blue-500';
+  };
 
   const getStarCount = (skill: string) => {
+    console.log('getStarCount called for:', skill);
     const sum = skill.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return (sum % 5) + 1;
   };
-
   if (loading) {
     return (<div className="bg-white rounded-xl shadow-sm border border-gray-200">
     {/* Tabs */}
