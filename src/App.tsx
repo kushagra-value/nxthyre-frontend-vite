@@ -149,6 +149,21 @@ function MainApp() {
   useEffect(() => {
     const fetchCreditBalance = async () => {
       if (isAuthenticated && userStatus) {
+          const user: User = {
+          id: firebaseUser?.uid,
+          fullName: userStatus.full_name || "Unknown User",
+          email: userStatus.email || "Unknown@user.com",
+          role:
+            userStatus.roles?.length > 0
+              ? userStatus.roles[0].name.toLowerCase()
+              : "team",
+          organizationId: userStatus.organization?.id?.toString(),
+          workspaceIds: [],
+          isVerified: firebaseUser?.emailVerified ?? true,
+          createdAt:
+            firebaseUser?.metadata.creationTime || new Date().toISOString(),
+        };
+        setCurrentUser(user);
         setLoadingCredits(true);
         try {
           const balanceData = await creditService.getCreditBalance();
@@ -165,7 +180,7 @@ function MainApp() {
     };
 
     fetchCreditBalance();
-  }, [isAuthenticated, userStatus]);
+  }, [isAuthenticated, userStatus, firebaseUser]);
 
   useEffect(() => {
     if (isAuthenticated && !searchTerm && !Object.values(filters).some(val => val)) {
@@ -198,25 +213,6 @@ function MainApp() {
     }
   }, [isAuthenticated, activeTab, selectedCandidate]);
 
-  useEffect(() => {
-    if (isAuthenticated && userStatus) {
-      const user: User = {
-        id: firebaseUser?.uid,
-        fullName: userStatus.full_name || "Unknown User",
-        email: userStatus.email || "Unknown@user.com",
-        role:
-          userStatus.roles?.length > 0
-            ? userStatus.roles[0].name.toLowerCase()
-            : "team",
-        organizationId: userStatus.organization?.id?.toString(),
-        workspaceIds: [],
-        isVerified: firebaseUser?.emailVerified ?? true,
-        createdAt:
-          firebaseUser?.metadata.creationTime || new Date().toISOString(),
-      };
-      setCurrentUser(user);
-    }
-  }, [isAuthenticated, userStatus, firebaseUser]);
 
   useEffect(() => {
     const path = window.location.pathname;
