@@ -19,6 +19,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
   const [detailedCandidate, setDetailedCandidate] = useState<CandidateDetailData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [revealedEmail, setRevealedEmail] = useState<string | null>(null);
+  const [revealedPhone, setRevealedPhone] = useState<string | null>(null);
 
   // // Use the first candidate if no candidate is selected but candidates are available
   // const displayCandidate = candidate || (candidates.length > 0 ? candidates[0] : null);
@@ -55,6 +57,25 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
       document.body.classList.remove('overflow-hidden');
     };
   }, [showComments]);
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast.success('Copied to clipboard!');
+    }).catch(() => {
+      showToast.error('Failed to copy to clipboard');
+    });
+  };
+
+  const handleWhatsApp = (phone: string) => {
+    const cleanedPhone = phone.replace(/[^0-9+]/g, ''); // Remove non-numeric characters except +
+    window.open(`https://wa.me/${cleanedPhone}`, '_blank');
+  };
+
+  const handleInviteSuccess = (email: string, phone: string, newBalance: number) => {
+    setRevealedEmail(email);
+    setRevealedPhone(phone);
+    setCreditBalance(newBalance);
+  };
 
   if (loading) {
     return (
@@ -95,78 +116,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
     );
   }
 
-  // const experiences = [
-  //   {
-  //     title: displayCandidate.currentRole,
-  //     company: `${displayCandidate.company} | ${displayCandidate.location}`,
-  //     period: displayCandidate.experience,
-  //     duration: `${displayCandidate.currentCompanyExperience} yr`,
-  //     description: 'Conducted in-depth data analysis on performance metrics, and inventory data using various tools. Streamlined the team workflow for increased efficiency.'
-  //   },
-  //   {
-  //     title: 'Previous Role',
-  //     company: 'Previous Company | Location',
-  //     period: '2019 - 2022',
-  //     duration: '3 yr',
-  //     description: 'Mentored team members and implemented KPIs. Mediated various processes and contributed to organizational growth.'
-  //   }
-  // ];
-
-  // const education = [
-  //   {
-  //     degree: displayCandidate.education,
-  //     field: 'Specialized Field',
-  //     period: '2017 - 2019',
-  //     location: displayCandidate.city
-  //   }
-  // ];
-
-  // const certifications = [
-  //   {
-  //     name: 'Certified Python Developer',
-  //     issuer: 'Python Institute',
-  //     date: 'January 2023'
-  //   },
-  //   {
-  //     name: 'AWS Certified Solutions Architect',
-  //     issuer: 'Amazon Web Services',
-  //     date: 'June 2022'
-  //   }
-  // ];
-
-  // const recommendations = [
-  //   {
-  //     name: 'Sarah Lee',
-  //     role: 'Project Manager at Innovations Inc.',
-  //     company: 'Innovations Inc.',
-  //     text: 'Alex is a fantastic team player with exceptional technical skills.',
-  //     date: 'Received March 2024'
-  //   }
-  // ];
-
-  // const existingComments = [
-  //   {
-  //     id: 1,
-  //     text: 'Great candidate with strong technical background. Very responsive during initial screening.',
-  //     author: 'John Doe',
-  //     date: '2 days ago',
-  //     avatar: 'J'
-  //   },
-  //   {
-  //     id: 2,
-  //     text: 'Excellent communication skills. Would be a good fit for senior roles.',
-  //     author: 'Jane Smith',
-  //     date: '1 week ago',
-  //     avatar: 'J'
-  //   },
-  //   {
-  //     id: 3,
-  //     text: 'Had a great conversation about their experience with Python and data analysis. Very knowledgeable.',
-  //     author: 'Mike Johnson',
-  //     date: '3 days ago',
-  //     avatar: 'M'
-  //   }
-  // ];
 
   const handleAddComment = () => {
     if (newComment.trim()) {
@@ -214,21 +163,34 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
-            <span className="text-sm text-gray-700 truncate">{detailedCandidate?.candidate?.full_name?.slice(0,2)}***************.****</span>
+            <span className="text-sm text-gray-700 truncate">
+              {revealedEmail || `${detailedCandidate?.candidate?.full_name?.slice(0, 2)}***************.com`}
+            </span>
           </div>
-          <button className="flex space-x-2 ml-auto p-1 text-gray-400 hover:text-gray-600 flex-shrink-0">
-            <Copy className="w-4 h-4" />
-          </button>
+          {revealedEmail && (
+            <button
+              onClick={() => handleCopy(revealedEmail)}
+              className="flex space-x-2 ml-auto p-1 text-gray-400 hover:text-gray-600 flex-shrink-0"
+            >
+              <Copy className="w-4 h-4" />
+            </button>
+          )}
         </div>
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
-            <span className="text-sm text-gray-700">+91-**********</span>
+            <span className="text-sm text-gray-700">{revealedPhone || '+91-**********'}</span>
           </div>
-          <button className="flex space-x-2 ml-auto p-1 text-gray-400 hover:text-gray-600 flex-shrink-0">
-            <FontAwesomeIcon icon={faWhatsapp} />
-            <Copy className="w-4 h-4" />
-          </button>
+          {revealedPhone && (
+            <div className="flex space-x-2 ml-auto p-1 text-gray-400 hover:text-gray-600 flex-shrink-0">
+              <button onClick={() => handleWhatsApp(revealedPhone)}>
+                <FontAwesomeIcon icon={faWhatsapp} />
+              </button>
+              <button onClick={() => handleCopy(revealedPhone)}>
+                <Copy className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
