@@ -156,6 +156,39 @@ function MainApp() {
   const candidatesPerPage= 5;
 
   // Fetch initial credit balance when user is authenticated
+  
+
+  useEffect(() => {
+    if (isAuthenticated && !searchTerm && !Object.values(filters).some(val => val)) {
+      const fetchInitialCandidates = async () => {
+        setLoadingCandidates(true);
+        try {
+          const { results, count } = await candidateService.getCandidates({
+              page,
+              page_size: candidatesPerPage,
+              tab: activeTab,
+            });
+          console.log("Fetched initial candidates:", results);
+          setCandidates(results);
+          setTotalCount(count || results.length)
+          setTotalPages(Math.ceil((count || results.length) / candidatesPerPage) || 1);
+          showToast.error("Initial candidates loaded successfully");
+          console.log("Total candidates fetched:", count);
+          console.log("Candidates fetched:", candidates);
+          if (count > 0 && !selectedCandidate) {
+            setSelectedCandidate(results[0]);
+          }
+        } catch (error) {
+          console.error("Error fetching initial candidates:", error);
+          showToast.error("Failed to load initial candidates");
+        } finally {
+          setLoadingCandidates(false);
+        }
+      };
+      fetchInitialCandidates();
+    }
+  }, [isAuthenticated, activeTab, selectedCandidate]);
+
   useEffect(() => {
     const fetchCreditBalance = async () => {
       if (isAuthenticated && userStatus) {
@@ -191,37 +224,6 @@ function MainApp() {
 
     fetchCreditBalance();
   }, [isAuthenticated, userStatus, firebaseUser]);
-
-  useEffect(() => {
-    if (isAuthenticated && !searchTerm && !Object.values(filters).some(val => val)) {
-      const fetchInitialCandidates = async () => {
-        setLoadingCandidates(true);
-        try {
-          const { results, count } = await candidateService.getCandidates({
-              page,
-              page_size: candidatesPerPage,
-              tab: activeTab,
-            });
-          console.log("Fetched initial candidates:", results);
-          setCandidates(results);
-          setTotalCount(count || results.length)
-          setTotalPages(Math.ceil((count || results.length) / candidatesPerPage) || 1);
-          showToast.error("Initial candidates loaded successfully");
-          console.log("Total candidates fetched:", count);
-          console.log("Candidates fetched:", candidates);
-          if (count > 0 && !selectedCandidate) {
-            setSelectedCandidate(results[0]);
-          }
-        } catch (error) {
-          console.error("Error fetching initial candidates:", error);
-          showToast.error("Failed to load initial candidates");
-        } finally {
-          setLoadingCandidates(false);
-        }
-      };
-      fetchInitialCandidates();
-    }
-  }, [isAuthenticated, activeTab, selectedCandidate]);
 
 
   useEffect(() => {
