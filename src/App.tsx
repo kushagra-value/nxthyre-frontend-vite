@@ -145,9 +145,6 @@ function MainApp() {
   const page=1;
   const candidatesPerPage= 5;
 
-  // Fetch initial credit balance when user is authenticated
-  
-
   useEffect(() => {
     if (isAuthenticated && !searchTerm && !Object.values(filters).some(val => val)) {
       const fetchInitialCandidates = async () => {
@@ -180,30 +177,34 @@ function MainApp() {
   }, [isAuthenticated, activeTab, selectedCandidate]);
 
   useEffect(() => {
-    const fetchCreditBalance = async () => {
-      if (isAuthenticated && userStatus) {
-          const user: User = {
-          id: firebaseUser?.uid,
-          fullName: userStatus.full_name || "Unknown User",
-          email: userStatus.email || "Unknown@user.com",
-          role:
-            userStatus.roles?.length > 0
-              ? userStatus.roles[0].name.toLowerCase()
-              : "team",
-          organizationId: userStatus.organization?.id?.toString(),
-          workspaceIds: [],
-          isVerified: firebaseUser?.emailVerified ?? true,
-          createdAt:
-            firebaseUser?.metadata.creationTime || new Date().toISOString(),
-        };
-        setCurrentUser(user);
-        setLoadingCredits(true);
+    if (isAuthenticated && userStatus) {
+      const user: User = {
+        id: firebaseUser?.uid,
+        fullName: userStatus.full_name || "Unknown User",
+        email: userStatus.email || "Unknown@user.com",
+        role:
+          userStatus.roles?.length > 0
+            ? userStatus.roles[0].name.toLowerCase()
+            : "team",
+        organizationId: userStatus.organization?.id?.toString(),
+        workspaceIds: [],
+        isVerified: firebaseUser?.emailVerified ?? true,
+        createdAt:
+          firebaseUser?.metadata.creationTime || new Date().toISOString(),
+      };
+      setCurrentUser(user);
+    }
+  }, [isAuthenticated, userStatus, firebaseUser]);
+  
+  useEffect(() => {
+  const fetchCreditBalance = async () => {
+    if (isAuthenticated && userStatus) {
+    setLoadingCredits(true);
         try {
           const balanceData = await creditService.getCreditBalance();
           setCreditBalance(balanceData.credit_balance);
         } catch (error) {
           setCreditBalance(null);
-          showToast.error('Failed to load credit balance');
         } finally {
           setLoadingCredits(false);
         }
@@ -211,10 +212,8 @@ function MainApp() {
         setCreditBalance(null);
       }
     };
-
     fetchCreditBalance();
-  }, [isAuthenticated, userStatus, firebaseUser]);
-
+    }, []);
 
   useEffect(() => {
     const path = window.location.pathname;
@@ -646,7 +645,7 @@ function MainApp() {
                             candidate={selectedCandidate}
                             candidates={candidates}
                             onSendInvite={handleSendInvite}
-                            setCreditBalance={setCreditBalance}
+                             setCreditBalance={setCreditBalance}
                             setLoadingCredits={setLoadingCredits}
                           />
                         )}
