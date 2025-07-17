@@ -8,7 +8,7 @@ export interface CreditBalance {
 class CreditService {
   async getCreditBalance(): Promise<CreditBalance> {
     try {
-      const response = await apiClient.get("/billing/credit-balance/");
+      const response = await apiClient.get("/billing/balance/");
       return {
         recruiter_id: response.data.recruiter_id,
         credit_balance: response.data.credit_balance || 0,
