@@ -499,22 +499,22 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   <div className="flex items-center space-x-1">
                      {/* FIX: Safer rendering with optional chaining */}
                     {candidate.social_links?.github && (
-                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
+                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg" onClick={() => window.open(candidate.social_links?.github, '_blank')}>
                         <Github className="w-4 h-4" />
                       </button>
                     )}
                     {candidate.social_links?.linkedin && (
-                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
+                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg" onClick={() => window.open(candidate.social_links?.linkedin, '_blank')}>
                         <Linkedin className="w-4 h-4" />
                       </button>
                     )}
                     {candidate.social_links?.resume && (
-                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
+                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg" onClick={() => window.open(candidate.social_links?.resume, '_blank')}>
                       <File className="w-4 h-4" />
                     </button>
                     )}
                     {candidate.social_links?.portfolio && (
-                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
+                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"  onClick={() => window.open(candidate.social_links?.portfolio, '_blank')}>
                       <Link  className="w-4 h-4" />
                     </button>
                     )}

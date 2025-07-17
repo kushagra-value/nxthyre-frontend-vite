@@ -511,7 +511,7 @@ function MainApp() {
                               </span>
                             </button>
                             {hoveredCategory === category.name && (
-                              <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                              <div className="absolute top-full left-0 mt-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                                 <div className="py-1">
                                   <button
                                     onClick={() =>
