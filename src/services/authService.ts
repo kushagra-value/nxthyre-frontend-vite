@@ -63,7 +63,7 @@ class AuthService {
     fullName: string
   ): Promise<SignUpResponse> {
     try {
-      const response = await apiClient.post("/authentication/signup/email/", {
+      const response = await apiClient.post("/auth/signup/", {
         email,
         password,
         fullName,
