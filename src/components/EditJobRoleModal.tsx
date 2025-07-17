@@ -37,7 +37,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
 
-  const seniorityOptions = ['Intern', 'Fresher', 'Junior', 'Senior', 'Mid', 'Manager', 'Senior Manager', 'Leadership'];
+  const seniorityOptions = ['JUNIOR', 'SENIOR', 'LEAD', 'HEAD'];
   const departmentOptions = ['Marketing', 'Finance', 'Sales', 'Ops', 'Engineering', 'Admin', 'Others'];
 
   const dummyJD = `We are seeking a talented Head of Finance to join our dynamic team...`;
@@ -62,7 +62,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
             skills: job.skills,
             location: job.location,
             hybrid: job.is_hybrid,
-            seniority: job.seniority || '',
+            seniority: job.seniority,
             department: job.department.toString(),
             aiInterviews: job.enable_ai_interviews,
             minExp: job.experience_min_years.toString(),
