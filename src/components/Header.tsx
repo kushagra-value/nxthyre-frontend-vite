@@ -21,8 +21,6 @@ interface User {
 }
 
 interface HeaderProps {
-  searchTerm: string;
-  setSearchTerm: (term: string) => void;
   onCreateRole: () => void;
   isAuthenticated?: boolean;
   user?: User | null;
@@ -32,11 +30,10 @@ interface HeaderProps {
   onWorkspacesOrg?: () => void;
   onSettings?: () => void;
   onShowLogoutModal: () => void;
+  credits: number;
 }
 
 const Header: React.FC<HeaderProps> = ({
-  searchTerm,
-  setSearchTerm,
   onCreateRole,
   isAuthenticated = false,
   user = null,
@@ -46,6 +43,7 @@ const Header: React.FC<HeaderProps> = ({
   onWorkspacesOrg,
   onSettings,
   onShowLogoutModal,
+  credits,
 }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -83,8 +81,8 @@ const Header: React.FC<HeaderProps> = ({
                   <input
                     type="text"
                     placeholder="LinkedIn Contact Finder..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    value=""
+                    onChange={() => {}}
                     className="bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none w-40"
                   />
                 </div>
@@ -115,9 +113,14 @@ const Header: React.FC<HeaderProps> = ({
                       <p className="text-sm font-medium text-gray-700">
                         {user.fullName || "User"}
                       </p>
+                      <div className="flex gap-2">
                       <p className="text-xs text-gray-500">
                         {user.role || "Member"}
+                      </p> 
+                      <p className="text-xs text-gray-500">
+                        Credits: <span className="font-semibold">{credits}</span>
                       </p>
+                      </div>
                     </div>
                     <ChevronDown className="w-4 h-4 text-gray-400" />
                   </button>

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./hooks/useAuth";
 import { authService } from "./services/authService";
+import { creditService } from "./services/creditService";
 import Header from "./components/Header";
 import FiltersSidebar from "./components/FiltersSidebar";
 import CandidatesMain from "./components/CandidatesMain";
@@ -54,6 +55,7 @@ function MainApp() {
   } = useAuth();
 
   // Authentication state
+  const [credits, setCredits] = useState<number>(0);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showAuthApp, setShowAuthApp] = useState(false);
   const [authFlow, setAuthFlow] = useState("login");
@@ -139,6 +141,21 @@ function MainApp() {
   const candidatesPerPage= 5;
 
   useEffect(() => {
+    const fetchCreditBalance = async () => {
+      try {
+        const data = await creditService.getCreditBalance();
+        setCredits(data.credit_balance);
+      } catch (error) {
+        console.error("Error fetching credit balance:", error);
+        showToast.error("Failed to fetch credit balance");
+      }
+    };
+    if (isAuthenticated) {
+      fetchCreditBalance();
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
     if (isAuthenticated && !searchTerm && !Object.values(filters).some(val => val)) {
       const fetchInitialCandidates = async () => {
         setLoadingCandidates(true);
@@ -200,6 +217,16 @@ function MainApp() {
       setShowShareableProfile(true);
     }
   }, []);
+
+  const deductCredits = async () => {
+    try {
+      const data = await creditService.getCreditBalance();
+      setCredits(data.credit_balance);
+    } catch (error) {
+      console.error("Error fetching updated credit balance:", error);
+      showToast.error("Failed to update credit balance");
+    }
+  };
   
   const handleLogoutRequest = () => {
     setShowLogoutModal(true);
@@ -439,8 +466,6 @@ function MainApp() {
                 <div className="bg-gray-50 min-h-screen">
                   <div className="sticky top-0 z-20 bg-white will-change-transform">
                     <Header
-                      searchTerm={searchTerm}
-                      setSearchTerm={setSearchTerm}
                       onCreateRole={handleCreateJobRole}
                       isAuthenticated={isAuthenticated}
                       user={currentUser}
@@ -450,6 +475,7 @@ function MainApp() {
                       onWorkspacesOrg={handleWorkspacesOrg}
                       onSettings={handleSettingsClick}
                       onShowLogoutModal={handleLogoutRequest}
+                      credits={credits}
                     />
                   </div>
 
@@ -593,6 +619,7 @@ function MainApp() {
                           searchTerm={searchTerm}
                           onPipelinesClick={handlePipelinesClick}
                           candidates={candidates}
+                          deductCredits={deductCredits}
                         />
                       </div>
                       <div className="lg:col-span-3 order-3 sticky top-16 self-start will-change-transform">
