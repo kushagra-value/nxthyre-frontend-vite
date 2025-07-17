@@ -7,7 +7,6 @@ import {
   Settings,
   LogOut,
   Building2,
-  Sparkles ,
 } from "lucide-react";
 
 interface User {
@@ -60,30 +59,7 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      <style>{`
-          @keyframes sparkle {
-            0%, 100% {
-              transform: scale(1) rotate(0deg);
-              opacity: 0.8;
-            }
-            25% {
-              transform: scale(1.1) rotate(90deg);
-              opacity: 1;
-            }
-            50% {
-              transform: scale(1.2) rotate(180deg);
-              opacity: 0.9;
-            }
-            75% {
-              transform: scale(1.1) rotate(270deg);
-              opacity: 1;
-            }
-          }
-          
-          .sparkle-animation {
-            animation: sparkle 3s ease-in-out infinite;
-          }
-      `}</style>
+      
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-full mx-auto px-7 py-1.5">
           <div className="flex items-center justify-between">
@@ -113,6 +89,8 @@ const Header: React.FC<HeaderProps> = ({
                 </div>
               )}
 
+              
+
               {/* Create Role Button - Only show when authenticated */}
               {isAuthenticated && (
                 <button
@@ -122,7 +100,14 @@ const Header: React.FC<HeaderProps> = ({
                   Create Role
                 </button>
               )}
-
+              {isAuthenticated && user && (
+              <div className="flex items-center gap-1 bg-gray-100 px-4 py-2 rounded-lg">
+                <span className="text-xs">🪙</span>
+                <p className="text-xs text-gray-500">
+                  <span className="font-semibold">{credits}</span>
+                </p>
+              </div>
+              )}
               {/* Authentication Section */}
               {isAuthenticated && user ? (
                 /* User Profile Menu */
@@ -139,17 +124,9 @@ const Header: React.FC<HeaderProps> = ({
                         {user.fullName || "User"}
                       </p>
                       <div className="flex gap-2">
-
-                      <Sparkles 
-                        className="w-4 h-4 text-indigo-500"
-                        style={{
-                          animation: 'sparkle 3s ease-in-out infinite'
-                        }}
-                        /> 
-
                       <p className="text-xs text-gray-500">
-                        Credits: <span className="font-semibold">{credits}</span>
-                      </p>
+                        {user.role || "Member"}
+                      </p> 
                       </div>
                     </div>
                     <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -166,9 +143,7 @@ const Header: React.FC<HeaderProps> = ({
                           <p className="text-xs text-gray-500">
                             {user.email || "user@example.com"}
                           </p>
-                          <p className="text-xs text-gray-500">
-                            {user.role || "Member"}
-                          </p> 
+                          
                         </div>
 
                         {/* Workspace & Organization */}
