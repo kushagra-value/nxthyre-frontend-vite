@@ -35,8 +35,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, onClose
   const [refinementInput, setRefinementInput] = useState('');
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const seniorityOptions = ['Intern', 'Fresher', 'Junior', 'Senior', 'Mid', 'Manager', 'Senior Manager', 'Leadership'];
+  const seniorityOptions = ['JUNIOR', 'SENIOR', 'LEAD', 'HEAD'];
   const departmentOptions = ['Marketing', 'Finance', 'Sales', 'Ops', 'Engineering', 'Admin', 'Others'];
 
   const dummyJD = `We are seeking a talented Head of Finance to join our dynamic team. The ideal candidate will have extensive experience in financial planning, analysis, and strategic decision-making.
@@ -101,7 +100,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
         title: formData.title,
         location: formData.location,
         is_hybrid: formData.hybrid,
-        seniority: formData.seniority || "null",
+        seniority: formData.seniority,
         department: parseInt(formData.department) || 1, // Assuming department ID 1 as default
         experience_min_years: parseInt(formData.minExp) || 0,
         experience_max_years: parseInt(formData.maxExp) || 0,
