@@ -641,14 +641,14 @@ function MainApp() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-full">
-                      <div className="lg:col-span-3 order-2 lg:order-1 sticky top-16 self-start will-change-transform">
+                    <div className="flex w-full gap-3 h-full">
+                      <div className="lg:w-[25%] order-2 lg:order-1 sticky top-16 self-start will-change-transform">
                         <FiltersSidebar
                           filters={filters}
                           onFiltersChange={setFilters}
                         />
                       </div>
-                      <div className="lg:col-span-6 order-1 lg:order-2">
+                      <div className="lg:w-[45%] order-1 lg:order-2">
                         <CandidatesMain
                           activeTab={activeTab}
                           setActiveTab={setActiveTab}
@@ -659,7 +659,7 @@ function MainApp() {
                           onPipelinesClick={handlePipelinesClick}
                         />
                       </div>
-                      <div className="lg:col-span-3 order-3 sticky top-16 self-start will-change-transform">
+                      <div className="lg:w-[30%] order-3 sticky top-16 self-start will-change-transform">
                         {showTemplateSelector && selectedCandidate ? (
                           <TemplateSelector
                             candidate={selectedCandidate}
@@ -674,6 +674,39 @@ function MainApp() {
                         )}
                       </div>
                     </div>
+                    {/* <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-full">
+                      <div className="lg:col-span-3 order-2 lg:order-1 sticky top-16 self-start will-change-transform">
+                        <FiltersSidebar
+                          filters={filters}
+                          onFiltersChange={setFilters}
+                        />
+                      </div>
+                      <div className="lg:col-span-5 order-1 lg:order-2">
+                        <CandidatesMain
+                          activeTab={activeTab}
+                          setActiveTab={setActiveTab}
+                          selectedCandidate={selectedCandidate}
+                          setSelectedCandidate={setSelectedCandidate}
+                          searchTerm={searchTerm}
+                          candidates={filteredCandidates}
+                          onPipelinesClick={handlePipelinesClick}
+                        />
+                      </div>
+                      <div className="lg:col-span-4 order-3 sticky top-16 self-start will-change-transform">
+                        {showTemplateSelector && selectedCandidate ? (
+                          <TemplateSelector
+                            candidate={selectedCandidate}
+                            onBack={handleBackFromTemplate}
+                          />
+                        ) : (
+                          <CandidateDetail
+                            candidate={selectedCandidate}
+                            candidates={filteredCandidates}
+                            onSendInvite={handleSendInvite}
+                          />
+                        )}
+                      </div>
+                    </div> */}
                   </div>
 
                   <CreateJobRoleModal
