@@ -66,7 +66,7 @@ class AuthService {
       const response = await apiClient.post("/auth/signup/", {
         email,
         password,
-        fullName,
+        full_name: fullName,
       });
       return response.data;
     } catch (error: any) {
