@@ -59,12 +59,14 @@ class AuthService {
   // Sign up with email
   async signUpWithEmail(
     email: string,
-    password: string
+    password: string,
+    fullName: string
   ): Promise<SignUpResponse> {
     try {
       const response = await apiClient.post("/auth/signup/email/", {
         email,
         password,
+        fullName,
       });
       return response.data;
     } catch (error: any) {

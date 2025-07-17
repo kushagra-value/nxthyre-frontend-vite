@@ -88,7 +88,11 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
     setIsLoading(true);
 
     try {
-      await authService.signUpWithEmail(formData.email, formData.password);
+      await authService.signUpWithEmail(
+        formData.email,
+        formData.password,
+        formData.fullName
+      );
       showToast.success(
         "Sign-up successful! Please check your email for verification."
       );
