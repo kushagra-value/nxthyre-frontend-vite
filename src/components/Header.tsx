@@ -7,6 +7,7 @@ import {
   Settings,
   LogOut,
   Building2,
+  Sparkles ,
 } from "lucide-react";
 import { creditService } from '../services/creditService';
 import { useAuthContext } from "../context/AuthContext"; // Adjust path
@@ -91,6 +92,30 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
+      <style>{`
+          @keyframes sparkle {
+            0%, 100% {
+              transform: scale(1) rotate(0deg);
+              opacity: 0.8;
+            }
+            25% {
+              transform: scale(1.1) rotate(90deg);
+              opacity: 1;
+            }
+            50% {
+              transform: scale(1.2) rotate(180deg);
+              opacity: 0.9;
+            }
+            75% {
+              transform: scale(1.1) rotate(270deg);
+              opacity: 1;
+            }
+          }
+          
+          .sparkle-animation {
+            animation: sparkle 3s ease-in-out infinite;
+          }
+      `}</style>
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-full mx-auto px-7 py-1.5">
           <div className="flex items-center justify-between">
@@ -148,9 +173,14 @@ const Header: React.FC<HeaderProps> = ({
                         {user.fullName || "User"}
                       </p>
                       <div className="flex gap-2">
-                      <p className="text-xs text-gray-500">
-                        {user.role || "Member"}
-                      </p> 
+
+                      <Sparkles 
+                        className="w-4 h-4 text-indigo-500"
+                        style={{
+                          animation: 'sparkle 3s ease-in-out infinite'
+                        }}
+                        /> 
+
                       <p className="text-xs text-gray-500">
                         Credits: <span className="font-semibold">{credits}</span>
                       </p>
@@ -170,6 +200,9 @@ const Header: React.FC<HeaderProps> = ({
                           <p className="text-xs\ text-gray-500">
                             {user.email || "user@example.com"}
                           </p>
+                          <p className="text-xs text-gray-500">
+                            {user.role || "Member"}
+                          </p> 
                         </div>
 
                         {/* Workspace & Organization */}
