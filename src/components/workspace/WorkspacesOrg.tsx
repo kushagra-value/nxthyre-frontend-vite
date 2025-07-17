@@ -75,51 +75,61 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   const setSearchTerm = propSetSearchTerm || setLocalSearchTerm;
 
   useEffect(() => {
-  const fetchData = async () => {
-    if (!isAuthenticated || !userStatus) return;
+    const fetchData = async () => {
+      if (!isAuthenticated || !userStatus) return;
 
-    try {
-      setLoading(true);
+      try {
+        setLoading(true);
 
-      // Fetch onboarding status
-      const status = await organizationService.getOnboardingStatus();
-      setOnboardingStatus(status);
+        // Fetch onboarding status
+        const status = await organizationService.getOnboardingStatus();
+        setOnboardingStatus(status);
 
-      // Fetch organizations
-      const orgResponse = await organizationService.getOrganizations();
-      const fetchedOrganizations: Organization[] = orgResponse.map((org: any) => ({
-        id: org.id,
-        name: org.name,
-        domain: org.domain || null,
-      }));
-      setOrganizations(fetchedOrganizations);
-      console.log("Fetched Organizations:", fetchedOrganizations);
+        // Fetch organizations
+        const orgResponse = await organizationService.getOrganizations();
+        const fetchedOrganizations: Organization[] = orgResponse.map(
+          (org: any) => ({
+            id: org.id,
+            name: org.name,
+            domain: org.domain || null,
+          })
+        );
+        setOrganizations(fetchedOrganizations);
+        console.log("Fetched Organizations:", fetchedOrganizations);
 
-      // Fetch workspaces for all organizations
-      const workspacePromises = fetchedOrganizations.map(async (org) => {
-        const workspaceResponse = await organizationService.getWorkspaces(org.id);
-        console.log("Raw Workspace Response for org", org.id, ":", workspaceResponse);
+        // Fetch workspaces for all organizations
+        const workspacePromises = fetchedOrganizations.map(async (org) => {
+          console.log("Raw Workspace Response for org", org.id, ":");
+          const workspaceResponse = await organizationService.getWorkspaces(
+            org.id
+          );
+          console.log(
+            "Raw Workspace Response for org",
+            org.id,
+            ":",
+            workspaceResponse
+          );
 
-        // Map the workspace response directly since it’s an array
-        return workspaceResponse.map((ws: any) => ({
-          id: ws.id,
-          name: ws.name,
-          organization: ws.organization, // This should now retain the value
-        }));
-      });
-      const allWorkspaces = (await Promise.all(workspacePromises)).flat();
-      setWorkspaces(allWorkspaces);
-      console.log("Fetched Workspaces:", allWorkspaces);
-    } catch (error: any) {
-      console.error("Error fetching data:", error);
-      showToast.error("Failed to load organizations and workspaces");
-    } finally {
-      setLoading(false);
-    }
-  };
+          // Map the workspace response directly since it’s an array
+          return workspaceResponse.map((ws: any) => ({
+            id: ws.id,
+            name: ws.name,
+            organization: ws.organization, // This should now retain the value
+          }));
+        });
+        const allWorkspaces = (await Promise.all(workspacePromises)).flat();
+        setWorkspaces(allWorkspaces);
+        console.log("Fetched Workspaces:", allWorkspaces);
+      } catch (error: any) {
+        console.error("Error fetching data:", error);
+        showToast.error("Failed to load organizations and workspaces");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchData();
-}, [isAuthenticated, userStatus]);
+    fetchData();
+  }, [isAuthenticated, userStatus]);
 
   // Provide default values if user data is missing
   const safeUser = {
@@ -132,7 +142,6 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
     workspaceIds: user?.workspaceIds || [],
     ...user,
   };
-
 
   if (loading) {
     return (
@@ -409,8 +418,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                         </p> */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center text-sm text-gray-500">
-                            <Users className="w-4 h-4 mr-1" />
-                            0 member
+                            <Users className="w-4 h-4 mr-1" />0 member
                             {/* {memberCount} member{memberCount !== 1 ? "s" : ""} */}
                           </div>
                           <button
@@ -521,8 +529,17 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                         <div className="flex items-center justify-between">
                           <div className="flex items-center text-sm text-gray-500">
                             <Users className="w-4 h-4 mr-1" />
-                            {workspaces.filter((ws) => ws.organization === org.id).length} workspace
-                            {workspaces.filter((ws) => ws.organization === org.id).length !== 1 ? "s" : ""}
+                            {
+                              workspaces.filter(
+                                (ws) => ws.organization === org.id
+                              ).length
+                            }{" "}
+                            workspace
+                            {workspaces.filter(
+                              (ws) => ws.organization === org.id
+                            ).length !== 1
+                              ? "s"
+                              : ""}
                           </div>
                           {isOwner && (
                             <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
@@ -551,10 +568,10 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                   </div>
                 )}
               </div>
-                  </div>
-            )}
-          </div>
-          </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (

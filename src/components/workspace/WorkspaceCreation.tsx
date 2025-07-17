@@ -78,6 +78,7 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
     try {
       // Create workspace
       const organizationId = parseInt(user.organizationId || "1");
+      console.log(user.organizationId, organizationId);
       await organizationService.createWorkspace(organizationId, workspaceName);
 
       showToast.success("Workspace created successfully!");
