@@ -9,11 +9,9 @@ interface CandidateDetailProps {
   candidate: CandidateListItem | null;
   candidates: CandidateListItem[];
   onSendInvite: () => void;
-  setCreditBalance: (balance: number | null) => void;
-  setLoadingCredits: (loading: boolean) => void;
 }
 
-const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates = [], onSendInvite,setCreditBalance,setLoadingCredits, }) => {
+const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates = [], onSendInvite }) => {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [detailedCandidate, setDetailedCandidate] = useState<CandidateDetailData | null>(null);
@@ -31,18 +29,15 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
         try {
           const data = await candidateService.getCandidateDetails(candidate.id);
           setDetailedCandidate(data);
-          setCreditBalance(data.credit_balance);
         } catch (error) {
           console.error("Error fetching candidate details:", error);
-          setCreditBalance(null);
         } finally {
           setLoading(false);
-          setLoadingCredits(false);
         }
       };
       fetchCandidateDetails();
     }
-  }, [candidate?.id, setCreditBalance, setLoadingCredits]);
+  }, [candidate?.id]);
 
 
   useEffect(() => {

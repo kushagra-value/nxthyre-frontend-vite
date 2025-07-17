@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Search,
   Home,
@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { showToast } from "../utils/toast";
 
 interface HeaderProps {
+  searchTerm: string;
   setSearchTerm: (term: string) => void;
   onCreateRole: () => void;
   onOpenLogoutModal: () => void;
@@ -24,6 +25,8 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({
+  searchTerm,
+  setSearchTerm,
   onCreateRole,
   onOpenLogoutModal, // Destructure new prop
   creditBalance,
@@ -127,7 +130,7 @@ const Header: React.FC<HeaderProps> = ({
                 >
                   Create Role
                 </button>
-              )}    
+              )}
 
               {/* Authentication Section */}
               {isAuthenticated && user ? (
@@ -164,20 +167,8 @@ const Header: React.FC<HeaderProps> = ({
                           <p className="text-xs\ text-gray-500">
                             {user.email || "user@example.com"}
                           </p>
-                          <div className="flex items-center space-x-2">
-                          {loadingCredits ? (
-                            <span className="text-xs text-gray-500 animate-pulse">Loading credits...</span>
-                          ) : creditBalance !== null ? (
-                            <span className="text-xs text-gray-500">
-                              {creditBalance} credit remaining
-                            </span>
-                          ) : (
-                            <span className="text-xs text-gray-500">oops!! no credit </span>
-                          )}
                         </div>
 
-                        </div>
-                        
                         {/* Workspace & Organization */}
                         <button
                           onClick={() => {

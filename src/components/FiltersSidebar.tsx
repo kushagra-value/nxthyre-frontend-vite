@@ -38,7 +38,7 @@ interface FiltersSidebarProps {
     hasPortfolio: boolean;
   };
   onFiltersChange: (filters: any) => void;
-  setCandidates: (candidates: CandidateListItem[], count?: number) => void;
+  setCandidates: (candidates: CandidateListItem[]) => void;
   candidates: CandidateListItem[];
 }
 
@@ -216,11 +216,11 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
   const debouncedFetchCandidates = useCallback(
     debounce(async (filterParams: any) => {
       try {
-        const { results,count } = await candidateService.searchCandidates(filterParams);
-        setCandidates(results,count);
+        const { results } = await candidateService.searchCandidates(filterParams);
+        setCandidates(results);
       } catch (error) {
         console.error("Error fetching filtered candidates:", error);
-        setCandidates([],0);
+        setCandidates([]);
       }
     }, 1000),
     [setCandidates]

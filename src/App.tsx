@@ -22,7 +22,6 @@ import ShareableProfile from "./components/ShareableProfile";
 import PipelineSharePage from "./components/PipelineSharePage";
 import { User } from "./types/auth"; // Adjust path
 import { CandidateListItem, candidateService} from './services/candidateService';
-import { creditService } from "./services/creditService";
 import {
   ChevronDown,
   MoreHorizontal,
@@ -137,12 +136,6 @@ function MainApp() {
   const [activeCategory, setActiveCategory] = useState("Head Of Finance");
   const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
   const [loadingCandidates, setLoadingCandidates] = useState(true);
-  // Credit balance state
-  const [creditBalance, setCreditBalance] = useState<number | null>(null);
-  const [loadingCredits, setLoadingCredits] = useState(false);
-
-  const [totalCount, setTotalCount] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
 
   // Example categories data; replace with your actual data source as needed
   const categories = [
@@ -165,10 +158,8 @@ function MainApp() {
               page_size: candidatesPerPage,
               tab: activeTab,
             });
-          console.error("Fetched initial candidates:", results);
+          console.log("Fetched initial candidates:", results);
           setCandidates(results);
-          setTotalCount(count || results.length)
-          setTotalPages(Math.ceil((count || results.length) / candidatesPerPage) || 1);
           showToast.error("Initial candidates loaded successfully");
           console.log("Total candidates fetched:", count);
           console.log("Candidates fetched:", candidates);
@@ -205,25 +196,6 @@ function MainApp() {
       setCurrentUser(user);
     }
   }, [isAuthenticated, userStatus, firebaseUser]);
-  
-  useEffect(() => {
-  const fetchCreditBalance = async () => {
-    if (isAuthenticated && userStatus) {
-    setLoadingCredits(true);
-        try {
-          const balanceData = await creditService.getCreditBalance();
-          setCreditBalance(balanceData.credit_balance);
-        } catch (error) {
-          setCreditBalance(null);
-        } finally {
-          setLoadingCredits(false);
-        }
-      } else {
-        setCreditBalance(null);
-      }
-    };
-    fetchCreditBalance();
-    }, []);
 
   useEffect(() => {
     const path = window.location.pathname;

@@ -10,10 +10,6 @@ interface CandidatesMainProps {
   setSelectedCandidate: (candidate: CandidateListItem | null) => void;
   searchTerm: string;
   candidates: CandidateListItem[];
-  totalCount: number;
-  totalPages: number;
-  setTotalCount: (count: number) => void;
-  setTotalPages: (pages: number) => void;
   onPipelinesClick?: () => void;
 }
 
@@ -24,19 +20,15 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   setSelectedCandidate,
   searchTerm,
   candidates,
-  totalCount,
-  totalPages,
-  setTotalCount,
-  setTotalPages,
   onPipelinesClick
 }) => {
-  console.log('Component rendered or re-rendered');
-
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [filteredCandidates, setFilteredCandidates] = useState<CandidateListItem[]>([]);
+  const [totalCount, setTotalCount] = useState(0); // State to hold the total number of candidates.
 
   const candidatesPerPage = 20;
 
@@ -47,35 +39,28 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     { id: 'prevetted', label: 'Prevetted', count: activeTab === 'prevetted' ? totalCount : 0}
   ];
 
-  // Memoize the debounced function to prevent it from being recreated on every render
   const fetchAndSetCandidates = useCallback(
-    debounce(async (searchQuery: string, page: number, currentTab: string, signal: AbortSignal) => {
-      console.log('API call initiated with:', { searchQuery, page, currentTab });
+    debounce(async (searchQuery: string, page: number, signal: AbortSignal) => {
       setLoading(true);
       try {
-        const serviceCall = searchQuery
-          ? candidateService.searchCandidates({
+        const { results, count } = searchQuery
+          ? await candidateService.searchCandidates({
               q: searchQuery,
               page,
               page_size: candidatesPerPage,
-              tab: currentTab,
+              tab: activeTab,
             })
-          : candidateService.getCandidates({
+          : await candidateService.getCandidates(
+            {
               page,
               page_size: candidatesPerPage,
-              tab: currentTab
+              tab: activeTab
             });
-          
-        const { results, count } = await serviceCall;
-
         if (!signal.aborted) {
-          console.log('API call successful, setting state.');
           setTotalCount(count || results.length);
           setTotalPages(Math.ceil((count || results.length) / candidatesPerPage) || 1);
+          // Update parent candidates state to sync with FiltersSidebar
           setSelectedCandidate(results.length > 0 ? results[0] : null);
-          console.error("Fetched candidates:", results);
-        } else {
-            console.log('API call aborted, state not updated.');
         }
       } catch (error: any) {
         if (error.name !== 'AbortError') {
@@ -86,28 +71,21 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       } finally {
         if (!signal.aborted) {
           setLoading(false);
-          console.log('Finished loading.');
         }
       }
-    }, 1000),
-    [setTotalCount, setTotalPages, setSelectedCandidate, candidatesPerPage] // Dependencies of the debounced function
+    }, 300),
+    [activeTab, candidatesPerPage, setSelectedCandidate]
   );
 
-  // Effect for fetching data when search term, active tab, or page changes
+  // Effect for handling page changes
   useEffect(() => {
-    console.log('useEffect triggered due to dependency change.');
     const controller = new AbortController();
-    
-    // Call the debounced function
-    fetchAndSetCandidates(searchTerm, currentPage, activeTab, controller.signal);
+    fetchAndSetCandidates(searchTerm, currentPage, controller.signal);
 
-    // Cleanup function to abort the request and cancel any pending debounced calls
     return () => {
-      console.log('useEffect cleanup: aborting controller and cancelling debounce.');
       controller.abort();
-      fetchAndSetCandidates.cancel();
     };
-  }, [searchTerm, activeTab, currentPage, fetchAndSetCandidates]); // Correct dependencies
+  }, [searchTerm, activeTab, currentPage, fetchAndSetCandidates]);
 
 
   const handleCandidateSelect = (candidateId: string) => {
@@ -121,6 +99,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const handleSelectAll = (checked: boolean) => {
     setSelectAll(checked);
     if (checked) {
+      // Select only the IDs of the candidates on the current page.
       setSelectedCandidates(filteredCandidates.map((candidate) => candidate.id));
     } else {
       setSelectedCandidates([]);
@@ -130,7 +109,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= totalPages) {
       setCurrentPage(page);
-      setSelectedCandidate(null); 
+      setSelectedCandidate(null); // Clear selection when changing pages
     }
   };
   
@@ -140,7 +119,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     const sum = skill.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return (sum % 5) + 1;
   };
-  
+
   if (loading) {
     return (<div className="bg-white rounded-xl shadow-sm border border-gray-200">
     {/* Tabs */}
