@@ -4,6 +4,7 @@ import { AuthProvider } from "./context/AuthContext"; // Adjust path
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./hooks/useAuth";
 import { authService } from "./services/authService";
+import { creditService } from "./services/creditService";
 import Header from "./components/Header";
 import FiltersSidebar from "./components/FiltersSidebar";
 import CandidatesMain from "./components/CandidatesMain";
@@ -46,6 +47,7 @@ function MainApp() {
   } = useAuth();
 
   // Authentication state
+  const [credits, setCredits] = useState<number>(0);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showAuthApp, setShowAuthApp] = useState(false);
   const [authFlow, setAuthFlow] = useState("login");
@@ -149,6 +151,21 @@ function MainApp() {
   const candidatesPerPage= 5;
 
   useEffect(() => {
+    const fetchCreditBalance = async () => {
+      try {
+        const data = await creditService.getCreditBalance();
+        setCredits(data.credit_balance);
+      } catch (error) {
+        console.error("Error fetching credit balance:", error);
+        showToast.error("Failed to fetch credit balance");
+      }
+    };
+    if (isAuthenticated) {
+      fetchCreditBalance();
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
     if (isAuthenticated && !searchTerm && !Object.values(filters).some(val => val)) {
       const fetchInitialCandidates = async () => {
         setLoadingCandidates(true);
@@ -211,18 +228,17 @@ function MainApp() {
     }
   }, []);
 
-  // useEffect(() => {
-  //   if (filteredCandidates.length > 0 && !selectedCandidate) {
-  //     setSelectedCandidate(filteredCandidates[0]);
-  //   }
-  // }, [filteredCandidates, selectedCandidate]);
-
-  // Handler Functions
-  // const handleLogoutRequest = () => {
-  //   setShowLogoutModal(true);
-  // };
-
-  const handleOpenLogoutModal = () => {
+  const deductCredits = async () => {
+    try {
+      const data = await creditService.getCreditBalance();
+      setCredits(data.credit_balance);
+    } catch (error) {
+      console.error("Error fetching updated credit balance:", error);
+      showToast.error("Failed to update credit balance");
+    }
+  };
+  
+  const handleLogoutRequest = () => {
     setShowLogoutModal(true);
   };
 

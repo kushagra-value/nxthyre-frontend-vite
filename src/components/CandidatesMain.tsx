@@ -11,6 +11,7 @@ interface CandidatesMainProps {
   searchTerm: string;
   candidates: CandidateListItem[];
   onPipelinesClick?: () => void;
+  deductCredits: () => Promise<void>;
 }
 
 const CandidatesMain: React.FC<CandidatesMainProps> = ({
@@ -20,7 +21,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   setSelectedCandidate,
   searchTerm,
   candidates,
-  onPipelinesClick
+  onPipelinesClick,
+  deductCredits
 }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
@@ -109,8 +111,12 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= totalPages) {
       setCurrentPage(page);
-      setSelectedCandidate(null); // Clear selection when changing pages
     }
+  };
+
+  const handleCandidateClick = async (candidate: CandidateListItem) => {
+    setSelectedCandidate(candidate);
+    await deductCredits(); // Fetch updated credits when candidate is clicked
   };
   
   const getAvatarColor = (name: string) => 'bg-blue-500';
@@ -409,7 +415,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             className={`p-3 lg:p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
               selectedCandidate?.id === candidate.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
             }`}
-            onClick={() => setSelectedCandidate(candidate)}
+            onClick={() => handleCandidateClick(candidate)}
           >
             <div className="flex items-center space-x-3 border-b pb-4">
               <input
