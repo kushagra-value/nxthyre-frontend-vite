@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Search,
   Home,
@@ -8,8 +8,6 @@ import {
   LogOut,
   Building2,
 } from "lucide-react";
-import { creditService } from '../services/creditService';
-import { showToast } from '../utils/toast';
 
 interface User {
   id: string | undefined;
@@ -23,6 +21,7 @@ interface User {
 }
 
 interface HeaderProps {
+  searchTerm: string;
   setSearchTerm: (term: string) => void;
   onCreateRole: () => void;
   isAuthenticated?: boolean;
@@ -33,13 +32,11 @@ interface HeaderProps {
   onWorkspacesOrg?: () => void;
   onSettings?: () => void;
   onShowLogoutModal: () => void;
-  creditBalance: number | null;
-  loadingCredits: boolean;
-  setCreditBalance: (balance: number | null) => void;
-  setLoadingCredits: (loading: boolean) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
+  searchTerm,
+  setSearchTerm,
   onCreateRole,
   isAuthenticated = false,
   user = null,
@@ -49,13 +46,8 @@ const Header: React.FC<HeaderProps> = ({
   onWorkspacesOrg,
   onSettings,
   onShowLogoutModal,
-  creditBalance,
-  loadingCredits,
-  setCreditBalance,
-  setLoadingCredits,
 }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("linkedin contact finder");
 
   const handleLogoutClick = () => {
     onShowLogoutModal();
@@ -66,26 +58,6 @@ const Header: React.FC<HeaderProps> = ({
     // Navigate back to main dashboard...
     window.location.href = "/";
   };
-
-  useEffect(() => {
-    const fetchCreditBalance = async () => {
-      if (isAuthenticated && user) {
-        setLoadingCredits(true);
-        try {
-          const balanceData = await creditService.getCreditBalance();
-          setCreditBalance(balanceData.credit_balance);
-        } catch (error) {
-          setCreditBalance(null);
-          showToast.error('Failed to load credit balance');
-        }
-        setLoadingCredits(false);
-      } else {
-        setCreditBalance(null);
-      }
-    };
-
-    fetchCreditBalance();
-  }, [isAuthenticated, user]);
 
   return (
     <>
@@ -126,7 +98,7 @@ const Header: React.FC<HeaderProps> = ({
                 >
                   Create Role
                 </button>
-              )}    
+              )}
 
               {/* Authentication Section */}
               {isAuthenticated && user ? (
@@ -161,20 +133,8 @@ const Header: React.FC<HeaderProps> = ({
                           <p className="text-xs text-gray-500">
                             {user.email || "user@example.com"}
                           </p>
-                          <div className="flex items-center space-x-2">
-                          {loadingCredits ? (
-                            <span className="text-xs text-gray-500 animate-pulse">Loading credits...</span>
-                          ) : creditBalance !== null ? (
-                            <span className="text-xs text-gray-500">
-                              {creditBalance} credit remaining
-                            </span>
-                          ) : (
-                            <span className="text-xs text-gray-500">oops!! no credit </span>
-                          )}
                         </div>
 
-                        </div>
-                        
                         {/* Workspace & Organization */}
                         <button
                           onClick={() => {
