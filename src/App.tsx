@@ -556,7 +556,7 @@ function MainApp() {
                       <div className="hidden md:flex items-center space-x-2">
                         {categories.map((category) => (
                           <div
-                            key={category.name}
+                            key={category.id}
                             className="relative"
                             onMouseEnter={() =>
                               setHoveredCategory(category.name)
