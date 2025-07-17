@@ -6,7 +6,7 @@ export interface Job {
   title: string;
   location: string;
   is_hybrid: boolean;
-  seniority: string | null;
+  seniority: string;
   department: number;
   experience_min_years: number;
   experience_max_years: number;
