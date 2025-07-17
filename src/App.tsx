@@ -91,7 +91,7 @@ function MainApp() {
   const [editingTemplate, setEditingTemplate] = useState<string>("");
   const [activeTab, setActiveTab] = useState("outbound");
   const [searchTerm, setSearchTerm] = useState("");
-  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
   const [showCategoryActions, setShowCategoryActions] = useState<string | null>(
     null
   );
@@ -559,7 +559,7 @@ function MainApp() {
                             key={category.id}
                             className="relative"
                             onMouseEnter={() =>
-                              setHoveredCategory(category.name)
+                              setHoveredCategory(category.id)
                             }
                             onMouseLeave={() => setHoveredCategory(null)}
                           >
@@ -582,7 +582,7 @@ function MainApp() {
                                 {category.count}
                               </span>
                             </button>
-                            {hoveredCategory === category.name && (
+                            {hoveredCategory === category.id && (
                               <div className="absolute top-full left-0 mt-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                                 <div className="py-1">
                                   <button
