@@ -138,7 +138,7 @@ Looking forward to hearing from you.`,
             >
               <ArrowLeft className="w-4 h-4 text-gray-600" />
             </button>
-            <h2 className="text-lg font-semibold text-gray-900">SEND INVITE</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Send Invite</h2>
           </div>
         </div>
 
