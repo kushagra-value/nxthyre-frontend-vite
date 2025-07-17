@@ -71,7 +71,7 @@ class OrganizationService {
 
   async getOrganizations(): Promise<Organization[]> {
     try {
-      const response = await apiClient.get("/organization/organizations/");
+      const response = await apiClient.get("/organization/");
       return response.data.map((org: any) => ({
         id: org.id,
         name: org.name,
@@ -89,7 +89,7 @@ class OrganizationService {
   async getWorkspaces(organizationId: number): Promise<Workspace[]> {
     try {
       const response = await apiClient.get(
-        `/organization/organizations/${organizationId}/workspaces/`
+        `/organization/${organizationId}/workspaces/`
       );
       return response.data.map((ws: any) => ({
         id: ws.id,
@@ -176,7 +176,7 @@ class OrganizationService {
   ): Promise<ManageRequestResponse> {
     try {
       const response = await apiClient.post(
-        `/organization/organizations/${organizationId}/workspaces/${workspaceId}/requests/${requestId}/manage/`,
+        `/organization/${organizationId}/workspaces/${workspaceId}/requests/${requestId}/manage/`,
         { action }
       );
       return response.data;
