@@ -4,12 +4,14 @@ import { Toaster } from "react-hot-toast";
 import { useAuth } from "./hooks/useAuth";
 import { authService } from "./services/authService";
 import { creditService } from "./services/creditService";
+import { jobPostService } from "./services/jobPostService";
 import Header from "./components/Header";
 import FiltersSidebar from "./components/FiltersSidebar";
 import CandidatesMain from "./components/CandidatesMain";
 import CandidateDetail from "./components/CandidateDetail";
 import TemplateSelector from "./components/TemplateSelector";
 import CreateJobRoleModal from "./components/CreateJobRoleModal";
+import EditJobRoleModal from "./components/EditJobRoleModal";
 import EditTemplateModal from "./components/EditTemplateModal";
 import CategoryDropdown from "./components/CategoryDropdown";
 import PipelineStages from "./components/PipelineStages";
@@ -44,6 +46,12 @@ interface User {
   createdAt: string;
 }
 
+interface Category {
+  id: number;
+  name: string;
+  count: number;
+}
+
 function MainApp() {
   const navigate = useNavigate();
   const {
@@ -75,6 +83,8 @@ function MainApp() {
   );
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
   const [showCreateJobRole, setShowCreateJobRole] = useState(false);
+  const [showEditJobRole, setShowEditJobRole] = useState(false);
+  const [editingJobId, setEditingJobId] = useState<number | null>(null);
   const [showEditTemplate, setShowEditTemplate] = useState(false);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showPipelineStages, setShowPipelineStages] = useState(false);
@@ -85,6 +95,7 @@ function MainApp() {
   const [showCategoryActions, setShowCategoryActions] = useState<string | null>(
     null
   );
+  const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null);
 
   // Share Pipelines state
   const [showShareLoader, setShowShareLoader] = useState(false);
@@ -126,17 +137,46 @@ function MainApp() {
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [activeCategory, setActiveCategory] = useState("Head Of Finance");
+  const [categories, setCategories] = useState<Category[]>([]);
   const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
   const [loadingCandidates, setLoadingCandidates] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const fetchCategories = async () => {
+        setLoadingCategories(true);
+        try {
+          const jobs = await jobPostService.getJobs();
+          const mappedCategories: Category[] = jobs.map(job => ({
+            id: job.id,
+            name: job.title,
+            count: 0, // You may need to adjust this based on actual candidate count from backend
+          }));
+          setCategories(mappedCategories);
+          if (mappedCategories.length > 0 && !activeCategory) {
+            setActiveCategory(mappedCategories[0].name);
+          }
+        } catch (error) {
+          showToast.error("Failed to fetch job categories");
+          console.error("Error fetching categories:", error);
+        } finally {
+          setLoadingCategories(false);
+        }
+      };
+      fetchCategories();
+    }
+  }, [isAuthenticated]);
+
 
   // Example categories data; replace with your actual data source as needed
-  const categories = [
-    { name: "Head Of Finance", count: 12 },
-    { name: "Engineering Manager", count: 8 },
-    { name: "Product Designer", count: 5 },
-    { name: "Marketing Lead", count: 7 },
-    // Add more categories as needed
-  ];
+  // const categories = [
+  //   { name: "Head Of Finance", count: 12 },
+  //   { name: "Engineering Manager", count: 8 },
+  //   { name: "Product Designer", count: 5 },
+  //   { name: "Marketing Lead", count: 7 },
+  //   // Add more categories as needed
+  // ];
   const page=1;
   const candidatesPerPage= 5;
 
@@ -308,8 +348,40 @@ function MainApp() {
     setShowCreateJobRole(true);
   };
 
-  const handleEditJobRole = (categoryName: string) => {
-    setShowCreateJobRole(true);
+  const handleEditJobRole = async (categoryName: string) => {
+    try {
+      const jobs = await jobPostService.getJobs();
+      const job = jobs.find(j => j.title === categoryName);
+      if (job) {
+        setEditingJobId(job.id);
+        setShowEditJobRole(true);
+      } else {
+        showToast.error('Job not found');
+      }
+    } catch (error) {
+      showToast.error('Failed to fetch job details');
+    }
+    setShowCategoryActions(null);
+  };
+
+  const handleDeleteJobRole = async (categoryName: string) => {
+    try {
+      const jobs = await jobPostService.getJobs();
+      const job = jobs.find(j => j.title === categoryName);
+      if (job) {
+        await jobPostService.deleteJob(job.id);
+        setCategories(prev => prev.filter(cat => cat.name !== categoryName));
+        showToast.success(`Successfully deleted ${categoryName}`);
+        if (activeCategory === categoryName) {
+          setActiveCategory(categories[0]?.name || "");
+        }
+      } else {
+        showToast.error('Job not found');
+      }
+    } catch (error) {
+      showToast.error('Failed to delete job role');
+    }
+    setShowDeleteModal(null);
     setShowCategoryActions(null);
   };
 
@@ -643,6 +715,14 @@ function MainApp() {
                     isOpen={showCreateJobRole}
                     onClose={() => setShowCreateJobRole(false)}
                   />
+                  <EditJobRoleModal
+                    isOpen={showEditJobRole}
+                    onClose={() => {
+                      setShowEditJobRole(false);
+                      setEditingJobId(null);
+                    }}
+                    jobId={editingJobId || 0}
+                  />
                   <EditTemplateModal
                     isOpen={showEditTemplate}
                     onClose={() => setShowEditTemplate(false)}
@@ -683,6 +763,37 @@ function MainApp() {
                               className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                             >
                               Sign Out
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {showDeleteModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
+                      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                        <div className="text-center">
+                          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Trash2 className="w-6 h-6 text-red-600" />
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            Confirm Delete Job
+                          </h3>
+                          <p className="text-gray-600 mb-6">
+                            Are you sure you want to delete {showDeleteModal}? This action cannot be undone.
+                          </p>
+                          <div className="flex space-x-3">
+                            <button
+                              onClick={() => setShowDeleteModal(null)}
+                              className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => handleDeleteJobRole(showDeleteModal)}
+                              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                            >
+                              Delete
                             </button>
                           </div>
                         </div>
