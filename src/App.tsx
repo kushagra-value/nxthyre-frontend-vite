@@ -423,7 +423,7 @@ function MainApp() {
         showToast.success(`Archived ${categoryName}`);
         break;
       case "delete":
-        showToast.success(`Deleted ${categoryName}`);
+        setShowDeleteModal(categoryName);
         break;
     }
   };
