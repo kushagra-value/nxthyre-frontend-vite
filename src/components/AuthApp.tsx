@@ -9,7 +9,7 @@ import WorkspacesOrg from './workspace/WorkspacesOrg';
 import WorkspaceJoining from './workspace/WorkspaceJoining';
 import WorkspaceCreation from './workspace/WorkspaceCreation';
 import CreateOrganization from './workspace/CreateOrganization';
-import { AuthState } from '../types/auth';
+import { AuthState, User } from '../types/auth';
 
 // Error Boundary Component
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
