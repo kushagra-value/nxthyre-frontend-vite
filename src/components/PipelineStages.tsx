@@ -41,12 +41,14 @@ interface PipelineStagesProps {
   onBack: () => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  onOpenLogoutModal: () => void; // Add new prop
 }
 
 const PipelineStages: React.FC<PipelineStagesProps> = ({
   onBack,
   activeTab,
   setActiveTab,
+  onOpenLogoutModal, // Destructure new prop
 }) => {
   const { user } = useAuthContext(); // Access user from AuthContext
   const [selectedStage, setSelectedStage] = useState("Uncontacted");
@@ -700,6 +702,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           onCreateRole={handleCreateJobRole}
+          onOpenLogoutModal={onOpenLogoutModal} // Pass handler
         />
       </div>
 

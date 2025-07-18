@@ -16,16 +16,17 @@ interface HeaderProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   onCreateRole: () => void;
+  onOpenLogoutModal: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
   searchTerm,
   setSearchTerm,
   onCreateRole,
+  onOpenLogoutModal, // Destructure new prop
 }) => {
   const { isAuthenticated, user, signOut } = useAuthContext();
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showLogoutModal, setShowLogoutModal] = useState(false); // Add logout modal state
   const navigate = useNavigate();
 
   const handleLogin = () => {
@@ -45,7 +46,6 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   const handleLogoutRequest = async () => {
-    setShowLogoutModal(false); // Close modal
     try {
       await signOut(); // Use signOut instead of logout
       showToast.success("Successfully logged out");
@@ -166,7 +166,7 @@ const Header: React.FC<HeaderProps> = ({
                         <button
                           onClick={() => {
                             setShowUserMenu(false);
-                            setShowLogoutModal(true); // Show logout modal
+                            onOpenLogoutModal(); // Trigger modal via prop
                           }}
                           className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center transition-colors"
                         >
@@ -198,40 +198,6 @@ const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </header>
-
-      {/* Logout Confirmation Modal */}
-      {showLogoutModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <LogOut className="w-6 h-6 text-red-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Confirm Logout
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Are you sure you want to sign out? You'll need to log in again
-                to access your account.
-              </p>
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => setShowLogoutModal(false)}
-                  className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleLogoutRequest}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Sign Out
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 };
