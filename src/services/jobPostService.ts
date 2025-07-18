@@ -24,6 +24,10 @@ export interface Job {
   workspace: number;
   created_at: string;
   updated_at: string;
+  total_candidates: number,
+  invites_sent_count: number,
+  total_applied: number,
+  total_replied: number
 }
 
 export interface CreateJobData {

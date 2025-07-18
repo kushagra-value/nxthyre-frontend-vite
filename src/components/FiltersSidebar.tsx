@@ -558,7 +558,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
                 onChange={(e) => updateFilters('minSalary', e.target.value)}
                 className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="">5lpa</option>
                 <option value="5">5 LPA</option>
                 <option value="10">10 LPA</option>
                 <option value="15">15 LPA</option>
@@ -569,7 +568,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
                 onChange={(e) => updateFilters('maxSalary', e.target.value)}
                 className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="">10lpa</option>
                 <option value="10">10 LPA</option>
                 <option value="20">20 LPA</option>
                 <option value="30">30 LPA</option>
