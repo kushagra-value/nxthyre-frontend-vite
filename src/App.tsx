@@ -4,18 +4,12 @@ import { AuthProvider } from "./context/AuthContext"; // Adjust path
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./hooks/useAuth";
 import { authService } from "./services/authService";
-import { creditService } from "./services/creditService";
-import { jobPostService } from "./services/jobPostService";
-import { creditService } from "./services/creditService";
-import { jobPostService } from "./services/jobPostService";
 import Header from "./components/Header";
 import FiltersSidebar from "./components/FiltersSidebar";
 import CandidatesMain from "./components/CandidatesMain";
 import CandidateDetail from "./components/CandidateDetail";
 import TemplateSelector from "./components/TemplateSelector";
 import CreateJobRoleModal from "./components/CreateJobRoleModal";
-import EditJobRoleModal from "./components/EditJobRoleModal";
-import EditJobRoleModal from "./components/EditJobRoleModal";
 import EditTemplateModal from "./components/EditTemplateModal";
 import CategoryDropdown from "./components/CategoryDropdown";
 import PipelineStages from "./components/PipelineStages";
@@ -27,7 +21,7 @@ import SharePipelinesModal from "./components/SharePipelinesModal";
 import ShareableProfile from "./components/ShareableProfile";
 import PipelineSharePage from "./components/PipelineSharePage";
 import { User } from "./types/auth"; // Adjust path
-import { CandidateListItem, candidateService} from './services/candidateService';
+import { candidates, Candidate } from "./data/candidates";
 import {
   ChevronDown,
   MoreHorizontal,
@@ -39,13 +33,6 @@ import {
   Share2,
 } from "lucide-react";
 import { showToast } from "./utils/toast";
-
-
-interface Category {
-  id: number;
-  name: string;
-  count: number;
-}
 
 function MainApp() {
   const navigate = useNavigate();
@@ -59,8 +46,6 @@ function MainApp() {
   } = useAuth();
 
   // Authentication state
-  const [credits, setCredits] = useState<number>(0);
-  const [credits, setCredits] = useState<number>(0);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showAuthApp, setShowAuthApp] = useState(false);
   const [authFlow, setAuthFlow] = useState("login");
@@ -71,49 +56,35 @@ function MainApp() {
   const [currentPipelineId, setCurrentPipelineId] = useState("");
 
   // Shareable profile state
-  // Shareable profile state
   const [showShareableProfile, setShowShareableProfile] = useState(false);
   const [currentCandidateId, setCurrentCandidateId] = useState("");
 
   // Existing state
-  const [selectedCandidate, setSelectedCandidate] = useState<CandidateListItem | null>(
-  const [selectedCandidate, setSelectedCandidate] = useState<CandidateListItem | null>(
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
     null
   );
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
   const [showCreateJobRole, setShowCreateJobRole] = useState(false);
-  const [showEditJobRole, setShowEditJobRole] = useState(false);
-  const [editingJobId, setEditingJobId] = useState<number | null>(null);
-  const [showEditJobRole, setShowEditJobRole] = useState(false);
-  const [editingJobId, setEditingJobId] = useState<number | null>(null);
   const [showEditTemplate, setShowEditTemplate] = useState(false);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showPipelineStages, setShowPipelineStages] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<string>("");
   const [activeTab, setActiveTab] = useState("outbound");
   const [searchTerm, setSearchTerm] = useState("");
-  const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
-  const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
-  const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
-  const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
+  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const [showCategoryActions, setShowCategoryActions] = useState<string | null>(
     null
   );
-  const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
-  const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
 
   // Share Pipelines state
   const [showShareLoader, setShowShareLoader] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
 
-
   const [filters, setFilters] = useState({
-    keywords: "",
     keywords: "",
     booleanSearch: false,
     semanticSearch: false,
     selectedCategories: [] as string[],
-    minExperience: "",
-    maxExperience: "",
     minExperience: "",
     maxExperience: "",
     funInCurrentCompany: false,
@@ -122,19 +93,7 @@ function MainApp() {
     city: "",
     country: "",
     location: "",
-    minTotalExp: "",
-    maxTotalExp: "",
-    city: "",
-    country: "",
-    location: "",
     selectedSkills: [] as string[],
-    skillLevel: "",
-    noticePeriod: "",
-    companies: "",
-    industries: "",
-    minSalary: "",
-    maxSalary: "",
-    colleges: "",
     skillLevel: "",
     noticePeriod: "",
     companies: "",
@@ -153,184 +112,115 @@ function MainApp() {
     hasBehance: false,
     hasTwitter: false,
     hasPortfolio: false,
-    hasPortfolio: false,
   });
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
-  const [loadingCandidates, setLoadingCandidates] = useState(true);
-  const [loadingCategories, setLoadingCategories] = useState(true);
-
-  const fetchCategories = async () => {
-    setLoadingCategories(true);
-    try {
-      const jobs = await jobPostService.getJobs();
-      const mappedCategories: Category[] = jobs.map(job => ({
-        id: job.id,
-        name: job.title,
-        count: 0,
-      }));
-      setCategories(mappedCategories);
-      if (mappedCategories.length > 0 && activeCategoryId === null) {
-        setActiveCategoryId(mappedCategories[0].id);
-      }
-    } catch (error) {
-      showToast.error("Failed to fetch job categories");
-      console.error("Error fetching categories:", error);
-    } finally {
-      setLoadingCategories(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchCategories();
-    }
-  }, [isAuthenticated]);
-
-  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
-  const [loadingCandidates, setLoadingCandidates] = useState(true);
-  const [loadingCategories, setLoadingCategories] = useState(true);
-
-  const fetchCategories = async () => {
-    setLoadingCategories(true);
-    try {
-      const jobs = await jobPostService.getJobs();
-      const mappedCategories: Category[] = jobs.map(job => ({
-        id: job.id,
-        name: job.title,
-        count: 0,
-      }));
-      setCategories(mappedCategories);
-      if (mappedCategories.length > 0 && activeCategoryId === null) {
-        setActiveCategoryId(mappedCategories[0].id);
-      }
-    } catch (error) {
-      showToast.error("Failed to fetch job categories");
-      console.error("Error fetching categories:", error);
-    } finally {
-      setLoadingCategories(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchCategories();
-    }
-  }, [isAuthenticated]);
-
+  const [activeCategory, setActiveCategory] = useState("Head Of Finance");
 
   // Example categories data; replace with your actual data source as needed
-  // const categories = [
-  //   { name: "Head Of Finance", count: 12 },
-  //   { name: "Engineering Manager", count: 8 },
-  //   { name: "Product Designer", count: 5 },
-  //   { name: "Marketing Lead", count: 7 },
-  //   // Add more categories as needed
-  // ];
-  const page=1;
-  const candidatesPerPage= 5;
+  const categories = [
+    { name: "Head Of Finance", count: 12 },
+    { name: "Engineering Manager", count: 8 },
+    { name: "Product Designer", count: 5 },
+    { name: "Marketing Lead", count: 7 },
+    // Add more categories as needed
+  ];
 
-  useEffect(() => {
-    const fetchCreditBalance = async () => {
-      try {
-        const data = await creditService.getCreditBalance();
-        setCredits(data.credit_balance);
-      } catch (error) {
-        console.error("Error fetching credit balance:", error);
-        showToast.error("Failed to fetch credit balance");
-      }
-    };
-    if (isAuthenticated) {
-      fetchCreditBalance();
-    }
-  }, [isAuthenticated]);
+  const filteredCandidates = useMemo(() => {
+    if (!isAuthenticated) return [];
 
-  useEffect(() => {
-    if (isAuthenticated && !searchTerm && !Object.values(filters).some(val => val)) {
-      const fetchInitialCandidates = async () => {
-        setLoadingCandidates(true);
-        try {
-          const { results, count } = await candidateService.getCandidates({
-              page,
-              page_size: candidatesPerPage,
-              tab: activeTab,
-            });
-          console.log("Fetched initial candidates:", results);
-          setCandidates(results);
-          showToast.error("Initial candidates loaded successfully");
-          console.log("Total candidates fetched:", count);
-          console.log("Candidates fetched:", candidates);
-          if (count > 0 && !selectedCandidate) {
-            setSelectedCandidate(results[0]);
-          }
-        } catch (error) {
-          console.error("Error fetching initial candidates:", error);
-          showToast.error("Failed to load initial candidates");
-        } finally {
-          setLoadingCandidates(false);
-        }
-      };
-      fetchInitialCandidates();
-    }
-  }, [isAuthenticated, activeTab, selectedCandidate]);
-  // const categories = [
-  //   { name: "Head Of Finance", count: 12 },
-  //   { name: "Engineering Manager", count: 8 },
-  //   { name: "Product Designer", count: 5 },
-  //   { name: "Marketing Lead", count: 7 },
-  //   // Add more categories as needed
-  // ];
-  const page=1;
-  const candidatesPerPage= 5;
+    return candidates.filter((candidate) => {
+      const matchesSearch =
+        !searchTerm ||
+        candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        candidate.currentRole
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        candidate.company.toLowerCase().includes(searchTerm.toLowerCase());
 
-  useEffect(() => {
-    const fetchCreditBalance = async () => {
-      try {
-        const data = await creditService.getCreditBalance();
-        setCredits(data.credit_balance);
-      } catch (error) {
-        console.error("Error fetching credit balance:", error);
-        showToast.error("Failed to fetch credit balance");
-      }
-    };
-    if (isAuthenticated) {
-      fetchCreditBalance();
-    }
-  }, [isAuthenticated]);
+      const matchesKeywords =
+        !filters.keywords ||
+        candidate.name.toLowerCase().includes(filters.keywords.toLowerCase()) ||
+        candidate.currentRole
+          .toLowerCase()
+          .includes(filters.keywords.toLowerCase()) ||
+        candidate.skills.some((skill) =>
+          skill.toLowerCase().includes(filters.keywords.toLowerCase())
+        );
 
-  useEffect(() => {
-    if (isAuthenticated && !searchTerm && !Object.values(filters).some(val => val)) {
-      const fetchInitialCandidates = async () => {
-        setLoadingCandidates(true);
-        try {
-          const { results, count } = await candidateService.getCandidates({
-              page,
-              page_size: candidatesPerPage,
-              tab: activeTab,
-            });
-          console.log("Fetched initial candidates:", results);
-          setCandidates(results);
-          showToast.error("Initial candidates loaded successfully");
-          console.log("Total candidates fetched:", count);
-          console.log("Candidates fetched:", candidates);
-          if (count > 0 && !selectedCandidate) {
-            setSelectedCandidate(results[0]);
-          }
-        } catch (error) {
-          console.error("Error fetching initial candidates:", error);
-          showToast.error("Failed to load initial candidates");
-        } finally {
-          setLoadingCandidates(false);
-        }
-      };
-      fetchInitialCandidates();
-    }
-  }, [isAuthenticated, activeTab, selectedCandidate]);
+      const matchesCategories =
+        filters.selectedCategories.length === 0 ||
+        filters.selectedCategories.some(
+          (category) =>
+            candidate.currentRole
+              .toLowerCase()
+              .includes(category.toLowerCase()) ||
+            candidate.skills.some((skill) =>
+              skill.toLowerCase().includes(category.toLowerCase())
+            )
+        );
+
+      const matchesCurrentExp =
+        (!filters.minExperience ||
+          candidate.currentCompanyExperience >=
+            parseInt(filters.minExperience)) &&
+        (!filters.maxExperience ||
+          candidate.currentCompanyExperience <=
+            parseInt(filters.maxExperience));
+
+      const matchesTotalExp =
+        (!filters.minTotalExp ||
+          candidate.totalExperience >= parseInt(filters.minTotalExp)) &&
+        (!filters.maxTotalExp ||
+          candidate.totalExperience <= parseInt(filters.maxTotalExp));
+
+      const matchesCity =
+        !filters.city ||
+        candidate.city.toLowerCase().includes(filters.city.toLowerCase());
+      const matchesCountry =
+        !filters.country ||
+        candidate.country.toLowerCase().includes(filters.country.toLowerCase());
+      const matchesLocation =
+        !filters.location ||
+        candidate.location
+          .toLowerCase()
+          .includes(filters.location.toLowerCase());
+
+      const matchesSkills =
+        filters.selectedSkills.length === 0 ||
+        filters.selectedSkills.some((skill) =>
+          candidate.skills.some((candidateSkill) =>
+            candidateSkill.toLowerCase().includes(skill.toLowerCase())
+          )
+        );
+
+      const matchesSkillLevel =
+        !filters.skillLevel || candidate.skillLevel === filters.skillLevel;
+      const matchesNoticePeriod =
+        !filters.noticePeriod ||
+        candidate.noticePeriod === filters.noticePeriod;
+      const matchesCompanies =
+        !filters.companies ||
+        candidate.company
+          .toLowerCase()
+          .includes(filters.companies.toLowerCase());
+
+      return (
+        matchesSearch &&
+        matchesKeywords &&
+        matchesCategories &&
+        matchesCurrentExp &&
+        matchesTotalExp &&
+        matchesCity &&
+        matchesCountry &&
+        matchesLocation &&
+        matchesSkills &&
+        matchesSkillLevel &&
+        matchesNoticePeriod &&
+        matchesCompanies
+      );
+    });
+  }, [searchTerm, filters, isAuthenticated]);
 
   useEffect(() => {
     if (isAuthenticated && userStatus) {
@@ -366,31 +256,26 @@ function MainApp() {
     }
   }, []);
 
-  const deductCredits = async () => {
-    try {
-      const data = await creditService.getCreditBalance();
-      setCredits(data.credit_balance);
-    } catch (error) {
-      console.error("Error fetching updated credit balance:", error);
-      showToast.error("Failed to update credit balance");
+  useEffect(() => {
+    if (filteredCandidates.length > 0 && !selectedCandidate) {
+      setSelectedCandidate(filteredCandidates[0]);
     }
-  };
-  
-  const deductCredits = async () => {
-    try {
-      const data = await creditService.getCreditBalance();
-      setCredits(data.credit_balance);
-    } catch (error) {
-      console.error("Error fetching updated credit balance:", error);
-      showToast.error("Failed to update credit balance");
-    }
-  };
-  
-  const handleLogoutRequest = () => {
+  }, [filteredCandidates, selectedCandidate]);
+
+  // Handler Functions
+  // const handleLogoutRequest = () => {
+  //   setShowLogoutModal(true);
+  // };
+
+  const handleOpenLogoutModal = () => {
     setShowLogoutModal(true);
   };
 
-  const handleLogoutConfirm = async() => {
+  const handleCloseLogoutModal = () => {
+    setShowLogoutModal(false);
+  };
+
+  const handleLogoutConfirm = async () => {
     setShowLogoutModal(false);
     try {
       await signOut();
@@ -449,7 +334,6 @@ function MainApp() {
   };
 
   // const handleLogin = () => {
-  //  setAuthFlow("login");
   //   setAuthFlow("login");
   //   setShowAuthApp(true);
   // };
@@ -462,13 +346,13 @@ function MainApp() {
   const handleAuthSuccess = (user: any) => {
     setCurrentUser(user);
     setShowAuthApp(false);
-    navigate("/"); // Redirect to dashboard after auth
+    navigate("/"); // Redirect to dashboard after auth...
   };
 
   const handleLinkedInAuthSuccess = (user: any) => {
     setCurrentUser(user);
     if (userStatus?.is_onboarded) {
-      navigate("/"); 
+      navigate("/"); // Redirect to dashboard if onboarded
     } else {
       navigate("/workspaces-org"); // Redirect to onboarding
     }
@@ -496,147 +380,49 @@ function MainApp() {
     setShowCreateJobRole(true);
   };
 
-  const handleEditJobRole = async (jobId: number) => {
-    try {
-      const jobs = await jobPostService.getJobs();
-      const job = jobs.find(j => j.id === jobId);
-      if (job) {
-        setEditingJobId(job.id);
-        setShowEditJobRole(true);
-      } else {
-        showToast.error('Job not found');
-      }
-    } catch (error) {
-      showToast.error('Failed to fetch job details');
-    }
+  const handleEditJobRole = (categoryName: string) => {
+    setShowCreateJobRole(true);
     setShowCategoryActions(null);
   };
 
-  const handleDeleteJobRole = async (jobId: number) => {
-    try {
-      const jobs = await jobPostService.getJobs();
-      const job = jobs.find(j => j.id === jobId);
-      if (job) {
-        await jobPostService.deleteJob(job.id);
-        await fetchCategories();
-        showToast.success(`Successfully deleted job with job id ${jobId}`);
-        if (activeCategoryId === jobId) {
-           setActiveCategoryId(categories[0]?.id || null);
-        }
-      } else {
-        showToast.error('Job not found');
-      }
-    } catch (error) {
-      showToast.error('Failed to delete job role');
-    }
-    setShowDeleteModal(null);
-  const handleEditJobRole = async (jobId: number) => {
-    try {
-      const jobs = await jobPostService.getJobs();
-      const job = jobs.find(j => j.id === jobId);
-      if (job) {
-        setEditingJobId(job.id);
-        setShowEditJobRole(true);
-      } else {
-        showToast.error('Job not found');
-      }
-    } catch (error) {
-      showToast.error('Failed to fetch job details');
-    }
+  const handleEditTemplate = (categoryName: string) => {
+    setEditingTemplate(categoryName);
+    setShowEditTemplate(true);
     setShowCategoryActions(null);
   };
 
-  const handleDeleteJobRole = async (jobId: number) => {
-    try {
-      const jobs = await jobPostService.getJobs();
-      const job = jobs.find(j => j.id === jobId);
-      if (job) {
-        await jobPostService.deleteJob(job.id);
-        await fetchCategories();
-        showToast.success(`Successfully deleted job with job id ${jobId}`);
-        if (activeCategoryId === jobId) {
-           setActiveCategoryId(categories[0]?.id || null);
-        }
-      } else {
-        showToast.error('Job not found');
-      }
-    } catch (error) {
-      showToast.error('Failed to delete job role');
-    }
-    setShowDeleteModal(null);
-    setShowCategoryActions(null);
-  };
-
-  const handleEditTemplate = (jobId: number) => {
-    const job = categories.find(cat => cat.id === jobId);
-    if (job) {
-      setEditingTemplate(job.name);
-      setShowEditTemplate(true);
-    }
-  const handleEditTemplate = (jobId: number) => {
-    const job = categories.find(cat => cat.id === jobId);
-    if (job) {
-      setEditingTemplate(job.name);
-      setShowEditTemplate(true);
-    }
-    setShowCategoryActions(null);
-  };
-
-  const handleSharePipelines = (jobId: number) => {
-    const job = categories.find(cat => cat.id === jobId);
-    if (job) {
-    const pipelineId = job.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    window.location.href = `/pipelines/${pipelineId}` 
-    }
-  const handleSharePipelines = (jobId: number) => {
-    const job = categories.find(cat => cat.id === jobId);
-    if (job) {
-    const pipelineId = job.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    window.location.href = `/pipelines/${pipelineId}` 
-    }
+  const handleSharePipelines = (categoryName: string) => {
+    setShowShareLoader(true);
   };
 
   const handleShareLoaderComplete = () => {
     setShowShareLoader(false);
-    const job = categories.find(cat => cat.id === activeCategoryId);
-     if (job) {
-      const pipelineId = job.id.toString();
-      setCurrentPipelineId(pipelineId);
-      setShowPipelineSharePage(true);
-      window.history.pushState({}, "", `/pipelines/${pipelineId}`);
-    }
-    const job = categories.find(cat => cat.id === activeCategoryId);
-     if (job) {
-      const pipelineId = job.id.toString();
-      setCurrentPipelineId(pipelineId);
-      setShowPipelineSharePage(true);
-      window.history.pushState({}, "", `/pipelines/${pipelineId}`);
-    }
+    const pipelineId = activeCategory
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+    setCurrentPipelineId(pipelineId);
+    setShowPipelineSharePage(true);
+    window.history.pushState({}, "", `/pipelines/${pipelineId}`);
   };
 
-  const handleCategoryAction = (action: string, jobId: number) => {
-  const handleCategoryAction = (action: string, jobId: number) => {
+  const handleCategoryAction = (action: string, categoryName: string) => {
     setShowCategoryActions(null);
     switch (action) {
       case "edit-job":
-        handleEditJobRole(categories.find(cat => cat.id === jobId)?.id || 0);
-        handleEditJobRole(categories.find(cat => cat.id === jobId)?.id || 0);
+        handleEditJobRole(categoryName);
         break;
       case "edit-template":
-        handleEditTemplate(jobId);
-        handleEditTemplate(jobId);
+        handleEditTemplate(categoryName);
         break;
       case "share-pipelines":
-        handleSharePipelines(jobId);
-        handleSharePipelines(jobId);
+        handleSharePipelines(categoryName);
         break;
       case "archive":
-        showToast.success(`Archived ${jobId}`);
-        showToast.success(`Archived ${jobId}`);
+        showToast.success(`Archived ${categoryName}`);
         break;
       case "delete":
-        setShowDeleteModal(jobId);
-        setShowDeleteModal(jobId);
+        showToast.success(`Deleted ${categoryName}`);
         break;
     }
   };
@@ -657,8 +443,6 @@ function MainApp() {
 
   const handleBackFromShareableProfile = () => {
     setShowShareableProfile(false);
-    setCurrentCandidateId("");
-    window.history.pushState({}, "", "/");
     setCurrentCandidateId("");
     window.history.pushState({}, "", "/");
   };
@@ -762,138 +546,124 @@ function MainApp() {
                       />
                     </div>
 
-                  <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3">
-                    <div className="mb-4">
-                      <div className="hidden md:flex items-center space-x-2">
-                        {categories.map((category) => (
-                          <div
-                            key={category.id}
-                            key={category.id}
-                            className="relative"
-                            onMouseEnter={() =>
-                              setHoveredCategory(category.id)
-                              setHoveredCategory(category.id)
-                            }
-                            onMouseLeave={() => setHoveredCategory(null)}
-                          >
-                            <button
-                              onClick={() => setActiveCategoryId(category.id)}
-                              onClick={() => setActiveCategoryId(category.id)}
-                              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                                activeCategoryId === category.id
-                                activeCategoryId === category.id
-                                  ? "bg-blue-100 text-blue-700 shadow-sm"
-                                  : "text-gray-600 hover:bg-gray-100"
-                              }`}
+                    <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3">
+                      <div className="mb-4">
+                        <div className="hidden md:flex items-center space-x-2">
+                          {categories.map((category) => (
+                            <div
+                              key={category.name}
+                              className="relative"
+                              onMouseEnter={() =>
+                                setHoveredCategory(category.name)
+                              }
+                              onMouseLeave={() => setHoveredCategory(null)}
                             >
-                              {category.name}
-                              <span
-                                className={`ml-2 px-2 py-1 rounded-full text-xs ${
-                                  activeCategoryId === category.id
-                                  activeCategoryId === category.id
-                                    ? "bg-blue-200 text-blue-800"
-                                    : "bg-gray-200 text-gray-600"
+                              <button
+                                onClick={() => setActiveCategory(category.name)}
+                                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                                  activeCategory === category.name
+                                    ? "bg-blue-100 text-blue-700 shadow-sm"
+                                    : "text-gray-600 hover:bg-gray-100"
                                 }`}
                               >
-                                {category.count}
-                              </span>
-                            </button>
-                            {hoveredCategory === category.id && (
-                              <div className="absolute top-full left-0 mt-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                            {hoveredCategory === category.id && (
-                              <div className="absolute top-full left-0 mt-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                                <div className="py-1">
-                                  <button
-                                    onClick={() =>
-                                      handleCategoryAction(
-                                        "edit-job",
-                                        category.id
-                                        category.id
-                                      )
-                                    }
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                  >
-                                    <Edit className="w-4 h-4 mr-2" />
-                                    Edit Job Role
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleCategoryAction(
-                                        "edit-template",
-                                        category.id
-                                        category.id
-                                      )
-                                    }
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                  >
-                                    <Mail className="w-4 h-4 mr-2" />
-                                    Edit Email Template
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleCategoryAction(
-                                        "share-pipelines",
-                                        category.id
-                                        category.id
-                                      )
-                                    }
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                  >
-                                    <Share2 className="w-4 h-4 mr-2" />
-                                    Share Pipelines
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleCategoryAction(
-                                        "archive",
-                                        category.id
-                                        category.id
-                                      )
-                                    }
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                  >
-                                    <Archive className="w-4 h-4 mr-2" />
-                                    Archive
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleCategoryAction(
-                                        "delete",
-                                        category.id
-                                        category.id
-                                      )
-                                    }
-                                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
-                                  >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Delete Job
-                                  </button>
+                                {category.name}
+                                <span
+                                  className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                                    activeCategory === category.name
+                                      ? "bg-blue-200 text-blue-800"
+                                      : "bg-gray-200 text-gray-600"
+                                  }`}
+                                >
+                                  {category.count}
+                                </span>
+                              </button>
+                              {hoveredCategory === category.name && (
+                                <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                                  <div className="py-1">
+                                    <button
+                                      onClick={() =>
+                                        handleCategoryAction(
+                                          "edit-job",
+                                          category.name
+                                        )
+                                      }
+                                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                    >
+                                      <Edit className="w-4 h-4 mr-2" />
+                                      Edit Job Role
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleCategoryAction(
+                                          "edit-template",
+                                          category.name
+                                        )
+                                      }
+                                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                    >
+                                      <Mail className="w-4 h-4 mr-2" />
+                                      Edit Email Template
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleCategoryAction(
+                                          "share-pipelines",
+                                          category.name
+                                        )
+                                      }
+                                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                    >
+                                      <Share2 className="w-4 h-4 mr-2" />
+                                      Share Pipelines
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleCategoryAction(
+                                          "archive",
+                                          category.name
+                                        )
+                                      }
+                                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                    >
+                                      <Archive className="w-4 h-4 mr-2" />
+                                      Archive
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleCategoryAction(
+                                          "delete",
+                                          category.name
+                                        )
+                                      }
+                                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                                    >
+                                      <Trash2 className="w-4 h-4 mr-2" />
+                                      Delete Job
+                                    </button>
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              )}
+                            </div>
+                          ))}
+                          <div className="relative">
+                            <button
+                              onClick={() =>
+                                setShowCategoryDropdown(!showCategoryDropdown)
+                              }
+                              className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
+                            >
+                              +12 more
+                              <ChevronDown className="ml-1 w-4 h-4" />
+                            </button>
+                            <CategoryDropdown
+                              isOpen={showCategoryDropdown}
+                              onClose={() => setShowCategoryDropdown(false)}
+                              onEditJobRole={handleEditJobRole}
+                              onEditTemplate={handleEditTemplate}
+                            />
                           </div>
-                        ))}
-                        <div className="relative">
-                          <button
-                            onClick={() =>
-                              setShowCategoryDropdown(!showCategoryDropdown)
-                            }
-                            className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
-                          >
-                            +12 more
-                            <ChevronDown className="ml-1 w-4 h-4" />
-                          </button>
-                          <CategoryDropdown
-                            isOpen={showCategoryDropdown}
-                            onClose={() => setShowCategoryDropdown(false)}
-                            onEditJobRole={handleEditJobRole}
-                            onEditTemplate={handleEditTemplate}
-                            onDeleteJob={(jobId) => setShowDeleteModal(jobId)}
-                            onDeleteJob={(jobId) => setShowDeleteModal(jobId)}
-                          />
                         </div>
                       </div>
-                    </div>
 
                       <div className="flex w-full gap-3 h-full">
                         <div className="lg:w-[25%] order-2 lg:order-1 sticky top-16 self-start will-change-transform">
@@ -963,147 +733,106 @@ function MainApp() {
                       </div> */}
                     </div>
 
-                  <CreateJobRoleModal
-                    isOpen={showCreateJobRole}
-                    onClose={() => setShowCreateJobRole(false)}
-                  />
-                  <EditJobRoleModal
-                    isOpen={showEditJobRole}
-                    onClose={() => {
-                      setShowEditJobRole(false);
-                      setEditingJobId(null);
-                    }}
-                    jobId={editingJobId || 0}
-                  />
-                  <EditJobRoleModal
-                    isOpen={showEditJobRole}
-                    onClose={() => {
-                      setShowEditJobRole(false);
-                      setEditingJobId(null);
-                    }}
-                    jobId={editingJobId || 0}
-                  />
-                  <EditTemplateModal
-                    isOpen={showEditTemplate}
-                    onClose={() => setShowEditTemplate(false)}
-                    templateName={editingTemplate}
-                  />
-                  <SharePipelinesLoader
-                    isOpen={showShareLoader}
-                    onComplete={handleShareLoaderComplete}
-                  />
-                  <SharePipelinesModal
-                    isOpen={showShareModal}
-                    onClose={() => setShowShareModal(false)}
-                    jobRole={categories.find(cat => cat.id === activeCategoryId)?.name || ""}
-                    jobRole={categories.find(cat => cat.id === activeCategoryId)?.name || ""}
-                  />
-                  {showLogoutModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
-                      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-                        <div className="text-center">
-                          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <LogOut className="w-6 h-6 text-red-600" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            Confirm Logout
-                          </h3>
-                          <p className="text-gray-600 mb-6">
-                            Are you sure you want to sign out? You'll need to
-                            log in again to access your account.
-                          </p>
-                          <div className="flex space-x-3">
-                            <button
-                              onClick={handleLogoutCancel}
-                              className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              onClick={handleLogoutConfirm}
-                              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                            >
-                              Sign Out
-                            </button>
+                    <CreateJobRoleModal
+                      isOpen={showCreateJobRole}
+                      onClose={() => setShowCreateJobRole(false)}
+                    />
+                    <EditTemplateModal
+                      isOpen={showEditTemplate}
+                      onClose={() => setShowEditTemplate(false)}
+                      templateName={editingTemplate}
+                    />
+                    <SharePipelinesLoader
+                      isOpen={showShareLoader}
+                      onComplete={handleShareLoaderComplete}
+                    />
+                    <SharePipelinesModal
+                      isOpen={showShareModal}
+                      onClose={() => setShowShareModal(false)}
+                      jobRole={activeCategory}
+                    />
+                    {showLogoutModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                          <div className="text-center">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                              <LogOut className="w-6 h-6 text-red-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              Confirm Logout
+                            </h3>
+                            <p className="text-gray-600 mb-6">
+                              Are you sure you want to sign out? You'll need to
+                              log in again to access your account.
+                            </p>
+                            <div className="flex space-x-3">
+                              <button
+                                onClick={handleLogoutCancel}
+                                className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={handleLogoutConfirm}
+                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                              >
+                                Sign Out
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                  {showDeleteModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
-                      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-                        <div className="text-center">
-                          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Trash2 className="w-6 h-6 text-red-600" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            Confirm Delete Job
-                          </h3>
-                          <p className="text-gray-600 mb-6">
-                            Are you sure you want to delete {showDeleteModal}? This action cannot be undone.
-                          </p>
-                          <div className="flex space-x-3">
-                            <button
-                              onClick={() => setShowDeleteModal(null)}
-                              className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              onClick={() => handleDeleteJobRole(showDeleteModal)}
-                              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {showDeleteModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
-                      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-                        <div className="text-center">
-                          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Trash2 className="w-6 h-6 text-red-600" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            Confirm Delete Job
-                          </h3>
-                          <p className="text-gray-600 mb-6">
-                            Are you sure you want to delete {showDeleteModal}? This action cannot be undone.
-                          </p>
-                          <div className="flex space-x-3">
-                            <button
-                              onClick={() => setShowDeleteModal(null)}
-                              className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              onClick={() => handleDeleteJobRole(showDeleteModal)}
-                              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                </>
+              )
+            ) : (
+              <>
+                <Toaster />
+                <AuthApp
+                  initialFlow="login"
+                  onAuthSuccess={handleAuthSuccess}
+                />
               </>
             )
-          ) : (
-            <>
-              <Toaster />
-              <AuthApp initialFlow="login" onAuthSuccess={handleAuthSuccess} />
-            </>
-          )
-        }
-      />
-    </Routes>
+          }
+        />
+      </Routes>
+
+      {/* Render modal at the root level */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <LogOut className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Confirm Logout
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to sign out? You'll need to log in again
+                to access your account.
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleCloseLogoutModal}
+                  className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleLogoutConfirm}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

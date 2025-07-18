@@ -8,33 +8,25 @@ import {
   LogOut,
   Building2,
 } from "lucide-react";
-import { creditService } from '../services/creditService';
 import { useAuthContext } from "../context/AuthContext"; // Adjust path
 import { useNavigate } from "react-router-dom";
 import { showToast } from "../utils/toast";
 
 interface HeaderProps {
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
   onCreateRole: () => void;
   onOpenLogoutModal: () => void;
-  creditBalance: number | null;
-  loadingCredits: boolean;
-  setCreditBalance: (balance: number | null) => void;
-  setLoadingCredits: (loading: boolean) => void;
-  credits: number;
 }
 
 const Header: React.FC<HeaderProps> = ({
+  searchTerm,
+  setSearchTerm,
   onCreateRole,
   onOpenLogoutModal, // Destructure new prop
-  creditBalance,
-  loadingCredits,
-  setCreditBalance,
-  setLoadingCredits,
-  credits,
 }) => {
   const { isAuthenticated, user, signOut } = useAuthContext();
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("linkedin contact finder");
   const navigate = useNavigate();
 
   const handleLogin = () => {
@@ -65,34 +57,11 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   const handleGoToDashboard = () => {
-    // Navigate back to main dashboard...
-     navigate("/");
+    navigate("/");
   };
-
-  useEffect(() => {
-    const fetchCreditBalance = async () => {
-      if (isAuthenticated && user) {
-        setLoadingCredits(true);
-        try {
-          const balanceData = await creditService.getCreditBalance();
-          setCreditBalance(balanceData.credit_balance);
-        } catch (error) {
-          setCreditBalance(null);
-          showToast.error('Failed to load credit balance');
-        }
-        setLoadingCredits(false);
-      } else {
-        setCreditBalance(null);
-      }
-    };
-
-    fetchCreditBalance();
-  }, [isAuthenticated, user]);
 
   return (
     <>
-      
-      
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-full mx-auto px-7 py-1.5">
           <div className="flex items-center justify-between">
@@ -115,18 +84,12 @@ const Header: React.FC<HeaderProps> = ({
                   <input
                     type="text"
                     placeholder="LinkedIn Contact Finder..."
-                    value=""
-                    onChange={() => {}}
-                    value=""
-                    onChange={() => {}}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     className="bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none w-40"
                   />
                 </div>
               )}
-
-              
-
-              
 
               {/* Create Role Button - Only show when authenticated */}
               {isAuthenticated && (
@@ -137,22 +100,7 @@ const Header: React.FC<HeaderProps> = ({
                   Create Role
                 </button>
               )}
-              {isAuthenticated && user && (
-              <div className="flex items-center gap-1 bg-gray-100 px-4 py-2 rounded-lg">
-                <span className="text-xs">🪙</span>
-                <p className="text-xs text-gray-500">
-                  <span className="font-semibold">{credits}</span>
-                </p>
-              </div>
-              )}
-              {isAuthenticated && user && (
-              <div className="flex items-center gap-1 bg-gray-100 px-4 py-2 rounded-lg">
-                <span className="text-xs">🪙</span>
-                <p className="text-xs text-gray-500">
-                  <span className="font-semibold">{credits}</span>
-                </p>
-              </div>
-              )}
+
               {/* Authentication Section */}
               {isAuthenticated && user ? (
                 /* User Profile Menu */
@@ -170,14 +118,9 @@ const Header: React.FC<HeaderProps> = ({
                       <p className="text-sm font-medium text-gray-700">
                         {user.fullName || "User"}
                       </p>
-                      <div className="flex gap-2">
-                      <div className="flex gap-2">
                       <p className="text-xs text-gray-500">
                         {user.role || "Member"}
-                      </p> 
-                      </div>
-                      </p> 
-                      </div>
+                      </p>
                     </div>
                     <ChevronDown className="w-4 h-4 text-gray-400" />
                   </button>
@@ -193,8 +136,6 @@ const Header: React.FC<HeaderProps> = ({
                           <p className="text-xs\ text-gray-500">
                             {user.email || "user@example.com"}
                           </p>
-                          
-                          
                         </div>
 
                         {/* Workspace & Organization */}
