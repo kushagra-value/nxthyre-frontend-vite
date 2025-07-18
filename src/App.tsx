@@ -601,7 +601,7 @@ function MainApp() {
                   <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3">
                     <div className="mb-4">
                       <div className="hidden md:flex items-center space-x-2">
-                        {categories.map((category) => (
+                        {categories.slice(0, 4).map((category) => (
                           <div
                             key={category.id}
                             className="relative"
@@ -697,6 +697,7 @@ function MainApp() {
                             )}
                           </div>
                         ))}
+                        {categories.length > 4 && (
                         <div className="relative">
                           <button
                             onClick={() =>
@@ -704,7 +705,7 @@ function MainApp() {
                             }
                             className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
                           >
-                            +12 more
+                            +{categories.length - 4} more
                             <ChevronDown className="ml-1 w-4 h-4" />
                           </button>
                           <CategoryDropdown
@@ -713,8 +714,10 @@ function MainApp() {
                             onEditJobRole={handleEditJobRole}
                             onEditTemplate={handleEditTemplate}
                             onDeleteJob={(jobId) => setShowDeleteModal(jobId)}
+                            onSharePipelines={handleSharePipelines}
                           />
                         </div>
+                        )}
                       </div>
                     </div>
 

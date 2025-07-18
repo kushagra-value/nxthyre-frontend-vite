@@ -314,7 +314,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       <div className="p-3 lg:p-4 flex items-center justify-between border-t border-gray-200">
         <div className="text-sm text-gray-600">
           {/* FIX: Display logic is now safer and reflects total count from API */}
-          Showing {(currentPage - 1) * candidatesPerPage + 1} to{" "}
+          Showing {(currentPage - 1) * candidatesPerPage} to{" "}
           {Math.min(currentPage * candidatesPerPage, totalCount)} of {totalCount}{" "}
           candidates
         </div>
