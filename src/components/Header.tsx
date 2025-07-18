@@ -8,55 +8,56 @@ import {
   LogOut,
   Building2,
 } from "lucide-react";
-
-interface User {
-  id: string | undefined;
-  fullName: string;
-  email: string;
-  role: string;
-  organizationId: string | undefined;
-  workspaceIds: string[];
-  isVerified: boolean;
-  createdAt: string;
-}
+import { useAuthContext } from "../context/AuthContext"; // Adjust path
+import { useNavigate } from "react-router-dom";
+import { showToast } from "../utils/toast";
 
 interface HeaderProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   onCreateRole: () => void;
-  isAuthenticated?: boolean;
-  user?: User | null;
-  onLogin?: () => void;
-  onSignup?: () => void;
-  onLogout?: () => void;
-  onWorkspacesOrg?: () => void;
-  onSettings?: () => void;
-  onShowLogoutModal: () => void;
+  onOpenLogoutModal: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
   searchTerm,
   setSearchTerm,
   onCreateRole,
-  isAuthenticated = false,
-  user = null,
-  onLogin,
-  onSignup,
-  onLogout,
-  onWorkspacesOrg,
-  onSettings,
-  onShowLogoutModal,
+  onOpenLogoutModal, // Destructure new prop
 }) => {
+  const { isAuthenticated, user, signOut } = useAuthContext();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const navigate = useNavigate();
 
-  const handleLogoutClick = () => {
-    onShowLogoutModal();
-    setShowUserMenu(false);
+  const handleLogin = () => {
+    navigate("/");
+  };
+
+  const handleSignup = () => {
+    navigate("/");
+  };
+
+  const handleWorkspacesOrg = () => {
+    navigate("/workspaces-org");
+  };
+
+  const handleSettingsClick = () => {
+    navigate("/settings");
+  };
+
+  const handleLogoutRequest = async () => {
+    try {
+      await signOut(); // Use signOut instead of logout
+      showToast.success("Successfully logged out");
+      navigate("/"); // Redirect to login page
+    } catch (error) {
+      console.error("Logout error:", error);
+      showToast.error("Failed to logout");
+    }
   };
 
   const handleGoToDashboard = () => {
-    // Navigate back to main dashboard...
-    window.location.href = "/";
+    navigate("/");
   };
 
   return (
@@ -109,7 +110,9 @@ const Header: React.FC<HeaderProps> = ({
                     className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
                   >
                     <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                      <User className="w-4 h-4 text-white" />
+                      <span className="text-white text-sm font-medium">
+                        {user.fullName ? user.fullName[0] : "U"}
+                      </span>
                     </div>
                     <div className="hidden sm:block text-left">
                       <p className="text-sm font-medium text-gray-700">
@@ -130,7 +133,7 @@ const Header: React.FC<HeaderProps> = ({
                           <p className="text-sm font-medium text-gray-900">
                             {user.fullName || "User"}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs\ text-gray-500">
                             {user.email || "user@example.com"}
                           </p>
                         </div>
@@ -139,7 +142,7 @@ const Header: React.FC<HeaderProps> = ({
                         <button
                           onClick={() => {
                             setShowUserMenu(false);
-                            onWorkspacesOrg?.();
+                            handleWorkspacesOrg();
                           }}
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center transition-colors"
                         >
@@ -151,7 +154,7 @@ const Header: React.FC<HeaderProps> = ({
                         <button
                           onClick={() => {
                             setShowUserMenu(false);
-                            onSettings?.();
+                            handleSettingsClick();
                           }}
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center transition-colors"
                         >
@@ -161,7 +164,10 @@ const Header: React.FC<HeaderProps> = ({
 
                         {/* Logout */}
                         <button
-                          onClick={handleLogoutClick}
+                          onClick={() => {
+                            setShowUserMenu(false);
+                            onOpenLogoutModal(); // Trigger modal via prop
+                          }}
                           className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center transition-colors"
                         >
                           <LogOut className="w-4 h-4 mr-3" />
@@ -175,13 +181,13 @@ const Header: React.FC<HeaderProps> = ({
                 /* Login/Register Buttons */
                 <div className="flex items-center space-x-3">
                   <button
-                    onClick={onLogin}
+                    onClick={handleLogin}
                     className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
                   >
                     Login
                   </button>
                   <button
-                    onClick={onSignup}
+                    onClick={handleSignup}
                     className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Register

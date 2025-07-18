@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { User as FirebaseUser, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../config/firebase';
-import { authService, UserStatusResponse } from '../services/authService';
+import { useState, useEffect } from "react";
+import { User as FirebaseUser, onAuthStateChanged } from "firebase/auth";
+import { auth } from "../config/firebase";
+import { authService, UserStatusResponse } from "../services/authService";
 
 interface AuthState {
   user: FirebaseUser | null;
@@ -15,7 +15,7 @@ export const useAuth = () => {
     user: null,
     userStatus: null,
     loading: true,
-    error: null
+    error: null,
   });
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export const useAuth = () => {
             user: firebaseUser,
             userStatus,
             loading: false,
-            error: null
+            error: null,
           });
         } else {
           // User is signed out
@@ -36,16 +36,16 @@ export const useAuth = () => {
             user: null,
             userStatus: null,
             loading: false,
-            error: null
+            error: null,
           });
         }
       } catch (error: any) {
-        console.error('Error fetching user status:', error);
+        console.error("Error fetching user status:", error);
         setAuthState({
           user: firebaseUser,
           userStatus: null,
           loading: false,
-          error: error.message
+          error: error.message,
         });
       }
     });
@@ -57,24 +57,43 @@ export const useAuth = () => {
     if (authState.user) {
       try {
         const userStatus = await authService.getUserStatus();
-        setAuthState(prev => ({
+        setAuthState((prev) => ({
           ...prev,
           userStatus,
-          error: null
+          error: null,
         }));
       } catch (error: any) {
-        setAuthState(prev => ({
+        setAuthState((prev) => ({
           ...prev,
-          error: error.message
+          error: error.message,
         }));
       }
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      await authService.signOut();
+      setAuthState({
+        user: null,
+        userStatus: null,
+        loading: false,
+        error: null,
+      });
+    } catch (error: any) {
+      console.error("Sign out error:", error);
+      setAuthState((prev) => ({
+        ...prev,
+        error: error.message,
+      }));
     }
   };
 
   return {
     ...authState,
     refreshUserStatus,
+    signOut,
     isAuthenticated: !!authState.user,
-    isOnboarded: authState.userStatus?.is_onboarded || false
+    isOnboarded: authState.userStatus?.is_onboarded || false,
   };
 };

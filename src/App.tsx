@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext"; // Adjust path
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./hooks/useAuth";
 import { authService } from "./services/authService";
@@ -19,6 +20,7 @@ import SharePipelinesLoader from "./components/SharePipelinesLoader";
 import SharePipelinesModal from "./components/SharePipelinesModal";
 import ShareableProfile from "./components/ShareableProfile";
 import PipelineSharePage from "./components/PipelineSharePage";
+import { User } from "./types/auth"; // Adjust path
 import { candidates, Candidate } from "./data/candidates";
 import {
   ChevronDown,
@@ -32,23 +34,13 @@ import {
 } from "lucide-react";
 import { showToast } from "./utils/toast";
 
-interface User {
-  id: string | undefined;
-  fullName: string;
-  email: string;
-  role: string;
-  organizationId: string | undefined;
-  workspaceIds: string[];
-  isVerified: boolean;
-  createdAt: string;
-}
-
 function MainApp() {
   const navigate = useNavigate();
   const {
     user: firebaseUser,
     userStatus,
     isAuthenticated,
+    signOut,
     isOnboarded,
     loading: authLoading,
   } = useAuth();
@@ -271,28 +263,85 @@ function MainApp() {
   }, [filteredCandidates, selectedCandidate]);
 
   // Handler Functions
-  const handleLogoutRequest = () => {
+  // const handleLogoutRequest = () => {
+  //   setShowLogoutModal(true);
+  // };
+
+  const handleOpenLogoutModal = () => {
     setShowLogoutModal(true);
   };
 
-  const handleLogoutConfirm = () => {
+  const handleCloseLogoutModal = () => {
     setShowLogoutModal(false);
-    handleLogout();
+  };
+
+  const handleLogoutConfirm = async () => {
+    setShowLogoutModal(false);
+    try {
+      await signOut();
+      setCurrentUser(null);
+      setShowAuthApp(false);
+      setShowSettings(false);
+      setSelectedCandidate(null);
+      setShowTemplateSelector(false);
+      setShowCreateJobRole(false);
+      setShowEditTemplate(false);
+      setShowPipelineStages(false);
+      setSearchTerm("");
+      setFilters({
+        keywords: "",
+        booleanSearch: false,
+        semanticSearch: false,
+        selectedCategories: [],
+        minExperience: "",
+        maxExperience: "",
+        funInCurrentCompany: false,
+        minTotalExp: "",
+        maxTotalExp: "",
+        city: "",
+        country: "",
+        location: "",
+        selectedSkills: [],
+        skillLevel: "",
+        noticePeriod: "",
+        companies: "",
+        industries: "",
+        minSalary: "",
+        maxSalary: "",
+        colleges: "",
+        topTierUniversities: false,
+        computerScienceGraduates: false,
+        showFemaleCandidates: false,
+        recentlyPromoted: false,
+        backgroundVerified: false,
+        hasCertification: false,
+        hasResearchPaper: false,
+        hasLinkedIn: false,
+        hasBehance: false,
+        hasTwitter: false,
+        hasPortfolio: false,
+      });
+      showToast.success("Successfully logged out");
+      navigate("/");
+    } catch (error: any) {
+      console.error("Logout error:", error);
+      showToast.error("Failed to logout");
+    }
   };
 
   const handleLogoutCancel = () => {
     setShowLogoutModal(false);
   };
 
-  const handleLogin = () => {
-    setAuthFlow("login");
-    setShowAuthApp(true);
-  };
+  // const handleLogin = () => {
+  //   setAuthFlow("login");
+  //   setShowAuthApp(true);
+  // };
 
-  const handleSignup = () => {
-    setAuthFlow("signup");
-    setShowAuthApp(true);
-  };
+  // const handleSignup = () => {
+  //   setAuthFlow("signup");
+  //   setShowAuthApp(true);
+  // };
 
   const handleAuthSuccess = (user: any) => {
     setCurrentUser(user);
@@ -309,35 +358,15 @@ function MainApp() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await authService.signOut();
-      setCurrentUser(null);
-      setShowAuthApp(false);
-      setShowSettings(false);
-      setSelectedCandidate(null);
-      setShowTemplateSelector(false);
-      setShowCreateJobRole(false);
-      setShowEditTemplate(false);
-      setShowPipelineStages(false);
-      setSearchTerm("");
-      showToast.success("Successfully logged out");
-      navigate("/"); // Redirect to root after logout
-    } catch (error: any) {
-      console.error("Logout error:", error);
-      showToast.error("Failed to logout");
-    }
-  };
+  // const handleWorkspacesOrg = () => {
+  //   setShowAuthApp(true);
+  //   setAuthFlow("workspaces-org");
+  //   navigate("/workspaces-org");
+  // };
 
-  const handleWorkspacesOrg = () => {
-    setShowAuthApp(true);
-    setAuthFlow("workspaces-org");
-    navigate("/workspaces-org");
-  };
-
-  const handleSettingsClick = () => {
-    setShowSettings(true);
-  };
+  // const handleSettingsClick = () => {
+  //   setShowSettings(true);
+  // };
 
   const handleSendInvite = () => {
     setShowTemplateSelector(true);
@@ -431,353 +460,388 @@ function MainApp() {
   }
 
   return (
-    <Routes>
-      <Route
-        path="/linkedin-auth"
-        element={
-          <LinkedInAuth
-            onNavigate={(flow: string) => {
-              setAuthFlow(flow);
-              navigate(`/${flow}`);
-            }}
-            onLogin={handleLinkedInAuthSuccess}
-          />
-        }
-      />
-      <Route
-        path="/pipelines/:pipelineId"
-        element={
-          <PipelineSharePage
-            pipelineId={currentPipelineId}
-            onBack={handleBackFromPipelineShare}
-          />
-        }
-      />
-      <Route
-        path="/candidate-profiles/:candidateId"
-        element={
-          <ShareableProfile
-            candidateId={currentCandidateId}
-            onBack={handleBackFromShareableProfile}
-          />
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <Settings
-            onBack={() => {
-              setShowSettings(false);
-              navigate("/");
-            }}
-            user={currentUser}
-          />
-        }
-      />
-      <Route
-        path="/workspaces-org"
-        element={
-          <AuthApp
-            initialFlow="workspaces-org"
-            initialUser={isAuthenticated ? currentUser : null}
-            onAuthSuccess={handleAuthSuccess}
-            onClose={() => {
-              setShowAuthApp(false);
-              navigate("/");
-            }}
-            onLogout={handleLogout}
-          />
-        }
-      />
-      <Route
-        path="/"
-        element={
-          isAuthenticated ? (
-            showPipelineStages ? (
-              <>
-                <Toaster />
-                <PipelineStages
-                  onBack={handleBackFromPipelines}
-                  activeTab={activeTab}
-                  setActiveTab={setActiveTab}
-                />
-              </>
+    <>
+      <Routes>
+        <Route
+          path="/linkedin-auth"
+          element={
+            <LinkedInAuth
+              onNavigate={(flow: string) => {
+                setAuthFlow(flow);
+                navigate(`/${flow}`);
+              }}
+              onLogin={handleLinkedInAuthSuccess}
+            />
+          }
+        />
+        <Route
+          path="/pipelines/:pipelineId"
+          element={
+            <PipelineSharePage
+              pipelineId={currentPipelineId}
+              onBack={handleBackFromPipelineShare}
+            />
+          }
+        />
+        <Route
+          path="/candidate-profiles/:candidateId"
+          element={
+            <ShareableProfile
+              candidateId={currentCandidateId}
+              onBack={handleBackFromShareableProfile}
+            />
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <Settings
+              onBack={() => {
+                setShowSettings(false);
+                navigate("/");
+              }}
+              user={currentUser}
+            />
+          }
+        />
+        <Route
+          path="/workspaces-org"
+          element={
+            <AuthApp
+              initialFlow="workspaces-org"
+              initialUser={isAuthenticated ? currentUser : null}
+              onAuthSuccess={handleAuthSuccess}
+              onClose={() => {
+                setShowAuthApp(false);
+                navigate("/");
+              }}
+              onLogout={handleLogoutConfirm}
+            />
+          }
+        />
+        <Route
+          path="/"
+          element={
+            isAuthenticated ? (
+              showPipelineStages ? (
+                <>
+                  <Toaster />
+                  <PipelineStages
+                    onBack={handleBackFromPipelines}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    onOpenLogoutModal={handleOpenLogoutModal} // Pass handler
+                  />
+                </>
+              ) : (
+                <>
+                  <Toaster />
+                  <div className="bg-gray-50 min-h-screen">
+                    <div className="sticky top-0 z-20 bg-white will-change-transform">
+                      <Header
+                        searchTerm={searchTerm}
+                        setSearchTerm={setSearchTerm}
+                        onCreateRole={handleCreateJobRole}
+                        onOpenLogoutModal={handleOpenLogoutModal} // Pass handler
+                      />
+                    </div>
+
+                    <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3">
+                      <div className="mb-4">
+                        <div className="hidden md:flex items-center space-x-2">
+                          {categories.map((category) => (
+                            <div
+                              key={category.name}
+                              className="relative"
+                              onMouseEnter={() =>
+                                setHoveredCategory(category.name)
+                              }
+                              onMouseLeave={() => setHoveredCategory(null)}
+                            >
+                              <button
+                                onClick={() => setActiveCategory(category.name)}
+                                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                                  activeCategory === category.name
+                                    ? "bg-blue-100 text-blue-700 shadow-sm"
+                                    : "text-gray-600 hover:bg-gray-100"
+                                }`}
+                              >
+                                {category.name}
+                                <span
+                                  className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                                    activeCategory === category.name
+                                      ? "bg-blue-200 text-blue-800"
+                                      : "bg-gray-200 text-gray-600"
+                                  }`}
+                                >
+                                  {category.count}
+                                </span>
+                              </button>
+                              {hoveredCategory === category.name && (
+                                <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                                  <div className="py-1">
+                                    <button
+                                      onClick={() =>
+                                        handleCategoryAction(
+                                          "edit-job",
+                                          category.name
+                                        )
+                                      }
+                                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                    >
+                                      <Edit className="w-4 h-4 mr-2" />
+                                      Edit Job Role
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleCategoryAction(
+                                          "edit-template",
+                                          category.name
+                                        )
+                                      }
+                                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                    >
+                                      <Mail className="w-4 h-4 mr-2" />
+                                      Edit Email Template
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleCategoryAction(
+                                          "share-pipelines",
+                                          category.name
+                                        )
+                                      }
+                                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                    >
+                                      <Share2 className="w-4 h-4 mr-2" />
+                                      Share Pipelines
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleCategoryAction(
+                                          "archive",
+                                          category.name
+                                        )
+                                      }
+                                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                    >
+                                      <Archive className="w-4 h-4 mr-2" />
+                                      Archive
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleCategoryAction(
+                                          "delete",
+                                          category.name
+                                        )
+                                      }
+                                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                                    >
+                                      <Trash2 className="w-4 h-4 mr-2" />
+                                      Delete Job
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                          <div className="relative">
+                            <button
+                              onClick={() =>
+                                setShowCategoryDropdown(!showCategoryDropdown)
+                              }
+                              className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
+                            >
+                              +12 more
+                              <ChevronDown className="ml-1 w-4 h-4" />
+                            </button>
+                            <CategoryDropdown
+                              isOpen={showCategoryDropdown}
+                              onClose={() => setShowCategoryDropdown(false)}
+                              onEditJobRole={handleEditJobRole}
+                              onEditTemplate={handleEditTemplate}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex w-full gap-3 h-full">
+                        <div className="lg:w-[25%] order-2 lg:order-1 sticky top-16 self-start will-change-transform">
+                          <FiltersSidebar
+                            filters={filters}
+                            onFiltersChange={setFilters}
+                          />
+                        </div>
+                        <div className="lg:w-[45%] order-1 lg:order-2">
+                          <CandidatesMain
+                            activeTab={activeTab}
+                            setActiveTab={setActiveTab}
+                            selectedCandidate={selectedCandidate}
+                            setSelectedCandidate={setSelectedCandidate}
+                            searchTerm={searchTerm}
+                            candidates={filteredCandidates}
+                            onPipelinesClick={handlePipelinesClick}
+                          />
+                        </div>
+                        <div className="lg:w-[30%] order-3 sticky top-16 self-start will-change-transform">
+                          {showTemplateSelector && selectedCandidate ? (
+                            <TemplateSelector
+                              candidate={selectedCandidate}
+                              onBack={handleBackFromTemplate}
+                            />
+                          ) : (
+                            <CandidateDetail
+                              candidate={selectedCandidate}
+                              candidates={filteredCandidates}
+                              onSendInvite={handleSendInvite}
+                            />
+                          )}
+                        </div>
+                      </div>
+                      {/* <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-full">
+                        <div className="lg:col-span-3 order-2 lg:order-1 sticky top-16 self-start will-change-transform">
+                          <FiltersSidebar
+                            filters={filters}
+                            onFiltersChange={setFilters}
+                          />
+                        </div>
+                        <div className="lg:col-span-5 order-1 lg:order-2">
+                          <CandidatesMain
+                            activeTab={activeTab}
+                            setActiveTab={setActiveTab}
+                            selectedCandidate={selectedCandidate}
+                            setSelectedCandidate={setSelectedCandidate}
+                            searchTerm={searchTerm}
+                            candidates={filteredCandidates}
+                            onPipelinesClick={handlePipelinesClick}
+                          />
+                        </div>
+                        <div className="lg:col-span-4 order-3 sticky top-16 self-start will-change-transform">
+                          {showTemplateSelector && selectedCandidate ? (
+                            <TemplateSelector
+                              candidate={selectedCandidate}
+                              onBack={handleBackFromTemplate}
+                            />
+                          ) : (
+                            <CandidateDetail
+                              candidate={selectedCandidate}
+                              candidates={filteredCandidates}
+                              onSendInvite={handleSendInvite}
+                            />
+                          )}
+                        </div>
+                      </div> */}
+                    </div>
+
+                    <CreateJobRoleModal
+                      isOpen={showCreateJobRole}
+                      onClose={() => setShowCreateJobRole(false)}
+                    />
+                    <EditTemplateModal
+                      isOpen={showEditTemplate}
+                      onClose={() => setShowEditTemplate(false)}
+                      templateName={editingTemplate}
+                    />
+                    <SharePipelinesLoader
+                      isOpen={showShareLoader}
+                      onComplete={handleShareLoaderComplete}
+                    />
+                    <SharePipelinesModal
+                      isOpen={showShareModal}
+                      onClose={() => setShowShareModal(false)}
+                      jobRole={activeCategory}
+                    />
+                    {showLogoutModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                          <div className="text-center">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                              <LogOut className="w-6 h-6 text-red-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              Confirm Logout
+                            </h3>
+                            <p className="text-gray-600 mb-6">
+                              Are you sure you want to sign out? You'll need to
+                              log in again to access your account.
+                            </p>
+                            <div className="flex space-x-3">
+                              <button
+                                onClick={handleLogoutCancel}
+                                className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={handleLogoutConfirm}
+                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                              >
+                                Sign Out
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )
             ) : (
               <>
                 <Toaster />
-                <div className="bg-gray-50 min-h-screen">
-                  <div className="sticky top-0 z-20 bg-white will-change-transform">
-                    <Header
-                      searchTerm={searchTerm}
-                      setSearchTerm={setSearchTerm}
-                      onCreateRole={handleCreateJobRole}
-                      isAuthenticated={isAuthenticated}
-                      user={currentUser}
-                      onLogin={handleLogin}
-                      onSignup={handleSignup}
-                      onLogout={handleLogout}
-                      onWorkspacesOrg={handleWorkspacesOrg}
-                      onSettings={handleSettingsClick}
-                      onShowLogoutModal={handleLogoutRequest}
-                    />
-                  </div>
-
-                  <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3">
-                    <div className="mb-4">
-                      <div className="hidden md:flex items-center space-x-2">
-                        {categories.map((category) => (
-                          <div
-                            key={category.name}
-                            className="relative"
-                            onMouseEnter={() =>
-                              setHoveredCategory(category.name)
-                            }
-                            onMouseLeave={() => setHoveredCategory(null)}
-                          >
-                            <button
-                              onClick={() => setActiveCategory(category.name)}
-                              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                                activeCategory === category.name
-                                  ? "bg-blue-100 text-blue-700 shadow-sm"
-                                  : "text-gray-600 hover:bg-gray-100"
-                              }`}
-                            >
-                              {category.name}
-                              <span
-                                className={`ml-2 px-2 py-1 rounded-full text-xs ${
-                                  activeCategory === category.name
-                                    ? "bg-blue-200 text-blue-800"
-                                    : "bg-gray-200 text-gray-600"
-                                }`}
-                              >
-                                {category.count}
-                              </span>
-                            </button>
-                            {hoveredCategory === category.name && (
-                              <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                                <div className="py-1">
-                                  <button
-                                    onClick={() =>
-                                      handleCategoryAction(
-                                        "edit-job",
-                                        category.name
-                                      )
-                                    }
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                  >
-                                    <Edit className="w-4 h-4 mr-2" />
-                                    Edit Job Role
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleCategoryAction(
-                                        "edit-template",
-                                        category.name
-                                      )
-                                    }
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                  >
-                                    <Mail className="w-4 h-4 mr-2" />
-                                    Edit Email Template
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleCategoryAction(
-                                        "share-pipelines",
-                                        category.name
-                                      )
-                                    }
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                  >
-                                    <Share2 className="w-4 h-4 mr-2" />
-                                    Share Pipelines
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleCategoryAction(
-                                        "archive",
-                                        category.name
-                                      )
-                                    }
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                  >
-                                    <Archive className="w-4 h-4 mr-2" />
-                                    Archive
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleCategoryAction(
-                                        "delete",
-                                        category.name
-                                      )
-                                    }
-                                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
-                                  >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Delete Job
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                        <div className="relative">
-                          <button
-                            onClick={() =>
-                              setShowCategoryDropdown(!showCategoryDropdown)
-                            }
-                            className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
-                          >
-                            +12 more
-                            <ChevronDown className="ml-1 w-4 h-4" />
-                          </button>
-                          <CategoryDropdown
-                            isOpen={showCategoryDropdown}
-                            onClose={() => setShowCategoryDropdown(false)}
-                            onEditJobRole={handleEditJobRole}
-                            onEditTemplate={handleEditTemplate}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex w-full gap-3 h-full">
-                      <div className="lg:w-[25%] order-2 lg:order-1 sticky top-16 self-start will-change-transform">
-                        <FiltersSidebar
-                          filters={filters}
-                          onFiltersChange={setFilters}
-                        />
-                      </div>
-                      <div className="lg:w-[45%] order-1 lg:order-2">
-                        <CandidatesMain
-                          activeTab={activeTab}
-                          setActiveTab={setActiveTab}
-                          selectedCandidate={selectedCandidate}
-                          setSelectedCandidate={setSelectedCandidate}
-                          searchTerm={searchTerm}
-                          candidates={filteredCandidates}
-                          onPipelinesClick={handlePipelinesClick}
-                        />
-                      </div>
-                      <div className="lg:w-[30%] order-3 sticky top-16 self-start will-change-transform">
-                        {showTemplateSelector && selectedCandidate ? (
-                          <TemplateSelector
-                            candidate={selectedCandidate}
-                            onBack={handleBackFromTemplate}
-                          />
-                        ) : (
-                          <CandidateDetail
-                            candidate={selectedCandidate}
-                            candidates={filteredCandidates}
-                            onSendInvite={handleSendInvite}
-                          />
-                        )}
-                      </div>
-                    </div>
-                    {/* <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-full">
-                      <div className="lg:col-span-3 order-2 lg:order-1 sticky top-16 self-start will-change-transform">
-                        <FiltersSidebar
-                          filters={filters}
-                          onFiltersChange={setFilters}
-                        />
-                      </div>
-                      <div className="lg:col-span-5 order-1 lg:order-2">
-                        <CandidatesMain
-                          activeTab={activeTab}
-                          setActiveTab={setActiveTab}
-                          selectedCandidate={selectedCandidate}
-                          setSelectedCandidate={setSelectedCandidate}
-                          searchTerm={searchTerm}
-                          candidates={filteredCandidates}
-                          onPipelinesClick={handlePipelinesClick}
-                        />
-                      </div>
-                      <div className="lg:col-span-4 order-3 sticky top-16 self-start will-change-transform">
-                        {showTemplateSelector && selectedCandidate ? (
-                          <TemplateSelector
-                            candidate={selectedCandidate}
-                            onBack={handleBackFromTemplate}
-                          />
-                        ) : (
-                          <CandidateDetail
-                            candidate={selectedCandidate}
-                            candidates={filteredCandidates}
-                            onSendInvite={handleSendInvite}
-                          />
-                        )}
-                      </div>
-                    </div> */}
-                  </div>
-
-                  <CreateJobRoleModal
-                    isOpen={showCreateJobRole}
-                    onClose={() => setShowCreateJobRole(false)}
-                  />
-                  <EditTemplateModal
-                    isOpen={showEditTemplate}
-                    onClose={() => setShowEditTemplate(false)}
-                    templateName={editingTemplate}
-                  />
-                  <SharePipelinesLoader
-                    isOpen={showShareLoader}
-                    onComplete={handleShareLoaderComplete}
-                  />
-                  <SharePipelinesModal
-                    isOpen={showShareModal}
-                    onClose={() => setShowShareModal(false)}
-                    jobRole={activeCategory}
-                  />
-                  {showLogoutModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
-                      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-                        <div className="text-center">
-                          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <LogOut className="w-6 h-6 text-red-600" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            Confirm Logout
-                          </h3>
-                          <p className="text-gray-600 mb-6">
-                            Are you sure you want to sign out? You'll need to
-                            log in again to access your account.
-                          </p>
-                          <div className="flex space-x-3">
-                            <button
-                              onClick={handleLogoutCancel}
-                              className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              onClick={handleLogoutConfirm}
-                              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                            >
-                              Sign Out
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <AuthApp
+                  initialFlow="login"
+                  onAuthSuccess={handleAuthSuccess}
+                />
               </>
             )
-          ) : (
-            <>
-              <Toaster />
-              <AuthApp initialFlow="login" onAuthSuccess={handleAuthSuccess} />
-            </>
-          )
-        }
-      />
-    </Routes>
+          }
+        />
+      </Routes>
+
+      {/* Render modal at the root level */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <LogOut className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Confirm Logout
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to sign out? You'll need to log in again
+                to access your account.
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleCloseLogoutModal}
+                  className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleLogoutConfirm}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <MainApp />
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <MainApp />
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
