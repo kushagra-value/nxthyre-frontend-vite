@@ -147,7 +147,7 @@ function MainApp() {
   });
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [activeCategory, setActiveCategory] = useState("");
+  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
   const [loadingCandidates, setLoadingCandidates] = useState(true);
@@ -163,8 +163,8 @@ function MainApp() {
         count: 0,
       }));
       setCategories(mappedCategories);
-      if (mappedCategories.length > 0 && !activeCategory) {
-        setActiveCategory(mappedCategories[0].name);
+      if (mappedCategories.length > 0 && activeCategoryId === null) {
+        setActiveCategoryId(mappedCategories[0].id);
       }
     } catch (error) {
       showToast.error("Failed to fetch job categories");
@@ -414,8 +414,8 @@ function MainApp() {
         await jobPostService.deleteJob(job.id);
         await fetchCategories();
         showToast.success(`Successfully deleted job with job id ${jobId}`);
-        if (categories.find(cat => cat.id === jobId)?.name === activeCategory) {
-          setActiveCategory(categories[0]?.name || "");
+        if (activeCategoryId === jobId) {
+           setActiveCategoryId(categories[0]?.id || null);
         }
       } else {
         showToast.error('Job not found');
@@ -446,14 +446,13 @@ function MainApp() {
 
   const handleShareLoaderComplete = () => {
     setShowShareLoader(false);
-    const pipelineId = activeCategory
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9-]/g, "");
-
-    setCurrentPipelineId(pipelineId);
-    setShowPipelineSharePage(true);
-    window.history.pushState({}, "", `/pipelines/${pipelineId}`);
+    const job = categories.find(cat => cat.id === activeCategoryId);
+     if (job) {
+      const pipelineId = job.id.toString();
+      setCurrentPipelineId(pipelineId);
+      setShowPipelineSharePage(true);
+      window.history.pushState({}, "", `/pipelines/${pipelineId}`);
+    }
   };
 
   const handleCategoryAction = (action: string, jobId: number) => {
@@ -611,9 +610,9 @@ function MainApp() {
                             onMouseLeave={() => setHoveredCategory(null)}
                           >
                             <button
-                              onClick={() => setActiveCategory(category.name)}
+                              onClick={() => setActiveCategoryId(category.id)}
                               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                                activeCategory === category.name
+                                activeCategoryId === category.id
                                   ? "bg-blue-100 text-blue-700 shadow-sm"
                                   : "text-gray-600 hover:bg-gray-100"
                               }`}
@@ -621,7 +620,7 @@ function MainApp() {
                               {category.name}
                               <span
                                 className={`ml-2 px-2 py-1 rounded-full text-xs ${
-                                  activeCategory === category.name
+                                  activeCategoryId === category.id
                                     ? "bg-blue-200 text-blue-800"
                                     : "bg-gray-200 text-gray-600"
                                 }`}
@@ -810,7 +809,7 @@ function MainApp() {
                   <SharePipelinesModal
                     isOpen={showShareModal}
                     onClose={() => setShowShareModal(false)}
-                    jobRole={activeCategory}
+                    jobRole={categories.find(cat => cat.id === activeCategoryId)?.name || ""}
                   />
                   {showLogoutModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
