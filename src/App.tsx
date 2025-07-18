@@ -312,6 +312,39 @@ function MainApp() {
       setShowEditTemplate(false);
       setShowPipelineStages(false);
       setSearchTerm("");
+      setFilters({
+        keywords: "",
+        booleanSearch: false,
+        semanticSearch: false,
+        selectedCategories: [],
+        minExperience: "",
+        maxExperience: "",
+        funInCurrentCompany: false,
+        minTotalExp: "",
+        maxTotalExp: "",
+        city: "",
+        country: "",
+        location: "",
+        selectedSkills: [],
+        skillLevel: "",
+        noticePeriod: "",
+        companies: "",
+        industries: "",
+        minSalary: "",
+        maxSalary: "",
+        colleges: "",
+        topTierUniversities: false,
+        computerScienceGraduates: false,
+        showFemaleCandidates: false,
+        recentlyPromoted: false,
+        backgroundVerified: false,
+        hasCertification: false,
+        hasResearchPaper: false,
+        hasLinkedIn: false,
+        hasBehance: false,
+        hasTwitter: false,
+        hasPortfolio: false,
+      });
       showToast.success("Successfully logged out");
       navigate("/"); // Redirect to root after logout
     } catch (error: any) {

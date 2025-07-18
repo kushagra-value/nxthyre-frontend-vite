@@ -16,6 +16,7 @@ import {
 import { useAuthContext } from "../../context/AuthContext";
 import { organizationService } from "../../services/organizationService";
 import { showToast } from "../../utils/toast";
+import { useNavigate } from "react-router-dom";
 
 interface Organization {
   id: number;
@@ -31,8 +32,6 @@ interface Workspace {
 
 interface WorkspacesOrgProps {
   onNavigate: (flow: string, data?: any) => void;
-  user: any;
-  onLogout: () => void;
   searchTerm?: string;
   setSearchTerm?: (term: string) => void;
   onCreateRole?: () => void;
@@ -40,14 +39,14 @@ interface WorkspacesOrgProps {
 
 const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   onNavigate,
-  onLogout,
   searchTerm: propSearchTerm,
   setSearchTerm: propSetSearchTerm,
   onCreateRole: propOnCreateRole,
 }) => {
-  const { user, userStatus, isAuthenticated } = useAuthContext(); // Use AuthContext
+  const { user, userStatus, isAuthenticated, logout } = useAuthContext();
   const [activeTab, setActiveTab] = useState("workspaces");
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false); // Add logout modal
   const [localSearchTerm, setLocalSearchTerm] = useState(propSearchTerm || "");
   const [showDeleteModal, setShowDeleteModal] = useState<{
     type: "org" | "workspace";
@@ -63,6 +62,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [onboardingStatus, setOnboardingStatus] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const searchTerm =
     propSearchTerm !== undefined ? propSearchTerm : localSearchTerm;
@@ -152,7 +152,19 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   const handleJoinWorkspace = () => onNavigate("workspace-joining");
   const handleCreateOrganization = () => onNavigate("create-organization");
   const handleGoToDashboard = () => {
-    window.location.href = "/";
+    navigate("/");
+  };
+
+  const handleLogoutRequest = async () => {
+    setShowLogoutModal(false);
+    try {
+      await logout();
+      showToast.success("Successfully logged out");
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      showToast.error("Failed to logout");
+    }
   };
 
   const onCreateRole =
@@ -290,7 +302,10 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                           Settings
                         </button>
                         <button
-                          onClick={onLogout}
+                          onClick={() => {
+                            setShowUserMenu(false);
+                            setShowLogoutModal(true); // Show logout modal
+                          }}
                           className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
                         >
                           <LogOut className="w-4 h-4 mr-2" />
@@ -698,6 +713,40 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
               >
                 Save Changes
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <LogOut className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Confirm Logout
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to sign out? You'll need to log in again
+                to access your account.
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowLogoutModal(false)}
+                  className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleLogoutRequest}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Sign Out
+                </button>
+              </div>
             </div>
           </div>
         </div>
