@@ -13,17 +13,15 @@ import { useNavigate } from "react-router-dom";
 import { showToast } from "../utils/toast";
 
 interface HeaderProps {
-  searchTerm: string;
-  setSearchTerm: (term: string) => void;
   onCreateRole: () => void;
   onOpenLogoutModal: () => void;
+  credits: number;
 }
 
 const Header: React.FC<HeaderProps> = ({
-  searchTerm,
-  setSearchTerm,
   onCreateRole,
-  onOpenLogoutModal, // Destructure new prop
+  onOpenLogoutModal,
+  credits,
 }) => {
   const { isAuthenticated, user, signOut } = useAuthContext();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -62,6 +60,7 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
+      
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-full mx-auto px-7 py-1.5">
           <div className="flex items-center justify-between">
@@ -84,12 +83,14 @@ const Header: React.FC<HeaderProps> = ({
                   <input
                     type="text"
                     placeholder="LinkedIn Contact Finder..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    value=""
+                    onChange={() => {}}
                     className="bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none w-40"
                   />
                 </div>
               )}
+
+              
 
               {/* Create Role Button - Only show when authenticated */}
               {isAuthenticated && (
@@ -100,7 +101,14 @@ const Header: React.FC<HeaderProps> = ({
                   Create Role
                 </button>
               )}
-
+              {isAuthenticated && user && (
+              <div className="flex items-center gap-1 bg-gray-100 px-4 py-2 rounded-lg">
+                <span className="text-xs">🪙</span>
+                <p className="text-xs text-gray-500">
+                  <span className="font-semibold">{credits}</span>
+                </p>
+              </div>
+              )}
               {/* Authentication Section */}
               {isAuthenticated && user ? (
                 /* User Profile Menu */
@@ -133,9 +141,10 @@ const Header: React.FC<HeaderProps> = ({
                           <p className="text-sm font-medium text-gray-900">
                             {user.fullName || "User"}
                           </p>
-                          <p className="text-xs\ text-gray-500">
+                          <p className="text-xs text-gray-500">
                             {user.email || "user@example.com"}
                           </p>
+                          
                         </div>
 
                         {/* Workspace & Organization */}

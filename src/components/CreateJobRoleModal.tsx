@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Upload, FileText, ChevronDown, RotateCcw, ArrowLeft, ArrowRight, Info } from 'lucide-react';
 import { showToast } from '../utils/toast';
+import { jobPostService, CreateJobData } from '../services/jobPostService';
 
 interface CreateJobRoleModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, onClose
   const [formData, setFormData] = useState({
     allowInbound: true,
     keepPrivate: false,
+    shareExternally: false,
     title: '',
     skills: [] as string[],
     location: '',
@@ -32,8 +34,8 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, onClose
   const [skillInput, setSkillInput] = useState('');
   const [refinementInput, setRefinementInput] = useState('');
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
-
-  const seniorityOptions = ['Intern', 'Fresher', 'Junior', 'Senior', 'Mid', 'Manager', 'Senior Manager', 'Leadership'];
+  const [isLoading, setIsLoading] = useState(false);
+  const seniorityOptions = ['JUNIOR', 'SENIOR', 'LEAD', 'HEAD'];
   const departmentOptions = ['Marketing', 'Finance', 'Sales', 'Ops', 'Engineering', 'Admin', 'Others'];
 
   const dummyJD = `We are seeking a talented Head of Finance to join our dynamic team. The ideal candidate will have extensive experience in financial planning, analysis, and strategic decision-making.
@@ -91,9 +93,36 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
     setCurrentStep(1);
   };
 
-  const handleCreate = () => {
-    showToast.success('Job role created successfully!');
-    onClose();
+  const handleCreate = async () => {
+    setIsLoading(true);
+    try {
+      const jobData: CreateJobData = {
+        title: formData.title,
+        location: formData.location,
+        is_hybrid: formData.hybrid,
+        seniority: formData.seniority,
+        department: parseInt(formData.department) || 1, // Assuming department ID 1 as default
+        experience_min_years: parseInt(formData.minExp) || 0,
+        experience_max_years: parseInt(formData.maxExp) || 0,
+        salary_min: formData.minSalary,
+        salary_max: formData.maxSalary,
+        is_salary_confidential: formData.confidential,
+        visibility: formData.keepPrivate ? 'PRIVATE' : 'PUBLIC',
+        enable_ai_interviews: formData.aiInterviews,
+        description: formData.jobDescription,
+        skill_names: formData.skills,
+        status: formData.shareExternally ? 'PUBLISHED' : 'DRAFT',
+        workspace: 1, // Assuming default workspace ID
+      };
+
+      await jobPostService.createJob(jobData);
+      showToast.success(formData.shareExternally ? 'Job role created and published successfully!' : 'Job role created successfully!');
+      onClose();
+    } catch (error: any) {
+      showToast.error(error.message || 'Failed to create job role');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCreateAndPublish = () => {
@@ -194,6 +223,18 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                     </div>
                   )}
                 </div>
+                <div className="relative">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.shareExternally}
+                      onChange={(e) => setFormData(prev => ({ ...prev, shareExternally: e.target.checked }))}
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm font-medium text-gray-700">SHARE EXTERNALLY</span>
+                  </label>
+                </div>
+
               </div>
 
               {/* Title */}
@@ -508,7 +549,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                   onClick={formData.shareThirdParty ? handleCreateAndPublish : handleCreate}
                   className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                  {formData.shareThirdParty ? 'Create & Publish' : 'Create'}
+                  {formData.shareExternally ? 'Create & Publish' : 'Create'}
                 </button>
               </div>
             </div>

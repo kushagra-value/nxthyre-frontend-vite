@@ -1,26 +1,10 @@
-import React, { useState } from "react";
-import {
-  ChevronDown,
-  Bold,
-  Italic,
-  Link,
-  List,
-  MoreHorizontal,
-  ArrowLeft,
-  Mail,
-  MessageSquare,
-  Phone,
-  Bot,
-  Eye,
-  Settings,
-  Send,
-  X,
-} from "lucide-react";
-import { Candidate } from "../data/candidates";
-import { showToast } from "../utils/toast";
+import React, { useState } from 'react';
+import { ChevronDown, Bold, Italic, Link, List, MoreHorizontal, ArrowLeft, Mail, MessageSquare, Phone, Bot, Eye, Settings, Send, X } from 'lucide-react';
+import { showToast } from '../utils/toast';
+import { CandidateListItem } from '../services/candidateService';
 
 interface TemplateSelectorProps {
-  candidate: Candidate;
+  candidate: CandidateListItem;
   onBack: () => void;
 }
 
@@ -31,35 +15,31 @@ interface Template {
   body: string;
 }
 
-const TemplateSelector: React.FC<TemplateSelectorProps> = ({
-  candidate,
-  onBack,
-}) => {
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
-  const [templateName, setTemplateName] = useState("");
-  const [subject, setSubject] = useState("");
-  const [body, setBody] = useState("");
+const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack }) => {
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [templateName, setTemplateName] = useState('');
+  const [subject, setSubject] = useState('');
+  const [body, setBody] = useState('');
   const [isBodyExpanded, setIsBodyExpanded] = useState(false);
   const [showCreateTemplate, setShowCreateTemplate] = useState(false);
   const [showTestEmail, setShowTestEmail] = useState(false);
   const [showAdvanceOptions, setShowAdvanceOptions] = useState(false);
-  const [testEmail, setTestEmail] = useState("");
-  const [selectedChannel, setSelectedChannel] = useState("Email");
+  const [testEmail, setTestEmail] = useState('');
+  const [selectedChannel, setSelectedChannel] = useState('Email');
 
   const templates: Template[] = [
     {
-      id: "1",
-      name: "Drip Campaign - Head of Finance",
-      subject: "Exciting Opportunity at Weekday: Head of Finance in Pune",
+      id: '1',
+      name: 'Drip Campaign - Head of Finance',
+      subject: 'Exciting Opportunity at Weekday: Head of Finance in Pune',
       body: `Hi [candidatename],
 
-I hope this message finds you well! At Weekday, we're a small team with a big heart, dedicated to making a positive impact on the world. We're currently looking for a Head of Finance who can bring their expertise in Finance to our dynamic online marketplace, with strong networks.
-`,
+I hope this message finds you well! At Weekday, we're a small team with a big heart, dedicated to making a positive impact on the world. We're currently looking for a Head of Finance who can bring their expertise in Finance to our dynamic online marketplace, with strong networks.`
     },
     {
-      id: "2",
-      name: "Follow-up Template",
-      subject: "Following up on our Finance opportunity",
+      id: '2',
+      name: 'Follow-up Template',
+      subject: 'Following up on our Finance opportunity',
       body: `Hi [candidatename],
 
 I wanted to follow up on the Head of Finance position we discussed. We're excited about the possibility of you joining our team at Weekday.
@@ -67,48 +47,48 @@ I wanted to follow up on the Head of Finance position we discussed. We're excite
 Would you be available for a quick call this week to discuss the role in more detail?
 
 Best regards,
-[Your Name]`,
+[Your Name]`
     },
     {
-      id: "3",
-      name: "Initial Outreach",
-      subject: "Finance Leadership Role at Weekday",
+      id: '3',
+      name: 'Initial Outreach',
+      subject: 'Finance Leadership Role at Weekday',
       body: `Hello [candidatename],
 
 I came across your profile and was impressed by your background in finance. We have an exciting Head of Finance position at Weekday that I think would be a great fit for your skills.
 
 Would you be interested in learning more about this opportunity?
 
-Looking forward to hearing from you.`,
-    },
+Looking forward to hearing from you.`
+    }
   ];
 
   const handleTemplateSelect = (templateId: string) => {
-    if (templateId === "create-new") {
+    if (templateId === 'create-new') {
       setShowCreateTemplate(true);
       return;
     }
-
-    const template = templates.find((t) => t.id === templateId);
+    
+    const template = templates.find(t => t.id === templateId);
     if (template) {
       setSelectedTemplate(templateId);
       setSubject(template.subject);
-      setBody(template.body.replace("[candidatename]", candidate.name));
+      setBody(template.body.replace('[candidatename]', candidate.full_name));
     }
   };
 
   const handleSaveTemplate = () => {
     if (!templateName.trim()) {
-      showToast.error("Please enter a template name");
+      showToast.error('Please enter a template name');
       return;
     }
     setShowCreateTemplate(false);
-    showToast.success("Template saved successfully!");
+    showToast.success('Template saved successfully!');
   };
 
   const handleSendTestEmail = () => {
     if (!testEmail) {
-      showToast.error("Please enter a test email address");
+      showToast.error('Please enter a test email address');
       return;
     }
     setShowTestEmail(false);
@@ -117,12 +97,10 @@ Looking forward to hearing from you.`,
 
   const handleSendInvite = () => {
     if (!selectedTemplate && !body) {
-      showToast.error("Please select a template or enter email content");
+      showToast.error('Please select a template or enter email content');
       return;
     }
-    showToast.success(
-      `Invite sent to ${candidate.name} via ${selectedChannel}`
-    );
+    showToast.success(`Invite sent to ${candidate.full_name} via ${selectedChannel}`);
     onBack();
   };
 
@@ -132,7 +110,7 @@ Looking forward to hearing from you.`,
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <button
+            <button 
               onClick={onBack}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
@@ -144,9 +122,7 @@ Looking forward to hearing from you.`,
 
         {/* Template Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Template
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Select Template</label>
           <div className="relative">
             <select
               value={selectedTemplate}
@@ -154,16 +130,10 @@ Looking forward to hearing from you.`,
               className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
             >
               <option value="">Choose a template</option>
-              <option value="create-new" className="font-bold text-blue-600">
-                + Create New Template
-              </option>
+              <option value="create-new" className="font-bold text-blue-600">+ Create New Template</option>
               {templates.map((template) => (
-                <option
-                  key={template.id}
-                  value={template.id}
-                  className="hover:bg-blue-300"
-                >
-                  {template.name}
+                <option key={template.id} value={template.id} className="hover:bg-blue-300">
+                  {template.name} 
                 </option>
               ))}
             </select>
@@ -173,9 +143,7 @@ Looking forward to hearing from you.`,
 
         {/* From Email */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            From
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">From</label>
           <input
             type="email"
             value="shivanshi@weekday.works"
@@ -186,9 +154,7 @@ Looking forward to hearing from you.`,
 
         {/* Subject */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Subject
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
           <input
             type="text"
             value={subject}
@@ -200,10 +166,8 @@ Looking forward to hearing from you.`,
 
         {/* Body */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Body
-          </label>
-
+          <label className="block text-sm font-medium text-gray-700 mb-2">Body</label>
+          
           {/* Toolbar */}
           <div className="border border-gray-300 rounded-t-lg bg-gray-50 px-3 py-2 flex items-center space-x-2">
             <select className="text-sm border-none bg-transparent">
@@ -235,10 +199,10 @@ Looking forward to hearing from you.`,
             onChange={(e) => setBody(e.target.value)}
             placeholder="Enter email body..."
             className={`text-sm w-full px-3 py-2 border-l border-r border-b border-gray-300 shadow-xl rounded-b-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${
-              isBodyExpanded ? "h-80" : "h-40"
+              isBodyExpanded ? 'h-80' : 'h-40'
             }`}
           />
-
+          
           {!isBodyExpanded && body.length > 150 && (
             <div className="flex justify-center">
               <button
@@ -249,7 +213,7 @@ Looking forward to hearing from you.`,
               </button>
             </div>
           )}
-
+          
           {isBodyExpanded && (
             <div className="flex justify-center">
               <button
@@ -264,22 +228,12 @@ Looking forward to hearing from you.`,
 
         {/* Channel Selection */}
         <div>
-          <p className="text-sm text-gray-600 mb-2">
-            The following will be sent to candidate via
-          </p>
+          <p className="text-sm text-gray-600 mb-2">The following will be sent to candidate via</p>
           <div className="flex justify-between">
             {[
-              { name: "Email", icon: Mail, color: "bg-blue-100 text-blue-800" },
-              {
-                name: "WhatsApp",
-                icon: MessageSquare,
-                color: "bg-green-100 text-green-800",
-              },
-              {
-                name: "Call",
-                icon: Phone,
-                color: "bg-orange-100 text-orange-800",
-              },
+              { name: 'Email', icon: Mail, color: 'bg-blue-100 text-blue-800' },
+              { name: 'WhatsApp', icon: MessageSquare, color: 'bg-green-100 text-green-800' },
+              { name: 'Call', icon: Phone, color: 'bg-orange-100 text-orange-800' }
             ].map((channel) => (
               <button
                 key={channel.name}
@@ -287,7 +241,7 @@ Looking forward to hearing from you.`,
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   selectedChannel === channel.name
                     ? channel.color
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 <channel.icon className="w-4 h-4 inline mr-1" />
@@ -305,10 +259,10 @@ Looking forward to hearing from you.`,
               className="text-blue-600 text-xs hover:bg-blue-50 transition-colors flex items-center justify-end"
             >
               <Settings className="w-4 h-4 mr-2" />
-              View Advance Options
+              View Advance Options 
             </button>
           </div>
-
+          
           <div className="flex justify-between space-x-8">
             <button
               onClick={() => setShowTestEmail(true)}
@@ -316,7 +270,7 @@ Looking forward to hearing from you.`,
             >
               Send test email
             </button>
-
+  
             <button
               onClick={handleSendInvite}
               className="w-full px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center font-medium"
@@ -331,11 +285,11 @@ Looking forward to hearing from you.`,
       {/* Create Template Slide Panel */}
       {showCreateTemplate && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-          <div
+          <div 
             className={`bg-white h-full transform transition-transform duration-300 ease-out ${
-              showCreateTemplate ? "translate-x-0" : "translate-x-full"
+              showCreateTemplate ? 'translate-x-0' : 'translate-x-full'
             }`}
-            style={{ width: "400px" }}
+            style={{ width: '400px' }}
           >
             <div className="p-6 h-full flex flex-col">
               <div className="flex items-center justify-between mb-6">
@@ -347,12 +301,10 @@ Looking forward to hearing from you.`,
                   <X className="w-4 h-4" />
                 </button>
               </div>
-
+              
               <div className="space-y-4 flex-1">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Template Name
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Template Name</label>
                   <input
                     type="text"
                     value={templateName}
@@ -363,9 +315,7 @@ Looking forward to hearing from you.`,
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Subject
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
                   <input
                     type="text"
                     placeholder="Enter email subject"
@@ -374,16 +324,14 @@ Looking forward to hearing from you.`,
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Body
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Body</label>
                   <textarea
                     placeholder="Enter email body..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none h-40"
                   />
                 </div>
               </div>
-
+              
               <div className="flex space-x-3 pt-4 border-t border-gray-200">
                 <button
                   onClick={() => setShowCreateTemplate(false)}
@@ -406,11 +354,11 @@ Looking forward to hearing from you.`,
       {/* Test Email Slide Panel */}
       {showTestEmail && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-          <div
+          <div 
             className={`bg-white h-full transform transition-transform duration-300 ease-out ${
-              showTestEmail ? "translate-x-0" : "translate-x-full"
+              showTestEmail ? 'translate-x-0' : 'translate-x-full'
             }`}
-            style={{ width: "400px" }}
+            style={{ width: '400px' }}
           >
             <div className="p-6 h-full flex flex-col">
               <div className="flex items-center justify-between mb-6">
@@ -422,12 +370,10 @@ Looking forward to hearing from you.`,
                   <X className="w-4 h-4" />
                 </button>
               </div>
-
+              
               <div className="space-y-4 flex-1">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Test Email Address
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Test Email Address</label>
                   <input
                     type="email"
                     value={testEmail}
@@ -437,7 +383,7 @@ Looking forward to hearing from you.`,
                   />
                 </div>
               </div>
-
+              
               <div className="flex space-x-3 pt-4 border-t border-gray-200">
                 <button
                   onClick={() => setShowTestEmail(false)}
@@ -460,11 +406,11 @@ Looking forward to hearing from you.`,
       {/* Advance Options Slide Panel */}
       {showAdvanceOptions && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-          <div
+          <div 
             className={`bg-white h-full transform transition-transform duration-300 ease-out ${
-              showAdvanceOptions ? "translate-x-0" : "translate-x-full"
+              showAdvanceOptions ? 'translate-x-0' : 'translate-x-full'
             }`}
-            style={{ width: "400px" }}
+            style={{ width: '400px' }}
           >
             <div className="p-6 h-full flex flex-col">
               <div className="flex items-center justify-between mb-6">
@@ -476,13 +422,11 @@ Looking forward to hearing from you.`,
                   <X className="w-4 h-4" />
                 </button>
               </div>
-
+              
               <div className="space-y-4 flex-1">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Send Delay
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Send Delay</label>
                     <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                       <option>Immediate</option>
                       <option>1 hour</option>
@@ -491,9 +435,7 @@ Looking forward to hearing from you.`,
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Priority
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
                     <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                       <option>Normal</option>
                       <option>High</option>
@@ -501,32 +443,22 @@ Looking forward to hearing from you.`,
                     </select>
                   </div>
                 </div>
-
+                
                 <div>
                   <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">
-                      Track email opens
-                    </span>
+                    <input type="checkbox" className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500" />
+                    <span className="ml-2 text-sm text-gray-700">Track email opens</span>
                   </label>
                 </div>
-
+                
                 <div>
                   <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">
-                      Track link clicks
-                    </span>
+                    <input type="checkbox" className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500" />
+                    <span className="ml-2 text-sm text-gray-700">Track link clicks</span>
                   </label>
                 </div>
               </div>
-
+              
               <div className="flex space-x-3 pt-4 border-t border-gray-200">
                 <button
                   onClick={() => setShowAdvanceOptions(false)}
