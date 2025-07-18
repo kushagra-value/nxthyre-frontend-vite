@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, Briefcase, Building2, Clock10, MapPin, GraduationCap, ChevronDown, ChevronUp, Filter, DollarSign, Award, Users, Star, History, ChevronLeft, ChevronRight, CircleEllipsis } from 'lucide-react';
+import { debounce } from 'lodash';
+import { candidateService, CandidateListItem } from "../services/candidateService";
 import { debounce } from 'lodash';
 import { candidateService, CandidateListItem } from "../services/candidateService";
 
@@ -38,6 +41,8 @@ interface FiltersSidebarProps {
     hasPortfolio: boolean;
   };
   onFiltersChange: (filters: any) => void;
+  setCandidates: (candidates: CandidateListItem[]) => void;
+  candidates: CandidateListItem[];
   setCandidates: (candidates: CandidateListItem[]) => void;
   candidates: CandidateListItem[];
 }
@@ -113,12 +118,19 @@ interface FilterMenuProps {
 }
 
 const FilterMenu: React.FC<FilterMenuProps> = ({ filters, updateFilters }) => {
+interface FilterMenuProps {
+  filters: FiltersSidebarProps['filters'];
+  updateFilters: (key: string, value: any) => void;
+}
+
+const FilterMenu: React.FC<FilterMenuProps> = ({ filters, updateFilters }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   useEffect(() => {
+    const handleClickOutside = (event:any) => {
     const handleClickOutside = (event:any) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsMenuOpen(false);
@@ -180,6 +192,21 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ filters, updateFilters }) => {
   );
 };
 
+type SectionKey =
+  | 'keywords'
+  | 'experience'
+  | 'totalExp'
+  | 'location'
+  | 'companies'
+  | 'salary'
+  | 'skills'
+  | 'notice'
+  | 'colleges'
+  | 'spotlight'
+  | 'moreFilters';
+
+const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChange, setCandidates, candidates }) => {
+  const [expandedSections, setExpandedSections] = useState<Record<SectionKey, boolean>>({
 type SectionKey =
   | 'keywords'
   | 'experience'
@@ -318,9 +345,12 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
   const clearAllFilters = () => {
     onFiltersChange({
       keywords: "",
+      keywords: "",
       booleanSearch: false,
       semanticSearch: false,
       selectedCategories: [],
+      minExperience: "",
+      maxExperience: "",
       minExperience: "",
       maxExperience: "",
       funInCurrentCompany: false,
@@ -329,7 +359,19 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
       city: "",
       country: "",
       location: "",
+      minTotalExp: "",
+      maxTotalExp: "",
+      city: "",
+      country: "",
+      location: "",
       selectedSkills: [],
+      skillLevel: "",
+      noticePeriod: "",
+      companies: "",
+      industries: "",
+      minSalary: "",
+      maxSalary: "",
+      colleges: "",
       skillLevel: "",
       noticePeriod: "",
       companies: "",
@@ -347,6 +389,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
       hasLinkedIn: false,
       hasBehance: false,
       hasTwitter: false,
+      hasPortfolio: false,
       hasPortfolio: false,
     });
   };
@@ -781,6 +824,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
         {/* Apply Filters */}
         <div className="mt-2 border border-blue-400 rounded-lg">
           <button 
+            onClick={() => debouncedFetchCandidates(filters)}
             onClick={() => debouncedFetchCandidates(filters)}
             className="w-full px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center justify-center"
           >

@@ -29,6 +29,7 @@ interface Candidate {
 
 interface TemplateSelectorProps {
   candidate: CandidateListItem;
+  candidate: CandidateListItem;
   onBack: () => void;
 }
 
@@ -102,6 +103,7 @@ Looking forward to hearing from you.`,
       setSelectedTemplate(templateId);
       setSubject(template.subject);
       setBody(template.body.replace('[candidatename]', candidate.full_name));
+      setBody(template.body.replace('[candidatename]', candidate.full_name));
     }
   };
 
@@ -128,6 +130,7 @@ Looking forward to hearing from you.`,
       showToast.error("Please select a template or enter email content");
       return;
     }
+    showToast.success(`Invite sent to ${candidate.full_name} via ${selectedChannel}`);
     showToast.success(`Invite sent to ${candidate.full_name} via ${selectedChannel}`);
     onBack();
   };

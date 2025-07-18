@@ -6,12 +6,15 @@ import { useAuth } from "./hooks/useAuth";
 import { authService } from "./services/authService";
 import { creditService } from "./services/creditService";
 import { jobPostService } from "./services/jobPostService";
+import { creditService } from "./services/creditService";
+import { jobPostService } from "./services/jobPostService";
 import Header from "./components/Header";
 import FiltersSidebar from "./components/FiltersSidebar";
 import CandidatesMain from "./components/CandidatesMain";
 import CandidateDetail from "./components/CandidateDetail";
 import TemplateSelector from "./components/TemplateSelector";
 import CreateJobRoleModal from "./components/CreateJobRoleModal";
+import EditJobRoleModal from "./components/EditJobRoleModal";
 import EditJobRoleModal from "./components/EditJobRoleModal";
 import EditTemplateModal from "./components/EditTemplateModal";
 import CategoryDropdown from "./components/CategoryDropdown";
@@ -57,6 +60,7 @@ function MainApp() {
 
   // Authentication state
   const [credits, setCredits] = useState<number>(0);
+  const [credits, setCredits] = useState<number>(0);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showAuthApp, setShowAuthApp] = useState(false);
   const [authFlow, setAuthFlow] = useState("login");
@@ -73,10 +77,13 @@ function MainApp() {
 
   // Existing state
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateListItem | null>(
+  const [selectedCandidate, setSelectedCandidate] = useState<CandidateListItem | null>(
     null
   );
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
   const [showCreateJobRole, setShowCreateJobRole] = useState(false);
+  const [showEditJobRole, setShowEditJobRole] = useState(false);
+  const [editingJobId, setEditingJobId] = useState<number | null>(null);
   const [showEditJobRole, setShowEditJobRole] = useState(false);
   const [editingJobId, setEditingJobId] = useState<number | null>(null);
   const [showEditTemplate, setShowEditTemplate] = useState(false);
@@ -87,8 +94,11 @@ function MainApp() {
   const [searchTerm, setSearchTerm] = useState("");
   const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
   const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
+  const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
+  const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
     null
   );
+  const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
 
   // Share Pipelines state
@@ -180,8 +190,94 @@ function MainApp() {
     }
   }, [isAuthenticated]);
 
+  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
+  const [loadingCandidates, setLoadingCandidates] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+
+  const fetchCategories = async () => {
+    setLoadingCategories(true);
+    try {
+      const jobs = await jobPostService.getJobs();
+      const mappedCategories: Category[] = jobs.map(job => ({
+        id: job.id,
+        name: job.title,
+        count: 0,
+      }));
+      setCategories(mappedCategories);
+      if (mappedCategories.length > 0 && activeCategoryId === null) {
+        setActiveCategoryId(mappedCategories[0].id);
+      }
+    } catch (error) {
+      showToast.error("Failed to fetch job categories");
+      console.error("Error fetching categories:", error);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCategories();
+    }
+  }, [isAuthenticated]);
+
 
   // Example categories data; replace with your actual data source as needed
+  // const categories = [
+  //   { name: "Head Of Finance", count: 12 },
+  //   { name: "Engineering Manager", count: 8 },
+  //   { name: "Product Designer", count: 5 },
+  //   { name: "Marketing Lead", count: 7 },
+  //   // Add more categories as needed
+  // ];
+  const page=1;
+  const candidatesPerPage= 5;
+
+  useEffect(() => {
+    const fetchCreditBalance = async () => {
+      try {
+        const data = await creditService.getCreditBalance();
+        setCredits(data.credit_balance);
+      } catch (error) {
+        console.error("Error fetching credit balance:", error);
+        showToast.error("Failed to fetch credit balance");
+      }
+    };
+    if (isAuthenticated) {
+      fetchCreditBalance();
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (isAuthenticated && !searchTerm && !Object.values(filters).some(val => val)) {
+      const fetchInitialCandidates = async () => {
+        setLoadingCandidates(true);
+        try {
+          const { results, count } = await candidateService.getCandidates({
+              page,
+              page_size: candidatesPerPage,
+              tab: activeTab,
+            });
+          console.log("Fetched initial candidates:", results);
+          setCandidates(results);
+          showToast.error("Initial candidates loaded successfully");
+          console.log("Total candidates fetched:", count);
+          console.log("Candidates fetched:", candidates);
+          if (count > 0 && !selectedCandidate) {
+            setSelectedCandidate(results[0]);
+          }
+        } catch (error) {
+          console.error("Error fetching initial candidates:", error);
+          showToast.error("Failed to load initial candidates");
+        } finally {
+          setLoadingCandidates(false);
+        }
+      };
+      fetchInitialCandidates();
+    }
+  }, [isAuthenticated, activeTab, selectedCandidate]);
   // const categories = [
   //   { name: "Head Of Finance", count: 12 },
   //   { name: "Engineering Manager", count: 8 },
@@ -280,6 +376,16 @@ function MainApp() {
     }
   };
   
+  const deductCredits = async () => {
+    try {
+      const data = await creditService.getCreditBalance();
+      setCredits(data.credit_balance);
+    } catch (error) {
+      console.error("Error fetching updated credit balance:", error);
+      showToast.error("Failed to update credit balance");
+    }
+  };
+  
   const handleLogoutRequest = () => {
     setShowLogoutModal(true);
   };
@@ -362,7 +468,7 @@ function MainApp() {
   const handleLinkedInAuthSuccess = (user: any) => {
     setCurrentUser(user);
     if (userStatus?.is_onboarded) {
-      navigate("/"); // Redirect to dashboard if onboarded
+      navigate("/"); 
     } else {
       navigate("/workspaces-org"); // Redirect to onboarding
     }
@@ -424,6 +530,40 @@ function MainApp() {
       showToast.error('Failed to delete job role');
     }
     setShowDeleteModal(null);
+  const handleEditJobRole = async (jobId: number) => {
+    try {
+      const jobs = await jobPostService.getJobs();
+      const job = jobs.find(j => j.id === jobId);
+      if (job) {
+        setEditingJobId(job.id);
+        setShowEditJobRole(true);
+      } else {
+        showToast.error('Job not found');
+      }
+    } catch (error) {
+      showToast.error('Failed to fetch job details');
+    }
+    setShowCategoryActions(null);
+  };
+
+  const handleDeleteJobRole = async (jobId: number) => {
+    try {
+      const jobs = await jobPostService.getJobs();
+      const job = jobs.find(j => j.id === jobId);
+      if (job) {
+        await jobPostService.deleteJob(job.id);
+        await fetchCategories();
+        showToast.success(`Successfully deleted job with job id ${jobId}`);
+        if (activeCategoryId === jobId) {
+           setActiveCategoryId(categories[0]?.id || null);
+        }
+      } else {
+        showToast.error('Job not found');
+      }
+    } catch (error) {
+      showToast.error('Failed to delete job role');
+    }
+    setShowDeleteModal(null);
     setShowCategoryActions(null);
   };
 
@@ -433,9 +573,21 @@ function MainApp() {
       setEditingTemplate(job.name);
       setShowEditTemplate(true);
     }
+  const handleEditTemplate = (jobId: number) => {
+    const job = categories.find(cat => cat.id === jobId);
+    if (job) {
+      setEditingTemplate(job.name);
+      setShowEditTemplate(true);
+    }
     setShowCategoryActions(null);
   };
 
+  const handleSharePipelines = (jobId: number) => {
+    const job = categories.find(cat => cat.id === jobId);
+    if (job) {
+    const pipelineId = job.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    window.location.href = `/pipelines/${pipelineId}` 
+    }
   const handleSharePipelines = (jobId: number) => {
     const job = categories.find(cat => cat.id === jobId);
     if (job) {
@@ -453,24 +605,37 @@ function MainApp() {
       setShowPipelineSharePage(true);
       window.history.pushState({}, "", `/pipelines/${pipelineId}`);
     }
+    const job = categories.find(cat => cat.id === activeCategoryId);
+     if (job) {
+      const pipelineId = job.id.toString();
+      setCurrentPipelineId(pipelineId);
+      setShowPipelineSharePage(true);
+      window.history.pushState({}, "", `/pipelines/${pipelineId}`);
+    }
   };
 
+  const handleCategoryAction = (action: string, jobId: number) => {
   const handleCategoryAction = (action: string, jobId: number) => {
     setShowCategoryActions(null);
     switch (action) {
       case "edit-job":
         handleEditJobRole(categories.find(cat => cat.id === jobId)?.id || 0);
+        handleEditJobRole(categories.find(cat => cat.id === jobId)?.id || 0);
         break;
       case "edit-template":
+        handleEditTemplate(jobId);
         handleEditTemplate(jobId);
         break;
       case "share-pipelines":
         handleSharePipelines(jobId);
+        handleSharePipelines(jobId);
         break;
       case "archive":
         showToast.success(`Archived ${jobId}`);
+        showToast.success(`Archived ${jobId}`);
         break;
       case "delete":
+        setShowDeleteModal(jobId);
         setShowDeleteModal(jobId);
         break;
     }
@@ -603,15 +768,19 @@ function MainApp() {
                         {categories.map((category) => (
                           <div
                             key={category.id}
+                            key={category.id}
                             className="relative"
                             onMouseEnter={() =>
+                              setHoveredCategory(category.id)
                               setHoveredCategory(category.id)
                             }
                             onMouseLeave={() => setHoveredCategory(null)}
                           >
                             <button
                               onClick={() => setActiveCategoryId(category.id)}
+                              onClick={() => setActiveCategoryId(category.id)}
                               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                                activeCategoryId === category.id
                                 activeCategoryId === category.id
                                   ? "bg-blue-100 text-blue-700 shadow-sm"
                                   : "text-gray-600 hover:bg-gray-100"
@@ -620,6 +789,7 @@ function MainApp() {
                               {category.name}
                               <span
                                 className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                                  activeCategoryId === category.id
                                   activeCategoryId === category.id
                                     ? "bg-blue-200 text-blue-800"
                                     : "bg-gray-200 text-gray-600"
@@ -630,11 +800,14 @@ function MainApp() {
                             </button>
                             {hoveredCategory === category.id && (
                               <div className="absolute top-full left-0 mt-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                            {hoveredCategory === category.id && (
+                              <div className="absolute top-full left-0 mt-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                                 <div className="py-1">
                                   <button
                                     onClick={() =>
                                       handleCategoryAction(
                                         "edit-job",
+                                        category.id
                                         category.id
                                       )
                                     }
@@ -648,6 +821,7 @@ function MainApp() {
                                       handleCategoryAction(
                                         "edit-template",
                                         category.id
+                                        category.id
                                       )
                                     }
                                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
@@ -659,6 +833,7 @@ function MainApp() {
                                     onClick={() =>
                                       handleCategoryAction(
                                         "share-pipelines",
+                                        category.id
                                         category.id
                                       )
                                     }
@@ -672,6 +847,7 @@ function MainApp() {
                                       handleCategoryAction(
                                         "archive",
                                         category.id
+                                        category.id
                                       )
                                     }
                                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
@@ -683,6 +859,7 @@ function MainApp() {
                                     onClick={() =>
                                       handleCategoryAction(
                                         "delete",
+                                        category.id
                                         category.id
                                       )
                                     }
@@ -711,6 +888,7 @@ function MainApp() {
                             onClose={() => setShowCategoryDropdown(false)}
                             onEditJobRole={handleEditJobRole}
                             onEditTemplate={handleEditTemplate}
+                            onDeleteJob={(jobId) => setShowDeleteModal(jobId)}
                             onDeleteJob={(jobId) => setShowDeleteModal(jobId)}
                           />
                         </div>
@@ -797,6 +975,14 @@ function MainApp() {
                     }}
                     jobId={editingJobId || 0}
                   />
+                  <EditJobRoleModal
+                    isOpen={showEditJobRole}
+                    onClose={() => {
+                      setShowEditJobRole(false);
+                      setEditingJobId(null);
+                    }}
+                    jobId={editingJobId || 0}
+                  />
                   <EditTemplateModal
                     isOpen={showEditTemplate}
                     onClose={() => setShowEditTemplate(false)}
@@ -809,6 +995,7 @@ function MainApp() {
                   <SharePipelinesModal
                     isOpen={showShareModal}
                     onClose={() => setShowShareModal(false)}
+                    jobRole={categories.find(cat => cat.id === activeCategoryId)?.name || ""}
                     jobRole={categories.find(cat => cat.id === activeCategoryId)?.name || ""}
                   />
                   {showLogoutModal && (
@@ -837,6 +1024,37 @@ function MainApp() {
                               className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                             >
                               Sign Out
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {showDeleteModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
+                      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                        <div className="text-center">
+                          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Trash2 className="w-6 h-6 text-red-600" />
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            Confirm Delete Job
+                          </h3>
+                          <p className="text-gray-600 mb-6">
+                            Are you sure you want to delete {showDeleteModal}? This action cannot be undone.
+                          </p>
+                          <div className="flex space-x-3">
+                            <button
+                              onClick={() => setShowDeleteModal(null)}
+                              className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => handleDeleteJobRole(showDeleteModal)}
+                              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                            >
+                              Delete
                             </button>
                           </div>
                         </div>

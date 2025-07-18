@@ -92,6 +92,7 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <>
       
+      
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-full mx-auto px-7 py-1.5">
           <div className="flex items-center justify-between">
@@ -116,10 +117,14 @@ const Header: React.FC<HeaderProps> = ({
                     placeholder="LinkedIn Contact Finder..."
                     value=""
                     onChange={() => {}}
+                    value=""
+                    onChange={() => {}}
                     className="bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none w-40"
                   />
                 </div>
               )}
+
+              
 
               
 
@@ -131,6 +136,14 @@ const Header: React.FC<HeaderProps> = ({
                 >
                   Create Role
                 </button>
+              )}
+              {isAuthenticated && user && (
+              <div className="flex items-center gap-1 bg-gray-100 px-4 py-2 rounded-lg">
+                <span className="text-xs">🪙</span>
+                <p className="text-xs text-gray-500">
+                  <span className="font-semibold">{credits}</span>
+                </p>
+              </div>
               )}
               {isAuthenticated && user && (
               <div className="flex items-center gap-1 bg-gray-100 px-4 py-2 rounded-lg">
@@ -158,8 +171,11 @@ const Header: React.FC<HeaderProps> = ({
                         {user.fullName || "User"}
                       </p>
                       <div className="flex gap-2">
+                      <div className="flex gap-2">
                       <p className="text-xs text-gray-500">
                         {user.role || "Member"}
+                      </p> 
+                      </div>
                       </p> 
                       </div>
                     </div>
@@ -177,6 +193,7 @@ const Header: React.FC<HeaderProps> = ({
                           <p className="text-xs\ text-gray-500">
                             {user.email || "user@example.com"}
                           </p>
+                          
                           
                         </div>
 
