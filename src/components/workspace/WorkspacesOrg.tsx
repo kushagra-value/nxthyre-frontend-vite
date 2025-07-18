@@ -43,7 +43,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   setSearchTerm: propSetSearchTerm,
   onCreateRole: propOnCreateRole,
 }) => {
-  const { user, userStatus, isAuthenticated, logout } = useAuthContext();
+  const { user, userStatus, isAuthenticated, signOut } = useAuthContext();
   const [activeTab, setActiveTab] = useState("workspaces");
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false); // Add logout modal
@@ -158,7 +158,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   const handleLogoutRequest = async () => {
     setShowLogoutModal(false);
     try {
-      await logout();
+      await signOut();
       showToast.success("Successfully logged out");
       navigate("/");
     } catch (error) {

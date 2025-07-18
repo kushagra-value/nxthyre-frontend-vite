@@ -7,8 +7,7 @@ interface AuthContextType {
   user: User | null;
   userStatus: any;
   loading: boolean;
-  login: (user: User) => void;
-  logout: () => void;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,6 +22,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     userStatus,
     isAuthenticated,
     loading,
+    signOut,
   } = useAuth();
 
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
@@ -49,21 +49,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [isAuthenticated, userStatus, firebaseUser]);
 
-  const login = (user: User) => {
-    setCurrentUser(user);
-  };
-
-  const logout = () => {
-    setCurrentUser(null);
-  };
-
   const value = {
     isAuthenticated,
     user: currentUser,
     userStatus,
     loading,
-    login,
-    logout,
+    signOut,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

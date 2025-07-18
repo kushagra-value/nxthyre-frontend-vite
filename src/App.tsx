@@ -40,6 +40,7 @@ function MainApp() {
     user: firebaseUser,
     userStatus,
     isAuthenticated,
+    signOut,
     isOnboarded,
     loading: authLoading,
   } = useAuth();
@@ -266,43 +267,10 @@ function MainApp() {
     setShowLogoutModal(true);
   };
 
-  const handleLogoutConfirm = () => {
+  const handleLogoutConfirm = async () => {
     setShowLogoutModal(false);
-    handleLogout();
-  };
-
-  const handleLogoutCancel = () => {
-    setShowLogoutModal(false);
-  };
-
-  const handleLogin = () => {
-    setAuthFlow("login");
-    setShowAuthApp(true);
-  };
-
-  const handleSignup = () => {
-    setAuthFlow("signup");
-    setShowAuthApp(true);
-  };
-
-  const handleAuthSuccess = (user: any) => {
-    setCurrentUser(user);
-    setShowAuthApp(false);
-    navigate("/"); // Redirect to dashboard after auth...
-  };
-
-  const handleLinkedInAuthSuccess = (user: any) => {
-    setCurrentUser(user);
-    if (userStatus?.is_onboarded) {
-      navigate("/"); // Redirect to dashboard if onboarded
-    } else {
-      navigate("/workspaces-org"); // Redirect to onboarding
-    }
-  };
-
-  const handleLogout = async () => {
     try {
-      await authService.signOut();
+      await signOut();
       setCurrentUser(null);
       setShowAuthApp(false);
       setShowSettings(false);
@@ -346,10 +314,39 @@ function MainApp() {
         hasPortfolio: false,
       });
       showToast.success("Successfully logged out");
-      navigate("/"); // Redirect to root after logout
+      navigate("/");
     } catch (error: any) {
       console.error("Logout error:", error);
       showToast.error("Failed to logout");
+    }
+  };
+
+  const handleLogoutCancel = () => {
+    setShowLogoutModal(false);
+  };
+
+  const handleLogin = () => {
+    setAuthFlow("login");
+    setShowAuthApp(true);
+  };
+
+  const handleSignup = () => {
+    setAuthFlow("signup");
+    setShowAuthApp(true);
+  };
+
+  const handleAuthSuccess = (user: any) => {
+    setCurrentUser(user);
+    setShowAuthApp(false);
+    navigate("/"); // Redirect to dashboard after auth...
+  };
+
+  const handleLinkedInAuthSuccess = (user: any) => {
+    setCurrentUser(user);
+    if (userStatus?.is_onboarded) {
+      navigate("/"); // Redirect to dashboard if onboarded
+    } else {
+      navigate("/workspaces-org"); // Redirect to onboarding
     }
   };
 
@@ -509,7 +506,7 @@ function MainApp() {
               setShowAuthApp(false);
               navigate("/");
             }}
-            onLogout={handleLogout}
+            onLogout={handleLogoutConfirm}
           />
         }
       />

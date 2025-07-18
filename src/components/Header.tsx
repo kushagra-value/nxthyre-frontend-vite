@@ -23,7 +23,7 @@ const Header: React.FC<HeaderProps> = ({
   setSearchTerm,
   onCreateRole,
 }) => {
-  const { isAuthenticated, user, logout } = useAuthContext();
+  const { isAuthenticated, user, signOut } = useAuthContext();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false); // Add logout modal state
   const navigate = useNavigate();
@@ -47,7 +47,7 @@ const Header: React.FC<HeaderProps> = ({
   const handleLogoutRequest = async () => {
     setShowLogoutModal(false); // Close modal
     try {
-      await logout(); // Await logout to ensure completion
+      await signOut(); // Use signOut instead of logout
       showToast.success("Successfully logged out");
       navigate("/"); // Redirect to login page
     } catch (error) {
