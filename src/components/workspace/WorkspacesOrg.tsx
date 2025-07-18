@@ -13,7 +13,7 @@ import {
   Edit,
   Trash2,
 } from "lucide-react";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuthContext } from "../../context/AuthContext";
 import { organizationService } from "../../services/organizationService";
 import { showToast } from "../../utils/toast";
 
@@ -40,12 +40,12 @@ interface WorkspacesOrgProps {
 
 const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   onNavigate,
-  user,
   onLogout,
   searchTerm: propSearchTerm,
   setSearchTerm: propSetSearchTerm,
   onCreateRole: propOnCreateRole,
 }) => {
+  const { user, userStatus, isAuthenticated } = useAuthContext(); // Use AuthContext
   const [activeTab, setActiveTab] = useState("workspaces");
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [localSearchTerm, setLocalSearchTerm] = useState(propSearchTerm || "");
@@ -61,12 +61,6 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   const [editFormData, setEditFormData] = useState<any>({});
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const {
-    user: firebaseUser,
-    userStatus,
-    isAuthenticated,
-    refreshUserStatus,
-  } = useAuth();
   const [onboardingStatus, setOnboardingStatus] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -132,16 +126,16 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   }, [isAuthenticated, userStatus]);
 
   // Provide default values if user data is missing
-  const safeUser = {
-    id: firebaseUser?.uid || "temp-user",
-    fullName: userStatus?.full_name || user?.fullName || "User",
-    email: userStatus?.email || user?.email || "user@example.com",
-    role: userStatus?.roles?.[0]?.name?.toLowerCase() || user?.role || "team",
-    organizationId:
-      userStatus?.organization?.id?.toString() || user?.organizationId || null,
-    workspaceIds: user?.workspaceIds || [],
-    ...user,
-  };
+  // const safeUser = {
+  //   id: firebaseUser?.uid || "temp-user",
+  //   fullName: userStatus?.full_name || user?.fullName || "User",
+  //   email: userStatus?.email || user?.email || "user@example.com",
+  //   role: userStatus?.roles?.[0]?.name?.toLowerCase() || user?.role || "team",
+  //   organizationId:
+  //     userStatus?.organization?.id?.toString() || user?.organizationId || null,
+  //   workspaceIds: user?.workspaceIds || [],
+  //   ...user,
+  // };
 
   if (loading) {
     return (
@@ -261,11 +255,11 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100"
                   >
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                      <User className="w-4 h-4 text-white" />
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                      {user?.fullName?.[0] || "U"} {/* Use user's initial */}
                     </div>
                     <span className="text-sm font-medium text-gray-700">
-                      {safeUser.fullName}
+                      {user?.fullName || "User"}
                     </span>
                     <ChevronDown className="w-4 h-4 text-gray-400" />
                   </button>
@@ -274,10 +268,10 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                       <div className="py-1">
                         <div className="px-4 py-2 border-b border-gray-100">
                           <p className="text-sm font-medium text-gray-900">
-                            {safeUser.fullName}
+                            {user?.fullName || "User"}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {safeUser.email}
+                            {user?.email || "user@example.com"}
                           </p>
                         </div>
                         <button
@@ -627,7 +621,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                   type="text"
                   value={editFormData.name || ""}
                   onChange={(e) =>
-                    setEditFormData((prev) => ({
+                    setEditFormData((prev: any) => ({
                       ...prev,
                       name: e.target.value,
                     }))
@@ -645,7 +639,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                       type="text"
                       value={editFormData.industry || ""}
                       onChange={(e) =>
-                        setEditFormData((prev) => ({
+                        setEditFormData((prev: any) => ({
                           ...prev,
                           industry: e.target.value,
                         }))
@@ -661,7 +655,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                       type="url"
                       value={editFormData.website || ""}
                       onChange={(e) =>
-                        setEditFormData((prev) => ({
+                        setEditFormData((prev: any) => ({
                           ...prev,
                           website: e.target.value,
                         }))
@@ -676,7 +670,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                     <textarea
                       value={editFormData.description || ""}
                       onChange={(e) =>
-                        setEditFormData((prev) => ({
+                        setEditFormData((prev: any) => ({
                           ...prev,
                           description: e.target.value,
                         }))
@@ -713,3 +707,6 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
 };
 
 export default WorkspacesOrg;
+function refreshUserStatus() {
+  throw new Error("Function not implemented.");
+}

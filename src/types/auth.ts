@@ -1,9 +1,9 @@
 export interface User {
-  id: string;
+  id: string | undefined;
   fullName: string;
   email: string;
-  role: 'admin' | 'team' | 'owner';
-  organizationId?: string;
+  role: string;
+  organizationId?: string | undefined;
   workspaceIds: string[];
   isVerified: boolean;
   createdAt: string;
@@ -31,7 +31,7 @@ export interface JoinRequest {
   id: string;
   userId: string;
   workspaceId: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   createdAt: string;
 }
 

@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext"; // Adjust path
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./hooks/useAuth";
 import { authService } from "./services/authService";
@@ -19,6 +20,7 @@ import SharePipelinesLoader from "./components/SharePipelinesLoader";
 import SharePipelinesModal from "./components/SharePipelinesModal";
 import ShareableProfile from "./components/ShareableProfile";
 import PipelineSharePage from "./components/PipelineSharePage";
+import { User } from "./types/auth"; // Adjust path
 import { candidates, Candidate } from "./data/candidates";
 import {
   ChevronDown,
@@ -31,17 +33,6 @@ import {
   Share2,
 } from "lucide-react";
 import { showToast } from "./utils/toast";
-
-interface User {
-  id: string | undefined;
-  fullName: string;
-  email: string;
-  role: string;
-  organizationId: string | undefined;
-  workspaceIds: string[];
-  isVerified: boolean;
-  createdAt: string;
-}
 
 function MainApp() {
   const navigate = useNavigate();
@@ -511,14 +502,6 @@ function MainApp() {
                       searchTerm={searchTerm}
                       setSearchTerm={setSearchTerm}
                       onCreateRole={handleCreateJobRole}
-                      isAuthenticated={isAuthenticated}
-                      user={currentUser}
-                      onLogin={handleLogin}
-                      onSignup={handleSignup}
-                      onLogout={handleLogout}
-                      onWorkspacesOrg={handleWorkspacesOrg}
-                      onSettings={handleSettingsClick}
-                      onShowLogoutModal={handleLogoutRequest}
                     />
                   </div>
 
@@ -776,8 +759,10 @@ function MainApp() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <MainApp />
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <MainApp />
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
