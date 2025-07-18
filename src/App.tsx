@@ -92,10 +92,10 @@ function MainApp() {
   const [activeTab, setActiveTab] = useState("outbound");
   const [searchTerm, setSearchTerm] = useState("");
   const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
-  const [showCategoryActions, setShowCategoryActions] = useState<string | null>(
+  const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
     null
   );
-  const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
 
   // Share Pipelines state
   const [showShareLoader, setShowShareLoader] = useState(false);
@@ -136,34 +136,35 @@ function MainApp() {
   });
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [activeCategory, setActiveCategory] = useState("Head Of Finance");
+  const [activeCategory, setActiveCategory] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
   const [loadingCandidates, setLoadingCandidates] = useState(true);
   const [loadingCategories, setLoadingCategories] = useState(true);
 
+  const fetchCategories = async () => {
+    setLoadingCategories(true);
+    try {
+      const jobs = await jobPostService.getJobs();
+      const mappedCategories: Category[] = jobs.map(job => ({
+        id: job.id,
+        name: job.title,
+        count: 0,
+      }));
+      setCategories(mappedCategories);
+      if (mappedCategories.length > 0 && !activeCategory) {
+        setActiveCategory(mappedCategories[0].name);
+      }
+    } catch (error) {
+      showToast.error("Failed to fetch job categories");
+      console.error("Error fetching categories:", error);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
-      const fetchCategories = async () => {
-        setLoadingCategories(true);
-        try {
-          const jobs = await jobPostService.getJobs();
-          const mappedCategories: Category[] = jobs.map(job => ({
-            id: job.id,
-            name: job.title,
-            count: 0, // You may need to adjust this based on actual candidate count from backend
-          }));
-          setCategories(mappedCategories);
-          if (mappedCategories.length > 0 && !activeCategory) {
-            setActiveCategory(mappedCategories[0].name);
-          }
-        } catch (error) {
-          showToast.error("Failed to fetch job categories");
-          console.error("Error fetching categories:", error);
-        } finally {
-          setLoadingCategories(false);
-        }
-      };
       fetchCategories();
     }
   }, [isAuthenticated]);
@@ -348,10 +349,10 @@ function MainApp() {
     setShowCreateJobRole(true);
   };
 
-  const handleEditJobRole = async (categoryName: string) => {
+  const handleEditJobRole = async (jobId: number) => {
     try {
       const jobs = await jobPostService.getJobs();
-      const job = jobs.find(j => j.title === categoryName);
+      const job = jobs.find(j => j.id === jobId);
       if (job) {
         setEditingJobId(job.id);
         setShowEditJobRole(true);
@@ -364,15 +365,15 @@ function MainApp() {
     setShowCategoryActions(null);
   };
 
-  const handleDeleteJobRole = async (categoryName: string) => {
+  const handleDeleteJobRole = async (jobId: number) => {
     try {
       const jobs = await jobPostService.getJobs();
-      const job = jobs.find(j => j.title === categoryName);
+      const job = jobs.find(j => j.id === jobId);
       if (job) {
         await jobPostService.deleteJob(job.id);
-        setCategories(prev => prev.filter(cat => cat.name !== categoryName));
-        showToast.success(`Successfully deleted ${categoryName}`);
-        if (activeCategory === categoryName) {
+        await fetchCategories();
+        showToast.success(`Successfully deleted job with job id ${jobId}`);
+        if (categories.find(cat => cat.id === jobId)?.name === activeCategory) {
           setActiveCategory(categories[0]?.name || "");
         }
       } else {
@@ -385,15 +386,21 @@ function MainApp() {
     setShowCategoryActions(null);
   };
 
-  const handleEditTemplate = (categoryName: string) => {
-    setEditingTemplate(categoryName);
-    setShowEditTemplate(true);
+  const handleEditTemplate = (jobId: number) => {
+    const job = categories.find(cat => cat.id === jobId);
+    if (job) {
+      setEditingTemplate(job.name);
+      setShowEditTemplate(true);
+    }
     setShowCategoryActions(null);
   };
 
-  const handleSharePipelines = (categoryName: string) => {
-    const pipelineId = categoryName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const handleSharePipelines = (jobId: number) => {
+    const job = categories.find(cat => cat.id === jobId);
+    if (job) {
+    const pipelineId = job.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     window.location.href = `/pipelines/${pipelineId}` 
+    }
   };
 
   const handleShareLoaderComplete = () => {
@@ -407,23 +414,23 @@ function MainApp() {
     window.history.pushState({}, "", `/pipelines/${pipelineId}`);
   };
 
-  const handleCategoryAction = (action: string, categoryName: string) => {
+  const handleCategoryAction = (action: string, jobId: number) => {
     setShowCategoryActions(null);
     switch (action) {
       case "edit-job":
-        handleEditJobRole(categoryName);
+        handleEditJobRole(categories.find(cat => cat.id === jobId)?.id || 0);
         break;
       case "edit-template":
-        handleEditTemplate(categoryName);
+        handleEditTemplate(jobId);
         break;
       case "share-pipelines":
-        handleSharePipelines(categoryName);
+        handleSharePipelines(jobId);
         break;
       case "archive":
-        showToast.success(`Archived ${categoryName}`);
+        showToast.success(`Archived ${jobId}`);
         break;
       case "delete":
-        setShowDeleteModal(categoryName);
+        setShowDeleteModal(jobId);
         break;
     }
   };
@@ -589,7 +596,7 @@ function MainApp() {
                                     onClick={() =>
                                       handleCategoryAction(
                                         "edit-job",
-                                        category.name
+                                        category.id
                                       )
                                     }
                                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
@@ -601,7 +608,7 @@ function MainApp() {
                                     onClick={() =>
                                       handleCategoryAction(
                                         "edit-template",
-                                        category.name
+                                        category.id
                                       )
                                     }
                                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
@@ -613,7 +620,7 @@ function MainApp() {
                                     onClick={() =>
                                       handleCategoryAction(
                                         "share-pipelines",
-                                        category.name
+                                        category.id
                                       )
                                     }
                                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
@@ -625,7 +632,7 @@ function MainApp() {
                                     onClick={() =>
                                       handleCategoryAction(
                                         "archive",
-                                        category.name
+                                        category.id
                                       )
                                     }
                                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
@@ -637,7 +644,7 @@ function MainApp() {
                                     onClick={() =>
                                       handleCategoryAction(
                                         "delete",
-                                        category.name
+                                        category.id
                                       )
                                     }
                                     className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
@@ -665,6 +672,7 @@ function MainApp() {
                             onClose={() => setShowCategoryDropdown(false)}
                             onEditJobRole={handleEditJobRole}
                             onEditTemplate={handleEditTemplate}
+                            onDeleteJob={(jobId) => setShowDeleteModal(jobId)}
                           />
                         </div>
                       </div>
