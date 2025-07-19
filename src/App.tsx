@@ -6,7 +6,10 @@ import { useAuth } from "./hooks/useAuth";
 import { authService } from "./services/authService";
 import { creditService } from "./services/creditService";
 import { jobPostService } from "./services/jobPostService";
-import { candidateService, CandidateListItem } from "./services/candidateService";
+import {
+  candidateService,
+  CandidateListItem,
+} from "./services/candidateService";
 import Header from "./components/Header";
 import FiltersSidebar from "./components/FiltersSidebar";
 import CandidatesMain from "./components/CandidatesMain";
@@ -34,10 +37,8 @@ import {
   LogOut,
   Share2,
   ArrowLeft,
-  X,
 } from "lucide-react";
 import { showToast } from "./utils/toast";
-import { set } from "lodash";
 
 interface Category {
   id: number;
@@ -62,11 +63,15 @@ function MainApp() {
   const [showAuthApp, setShowAuthApp] = useState(false);
   const [authFlow, setAuthFlow] = useState("login");
   const [showSettings, setShowSettings] = useState(false);
+
   const [showPipelineSharePage, setShowPipelineSharePage] = useState(false);
   const [currentPipelineId, setCurrentPipelineId] = useState("");
+
   const [showShareableProfile, setShowShareableProfile] = useState(false);
   const [currentCandidateId, setCurrentCandidateId] = useState("");
-  const [selectedCandidate, setSelectedCandidate] = useState<CandidateListItem | null>(null);
+
+  const [selectedCandidate, setSelectedCandidate] =
+    useState<CandidateListItem | null>(null);
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
   const [showCreateJobRole, setShowCreateJobRole] = useState(false);
   const [showEditJobRole, setShowEditJobRole] = useState(false);
@@ -78,11 +83,15 @@ function MainApp() {
   const [activeTab, setActiveTab] = useState("outbound");
   const [searchTerm, setSearchTerm] = useState("");
   const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
-  const [showCategoryActions, setShowCategoryActions] = useState<number | null>(null);
+  const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
+    null
+  );
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
+
   const [showShareLoader, setShowShareLoader] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -163,8 +172,12 @@ function MainApp() {
         ...prev,
         jobId: job.id.toString(),
         selectedSkills: job.skills || [],
-        minTotalExp: job.experience_min_years ? job.experience_min_years.toString() : "",
-        maxTotalExp: job.experience_max_years ? job.experience_max_years.toString() : "",
+        minTotalExp: job.experience_min_years
+          ? job.experience_min_years.toString()
+          : "",
+        maxTotalExp: job.experience_max_years
+          ? job.experience_max_years.toString()
+          : "",
         location: job.location || "",
         city: job.location ? job.location.split(",")[0]?.trim() || "" : "",
         country: job.location ? job.location.split(",")[1]?.trim() || "" : "",
@@ -188,27 +201,46 @@ function MainApp() {
           application_type: filters.application_type,
         };
         if (filters.keywords) filterParams.q = [filters.keywords];
-        if (filters.minTotalExp) filterParams.experience_min = filters.minTotalExp;
-        if (filters.maxTotalExp) filterParams.experience_max = filters.maxTotalExp;
-        if (filters.minExperience) filterParams.exp_in_current_company_min = filters.minExperience;
-        if (filters.topTierUniversities) filterParams.is_top_tier_college = filters.topTierUniversities;
-        if (filters.hasCertification) filterParams.has_certification = filters.hasCertification;
+        if (filters.minTotalExp)
+          filterParams.experience_min = filters.minTotalExp;
+        if (filters.maxTotalExp)
+          filterParams.experience_max = filters.maxTotalExp;
+        if (filters.minExperience)
+          filterParams.exp_in_current_company_min = filters.minExperience;
+        if (filters.topTierUniversities)
+          filterParams.is_top_tier_college = filters.topTierUniversities;
+        if (filters.hasCertification)
+          filterParams.has_certification = filters.hasCertification;
         if (filters.city || filters.country)
-          filterParams.location = `${filters.city}${filters.city && filters.country ? ", " : ""}${filters.country}`;
+          filterParams.location = `${filters.city}${
+            filters.city && filters.country ? ", " : ""
+          }${filters.country}`;
         if (filters.location) filterParams.location = filters.location;
-        if (filters.selectedSkills.length > 0) filterParams.skills = filters.selectedSkills.join(",");
-        if (filters.companies) filterParams.companies = filters.companies.split(",").map((c: string) => c.trim());
-        if (filters.industries) filterParams.industries = filters.industries.split(",").map((i: string) => i.trim());
+        if (filters.selectedSkills.length > 0)
+          filterParams.skills = filters.selectedSkills.join(",");
+        if (filters.companies)
+          filterParams.companies = filters.companies
+            .split(",")
+            .map((c: string) => c.trim());
+        if (filters.industries)
+          filterParams.industries = filters.industries
+            .split(",")
+            .map((i: string) => i.trim());
         if (filters.minSalary) filterParams.salary_min = filters.minSalary;
         if (filters.maxSalary) filterParams.salary_max = filters.maxSalary;
-        if (filters.colleges) filterParams.colleges = filters.colleges.split(",").map((c: string) => c.trim());
+        if (filters.colleges)
+          filterParams.colleges = filters.colleges
+            .split(",")
+            .map((c: string) => c.trim());
         if (filters.showFemaleCandidates) filterParams.is_female_only = true;
         if (filters.recentlyPromoted) filterParams.is_recently_promoted = true;
-        if (filters.backgroundVerified) filterParams.is_background_verified = true;
+        if (filters.backgroundVerified)
+          filterParams.is_background_verified = true;
         if (filters.hasLinkedIn) filterParams.has_linkedin = true;
         if (filters.hasTwitter) filterParams.has_twitter = true;
         if (filters.hasPortfolio) filterParams.has_portfolio = true;
-        if (filters.computerScienceGraduates) filterParams.is_cs_graduate = true;
+        if (filters.computerScienceGraduates)
+          filterParams.is_cs_graduate = true;
         if (filters.hasResearchPaper) filterParams.has_research_paper = true;
         if (filters.hasBehance) filterParams.has_behance = true;
         if (filters.is_prevetted) filterParams.is_prevetted = true;
@@ -241,11 +273,45 @@ function MainApp() {
         setLoadingCandidates(false);
       }
     },
-    [filters.jobId, filters.application_type, filters.keywords, filters.minTotalExp, filters.maxTotalExp, filters.minExperience, filters.topTierUniversities, filters.hasCertification, filters.city, filters.country, filters.location, filters.selectedSkills, filters.companies, filters.industries, filters.minSalary, filters.maxSalary, filters.colleges, filters.showFemaleCandidates, filters.recentlyPromoted, filters.backgroundVerified, filters.hasLinkedIn, filters.hasTwitter, filters.hasPortfolio, filters.computerScienceGraduates, filters.hasResearchPaper, filters.hasBehance, filters.is_prevetted, filters.is_active, filters.noticePeriod, selectedCandidate]
+    [
+      filters.jobId,
+      filters.application_type,
+      filters.keywords,
+      filters.minTotalExp,
+      filters.maxTotalExp,
+      filters.minExperience,
+      filters.topTierUniversities,
+      filters.hasCertification,
+      filters.city,
+      filters.country,
+      filters.location,
+      filters.selectedSkills,
+      filters.companies,
+      filters.industries,
+      filters.minSalary,
+      filters.maxSalary,
+      filters.colleges,
+      filters.showFemaleCandidates,
+      filters.recentlyPromoted,
+      filters.backgroundVerified,
+      filters.hasLinkedIn,
+      filters.hasTwitter,
+      filters.hasPortfolio,
+      filters.computerScienceGraduates,
+      filters.hasResearchPaper,
+      filters.hasBehance,
+      filters.is_prevetted,
+      filters.is_active,
+      filters.noticePeriod,
+      selectedCandidate,
+    ]
   );
 
   // Handle candidates update from CandidatesMain
-  const handleCandidatesUpdate = (newCandidates: CandidateListItem[], count: number) => {
+  const handleCandidatesUpdate = (
+    newCandidates: CandidateListItem[],
+    count: number
+  ) => {
     setCandidates(newCandidates);
     setTotalCount(count);
     if (newCandidates.length > 0 && !selectedCandidate) {
@@ -299,11 +365,15 @@ function MainApp() {
         id: firebaseUser?.uid,
         fullName: userStatus.full_name || "Unknown User",
         email: userStatus.email || "Unknown@user.com",
-        role: userStatus.roles?.length > 0 ? userStatus.roles[0].name.toLowerCase() : "team",
+        role:
+          userStatus.roles?.length > 0
+            ? userStatus.roles[0].name.toLowerCase()
+            : "team",
         organizationId: userStatus.organization?.id?.toString(),
         workspaceIds: [],
         isVerified: firebaseUser?.emailVerified ?? true,
-        createdAt: firebaseUser?.metadata.creationTime || new Date().toISOString(),
+        createdAt:
+          firebaseUser?.metadata.creationTime || new Date().toISOString(),
       };
       setCurrentUser(user);
     }
@@ -398,6 +468,10 @@ function MainApp() {
     }
   };
 
+  const handleLogoutCancel = () => {
+    setShowLogoutModal(false);
+  };
+
   const handleAuthSuccess = (user: any) => {
     setCurrentUser(user);
     setShowAuthApp(false);
@@ -469,7 +543,10 @@ function MainApp() {
   const handleSharePipelines = (jobId: number) => {
     const job = categories.find((cat) => cat.id === jobId);
     if (job) {
-      const pipelineId = job.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+      const pipelineId = job.name
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
       window.location.href = `/pipelines/${pipelineId}`;
     }
   };
@@ -642,7 +719,9 @@ function MainApp() {
                               <div
                                 key={category.id}
                                 className="relative"
-                                onMouseEnter={() => setHoveredCategory(category.id)}
+                                onMouseEnter={() =>
+                                  setHoveredCategory(category.id)
+                                }
                                 onMouseLeave={() => setHoveredCategory(null)}
                               >
                                 <button
@@ -671,35 +750,60 @@ function MainApp() {
                                   <div className="absolute top-full left-0 mt-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                                     <div className="py-1">
                                       <button
-                                        onClick={() => handleCategoryAction("edit-job", category.id)}
+                                        onClick={() =>
+                                          handleCategoryAction(
+                                            "edit-job",
+                                            category.id
+                                          )
+                                        }
                                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
                                       >
                                         <Edit className="w-4 h-4 mr-2" />
                                         Edit Job Role
                                       </button>
                                       <button
-                                        onClick={() => handleCategoryAction("edit-template", category.id)}
+                                        onClick={() =>
+                                          handleCategoryAction(
+                                            "edit-template",
+                                            category.id
+                                          )
+                                        }
                                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
                                       >
                                         <Mail className="w-4 h-4 mr-2" />
                                         Edit Email Template
                                       </button>
                                       <button
-                                        onClick={() => handleCategoryAction("share-pipelines", category.id)}
+                                        onClick={() =>
+                                          handleCategoryAction(
+                                            "share-pipelines",
+                                            category.id
+                                          )
+                                        }
                                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
                                       >
                                         <Share2 className="w-4 h-4 mr-2" />
                                         Share Pipelines
                                       </button>
                                       <button
-                                        onClick={() => handleCategoryAction("archive", category.id)}
+                                        onClick={() =>
+                                          handleCategoryAction(
+                                            "archive",
+                                            category.id
+                                          )
+                                        }
                                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
                                       >
                                         <Archive className="w-4 h-4 mr-2" />
                                         Archive
                                       </button>
                                       <button
-                                        onClick={() => handleCategoryAction("delete", category.id)}
+                                        onClick={() =>
+                                          handleCategoryAction(
+                                            "delete",
+                                            category.id
+                                          )
+                                        }
                                         className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
                                       >
                                         <Trash2 className="w-4 h-4 mr-2" />
@@ -713,7 +817,11 @@ function MainApp() {
                             {categories.length > 4 && (
                               <div className="relative">
                                 <button
-                                  onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                                  onClick={() =>
+                                    setShowCategoryDropdown(
+                                      !showCategoryDropdown
+                                    )
+                                  }
                                   className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
                                 >
                                   +{categories.length - 4} more
@@ -724,7 +832,9 @@ function MainApp() {
                                   onClose={() => setShowCategoryDropdown(false)}
                                   onEditJobRole={handleEditJobRole}
                                   onEditTemplate={handleEditTemplate}
-                                  onDeleteJob={(jobId) => setShowDeleteModal(jobId)}
+                                  onDeleteJob={(jobId) =>
+                                    setShowDeleteModal(jobId)
+                                  }
                                   onSharePipelines={handleSharePipelines}
                                 />
                               </div>
@@ -801,7 +911,10 @@ function MainApp() {
                     <SharePipelinesModal
                       isOpen={showShareModal}
                       onClose={() => setShowShareModal(false)}
-                      jobRole={categories.find((cat) => cat.id === activeCategoryId)?.name || ""}
+                      jobRole={
+                        categories.find((cat) => cat.id === activeCategoryId)
+                          ?.name || ""
+                      }
                     />
                     {showLogoutModal && (
                       <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
@@ -814,7 +927,8 @@ function MainApp() {
                               Confirm Logout
                             </h3>
                             <p className="text-gray-600 mb-6">
-                              Are you sure you want to sign out? You'll need to log in again to access your account.
+                              Are you sure you want to sign out? You'll need to
+                              log in again to access your account.
                             </p>
                             <div className="flex space-x-3">
                               <button
@@ -842,17 +956,18 @@ function MainApp() {
                               Create Your First Job Role
                             </h3>
                             <p className="text-gray-600 ">
-                              It looks like you haven't created any job roles yet.<br /> 
+                              It looks like you haven't created any job roles
+                              yet.
+                              <br />
                               Create a role to get started!
                             </p>
                             <div className="absolute top-[-35px] right-[320px] transform rotate-90">
                               <ArrowLeft className="w-8 h-8 text-blue-600" />
                             </div>
-                            
 
                             {isAuthenticated && (
                               <button
-                                onClick={() =>{
+                                onClick={() => {
                                   setShowCreateJobRole(true);
                                   setShowGuideModal(false);
                                 }}
@@ -876,7 +991,8 @@ function MainApp() {
                               Confirm Delete Job
                             </h3>
                             <p className="text-gray-600 mb-6">
-                              Are you sure you want to delete {showDeleteModal}? This action cannot be undone.
+                              Are you sure you want to delete {showDeleteModal}?
+                              This action cannot be undone.
                             </p>
                             <div className="flex space-x-3">
                               <button
@@ -886,7 +1002,9 @@ function MainApp() {
                                 Cancel
                               </button>
                               <button
-                                onClick={() => handleDeleteJobRole(showDeleteModal)}
+                                onClick={() =>
+                                  handleDeleteJobRole(showDeleteModal)
+                                }
                                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                               >
                                 Delete
@@ -896,21 +1014,53 @@ function MainApp() {
                         </div>
                       </div>
                     )}
-
-                    
-                    
                   </div>
                 </>
               )
             ) : (
               <>
                 <Toaster />
-                <AuthApp initialFlow="login" onAuthSuccess={handleAuthSuccess} />
+                <AuthApp
+                  initialFlow="login"
+                  onAuthSuccess={handleAuthSuccess}
+                />
               </>
             )
           }
         />
       </Routes>
+      {showLogoutModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <LogOut className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Confirm Logout
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to sign out? You'll need to log in again
+                to access your account.
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleCloseLogoutModal}
+                  className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleLogoutConfirm}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
