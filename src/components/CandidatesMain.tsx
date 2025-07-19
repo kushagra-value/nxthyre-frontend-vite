@@ -54,12 +54,16 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
   const fetchAndSetCandidates = useCallback(
     debounce(async (searchQuery: string, page: number, tab: string, signal: AbortSignal) => {
-      if (!jobId) return;
+      if (!jobId) {
+        console.warn('No jobId provided, skipping candidate fetch');
+        return;
+      } 
       setLoading(true);
       try {
+        const queryList = searchQuery.trim() ? [searchQuery] : [];
         const params = {
           page,
-          q: searchQuery,
+          q: queryList,
           job_id: jobId,
           tab,
         };
@@ -99,7 +103,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     return () => {
       controller.abort();
     };
-  }, [searchTerm, activeTab, currentPage, jobId, candidates.length, fetchAndSetCandidates]);
+  }, [searchTerm, activeTab, currentPage, jobId, fetchAndSetCandidates]);
 
 
   const handleCandidateSelect = (candidateId: string) => {
