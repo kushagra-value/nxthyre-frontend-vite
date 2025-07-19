@@ -169,7 +169,7 @@ class CandidateService {
   }
   async getShareableProfile(candidateId: string): Promise<ShareableProfileSensitiveCandidate> {
     try {
-      const response = await apiClient.get(`/api/candidates/share/${candidateId}/`);
+      const response = await apiClient.get(`/candidates/share/${candidateId}/`);
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to fetch shareable profile");
