@@ -35,22 +35,123 @@ import {
   pipelineCandidates,
   PipelineCandidate,
 } from "../data/pipelineData";
-import { useAuthContext } from "../context/AuthContext"; // Import AuthContext
+import { useAuthContext } from "../context/AuthContext";
+import apiClient from "../services/api";
+import { jobPostService } from "../services/jobPostService"; // Import jobPostService
+
+// Define interfaces for API responses
+interface Stage {
+  id: number;
+  name: string;
+  slug: string;
+  sort_order: number;
+  candidate_count: number;
+}
+
+interface CandidateListItem {
+  id: number;
+  candidate: {
+    id: string;
+    full_name: string;
+    avatar: string;
+    headline: string;
+    location: string;
+    linkedin_url: string;
+    is_background_verified: boolean;
+    experience_years: string;
+    experience_summary: { title: string; date_range: string };
+    education_summary: { title: string; date_range: string };
+    notice_period_summary: string;
+    skills_list: string[];
+    social_links: {
+      linkedin: string;
+      github: string;
+      portfolio: string;
+      resume: string;
+    };
+  };
+  stage_slug: string;
+}
+
+// Define Category interface
+interface Category {
+  id: number;
+  name: string;
+  count: number;
+}
+
+interface PipelineCandidate {
+  id: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  publicIdentifier: string;
+  headline: string;
+  summary: string;
+  profilePicture: { displayImageUrl: string; artifacts: any[] };
+  location: { country: string; city: string };
+  industry: string;
+  email: string;
+  phone: { type: string; number: string };
+  positions: Array<{
+    title: string;
+    companyName: string;
+    companyUrn: string;
+    startDate: { month: number; year: number };
+    endDate?: { month: number; year: number };
+    isCurrent: boolean;
+    location: string;
+    description: string;
+  }>;
+  educations: Array<{
+    schoolName: string;
+    degreeName: string;
+    fieldOfStudy: string;
+    startDate: { year: number };
+    endDate: { year: number };
+    activities: string;
+    description: string;
+  }>;
+  certifications: Array<{
+    name: string;
+    authority: string;
+    licenseNumber: string;
+    startDate: { month: number; year: number };
+    endDate?: { month: number; year: number };
+    url: string;
+  }>;
+  skills: Array<{ name: string; endorsementCount: number }>;
+  endorsements: any[];
+  recommendations: { received: any[]; given: any[] };
+  visibility: {
+    profile: "PUBLIC" | "CONNECTIONS" | "PRIVATE";
+    email: boolean;
+    phone: boolean;
+  };
+  connections: any[];
+  meta: {
+    fetchedAt: string;
+    dataCompleteness: "full" | "partial";
+    source: string;
+    scopesGranted: string[];
+  };
+  stageData: { [key: string]: any };
+}
 
 interface PipelineStagesProps {
   onBack: () => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  onOpenLogoutModal: () => void; // Add new prop
+  onOpenLogoutModal: () => void;
 }
 
 const PipelineStages: React.FC<PipelineStagesProps> = ({
   onBack,
   activeTab,
   setActiveTab,
-  onOpenLogoutModal, // Destructure new prop
+  onOpenLogoutModal,
 }) => {
-  const { user } = useAuthContext(); // Access user from AuthContext
+  const { user } = useAuthContext();
   const [selectedStage, setSelectedStage] = useState("Uncontacted");
   const [selectedCandidate, setSelectedCandidate] =
     useState<PipelineCandidate | null>(null);
@@ -59,31 +160,268 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
 
-  const tabs = [
-    { id: "outbound", label: "Outbound", count: 2325 },
-    { id: "active", label: "Active", count: 2034 },
-    { id: "inbound", label: "Inbound", count: 2034 },
-    { id: "prevetted", label: "Prevetted", count: 2034 },
-  ];
+  // States for API data
+  const [stages, setStages] = useState<Stage[]>([]);
+  const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
+  const [activeJobId, setActiveJobId] = useState<number | null>(null); // Initially null
 
+  // Dynamic category states
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
+    null
+  );
+  const [showCreateJobRole, setShowCreateJobRole] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // const tabs = [
+  //   { id: "outbound", label: "Outbound", count: 2325 },
+  //   { id: "active", label: "Active", count: 2034 },
+  //   { id: "inbound", label: "Inbound", count: 2034 },
+  //   { id: "prevetted", label: "Prevetted", count: 2034 },
+  // ];
+
+  // Fetch categories when component mounts
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setLoadingCategories(true);
+      try {
+        const jobs = await jobPostService.getJobs();
+        const mappedCategories: Category[] = jobs.map((job) => ({
+          id: job.id,
+          name: job.title,
+          count: job.total_candidates || 0,
+        }));
+        setCategories(mappedCategories);
+        if (mappedCategories.length > 0) {
+          setActiveCategoryId(mappedCategories[0].id);
+          setActiveJobId(mappedCategories[0].id);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setCategories([]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Fetch stages when activeJobId changes
+  useEffect(() => {
+    if (activeJobId !== null) {
+      fetchStages(activeJobId);
+    }
+  }, [activeJobId]);
+
+  // Fetch candidates when activeJobId or selectedStage changes
+  useEffect(() => {
+    if (activeJobId !== null && selectedStage) {
+      fetchCandidates(
+        activeJobId,
+        selectedStage.toLowerCase().replace(" ", "-")
+      );
+    }
+  }, [activeJobId, selectedStage]);
+
+  // Body overflow handling for comments
   useEffect(() => {
     if (showComments) {
       document.body.classList.add("overflow-hidden");
     } else {
       document.body.classList.remove("overflow-hidden");
     }
-    return () => {
-      document.body.classList.remove("overflow-hidden");
-    };
+    return () => document.body.classList.remove("overflow-hidden");
   }, [showComments]);
+
+  // API functions
+  const fetchStages = async (jobId: number) => {
+    try {
+      const response = await apiClient.get(
+        `/jobs/applications/stages/?job_id=${jobId}`
+      );
+      const data: Stage[] = response.data;
+      setStages(data.sort((a, b) => a.sort_order - b.sort_order));
+      setSelectedStage(data[0]?.name || "Uncontacted");
+    } catch (error) {
+      console.error("Error fetching stages:", error);
+      setStages([]);
+    }
+  };
+
+  const fetchCandidates = async (jobId: number, stageSlug: string) => {
+    try {
+      const response = await apiClient.get(
+        `/jobs/applications/?job_id=${jobId}&stage_slug=${stageSlug}`
+      );
+      const data: CandidateListItem[] = response.data;
+      setCandidates(data);
+    } catch (error) {
+      console.error("Error fetching candidates:", error);
+      setCandidates([]);
+    }
+  };
+
+  const fetchCandidateDetails = async (applicationId: number) => {
+    try {
+      const response = await apiClient.get(
+        `/jobs/applications/${applicationId}/`
+      );
+      const data = response.data;
+      const mappedCandidate: PipelineCandidate = mapCandidateDetails(data);
+      setSelectedCandidate(mappedCandidate);
+    } catch (error) {
+      console.error("Error fetching candidate details:", error);
+      setSelectedCandidate(null);
+    }
+  };
+
+  const moveCandidate = async (applicationId: number, stageId: number) => {
+    try {
+      await apiClient.patch(`/jobs/applications/${applicationId}/`, {
+        current_stage: stageId,
+      });
+      if (activeJobId !== null) {
+        fetchCandidates(
+          activeJobId,
+          selectedStage.toLowerCase().replace(" ", "-")
+        );
+      }
+    } catch (error) {
+      console.error("Error moving candidate:", error);
+    }
+  };
+
+  const archiveCandidate = async (applicationId: number) => {
+    const archiveStage = stages.find((stage) => stage.slug === "archives");
+    if (!archiveStage) return;
+    try {
+      await apiClient.patch(`/jobs/applications/${applicationId}/`, {
+        current_stage: archiveStage.id,
+        status: "ARCHIVED",
+        archive_reason: "Candidate archived from UI",
+      });
+      if (activeJobId !== null) {
+        fetchCandidates(
+          activeJobId,
+          selectedStage.toLowerCase().replace(" ", "-")
+        );
+      }
+    } catch (error) {
+      console.error("Error archiving candidate:", error);
+    }
+  };
+
+  const bulkMoveCandidates = async (applicationIds: number[]) => {
+    try {
+      await apiClient.post("/jobs/bulk-move-stage/", {
+        application_ids: applicationIds,
+      });
+      if (activeJobId !== null) {
+        fetchCandidates(
+          activeJobId,
+          selectedStage.toLowerCase().replace(" ", "-")
+        );
+      }
+    } catch (error) {
+      console.error("Error bulk moving candidates:", error);
+    }
+  };
+
+  // Helper to map candidate details
+  // Map API response to PipelineCandidate
+  const mapCandidateDetails = (data: any): PipelineCandidate => {
+    const candidateData = data.candidate;
+    return {
+      id: data.id.toString(),
+      firstName: candidateData.full_name.split(" ")[0] || "",
+      lastName: candidateData.full_name.split(" ").slice(1).join(" ") || "",
+      fullName: candidateData.full_name,
+      publicIdentifier: candidateData.id,
+      headline: candidateData.headline,
+      summary: "",
+      profilePicture: {
+        displayImageUrl: candidateData.profile_picture_url || "",
+        artifacts: [],
+      },
+      location: {
+        country: candidateData.location.split(", ")[1] || "",
+        city: candidateData.location.split(", ")[0] || "",
+      },
+      industry: "",
+      email: candidateData.resume_url || "",
+      phone: { type: "mobile", number: "" },
+      positions: candidateData.experience.map((exp: any) => ({
+        title: exp.job_title,
+        companyName: exp.company,
+        companyUrn: "",
+        startDate: exp.start_date
+          ? {
+              month: new Date(exp.start_date).getMonth() + 1,
+              year: new Date(exp.start_date).getFullYear(),
+            }
+          : { month: 0, year: 0 },
+        endDate: exp.end_date
+          ? {
+              month: new Date(exp.end_date).getMonth() + 1,
+              year: new Date(exp.end_date).getFullYear(),
+            }
+          : undefined,
+        isCurrent: exp.is_current,
+        location: exp.location,
+        description: exp.description,
+      })),
+      educations: candidateData.education.map((edu: any) => ({
+        schoolName: edu.institution,
+        degreeName: edu.degree,
+        fieldOfStudy: edu.specialization,
+        startDate: edu.start_date
+          ? { year: new Date(edu.start_date).getFullYear() }
+          : { year: 0 },
+        endDate: edu.end_date
+          ? { year: new Date(edu.end_date).getFullYear() }
+          : { year: 0 },
+        activities: "",
+        description: "",
+      })),
+      certifications: candidateData.certifications.map((cert: any) => ({
+        name: cert.name,
+        authority: cert.authority,
+        licenseNumber: cert.licenseNumber,
+        startDate: cert.startDate,
+        endDate: cert.endDate,
+        url: cert.url,
+      })),
+      skills: candidateData.skills_data.skills_mentioned.map((skill: any) => ({
+        name: skill.skill,
+        endorsementCount: skill.number_of_endorsements,
+      })),
+      endorsements: candidateData.skills_data.endorsements,
+      recommendations: { received: candidateData.recommendations, given: [] },
+      visibility: { profile: "PUBLIC", email: false, phone: false },
+      connections: [],
+      meta: {
+        fetchedAt: "",
+        dataCompleteness: "partial",
+        source: "",
+        scopesGranted: [],
+      },
+      stageData: {
+        [data.current_stage_details.slug]: data.contextual_details,
+      },
+    };
+  };
 
   const handleStageSelect = (stage: string) => {
     setSelectedStage(stage);
     setSelectedCandidate(null);
   };
 
-  const handleCandidateSelect = (candidate: PipelineCandidate) => {
-    setSelectedCandidate(candidate);
+  const handleCandidateSelect = (candidate: CandidateListItem) => {
+    fetchCandidateDetails(candidate.id);
   };
 
   const handleCandidateCheckbox = (candidateId: string) => {
@@ -118,24 +456,52 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     return icons[stage as keyof typeof icons] || User;
   };
 
-  // const getStageColor = (stage: string) => {
-  //   const colors = {
-  //     'Uncontacted': 'text-gray-600',
-  //     'Invites Sent': 'text-blue-600',
-  //     'Applied': 'text-green-600',
-  //     'AI Interview': 'text-purple-600',
-  //     'Shortlisted': 'text-yellow-600',
-  //     'First Interview': 'text-indigo-600',
-  //     'Other Interviews': 'text-pink-600',
-  //     'HR Round': 'text-red-600',
-  //     'Salary Negotiation': 'text-orange-600',
-  //     'Offer Sent': 'text-emerald-600',
-  //     'Archives': 'text-gray-500'
-  //   };
-  //   return colors[stage] || 'text-gray-600';
-  // };
+  const currentCandidates =
+    candidates.length > 0
+      ? candidates
+      : pipelineCandidates[selectedStage] || [];
 
-  const currentCandidates = pipelineCandidates[selectedStage] || [];
+  const handleCreateJobRole = () => {
+    setShowCreateJobRole(true);
+  };
+
+  const handleEditJobRole = (categoryId: number) => {
+    setShowCreateJobRole(true);
+    setShowCategoryActions(null);
+  };
+
+  const handleEditTemplate = (categoryId: number) => {
+    setShowCategoryActions(null);
+  };
+
+  const handleCategoryAction = (action: string, categoryId: number) => {
+    setShowCategoryActions(null);
+    switch (action) {
+      case "edit-job":
+        handleEditJobRole(categoryId);
+        break;
+      case "edit-template":
+        handleEditTemplate(categoryId);
+        break;
+      case "archive":
+        alert(`Archived category with id ${categoryId}`);
+        break;
+      case "delete":
+        if (
+          confirm(
+            `Are you sure you want to delete category with id ${categoryId}?`
+          )
+        ) {
+          alert(`Deleted category with id ${categoryId}`);
+        }
+        break;
+    }
+  };
+
+  const handleCategorySelect = (categoryId: number) => {
+    setActiveCategoryId(categoryId);
+    setActiveJobId(categoryId);
+  };
 
   const renderStageDetails = () => {
     if (!selectedCandidate) {
@@ -152,13 +518,15 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       );
     }
 
-    const stageData = selectedCandidate.stageData;
+    const stageData =
+      selectedCandidate.stageData[
+        selectedStage.toLowerCase().replace(" ", "-")
+      ];
 
     switch (selectedStage) {
       case "Uncontacted":
         return (
           <div className="space-y-4">
-            {/* Action Buttons */}
             <div className="flex space-x-2">
               <button className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
                 Send Invite & Reveal Info
@@ -169,14 +537,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               >
                 <MessageCircle className="w-4 h-4" />
               </button>
-              {/* <button
-                onClick={() => setShowComments(true)}
-                className="px-3 py-2 bg-blue-0 border border-blue-600 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-50 transition-colors"
-              >
-                <MessageCircle className="w-4 h-4" />
-              </button> */}
             </div>
-
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Experience</h4>
               {selectedCandidate.positions.map((pos, index) => (
@@ -188,7 +549,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 </div>
               ))}
             </div>
-
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Education</h4>
               {selectedCandidate.educations.map((edu, index) => (
@@ -198,49 +558,33 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 </div>
               ))}
             </div>
-
             <div className="flex justify-between w-full">
-              <button className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button
+                onClick={() => {
+                  const currentIndex = stages.findIndex(
+                    (s) => s.name === selectedStage
+                  );
+                  const nextStage = stages[currentIndex + 1];
+                  if (nextStage)
+                    moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
+                }}
+                className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 Move to Next Stage
               </button>
-              <button className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button
+                onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
+                className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 Archive
               </button>
             </div>
           </div>
         );
-
       case "Invites Sent":
         const inviteData = stageData.invitesSent;
         return (
           <div className="space-y-4">
-            {/* <div className="bg-blue-50 rounded-lg p-3">
-              <h4 className="font-medium text-blue-900 mb-2">Invite Details</h4>
-              <div className="space-y-1 text-sm">
-                <p>
-                  <span className="font-medium">Date Sent:</span>{" "}
-                  {inviteData?.dateSent}
-                </p>
-                <p>
-                  <span className="font-medium">Status:</span>
-                  <span
-                    className={`ml-1 px-2 py-1 rounded-full text-xs ${
-                      inviteData?.responseStatus === "Interested"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-yellow-100 text-yellow-800"
-                    }`}
-                  >
-                    {inviteData?.responseStatus}
-                  </span>
-                </p>
-                <p>
-                  <span className="font-medium">Current Status:</span>{" "}
-                  {inviteData?.currentStatus}
-                </p>
-              </div>
-            </div> */}
-
-            {/* Action Buttons */}
             <div className="flex space-x-2">
               <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
                 Send Invite & Reveal Info
@@ -252,37 +596,46 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <MessageCircle className="w-4 h-4" />
               </button>
             </div>
-
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Notes</h4>
               <div className="space-y-2">
-                {inviteData?.notes?.map((note, index) => (
+                {inviteData?.notes?.map((note: any, index: number) => (
                   <div
                     key={index}
                     className="bg-gray-50 rounded p-2 text-sm text-gray-700"
                   >
-                    {note}
+                    {note.comment || "No comment available"}
                   </div>
                 ))}
               </div>
             </div>
-
             <div className="flex justify-between w-full">
-              <button className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button
+                onClick={() => {
+                  const currentIndex = stages.findIndex(
+                    (s) => s.name === selectedStage
+                  );
+                  const nextStage = stages[currentIndex + 1];
+                  if (nextStage)
+                    moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
+                }}
+                className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 Move to Next Stage
               </button>
-              <button className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button
+                onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
+                className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 Archive
               </button>
             </div>
           </div>
         );
-
       case "Applied":
         const appliedData = stageData.applied;
         return (
           <div className="space-y-4">
-            {/* Action Buttons */}
             <div className="flex space-x-2">
               <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
                 Send Invite & Reveal Info
@@ -294,25 +647,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <MessageCircle className="w-4 h-4" />
               </button>
             </div>
-
-            {/* <div className="bg-green-50 rounded-lg p-3">
-              <h4 className="font-medium text-green-900 mb-2">
-                Application Details
-              </h4>
-              <div className="space-y-1 text-sm">
-                <p>
-                  <span className="font-medium">Applied Date:</span>{" "}
-                  {appliedData?.appliedDate}
-                </p>
-                <p>
-                  <span className="font-medium">Resume Score:</span>
-                  <span className="ml-1 px-2 py-1 bg-green-100 text-green-800 rounded text-xs">
-                    {appliedData?.resumeScore}/100
-                  </span>
-                </p>
-              </div>
-            </div> */}
-
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-gray-50 rounded-lg p-3">
                 <h5 className="font-medium text-gray-900 text-sm mb-1">
@@ -331,8 +665,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 </p>
               </div>
             </div>
-
-            <div className="">
+            <div>
               <h4 className="font-medium text-gray-900 mb-3">
                 Resume Highlights
               </h4>
@@ -349,23 +682,34 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   ))}
               </div>
             </div>
-
             <div>
               <button className="mt-1 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 Resend Interview Link
               </button>
             </div>
             <div className="flex justify-between w-full">
-              <button className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button
+                onClick={() => {
+                  const currentIndex = stages.findIndex(
+                    (s) => s.name === selectedStage
+                  );
+                  const nextStage = stages[currentIndex + 1];
+                  if (nextStage)
+                    moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
+                }}
+                className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 Move to Next Stage
               </button>
-              <button className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button
+                onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
+                className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 Archive
               </button>
             </div>
           </div>
         );
-
       case "AI Interview":
       case "Shortlisted":
         const interviewData =
@@ -374,16 +718,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             : stageData.shortlisted;
         return (
           <div className="space-y-4">
-            {/* <div className="bg-purple-50 rounded-lg p-3">
-              <h4 className="font-medium text-purple-900 mb-2">
-                Interview Results
-              </h4>
-              <p className="text-sm">
-                <span className="font-medium">Date:</span>{" "}
-                {interviewData?.interviewedDate}
-              </p>
-            </div> */}
-            {/* Action Buttons */}
             <div className="flex space-x-2">
               <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
                 Send Invite & Reveal Info
@@ -395,7 +729,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <MessageCircle className="w-4 h-4" />
               </button>
             </div>
-
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-gray-50 rounded-lg p-2 text-center">
                 <p className="text-xs text-gray-600">Resume Score</p>
@@ -422,7 +755,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 </p>
               </div>
             </div>
-
             <div className="bg-red-50 rounded-lg p-3">
               <h5 className="font-medium text-red-900 mb-2">
                 Proctoring Check
@@ -441,24 +773,29 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 </div>
               </div>
             </div>
-
-            {/* <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-              {selectedStage === "AI Interview"
-                ? "Move to Shortlisted"
-                : "Schedule First Interview"}
-            </button> */}
-
             <div className="flex justify-between w-full">
-              <button className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button
+                onClick={() => {
+                  const currentIndex = stages.findIndex(
+                    (s) => s.name === selectedStage
+                  );
+                  const nextStage = stages[currentIndex + 1];
+                  if (nextStage)
+                    moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
+                }}
+                className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 Move to Next Stage
               </button>
-              <button className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button
+                onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
+                className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 Archive
               </button>
             </div>
           </div>
         );
-
       case "First Interview":
       case "Other Interviews":
       case "HR Round":
@@ -470,7 +807,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             : stageData.hrRound;
         return (
           <div className="space-y-4">
-            {/* Action Buttons */}
             <div className="flex space-x-2">
               <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
                 Send Invite & Reveal Info
@@ -482,42 +818,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <MessageCircle className="w-4 h-4" />
               </button>
             </div>
-            {/* <div className="bg-indigo-50 rounded-lg p-3">
-              <h4 className="font-medium text-indigo-900 mb-2">
-                Interview Details
-              </h4>
-              <div className="space-y-1 text-sm">
-                <p>
-                  <span className="font-medium">Date:</span>{" "}
-                  {roundData?.interviewDate}
-                </p>
-                <p>
-                  <span className="font-medium">Interviewer:</span>{" "}
-                  {roundData?.interviewerName}
-                </p>
-                <p>
-                  <span className="font-medium">Email:</span>{" "}
-                  {roundData?.interviewerEmail}
-                </p>
-              </div>
-            </div> */}
-
-            {/* <div>
-              <h4 className="font-medium text-gray-900 mb-2">
-                Interview Notes
-              </h4>
-              <div className="space-y-2">
-                {roundData?.interviewNotes?.map((note, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-50 rounded p-2 text-sm text-gray-700"
-                  >
-                    {note}
-                  </div>
-                ))}
-              </div>
-            </div> */}
-
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Follow-ups</h4>
               <div className="space-y-2">
@@ -532,23 +832,33 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 ))}
               </div>
             </div>
-
             <div className="flex justify-between w-full">
-              <button className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button
+                onClick={() => {
+                  const currentIndex = stages.findIndex(
+                    (s) => s.name === selectedStage
+                  );
+                  const nextStage = stages[currentIndex + 1];
+                  if (nextStage)
+                    moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
+                }}
+                className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 Move to Next Stage
               </button>
-              <button className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button
+                onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
+                className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 Archive
               </button>
             </div>
           </div>
         );
-
       case "Salary Negotiation":
         const salaryData = stageData.salaryNegotiation;
         return (
           <div className="space-y-4">
-            {/* Action Buttons */}
             <div className="flex space-x-2">
               <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
                 Send Invite & Reveal Info
@@ -560,22 +870,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <MessageCircle className="w-4 h-4" />
               </button>
             </div>
-            {/* <div className="bg-orange-50 rounded-lg p-3">
-              <h4 className="font-medium text-orange-900 mb-2">
-                Salary Details
-              </h4>
-              <div className="space-y-1 text-sm">
-                <p>
-                  <span className="font-medium">Salary Range:</span>{" "}
-                  {salaryData?.salary}
-                </p>
-                <p>
-                  <span className="font-medium">Negotiation:</span>{" "}
-                  {salaryData?.negotiation}
-                </p>
-              </div>
-            </div> */}
-
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Follow-ups</h4>
               <div className="space-y-2">
@@ -590,23 +884,33 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 ))}
               </div>
             </div>
-
             <div className="flex justify-between w-full">
-              <button className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button
+                onClick={() => {
+                  const currentIndex = stages.findIndex(
+                    (s) => s.name === selectedStage
+                  );
+                  const nextStage = stages[currentIndex + 1];
+                  if (nextStage)
+                    moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
+                }}
+                className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 Send Offer
               </button>
-              <button className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button
+                onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
+                className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 Archive
               </button>
             </div>
           </div>
         );
-
       case "Offer Sent":
         const offerData = stageData.offerSent;
         return (
           <div className="space-y-4">
-            {/* Action Buttons */}
             <div className="flex space-x-2">
               <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
                 Send Invite & Reveal Info
@@ -618,30 +922,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <MessageCircle className="w-4 h-4" />
               </button>
             </div>
-            {/* <div className="bg-emerald-50 rounded-lg p-3">
-              <h4 className="font-medium text-emerald-900 mb-2">
-                Offer Details
-              </h4>
-              <div className="space-y-1 text-sm">
-                <p>
-                  <span className="font-medium">Sent Date:</span>{" "}
-                  {offerData?.offerSentDate}
-                </p>
-                <p>
-                  <span className="font-medium">Status:</span>
-                  <span
-                    className={`ml-1 px-2 py-1 rounded-full text-xs ${
-                      offerData?.offerAcceptanceStatus === "Accepted"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-yellow-100 text-yellow-800"
-                    }`}
-                  >
-                    {offerData?.offerAcceptanceStatus}
-                  </span>
-                </p>
-              </div>
-            </div> */}
-
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Follow-ups</h4>
               <div className="space-y-2">
@@ -656,7 +936,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 ))}
               </div>
             </div>
-
             {offerData?.offerAcceptanceStatus === "Pending" && (
               <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 Follow Up on Offer
@@ -664,12 +943,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             )}
           </div>
         );
-
       case "Archives":
-        const archiveData = stageData.archived;
         return (
           <div className="space-y-4">
-            {/* Action Buttons */}
             <div className="flex space-x-2">
               <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
                 Send Invite & Reveal Info
@@ -681,46 +957,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <MessageCircle className="w-4 h-4" />
               </button>
             </div>
-
-            {/* <div className="bg-gray-50 rounded-lg p-3">
-              <h4 className="font-medium text-gray-900 mb-2">
-                Archive Details
-              </h4>
-              <div className="space-y-1 text-sm">
-                <p>
-                  <span className="font-medium">Reason:</span>{" "}
-                  {archiveData?.reason}
-                </p>
-                <p>
-                  <span className="font-medium">Archived Date:</span>{" "}
-                  {archiveData?.archivedDate}
-                </p>
-              </div>
-            </div> */}
-
-            {/* <div>
-              <h4 className="font-medium text-gray-900 mb-2">Notes</h4>
-              <div className="space-y-2">
-                {archiveData?.notes?.map((note, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-50 rounded p-2 text-sm text-gray-700"
-                  >
-                    {note}
-                  </div>
-                ))}
-              </div>
-            </div> */}
-
-            {/* <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-              <p className="text-sm text-red-700">
-                This candidate has been archived and is no longer active in the
-                pipeline.
-              </p>
-            </div> */}
           </div>
         );
-
       default:
         return null;
     }
@@ -743,185 +981,122 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     },
   ];
 
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
-  const [showCategoryActions, setShowCategoryActions] = useState<string | null>(
-    null
-  );
-  const [showCreateJobRole, setShowCreateJobRole] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const [activeCategory, setActiveCategory] = useState("Head Of Finance");
-
-  const categories = [
-    { name: "Head Of Finance", count: 8, active: true },
-    { name: "Contract Executive", count: 6 },
-    { name: "Aerospace Engineer", count: 9 },
-    { name: "AI/ML Engineer", count: 9 },
-  ];
-
-  // const handleSendInvite = () => {
-  //   setShowTemplateSelector(true);
-  // };
-
-  // const handleBackFromTemplate = () => {
-  //   setShowTemplateSelector(false);
-  // };
-
-  const handleCreateJobRole = () => {
-    setShowCreateJobRole(true);
-  };
-
-  const handleEditJobRole = (categoryName: string) => {
-    setShowCreateJobRole(true);
-    setShowCategoryActions(null);
-  };
-
-  const handleEditTemplate = (categoryName: string) => {
-    // setEditingTemplate(categoryName);
-    // setShowEditTemplate(true);
-    setShowCategoryActions(null);
-  };
-
-  const handleCategoryAction = (action: string, categoryName: string) => {
-    setShowCategoryActions(null);
-
-    switch (action) {
-      case "edit-job":
-        handleEditJobRole(categoryName);
-        break;
-      case "edit-template":
-        handleEditTemplate(categoryName);
-        break;
-      case "archive":
-        alert(`Archived ${categoryName}`);
-        break;
-      case "delete":
-        if (confirm(`Are you sure you want to delete ${categoryName}?`)) {
-          alert(`Deleted ${categoryName}`);
-        }
-        break;
-    }
-  };
-
-  // const handlePipelinesClick = () => {
-  //   setShowPipelineStages(true);
-  // };
-
-  // const handleBackFromPipelines = () => {
-  //   setShowPipelineStages(false);
-  // };
-
   return (
     <div className="bg-gray-50 min-h-screen">
-      {/* Header - Sticky with will-change */}
       <div className="sticky top-0 z-20 bg-white will-change-transform">
         <Header
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           onCreateRole={handleCreateJobRole}
-          onOpenLogoutModal={onOpenLogoutModal} // Pass handler
+          onOpenLogoutModal={onOpenLogoutModal}
         />
       </div>
 
-      {/* Categories */}
       <div className="my-3 mx-6">
-        <div className="hidden md:flex items-center space-x-2">
-          {categories.map((category) => (
-            <div
-              key={category.name}
-              className="relative"
-              onMouseEnter={() => setHoveredCategory(category.name)}
-              onMouseLeave={() => setHoveredCategory(null)}
-            >
-              <button
-                onClick={() => setActiveCategory(category.name)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                  activeCategory === category.name
-                    ? "bg-blue-100 text-blue-700 shadow-sm"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
+        {loadingCategories ? (
+          <div className="text-center text-gray-500">Loading categories...</div>
+        ) : categories.length === 0 ? (
+          <div className="text-center text-gray-500">
+            <p>No Job Roles Found</p>
+            <p className="text-sm mt-1">
+              Please create a job role to view the pipeline stages.
+            </p>
+          </div>
+        ) : (
+          <div className="hidden md:flex items-center space-x-2">
+            {categories.map((category) => (
+              <div
+                key={category.id}
+                className="relative"
+                onMouseEnter={() => setHoveredCategory(category.id)}
+                onMouseLeave={() => setHoveredCategory(null)}
               >
-                {category.name}
-                <span
-                  className={`ml-2 px-2 py-1 rounded-full text-xs ${
-                    activeCategory === category.name
-                      ? "bg-blue-200 text-blue-800"
-                      : "bg-gray-200 text-gray-600"
+                <button
+                  onClick={() => handleCategorySelect(category.id)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                    activeCategoryId === category.id
+                      ? "bg-blue-100 text-blue-700 shadow-sm"
+                      : "text-gray-600 hover:bg-gray-100"
                   }`}
                 >
-                  {category.count}
-                </span>
-              </button>
-
-              {/* Hover Actions */}
-              {hoveredCategory === category.name && (
-                <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                  <div className="py-1">
-                    <button
-                      onClick={() =>
-                        handleCategoryAction("edit-job", category.name)
-                      }
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                    >
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit Job Role
-                    </button>
-                    <button
-                      onClick={() =>
-                        handleCategoryAction("edit-template", category.name)
-                      }
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                    >
-                      <Mail className="w-4 h-4 mr-2" />
-                      Edit Email Template
-                    </button>
-                    <button
-                      onClick={() =>
-                        handleCategoryAction("archive", category.name)
-                      }
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                    >
-                      <Archive className="w-4 h-4 mr-2" />
-                      Archive
-                    </button>
-                    <button
-                      onClick={() =>
-                        handleCategoryAction("delete", category.name)
-                      }
-                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete Job
-                    </button>
+                  {category.name}
+                  <span
+                    className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                      activeCategoryId === category.id
+                        ? "bg-blue-200 text-blue-800"
+                        : "bg-gray-200 text-gray-600"
+                    }`}
+                  >
+                    {category.count}
+                  </span>
+                </button>
+                {hoveredCategory === category.id && (
+                  <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                    <div className="py-1">
+                      <button
+                        onClick={() =>
+                          handleCategoryAction("edit-job", category.id)
+                        }
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit Job Role
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleCategoryAction("edit-template", category.id)
+                        }
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                      >
+                        <Mail className="w-4 h-4 mr-2" />
+                        Edit Email Template
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleCategoryAction("archive", category.id)
+                        }
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                      >
+                        <Archive className="w-4 h-4 mr-2" />
+                        Archive
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleCategoryAction("delete", category.id)
+                        }
+                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete Job
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          ))}
-
-          <div className="relative">
-            <button
-              onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-              className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
-            >
-              +12 more
-              <ChevronDown className="ml-1 w-4 h-4" />
-            </button>
-
-            <CategoryDropdown
-              isOpen={showCategoryDropdown}
-              onClose={() => setShowCategoryDropdown(false)}
-              onEditJobRole={handleEditJobRole}
-              onEditTemplate={handleEditTemplate}
-            />
+                )}
+              </div>
+            ))}
+            {categories.length > 4 && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                  className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
+                >
+                  +{categories.length - 4} more
+                  <ChevronDown className="ml-1 w-4 h-4" />
+                </button>
+                <CategoryDropdown
+                  isOpen={showCategoryDropdown}
+                  onClose={() => setShowCategoryDropdown(false)}
+                  onEditJobRole={handleEditJobRole}
+                  onEditTemplate={handleEditTemplate}
+                />
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
 
       <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-2">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-full">
-          {/* Left Sidebar - Pipeline Stages */}
           <div className="lg:col-span-3 order-2 lg:order-1">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3">
               <div
@@ -936,74 +1111,85 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 </h3>
               </div>
               <div className="space-y-2">
-                {pipelineStages.map((stage) => {
-                  const Icon = getStageIcon(stage);
-                  const isSelected = selectedStage === stage;
-                  const candidateCount = pipelineCandidates[stage]?.length || 0;
-
-                  return (
-                    <button
-                      key={stage}
-                      onClick={() => handleStageSelect(stage)}
-                      className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                        isSelected
-                          ? "bg-blue-50 text-blue-700 border border-blue-200"
-                          : "text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      {isSelected && (
-                        <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                      )}
-                      <Icon
-                        className={`w-4 h-4 ${
-                          isSelected ? "text-blue-600" : "text-gray-600"
-                        }`}
-                      />
-                      <span className="flex-1 font-medium">{stage}</span>
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${
-                          isSelected
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-gray-100 text-gray-600"
-                        }`}
-                      >
-                        {candidateCount}
-                      </span>
-                    </button>
-                  );
-                })}
+                {stages.length > 0
+                  ? stages.map((stage) => {
+                      const Icon = getStageIcon(stage.name);
+                      const isSelected = selectedStage === stage.name;
+                      return (
+                        <button
+                          key={stage.id}
+                          onClick={() => handleStageSelect(stage.name)}
+                          className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                            isSelected
+                              ? "bg-blue-50 text-blue-700 border border-blue-200"
+                              : "text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          {isSelected && (
+                            <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                          )}
+                          <Icon
+                            className={`w-4 h-4 ${
+                              isSelected ? "text-blue-600" : "text-gray-600"
+                            }`}
+                          />
+                          <span className="flex-1 font-medium">
+                            {stage.name}
+                          </span>
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              isSelected
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {stage.candidate_count}
+                          </span>
+                        </button>
+                      );
+                    })
+                  : pipelineStages.map((stage) => {
+                      const Icon = getStageIcon(stage);
+                      const isSelected = selectedStage === stage;
+                      const candidateCount =
+                        pipelineCandidates[stage]?.length || 0;
+                      return (
+                        <button
+                          key={stage}
+                          onClick={() => handleStageSelect(stage)}
+                          className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                            isSelected
+                              ? "bg-blue-50 text-blue-700 border border-blue-200"
+                              : "text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          {isSelected && (
+                            <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                          )}
+                          <Icon
+                            className={`w-4 h-4 ${
+                              isSelected ? "text-blue-600" : "text-gray-600"
+                            }`}
+                          />
+                          <span className="flex-1 font-medium">{stage}</span>
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              isSelected
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {candidateCount}
+                          </span>
+                        </button>
+                      );
+                    })}
               </div>
             </div>
           </div>
 
-          {/* Middle Section - Candidates List */}
           <div className="lg:col-span-6 order-1 lg:order-2">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-              {/* Tabs */}
-              {/* <div className="border-b border-gray-200">
-                <div className="flex items-center justify-between p-3 lg:p-4 pb-0">
-                  <div className="flex space-x-1 overflow-x-auto">
-                    {tabs.map((tab) => (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`px-3 py-2 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap ${
-                          activeTab === tab.id
-                            ? "text-blue-600 border-b-2 border-blue-500 bg-blue-50"
-                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                        }`}
-                      >
-                        {tab.label}
-                        <span className="ml-2 px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded-full">
-                          {tab.count}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div> */}
-
-              {/* Filters Bar */}
               <div className="p-3 lg:p-4 border-b border-gray-200">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex space-x-3">
@@ -1011,10 +1197,24 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       <input
                         type="checkbox"
                         checked={selectAll}
-                        onChange={(e) => setSelectAll(e.target.checked)}
+                        onChange={(e) => {
+                          setSelectAll(e.target.checked);
+                          setSelectedCandidates(
+                            e.target.checked
+                              ? currentCandidates.map((c) => c.id.toString())
+                              : []
+                          );
+                        }}
                         className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
                       />
-                      <button className="px-3 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors">
+                      <button
+                        onClick={() =>
+                          bulkMoveCandidates(
+                            selectedCandidates.map((id) => parseInt(id))
+                          )
+                        }
+                        className="px-3 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors"
+                      >
                         Move to Next Stage
                       </button>
                     </label>
@@ -1024,8 +1224,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   </div>
                 </div>
               </div>
-
-              {/* Candidates List */}
               <div className="divide-y divide-gray-200">
                 {currentCandidates.length === 0 ? (
                   <div className="p-8 text-center text-gray-500">
@@ -1038,11 +1236,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                     </p>
                   </div>
                 ) : (
-                  currentCandidates.map((candidate) => (
+                  currentCandidates.map((candidate: any) => (
                     <div
                       key={candidate.id}
                       className={`p-3 lg:p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
-                        selectedCandidate?.id === candidate.id
+                        selectedCandidate?.id === candidate.id.toString()
                           ? "bg-blue-50 border-l-4 border-blue-500"
                           : ""
                       }`}
@@ -1051,32 +1249,37 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       <div className="flex items-center space-x-3">
                         <input
                           type="checkbox"
-                          checked={selectedCandidates.includes(candidate.id)}
-                          onChange={() => handleCandidateCheckbox(candidate.id)}
+                          checked={selectedCandidates.includes(
+                            candidate.id.toString()
+                          )}
+                          onChange={() =>
+                            handleCandidateCheckbox(candidate.id.toString())
+                          }
                           className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
                           onClick={(e) => e.stopPropagation()}
                         />
-
                         <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                          {candidate.firstName[0]}
-                          {candidate.lastName[0]}
+                          {(
+                            candidate.candidate?.full_name || candidate.fullName
+                          )
+                            .split(" ")
+                            .map((n: string) => n[0])
+                            .join("")}
                         </div>
-
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
                             <h3 className="text-base font-semibold text-gray-900">
-                              {candidate.fullName}
+                              {candidate.candidate?.full_name ||
+                                candidate.fullName}
                             </h3>
-                            {/* <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
-                              {selectedStage}
-                            </span> */}
                           </div>
                           <p className="text-sm text-gray-600 mt-1">
-                            {candidate.headline}
+                            {candidate.candidate?.headline ||
+                              candidate.headline}
                           </p>
                           <p className="text-sm text-gray-500 mt-1">
-                            {candidate.location.city},{" "}
-                            {candidate.location.country}
+                            {candidate.candidate?.location ||
+                              `${candidate.location.city}, ${candidate.location.country}`}
                           </p>
                         </div>
                       </div>
@@ -1087,12 +1290,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             </div>
           </div>
 
-          {/* Right Sidebar - Candidate Details */}
           <div className="lg:col-span-3 order-3 relative">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-4 min-h-[81vh]">
               {selectedCandidate ? (
                 <>
-                  {/* Header */}
                   <div className="flex items-center space-x-3">
                     <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
                       {selectedCandidate.firstName[0]}
@@ -1111,7 +1312,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       </p>
                     </div>
                   </div>
-
                   <div className="bg-gray-50 rounded-lg p-3 space-y-2">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center space-x-2">
@@ -1138,8 +1338,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       </div>
                     </div>
                   </div>
-
-                  {/* Stage-specific Details */}
                   {renderStageDetails()}
                 </>
               ) : (
@@ -1153,8 +1351,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   </p>
                 </div>
               )}
-
-              {/* Notes Section */}
               <div
                 className={`absolute top-0 left-0 w-full h-full bg-gray-50 transform transition-all duration-300 ease-in-out z-10 ${
                   showComments
@@ -1199,7 +1395,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   <div className="mt-4">
                     <div className="flex space-x-3">
                       <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-                        {user?.fullName?.[0] || "U"} {/* Use user's initial */}
+                        {user?.fullName?.[0] || "U"}
                       </div>
                       <div className="flex-1 flex space-x-2">
                         <input
@@ -1233,5 +1429,3 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 };
 
 export default PipelineStages;
-
-// working one
