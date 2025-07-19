@@ -159,9 +159,10 @@ class CandidateService {
     }
   }
 
-  async searchCandidates(filters: any): Promise<{ results: CandidateListItem[]; count: number }> {
+  async searchCandidates(params: any): Promise<{ results: CandidateListItem[]; count: number }> {
     try {
-      const response = await apiClient.post("/candidates/search/", filters);
+      const { page, ...body } = params;
+      const response = await apiClient.post(`/candidates/search/?page=${page || 1}`, body);
      
       if (Array.isArray(response.data)) {
         return {

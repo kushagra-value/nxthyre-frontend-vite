@@ -25,6 +25,7 @@ import ShareableProfile from "./components/ShareableProfile";
 import PipelineSharePage from "./components/PipelineSharePage";
 import { User } from "./types/auth"; // Adjust path
 import { CandidateListItem, candidateService} from './services/candidateService';
+import { Job } from "./services/jobPostService";
 import {
   ChevronDown,
   MoreHorizontal,
@@ -34,6 +35,8 @@ import {
   Trash2,
   LogOut,
   Share2,
+  ArrowRight,
+
 } from "lucide-react";
 import { showToast } from "./utils/toast";
 
@@ -87,6 +90,7 @@ function MainApp() {
   const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
     null
   );
+  const [showGuideModal, setShowGuideModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
 
   // Share Pipelines state
@@ -125,6 +129,7 @@ function MainApp() {
     hasBehance: false,
     hasTwitter: false,
     hasPortfolio: false,
+    jobId: "",
   });
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -133,6 +138,7 @@ function MainApp() {
   const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
   const [loadingCandidates, setLoadingCandidates] = useState(true);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
 
   const fetchCategories = async () => {
     setLoadingCategories(true);
@@ -141,17 +147,73 @@ function MainApp() {
       const mappedCategories: Category[] = jobs.map(job => ({
         id: job.id,
         name: job.title,
-        count: 0,
+        count: job.total_candidates || 0,
       }));
       setCategories(mappedCategories);
-      if (mappedCategories.length > 0 && activeCategoryId === null) {
+      if (mappedCategories.length > 0) {
         setActiveCategoryId(mappedCategories[0].id);
+        await fetchJobDetailsAndSetFilters(mappedCategories[0].id);
+      } else {
+        setShowGuideModal(true); // Show guide modal if no jobs
       }
     } catch (error) {
       showToast.error("Failed to fetch job categories");
       console.error("Error fetching categories:", error);
     } finally {
       setLoadingCategories(false);
+    }
+  };
+
+  const fetchJobDetailsAndSetFilters = async (jobId: number) => {
+    try {
+      const job: Job = await jobPostService.getJob(jobId);
+      // Set filters based on job details
+      setFilters(prev => ({
+        ...prev,
+        jobId: job.id.toString(),
+        selectedSkills: job.skills || [],
+        minTotalExp: job.experience_min_years.toString(),
+        maxTotalExp: job.experience_max_years.toString(),
+        location: job.location || "",
+        minSalary: job.salary_min || "",
+        maxSalary: job.salary_max || "",
+      }));
+      // Fetch candidates with the job ID
+      await fetchInitialCandidates(job.id);
+    } catch (error) {
+      showToast.error("Failed to fetch job details");
+      console.error("Error fetching job details:", error);
+    }
+  };
+
+  const fetchInitialCandidates = async (jobId?: number) => {
+    setLoadingCandidates(true);
+    try {
+      const { results, count } = await candidateService.searchCandidates({
+        page: 1,
+        job_id: jobId || filters.jobId,
+      });
+      setCandidates(results);
+      setTotalCount(count);
+      console.log("Fetched initial candidates:", results);
+      if (count > 0 && !selectedCandidate) {
+        setSelectedCandidate(results[0]);
+      }
+    } catch (error) {
+      console.error("Error fetching initial candidates:", error);
+      showToast.error("Failed to load initial candidates");
+      setCandidates([]);
+      setTotalCount(0);
+    } finally {
+      setLoadingCandidates(false);
+    }
+  };
+
+  const handleCandidatesUpdate = (newCandidates: CandidateListItem[], count: number) => {
+    setCandidates(newCandidates);
+    setTotalCount(count);
+    if (newCandidates.length > 0 && !selectedCandidate) {
+      setSelectedCandidate(newCandidates[0]);
     }
   };
 
@@ -170,9 +232,7 @@ function MainApp() {
   //   { name: "Marketing Lead", count: 7 },
   //   // Add more categories as needed
   // ];
-  const page=1;
-  const candidatesPerPage= 5;
-
+  
   useEffect(() => {
     const fetchCreditBalance = async () => {
       try {
@@ -187,35 +247,6 @@ function MainApp() {
       fetchCreditBalance();
     }
   }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (isAuthenticated && !searchTerm && !Object.values(filters).some(val => val)) {
-      const fetchInitialCandidates = async () => {
-        setLoadingCandidates(true);
-        try {
-          const { results, count } = await candidateService.getCandidates({
-              page,
-              page_size: candidatesPerPage,
-              tab: activeTab,
-            });
-          console.log("Fetched initial candidates:", results);
-          setCandidates(results);
-          showToast.error("Initial candidates loaded successfully");
-          console.log("Total candidates fetched:", count);
-          console.log("Candidates fetched:", candidates);
-          if (count > 0 && !selectedCandidate) {
-            setSelectedCandidate(results[0]);
-          }
-        } catch (error) {
-          console.error("Error fetching initial candidates:", error);
-          showToast.error("Failed to load initial candidates");
-        } finally {
-          setLoadingCandidates(false);
-        }
-      };
-      fetchInitialCandidates();
-    }
-  }, [isAuthenticated, activeTab, selectedCandidate]);
 
   useEffect(() => {
     if (isAuthenticated && userStatus) {
@@ -314,6 +345,7 @@ function MainApp() {
         hasBehance: false,
         hasTwitter: false,
         hasPortfolio: false,
+        jobId: "",
       });
       showToast.success("Successfully logged out");
       navigate("/");
@@ -391,6 +423,7 @@ function MainApp() {
   };
 
   const handleCreateJobRole = () => {
+    setShowGuideModal(false);
     setShowCreateJobRole(true);
   };
 
@@ -463,7 +496,7 @@ function MainApp() {
     setShowCategoryActions(null);
     switch (action) {
       case "edit-job":
-        handleEditJobRole(categories.find(cat => cat.id === jobId)?.id || 0);
+        handleEditJobRole(jobId);
         break;
       case "edit-template":
         handleEditTemplate(jobId);
@@ -599,6 +632,7 @@ function MainApp() {
                   </div>
 
                   <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3">
+                    {categories.length > 0 && (
                     <div className="mb-4">
                       <div className="hidden md:flex items-center space-x-2">
                         {categories.slice(0, 4).map((category) => (
@@ -611,7 +645,11 @@ function MainApp() {
                             onMouseLeave={() => setHoveredCategory(null)}
                           >
                             <button
-                              onClick={() => setActiveCategoryId(category.id)}
+                              onClick={() => {
+                                setActiveCategoryId(category.id);
+                                fetchJobDetailsAndSetFilters(category.id);
+                              }
+                              }
                               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
                                 activeCategoryId === category.id
                                   ? "bg-blue-100 text-blue-700 shadow-sm"
@@ -720,6 +758,7 @@ function MainApp() {
                         )}
                       </div>
                     </div>
+                    )}
 
                     <div className="flex w-full gap-3 h-full">
                       <div className="lg:w-[25%] order-2 lg:order-1 sticky top-16 self-start will-change-transform">
@@ -742,7 +781,10 @@ function MainApp() {
                           searchTerm={searchTerm}
                           onPipelinesClick={handlePipelinesClick}
                           candidates={candidates}
+                          totalCount={totalCount}
+                          jobId={filters.jobId}
                           deductCredits={deductCredits}
+                          onCandidatesUpdate={handleCandidatesUpdate}
                         />
                       </div>
                       <div className="lg:w-[30%] order-3 sticky top-16 self-start will-change-transform">
@@ -820,6 +862,29 @@ function MainApp() {
                       </div>
                     </div>
                   )}
+                  {showGuideModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative">
+                          <div className="text-center">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              Create Your First Job Role
+                            </h3>
+                            <p className="text-gray-600 mb-6">
+                              It looks like you haven't created any job roles yet. Click the button below to get started!
+                            </p>
+                            <div className="absolute top-[-40px] right-4 transform rotate-45">
+                              <ArrowRight className="w-8 h-8 text-blue-600" />
+                            </div>
+                            <button
+                              onClick={handleCreateJobRole}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                              Create Job Role
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   {showDeleteModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
                       <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">

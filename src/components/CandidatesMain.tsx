@@ -10,8 +10,11 @@ interface CandidatesMainProps {
   setSelectedCandidate: (candidate: CandidateListItem | null) => void;
   searchTerm: string;
   candidates: CandidateListItem[];
+  totalCount: number; 
+  jobId: string;
   onPipelinesClick?: () => void;
   deductCredits: () => Promise<void>;
+  onCandidatesUpdate: (candidates: CandidateListItem[], totalCount: number) => void;
 }
 
 const CandidatesMain: React.FC<CandidatesMainProps> = ({
@@ -21,18 +24,19 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   setSelectedCandidate,
   searchTerm,
   candidates,
+  totalCount,
+  jobId,
   onPipelinesClick,
-  deductCredits
+  deductCredits,
+  onCandidatesUpdate,
 }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [filteredCandidates, setFilteredCandidates] = useState<CandidateListItem[]>([]);
-  const [totalCount, setTotalCount] = useState(0); // State to hold the total number of candidates.
-
   const candidatesPerPage = 20;
+  const maxVisiblePages = 5;
 
   const tabs = [
     { id: 'outbound', label: 'Outbound', count: activeTab === 'outbound' ? totalCount : 0 },
@@ -41,33 +45,36 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     { id: 'prevetted', label: 'Prevetted', count: activeTab === 'prevetted' ? totalCount : 0}
   ];
 
+  useEffect(() => {
+    setTotalPages(Math.ceil(totalCount / candidatesPerPage) || 1);
+    if (currentPage > Math.ceil(totalCount / candidatesPerPage)) {
+      setCurrentPage(1);
+    }
+  }, [totalCount, candidatesPerPage]);
+
   const fetchAndSetCandidates = useCallback(
-    debounce(async (searchQuery: string, page: number, signal: AbortSignal) => {
+    debounce(async (searchQuery: string, page: number, tab: string, signal: AbortSignal) => {
+      if (!jobId) return;
       setLoading(true);
       try {
-        const { results, count } = searchQuery
-          ? await candidateService.searchCandidates({
-              q: searchQuery,
-              page,
-              page_size: candidatesPerPage,
-              tab: activeTab,
-            })
-          : await candidateService.getCandidates(
-            {
-              page,
-              page_size: candidatesPerPage,
-              tab: activeTab
-            });
+        const params = {
+          page,
+          q: searchQuery,
+          job_id: jobId,
+          tab,
+        };
+        const { results, count } = await candidateService.searchCandidates(params);
         if (!signal.aborted) {
-          setTotalCount(count || results.length);
-          setTotalPages(Math.ceil((count || results.length) / candidatesPerPage) || 1);
-          // Update parent candidates state to sync with FiltersSidebar
-          setSelectedCandidate(results.length > 0 ? results[0] : null);
+          onCandidatesUpdate(results, count);
+          setTotalPages(Math.ceil(count / candidatesPerPage) || 1);
+          if (results.length > 0 && !selectedCandidate) {
+            setSelectedCandidate(results[0]);
+          }
         }
       } catch (error: any) {
         if (error.name !== 'AbortError') {
           console.error("Error fetching candidates:", error);
-          setTotalCount(0);
+          onCandidatesUpdate([], 0);
           setTotalPages(1);
         }
       } finally {
@@ -76,18 +83,23 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         }
       }
     }, 300),
-    [activeTab, candidatesPerPage, setSelectedCandidate]
+    [jobId, candidatesPerPage, selectedCandidate, setSelectedCandidate, onCandidatesUpdate]
   );
 
   // Effect for handling page changes
   useEffect(() => {
     const controller = new AbortController();
-    fetchAndSetCandidates(searchTerm, currentPage, controller.signal);
+    // Only fetch if candidates array is empty or outdated (e.g., tab change)
+    if (!candidates.length || searchTerm || activeTab) {
+      fetchAndSetCandidates(searchTerm, currentPage, activeTab, controller.signal);
+    } else {
+      setLoading(false); // Use parent-provided candidates
+    }
 
     return () => {
       controller.abort();
     };
-  }, [searchTerm, activeTab, currentPage, fetchAndSetCandidates]);
+  }, [searchTerm, activeTab, currentPage, jobId, candidates.length, fetchAndSetCandidates]);
 
 
   const handleCandidateSelect = (candidateId: string) => {
@@ -98,16 +110,14 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     );
   };
 
-  // Pagination logic
-  const startIndex = (currentPage - 1) * candidatesPerPage;
-  const endIndex = startIndex + candidatesPerPage;
-  const currentCandidates = filteredCandidates.slice(startIndex, endIndex);
-
   const handleSelectAll = (checked: boolean) => {
     setSelectAll(checked);
     if (checked) {
-      // Select only the IDs of the candidates on the current page.
-      setSelectedCandidates(filteredCandidates.map((candidate) => candidate.id));
+      const currentCandidates = candidates.slice(
+        (currentPage - 1) * candidatesPerPage,
+        currentPage * candidatesPerPage
+      );
+      setSelectedCandidates(currentCandidates.map((candidate) => candidate.id));
     } else {
       setSelectedCandidates([]);
     }
@@ -130,6 +140,60 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     const sum = skill.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return (sum % 5) + 1;
   };
+
+  const getPageNumbers = () => {
+    const pageNumbers: (number | string)[] = [];
+
+    if (totalPages <= maxVisiblePages + 2) {
+      // Show all pages if totalPages is small
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      // Always include page 1
+      pageNumbers.push(1);
+
+      // Calculate the range of pages around currentPage
+      const halfWindow = Math.floor(maxVisiblePages / 2);
+      let startPage = Math.max(2, currentPage - halfWindow);
+      let endPage = Math.min(totalPages - 1, currentPage + halfWindow);
+
+      // Adjust start and end to ensure maxVisiblePages are shown
+      if (endPage - startPage + 1 < maxVisiblePages) {
+        if (currentPage <= halfWindow + 1) {
+          endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
+        } else {
+          startPage = Math.max(2, endPage - maxVisiblePages + 1);
+        }
+      }
+
+      // Add ellipsis after page 1 if needed
+      if (startPage > 2) {
+        pageNumbers.push('...');
+      }
+
+      // Add pages in the window
+      for (let i = startPage; i <= endPage; i++) {
+        pageNumbers.push(i);
+      }
+
+      // Add ellipsis before last page if needed
+      if (endPage < totalPages - 1) {
+        pageNumbers.push('...');
+      }
+
+      // Always include the last page
+      if (totalPages > 1) {
+        pageNumbers.push(totalPages);
+      }
+    }
+
+    return pageNumbers;
+  };
+
+  const startIndex = (currentPage - 1) * candidatesPerPage;
+  const endIndex = Math.min(startIndex + candidatesPerPage, candidates.length);
+  const currentCandidates = candidates.slice(startIndex, endIndex);
 
   if (loading) {
     return (<div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -180,7 +244,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
               />
               {/* FIX: Clarified label to match functionality */}
-              <span className="ml-2 text-sm text-gray-600">Select all on page</span>
+              <span className="ml-2 text-sm text-gray-600">Select all</span>
             </label>
             <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
                 Add To Pipeline
@@ -208,11 +272,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       {/* Pagination */}
       <div className="p-3 lg:p-4 flex items-center justify-between border-t border-gray-200">
         <div className="text-sm text-gray-600">
-          {/* FIX: Display logic is now safer and reflects total count from API */}
-          Showing {(currentPage - 1) * candidatesPerPage + 1} to{" "}
-          {Math.min(currentPage * candidatesPerPage, totalCount)} of {totalCount}{" "}
-          candidates
-        </div>
+            Showing {startIndex + 1} to {Math.min(endIndex, totalCount)} of {totalCount} candidates
+          </div>
         <div className="flex space-x-2">
           <button
             onClick={() => handlePageChange(currentPage - 1)}
@@ -222,6 +283,22 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             <ChevronLeft className="w-4 h-4 mr-1" />
             Previous
           </button>
+          {getPageNumbers().map((page, index) => (
+              <button
+                key={index}
+                onClick={() => typeof page === 'number' && handlePageChange(page)}
+                className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                  page === currentPage
+                    ? 'bg-blue-600 text-white'
+                    : typeof page === 'number'
+                    ? 'text-gray-600 hover:bg-gray-100'
+                    : 'text-gray-600 cursor-default'
+                }`}
+                disabled={typeof page !== 'number'}
+              >
+                {page}
+              </button>
+            ))}
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
@@ -237,7 +314,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   }
 
 
-  if (!candidates || candidates?.length === 0) {
+  if (!candidates.length) {
     return (<div className="bg-white rounded-xl shadow-sm border border-gray-200">
     {/* Tabs */}
       <div className="border-b border-gray-200">
@@ -286,7 +363,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
               />
               {/* FIX: Clarified label to match functionality */}
-              <span className="ml-2 text-sm text-gray-600">Select all on page</span>
+              <span className="ml-2 text-sm text-gray-600">Select all</span>
             </label>
             <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
                 Add To Pipeline
@@ -313,10 +390,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       {/* Pagination */}
       <div className="p-3 lg:p-4 flex items-center justify-between border-t border-gray-200">
         <div className="text-sm text-gray-600">
-          {/* FIX: Display logic is now safer and reflects total count from API */}
-          Showing {(currentPage - 1) * candidatesPerPage} to{" "}
-          {Math.min(currentPage * candidatesPerPage, totalCount)} of {totalCount}{" "}
-          candidates
+          Showing 0 to 0 of {totalCount} candidates
         </div>
         <div className="flex space-x-2">
           <button
@@ -327,6 +401,22 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             <ChevronLeft className="w-4 h-4 mr-1" />
             Previous
           </button>
+          {getPageNumbers().map((page, index) => (
+              <button
+                key={index}
+                onClick={() => typeof page === 'number' && handlePageChange(page)}
+                className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                  page === currentPage
+                    ? 'bg-blue-600 text-white'
+                    : typeof page === 'number'
+                    ? 'text-gray-600 hover:bg-gray-100'
+                    : 'text-gray-600 cursor-default'
+                }`}
+                disabled={typeof page !== 'number'}
+              >
+                {page}
+              </button>
+            ))}
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
@@ -412,7 +502,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
       {/* Candidates List */}
       <div className="divide-y divide-gray-200">
-        {candidates.map((candidate) => (
+        {currentCandidates.map((candidate) => (
           <div
             key={candidate.id}
             className={`p-3 lg:p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
@@ -587,7 +677,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         <div className="p-3 lg:p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-600">
-              Showing {startIndex + 1} to {Math.min(endIndex, filteredCandidates.length)} of {filteredCandidates.length} candidates
+              Showing {startIndex + 1} to {Math.min(endIndex, totalCount)} of {totalCount} candidates
             </div>
             <div className="flex items-center space-x-2">
               <button
@@ -598,15 +688,18 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 <ChevronLeft className="w-4 h-4" />
               </button>
               
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              {getPageNumbers().map((page, index) => (
                 <button
-                  key={page}
-                  onClick={() => handlePageChange(page)}
+                  key={index}
+                  onClick={() => typeof page === 'number' && handlePageChange(page)}
                   className={`px-3 py-1 text-sm rounded-lg transition-colors ${
-                    currentPage === page
+                    page === currentPage
                       ? 'bg-blue-600 text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      : typeof page === 'number'
+                      ? 'text-gray-600 hover:bg-gray-100'
+                      : 'text-gray-600 cursor-default'
                   }`}
+                  disabled={typeof page !== 'number'}
                 >
                   {page}
                 </button>
