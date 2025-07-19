@@ -15,6 +15,7 @@ import {
   Clock10,
   Briefcase,
   Star,
+  Award,
 } from "lucide-react";
 import { debounce } from "lodash";
 import {
@@ -720,18 +721,23 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       </div>
 
       {/* Skills */}
-      <div className="mb-4">
-        <button
+
+      <div
+          className="flex items-center justify-between cursor-pointer mb-2"
           onClick={() => toggleSection("skills")}
-          className="flex items-center justify-between w-full text-sm font-medium text-gray-700"
         >
-          Skills
+          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
+            <Award className="w-4 h-4 mr-2 text-gray-800" />
+            Skills
+          </h3>
           {expandedSections.skills ? (
-            <ChevronUp className="w-4 h-4" />
+            <ChevronUp className="w-4 h-4 text-gray-500" />
           ) : (
-            <ChevronDown className="w-4 h-4" />
+            <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
-        </button>
+        </div>
+      <div>
+        
         {expandedSections.skills && (
           <div className="mt-2">
             <input
