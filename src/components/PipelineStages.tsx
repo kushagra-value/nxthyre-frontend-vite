@@ -158,31 +158,23 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       case "Uncontacted":
         return (
           <div className="space-y-4">
-            <div className="bg-gray-50 rounded-lg p-3 space-y-2">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-2">
-                  <Mail className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm text-gray-700 truncate">
-                    {selectedCandidate.email}
-                  </span>
-                </div>
-                <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-2">
-                  <Phone className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm text-gray-700">
-                    {selectedCandidate.phone.number}
-                  </span>
-                </div>
-                <div className="flex space-x-2">
-                  <FontAwesomeIcon
-                    icon={faWhatsapp}
-                    className="w-4 h-4 text-gray-400 hover:text-green-600 cursor-pointer"
-                  />
-                  <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
-                </div>
-              </div>
+            {/* Action Buttons */}
+            <div className="flex space-x-2">
+              <button className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                Send Invite & Reveal Info
+              </button>
+              <button
+                onClick={() => setShowComments(true)}
+                className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+              </button>
+              {/* <button
+                onClick={() => setShowComments(true)}
+                className="px-3 py-2 bg-blue-0 border border-blue-600 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-50 transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+              </button> */}
             </div>
 
             <div>
@@ -222,7 +214,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         const inviteData = stageData.invitesSent;
         return (
           <div className="space-y-4">
-            <div className="bg-blue-50 rounded-lg p-3">
+            {/* <div className="bg-blue-50 rounded-lg p-3">
               <h4 className="font-medium text-blue-900 mb-2">Invite Details</h4>
               <div className="space-y-1 text-sm">
                 <p>
@@ -246,6 +238,19 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   {inviteData?.currentStatus}
                 </p>
               </div>
+            </div> */}
+
+            {/* Action Buttons */}
+            <div className="flex space-x-2">
+              <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
+                Send Invite & Reveal Info
+              </button>
+              <button
+                onClick={() => setShowComments(true)}
+                className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+              </button>
             </div>
 
             <div>
@@ -277,7 +282,20 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         const appliedData = stageData.applied;
         return (
           <div className="space-y-4">
-            <div className="bg-green-50 rounded-lg p-3">
+            {/* Action Buttons */}
+            <div className="flex space-x-2">
+              <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
+                Send Invite & Reveal Info
+              </button>
+              <button
+                onClick={() => setShowComments(true)}
+                className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* <div className="bg-green-50 rounded-lg p-3">
               <h4 className="font-medium text-green-900 mb-2">
                 Application Details
               </h4>
@@ -293,7 +311,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   </span>
                 </p>
               </div>
-            </div>
+            </div> */}
 
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-gray-50 rounded-lg p-3">
@@ -314,8 +332,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               </div>
             </div>
 
-            <div>
-              <h4 className="font-medium text-gray-900 mb-2">
+            <div className="">
+              <h4 className="font-medium text-gray-900 mb-3">
                 Resume Highlights
               </h4>
               <div className="flex flex-wrap gap-2">
@@ -332,6 +350,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               </div>
             </div>
 
+            <div>
+              <button className="mt-1 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Resend Interview Link
+              </button>
+            </div>
             <div className="flex justify-between w-full">
               <button className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 Move to Next Stage
@@ -351,7 +374,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             : stageData.shortlisted;
         return (
           <div className="space-y-4">
-            <div className="bg-purple-50 rounded-lg p-3">
+            {/* <div className="bg-purple-50 rounded-lg p-3">
               <h4 className="font-medium text-purple-900 mb-2">
                 Interview Results
               </h4>
@@ -359,6 +382,18 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <span className="font-medium">Date:</span>{" "}
                 {interviewData?.interviewedDate}
               </p>
+            </div> */}
+            {/* Action Buttons */}
+            <div className="flex space-x-2">
+              <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
+                Send Invite & Reveal Info
+              </button>
+              <button
+                onClick={() => setShowComments(true)}
+                className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+              </button>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
@@ -407,11 +442,20 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               </div>
             </div>
 
-            <button className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+            {/* <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
               {selectedStage === "AI Interview"
                 ? "Move to Shortlisted"
                 : "Schedule First Interview"}
-            </button>
+            </button> */}
+
+            <div className="flex justify-between w-full">
+              <button className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Move to Next Stage
+              </button>
+              <button className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Archive
+              </button>
+            </div>
           </div>
         );
 
@@ -426,7 +470,19 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             : stageData.hrRound;
         return (
           <div className="space-y-4">
-            <div className="bg-indigo-50 rounded-lg p-3">
+            {/* Action Buttons */}
+            <div className="flex space-x-2">
+              <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
+                Send Invite & Reveal Info
+              </button>
+              <button
+                onClick={() => setShowComments(true)}
+                className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+              </button>
+            </div>
+            {/* <div className="bg-indigo-50 rounded-lg p-3">
               <h4 className="font-medium text-indigo-900 mb-2">
                 Interview Details
               </h4>
@@ -444,9 +500,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   {roundData?.interviewerEmail}
                 </p>
               </div>
-            </div>
+            </div> */}
 
-            <div>
+            {/* <div>
               <h4 className="font-medium text-gray-900 mb-2">
                 Interview Notes
               </h4>
@@ -460,7 +516,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   </div>
                 ))}
               </div>
-            </div>
+            </div> */}
 
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Follow-ups</h4>
@@ -477,9 +533,14 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               </div>
             </div>
 
-            <button className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-              Move to Next Stage
-            </button>
+            <div className="flex justify-between w-full">
+              <button className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Move to Next Stage
+              </button>
+              <button className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Archive
+              </button>
+            </div>
           </div>
         );
 
@@ -487,7 +548,19 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         const salaryData = stageData.salaryNegotiation;
         return (
           <div className="space-y-4">
-            <div className="bg-orange-50 rounded-lg p-3">
+            {/* Action Buttons */}
+            <div className="flex space-x-2">
+              <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
+                Send Invite & Reveal Info
+              </button>
+              <button
+                onClick={() => setShowComments(true)}
+                className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+              </button>
+            </div>
+            {/* <div className="bg-orange-50 rounded-lg p-3">
               <h4 className="font-medium text-orange-900 mb-2">
                 Salary Details
               </h4>
@@ -501,7 +574,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   {salaryData?.negotiation}
                 </p>
               </div>
-            </div>
+            </div> */}
 
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Follow-ups</h4>
@@ -518,9 +591,14 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               </div>
             </div>
 
-            <button className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
-              Send Offer
-            </button>
+            <div className="flex justify-between w-full">
+              <button className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Send Offer
+              </button>
+              <button className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Archive
+              </button>
+            </div>
           </div>
         );
 
@@ -528,7 +606,19 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         const offerData = stageData.offerSent;
         return (
           <div className="space-y-4">
-            <div className="bg-emerald-50 rounded-lg p-3">
+            {/* Action Buttons */}
+            <div className="flex space-x-2">
+              <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
+                Send Invite & Reveal Info
+              </button>
+              <button
+                onClick={() => setShowComments(true)}
+                className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+              </button>
+            </div>
+            {/* <div className="bg-emerald-50 rounded-lg p-3">
               <h4 className="font-medium text-emerald-900 mb-2">
                 Offer Details
               </h4>
@@ -550,7 +640,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   </span>
                 </p>
               </div>
-            </div>
+            </div> */}
 
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Follow-ups</h4>
@@ -568,7 +658,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             </div>
 
             {offerData?.offerAcceptanceStatus === "Pending" && (
-              <button className="w-full px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+              <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 Follow Up on Offer
               </button>
             )}
@@ -579,7 +669,20 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         const archiveData = stageData.archived;
         return (
           <div className="space-y-4">
-            <div className="bg-gray-50 rounded-lg p-3">
+            {/* Action Buttons */}
+            <div className="flex space-x-2">
+              <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
+                Send Invite & Reveal Info
+              </button>
+              <button
+                onClick={() => setShowComments(true)}
+                className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* <div className="bg-gray-50 rounded-lg p-3">
               <h4 className="font-medium text-gray-900 mb-2">
                 Archive Details
               </h4>
@@ -593,9 +696,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   {archiveData?.archivedDate}
                 </p>
               </div>
-            </div>
+            </div> */}
 
-            <div>
+            {/* <div>
               <h4 className="font-medium text-gray-900 mb-2">Notes</h4>
               <div className="space-y-2">
                 {archiveData?.notes?.map((note, index) => (
@@ -607,14 +710,14 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   </div>
                 ))}
               </div>
-            </div>
+            </div> */}
 
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            {/* <div className="bg-red-50 border border-red-200 rounded-lg p-3">
               <p className="text-sm text-red-700">
                 This candidate has been archived and is no longer active in the
                 pipeline.
               </p>
-            </div>
+            </div> */}
           </div>
         );
 
@@ -877,7 +980,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           <div className="lg:col-span-6 order-1 lg:order-2">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
               {/* Tabs */}
-              <div className="border-b border-gray-200">
+              {/* <div className="border-b border-gray-200">
                 <div className="flex items-center justify-between p-3 lg:p-4 pb-0">
                   <div className="flex space-x-1 overflow-x-auto">
                     {tabs.map((tab) => (
@@ -898,26 +1001,23 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                     ))}
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* Filters Bar */}
               <div className="p-3 lg:p-4 border-b border-gray-200">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex space-x-3">
-                    <label className="flex items-center">
+                    <label className="flex items-center space-x-3">
                       <input
                         type="checkbox"
                         checked={selectAll}
                         onChange={(e) => setSelectAll(e.target.checked)}
                         className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
                       />
-                      <span className="ml-2 text-sm text-gray-600">
-                        Select all
-                      </span>
+                      <button className="px-3 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors">
+                        Move to Next Stage
+                      </button>
                     </label>
-                    <button className="px-3 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors">
-                      Add To Pipeline
-                    </button>
                     <button className="px-3 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors">
                       Export Candidates
                     </button>
@@ -967,9 +1067,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             <h3 className="text-base font-semibold text-gray-900">
                               {candidate.fullName}
                             </h3>
-                            <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                            {/* <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
                               {selectedStage}
-                            </span>
+                            </span> */}
                           </div>
                           <p className="text-sm text-gray-600 mt-1">
                             {candidate.headline}
@@ -1012,17 +1112,31 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex space-x-2">
-                    <button className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
-                      Send Invite & Reveal Info
-                    </button>
-                    <button
-                      onClick={() => setShowComments(true)}
-                      className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                    </button>
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center space-x-2">
+                        <Mail className="w-4 h-4 text-gray-500" />
+                        <span className="text-sm text-gray-700 truncate">
+                          {selectedCandidate.email}
+                        </span>
+                      </div>
+                      <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center space-x-2">
+                        <Phone className="w-4 h-4 text-gray-500" />
+                        <span className="text-sm text-gray-700">
+                          {selectedCandidate.phone.number}
+                        </span>
+                      </div>
+                      <div className="flex space-x-2">
+                        <FontAwesomeIcon
+                          icon={faWhatsapp}
+                          className="w-4 h-4 text-gray-400 hover:text-green-600 cursor-pointer"
+                        />
+                        <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
+                      </div>
+                    </div>
                   </div>
 
                   {/* Stage-specific Details */}
