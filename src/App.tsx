@@ -33,7 +33,8 @@ import {
   Trash2,
   LogOut,
   Share2,
-  ArrowRight,
+  ArrowLeft,
+  X,
 } from "lucide-react";
 import { showToast } from "./utils/toast";
 
@@ -833,23 +834,21 @@ function MainApp() {
                       </div>
                     )}
                     {showGuideModal && (
-                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
-                        <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative">
+                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[100]  p-4 flex items-start justify-end">
+                        <div className="relative top-16 end-48  bg-white rounded-xl shadow-xl max-w-md w-full p-4 mr-6 ">
                           <div className="text-center">
                             <h3 className="text-lg font-semibold text-gray-900 mb-2">
                               Create Your First Job Role
                             </h3>
-                            <p className="text-gray-600 mb-6">
-                              It looks like you haven't created any job roles yet. Click the button below to get started!
+                            <p className="text-gray-600 ">
+                              It looks like you haven't created any job roles yet.<br /> 
+                              Create a role to get started!
                             </p>
-                            <div className="absolute top-[-40px] right-4 transform rotate-45">
-                              <ArrowRight className="w-8 h-8 text-blue-600" />
+                            <div className="absolute top-[-40px] right-4 transform rotate-90">
+                              <ArrowLeft className="w-8 h-8 text-blue-600" />
                             </div>
-                            <button
-                              onClick={handleCreateJobRole}
-                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                              Create Job Role
+                            <button onClick={() =>{setShowCreateJobRole(true);}} className="absolute top-0 right-4 ">
+                              <X className="w-8 h-8 text-gray-600" />
                             </button>
                           </div>
                         </div>
@@ -886,6 +885,7 @@ function MainApp() {
                         </div>
                       </div>
                     )}
+                    
                   </div>
                 </>
               )
