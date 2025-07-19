@@ -154,25 +154,28 @@ function MainApp() {
   };
 
   // Fetch job details and set filters
-  const fetchJobDetailsAndSetFilters = async (jobId: number) => {
-    try {
-      const job = await jobPostService.getJob(jobId);
-      setFilters((prev) => ({
-        ...prev,
-        jobId: job.id.toString(),
-        selectedSkills: job.skills || [],
-        minTotalExp: job.experience_min_years.toString(),
-        maxTotalExp: job.experience_max_years.toString(),
-        location: job.location || "",
-        minSalary: job.salary_min || "",
-        maxSalary: job.salary_max || "",
-        application_type: activeTab, // Set initial application_type based on activeTab
-      }));
-    } catch (error) {
-      showToast.error("Failed to fetch job details");
-      console.error("Error fetching job details:", error);
-    }
-  };
+  // In MainApp
+const fetchJobDetailsAndSetFilters = async (jobId: number) => {
+  try {
+    const job = await jobPostService.getJob(jobId);
+    setFilters((prev) => ({
+      ...prev,
+      jobId: job.id.toString(),
+      selectedSkills: job.skills || [], // Handle empty skills array
+      minTotalExp: job.experience_min_years ? job.experience_min_years.toString() : "",
+      maxTotalExp: job.experience_max_years ? job.experience_max_years.toString() : "",
+      location: job.location || "",
+      city: job.location ? job.location.split(",")[0]?.trim() || "" : "",
+      country: job.location ? job.location.split(",")[1]?.trim() || "" : "",
+      minSalary: job.salary_min || "",
+      maxSalary: job.salary_max || "",
+      application_type: activeTab,
+    }));
+  } catch (error) {
+    showToast.error("Failed to fetch job details");
+    console.error("Error fetching job details:", error);
+  }
+};
 
   // Fetch candidates based on filters and page
   const fetchCandidates = useCallback(
