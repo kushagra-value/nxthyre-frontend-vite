@@ -836,7 +836,7 @@ function MainApp() {
                     )}
                     {showGuideModal && (
                       <div className="fixed inset-0 bg-black bg-opacity-50 z-[100]  p-4 flex items-start justify-end">
-                        <div className="relative top-16 end-48  bg-white rounded-xl shadow-xl max-w-md w-full p-4 mr-6 ">
+                        <div className="relative top-16 end-[96px]  bg-white rounded-xl shadow-xl max-w-md w-full p-4 mr-6 ">
                           <div className="text-center">
                             <h3 className="text-lg font-semibold text-gray-900 mb-2">
                               Create Your First Job Role
@@ -845,7 +845,7 @@ function MainApp() {
                               It looks like you haven't created any job roles yet.<br /> 
                               Create a role to get started!
                             </p>
-                            <div className="absolute top-[-40px] right-4 transform rotate-90">
+                            <div className="absolute top-[-40px] right-[96px] transform rotate-90">
                               <ArrowLeft className="w-8 h-8 text-blue-600" />
                             </div>
                             
@@ -856,7 +856,7 @@ function MainApp() {
                                   setShowCreateJobRole(true);
                                   setShowGuideModal(false);
                                 }}
-                                className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center absolute top-[-72px] right-[64px] "
+                                className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center absolute top-[-72px] right-[96px] "
                               >
                                 Create Role
                               </button>
