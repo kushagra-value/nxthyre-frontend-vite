@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext"; // Adjust path
+import { AuthProvider } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./hooks/useAuth";
 import { authService } from "./services/authService";
@@ -17,13 +17,13 @@ import EditTemplateModal from "./components/EditTemplateModal";
 import CategoryDropdown from "./components/CategoryDropdown";
 import PipelineStages from "./components/PipelineStages";
 import AuthApp from "./components/AuthApp";
-import LinkedInAuth from "./components/auth/LinkedInAuth"; // Import LinkedInAuth
+import LinkedInAuth from "./components/auth/LinkedInAuth";
 import Settings from "./components/Settings";
 import SharePipelinesLoader from "./components/SharePipelinesLoader";
 import SharePipelinesModal from "./components/SharePipelinesModal";
 import ShareableProfile from "./components/ShareableProfile";
 import PipelineSharePage from "./components/PipelineSharePage";
-import { User } from "./types/auth"; // Adjust path
+import { User } from "./types/auth";
 import {
   CandidateListItem,
   candidateService,
@@ -57,22 +57,18 @@ function MainApp() {
     loading: authLoading,
   } = useAuth();
 
-  // Authentication state
   const [credits, setCredits] = useState<number>(0);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showAuthApp, setShowAuthApp] = useState(false);
   const [authFlow, setAuthFlow] = useState("login");
   const [showSettings, setShowSettings] = useState(false);
 
-  // Pipeline share page state
   const [showPipelineSharePage, setShowPipelineSharePage] = useState(false);
   const [currentPipelineId, setCurrentPipelineId] = useState("");
 
-  // Shareable profile state
   const [showShareableProfile, setShowShareableProfile] = useState(false);
   const [currentCandidateId, setCurrentCandidateId] = useState("");
 
-  // Existing state
   const [selectedCandidate, setSelectedCandidate] =
     useState<CandidateListItem | null>(null);
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
@@ -91,7 +87,6 @@ function MainApp() {
   );
   const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
 
-  // Share Pipelines state
   const [showShareLoader, setShowShareLoader] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
 
@@ -163,14 +158,6 @@ function MainApp() {
     }
   }, [isAuthenticated]);
 
-  // Example categories data; replace with your actual data source as needed
-  // const categories = [
-  //   { name: "Head Of Finance", count: 12 },
-  //   { name: "Engineering Manager", count: 8 },
-  //   { name: "Product Designer", count: 5 },
-  //   { name: "Marketing Lead", count: 7 },
-  //   // Add more categories as needed
-  // ];
   const page = 1;
   const candidatesPerPage = 5;
 
@@ -193,7 +180,8 @@ function MainApp() {
     if (
       isAuthenticated &&
       !searchTerm &&
-      !Object.values(filters).some((val) => val)
+      !Object.values(filters).some((val) => val) &&
+      activeCategoryId !== null // Ensure we have an active category
     ) {
       const fetchInitialCandidates = async () => {
         setLoadingCandidates(true);
@@ -202,12 +190,12 @@ function MainApp() {
             page,
             page_size: candidatesPerPage,
             tab: activeTab,
+            job_id: activeCategoryId, // Pass the activeCategoryId as job_id
           });
           console.log("Fetched initial candidates:", results);
           setCandidates(results);
-          showToast.error("Initial candidates loaded successfully");
+          showToast.success("Initial candidates loaded successfully"); // Fixed toast type
           console.log("Total candidates fetched:", count);
-          console.log("Candidates fetched:", candidates);
           if (count > 0 && !selectedCandidate) {
             setSelectedCandidate(results[0]);
           }
@@ -220,7 +208,14 @@ function MainApp() {
       };
       fetchInitialCandidates();
     }
-  }, [isAuthenticated, activeTab, selectedCandidate]);
+  }, [
+    isAuthenticated,
+    activeTab,
+    selectedCandidate,
+    activeCategoryId,
+    searchTerm,
+    filters,
+  ]);
 
   useEffect(() => {
     if (isAuthenticated && userStatus) {
@@ -328,20 +323,6 @@ function MainApp() {
     }
   };
 
-  const handleLogoutCancel = () => {
-    setShowLogoutModal(false);
-  };
-
-  // const handleLogin = () => {
-  //   setAuthFlow("login");
-  //   setShowAuthApp(true);
-  // };
-
-  // const handleSignup = () => {
-  //   setAuthFlow("signup");
-  //   setShowAuthApp(true);
-  // };
-
   const handleAuthSuccess = (user: any) => {
     setCurrentUser(user);
     setShowAuthApp(false);
@@ -353,39 +334,9 @@ function MainApp() {
     if (userStatus?.is_onboarded) {
       navigate("/");
     } else {
-      navigate("/workspaces-org"); // Redirect to onboarding
+      navigate("/workspaces-org");
     }
   };
-
-  // const handleLogout = async () => {
-  //   try {
-  //     await authService.signOut();
-  //     setCurrentUser(null);
-  //     setShowAuthApp(false);
-  //     setShowSettings(false);
-  //     setSelectedCandidate(null);
-  //     setShowTemplateSelector(false);
-  //     setShowCreateJobRole(false);
-  //     setShowEditTemplate(false);
-  //     setShowPipelineStages(false);
-  //     setSearchTerm("");
-  //     showToast.success("Successfully logged out");
-  //     navigate("/"); // Redirect to root after logout
-  //   } catch (error: any) {
-  //     console.error("Logout error:", error);
-  //     showToast.error("Failed to logout");
-  //   }
-  // };
-
-  // const handleWorkspacesOrg = () => {
-  //   setShowAuthApp(true);
-  //   setAuthFlow("workspaces-org");
-  //   navigate("/workspaces-org");
-  // };
-
-  // const handleSettingsClick = () => {
-  //   setShowSettings(true);
-  // };
 
   const handleSendInvite = () => {
     setShowTemplateSelector(true);
@@ -508,7 +459,6 @@ function MainApp() {
     window.history.pushState({}, "", "/");
   };
 
-  // Conditional Rendering
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -592,6 +542,9 @@ function MainApp() {
                     activeTab={activeTab}
                     setActiveTab={setActiveTab}
                     onOpenLogoutModal={handleOpenLogoutModal}
+                    jobId={activeCategoryId || 0}
+                    categories={categories}
+                    onSelectJob={setActiveCategoryId}
                   />
                 </>
               ) : (
@@ -732,7 +685,7 @@ function MainApp() {
                             filters={filters}
                             onFiltersChange={(newFilters) => {
                               setFilters(newFilters);
-                              setSearchTerm(newFilters.keywords); // Sync keywords with searchTerm
+                              setSearchTerm(newFilters.keywords);
                             }}
                             setCandidates={setCandidates}
                             candidates={candidates}
@@ -812,7 +765,7 @@ function MainApp() {
                             </p>
                             <div className="flex space-x-3">
                               <button
-                                onClick={handleLogoutCancel}
+                                onClick={handleCloseLogoutModal}
                                 className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                               >
                                 Cancel
@@ -878,7 +831,6 @@ function MainApp() {
         />
       </Routes>
 
-      {/* Render modal at the root level */}
       {showLogoutModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">

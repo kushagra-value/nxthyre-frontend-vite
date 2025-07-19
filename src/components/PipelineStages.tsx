@@ -830,64 +830,72 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               </div>
 
               <div className="divide-y divide-gray-200">
-                {applications.length === 0 ? (
-                  <div className="p-8 text-center text-gray-500">
-                    <User className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                    <p className="text-lg font-medium">
-                      No candidates in this stage
-                    </p>
-                    <p className="text-sm mt-1">
-                      Candidates will appear here when they reach this stage
-                    </p>
-                  </div>
-                ) : (
-                  applications.map((app) => (
-                    <div
-                      key={app.id}
-                      className={`p-3 lg:p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
-                        selectedApplicationId === app.id
-                          ? "bg-blue-50 border-l-4 border-blue-500"
-                          : ""
-                      }`}
-                      onClick={() => handleApplicationSelect(app.id)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedCandidates.includes(
-                            app.candidate.id
-                          )}
-                          onChange={() =>
-                            handleCandidateCheckbox(app.candidate.id)
-                          }
-                          className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                        <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                          {app.candidate.first_name[0]}
-                          {app.candidate.last_name[0]}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-base font-semibold text-gray-900">
-                              {app.candidate.first_name}{" "}
-                              {app.candidate.last_name}
-                            </h3>
-                            <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
-                              {
-                                stages.find(
-                                  (stage) => stage.id === selectedStageId
-                                )?.name
-                              }
-                            </span>
+                {applications ? (
+                  applications.length === 0 ? (
+                    <div className="p-8 text-center text-gray-500">
+                      <User className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <p className="text-lg font-medium">
+                        No candidates in this stage
+                      </p>
+                      <p className="text-sm mt-1">
+                        Candidates will appear here when they reach this stage
+                      </p>
+                    </div>
+                  ) : (
+                    applications.map((app) => (
+                      <div
+                        key={app.id}
+                        className={`p-3 lg:p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
+                          selectedApplicationId === app.id
+                            ? "bg-blue-50 border-l-4 border-blue-500"
+                            : ""
+                        }`}
+                        onClick={() => handleApplicationSelect(app.id)}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedCandidates.includes(
+                              app.candidate.id
+                            )}
+                            onChange={() =>
+                              handleCandidateCheckbox(app.candidate.id)
+                            }
+                            className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                            {app.candidate.first_name[0]}
+                            {app.candidate.last_name[0]}
                           </div>
-                          <p className="text-sm text-gray-500 mt-1">
-                            Candidate
-                          </p>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <h3 className="text-base font-semibold text-gray-900">
+                                {app.candidate.first_name}{" "}
+                                {app.candidate.last_name}
+                              </h3>
+                              <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                                {
+                                  stages.find(
+                                    (stage) => stage.id === selectedStageId
+                                  )?.name
+                                }
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-500 mt-1">
+                              Candidate
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    ))
+                  )
+                ) : (
+                  <div className="p-8 text-center text-gray-500">
+                    <p className="text-lg font-medium">
+                      Loading applications...
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
