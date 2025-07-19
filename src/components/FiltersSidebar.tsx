@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Search,
   Building2,
-  Clock10,
   MapPin,
   GraduationCap,
   ChevronDown,
@@ -231,34 +230,29 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     spotlight: false,
     moreFilters: false,
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   // Debounced fetch candidates
   const debouncedFetchCandidates = useCallback(
     debounce(async (filterParams: any) => {
+      setIsLoading(true);
       try {
+        console.log("Fetching candidates with params:", filterParams);
         const response = await candidateService.searchCandidates({
           ...filterParams,
-          page: 1, // Reset to page 1 on filter change
+          page: 1,
           page_size: 20,
         });
         setCandidates(response.results);
       } catch (error) {
         console.error("Error fetching filtered candidates:", error);
         setCandidates([]);
+      } finally {
+        setIsLoading(false);
       }
     }, 500),
     [setCandidates]
   );
-
-  // Update filters when activeTab changes
-  useEffect(() => {
-    onFiltersChange({
-      ...filters,
-      application_type: activeTab,
-      is_prevetted: activeTab === "prevetted",
-      is_active: activeTab === "active",
-    });
-  }, [activeTab, onFiltersChange, filters]);
 
   // Fetch candidates when filters change
   useEffect(() => {
@@ -268,9 +262,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         application_type: filters.application_type,
       };
       if (filters.keywords) filterParams.q = filters.keywords;
-      if (filters.minTotalExp) filterParams.experience_min = filters.minTotalExp;
-      if (filters.maxTotalExp) filterParams.experience_max = filters.maxTotalExp;
-      if (filters.minExperience) filterParams.exp_in_current_company_min = filters.minExperience;
+      if (filters.minTotalExp) filterParams.experience_min = Number(filters.minTotalExp);
+      if (filters.maxTotalExp) filterParams.experience_max = Number(filters.maxTotalExp);
+      if (filters.minExperience) filterParams.exp_in_current_company_min = Number(filters.minExperience);
       if (filters.topTierUniversities) filterParams.is_top_tier_college = filters.topTierUniversities;
       if (filters.hasCertification) filterParams.has_certification = filters.hasCertification;
       if (filters.city || filters.country)
@@ -278,7 +272,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       if (filters.location) filterParams.location = filters.location;
       if (filters.selectedSkills.length > 0) filterParams.skills = filters.selectedSkills.join(",");
       if (filters.companies) filterParams.companies = filters.companies.split(",").map((c: string) => c.trim());
-      if (filters.industries) filterParams.industries = filters.industries.split(",").map((c: string) => c.trim());
+      if (filters.industries) filterParams.industries = filters.industries.split(",").map((i: string) => i.trim());
       if (filters.minSalary) filterParams.salary_min = filters.minSalary;
       if (filters.maxSalary) filterParams.salary_max = filters.maxSalary;
       if (filters.colleges) filterParams.colleges = filters.colleges.split(",").map((c: string) => c.trim());
@@ -317,7 +311,65 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   };
 
   const updateFilters = (key: string, value: any) => {
-    onFiltersChange({ ...filters, [key]: value });
+    const newFilters = { ...filters, [key]: value };
+    // Validate numeric fields
+    if (key === "minTotalExp" && newFilters.maxTotalExp && Number(value) > Number(newFilters.maxTotalExp)) {
+      console.warn("Min experience cannot be greater than max experience");
+      return;
+    }
+    if (key === "maxTotalExp" && newFilters.minTotalExp && Number(value) < Number(newFilters.minTotalExp)) {
+      console.warn("Max experience cannot be less than min experience");
+      return;
+    }
+    if (key === "minSalary" && newFilters.maxSalary && Number(value) > Number(newFilters.maxSalary)) {
+      console.warn("Min salary cannot be greater than max salary");
+      return;
+    }
+    if (key === "maxSalary" && newFilters.minSalary && Number(value) < Number(newFilters.minSalary)) {
+      console.warn("Max salary cannot be less than min salary");
+      return;
+    }
+    onFiltersChange(newFilters);
+  };
+
+  const resetFilters = () => {
+    onFiltersChange({
+      keywords: "",
+      booleanSearch: false,
+      semanticSearch: false,
+      selectedCategories: [],
+      minExperience: "",
+      maxExperience: "",
+      funInCurrentCompany: false,
+      minTotalExp: "",
+      maxTotalExp: "",
+      city: "",
+      country: "",
+      location: "",
+      selectedSkills: [],
+      skillLevel: "",
+      noticePeriod: "",
+      companies: "",
+      industries: "",
+      minSalary: "",
+      maxSalary: "",
+      colleges: "",
+      topTierUniversities: false,
+      computerScienceGraduates: false,
+      showFemaleCandidates: false,
+      recentlyPromoted: false,
+      backgroundVerified: false,
+      hasCertification: false,
+      hasResearchPaper: false,
+      hasLinkedIn: false,
+      hasBehance: false,
+      hasTwitter: false,
+      hasPortfolio: false,
+      jobId: filters.jobId,
+      application_type: activeTab,
+      is_prevetted: activeTab === "prevetted",
+      is_active: activeTab === "active",
+    });
   };
 
   const noticePeriodOptions = ["Immediate", "15 days", "30 days", "45 days", "60 days", "90 days"];
@@ -330,6 +382,22 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           Filters
         </h2>
         <FilterMenu filters={filters} updateFilters={updateFilters} />
+      </div>
+
+      {isLoading && (
+        <div className="text-center mb-4">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="text-gray-600 text-sm">Loading candidates...</p>
+        </div>
+      )}
+
+      <div className="mb-4">
+        <button
+          onClick={resetFilters}
+          className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
+        >
+          Reset Filters
+        </button>
       </div>
 
       {/* Keywords */}

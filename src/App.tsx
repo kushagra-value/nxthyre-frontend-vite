@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
@@ -128,7 +128,7 @@ function MainApp() {
     is_active: false,
   });
 
-  // Fetch job categories and set initial filters
+  // Fetch job categories
   const fetchCategories = async () => {
     setLoadingCategories(true);
     try {
@@ -154,28 +154,27 @@ function MainApp() {
   };
 
   // Fetch job details and set filters
-  // In MainApp
-const fetchJobDetailsAndSetFilters = async (jobId: number) => {
-  try {
-    const job = await jobPostService.getJob(jobId);
-    setFilters((prev) => ({
-      ...prev,
-      jobId: job.id.toString(),
-      selectedSkills: job.skills || [], // Handle empty skills array
-      minTotalExp: job.experience_min_years ? job.experience_min_years.toString() : "",
-      maxTotalExp: job.experience_max_years ? job.experience_max_years.toString() : "",
-      location: job.location || "",
-      city: job.location ? job.location.split(",")[0]?.trim() || "" : "",
-      country: job.location ? job.location.split(",")[1]?.trim() || "" : "",
-      minSalary: job.salary_min || "",
-      maxSalary: job.salary_max || "",
-      application_type: activeTab,
-    }));
-  } catch (error) {
-    showToast.error("Failed to fetch job details");
-    console.error("Error fetching job details:", error);
-  }
-};
+  const fetchJobDetailsAndSetFilters = async (jobId: number) => {
+    try {
+      const job = await jobPostService.getJob(jobId);
+      setFilters((prev) => ({
+        ...prev,
+        jobId: job.id.toString(),
+        selectedSkills: job.skills || [],
+        minTotalExp: job.experience_min_years ? job.experience_min_years.toString() : "",
+        maxTotalExp: job.experience_max_years ? job.experience_max_years.toString() : "",
+        location: job.location || "",
+        city: job.location ? job.location.split(",")[0]?.trim() || "" : "",
+        country: job.location ? job.location.split(",")[1]?.trim() || "" : "",
+        minSalary: job.salary_min || "",
+        maxSalary: job.salary_max || "",
+        application_type: activeTab,
+      }));
+    } catch (error) {
+      showToast.error("Failed to fetch job details");
+      console.error("Error fetching job details:", error);
+    }
+  };
 
   // Fetch candidates based on filters and page
   const fetchCandidates = useCallback(
@@ -226,6 +225,7 @@ const fetchJobDetailsAndSetFilters = async (jobId: number) => {
           if (days !== undefined) filterParams.notice_period_max_days = days;
         }
 
+        console.log("Fetching candidates with params:", filterParams);
         const response = await candidateService.searchCandidates(filterParams);
         setCandidates(response.results);
         setTotalCount(response.count);
@@ -241,7 +241,7 @@ const fetchJobDetailsAndSetFilters = async (jobId: number) => {
         setLoadingCandidates(false);
       }
     },
-    [filters, selectedCandidate]
+    [filters.jobId, filters.application_type, filters.keywords, filters.minTotalExp, filters.maxTotalExp, filters.minExperience, filters.topTierUniversities, filters.hasCertification, filters.city, filters.country, filters.location, filters.selectedSkills, filters.companies, filters.industries, filters.minSalary, filters.maxSalary, filters.colleges, filters.showFemaleCandidates, filters.recentlyPromoted, filters.backgroundVerified, filters.hasLinkedIn, filters.hasTwitter, filters.hasPortfolio, filters.computerScienceGraduates, filters.hasResearchPaper, filters.hasBehance, filters.is_prevetted, filters.is_active, filters.noticePeriod, selectedCandidate]
   );
 
   // Handle candidates update from CandidatesMain
@@ -253,19 +253,19 @@ const fetchJobDetailsAndSetFilters = async (jobId: number) => {
     }
   };
 
-  // Fetch categories and candidates on mount
+  // Fetch categories on auth change
   useEffect(() => {
     if (isAuthenticated) {
       fetchCategories();
     }
   }, [isAuthenticated]);
 
-  // Fetch candidates when filters or page change
+  // Fetch candidates when filters.jobId or currentPage changes
   useEffect(() => {
     if (filters.jobId) {
       fetchCandidates(currentPage);
     }
-  }, [filters, currentPage, fetchCandidates]);
+  }, [filters.jobId, currentPage, fetchCandidates]);
 
   // Update filters when activeTab changes
   useEffect(() => {
@@ -602,7 +602,17 @@ const fetchJobDetailsAndSetFilters = async (jobId: number) => {
           path="/"
           element={
             isAuthenticated ? (
-              showPipelineStages ? (
+              showPipelineSharePage ? (
+                <PipelineSharePage
+                  pipelineId={currentPipelineId}
+                  onBack={handleBackFromPipelineShare}
+                />
+              ) : showShareableProfile ? (
+                <ShareableProfile
+                  candidateId={currentCandidateId}
+                  onBack={handleBackFromShareableProfile}
+                />
+              ) : showPipelineStages ? (
                 <>
                   <Toaster />
                   <PipelineStages
