@@ -257,9 +257,14 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               </div>
             </div>
 
-            <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-              Resend Invite
-            </button>
+            <div className="flex justify-between w-full">
+              <button className="w-[45%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Move to Next Stage
+              </button>
+              <button className="w-[45%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Archive
+              </button>
+            </div>
           </div>
         );
 
