@@ -239,7 +239,7 @@ function MainApp() {
         setLoadingCandidates(false);
       }
     },
-    [filters, selectedCandidate]
+    [selectedCandidate]
   );
 
   // Handle candidates update from CandidatesMain
