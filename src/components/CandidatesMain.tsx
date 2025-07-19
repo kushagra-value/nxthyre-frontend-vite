@@ -621,7 +621,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         <div className="p-3 lg:p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-600">
-              Showing {startIndex + 1} to {Math.min(endIndex, totalCount)} of {totalCount} candidates
+              Showing {startIndex + 1} to {Math.min(endIndex, totalCount)+startIndex+1} of {totalCount} candidates
             </div>
             <div className="flex items-center space-x-2">
               <button
