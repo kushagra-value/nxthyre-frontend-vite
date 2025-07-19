@@ -12,9 +12,15 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleEllipsis,
+  Clock10,
+  Briefcase,
+  Star,
 } from "lucide-react";
 import { debounce } from "lodash";
-import { candidateService, CandidateListItem } from "../services/candidateService";
+import {
+  candidateService,
+  CandidateListItem,
+} from "../services/candidateService";
 
 interface FiltersSidebarProps {
   filters: {
@@ -61,8 +67,18 @@ interface FiltersSidebarProps {
 }
 
 const JobTitlesSlider: React.FC = () => {
-  const jobTitles = ["Software Engineer", "Product Manager", "Data Scientist", "Designer"];
-  const repeatedJobTitles = [...jobTitles, ...jobTitles, ...jobTitles, ...jobTitles];
+  const jobTitles = [
+    "Software Engineer",
+    "Product Manager",
+    "Data Scientist",
+    "Designer",
+  ];
+  const repeatedJobTitles = [
+    ...jobTitles,
+    ...jobTitles,
+    ...jobTitles,
+    ...jobTitles,
+  ];
   const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -76,13 +92,19 @@ const JobTitlesSlider: React.FC = () => {
 
   const scrollLeft = () => {
     if (sliderRef.current) {
-      sliderRef.current.scrollBy({ left: -sliderRef.current.clientWidth, behavior: "smooth" });
+      sliderRef.current.scrollBy({
+        left: -sliderRef.current.clientWidth,
+        behavior: "smooth",
+      });
     }
   };
 
   const scrollRight = () => {
     if (sliderRef.current) {
-      sliderRef.current.scrollBy({ left: sliderRef.current.clientWidth, behavior: "smooth" });
+      sliderRef.current.scrollBy({
+        left: sliderRef.current.clientWidth,
+        behavior: "smooth",
+      });
     }
   };
 
@@ -138,7 +160,10 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ filters, updateFilters }) => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsMenuOpen(false);
       }
     };
@@ -158,12 +183,18 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ filters, updateFilters }) => {
         <div
           ref={dropdownRef}
           className="absolute right-0 top-full mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out z-10"
+          style={{
+            opacity: isMenuOpen ? 1 : 0,
+            transform: `translateY(${isMenuOpen ? 0 : -10}px)`,
+          }}
         >
           <div className="py-1">
             <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-700">
               <span>Semantic Search</span>
               <button
-                onClick={() => updateFilters("semanticSearch", !filters.semanticSearch)}
+                onClick={() =>
+                  updateFilters("semanticSearch", !filters.semanticSearch)
+                }
                 className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
                   filters.semanticSearch ? "bg-blue-500" : "bg-gray-300"
                 }`}
@@ -178,7 +209,9 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ filters, updateFilters }) => {
             <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-700">
               <span>Boolean Search</span>
               <button
-                onClick={() => updateFilters("booleanSearch", !filters.booleanSearch)}
+                onClick={() =>
+                  updateFilters("booleanSearch", !filters.booleanSearch)
+                }
                 className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
                   filters.booleanSearch ? "bg-blue-500" : "bg-gray-300"
                 }`}
@@ -217,7 +250,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   candidates,
   activeTab,
 }) => {
-  const [expandedSections, setExpandedSections] = useState<Record<SectionKey, boolean>>({
+  const [expandedSections, setExpandedSections] = useState<
+    Record<SectionKey, boolean>
+  >({
     keywords: true,
     experience: false,
     totalExp: true,
@@ -241,7 +276,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         const response = await candidateService.searchCandidates({
           ...filterParams,
           page: 1,
-          page_size: 20,
         });
         setCandidates(response.results);
       } catch (error) {
@@ -250,7 +284,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       } finally {
         setIsLoading(false);
       }
-    }, 500),
+    }, 1000),
     [setCandidates]
   );
 
@@ -262,23 +296,41 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         application_type: filters.application_type,
       };
       if (filters.keywords) filterParams.q = [filters.keywords];
-      if (filters.minTotalExp) filterParams.experience_min = Number(filters.minTotalExp);
-      if (filters.maxTotalExp) filterParams.experience_max = Number(filters.maxTotalExp);
-      if (filters.minExperience) filterParams.exp_in_current_company_min = Number(filters.minExperience);
-      if (filters.topTierUniversities) filterParams.is_top_tier_college = filters.topTierUniversities;
-      if (filters.hasCertification) filterParams.has_certification = filters.hasCertification;
+      if (filters.minTotalExp)
+        filterParams.experience_min = Number(filters.minTotalExp);
+      if (filters.maxTotalExp)
+        filterParams.experience_max = Number(filters.maxTotalExp);
+      if (filters.minExperience)
+        filterParams.exp_in_current_company_min = Number(filters.minExperience);
+      if (filters.topTierUniversities)
+        filterParams.is_top_tier_college = filters.topTierUniversities;
+      if (filters.hasCertification)
+        filterParams.has_certification = filters.hasCertification;
       if (filters.city || filters.country)
-        filterParams.location = `${filters.city}${filters.city && filters.country ? ", " : ""}${filters.country}`;
+        filterParams.location = `${filters.city}${
+          filters.city && filters.country ? ", " : ""
+        }${filters.country}`;
       if (filters.location) filterParams.location = filters.location;
-      if (filters.selectedSkills.length > 0) filterParams.skills = filters.selectedSkills.join(",");
-      if (filters.companies) filterParams.companies = filters.companies.split(",").map((c: string) => c.trim());
-      if (filters.industries) filterParams.industries = filters.industries.split(",").map((i: string) => i.trim());
+      if (filters.selectedSkills.length > 0)
+        filterParams.skills = filters.selectedSkills.join(",");
+      if (filters.companies)
+        filterParams.companies = filters.companies
+          .split(",")
+          .map((c: string) => c.trim());
+      if (filters.industries)
+        filterParams.industries = filters.industries
+          .split(",")
+          .map((i: string) => i.trim());
       if (filters.minSalary) filterParams.salary_min = filters.minSalary;
       if (filters.maxSalary) filterParams.salary_max = filters.maxSalary;
-      if (filters.colleges) filterParams.colleges = filters.colleges.split(",").map((c: string) => c.trim());
+      if (filters.colleges)
+        filterParams.colleges = filters.colleges
+          .split(",")
+          .map((c: string) => c.trim());
       if (filters.showFemaleCandidates) filterParams.is_female_only = true;
       if (filters.recentlyPromoted) filterParams.is_recently_promoted = true;
-      if (filters.backgroundVerified) filterParams.is_background_verified = true;
+      if (filters.backgroundVerified)
+        filterParams.is_background_verified = true;
       if (filters.hasLinkedIn) filterParams.has_linkedin = true;
       if (filters.hasTwitter) filterParams.has_twitter = true;
       if (filters.hasPortfolio) filterParams.has_portfolio = true;
@@ -313,19 +365,35 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const updateFilters = (key: string, value: any) => {
     const newFilters = { ...filters, [key]: value };
     // Validate numeric fields
-    if (key === "minTotalExp" && newFilters.maxTotalExp && Number(value) > Number(newFilters.maxTotalExp)) {
+    if (
+      key === "minTotalExp" &&
+      newFilters.maxTotalExp &&
+      Number(value) > Number(newFilters.maxTotalExp)
+    ) {
       console.warn("Min experience cannot be greater than max experience");
       return;
     }
-    if (key === "maxTotalExp" && newFilters.minTotalExp && Number(value) < Number(newFilters.minTotalExp)) {
+    if (
+      key === "maxTotalExp" &&
+      newFilters.minTotalExp &&
+      Number(value) < Number(newFilters.minTotalExp)
+    ) {
       console.warn("Max experience cannot be less than min experience");
       return;
     }
-    if (key === "minSalary" && newFilters.maxSalary && Number(value) > Number(newFilters.maxSalary)) {
+    if (
+      key === "minSalary" &&
+      newFilters.maxSalary &&
+      Number(value) > Number(newFilters.maxSalary)
+    ) {
       console.warn("Min salary cannot be greater than max salary");
       return;
     }
-    if (key === "maxSalary" && newFilters.minSalary && Number(value) < Number(newFilters.minSalary)) {
+    if (
+      key === "maxSalary" &&
+      newFilters.minSalary &&
+      Number(value) < Number(newFilters.minSalary)
+    ) {
       console.warn("Max salary cannot be less than min salary");
       return;
     }
@@ -372,131 +440,281 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     });
   };
 
-  const noticePeriodOptions = ["Immediate", "15 days", "30 days", "45 days", "60 days", "90 days"];
+  const noticePeriodOptions = [
+    "Immediate",
+    "15 days",
+    "30 days",
+    "45 days",
+    "60 days",
+    "90 days",
+  ];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-800 flex items-center">
-          <Filter className="w-5 h-5 mr-2 text-gray-800" />
-          Filters
-        </h2>
-        <FilterMenu filters={filters} updateFilters={updateFilters} />
-      </div>
-
-      {isLoading && (
-        <div className="text-center mb-4">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-gray-600 text-sm">Loading candidates...</p>
-        </div>
-      )}
-
-      <div className="mb-4">
-        <button
-          onClick={resetFilters}
-          className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
-        >
-          Reset Filters
-        </button>
-      </div>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-4 space-y-4 h-fit">
 
       {/* Keywords */}
-      <div className="mb-4">
-        <button
-          onClick={() => toggleSection("keywords")}
-          className="flex items-center justify-between w-full text-sm font-medium text-gray-700"
-        >
-          Keywords
-          {expandedSections.keywords ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <ChevronDown className="w-4 h-4" />
-          )}
-        </button>
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
+            <Search className="w-4 h-4 mr-2 text-gray-800" />
+            Keywords
+          </h3>
+          <div className="flex gap-2 cursor-pointer">
+            <FilterMenu filters={filters} updateFilters={updateFilters} />
+            <div
+              className="cursor-pointer"
+              onClick={() => toggleSection("keywords")}
+            >
+              {expandedSections.keywords ? (
+                <ChevronUp className="w-4 h-4 text-gray-500" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-gray-500" />
+              )}
+            </div>
+          </div>
+        </div>
         {expandedSections.keywords && (
-          <div className="mt-2">
+          <div className="space-y-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by keywords"
+                placeholder="For Ex: Gen AI Specialist, and Gen AI engineer"
                 value={filters.keywords}
                 onChange={(e) => updateFilters("keywords", e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
             </div>
+
+            <JobTitlesSlider />
           </div>
         )}
       </div>
 
       {/* Total Experience */}
-      <div className="mb-4">
-        <button
+      <div>
+        <div
+          className="flex items-center justify-between cursor-pointer mb-2"
           onClick={() => toggleSection("totalExp")}
-          className="flex items-center justify-between w-full text-sm font-medium text-gray-700"
         >
-          Total Experience
+          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
+            <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
+            Total Experience
+          </h3>
           {expandedSections.totalExp ? (
-            <ChevronUp className="w-4 h-4" />
+            <ChevronUp className="w-4 h-4 text-gray-500" />
           ) : (
-            <ChevronDown className="w-4 h-4" />
+            <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
-        </button>
+        </div>
         {expandedSections.totalExp && (
-          <div className="mt-2 flex space-x-2">
+          <div className="space-y-2">
+            <div className="flex space-x-2">
+              <input
+                type="number"
+                placeholder="Min Exp (in years)"
+                value={filters.minTotalExp}
+                onChange={(e) => updateFilters("minTotalExp", e.target.value)}
+                className="w-1/3 flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <input
+                type="number"
+                placeholder="Max Exp (in years)"
+                value={filters.maxTotalExp}
+                onChange={(e) => updateFilters("maxTotalExp", e.target.value)}
+                className="w-1/3 flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="mt-2">
+          <input
+            type="number"
+            placeholder="Years of Exp in Current Company"
+            value={filters.minExperience}
+            onChange={(e) => updateFilters("minExperience", e.target.value)}
+            className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+      </div>
+
+      {/* Location */}
+      <div className="mb-4">
+        <div
+          className="flex items-center justify-between cursor-pointer mb-2"
+          onClick={() => toggleSection("location")}
+        >
+          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
+            <MapPin className="w-4 h-4 mr-2 text-gray-800" />
+            Location
+          </h3>
+          {expandedSections.location ? (
+            <ChevronUp className="w-4 h-4 text-gray-500" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-gray-500" />
+          )}
+        </div>
+        {expandedSections.location && (
+          <div className="space-y-2">
+            <div className="flex space-x-2">
+              <select
+                value={filters.city}
+                onChange={(e) => updateFilters("city", e.target.value)}
+                className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">City</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Bangalore">Bangalore</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Hyderabad">Hyderabad</option>
+              </select>
+              <select
+                value={filters.country}
+                onChange={(e) => updateFilters("country", e.target.value)}
+                className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Country</option>
+                <option value="India">India</option>
+                <option value="USA">USA</option>
+                <option value="UK">UK</option>
+                <option value="Canada">Canada</option>
+              </select>
+            </div>
             <input
-              type="number"
-              placeholder="Min"
-              value={filters.minTotalExp}
-              onChange={(e) => updateFilters("minTotalExp", e.target.value)}
-              className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-            />
-            <input
-              type="number"
-              placeholder="Max"
-              value={filters.maxTotalExp}
-              onChange={(e) => updateFilters("maxTotalExp", e.target.value)}
-              className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+              type="text"
+              placeholder="Enter Location like Ahmedabad"
+              value={filters.location}
+              onChange={(e) => updateFilters("location", e.target.value)}
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
         )}
       </div>
 
-      {/* Location */}
-      <div className="mb-4">
-        <button
-          onClick={() => toggleSection("location")}
-          className="flex items-center justify-between w-full text-sm font-medium text-gray-700"
+      {/* Companies/Industries */}
+      <div>
+        <div
+          className="flex items-center justify-between cursor-pointer mb-2"
+          onClick={() => toggleSection("companies")}
         >
-          Location
-          {expandedSections.location ? (
-            <ChevronUp className="w-4 h-4" />
+          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
+            <Building2 className="w-4 h-4 mr-2 text-gray-800" />
+            Companies/Industries
+          </h3>
+          {expandedSections.companies ? (
+            <ChevronUp className="w-4 h-4 text-gray-500" />
           ) : (
-            <ChevronDown className="w-4 h-4" />
+            <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
-        </button>
-        {expandedSections.location && (
-          <div className="mt-2">
-            <div className="relative mb-2">
-              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+        </div>
+
+        {expandedSections.companies && (
+          <div className="space-y-0">
+            <div>
+              <label className="text-xs text-gray-600 mb-1 block">
+                Companies
+              </label>
               <input
                 type="text"
-                placeholder="City"
-                value={filters.city}
-                onChange={(e) => updateFilters("city", e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                placeholder="Search Companies"
+                value={filters.companies}
+                onChange={(e) => updateFilters("companies", e.target.value)}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <span className="flex justify-center text-gray-400">or</span>
+            <div>
+              <label className="text-xs text-gray-600 mb-1 block">
+                Industries
+              </label>
               <input
                 type="text"
-                placeholder="Country"
-                value={filters.country}
-                onChange={(e) => updateFilters("country", e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                placeholder="Search Industries"
+                value={filters.industries}
+                onChange={(e) => updateFilters("industries", e.target.value)}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* Salary Range */}
+      <div>
+        <div
+          className="flex items-center justify-between cursor-pointer mb-2"
+          onClick={() => toggleSection("salary")}
+        >
+          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
+            <DollarSign className="w-4 h-4 mr-2 text-gray-800" />
+            Salary range
+          </h3>
+          {expandedSections.salary ? (
+            <ChevronUp className="w-4 h-4 text-gray-500" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-gray-500" />
+          )}
+        </div>
+
+        {expandedSections.salary && (
+          <div className="space-y-2">
+            <div className="flex space-x-2">
+              <select
+                value={filters.minSalary}
+                onChange={(e) => updateFilters("minSalary", e.target.value)}
+                className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="5">5 LPA</option>
+                <option value="10">10 LPA</option>
+                <option value="15">15 LPA</option>
+                <option value="20">20 LPA</option>
+              </select>
+              <select
+                value={filters.maxSalary}
+                onChange={(e) => updateFilters("maxSalary", e.target.value)}
+                className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="10">10 LPA</option>
+                <option value="20">20 LPA</option>
+                <option value="30">30 LPA</option>
+                <option value="50">50 LPA</option>
+              </select>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Notice Period */}
+      <div>
+        <div
+          className="flex items-center justify-between cursor-pointer mb-2"
+          onClick={() => toggleSection("notice")}
+        >
+          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
+            <Clock10 className="w-4 h-4 mr-2 text-gray-800" />
+            Notice period
+          </h3>
+          {expandedSections.notice ? (
+            <ChevronUp className="w-4 h-4 text-gray-500" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-gray-500" />
+          )}
+        </div>
+
+        {expandedSections.notice && (
+          <div>
+            <select
+              value={filters.noticePeriod}
+              onChange={(e) => updateFilters("noticePeriod", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+            >
+              <option value="">Select Notice Period</option>
+              {noticePeriodOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
           </div>
         )}
       </div>
@@ -520,280 +738,246 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               type="text"
               placeholder="Add skills (comma-separated)"
               value={filters.selectedSkills.join(", ")}
-              onChange={(e) => updateFilters("selectedSkills", e.target.value.split(",").map((s) => s.trim()))}
+              onChange={(e) =>
+                updateFilters(
+                  "selectedSkills",
+                  e.target.value.split(",").map((s) => s.trim())
+                )
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
             />
           </div>
         )}
       </div>
 
-      {/* Notice Period */}
-      <div className="mb-4">
-        <button
-          onClick={() => toggleSection("notice")}
-          className="flex items-center justify-between w-full text-sm font-medium text-gray-700"
-        >
-          Notice Period
-          {expandedSections.notice ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <ChevronDown className="w-4 h-4" />
-          )}
-        </button>
-        {expandedSections.notice && (
-          <div className="mt-2">
-            <select
-              value={filters.noticePeriod}
-              onChange={(e) => updateFilters("noticePeriod", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-            >
-              <option value="">Select Notice Period</option>
-              {noticePeriodOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-      </div>
 
-      {/* Companies */}
-      <div className="mb-4">
-        <button
-          onClick={() => toggleSection("companies")}
-          className="flex items-center justify-between w-full text-sm font-medium text-gray-700"
-        >
-          Companies
-          {expandedSections.companies ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <ChevronDown className="w-4 h-4" />
-          )}
-        </button>
-        {expandedSections.companies && (
-          <div className="mt-2">
-            <div className="relative">
-              <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Add companies (comma-separated)"
-                value={filters.companies}
-                onChange={(e) => updateFilters("companies", e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-              />
-            </div>
-          </div>
-        )}
-      </div>
 
-      {/* Salary */}
-      <div className="mb-4">
-        <button
-          onClick={() => toggleSection("salary")}
-          className="flex items-center justify-between w-full text-sm font-medium text-gray-700"
-        >
-          Salary
-          {expandedSections.salary ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <ChevronDown className="w-4 h-4" />
-          )}
-        </button>
-        {expandedSections.salary && (
-          <div className="mt-2 flex space-x-2">
-            <div className="relative w-1/2">
-              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="number"
-                placeholder="Min"
-                value={filters.minSalary}
-                onChange={(e) => updateFilters("minSalary", e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-              />
-            </div>
-            <div className="relative w-1/2">
-              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="number"
-                placeholder="Max"
-                value={filters.maxSalary}
-                onChange={(e) => updateFilters("maxSalary", e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-              />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Colleges */}
-      <div className="mb-4">
-        <button
+      <div>
+        <div
+          className="flex items-center justify-between cursor-pointer mb-2"
           onClick={() => toggleSection("colleges")}
-          className="flex items-center justify-between w-full text-sm font-medium text-gray-700"
         >
-          Colleges
+          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
+            <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
+            Colleges
+          </h3>
           {expandedSections.colleges ? (
-            <ChevronUp className="w-4 h-4" />
+            <ChevronUp className="w-4 h-4 text-gray-500" />
           ) : (
-            <ChevronDown className="w-4 h-4" />
+            <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
-        </button>
+        </div>
+
         {expandedSections.colleges && (
-          <div className="mt-2">
-            <div className="relative">
-              <GraduationCap className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Add colleges (comma-separated)"
-                value={filters.colleges}
-                onChange={(e) => updateFilters("colleges", e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-              />
-            </div>
-            <label className="flex items-center mt-2">
+          <div className="space-y-2">
+            <input
+              type="text"
+              placeholder="Search Colleges"
+              value={filters.colleges}
+              onChange={(e) => updateFilters("colleges", e.target.value)}
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <label className="flex items-center">
               <input
                 type="checkbox"
                 checked={filters.topTierUniversities}
-                onChange={(e) => updateFilters("topTierUniversities", e.target.checked)}
-                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                onChange={(e) =>
+                  updateFilters("topTierUniversities", e.target.checked)
+                }
+                className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
-              <span className="ml-2 text-sm text-gray-600">Top Tier Universities</span>
+              <span className="ml-2 text-xs text-gray-700">
+                Top tier Universities only
+              </span>
             </label>
-            <label className="flex items-center mt-2">
+            <label className="flex items-center">
               <input
                 type="checkbox"
                 checked={filters.computerScienceGraduates}
-                onChange={(e) => updateFilters("computerScienceGraduates", e.target.checked)}
-                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                onChange={(e) =>
+                  updateFilters("computerScienceGraduates", e.target.checked)
+                }
+                className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
-              <span className="ml-2 text-sm text-gray-600">Computer Science Graduates</span>
+              <span className="ml-2 text-xs text-gray-700">
+                Show computer science graduates only
+              </span>
             </label>
           </div>
         )}
       </div>
 
       {/* Spotlight */}
-      <div className="mb-4">
-        <button
+      <div>
+        <div
+          className="flex items-center justify-between cursor-pointer mb-2"
           onClick={() => toggleSection("spotlight")}
-          className="flex items-center justify-between w-full text-sm font-medium text-gray-700"
         >
-          Spotlight
+          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
+            <Star className="w-4 h-4 mr-2 text-gray-800" />
+            Spotlight
+          </h3>
           {expandedSections.spotlight ? (
-            <ChevronUp className="w-4 h-4" />
+            <ChevronUp className="w-4 h-4 text-gray-500" />
           ) : (
-            <ChevronDown className="w-4 h-4" />
+            <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
-        </button>
+        </div>
+
         {expandedSections.spotlight && (
-          <div className="mt-2 grid grid-cols-1 gap-2">
+          <div className="space-y-2">
             <label className="flex items-center">
               <input
                 type="checkbox"
                 checked={filters.showFemaleCandidates}
-                onChange={(e) => updateFilters("showFemaleCandidates", e.target.checked)}
-                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                onChange={(e) =>
+                  updateFilters("showFemaleCandidates", e.target.checked)
+                }
+                className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
-              <span className="ml-2 text-sm text-gray-600">Female Candidates Only</span>
+              <span className="ml-2 text-xs text-gray-700">
+                Show Female Candidates Only
+              </span>
             </label>
             <label className="flex items-center">
               <input
                 type="checkbox"
                 checked={filters.recentlyPromoted}
-                onChange={(e) => updateFilters("recentlyPromoted", e.target.checked)}
-                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                onChange={(e) =>
+                  updateFilters("recentlyPromoted", e.target.checked)
+                }
+                className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
-              <span className="ml-2 text-sm text-gray-600">Recently Promoted</span>
+              <span className="ml-2 text-xs text-gray-700">
+                Show Candidate that got promoted recently
+              </span>
             </label>
             <label className="flex items-center">
               <input
                 type="checkbox"
                 checked={filters.backgroundVerified}
-                onChange={(e) => updateFilters("backgroundVerified", e.target.checked)}
-                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                onChange={(e) =>
+                  updateFilters("backgroundVerified", e.target.checked)
+                }
+                className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
-              <span className="ml-2 text-sm text-gray-600">Background Verified</span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={filters.hasCertification}
-                onChange={(e) => updateFilters("hasCertification", e.target.checked)}
-                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="ml-2 text-sm text-gray-600">Has Certifications</span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={filters.hasResearchPaper}
-                onChange={(e) => updateFilters("hasResearchPaper", e.target.checked)}
-                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="ml-2 text-sm text-gray-600">Has Research Papers</span>
+              <span className="ml-2 text-xs text-gray-700">
+                Is Background Verified
+              </span>
             </label>
           </div>
         )}
       </div>
 
       {/* More Filters */}
-      <div className="mb-4">
-        <button
+      <div>
+        <div
+          className="flex items-center justify-between cursor-pointer mb-2"
           onClick={() => toggleSection("moreFilters")}
-          className="flex items-center justify-between w-full text-sm font-medium text-gray-700"
         >
-          More Filters
+          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
+            <Filter className="w-4 h-4 mr-2 text-gray-800" />
+            More Filters
+          </h3>
           {expandedSections.moreFilters ? (
-            <ChevronUp className="w-4 h-4" />
+            <ChevronUp className="w-4 h-4 text-gray-500" />
           ) : (
-            <ChevronDown className="w-4 h-4" />
+            <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
-        </button>
+        </div>
+
         {expandedSections.moreFilters && (
-          <div className="mt-2 grid grid-cols-1 gap-2">
+          <div className="space-y-2">
             <label className="flex items-center">
               <input
                 type="checkbox"
-                checked={filters.hasLinkedIn}
-                onChange={(e) => updateFilters("hasLinkedIn", e.target.checked)}
-                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                checked={filters.hasCertification}
+                onChange={(e) =>
+                  updateFilters("hasCertification", e.target.checked)
+                }
+                className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
-              <span className="ml-2 text-sm text-gray-600">Has LinkedIn Profile</span>
+              <span className="ml-2 text-xs text-gray-700">
+                Has Certification
+              </span>
             </label>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={filters.hasResearchPaper}
+                onChange={(e) =>
+                  updateFilters("hasResearchPaper", e.target.checked)
+                }
+                className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="ml-2 text-xs text-gray-700">
+                Must have Research Paper
+              </span>
+            </label>
+
             <label className="flex items-center">
               <input
                 type="checkbox"
                 checked={filters.hasBehance}
                 onChange={(e) => updateFilters("hasBehance", e.target.checked)}
-                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
-              <span className="ml-2 text-sm text-gray-600">Has Behance Profile</span>
+              <span className="ml-2 text-xs text-gray-700">
+                Must have Behance
+              </span>
             </label>
             <label className="flex items-center">
               <input
                 type="checkbox"
                 checked={filters.hasTwitter}
                 onChange={(e) => updateFilters("hasTwitter", e.target.checked)}
-                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
-              <span className="ml-2 text-sm text-gray-600">Has Twitter Profile</span>
+              <span className="ml-2 text-xs text-gray-700">
+                Must have Twitter
+              </span>
             </label>
             <label className="flex items-center">
               <input
                 type="checkbox"
                 checked={filters.hasPortfolio}
-                onChange={(e) => updateFilters("hasPortfolio", e.target.checked)}
-                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                onChange={(e) =>
+                  updateFilters("hasPortfolio", e.target.checked)
+                }
+                className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
-              <span className="ml-2 text-sm text-gray-600">Has Portfolio</span>
+              <span className="ml-2 text-xs text-gray-700">
+                Must have Portfolio website
+              </span>
             </label>
           </div>
         )}
       </div>
 
-      {/* Job Titles Slider */}
-      <JobTitlesSlider />
+      <div className="flex gap-2 border-t border-gray-200">
+        {/* Apply Filters */}
+        <div className="w-full border border-blue-400 rounded-lg">
+          <button
+            onClick={() => debouncedFetchCandidates(filters)}
+            className="w-full p-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center justify-center"
+          >
+            <Filter className="w-4 h-4 mr-2" />
+            Apply Filters
+          </button>
+        </div>
+
+        {/* Clear Filters */}
+        <div className="w-full  border border-blue-400 rounded-lg">
+          <div className="">
+            <button
+              onClick={resetFilters}
+              className="w-full p-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center justify-center"
+            >
+              Clear All Filters
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
