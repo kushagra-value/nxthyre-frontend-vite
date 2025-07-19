@@ -143,7 +143,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const fetchStages = async (jobId: number) => {
     try {
       const response = await apiClient.get(
-        `/api/jobs/applications/stages/?job_id=${jobId}`
+        `/jobs/applications/stages/?job_id=${jobId}`
       );
       const data: Stage[] = response.data;
       setStages(data.sort((a, b) => a.sort_order - b.sort_order));
@@ -157,7 +157,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const fetchCandidates = async (jobId: number, stageSlug: string) => {
     try {
       const response = await apiClient.get(
-        `/api/jobs/applications/?job_id=${jobId}&stage_slug=${stageSlug}`
+        `/jobs/applications/?job_id=${jobId}&stage_slug=${stageSlug}`
       );
       const data: CandidateListItem[] = response.data;
       setCandidates(data);
@@ -170,7 +170,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const fetchCandidateDetails = async (applicationId: number) => {
     try {
       const response = await apiClient.get(
-        `/api/jobs/applications/${applicationId}/`
+        `/jobs/applications/${applicationId}/`
       );
       const data = response.data;
       const mappedCandidate: PipelineCandidate = mapCandidateDetails(data);
@@ -183,7 +183,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
   const moveCandidate = async (applicationId: number, stageId: number) => {
     try {
-      await apiClient.patch(`/api/jobs/applications/${applicationId}/`, {
+      await apiClient.patch(`/jobs/applications/${applicationId}/`, {
         current_stage: stageId,
       });
       fetchCandidates(
@@ -199,7 +199,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     const archiveStage = stages.find((stage) => stage.slug === "archives");
     if (!archiveStage) return;
     try {
-      await apiClient.patch(`/api/jobs/applications/${applicationId}/`, {
+      await apiClient.patch(`/jobs/applications/${applicationId}/`, {
         current_stage: archiveStage.id,
         status: "ARCHIVED",
         archive_reason: "Candidate archived from UI",
@@ -215,7 +215,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
   const bulkMoveCandidates = async (applicationIds: number[]) => {
     try {
-      await apiClient.post("/api/jobs/bulk-move-stage/", {
+      await apiClient.post("/jobs/bulk-move-stage/", {
         application_ids: applicationIds,
       });
       fetchCandidates(
