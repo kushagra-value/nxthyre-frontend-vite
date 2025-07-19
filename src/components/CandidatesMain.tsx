@@ -575,14 +575,14 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 <div className="flex justify-between">
                   <div className="flex space-x-12">
                     <span className="text-gray-500">Experience</span>
-                    <p className="text-gray-900">{candidate.experience_summary?.title}</p>
+                    <p className="text-gray-900 max-w-[58ch] truncate">{candidate.experience_summary?.title}</p>
                   </div>
-                  <p className="text-gray-900">{candidate.experience_summary?.date_range}</p>
+                  <p className="text-gray-900 truncate">{candidate.experience_summary?.date_range}</p>
                 </div>
                 <div className="flex justify-between">
                   <div className="flex space-x-12">
                     <span className="text-gray-500 mr-[5px]">Education</span>
-                    <p className="text-gray-900 truncate">{candidate.education_summary?.title}</p>
+                    <p className="text-gray-900 max-w-[58ch] truncate">{candidate.education_summary?.title}</p>
                   </div>
                   <p className="text-gray-900 truncate">{candidate.education_summary?.date_range}</p>
                 </div>
