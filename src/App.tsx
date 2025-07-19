@@ -141,7 +141,7 @@ function MainApp() {
         count: job.total_candidates || 0,
       }));
       setCategories(mappedCategories);
-      if (mappedCategories.length > 2) {
+      if (mappedCategories.length > 0) {
         setActiveCategoryId(mappedCategories[0].id);
         await fetchJobDetailsAndSetFilters(mappedCategories[0].id);
       } else {
