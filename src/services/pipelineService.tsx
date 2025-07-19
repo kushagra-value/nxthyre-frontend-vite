@@ -37,9 +37,7 @@ export interface ApplicationDetails {
 }
 
 export const getStages = async (jobId: number): Promise<Stage[]> => {
-  const response = await api.get(
-    `/api/jobs/applications/stages/?job_id=${jobId}`
-  );
+  const response = await api.get(`/jobs/applications/stages/?job_id=${jobId}`);
   return response.data;
 };
 
@@ -48,7 +46,7 @@ export const getCandidates = async (
   stageId: number
 ): Promise<CandidateListItem[]> => {
   const response = await api.get(
-    `/api/jobs/applications/?job_id=${jobId}&stage_id=${stageId}`
+    `/jobs/applications/?job_id=${jobId}&stage_id=${stageId}`
   );
   return response.data.results;
 };
@@ -56,7 +54,7 @@ export const getCandidates = async (
 export const getApplicationDetails = async (
   applicationId: number
 ): Promise<ApplicationDetails> => {
-  const response = await api.get(`/api/jobs/applications/${applicationId}/`);
+  const response = await api.get(`/jobs/applications/${applicationId}/`);
   return response.data;
 };
 
@@ -68,5 +66,5 @@ export const updateApplication = async (
     feedback?: { subject: string; comment: string };
   }
 ): Promise<void> => {
-  await api.patch(`/api/jobs/applications/${applicationId}/`, data);
+  await api.patch(`/jobs/applications/${applicationId}/`, data);
 };
