@@ -255,7 +255,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         setCandidates([]);
       }
     }, 500),
-    [onFiltersChange, filters]
+    [onFiltersChange]
   );
 
   // Update filters when activeTab changes
