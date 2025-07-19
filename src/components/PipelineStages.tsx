@@ -36,6 +36,7 @@ import {
   PipelineCandidate,
 } from "../data/pipelineData";
 import { useAuthContext } from "../context/AuthContext";
+import apiClient from "../services/api"; // Adjust path as needed
 
 // Define interfaces for API responses
 interface Stage {
@@ -138,44 +139,40 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     };
   }, [showComments]);
 
-  // API fetch functions
+  // API axios functions using apiClient :
   const fetchStages = async (jobId: number) => {
     try {
-      const response = await fetch(
-        `https://nxthyre-server-staging-863630644667.asia-south1.run.app/api/jobs/applications/stages/?job_id=${jobId}`
+      const response = await apiClient.get(
+        `/api/jobs/applications/stages/?job_id=${jobId}`
       );
-      if (!response.ok) throw new Error("Failed to fetch stages");
-      const data: Stage[] = await response.json();
+      const data: Stage[] = response.data;
       setStages(data.sort((a, b) => a.sort_order - b.sort_order));
-      setSelectedStage(data[0]?.name || "Uncontacted"); // Set initial stage
+      setSelectedStage(data[0]?.name || "Uncontacted");
     } catch (error) {
       console.error("Error fetching stages:", error);
-      setStages([]); // Fallback to empty array
+      setStages([]);
     }
   };
 
   const fetchCandidates = async (jobId: number, stageSlug: string) => {
     try {
-      const response = await fetch(
-        `https://nxthyre-server-staging-863630644667.asia-south1.run.app/api/jobs/applications/?job_id=${jobId}&stage_slug=${stageSlug}`
+      const response = await apiClient.get(
+        `/api/jobs/applications/?job_id=${jobId}&stage_slug=${stageSlug}`
       );
-      if (!response.ok) throw new Error("Failed to fetch candidates");
-      const data: CandidateListItem[] = await response.json();
+      const data: CandidateListItem[] = response.data;
       setCandidates(data);
     } catch (error) {
       console.error("Error fetching candidates:", error);
-      setCandidates([]); // Fallback to empty array
+      setCandidates([]);
     }
   };
 
   const fetchCandidateDetails = async (applicationId: number) => {
     try {
-      const response = await fetch(
-        `https://nxthyre-server-staging-863630644667.asia-south1.run.app/api/jobs/applications/${applicationId}/`
+      const response = await apiClient.get(
+        `/api/jobs/applications/${applicationId}/`
       );
-      if (!response.ok) throw new Error("Failed to fetch candidate details");
-      const data = await response.json();
-      // Map API response to PipelineCandidate structure (assuming stageData is included)
+      const data = response.data;
       const mappedCandidate: PipelineCandidate = mapCandidateDetails(data);
       setSelectedCandidate(mappedCandidate);
     } catch (error) {
@@ -186,19 +183,13 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
   const moveCandidate = async (applicationId: number, stageId: number) => {
     try {
-      const response = await fetch(
-        `https://nxthyre-server-staging-863630644667.asia-south1.run.app/api/jobs/applications/${applicationId}/`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ current_stage: stageId }),
-        }
-      );
-      if (!response.ok) throw new Error("Failed to move candidate");
+      await apiClient.patch(`/api/jobs/applications/${applicationId}/`, {
+        current_stage: stageId,
+      });
       fetchCandidates(
         activeJobId,
         selectedStage.toLowerCase().replace(" ", "-")
-      ); // Refresh candidates
+      );
     } catch (error) {
       console.error("Error moving candidate:", error);
     }
@@ -208,23 +199,15 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     const archiveStage = stages.find((stage) => stage.slug === "archives");
     if (!archiveStage) return;
     try {
-      const response = await fetch(
-        `https://nxthyre-server-staging-863630644667.asia-south1.run.app/api/jobs/applications/${applicationId}/`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            current_stage: archiveStage.id,
-            status: "ARCHIVED",
-            archive_reason: "Candidate archived from UI",
-          }),
-        }
-      );
-      if (!response.ok) throw new Error("Failed to archive candidate");
+      await apiClient.patch(`/api/jobs/applications/${applicationId}/`, {
+        current_stage: archiveStage.id,
+        status: "ARCHIVED",
+        archive_reason: "Candidate archived from UI",
+      });
       fetchCandidates(
         activeJobId,
         selectedStage.toLowerCase().replace(" ", "-")
-      ); // Refresh candidates
+      );
     } catch (error) {
       console.error("Error archiving candidate:", error);
     }
@@ -232,19 +215,13 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
   const bulkMoveCandidates = async (applicationIds: number[]) => {
     try {
-      const response = await fetch(
-        "https://nxthyre-server-staging-863630644667.asia-south1.run.app/api/jobs/bulk-move-stage/",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ application_ids: applicationIds }),
-        }
-      );
-      if (!response.ok) throw new Error("Failed to bulk move candidates");
+      await apiClient.post("/api/jobs/bulk-move-stage/", {
+        application_ids: applicationIds,
+      });
       fetchCandidates(
         activeJobId,
         selectedStage.toLowerCase().replace(" ", "-")
-      ); // Refresh candidates
+      );
     } catch (error) {
       console.error("Error bulk moving candidates:", error);
     }
