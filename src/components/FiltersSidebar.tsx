@@ -261,7 +261,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         job_id: filters.jobId,
         application_type: filters.application_type,
       };
-      if (filters.keywords) filterParams.q = filters.keywords;
+      if (filters.keywords) filterParams.q = [filters.keywords];
       if (filters.minTotalExp) filterParams.experience_min = Number(filters.minTotalExp);
       if (filters.maxTotalExp) filterParams.experience_max = Number(filters.maxTotalExp);
       if (filters.minExperience) filterParams.exp_in_current_company_min = Number(filters.minExperience);
