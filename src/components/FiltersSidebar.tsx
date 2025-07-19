@@ -249,6 +249,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         if (response.results.length > 0) {
           // Update selected candidate in parent component if needed
           onFiltersChange({ ...filters, selectedCandidate: response.results[0] });
+          console.error("Error fetching filtered candidates:", filters);
         }
       } catch (error) {
         console.error("Error fetching filtered candidates:", error);
