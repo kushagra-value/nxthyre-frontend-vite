@@ -166,8 +166,6 @@ function MainApp() {
         location: job.location || "",
         city: job.location ? job.location.split(",")[0]?.trim() || "" : "",
         country: job.location ? job.location.split(",")[1]?.trim() || "" : "",
-        minSalary: job.salary_min || "",
-        maxSalary: job.salary_max || "",
         application_type: activeTab,
       }));
     } catch (error) {
@@ -187,7 +185,7 @@ function MainApp() {
           job_id: filters.jobId,
           application_type: filters.application_type,
         };
-        if (filters.keywords) filterParams.q = filters.keywords;
+        if (filters.keywords) filterParams.q = [filters.keywords];
         if (filters.minTotalExp) filterParams.experience_min = filters.minTotalExp;
         if (filters.maxTotalExp) filterParams.experience_max = filters.maxTotalExp;
         if (filters.minExperience) filterParams.exp_in_current_company_min = filters.minExperience;
