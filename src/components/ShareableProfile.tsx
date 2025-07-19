@@ -16,9 +16,9 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
     const fetchShareableProfile = async () => {
       setLoading(true);
       try {
-        const data = await candidateService.getShareableProfile(candidateId);
-        setAnonymizedCandidate(data);
-        if (data===null){
+        // const data = await candidateService.getShareableProfile(candidateId);
+        // setAnonymizedCandidate(data);
+        // if (data===null){
           const dummyData: ShareableProfileSensitiveCandidate = {
             id: "ed51c22f-517c-4f71-884b-55b56c9bea1a",
             about: "Machine Learning Engineer | NLP, Deep Learning, MLOps | Healthcare AI",
@@ -98,7 +98,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
             ]
           };
         setAnonymizedCandidate(dummyData);
-        }
+        
       } catch (err) {
         setError('Failed to load candidate profile');
       } finally {
