@@ -1,7 +1,18 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Filter, ChevronDown, MapPin, Bookmark, Eye, Star, Link, File, Github, Linkedin, Twitter, EyeOff, Mail, Phone, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Filter,
+  ChevronDown,
+  MapPin,
+  Bookmark,
+  Star,
+  Link,
+  File,
+  Github,
+  Linkedin,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { candidateService, CandidateListItem } from "../services/candidateService";
-import { debounce } from 'lodash';
 
 interface CandidatesMainProps {
   activeTab: string;
@@ -10,11 +21,13 @@ interface CandidatesMainProps {
   setSelectedCandidate: (candidate: CandidateListItem | null) => void;
   searchTerm: string;
   candidates: CandidateListItem[];
-  totalCount: number; 
+  totalCount: number;
   jobId: string;
   onPipelinesClick?: () => void;
   deductCredits: () => Promise<void>;
   onCandidatesUpdate: (candidates: CandidateListItem[], totalCount: number) => void;
+  currentPage: number;
+  setCurrentPage: (page: number) => void;
 }
 
 const CandidatesMain: React.FC<CandidatesMainProps> = ({
@@ -29,20 +42,21 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   onPipelinesClick,
   deductCredits,
   onCandidatesUpdate,
+  currentPage,
+  setCurrentPage,
 }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const candidatesPerPage = 20;
   const maxVisiblePages = 5;
 
   const tabs = [
-    { id: 'outbound', label: 'Outbound', count: activeTab === 'outbound' ? totalCount : 0 },
-    { id: 'active', label: 'Active', count: activeTab === 'active' ? totalCount : 0},
-    { id: 'inbound', label: 'Inbound', count: activeTab === 'inbound' ? totalCount : 0 },
-    { id: 'prevetted', label: 'Prevetted', count: activeTab === 'prevetted' ? totalCount : 0}
+    { id: "outbound", label: "Outbound", count: activeTab === "outbound" ? totalCount : 0 },
+    { id: "active", label: "Active", count: activeTab === "active" ? totalCount : 0 },
+    { id: "inbound", label: "Inbound", count: activeTab === "inbound" ? totalCount : 0 },
+    { id: "prevetted", label: "Prevetted", count: activeTab === "prevetted" ? totalCount : 0 },
   ];
 
   useEffect(() => {
@@ -50,67 +64,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     if (currentPage > Math.ceil(totalCount / candidatesPerPage)) {
       setCurrentPage(1);
     }
-  }, [totalCount, candidatesPerPage]);
-
-  const fetchAndSetCandidates = useCallback(
-    debounce(async (searchQuery: string, page: number, tab: string, signal: AbortSignal) => {
-      if (!jobId) {
-        console.warn('No jobId provided, skipping candidate fetch');
-        return;
-      } 
-      setLoading(true);
-      try {
-        const queryList = searchQuery.trim() ? [searchQuery] : [];
-        const params = {
-          page,
-          q: queryList,
-          job_id: jobId,
-          tab,
-        };
-        const { results, count } = await candidateService.searchCandidates(params);
-        if (!signal.aborted) {
-          onCandidatesUpdate(results, count);
-          setTotalPages(Math.ceil(count / candidatesPerPage) || 1);
-          if (results.length > 0 && !selectedCandidate) {
-            setSelectedCandidate(results[0]);
-          }
-        }
-      } catch (error: any) {
-        if (error.name !== 'AbortError') {
-          console.error("Error fetching candidates:", error);
-          onCandidatesUpdate([], 0);
-          setTotalPages(1);
-        }
-      } finally {
-        if (!signal.aborted) {
-          setLoading(false);
-        }
-      }
-    }, 300),
-    [jobId, candidatesPerPage, selectedCandidate, setSelectedCandidate, onCandidatesUpdate]
-  );
-
-  // Effect for handling page changes
-  useEffect(() => {
-    const controller = new AbortController();
-    // Only fetch if candidates array is empty or outdated (e.g., tab change)
-    if (!candidates.length || searchTerm || activeTab) {
-      fetchAndSetCandidates(searchTerm, currentPage, activeTab, controller.signal);
-    } else {
-      setLoading(false); // Use parent-provided candidates
-    }
-
-    return () => {
-      controller.abort();
-    };
-  }, [searchTerm, activeTab, currentPage, jobId, fetchAndSetCandidates]);
-
+  }, [totalCount, currentPage, setCurrentPage]);
 
   const handleCandidateSelect = (candidateId: string) => {
-    setSelectedCandidates(prev =>
-      prev.includes(candidateId)
-        ? prev.filter(id => id !== candidateId)
-        : [...prev, candidateId]
+    setSelectedCandidates((prev) =>
+      prev.includes(candidateId) ? prev.filter((id) => id !== candidateId) : [...prev, candidateId]
     );
   };
 
@@ -135,13 +93,13 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
   const handleCandidateClick = async (candidate: CandidateListItem) => {
     setSelectedCandidate(candidate);
-    await deductCredits(); // Fetch updated credits when candidate is clicked
+    await deductCredits();
   };
-  
-  const getAvatarColor = (name: string) => 'bg-blue-500';
+
+  const getAvatarColor = (name: string) => "bg-blue-500";
 
   const getStarCount = (skill: string) => {
-    const sum = skill.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const sum = skill.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return (sum % 5) + 1;
   };
 
@@ -149,20 +107,15 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     const pageNumbers: (number | string)[] = [];
 
     if (totalPages <= maxVisiblePages + 2) {
-      // Show all pages if totalPages is small
       for (let i = 1; i <= totalPages; i++) {
         pageNumbers.push(i);
       }
     } else {
-      // Always include page 1
       pageNumbers.push(1);
-
-      // Calculate the range of pages around currentPage
       const halfWindow = Math.floor(maxVisiblePages / 2);
       let startPage = Math.max(2, currentPage - halfWindow);
       let endPage = Math.min(totalPages - 1, currentPage + halfWindow);
 
-      // Adjust start and end to ensure maxVisiblePages are shown
       if (endPage - startPage + 1 < maxVisiblePages) {
         if (currentPage <= halfWindow + 1) {
           endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
@@ -171,22 +124,18 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         }
       }
 
-      // Add ellipsis after page 1 if needed
       if (startPage > 2) {
-        pageNumbers.push('...');
+        pageNumbers.push("...");
       }
 
-      // Add pages in the window
       for (let i = startPage; i <= endPage; i++) {
         pageNumbers.push(i);
       }
 
-      // Add ellipsis before last page if needed
       if (endPage < totalPages - 1) {
-        pageNumbers.push('...');
+        pageNumbers.push("...");
       }
 
-      // Always include the last page
       if (totalPages > 1) {
         pageNumbers.push(totalPages);
       }
@@ -200,245 +149,227 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const currentCandidates = candidates.slice(startIndex, endIndex);
 
   if (loading) {
-    return (<div className="bg-white rounded-xl shadow-sm border border-gray-200">
-    {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <div className="flex items-center justify-between p-3 lg:p-4 pb-0">
-          <div className="flex space-x-1 overflow-x-auto">
-            {tabs.map((tab) => (
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="border-b border-gray-200">
+          <div className="flex items-center justify-between p-3 lg:p-4 pb-0">
+            <div className="flex space-x-1 overflow-x-auto">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-3 py-2 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? "text-blue-600 border-b-2 border-blue-500 bg-blue-50"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  }`}
+                >
+                  {tab.label}
+                  {tab.count > 0 && (
+                    <span className="ml-2 px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded-full">
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+            <div>
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-2 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'text-blue-600 border-b-2 border-blue-500 bg-blue-50'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
+                onClick={onPipelinesClick}
+                className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
               >
-                {tab.label}
-                 {/* FIX: Safely render count only if it's a positive number */}
-                {tab.count > 0 && (
-                  <span className="ml-2 px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded-full">
-                    {tab.count}
-                  </span>
-                )}
+                Pipelines
               </button>
-            ))}
-          </div>
-          <div>
-            <button
-              onClick={onPipelinesClick}
-              className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-            >
-              Pipelines
-            </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Filters Bar */}
-      <div className="p-3 lg:p-4 border-b border-gray-200">
-        <div className="mt-0 flex items-center justify-between flex-wrap gap-2">
-          <div className="flex space-x-3">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={selectAll}
-                onChange={(e) => handleSelectAll(e.target.checked)}
-                className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
-              />
-              {/* FIX: Clarified label to match functionality */}
-              <span className="ml-2 text-sm text-gray-600">Select all</span>
-            </label>
-            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
+        <div className="p-3 lg:p-4 border-b border-gray-200">
+          <div className="mt-0 flex items-center justify-between flex-wrap gap-2">
+            <div className="flex space-x-3">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                  className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
+                />
+                <span className="ml-2 text-sm text-gray-600">Select all</span>
+              </label>
+              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
                 Add To Pipeline
-            </button>
-            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
+              </button>
+              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
                 Export Candidates
-            </button>
-            
-          </div>
-          <div className="flex space-x-2">
-            
-            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
+              </button>
+            </div>
+            <div className="flex space-x-2">
+              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
                 Sort By - <span className="text-blue-600 font-semibold ml-1 mr-1">Relevance</span>
-              <ChevronDown className="w-4 h-4 mt-1" />
-            </button>
-            
+                <ChevronDown className="w-4 h-4 mt-1" />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="bg-white  p-4 text-center">
-        
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="text-gray-600 mt-2">Loading candidates...</p>
-      </div>
-      {/* Pagination */}
-      <div className="p-3 lg:p-4 flex items-center justify-between border-t border-gray-200">
-        <div className="text-sm text-gray-600">
+        <div className="bg-white p-4 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="text-gray-600 mt-2">Loading candidates...</p>
+        </div>
+        <div className="p-3 lg:p-4 flex items-center justify-between border-t border-gray-200">
+          <div className="text-sm text-gray-600">
             Showing {startIndex + 1} to {Math.min(endIndex, totalCount)} of {totalCount} candidates
           </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Previous
-          </button>
-          {getPageNumbers().map((page, index) => (
+          <div className="flex space-x-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Previous
+            </button>
+            {getPageNumbers().map((page, index) => (
               <button
                 key={index}
-                onClick={() => typeof page === 'number' && handlePageChange(page)}
+                onClick={() => typeof page === "number" && handlePageChange(page)}
                 className={`px-3 py-1 text-sm rounded-lg transition-colors ${
                   page === currentPage
-                    ? 'bg-blue-600 text-white'
-                    : typeof page === 'number'
-                    ? 'text-gray-600 hover:bg-gray-100'
-                    : 'text-gray-600 cursor-default'
+                    ? "bg-blue-600 text-white"
+                    : typeof page === "number"
+                    ? "text-gray-600 hover:bg-gray-100"
+                    : "text-gray-600 cursor-default"
                 }`}
-                disabled={typeof page !== 'number'}
+                disabled={typeof page !== "number"}
               >
                 {page}
               </button>
             ))}
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-          >
-            Next
-            <ChevronRight className="w-4 h-4 ml-1" />
-          </button>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              Next
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </button>
+          </div>
         </div>
-      </div>
       </div>
     );
   }
-
 
   if (!candidates.length) {
-    return (<div className="bg-white rounded-xl shadow-sm border border-gray-200">
-    {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <div className="flex items-center justify-between p-3 lg:p-4 pb-0">
-          <div className="flex space-x-1 overflow-x-auto">
-            {tabs.map((tab) => (
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="border-b border-gray-200">
+          <div className="flex items-center justify-between p-3 lg:p-4 pb-0">
+            <div className="flex space-x-1 overflow-x-auto">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-3 py-2 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? "text-blue-600 border-b-2 border-blue-500 bg-blue-50"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  }`}
+                >
+                  {tab.label}
+                  {tab.count > 0 && (
+                    <span className="ml-2 px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded-full">
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+            <div>
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-2 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'text-blue-600 border-b-2 border-blue-500 bg-blue-50'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
+                onClick={onPipelinesClick}
+                className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
               >
-                {tab.label}
-                 {/* FIX: Safely render count only if it's a positive number */}
-                {tab.count > 0 && (
-                  <span className="ml-2 px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded-full">
-                    {tab.count}
-                  </span>
-                )}
+                Pipelines
               </button>
-            ))}
-          </div>
-          <div>
-            <button
-              onClick={onPipelinesClick}
-              className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-            >
-              Pipelines
-            </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Filters Bar */}
-      <div className="p-3 lg:p-4 border-b border-gray-200">
-        <div className="mt-0 flex items-center justify-between flex-wrap gap-2">
-          <div className="flex space-x-3">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={selectAll}
-                onChange={(e) => handleSelectAll(e.target.checked)}
-                className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
-              />
-              {/* FIX: Clarified label to match functionality */}
-              <span className="ml-2 text-sm text-gray-600">Select all</span>
-            </label>
-            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
+        <div className="p-3 lg:p-4 border-b border-gray-200">
+          <div className="mt-0 flex items-center justify-between flex-wrap gap-2">
+            <div className="flex space-x-3">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                  className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
+                />
+                <span className="ml-2 text-sm text-gray-600">Select all</span>
+              </label>
+              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
                 Add To Pipeline
-            </button>
-            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
+              </button>
+              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
                 Export Candidates
-            </button>
-            
+              </button>
+            </div>
+            <div className="flex space-x-2">
+              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
+                Sort By - <span className="text-blue-600 font-semibold ml-1 mr-1">Relevance</span>
+                <ChevronDown className="w-4 h-4 mt-1" />
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center">
+          <p className="text-base font-medium">No candidates found</p>
+          <p className="text-sm text-gray-500 mt-1">Try adjusting your filters or search term.</p>
+        </div>
+        <div className="p-3 lg:p-4 flex items-center justify-between border-t border-gray-200">
+          <div className="text-sm text-gray-600">
+            Showing 0 to 0 of {totalCount} candidates
           </div>
           <div className="flex space-x-2">
-            
-            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
-                Sort By - <span className="text-blue-600 font-semibold ml-1 mr-1">Relevance</span>
-              <ChevronDown className="w-4 h-4 mt-1" />
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Previous
             </button>
-            
-          </div>
-        </div>
-      </div>
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center">
-        <p className="text-base font-medium">No candidates found</p>
-        <p className="text-sm text-gray-500 mt-1">Try adjusting your filters or search term.</p>
-      </div>
-      {/* Pagination */}
-      <div className="p-3 lg:p-4 flex items-center justify-between border-t border-gray-200">
-        <div className="text-sm text-gray-600">
-          Showing 0 to 0 of {totalCount} candidates
-        </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Previous
-          </button>
-          {getPageNumbers().map((page, index) => (
+            {getPageNumbers().map((page, index) => (
               <button
                 key={index}
-                onClick={() => typeof page === 'number' && handlePageChange(page)}
+                onClick={() => typeof page === "number" && handlePageChange(page)}
                 className={`px-3 py-1 text-sm rounded-lg transition-colors ${
                   page === currentPage
-                    ? 'bg-blue-600 text-white'
-                    : typeof page === 'number'
-                    ? 'text-gray-600 hover:bg-gray-100'
-                    : 'text-gray-600 cursor-default'
+                    ? "bg-blue-600 text-white"
+                    : typeof page === "number"
+                    ? "text-gray-600 hover:bg-gray-100"
+                    : "text-gray-600 cursor-default"
                 }`}
-                disabled={typeof page !== 'number'}
+                disabled={typeof page !== "number"}
               >
                 {page}
               </button>
             ))}
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-          >
-            Next
-            <ChevronRight className="w-4 h-4 ml-1" />
-          </button>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              Next
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </button>
+          </div>
         </div>
-      </div>
       </div>
     );
   }
-
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-      {/* Tabs */}
       <div className="border-b border-gray-200">
         <div className="flex items-center justify-between p-3 lg:p-4 pb-0">
           <div className="flex space-x-1 overflow-x-auto">
@@ -448,8 +379,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-3 py-2 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'text-blue-600 border-b-2 border-blue-500 bg-blue-50'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? "text-blue-600 border-b-2 border-blue-500 bg-blue-50"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                 }`}
               >
                 {tab.label}
@@ -472,7 +403,6 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         </div>
       </div>
 
-      {/* Filters Bar */}
       <div className="p-3 lg:p-4 border-b border-gray-200">
         <div className="mt-0 flex items-center justify-between flex-wrap gap-2">
           <div className="flex space-x-3">
@@ -486,31 +416,27 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               <span className="ml-2 text-sm text-gray-600">Select all</span>
             </label>
             <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
-                Add To Pipeline
+              Add To Pipeline
             </button>
             <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
-                Export Candidates
+              Export Candidates
             </button>
-            
           </div>
           <div className="flex space-x-2">
-            
             <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
-                Sort By - <span className="text-blue-600 font-semibold ml-1 mr-1">Relevance</span>
+              Sort By - <span className="text-blue-600 font-semibold ml-1 mr-1">Relevance</span>
               <ChevronDown className="w-4 h-4 mt-1" />
             </button>
-            
           </div>
         </div>
       </div>
 
-      {/* Candidates List */}
       <div className="divide-y divide-gray-200">
         {currentCandidates.map((candidate) => (
           <div
             key={candidate.id}
             className={`p-3 lg:p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
-              selectedCandidate?.id === candidate.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+              selectedCandidate?.id === candidate.id ? "bg-blue-50 border-l-4 border-blue-500" : ""
             }`}
             onClick={() => handleCandidateClick(candidate)}
           >
@@ -522,11 +448,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mt-1"
                 onClick={(e) => e.stopPropagation()}
               />
-              
               <div className={`w-14 h-14 ${getAvatarColor(candidate.full_name)} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
                 {candidate.avatar}
               </div>
-
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center space-x-2 flex-wrap">
@@ -544,28 +468,28 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                             <g
                               transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)"
                               style={{
-                                stroke: 'none',
+                                stroke: "none",
                                 strokeWidth: 0,
-                                strokeDasharray: 'none',
-                                strokeLinecap: 'butt',
-                                strokeLinejoin: 'miter',
+                                strokeDasharray: "none",
+                                strokeLinecap: "butt",
+                                strokeLinejoin: "miter",
                                 strokeMiterlimit: 10,
-                                fill: 'none',
-                                fillRule: 'nonzero',
+                                fill: "none",
+                                fillRule: "nonzero",
                                 opacity: 1,
                               }}
                             >
                               <polygon
                                 points="45,6.18 57.06,0 64.41,11.38 77.94,12.06 78.62,25.59 90,32.94 83.82,45 90,57.06 78.62,64.41 77.94,77.94 64.41,78.62 57.06,90 45,83.82 32.94,90 25.59,78.62 12.06,77.94 11.38,64.41 0,57.06 6.18,45 0,32.94 11.38,25.59 12.06,12.06 25.59,11.38 32.94,0"
                                 style={{
-                                  stroke: 'none',
+                                  stroke: "none",
                                   strokeWidth: 1,
-                                  strokeDasharray: 'none',
-                                  strokeLinecap: 'butt',
-                                  strokeLinejoin: 'miter',
+                                  strokeDasharray: "none",
+                                  strokeLinecap: "butt",
+                                  strokeLinejoin: "miter",
                                   strokeMiterlimit: 10,
-                                  fill: 'rgb(0,150,241)',
-                                  fillRule: 'nonzero',
+                                  fill: "rgb(0,150,241)",
+                                  fillRule: "nonzero",
                                   opacity: 1,
                                 }}
                                 transform="matrix(1 0 0 1 0 0)"
@@ -573,14 +497,14 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                               <polygon
                                 points="40.16,58.47 26.24,45.08 29.7,41.48 40.15,51.52 61.22,31.08 64.7,34.67"
                                 style={{
-                                  stroke: 'none',
+                                  stroke: "none",
                                   strokeWidth: 1,
-                                  strokeDasharray: 'none',
-                                  strokeLinecap: 'butt',
-                                  strokeLinejoin: 'miter',
+                                  strokeDasharray: "none",
+                                  strokeLinecap: "butt",
+                                  strokeLinejoin: "miter",
                                   strokeMiterlimit: 10,
-                                  fill: 'rgb(255,255,255)',
-                                  fillRule: 'nonzero',
+                                  fill: "rgb(255,255,255)",
+                                  fillRule: "nonzero",
                                   opacity: 1,
                                 }}
                                 transform="matrix(1 0 0 1 0 0)"
@@ -590,33 +514,53 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         </span>
                       </div>
                     )}
-                   <span className={`mt-1 px-2 py-1 text-xs rounded-full ${candidate.experience_years?.includes("Available") ? "bg-blue-100 text-blue-800" : "bg-blue-100 text-blue-800"}`}>{candidate.experience_years}</span>
+                    <span
+                      className={`mt-1 px-2 py-1 text-xs rounded-full ${
+                        candidate.experience_years?.includes("Available") ? "bg-blue-100 text-blue-800" : "bg-blue-100 text-blue-800"
+                      }`}
+                    >
+                      {candidate.experience_years}
+                    </span>
                   </div>
                   <div className="flex items-center space-x-1">
                     {candidate.social_links?.github && (
-                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg" onClick={() => window.open(candidate.social_links?.github, '_blank')}>
+                      <button
+                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                        onClick={() => window.open(candidate.social_links?.github, "_blank")}
+                      >
                         <Github className="w-4 h-4" />
                       </button>
                     )}
                     {candidate.social_links?.linkedin && (
-                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg" onClick={() => window.open(candidate.social_links?.linkedin, '_blank')}>
+                      <button
+                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                        onClick={() => window.open(candidate.social_links?.linkedin, "_blank")}
+                      >
                         <Linkedin className="w-4 h-4" />
                       </button>
                     )}
                     {candidate.social_links?.resume && (
-                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg" onClick={() => window.open(candidate.social_links?.resume, '_blank')}>
-                      <File className="w-4 h-4" />
-                    </button>
+                      <button
+                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                        onClick={() => window.open(candidate.social_links?.resume, "_blank")}
+                      >
+                        <File className="w-4 h-4" />
+                      </button>
                     )}
                     {candidate.social_links?.portfolio && (
-                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"  onClick={() => window.open(candidate.social_links?.portfolio, '_blank')}>
-                      <Link  className="w-4 h-4" />
-                    </button>
+                      <button
+                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                        onClick={() => window.open(candidate.social_links?.portfolio, "_blank")}
+                      >
+                        <Link className="w-4 h-4" />
+                      </button>
                     )}
                   </div>
                 </div>
                 <div className="flex space-x-1">
-                  <p className="text-sm text-gray-600 mt-1 max-w-[58ch] truncate">{candidate.headline} |</p>
+                  <p className="text-sm text-gray-600 mt-1 max-w-[58ch] truncate">
+                    {candidate.headline} |
+                  </p>
                 </div>
                 <div className="flex space-x-1">
                   <p className="flex text-sm text-gray-600 mt-1">
@@ -645,10 +589,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 <div className="flex space-x-6">
                   <span className="text-gray-500 mr-[5px]">Notice Period</span>
                   <p className="text-gray-900">{candidate.notice_period_summary}</p>
-                  </div>
+                </div>
               </div>
-              
-            
               <div className="mt-3 flex items-center justify-between space-x-2 flex-wrap gap-2">
                 <div className="mt-3 flex flex-wrap gap-1">
                   {candidate.skills_list?.slice(0, 3).map((skill, index) => (
@@ -660,9 +602,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     </span>
                   ))}
                 </div>
-                
                 <div className="rounded-md flex space-x-2 rounde-lg border border-blue-400 hover:border-blue-600 transition-colors">
-                  <button className="pl-3 pr-2 py-1.5 bg-white text-blue-600 text-sm font-medium  flex items-center rounded-md">
+                  <button className="pl-3 pr-2 py-1.5 bg-white text-blue-600 text-sm font-medium flex items-center rounded-md">
                     <Bookmark className="w-4 h-4 mr-1" />
                     Save to Pipeline
                   </button>
@@ -676,7 +617,6 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         ))}
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="p-3 lg:p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
@@ -691,24 +631,22 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              
               {getPageNumbers().map((page, index) => (
                 <button
                   key={index}
-                  onClick={() => typeof page === 'number' && handlePageChange(page)}
+                  onClick={() => typeof page === "number" && handlePageChange(page)}
                   className={`px-3 py-1 text-sm rounded-lg transition-colors ${
                     page === currentPage
-                      ? 'bg-blue-600 text-white'
-                      : typeof page === 'number'
-                      ? 'text-gray-600 hover:bg-gray-100'
-                      : 'text-gray-600 cursor-default'
+                      ? "bg-blue-600 text-white"
+                      : typeof page === "number"
+                      ? "text-gray-600 hover:bg-gray-100"
+                      : "text-gray-600 cursor-default"
                   }`}
-                  disabled={typeof page !== 'number'}
+                  disabled={typeof page !== "number"}
                 >
                   {page}
                 </button>
               ))}
-              
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
