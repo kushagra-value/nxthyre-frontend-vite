@@ -207,9 +207,14 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               ))}
             </div>
 
-            <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-              Send Invite
-            </button>
+            <div className="flex justify-between w-full">
+              <button className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Move to Next Stage
+              </button>
+              <button className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Archive
+              </button>
+            </div>
           </div>
         );
 
@@ -258,10 +263,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             </div>
 
             <div className="flex justify-between w-full">
-              <button className="w-[65%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 Move to Next Stage
               </button>
-              <button className="w-[35%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 Archive
               </button>
             </div>
@@ -327,9 +332,14 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               </div>
             </div>
 
-            <button className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-              Schedule AI Interview
-            </button>
+            <div className="flex justify-between w-full">
+              <button className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Move to Next Stage
+              </button>
+              <button className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Archive
+              </button>
+            </div>
           </div>
         );
 
