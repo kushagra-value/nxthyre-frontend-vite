@@ -616,7 +616,47 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         ))}
       </div>
 
-      {totalPages > 1 && (
+      {totalPages > 1 ? (
+        <div className="p-3 lg:p-4 border-t border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Showing {startIndex + 1} to {Math.min(endIndex, totalCount)+startIndex} of {totalCount} candidates
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              {getPageNumbers().map((page, index) => (
+                <button
+                  key={index}
+                  onClick={() => typeof page === "number" && handlePageChange(page)}
+                  className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                    page === currentPage
+                      ? "bg-blue-600 text-white"
+                      : typeof page === "number"
+                      ? "text-gray-600 hover:bg-gray-100"
+                      : "text-gray-600 cursor-default"
+                  }`}
+                  disabled={typeof page !== "number"}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      ):(
         <div className="p-3 lg:p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-600">
