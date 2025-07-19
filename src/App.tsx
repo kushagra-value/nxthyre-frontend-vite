@@ -157,6 +157,7 @@ function MainApp() {
   const fetchJobDetailsAndSetFilters = async (jobId: number) => {
     try {
       const job = await jobPostService.getJob(jobId);
+      console.error("Fetched job details:", job);
       setFilters((prev) => ({
         ...prev,
         jobId: job.id.toString(),
