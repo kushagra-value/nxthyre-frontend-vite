@@ -146,7 +146,7 @@ export interface ShareableProfileSensitiveCandidate {
 class CandidateService {
   async getCandidates(filters: any): Promise<{ results: CandidateListItem[]; count: number }> {
     try {
-      const response = await apiClient.post("/candidates/search/", filters);
+      const response = await apiClient.post("/candidates/search/", {filters});
       if (Array.isArray(response.data)) {
         return {
           results: response.data,
@@ -156,6 +156,22 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to fetch candidates");
+    }
+  }
+
+  async searchCandidates(filters: any): Promise<{ results: CandidateListItem[]; count: number }> {
+    try {
+      const response = await apiClient.post("/candidates/search/", filters);
+     
+      if (Array.isArray(response.data)) {
+        return {
+          results: response.data,
+          count: response.data.length,
+        };
+      }
+       return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to search candidates");
     }
   }
 
