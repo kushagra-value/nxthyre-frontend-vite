@@ -46,7 +46,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       setLoading(true);
       try {
         const { results, count } = searchQuery
-          ? await candidateService.searchCandidates({
+          ? await candidateService.getCandidates({
               q: searchQuery,
               page,
               page_size: candidatesPerPage,
