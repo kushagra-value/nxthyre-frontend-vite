@@ -836,7 +836,7 @@ function MainApp() {
                     )}
                     {showGuideModal && (
                       <div className="fixed inset-0 bg-black bg-opacity-50 z-[100]  p-4 flex items-start justify-end">
-                        <div className="relative top-16 end-[200px]  bg-white rounded-xl shadow-xl max-w-md w-full p-4 mr-6 ">
+                        <div className="relative top-16 bg-white rounded-xl shadow-xl max-w-md w-full p-4 mr-6 ">
                           <div className="text-center">
                             <h3 className="text-lg font-semibold text-gray-900 mb-2">
                               Create Your First Job Role
