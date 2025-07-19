@@ -215,7 +215,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({ filters, onFiltersChang
   const debouncedFetchCandidates = useCallback(
     debounce(async (filterParams: any) => {
       try {
-        const { results } = await candidateService.getCandidates(filterParams);
+        const { results } = await candidateService.searchCandidates(filterParams);
         setCandidates(results);
       } catch (error) {
         console.error("Error fetching filtered candidates:", error);
