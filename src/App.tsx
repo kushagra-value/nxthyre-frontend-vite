@@ -37,6 +37,7 @@ import {
   X,
 } from "lucide-react";
 import { showToast } from "./utils/toast";
+import { set } from "lodash";
 
 interface Category {
   id: number;
@@ -847,9 +848,19 @@ function MainApp() {
                             <div className="absolute top-[-40px] right-4 transform rotate-90">
                               <ArrowLeft className="w-8 h-8 text-blue-600" />
                             </div>
-                            <button onClick={() =>{setShowCreateJobRole(true);}} className="absolute top-0 right-4 ">
-                              <X className="w-8 h-8 text-gray-600" />
-                            </button>
+                            
+
+                            {isAuthenticated && (
+                              <button
+                                onClick={() =>{
+                                  setShowCreateJobRole(true);
+                                  setShowGuideModal(false);
+                                }}
+                                className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center absolute top-[-72px] right-[-16px] "
+                              >
+                                Create Role
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -885,6 +896,8 @@ function MainApp() {
                         </div>
                       </div>
                     )}
+
+                    
                     
                   </div>
                 </>
