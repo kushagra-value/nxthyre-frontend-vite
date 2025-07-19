@@ -80,6 +80,64 @@ interface Category {
   count: number;
 }
 
+interface PipelineCandidate {
+  id: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  publicIdentifier: string;
+  headline: string;
+  summary: string;
+  profilePicture: { displayImageUrl: string; artifacts: any[] };
+  location: { country: string; city: string };
+  industry: string;
+  email: string;
+  phone: { type: string; number: string };
+  positions: Array<{
+    title: string;
+    companyName: string;
+    companyUrn: string;
+    startDate: { month: number; year: number };
+    endDate?: { month: number; year: number };
+    isCurrent: boolean;
+    location: string;
+    description: string;
+  }>;
+  educations: Array<{
+    schoolName: string;
+    degreeName: string;
+    fieldOfStudy: string;
+    startDate: { year: number };
+    endDate: { year: number };
+    activities: string;
+    description: string;
+  }>;
+  certifications: Array<{
+    name: string;
+    authority: string;
+    licenseNumber: string;
+    startDate: { month: number; year: number };
+    endDate?: { month: number; year: number };
+    url: string;
+  }>;
+  skills: Array<{ name: string; endorsementCount: number }>;
+  endorsements: any[];
+  recommendations: { received: any[]; given: any[] };
+  visibility: {
+    profile: "PUBLIC" | "CONNECTIONS" | "PRIVATE";
+    email: boolean;
+    phone: boolean;
+  };
+  connections: any[];
+  meta: {
+    fetchedAt: string;
+    dataCompleteness: "full" | "partial";
+    source: string;
+    scopesGranted: string[];
+  };
+  stageData: { [key: string]: any };
+}
+
 interface PipelineStagesProps {
   onBack: () => void;
   activeTab: string;
@@ -119,12 +177,12 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const [showCreateJobRole, setShowCreateJobRole] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const tabs = [
-    { id: "outbound", label: "Outbound", count: 2325 },
-    { id: "active", label: "Active", count: 2034 },
-    { id: "inbound", label: "Inbound", count: 2034 },
-    { id: "prevetted", label: "Prevetted", count: 2034 },
-  ];
+  // const tabs = [
+  //   { id: "outbound", label: "Outbound", count: 2325 },
+  //   { id: "active", label: "Active", count: 2034 },
+  //   { id: "inbound", label: "Inbound", count: 2034 },
+  //   { id: "prevetted", label: "Prevetted", count: 2034 },
+  // ];
 
   // Fetch categories when component mounts
   useEffect(() => {
@@ -274,53 +332,75 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   };
 
   // Helper to map candidate details
+  // Map API response to PipelineCandidate
   const mapCandidateDetails = (data: any): PipelineCandidate => {
+    const candidateData = data.candidate;
     return {
       id: data.id.toString(),
-      firstName: data.candidate.full_name.split(" ")[0] || "",
-      lastName: data.candidate.full_name.split(" ").slice(1).join(" ") || "",
-      fullName: data.candidate.full_name,
-      publicIdentifier: data.candidate.id,
-      headline: data.candidate.headline,
+      firstName: candidateData.full_name.split(" ")[0] || "",
+      lastName: candidateData.full_name.split(" ").slice(1).join(" ") || "",
+      fullName: candidateData.full_name,
+      publicIdentifier: candidateData.id,
+      headline: candidateData.headline,
       summary: "",
-      profilePicture: { displayImageUrl: "", artifacts: [] },
+      profilePicture: {
+        displayImageUrl: candidateData.profile_picture_url || "",
+        artifacts: [],
+      },
       location: {
-        country: data.candidate.location.split(", ")[1] || "",
-        city: data.candidate.location.split(", ")[0] || "",
+        country: candidateData.location.split(", ")[1] || "",
+        city: candidateData.location.split(", ")[0] || "",
       },
       industry: "",
-      email: data.candidate.social_links?.resume || "",
+      email: candidateData.resume_url || "",
       phone: { type: "mobile", number: "" },
-      positions: [
-        {
-          title: data.candidate.experience_summary.title,
-          companyName: "",
-          companyUrn: "",
-          startDate: { month: 0, year: 0 },
-          isCurrent: true,
-          location: data.candidate.location,
-          description: "",
-        },
-      ],
-      educations: [
-        {
-          schoolName: data.candidate.education_summary.title.split(" - ")[0],
-          degreeName:
-            data.candidate.education_summary.title.split(" - ")[1] || "",
-          fieldOfStudy: "",
-          startDate: { year: 0 },
-          endDate: { year: 0 },
-          activities: "",
-          description: "",
-        },
-      ],
-      certifications: [],
-      skills: data.candidate.skills_list.map((skill: string) => ({
-        name: skill,
-        endorsementCount: 0,
+      positions: candidateData.experience.map((exp: any) => ({
+        title: exp.job_title,
+        companyName: exp.company,
+        companyUrn: "",
+        startDate: exp.start_date
+          ? {
+              month: new Date(exp.start_date).getMonth() + 1,
+              year: new Date(exp.start_date).getFullYear(),
+            }
+          : { month: 0, year: 0 },
+        endDate: exp.end_date
+          ? {
+              month: new Date(exp.end_date).getMonth() + 1,
+              year: new Date(exp.end_date).getFullYear(),
+            }
+          : undefined,
+        isCurrent: exp.is_current,
+        location: exp.location,
+        description: exp.description,
       })),
-      endorsements: [],
-      recommendations: { received: [], given: [] },
+      educations: candidateData.education.map((edu: any) => ({
+        schoolName: edu.institution,
+        degreeName: edu.degree,
+        fieldOfStudy: edu.specialization,
+        startDate: edu.start_date
+          ? { year: new Date(edu.start_date).getFullYear() }
+          : { year: 0 },
+        endDate: edu.end_date
+          ? { year: new Date(edu.end_date).getFullYear() }
+          : { year: 0 },
+        activities: "",
+        description: "",
+      })),
+      certifications: candidateData.certifications.map((cert: any) => ({
+        name: cert.name,
+        authority: cert.authority,
+        licenseNumber: cert.licenseNumber,
+        startDate: cert.startDate,
+        endDate: cert.endDate,
+        url: cert.url,
+      })),
+      skills: candidateData.skills_data.skills_mentioned.map((skill: any) => ({
+        name: skill.skill,
+        endorsementCount: skill.number_of_endorsements,
+      })),
+      endorsements: candidateData.skills_data.endorsements,
+      recommendations: { received: candidateData.recommendations, given: [] },
       visibility: { profile: "PUBLIC", email: false, phone: false },
       connections: [],
       meta: {
@@ -329,7 +409,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         source: "",
         scopesGranted: [],
       },
-      stageData: data.stage_data || {},
+      stageData: {
+        [data.current_stage_details.slug]: data.contextual_details,
+      },
     };
   };
 
@@ -436,7 +518,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       );
     }
 
-    const stageData = selectedCandidate.stageData;
+    const stageData =
+      selectedCandidate.stageData[
+        selectedStage.toLowerCase().replace(" ", "-")
+      ];
 
     switch (selectedStage) {
       case "Uncontacted":
@@ -514,12 +599,12 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Notes</h4>
               <div className="space-y-2">
-                {inviteData?.notes?.map((note, index) => (
+                {inviteData?.notes?.map((note: any, index: number) => (
                   <div
                     key={index}
                     className="bg-gray-50 rounded p-2 text-sm text-gray-700"
                   >
-                    {note}
+                    {note.comment || "No comment available"}
                   </div>
                 ))}
               </div>
