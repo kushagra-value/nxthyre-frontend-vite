@@ -16,88 +16,88 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
     const fetchShareableProfile = async () => {
       setLoading(true);
       try {
-        // const data = await candidateService.getShareableProfile(candidateId);
-        // setAnonymizedCandidate(data);
-        // if (data===null){
-          const dummyData: ShareableProfileSensitiveCandidate = {
-            id: "ed51c22f-517c-4f71-884b-55b56c9bea1a",
-            about: "Machine Learning Engineer | NLP, Deep Learning, MLOps | Healthcare AI",
-            location: "Hyderabad, India",
-            total_experience_years: 6.6,
-            experience: [
-              {
-                job_title: "Machine Learning Engineer",
-                location: "Remote",
-                start_date: "2021-06-01",
-                end_date: null,
-                description: "Developed and deployed deep learning models for radiology report summarization and image-text cross-modal retrieval. Worked closely with radiologists to build annotation pipelines and establish data quality baselines. Designed custom CNN+Transformer hybrid architectures in PyTorch, achieving 92% F1 score in disease classification. Built internal autoML tooling for model benchmarking and hyperparameter tuning using Optuna. Also led the end-to-end MLOps setup using MLflow and AWS SageMaker for model versioning, reproducibility, and monitoring in production. Mentored 2 interns on explainable AI (GradCAM, SHAP) and supervised learning projects.",
-                is_current: true
-              },
-              {
-                job_title: "Data Scientist",
-                location: "Bangalore, India",
-                start_date: "2018-11-01",
-                end_date: "2021-05-01",
-                description: "Worked on natural language understanding (NLU) problems in digital health. Built intent recognition models for symptom checkers using BERT and fastText embeddings. Contributed to internal Python packages for text preprocessing and spell correction tailored to medical transcripts. Improved chatbot performance by 15% by integrating rule-based fallback layers. Also explored weak supervision and active learning strategies to improve low-resource language coverage. Supported product analytics using cohort tracking and built dashboards in Streamlit for internal stakeholders.",
-                is_current: false
-              }
-            ],
-            education: [
-              {
-                degree: "M.Tech",
-                specialization: "Artificial Intelligence",
-                start_date: "2016-07-01",
-                end_date: "2018-06-01"
-              },
-              {
-                degree: "B.E.",
-                specialization: "Computer Science",
-                start_date: "2012-07-01",
-                end_date: "2016-06-01"
-              }
-            ],
-            skills: [
-              {
-                skill: "PyTorch",
-                number_of_endorsements: 1
-              },
-              {
-                skill: "Transformers",
-                number_of_endorsements: 0
-              },
-              {
-                skill: "NLP",
-                number_of_endorsements: 1
-              },
-              {
-                skill: "MLOps",
-                number_of_endorsements: 0
-              },
-              {
-                skill: "AWS SageMaker",
-                number_of_endorsements: 0
-              }
-            ],
-            certifications: [
-              {
-                name: "AWS Certified Machine Learning - Specialty",
-                issuer: "Amazon Web Services",
-                license_number: "AWS-ML-SP-1012",
-                issued_date: "2023-01-01",
-                valid_until: "2026-01-01",
-                url: "https://aws.amazon.com/verification/aws-ml-sp-1012"
-              },
-              {
-                name: "Deep Learning Specialization",
-                issuer: "Coursera / DeepLearning.AI",
-                license_number: "DL-3021-998",
-                issued_date: "2019-08-01",
-                valid_until: null,
-                url: "https://coursera.org/certificate/dl-3021-998"
-              }
-            ]
-          };
-        setAnonymizedCandidate(dummyData);
+          const data = await candidateService.getShareableProfile(candidateId);
+          setAnonymizedCandidate(data);
+        
+        //   const dummyData: ShareableProfileSensitiveCandidate = {
+        //     id: "ed51c22f-517c-4f71-884b-55b56c9bea1a",
+        //     about: "Machine Learning Engineer | NLP, Deep Learning, MLOps | Healthcare AI",
+        //     location: "Hyderabad, India",
+        //     total_experience_years: 6.6,
+        //     experience: [
+        //       {
+        //         job_title: "Machine Learning Engineer",
+        //         location: "Remote",
+        //         start_date: "2021-06-01",
+        //         end_date: null,
+        //         description: "Developed and deployed deep learning models for radiology report summarization and image-text cross-modal retrieval. Worked closely with radiologists to build annotation pipelines and establish data quality baselines. Designed custom CNN+Transformer hybrid architectures in PyTorch, achieving 92% F1 score in disease classification. Built internal autoML tooling for model benchmarking and hyperparameter tuning using Optuna. Also led the end-to-end MLOps setup using MLflow and AWS SageMaker for model versioning, reproducibility, and monitoring in production. Mentored 2 interns on explainable AI (GradCAM, SHAP) and supervised learning projects.",
+        //         is_current: true
+        //       },
+        //       {
+        //         job_title: "Data Scientist",
+        //         location: "Bangalore, India",
+        //         start_date: "2018-11-01",
+        //         end_date: "2021-05-01",
+        //         description: "Worked on natural language understanding (NLU) problems in digital health. Built intent recognition models for symptom checkers using BERT and fastText embeddings. Contributed to internal Python packages for text preprocessing and spell correction tailored to medical transcripts. Improved chatbot performance by 15% by integrating rule-based fallback layers. Also explored weak supervision and active learning strategies to improve low-resource language coverage. Supported product analytics using cohort tracking and built dashboards in Streamlit for internal stakeholders.",
+        //         is_current: false
+        //       }
+        //     ],
+        //     education: [
+        //       {
+        //         degree: "M.Tech",
+        //         specialization: "Artificial Intelligence",
+        //         start_date: "2016-07-01",
+        //         end_date: "2018-06-01"
+        //       },
+        //       {
+        //         degree: "B.E.",
+        //         specialization: "Computer Science",
+        //         start_date: "2012-07-01",
+        //         end_date: "2016-06-01"
+        //       }
+        //     ],
+        //     skills: [
+        //       {
+        //         skill: "PyTorch",
+        //         number_of_endorsements: 1
+        //       },
+        //       {
+        //         skill: "Transformers",
+        //         number_of_endorsements: 0
+        //       },
+        //       {
+        //         skill: "NLP",
+        //         number_of_endorsements: 1
+        //       },
+        //       {
+        //         skill: "MLOps",
+        //         number_of_endorsements: 0
+        //       },
+        //       {
+        //         skill: "AWS SageMaker",
+        //         number_of_endorsements: 0
+        //       }
+        //     ],
+        //     certifications: [
+        //       {
+        //         name: "AWS Certified Machine Learning - Specialty",
+        //         issuer: "Amazon Web Services",
+        //         license_number: "AWS-ML-SP-1012",
+        //         issued_date: "2023-01-01",
+        //         valid_until: "2026-01-01",
+        //         url: "https://aws.amazon.com/verification/aws-ml-sp-1012"
+        //       },
+        //       {
+        //         name: "Deep Learning Specialization",
+        //         issuer: "Coursera / DeepLearning.AI",
+        //         license_number: "DL-3021-998",
+        //         issued_date: "2019-08-01",
+        //         valid_until: null,
+        //         url: "https://coursera.org/certificate/dl-3021-998"
+        //       }
+        //     ]
+        //   };
+        // setAnonymizedCandidate(dummyData);
         
       } catch (err) {
         setError('Failed to load candidate profile');
@@ -152,7 +152,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               {onBack && (
@@ -185,7 +185,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
       </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-2 py-2">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
           
 
@@ -194,19 +194,21 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
             
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">
-                  <div className="bg-gray-700 rounded-full w-16 h-16"/>
+                  <div className="bg-gray-700 rounded-full w-16 h-16 flex items-center justify-center">
+                    <User className="w-4 h-4 text-white " />
+                  </div>
                   <div className="space-y-2">
                     <div className="flex gap-2">
                       <User className="w-4 h-4" />
-                      <span className="text-gray-700">********</span>
+                      <span className="text-gray-700">******** ********</span>
                     </div>
                     <div className="flex gap-2">
                       <Mail className="w-4 h-4"/>
-                      <span className="text-gray-700">********</span>
+                      <span className="text-gray-700">*********************</span>
                     </div>
                     <div className="flex gap-2">
                       <Phone className="w-4 h-4"/>
-                      <span className="text-gray-700">********</span>
+                      <span className="text-gray-700">**********</span>
                     </div>
                   </div>
                 </div>
@@ -227,7 +229,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
                     <div className="space-y-1">
                       <div className="flex gap-2">
                         <Building2 className="w-4 h-4"/>
-                        <span className="text-gray-700">********</span>
+                        <span className="text-gray-700">********* ********* *********</span>
                       </div>
                       <p className="text-gray-500">{exp.start_date} - {exp.end_date || 'Present'}</p>
                     </div>
@@ -245,7 +247,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
                     <div className="space-y-1">
                       <div className="flex gap-2">
                         <GraduationCap className="w-4 h-4"/>
-                        <span className="text-gray-700">********</span>
+                        <span className="text-gray-700">********* ********* *********</span>
                       </div>
                       <p className="text-gray-500">{edu.specialization}</p>
                       <p className="text-gray-500">{edu.start_date} - {edu.end_date}</p>
@@ -279,7 +281,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
                       <div className="space-y-1">
                         <div className="flex gap-2">
                           <Award className="w-4 h-4"/>
-                          <span className="text-gray-700">********</span>
+                          <span className="text-gray-700">********* ********* *********</span>
                         </div>
                         <p className="text-gray-500">{cert.issued_date}</p>
                       </div>
