@@ -146,7 +146,6 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
   const startIndex = (currentPage - 1) * candidatesPerPage;
   const endIndex = Math.min(startIndex + candidatesPerPage, candidates.length);
-  const currentCandidates = candidates.slice(startIndex, endIndex);
 
   if (loading) {
     return (
@@ -432,7 +431,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       </div>
 
       <div className="divide-y divide-gray-200">
-        {currentCandidates.map((candidate) => (
+        {candidates.map((candidate) => (
           <div
             key={candidate.id}
             className={`p-3 lg:p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
