@@ -111,7 +111,7 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
         showToast.success(`Archived ${jobId}`);
         break;
       case 'delete':
-        onSharePipelines(jobId);
+        onDeleteJob(jobId);
         break;
     }
   };
@@ -145,16 +145,16 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
                 </div>
                 
                 {hoveredItem === category.id && (
-                  <div className="flex mt-1 text-xs text-gray-500 space-x-2">
-                    <div className="flex justify-between">
+                  <div className="flex mt-1 text-xs text-gray-500 space-x-3">
+                    <div className="flex gap-2">
                       <span>Invites Sent:</span>
                       <span className="font-medium">{category.invitesSent}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex gap-2">
                       <span>Total Replied:</span>
                       <span className="font-medium">{category.totalReplied}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex gap-2">
                       <span>Total Applied:</span>
                       <span className="font-medium">{category.totalApplied}</span>
                     </div>
