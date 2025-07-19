@@ -36,7 +36,8 @@ import {
   PipelineCandidate,
 } from "../data/pipelineData";
 import { useAuthContext } from "../context/AuthContext";
-import apiClient from "../services/api"; // Adjust path as needed
+import apiClient from "../services/api";
+import { jobPostService } from "../services/jobPostService"; // Import jobPostService
 
 // Define interfaces for API responses
 interface Stage {
@@ -58,14 +59,8 @@ interface CandidateListItem {
     linkedin_url: string;
     is_background_verified: boolean;
     experience_years: string;
-    experience_summary: {
-      title: string;
-      date_range: string;
-    };
-    education_summary: {
-      title: string;
-      date_range: string;
-    };
+    experience_summary: { title: string; date_range: string };
+    education_summary: { title: string; date_range: string };
     notice_period_summary: string;
     skills_list: string[];
     social_links: {
@@ -76,6 +71,13 @@ interface CandidateListItem {
     };
   };
   stage_slug: string;
+}
+
+// Define Category interface
+interface Category {
+  id: number;
+  name: string;
+  count: number;
 }
 
 interface PipelineStagesProps {
@@ -103,7 +105,19 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   // States for API data
   const [stages, setStages] = useState<Stage[]>([]);
   const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
-  const [activeJobId, setActiveJobId] = useState<number>(35); // Default job_id
+  const [activeJobId, setActiveJobId] = useState<number | null>(null); // Initially null
+
+  // Dynamic category states
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
+    null
+  );
+  const [showCreateJobRole, setShowCreateJobRole] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const tabs = [
     { id: "outbound", label: "Outbound", count: 2325 },
@@ -112,14 +126,42 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     { id: "prevetted", label: "Prevetted", count: 2034 },
   ];
 
+  // Fetch categories when component mounts
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setLoadingCategories(true);
+      try {
+        const jobs = await jobPostService.getJobs();
+        const mappedCategories: Category[] = jobs.map((job) => ({
+          id: job.id,
+          name: job.title,
+          count: job.total_candidates || 0,
+        }));
+        setCategories(mappedCategories);
+        if (mappedCategories.length > 0) {
+          setActiveCategoryId(mappedCategories[0].id);
+          setActiveJobId(mappedCategories[0].id);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setCategories([]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   // Fetch stages when activeJobId changes
   useEffect(() => {
-    fetchStages(activeJobId);
+    if (activeJobId !== null) {
+      fetchStages(activeJobId);
+    }
   }, [activeJobId]);
 
-  // Fetch candidates when selectedStage or activeJobId changes
+  // Fetch candidates when activeJobId or selectedStage changes
   useEffect(() => {
-    if (selectedStage) {
+    if (activeJobId !== null && selectedStage) {
       fetchCandidates(
         activeJobId,
         selectedStage.toLowerCase().replace(" ", "-")
@@ -134,12 +176,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     } else {
       document.body.classList.remove("overflow-hidden");
     }
-    return () => {
-      document.body.classList.remove("overflow-hidden");
-    };
+    return () => document.body.classList.remove("overflow-hidden");
   }, [showComments]);
 
-  // API axios functions using apiClient :
+  // API functions
   const fetchStages = async (jobId: number) => {
     try {
       const response = await apiClient.get(
@@ -186,10 +226,12 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       await apiClient.patch(`/jobs/applications/${applicationId}/`, {
         current_stage: stageId,
       });
-      fetchCandidates(
-        activeJobId,
-        selectedStage.toLowerCase().replace(" ", "-")
-      );
+      if (activeJobId !== null) {
+        fetchCandidates(
+          activeJobId,
+          selectedStage.toLowerCase().replace(" ", "-")
+        );
+      }
     } catch (error) {
       console.error("Error moving candidate:", error);
     }
@@ -204,10 +246,12 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         status: "ARCHIVED",
         archive_reason: "Candidate archived from UI",
       });
-      fetchCandidates(
-        activeJobId,
-        selectedStage.toLowerCase().replace(" ", "-")
-      );
+      if (activeJobId !== null) {
+        fetchCandidates(
+          activeJobId,
+          selectedStage.toLowerCase().replace(" ", "-")
+        );
+      }
     } catch (error) {
       console.error("Error archiving candidate:", error);
     }
@@ -218,18 +262,19 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       await apiClient.post("/jobs/bulk-move-stage/", {
         application_ids: applicationIds,
       });
-      fetchCandidates(
-        activeJobId,
-        selectedStage.toLowerCase().replace(" ", "-")
-      );
+      if (activeJobId !== null) {
+        fetchCandidates(
+          activeJobId,
+          selectedStage.toLowerCase().replace(" ", "-")
+        );
+      }
     } catch (error) {
       console.error("Error bulk moving candidates:", error);
     }
   };
 
-  // Helper to map candidate details to PipelineCandidate type
+  // Helper to map candidate details
   const mapCandidateDetails = (data: any): PipelineCandidate => {
-    // Since exact response structure isn't provided, assume it includes necessary fields
     return {
       id: data.id.toString(),
       firstName: data.candidate.full_name.split(" ")[0] || "",
@@ -244,8 +289,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         city: data.candidate.location.split(", ")[0] || "",
       },
       industry: "",
-      email: data.candidate.social_links?.resume || "", // Placeholder
-      phone: { type: "mobile", number: "" }, // Placeholder
+      email: data.candidate.social_links?.resume || "",
+      phone: { type: "mobile", number: "" },
       positions: [
         {
           title: data.candidate.experience_summary.title,
@@ -284,7 +329,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         source: "",
         scopesGranted: [],
       },
-      stageData: data.stage_data || {}, // Assume stage-specific data is included
+      stageData: data.stage_data || {},
     };
   };
 
@@ -334,6 +379,48 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       ? candidates
       : pipelineCandidates[selectedStage] || [];
 
+  const handleCreateJobRole = () => {
+    setShowCreateJobRole(true);
+  };
+
+  const handleEditJobRole = (categoryId: number) => {
+    setShowCreateJobRole(true);
+    setShowCategoryActions(null);
+  };
+
+  const handleEditTemplate = (categoryId: number) => {
+    setShowCategoryActions(null);
+  };
+
+  const handleCategoryAction = (action: string, categoryId: number) => {
+    setShowCategoryActions(null);
+    switch (action) {
+      case "edit-job":
+        handleEditJobRole(categoryId);
+        break;
+      case "edit-template":
+        handleEditTemplate(categoryId);
+        break;
+      case "archive":
+        alert(`Archived category with id ${categoryId}`);
+        break;
+      case "delete":
+        if (
+          confirm(
+            `Are you sure you want to delete category with id ${categoryId}?`
+          )
+        ) {
+          alert(`Deleted category with id ${categoryId}`);
+        }
+        break;
+    }
+  };
+
+  const handleCategorySelect = (categoryId: number) => {
+    setActiveCategoryId(categoryId);
+    setActiveJobId(categoryId);
+  };
+
   const renderStageDetails = () => {
     if (!selectedCandidate) {
       return (
@@ -366,7 +453,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <MessageCircle className="w-4 h-4" />
               </button>
             </div>
-
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Experience</h4>
               {selectedCandidate.positions.map((pos, index) => (
@@ -378,7 +464,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 </div>
               ))}
             </div>
-
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Education</h4>
               {selectedCandidate.educations.map((edu, index) => (
@@ -388,7 +473,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 </div>
               ))}
             </div>
-
             <div className="flex justify-between w-full">
               <button
                 onClick={() => {
@@ -412,7 +496,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             </div>
           </div>
         );
-
       case "Invites Sent":
         const inviteData = stageData.invitesSent;
         return (
@@ -428,7 +511,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <MessageCircle className="w-4 h-4" />
               </button>
             </div>
-
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Notes</h4>
               <div className="space-y-2">
@@ -442,7 +524,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 ))}
               </div>
             </div>
-
             <div className="flex justify-between w-full">
               <button
                 onClick={() => {
@@ -466,7 +547,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             </div>
           </div>
         );
-
       case "Applied":
         const appliedData = stageData.applied;
         return (
@@ -482,7 +562,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <MessageCircle className="w-4 h-4" />
               </button>
             </div>
-
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-gray-50 rounded-lg p-3">
                 <h5 className="font-medium text-gray-900 text-sm mb-1">
@@ -501,8 +580,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 </p>
               </div>
             </div>
-
-            <div className="">
+            <div>
               <h4 className="font-medium text-gray-900 mb-3">
                 Resume Highlights
               </h4>
@@ -519,7 +597,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   ))}
               </div>
             </div>
-
             <div>
               <button className="mt-1 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 Resend Interview Link
@@ -548,7 +625,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             </div>
           </div>
         );
-
       case "AI Interview":
       case "Shortlisted":
         const interviewData =
@@ -568,7 +644,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <MessageCircle className="w-4 h-4" />
               </button>
             </div>
-
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-gray-50 rounded-lg p-2 text-center">
                 <p className="text-xs text-gray-600">Resume Score</p>
@@ -595,7 +670,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 </p>
               </div>
             </div>
-
             <div className="bg-red-50 rounded-lg p-3">
               <h5 className="font-medium text-red-900 mb-2">
                 Proctoring Check
@@ -614,7 +688,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 </div>
               </div>
             </div>
-
             <div className="flex justify-between w-full">
               <button
                 onClick={() => {
@@ -638,7 +711,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             </div>
           </div>
         );
-
       case "First Interview":
       case "Other Interviews":
       case "HR Round":
@@ -661,7 +733,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <MessageCircle className="w-4 h-4" />
               </button>
             </div>
-
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Follow-ups</h4>
               <div className="space-y-2">
@@ -676,7 +747,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 ))}
               </div>
             </div>
-
             <div className="flex justify-between w-full">
               <button
                 onClick={() => {
@@ -700,7 +770,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             </div>
           </div>
         );
-
       case "Salary Negotiation":
         const salaryData = stageData.salaryNegotiation;
         return (
@@ -716,7 +785,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <MessageCircle className="w-4 h-4" />
               </button>
             </div>
-
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Follow-ups</h4>
               <div className="space-y-2">
@@ -731,7 +799,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 ))}
               </div>
             </div>
-
             <div className="flex justify-between w-full">
               <button
                 onClick={() => {
@@ -755,7 +822,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             </div>
           </div>
         );
-
       case "Offer Sent":
         const offerData = stageData.offerSent;
         return (
@@ -771,7 +837,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <MessageCircle className="w-4 h-4" />
               </button>
             </div>
-
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Follow-ups</h4>
               <div className="space-y-2">
@@ -786,7 +851,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 ))}
               </div>
             </div>
-
             {offerData?.offerAcceptanceStatus === "Pending" && (
               <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 Follow Up on Offer
@@ -794,9 +858,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             )}
           </div>
         );
-
       case "Archives":
-        const archiveData = stageData.archived;
         return (
           <div className="space-y-4">
             <div className="flex space-x-2">
@@ -812,7 +874,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             </div>
           </div>
         );
-
       default:
         return null;
     }
@@ -835,57 +896,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     },
   ];
 
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
-  const [showCategoryActions, setShowCategoryActions] = useState<string | null>(
-    null
-  );
-  const [showCreateJobRole, setShowCreateJobRole] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const [activeCategory, setActiveCategory] = useState("Head Of Finance");
-
-  const categories = [
-    { name: "Head Of Finance", count: 8, active: true },
-    { name: "Contract Executive", count: 6 },
-    { name: "Aerospace Engineer", count: 9 },
-    { name: "AI/ML Engineer", count: 9 },
-  ];
-
-  const handleCreateJobRole = () => {
-    setShowCreateJobRole(true);
-  };
-
-  const handleEditJobRole = (categoryName: string) => {
-    setShowCreateJobRole(true);
-    setShowCategoryActions(null);
-  };
-
-  const handleEditTemplate = (categoryName: string) => {
-    setShowCategoryActions(null);
-  };
-
-  const handleCategoryAction = (action: string, categoryName: string) => {
-    setShowCategoryActions(null);
-
-    switch (action) {
-      case "edit-job":
-        handleEditJobRole(categoryName);
-        break;
-      case "edit-template":
-        handleEditTemplate(categoryName);
-        break;
-      case "archive":
-        alert(`Archived ${categoryName}`);
-        break;
-      case "delete":
-        if (confirm(`Are you sure you want to delete ${categoryName}?`)) {
-          alert(`Deleted ${categoryName}`);
-        }
-        break;
-    }
-  };
-
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="sticky top-0 z-20 bg-white will-change-transform">
@@ -898,96 +908,106 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       </div>
 
       <div className="my-3 mx-6">
-        <div className="hidden md:flex items-center space-x-2">
-          {categories.map((category) => (
-            <div
-              key={category.name}
-              className="relative"
-              onMouseEnter={() => setHoveredCategory(category.name)}
-              onMouseLeave={() => setHoveredCategory(null)}
-            >
-              <button
-                onClick={() => setActiveCategory(category.name)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                  activeCategory === category.name
-                    ? "bg-blue-100 text-blue-700 shadow-sm"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
+        {loadingCategories ? (
+          <div className="text-center text-gray-500">Loading categories...</div>
+        ) : categories.length === 0 ? (
+          <div className="text-center text-gray-500">
+            <p>No Job Roles Found</p>
+            <p className="text-sm mt-1">
+              Please create a job role to view the pipeline stages.
+            </p>
+          </div>
+        ) : (
+          <div className="hidden md:flex items-center space-x-2">
+            {categories.map((category) => (
+              <div
+                key={category.id}
+                className="relative"
+                onMouseEnter={() => setHoveredCategory(category.id)}
+                onMouseLeave={() => setHoveredCategory(null)}
               >
-                {category.name}
-                <span
-                  className={`ml-2 px-2 py-1 rounded-full text-xs ${
-                    activeCategory === category.name
-                      ? "bg-blue-200 text-blue-800"
-                      : "bg-gray-200 text-gray-600"
+                <button
+                  onClick={() => handleCategorySelect(category.id)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                    activeCategoryId === category.id
+                      ? "bg-blue-100 text-blue-700 shadow-sm"
+                      : "text-gray-600 hover:bg-gray-100"
                   }`}
                 >
-                  {category.count}
-                </span>
-              </button>
-
-              {hoveredCategory === category.name && (
-                <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                  <div className="py-1">
-                    <button
-                      onClick={() =>
-                        handleCategoryAction("edit-job", category.name)
-                      }
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                    >
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit Job Role
-                    </button>
-                    <button
-                      onClick={() =>
-                        handleCategoryAction("edit-template", category.name)
-                      }
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                    >
-                      <Mail className="w-4 h-4 mr-2" />
-                      Edit Email Template
-                    </button>
-                    <button
-                      onClick={() =>
-                        handleCategoryAction("archive", category.name)
-                      }
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                    >
-                      <Archive className="w-4 h-4 mr-2" />
-                      Archive
-                    </button>
-                    <button
-                      onClick={() =>
-                        handleCategoryAction("delete", category.name)
-                      }
-                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete Job
-                    </button>
+                  {category.name}
+                  <span
+                    className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                      activeCategoryId === category.id
+                        ? "bg-blue-200 text-blue-800"
+                        : "bg-gray-200 text-gray-600"
+                    }`}
+                  >
+                    {category.count}
+                  </span>
+                </button>
+                {hoveredCategory === category.id && (
+                  <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                    <div className="py-1">
+                      <button
+                        onClick={() =>
+                          handleCategoryAction("edit-job", category.id)
+                        }
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit Job Role
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleCategoryAction("edit-template", category.id)
+                        }
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                      >
+                        <Mail className="w-4 h-4 mr-2" />
+                        Edit Email Template
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleCategoryAction("archive", category.id)
+                        }
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                      >
+                        <Archive className="w-4 h-4 mr-2" />
+                        Archive
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleCategoryAction("delete", category.id)
+                        }
+                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete Job
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          ))}
-
-          <div className="relative">
-            <button
-              onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-              className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
-            >
-              +12 more
-              <ChevronDown className="ml-1 w-4 h-4" />
-            </button>
-
-            <CategoryDropdown
-              isOpen={showCategoryDropdown}
-              onClose={() => setShowCategoryDropdown(false)}
-              onEditJobRole={handleEditJobRole}
-              onEditTemplate={handleEditTemplate}
-            />
+                )}
+              </div>
+            ))}
+            {categories.length > 4 && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                  className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
+                >
+                  +{categories.length - 4} more
+                  <ChevronDown className="ml-1 w-4 h-4" />
+                </button>
+                <CategoryDropdown
+                  isOpen={showCategoryDropdown}
+                  onClose={() => setShowCategoryDropdown(false)}
+                  onEditJobRole={handleEditJobRole}
+                  onEditTemplate={handleEditTemplate}
+                />
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
 
       <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-2">
@@ -1094,13 +1114,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         checked={selectAll}
                         onChange={(e) => {
                           setSelectAll(e.target.checked);
-                          if (e.target.checked) {
-                            setSelectedCandidates(
-                              currentCandidates.map((c) => c.id.toString())
-                            );
-                          } else {
-                            setSelectedCandidates([]);
-                          }
+                          setSelectedCandidates(
+                            e.target.checked
+                              ? currentCandidates.map((c) => c.id.toString())
+                              : []
+                          );
                         }}
                         className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
                       />
@@ -1121,7 +1139,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   </div>
                 </div>
               </div>
-
               <div className="divide-y divide-gray-200">
                 {currentCandidates.length === 0 ? (
                   <div className="p-8 text-center text-gray-500">
@@ -1210,7 +1227,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       </p>
                     </div>
                   </div>
-
                   <div className="bg-gray-50 rounded-lg p-3 space-y-2">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center space-x-2">
@@ -1237,7 +1253,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       </div>
                     </div>
                   </div>
-
                   {renderStageDetails()}
                 </>
               ) : (
@@ -1251,7 +1266,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   </p>
                 </div>
               )}
-
               <div
                 className={`absolute top-0 left-0 w-full h-full bg-gray-50 transform transition-all duration-300 ease-in-out z-10 ${
                   showComments
