@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Search,
-  Briefcase,
   Building2,
   Clock10,
   MapPin,
@@ -10,7 +9,6 @@ import {
   ChevronUp,
   Filter,
   DollarSign,
-  Star,
   History,
   ChevronLeft,
   ChevronRight,
@@ -234,8 +232,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     moreFilters: false,
   });
 
-  const [jobTitles, setJobTitles] = useState<string[]>([]);
-
   // Debounced fetch candidates
   const debouncedFetchCandidates = useCallback(
     debounce(async (filterParams: any) => {
@@ -246,16 +242,12 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           page_size: 20,
         });
         setCandidates(response.results);
-        if (response.results.length > 0) {
-          // Update selected candidate in parent component if needed
-          onFiltersChange({ ...filters, selectedCandidate: response.results[0] });
-        }
       } catch (error) {
         console.error("Error fetching filtered candidates:", error);
         setCandidates([]);
       }
     }, 500),
-    [onFiltersChange]
+    [setCandidates]
   );
 
   // Update filters when activeTab changes
@@ -266,7 +258,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       is_prevetted: activeTab === "prevetted",
       is_active: activeTab === "active",
     });
-  }, [activeTab, onFiltersChange]);
+  }, [activeTab, onFiltersChange, filters]);
 
   // Fetch candidates when filters change
   useEffect(() => {
@@ -286,7 +278,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       if (filters.location) filterParams.location = filters.location;
       if (filters.selectedSkills.length > 0) filterParams.skills = filters.selectedSkills.join(",");
       if (filters.companies) filterParams.companies = filters.companies.split(",").map((c: string) => c.trim());
-      if (filters.industries) filterParams.industries = filters.industries.split(",").map((i: string) => i.trim());
+      if (filters.industries) filterParams.industries = filters.industries.split(",").map((c: string) => c.trim());
       if (filters.minSalary) filterParams.salary_min = filters.minSalary;
       if (filters.maxSalary) filterParams.salary_max = filters.maxSalary;
       if (filters.colleges) filterParams.colleges = filters.colleges.split(",").map((c: string) => c.trim());
@@ -327,13 +319,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const updateFilters = (key: string, value: any) => {
     onFiltersChange({ ...filters, [key]: value });
   };
-
-  const jobCategories = [
-    { name: "Engineering Manager", count: 120 },
-    { name: "Software Engineer", count: 85 },
-    { name: "Product Manager", count: 45 },
-    { name: "Data Scientist", count: 30 },
-  ];
 
   const noticePeriodOptions = ["Immediate", "15 days", "30 days", "45 days", "60 days", "90 days"];
 
