@@ -18,6 +18,7 @@ interface CategoryDropdownProps {
   onEditJobRole: (jobId: number) => void;
   onEditTemplate: (jobId: number) => void;
   onDeleteJob: (jobId: number) => void;
+  onSharePipelines: (jobId: number) => void;
 }
 
 const CategoryDropdown: React.FC<CategoryDropdownProps> = ({ 
@@ -26,6 +27,7 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   onEditJobRole, 
   onEditTemplate,
   onDeleteJob,
+  onSharePipelines,
 }) => {
   const [hoveredItem, setHoveredItem] = useState<number | null>(null);
   const [showActionMenu, setShowActionMenu] = useState<number | null>(null);
@@ -103,13 +105,13 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
         onEditTemplate(jobId);
         break;
       case 'share-pipelines':
-        showToast.success(`Share Pipelines for ${jobId}`);
+        onSharePipelines(jobId);
         break;
       case 'archive':
         showToast.success(`Archived ${jobId}`);
         break;
       case 'delete':
-        showToast.success(`Deleted ${jobId}`);
+        onDeleteJob(jobId);
         break;
     }
   };
@@ -143,16 +145,16 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
                 </div>
                 
                 {hoveredItem === category.id && (
-                  <div className="mt-1 text-xs text-gray-500 space-y-1">
-                    <div className="flex justify-between">
+                  <div className="flex mt-1 text-xs text-gray-500 space-x-3">
+                    <div className="flex gap-2">
                       <span>Invites Sent:</span>
                       <span className="font-medium">{category.invitesSent}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex gap-2">
                       <span>Total Replied:</span>
                       <span className="font-medium">{category.totalReplied}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex gap-2">
                       <span>Total Applied:</span>
                       <span className="font-medium">{category.totalApplied}</span>
                     </div>
@@ -166,7 +168,7 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
                     e.stopPropagation();
                     setShowActionMenu(showActionMenu === category.id ? null : category.id);
                   }}
-                  className="p-1 hover:bg-gray-200 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="p-1 bg-gray-100 hover:bg-gray-200 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <MoreHorizontal className="w-4 h-4 text-gray-500" />
                 </button>

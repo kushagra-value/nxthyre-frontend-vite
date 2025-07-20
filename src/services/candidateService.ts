@@ -110,6 +110,39 @@ export interface CandidateDetailData {
   }
 }
 
+export interface ShareableProfileSensitiveCandidate {
+  id: string;
+  about: string;
+  location: string;
+  total_experience_years: number;
+  experience: {
+    job_title: string;
+    location: string;
+    start_date: string;
+    end_date: string | null;
+    description: string;
+    is_current: boolean;
+  }[];
+  education: {
+    degree: string;
+    specialization: string;
+    start_date: string;
+    end_date: string;
+  }[];
+  skills: {
+    skill: string;
+    number_of_endorsements: number;
+  }[];
+  certifications: {
+    name: string;
+    issuer: string;
+    license_number: string;
+    issued_date: string;
+    valid_until: string | null;
+    url: string;
+  }[];
+}
+
 class CandidateService {
   async getCandidates(filters: any): Promise<{ results: CandidateListItem[]; count: number }> {
     try {
@@ -126,9 +159,10 @@ class CandidateService {
     }
   }
 
-  async searchCandidates(filters: any): Promise<{ results: CandidateListItem[]; count: number }> {
+  async searchCandidates(params: any): Promise<{ results: CandidateListItem[]; count: number }> {
     try {
-      const response = await apiClient.post("/candidates/search/", filters);
+      const { page, ...body } = params;
+      const response = await apiClient.post(`/candidates/search/?page=${page || 1}`, body);
      
       if (Array.isArray(response.data)) {
         return {
@@ -148,6 +182,14 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to fetch candidate details");
+    }
+  }
+  async getShareableProfile(candidateId: string): Promise<ShareableProfileSensitiveCandidate> {
+    try {
+      const response = await apiClient.get(`/candidates/share/${candidateId}/`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to fetch shareable profile");
     }
   }
 }
