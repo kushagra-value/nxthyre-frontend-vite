@@ -887,6 +887,7 @@ function MainApp() {
                               candidate={selectedCandidate}
                               onBack={handleBackFromTemplate}
                               updateCandidateEmail={updateCandidateEmail}
+                              jobId={filters.jobId}
                             />
                           ) : (
                             <CandidateDetail
