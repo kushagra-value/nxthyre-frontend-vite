@@ -229,11 +229,11 @@ class CandidateService {
   async saveTemplate(template: Template): Promise<Template> {
     if (template.id) {
       // Update existing template
-      const response = await apiClient.put(`/api/jobs/notification-templates/${template.id}/`, template);
+      const response = await apiClient.put(`/jobs/notification-templates/${template.id}/`, template);
       return response.data;
     } else {
       // Create new template
-      const response = await apiClient.post('/api/jobs/notification-templates/', template);
+      const response = await apiClient.post('/jobs/notification-templates/', template);
       return response.data;
     }
   }
