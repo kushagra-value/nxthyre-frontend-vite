@@ -212,12 +212,12 @@ class CandidateService {
   }
 
   async getTemplates(): Promise<Template[]> {
-    const response = await apiClient.get('/templates/');
+    const response = await apiClient.get('/jobs/notification-templates/');
     return response.data;
   }
 
   async sendInvite(data: { candidateId: string; templateId?: string; subject: string; body: string; channel: string; followUpTemplates: string[] }): Promise<InviteResponse> {
-    const response = await apiClient.post('/invites/send/', data);
+    const response = await apiClient.post('/jobs/invite/', data);
     return response.data;
   }
 }
