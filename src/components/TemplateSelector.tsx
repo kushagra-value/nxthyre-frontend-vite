@@ -344,7 +344,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
         {/* Channel Selection */}
         <div>
           <p className="text-sm text-gray-600 mb-2">The following will be sent to candidate via</p>
-          <div className="flex justify-between">
+          {/* <div className="flex justify-between">
             {[
               { name: 'Email', icon: Mail, color: 'bg-blue-100 text-blue-800', enabled: canSendEmail },
               { name: 'WhatsApp', icon: MessageSquare, color: 'bg-green-100 text-green-800', enabled: canSendWhatsApp },
@@ -364,7 +364,39 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
                 {channel.name}
               </button>
             ))}
-          </div>
+          </div> */}
+          <div className="space-y-2">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={canSendEmail}
+                        onChange={(e) => setCanSendEmail(e.target.checked)}
+                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                        disabled={loading}
+                      />
+                      <span className="ml-2 text-sm text-gray-700">Email</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={canSendWhatsApp}
+                        onChange={(e) => setCanSendWhatsApp(e.target.checked)}
+                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                        disabled={loading}
+                      />
+                      <span className="ml-2 text-sm text-gray-700">WhatsApp</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={canSendCall}
+                        onChange={(e) => setCanSendCall(e.target.checked)}
+                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                        disabled={loading}
+                      />
+                      <span className="ml-2 text-sm text-gray-700">Call</span>
+                    </label>
+                  </div>
         </div>
 
         {/* Action Buttons */}
