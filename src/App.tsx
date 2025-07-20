@@ -394,6 +394,17 @@ function MainApp() {
     }
   }, []);
 
+  const updateCandidateEmail = (candidateId: string, email: string) => {
+    setCandidates((prevCandidates) =>
+      prevCandidates.map((cand) =>
+        cand.id === candidateId ? { ...cand, email } : cand
+      )
+    );
+    if (selectedCandidate?.id === candidateId) {
+      setSelectedCandidate((prev) => prev ? { ...prev, email } : prev);
+    }
+  };
+
   const deductCredits = async () => {
     try {
       const data = await creditService.getCreditBalance();
@@ -875,12 +886,15 @@ function MainApp() {
                             <TemplateSelector
                               candidate={selectedCandidate}
                               onBack={handleBackFromTemplate}
+                              updateCandidateEmail={updateCandidateEmail}
                             />
                           ) : (
                             <CandidateDetail
                               candidate={selectedCandidate}
                               candidates={candidates}
                               onSendInvite={handleSendInvite}
+                              updateCandidateEmail={updateCandidateEmail}
+                              deductCredits={deductCredits}
                             />
                           )}
                         </div>

@@ -3,6 +3,7 @@ import apiClient from "./api";
 export interface CandidateListItem {
   id: string;
   full_name: string;
+  email?: string;
   avatar: string;
   headline: string;
   location: string;
@@ -33,6 +34,7 @@ export interface CandidateDetailData {
   candidate: {
     id: string;
     full_name: string;
+    email?: string;
     headline: string;
     location: string;
     profile_picture_url: string;
@@ -143,6 +145,22 @@ export interface ShareableProfileSensitiveCandidate {
   }[];
 }
 
+
+export interface Template {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+  followUp?: string[];
+}
+
+export interface InviteResponse {
+  success: string;
+  invite_id: number;
+  candidate_email: string;
+  candidate_name: string;
+}
+
 class CandidateService {
   async getCandidates(filters: any): Promise<{ results: CandidateListItem[]; count: number }> {
     try {
@@ -191,6 +209,16 @@ class CandidateService {
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to fetch shareable profile");
     }
+  }
+
+  async getTemplates(): Promise<Template[]> {
+    const response = await apiClient.get('/templates/');
+    return response.data;
+  }
+
+  async sendInvite(data: { candidateId: string; templateId?: string; subject: string; body: string; channel: string; followUpTemplates: string[] }): Promise<InviteResponse> {
+    const response = await apiClient.post('/invites/send/', data);
+    return response.data;
   }
 }
 

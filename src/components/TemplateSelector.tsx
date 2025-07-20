@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown, Bold, Italic, Link, List, MoreHorizontal, ArrowLeft, Mail, MessageSquare, Phone, Bot, Eye, Settings, Send, X } from 'lucide-react';
 import { showToast } from '../utils/toast';
-import { CandidateListItem } from '../services/candidateService';
+import { CandidateListItem, candidateService } from '../services/candidateService';
 
 interface TemplateSelectorProps {
   candidate: CandidateListItem;
   onBack: () => void;
+  updateCandidateEmail: (candidateId: string, email: string) => void;
 }
 
 interface Template {
@@ -13,9 +14,11 @@ interface Template {
   name: string;
   subject: string;
   body: string;
+  followUp?: string[];
 }
 
-const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack }) => {
+const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, updateCandidateEmail }) => {
+  const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [templateName, setTemplateName] = useState('');
   const [subject, setSubject] = useState('');
@@ -26,55 +29,72 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack }
   const [showAdvanceOptions, setShowAdvanceOptions] = useState(false);
   const [testEmail, setTestEmail] = useState('');
   const [selectedChannel, setSelectedChannel] = useState('Email');
+  const [followUpTemplates, setFollowUpTemplates] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const templates: Template[] = [
-    {
-      id: '1',
-      name: 'Drip Campaign - Head of Finance',
-      subject: 'Exciting Opportunity at Weekday: Head of Finance in Pune',
-      body: `Hi [candidatename],
+//   const templates: Template[] = [
+//     {
+//       id: '1',
+//       name: 'Drip Campaign - Head of Finance',
+//       subject: 'Exciting Opportunity at Weekday: Head of Finance in Pune',
+//       body: `Hi [candidatename],
 
-I hope this message finds you well! At Weekday, we're a small team with a big heart, dedicated to making a positive impact on the world. We're currently looking for a Head of Finance who can bring their expertise in Finance to our dynamic online marketplace, with strong networks.`
-    },
-    {
-      id: '2',
-      name: 'Follow-up Template',
-      subject: 'Following up on our Finance opportunity',
-      body: `Hi [candidatename],
+// I hope this message finds you well! At Weekday, we're a small team with a big heart, dedicated to making a positive impact on the world. We're currently looking for a Head of Finance who can bring their expertise in Finance to our dynamic online marketplace, with strong networks.`
+//     },
+//     {
+//       id: '2',
+//       name: 'Follow-up Template',
+//       subject: 'Following up on our Finance opportunity',
+//       body: `Hi [candidatename],
 
-I wanted to follow up on the Head of Finance position we discussed. We're excited about the possibility of you joining our team at Weekday.
+// I wanted to follow up on the Head of Finance position we discussed. We're excited about the possibility of you joining our team at Weekday.
 
-Would you be available for a quick call this week to discuss the role in more detail?
+// Would you be available for a quick call this week to discuss the role in more detail?
 
-Best regards,
-[Your Name]`
-    },
-    {
-      id: '3',
-      name: 'Initial Outreach',
-      subject: 'Finance Leadership Role at Weekday',
-      body: `Hello [candidatename],
+// Best regards,
+// [Your Name]`
+//     },
+//     {
+//       id: '3',
+//       name: 'Initial Outreach',
+//       subject: 'Finance Leadership Role at Weekday',
+//       body: `Hello [candidatename],
 
-I came across your profile and was impressed by your background in finance. We have an exciting Head of Finance position at Weekday that I think would be a great fit for your skills.
+// I came across your profile and was impressed by your background in finance. We have an exciting Head of Finance position at Weekday that I think would be a great fit for your skills.
 
-Would you be interested in learning more about this opportunity?
+// Would you be interested in learning more about this opportunity?
 
-Looking forward to hearing from you.`
-    }
-  ];
+// Looking forward to hearing from you.`
+//     }
+//   ];
 
-  const handleTemplateSelect = (templateId: string) => {
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      setLoading(true);
+      try {
+        const data = await candidateService.getTemplates(); // Assume this API exists
+        setTemplates(data);
+      } catch (error) {
+        showToast.error('Failed to fetch templates');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTemplates();
+  }, []);
+
+    const handleTemplateSelect = (templateId: string) => {
     if (templateId === 'create-new') {
       setShowCreateTemplate(true);
       return;
     }
-    
     const template = templates.find(t => t.id === templateId);
-    if (template) {
-      setSelectedTemplate(templateId);
-      setSubject(template.subject);
-      setBody(template.body.replace('[candidatename]', candidate.full_name));
-    }
+      if (template) {
+        setSelectedTemplate(templateId);
+        setSubject(template.subject);
+        setBody(template.body.replace('[candidatename]', candidate.full_name));
+        setFollowUpTemplates(template.followUp || []);
+      }
   };
 
   const handleSaveTemplate = () => {
@@ -82,6 +102,14 @@ Looking forward to hearing from you.`
       showToast.error('Please enter a template name');
       return;
     }
+    const newTemplate: Template = {
+      id: Date.now().toString(),
+      name: templateName,
+      subject: subject,
+      body: body,
+      followUp: followUpTemplates,
+    };
+    setTemplates([...templates, newTemplate]);
     setShowCreateTemplate(false);
     showToast.success('Template saved successfully!');
   };
@@ -95,13 +123,29 @@ Looking forward to hearing from you.`
     showToast.success(`Test email sent to ${testEmail}`);
   };
 
-  const handleSendInvite = () => {
+  const handleSendInvite = async () => {
     if (!selectedTemplate && !body) {
       showToast.error('Please select a template or enter email content');
       return;
     }
-    showToast.success(`Invite sent to ${candidate.full_name} via ${selectedChannel}`);
-    onBack();
+    setLoading(true);
+    try {
+      const response = await candidateService.sendInvite({
+        candidateId: candidate.id,
+        templateId: selectedTemplate || undefined,
+        subject,
+        body,
+        channel: selectedChannel,
+        followUpTemplates,
+      });
+      showToast.success(`Invite sent successfully! Invite ID: ${response.invite_id}. Follow-ups scheduled.`);
+      updateCandidateEmail(candidate.id, response.candidate_email);
+    } catch (error) {
+      showToast.error('Failed to send invite');
+    } finally {
+      setLoading(false);
+      onBack();
+    }
   };
 
   return (
@@ -128,6 +172,7 @@ Looking forward to hearing from you.`
               value={selectedTemplate}
               onChange={(e) => handleTemplateSelect(e.target.value)}
               className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+              disabled={loading}
             >
               <option value="">Choose a template</option>
               <option value="create-new" className="font-bold text-blue-600">+ Create New Template</option>
@@ -146,7 +191,7 @@ Looking forward to hearing from you.`
           <label className="block text-sm font-medium text-gray-700 mb-2">From</label>
           <input
             type="email"
-            value="shivanshi@weekday.works"
+            value="yuvraj@nxthyre.com"
             readOnly
             className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
           />
@@ -161,6 +206,7 @@ Looking forward to hearing from you.`
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Enter email subject"
             className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            disabled={loading}
           />
         </div>
 
@@ -201,6 +247,7 @@ Looking forward to hearing from you.`
             className={`text-sm w-full px-3 py-2 border-l border-r border-b border-gray-300 shadow-xl rounded-b-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${
               isBodyExpanded ? 'h-80' : 'h-40'
             }`}
+            disabled={loading}
           />
           
           {!isBodyExpanded && body.length > 150 && (
@@ -225,6 +272,8 @@ Looking forward to hearing from you.`
             </div>
           )}
         </div>
+
+
 
         {/* Channel Selection */}
         <div>
@@ -251,12 +300,46 @@ Looking forward to hearing from you.`
           </div>
         </div>
 
+                <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Follow-up Templates</label>
+          {followUpTemplates.map((followUp, index) => (
+            <div key={index} className="flex items-center mb-2">
+              <input
+                type="text"
+                value={followUp}
+                onChange={(e) => {
+                  const updatedFollowUps = [...followUpTemplates];
+                  updatedFollowUps[index] = e.target.value;
+                  setFollowUpTemplates(updatedFollowUps);
+                }}
+                className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter follow-up content"
+                disabled={loading}
+              />
+              <button
+                onClick={() => setFollowUpTemplates(followUpTemplates.filter((_, i) => i !== index))}
+                className="ml-2 p-1 text-red-500 hover:text-red-700"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+          <button
+            onClick={() => setFollowUpTemplates([...followUpTemplates, ''])}
+            className="text-sm text-blue-600 hover:text-blue-700 mt-2"
+            disabled={loading}
+          >
+            + Add Follow-up
+          </button>
+        </div>
+
         {/* Action Buttons */}
         <div className="space-y-2 pt-4 border-t border-gray-200">
           <div className="w-full flex justify-end">
             <button
               onClick={() => setShowAdvanceOptions(true)}
               className="text-blue-600 text-xs hover:bg-blue-50 transition-colors flex items-center justify-end"
+              disabled={loading}
             >
               <Settings className="w-4 h-4 mr-2" />
               View Advance Options 
@@ -267,6 +350,7 @@ Looking forward to hearing from you.`
             <button
               onClick={() => setShowTestEmail(true)}
               className="w-full px-4 py-2 text-xs text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"
+              disabled={loading}
             >
               Send test email
             </button>
@@ -274,6 +358,7 @@ Looking forward to hearing from you.`
             <button
               onClick={handleSendInvite}
               className="w-full px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center font-medium"
+              disabled={loading}
             >
               <Send className="w-4 h-4 mr-2" />
               Send Invite
@@ -323,29 +408,131 @@ Looking forward to hearing from you.`
                   />
                 </div>
 
+                <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder="Enter email body..."
+            className={`text-sm w-full px-3 py-2 border-l border-r border-b border-gray-300 shadow-xl rounded-b-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${
+              isBodyExpanded ? 'h-80' : 'h-40'
+            }`}
+            disabled={loading}
+          />
+          
+          {!isBodyExpanded && body.length > 150 && (
+            <div className="flex justify-center">
+              <button
+                onClick={() => setIsBodyExpanded(true)}
+                className="mt-1 text-sm text-blue-600 hover:text-blue-700"
+              >
+                View more
+              </button>
+            </div>
+          )}
+          
+          {isBodyExpanded && (
+            <div className="flex justify-center">
+              <button
+                onClick={() => setIsBodyExpanded(false)}
+                className="mt-1 text-sm text-blue-600 hover:text-blue-700"
+              >
+                View less
+              </button>
+            </div>
+          )}
+        </div>
+
+
+
+        {/* Channel Selection */}
+        <div>
+          <p className="text-sm text-gray-600 mb-2">The following will be sent to candidate via</p>
+          <div className="flex justify-between">
+            {[
+              { name: 'Email', icon: Mail, color: 'bg-blue-100 text-blue-800' },
+              { name: 'WhatsApp', icon: MessageSquare, color: 'bg-green-100 text-green-800' },
+              { name: 'Call', icon: Phone, color: 'bg-orange-100 text-orange-800' }
+            ].map((channel) => (
+              <button
+                key={channel.name}
+                onClick={() => setSelectedChannel(channel.name)}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  selectedChannel === channel.name
+                    ? channel.color
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <channel.icon className="w-4 h-4 inline mr-1" />
+                {channel.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Body</label>
-                  <textarea
-                    placeholder="Enter email body..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none h-40"
-                  />
-                </div>
-              </div>
-              
-              <div className="flex space-x-3 pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => setShowCreateTemplate(false)}
-                  className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveTemplate}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Save Template
-                </button>
-              </div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Follow-up Templates</label>
+          {followUpTemplates.map((followUp, index) => (
+            <div key={index} className="flex items-center mb-2">
+              <input
+                type="text"
+                value={followUp}
+                onChange={(e) => {
+                  const updatedFollowUps = [...followUpTemplates];
+                  updatedFollowUps[index] = e.target.value;
+                  setFollowUpTemplates(updatedFollowUps);
+                }}
+                className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter follow-up content"
+                disabled={loading}
+              />
+              <button
+                onClick={() => setFollowUpTemplates(followUpTemplates.filter((_, i) => i !== index))}
+                className="ml-2 p-1 text-red-500 hover:text-red-700"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+          <button
+            onClick={() => setFollowUpTemplates([...followUpTemplates, ''])}
+            className="text-sm text-blue-600 hover:text-blue-700 mt-2"
+            disabled={loading}
+          >
+            + Add Follow-up
+          </button>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="space-y-2 pt-4 border-t border-gray-200">
+          <div className="w-full flex justify-end">
+            <button
+              onClick={() => setShowAdvanceOptions(true)}
+              className="text-blue-600 text-xs hover:bg-blue-50 transition-colors flex items-center justify-end"
+              disabled={loading}
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              View Advance Options 
+            </button>
+          </div>
+          
+          <div className="flex justify-between space-x-8">
+            <button
+              onClick={() => setShowTestEmail(true)}
+              className="w-full px-4 py-2 text-xs text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"
+              disabled={loading}
+            >
+              Send test email
+            </button>
+  
+            <button
+              onClick={handleSendInvite}
+              className="w-full px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center font-medium"
+              disabled={loading}
+            >
+              <Send className="w-4 h-4 mr-2" />
+              Send Invite
+            </button>
+          </div>
+        </div>
             </div>
           </div>
         </div>
@@ -422,7 +609,6 @@ Looking forward to hearing from you.`
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              
               <div className="space-y-4 flex-1">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -443,14 +629,12 @@ Looking forward to hearing from you.`
                     </select>
                   </div>
                 </div>
-                
                 <div>
                   <label className="flex items-center">
                     <input type="checkbox" className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500" />
                     <span className="ml-2 text-sm text-gray-700">Track email opens</span>
                   </label>
                 </div>
-                
                 <div>
                   <label className="flex items-center">
                     <input type="checkbox" className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500" />
@@ -458,7 +642,6 @@ Looking forward to hearing from you.`
                   </label>
                 </div>
               </div>
-              
               <div className="flex space-x-3 pt-4 border-t border-gray-200">
                 <button
                   onClick={() => setShowAdvanceOptions(false)}
