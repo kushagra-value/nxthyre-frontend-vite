@@ -230,7 +230,6 @@ interface PipelineStagesProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   onOpenLogoutModal: () => void;
-  onOpenLogoutModal: () => void;
 }
 
 const PipelineStages: React.FC<PipelineStagesProps> = ({
@@ -238,9 +237,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   activeTab,
   setActiveTab,
   onOpenLogoutModal,
-  onOpenLogoutModal,
 }) => {
-  const { user } = useAuthContext();
   const { user } = useAuthContext();
   const [selectedStage, setSelectedStage] = useState("Uncontacted");
   const [selectedCandidate, setSelectedCandidate] =
@@ -273,74 +270,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   //   { id: "inbound", label: "Inbound", count: 2034 },
   //   { id: "prevetted", label: "Prevetted", count: 2034 },
   // ];
-  // States for API data
-  const [stages, setStages] = useState<Stage[]>([]);
-  const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
-  const [activeJobId, setActiveJobId] = useState<number | null>(null); // Initially null
 
-  // Dynamic category states
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
-  const [loadingCategories, setLoadingCategories] = useState(true);
-  const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
-    null
-  );
-  const [showCreateJobRole, setShowCreateJobRole] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // const tabs = [
-  //   { id: "outbound", label: "Outbound", count: 2325 },
-  //   { id: "active", label: "Active", count: 2034 },
-  //   { id: "inbound", label: "Inbound", count: 2034 },
-  //   { id: "prevetted", label: "Prevetted", count: 2034 },
-  // ];
-
-  // Fetch categories when component mounts
-  useEffect(() => {
-    const fetchCategories = async () => {
-      setLoadingCategories(true);
-      try {
-        const jobs = await jobPostService.getJobs();
-        const mappedCategories: Category[] = jobs.map((job) => ({
-          id: job.id,
-          name: job.title,
-          count: job.total_candidates || 0,
-        }));
-        setCategories(mappedCategories);
-        if (mappedCategories.length > 0) {
-          setActiveCategoryId(mappedCategories[0].id);
-          setActiveJobId(mappedCategories[0].id);
-        }
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        setCategories([]);
-      } finally {
-        setLoadingCategories(false);
-      }
-    };
-    fetchCategories();
-  }, []);
-
-  // Fetch stages when activeJobId changes
-  useEffect(() => {
-    if (activeJobId !== null) {
-      fetchStages(activeJobId);
-    }
-  }, [activeJobId]);
-
-  // Fetch candidates when activeJobId or selectedStage changes
-  useEffect(() => {
-    if (activeJobId !== null && selectedStage) {
-      fetchCandidates(
-        activeJobId,
-        selectedStage.toLowerCase().replace(" ", "-")
-      );
-    }
-  }, [activeJobId, selectedStage]);
-
-  // Body overflow handling for comments
   // Fetch categories when component mounts
   useEffect(() => {
     const fetchCategories = async () => {
@@ -392,186 +322,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       document.body.classList.remove("overflow-hidden");
     }
     return () => document.body.classList.remove("overflow-hidden");
-    return () => document.body.classList.remove("overflow-hidden");
   }, [showComments]);
-
-  // API functions
-  const fetchStages = async (jobId: number) => {
-    try {
-      const response = await apiClient.get(
-        `/jobs/applications/stages/?job_id=${jobId}`
-      );
-      const data: Stage[] = response.data;
-      setStages(data.sort((a, b) => a.sort_order - b.sort_order));
-      setSelectedStage(data[0]?.name || "Uncontacted");
-    } catch (error) {
-      console.error("Error fetching stages:", error);
-      setStages([]);
-    }
-  };
-
-  const fetchCandidates = async (jobId: number, stageSlug: string) => {
-    try {
-      const response = await apiClient.get(
-        `/jobs/applications/?job_id=${jobId}&stage_slug=${stageSlug}`
-      );
-      const data: CandidateListItem[] = response.data;
-      setCandidates(data);
-    } catch (error) {
-      console.error("Error fetching candidates:", error);
-      setCandidates([]);
-    }
-  };
-
-  const fetchCandidateDetails = async (applicationId: number) => {
-    try {
-      const response = await apiClient.get(
-        `/jobs/applications/${applicationId}/`
-      );
-      const data = response.data;
-      const mappedCandidate: PipelineCandidate = mapCandidateDetails(data);
-      setSelectedCandidate(mappedCandidate);
-    } catch (error) {
-      console.error("Error fetching candidate details:", error);
-      setSelectedCandidate(null);
-    }
-  };
-
-  const moveCandidate = async (applicationId: number, stageId: number) => {
-    try {
-      await apiClient.patch(`/jobs/applications/${applicationId}/`, {
-        current_stage: stageId,
-      });
-      if (activeJobId !== null) {
-        fetchCandidates(
-          activeJobId,
-          selectedStage.toLowerCase().replace(" ", "-")
-        );
-      }
-    } catch (error) {
-      console.error("Error moving candidate:", error);
-    }
-  };
-
-  const archiveCandidate = async (applicationId: number) => {
-    const archiveStage = stages.find((stage) => stage.slug === "archives");
-    if (!archiveStage) return;
-    try {
-      await apiClient.patch(`/jobs/applications/${applicationId}/`, {
-        current_stage: archiveStage.id,
-        status: "ARCHIVED",
-        archive_reason: "Candidate archived from UI",
-      });
-      if (activeJobId !== null) {
-        fetchCandidates(
-          activeJobId,
-          selectedStage.toLowerCase().replace(" ", "-")
-        );
-      }
-    } catch (error) {
-      console.error("Error archiving candidate:", error);
-    }
-  };
-
-  const bulkMoveCandidates = async (applicationIds: number[]) => {
-    try {
-      await apiClient.post("/jobs/bulk-move-stage/", {
-        application_ids: applicationIds,
-      });
-      if (activeJobId !== null) {
-        fetchCandidates(
-          activeJobId,
-          selectedStage.toLowerCase().replace(" ", "-")
-        );
-      }
-    } catch (error) {
-      console.error("Error bulk moving candidates:", error);
-    }
-  };
-
-  // Helper to map candidate details
-  // Map API response to PipelineCandidate
-  const mapCandidateDetails = (data: any): PipelineCandidate => {
-    const candidateData = data.candidate;
-    return {
-      id: data.id.toString(),
-      firstName: candidateData.full_name.split(" ")[0] || "",
-      lastName: candidateData.full_name.split(" ").slice(1).join(" ") || "",
-      fullName: candidateData.full_name,
-      publicIdentifier: candidateData.id,
-      headline: candidateData.headline,
-      summary: "",
-      profilePicture: {
-        displayImageUrl: candidateData.profile_picture_url || "",
-        artifacts: [],
-      },
-      location: {
-        country: candidateData.location.split(", ")[1] || "",
-        city: candidateData.location.split(", ")[0] || "",
-      },
-      industry: "",
-      email: candidateData.resume_url || "",
-      phone: { type: "mobile", number: "" },
-      positions: candidateData.experience.map((exp: any) => ({
-        title: exp.job_title,
-        companyName: exp.company,
-        companyUrn: "",
-        startDate: exp.start_date
-          ? {
-              month: new Date(exp.start_date).getMonth() + 1,
-              year: new Date(exp.start_date).getFullYear(),
-            }
-          : { month: 0, year: 0 },
-        endDate: exp.end_date
-          ? {
-              month: new Date(exp.end_date).getMonth() + 1,
-              year: new Date(exp.end_date).getFullYear(),
-            }
-          : undefined,
-        isCurrent: exp.is_current,
-        location: exp.location,
-        description: exp.description,
-      })),
-      educations: candidateData.education.map((edu: any) => ({
-        schoolName: edu.institution,
-        degreeName: edu.degree,
-        fieldOfStudy: edu.specialization,
-        startDate: edu.start_date
-          ? { year: new Date(edu.start_date).getFullYear() }
-          : { year: 0 },
-        endDate: edu.end_date
-          ? { year: new Date(edu.end_date).getFullYear() }
-          : { year: 0 },
-        activities: "",
-        description: "",
-      })),
-      certifications: candidateData.certifications.map((cert: any) => ({
-        name: cert.name,
-        authority: cert.authority,
-        licenseNumber: cert.licenseNumber,
-        startDate: cert.startDate,
-        endDate: cert.endDate,
-        url: cert.url,
-      })),
-      skills: candidateData.skills_data.skills_mentioned.map((skill: any) => ({
-        name: skill.skill,
-        endorsementCount: skill.number_of_endorsements,
-      })),
-      endorsements: candidateData.skills_data.endorsements,
-      recommendations: { received: candidateData.recommendations, given: [] },
-      visibility: { profile: "PUBLIC", email: false, phone: false },
-      connections: [],
-      meta: {
-        fetchedAt: "",
-        dataCompleteness: "partial",
-        source: "",
-        scopesGranted: [],
-      },
-      stageData: {
-        [data.current_stage_details.slug]: data.contextual_details,
-      },
-    };
-  };
 
   // API functions
   const fetchStages = async (jobId: number) => {
@@ -758,8 +509,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
   const handleCandidateSelect = (candidate: CandidateListItem) => {
     fetchCandidateDetails(candidate.id);
-  const handleCandidateSelect = (candidate: CandidateListItem) => {
-    fetchCandidateDetails(candidate.id);
   };
 
   const handleCandidateCheckbox = (candidateId: string) => {
@@ -835,52 +584,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         break;
     }
   };
-  const currentCandidates =
-    candidates.length > 0
-      ? candidates
-      : pipelineCandidates[selectedStage] || [];
 
-  const handleCreateJobRole = () => {
-    setShowCreateJobRole(true);
-  };
-
-  const handleEditJobRole = (categoryId: number) => {
-    setShowCreateJobRole(true);
-    setShowCategoryActions(null);
-  };
-
-  const handleEditTemplate = (categoryId: number) => {
-    setShowCategoryActions(null);
-  };
-
-  const handleCategoryAction = (action: string, categoryId: number) => {
-    setShowCategoryActions(null);
-    switch (action) {
-      case "edit-job":
-        handleEditJobRole(categoryId);
-        break;
-      case "edit-template":
-        handleEditTemplate(categoryId);
-        break;
-      case "archive":
-        alert(`Archived category with id ${categoryId}`);
-        break;
-      case "delete":
-        if (
-          confirm(
-            `Are you sure you want to delete category with id ${categoryId}?`
-          )
-        ) {
-          alert(`Deleted category with id ${categoryId}`);
-        }
-        break;
-    }
-  };
-
-  const handleCategorySelect = (categoryId: number) => {
-    setActiveCategoryId(categoryId);
-    setActiveJobId(categoryId);
-  };
   const handleCategorySelect = (categoryId: number) => {
     setActiveCategoryId(categoryId);
     setActiveJobId(categoryId);
@@ -901,10 +605,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       );
     }
 
-    const stageData =
-      selectedCandidate.stageData[
-        selectedStage.toLowerCase().replace(" ", "-")
-      ];
     const stageData =
       selectedCandidate.stageData[
         selectedStage.toLowerCase().replace(" ", "-")
@@ -1117,23 +817,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 }}
                 className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-              <button
-                onClick={() => {
-                  const currentIndex = stages.findIndex(
-                    (s) => s.name === selectedStage
-                  );
-                  const nextStage = stages[currentIndex + 1];
-                  if (nextStage)
-                    moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
-                }}
-                className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
                 Move to Next Stage
               </button>
-              <button
-                onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
-                className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
               <button
                 onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
                 className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -1343,18 +1028,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 )}
               </div>
             </div>
+
             <div className="flex justify-between w-full">
-              <button
-                onClick={() => {
-                  const currentIndex = stages.findIndex(
-                    (s) => s.name === selectedStage
-                  );
-                  const nextStage = stages[currentIndex + 1];
-                  if (nextStage)
-                    moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
-                }}
-                className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
               <button
                 onClick={() => {
                   const currentIndex = stages.findIndex(
@@ -1368,10 +1043,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               >
                 Move to Next Stage
               </button>
-              <button
-                onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
-                className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
               <button
                 onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
                 className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -1414,7 +1085,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 </p>
               </div>
             </div>
-            <div>
             <div>
               <h4 className="font-medium text-gray-900 mb-3">
                 Resume Highlights
@@ -1629,23 +1299,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 }}
                 className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-              <button
-                onClick={() => {
-                  const currentIndex = stages.findIndex(
-                    (s) => s.name === selectedStage
-                  );
-                  const nextStage = stages[currentIndex + 1];
-                  if (nextStage)
-                    moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
-                }}
-                className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
                 Move to Next Stage
               </button>
-              <button
-                onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
-                className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
               <button
                 onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
                 className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -1910,23 +1565,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 }}
                 className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-              <button
-                onClick={() => {
-                  const currentIndex = stages.findIndex(
-                    (s) => s.name === selectedStage
-                  );
-                  const nextStage = stages[currentIndex + 1];
-                  if (nextStage)
-                    moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
-                }}
-                className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
                 Move to Next Stage
               </button>
-              <button
-                onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
-                className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
               <button
                 onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
                 className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -2166,23 +1806,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 }}
                 className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-              <button
-                onClick={() => {
-                  const currentIndex = stages.findIndex(
-                    (s) => s.name === selectedStage
-                  );
-                  const nextStage = stages[currentIndex + 1];
-                  if (nextStage)
-                    moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
-                }}
-                className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
                 Move to Next Stage
               </button>
-              <button
-                onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
-                className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
               <button
                 onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
                 className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -2415,23 +2040,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 }}
                 className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-              <button
-                onClick={() => {
-                  const currentIndex = stages.findIndex(
-                    (s) => s.name === selectedStage
-                  );
-                  const nextStage = stages[currentIndex + 1];
-                  if (nextStage)
-                    moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
-                }}
-                className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
                 Send Offer
               </button>
-              <button
-                onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
-                className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
               <button
                 onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
                 className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -2884,111 +2494,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           setSearchTerm={setSearchTerm}
           onCreateRole={handleCreateJobRole}
           onOpenLogoutModal={onOpenLogoutModal}
-          onOpenLogoutModal={onOpenLogoutModal}
         />
       </div>
 
       <div className="my-3 mx-6">
-        {loadingCategories ? (
-          <div className="text-center text-gray-500">Loading categories...</div>
-        ) : categories.length === 0 ? (
-          <div className="text-center text-gray-500">
-            <p>No Job Roles Found</p>
-            <p className="text-sm mt-1">
-              Please create a job role to view the pipeline stages.
-            </p>
-          </div>
-        ) : (
-          <div className="hidden md:flex items-center space-x-2">
-            {categories.map((category) => (
-              <div
-                key={category.id}
-                className="relative"
-                onMouseEnter={() => setHoveredCategory(category.id)}
-                onMouseLeave={() => setHoveredCategory(null)}
-              >
-                <button
-                  onClick={() => handleCategorySelect(category.id)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                    activeCategoryId === category.id
-                      ? "bg-blue-100 text-blue-700 shadow-sm"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  {category.name}
-                  <span
-                    className={`ml-2 px-2 py-1 rounded-full text-xs ${
-                      activeCategoryId === category.id
-                        ? "bg-blue-200 text-blue-800"
-                        : "bg-gray-200 text-gray-600"
-                    }`}
-                  >
-                    {category.count}
-                  </span>
-                </button>
-                {hoveredCategory === category.id && (
-                  <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                    <div className="py-1">
-                      <button
-                        onClick={() =>
-                          handleCategoryAction("edit-job", category.id)
-                        }
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                      >
-                        <Edit className="w-4 h-4 mr-2" />
-                        Edit Job Role
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleCategoryAction("edit-template", category.id)
-                        }
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                      >
-                        <Mail className="w-4 h-4 mr-2" />
-                        Edit Email Template
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleCategoryAction("archive", category.id)
-                        }
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                      >
-                        <Archive className="w-4 h-4 mr-2" />
-                        Archive
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleCategoryAction("delete", category.id)
-                        }
-                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Delete Job
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-            {categories.length > 4 && (
-              <div className="relative">
-                <button
-                  onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                  className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
-                >
-                  +{categories.length - 4} more
-                  <ChevronDown className="ml-1 w-4 h-4" />
-                </button>
-                <CategoryDropdown
-                  isOpen={showCategoryDropdown}
-                  onClose={() => setShowCategoryDropdown(false)}
-                  onEditJobRole={handleEditJobRole}
-                  onEditTemplate={handleEditTemplate}
-                />
-              </div>
-            )}
-          </div>
-        )}
         {loadingCategories ? (
           <div className="text-center text-gray-500">Loading categories...</div>
         ) : categories.length === 0 ? (
@@ -3180,79 +2689,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         </button>
                       );
                     })}
-                {stages.length > 0
-                  ? stages.map((stage) => {
-                      const Icon = getStageIcon(stage.name);
-                      const isSelected = selectedStage === stage.name;
-                      return (
-                        <button
-                          key={stage.id}
-                          onClick={() => handleStageSelect(stage.name)}
-                          className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                            isSelected
-                              ? "bg-blue-50 text-blue-700 border border-blue-200"
-                              : "text-gray-700 hover:bg-gray-50"
-                          }`}
-                        >
-                          {isSelected && (
-                            <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                          )}
-                          <Icon
-                            className={`w-4 h-4 ${
-                              isSelected ? "text-blue-600" : "text-gray-600"
-                            }`}
-                          />
-                          <span className="flex-1 font-medium">
-                            {stage.name}
-                          </span>
-                          <span
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              isSelected
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-gray-100 text-gray-600"
-                            }`}
-                          >
-                            {stage.candidate_count}
-                          </span>
-                        </button>
-                      );
-                    })
-                  : pipelineStages.map((stage) => {
-                      const Icon = getStageIcon(stage);
-                      const isSelected = selectedStage === stage;
-                      const candidateCount =
-                        pipelineCandidates[stage]?.length || 0;
-                      return (
-                        <button
-                          key={stage}
-                          onClick={() => handleStageSelect(stage)}
-                          className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                            isSelected
-                              ? "bg-blue-50 text-blue-700 border border-blue-200"
-                              : "text-gray-700 hover:bg-gray-50"
-                          }`}
-                        >
-                          {isSelected && (
-                            <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                          )}
-                          <Icon
-                            className={`w-4 h-4 ${
-                              isSelected ? "text-blue-600" : "text-gray-600"
-                            }`}
-                          />
-                          <span className="flex-1 font-medium">{stage}</span>
-                          <span
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              isSelected
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-gray-100 text-gray-600"
-                            }`}
-                          >
-                            {candidateCount}
-                          </span>
-                        </button>
-                      );
-                    })}
               </div>
             </div>
           </div>
@@ -3274,24 +2710,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               : []
                           );
                         }}
-                        onChange={(e) => {
-                          setSelectAll(e.target.checked);
-                          setSelectedCandidates(
-                            e.target.checked
-                              ? currentCandidates.map((c) => c.id.toString())
-                              : []
-                          );
-                        }}
                         className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
                       />
-                      <button
-                        onClick={() =>
-                          bulkMoveCandidates(
-                            selectedCandidates.map((id) => parseInt(id))
-                          )
-                        }
-                        className="px-3 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors"
-                      >
                       <button
                         onClick={() =>
                           bulkMoveCandidates(
@@ -3322,11 +2742,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   </div>
                 ) : (
                   currentCandidates.map((candidate: any) => (
-                  currentCandidates.map((candidate: any) => (
                     <div
                       key={candidate.id}
                       className={`p-3 lg:p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
-                        selectedCandidate?.id === candidate.id.toString()
                         selectedCandidate?.id === candidate.id.toString()
                           ? "bg-blue-50 border-l-4 border-blue-500"
                           : ""
@@ -3336,12 +2754,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       <div className="flex items-center space-x-3">
                         <input
                           type="checkbox"
-                          checked={selectedCandidates.includes(
-                            candidate.id.toString()
-                          )}
-                          onChange={() =>
-                            handleCandidateCheckbox(candidate.id.toString())
-                          }
                           checked={selectedCandidates.includes(
                             candidate.id.toString()
                           )}
@@ -3358,18 +2770,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             .split(" ")
                             .map((n: string) => n[0])
                             .join("")}
-                          {(
-                            candidate.candidate?.full_name || candidate.fullName
-                          )
-                            .split(" ")
-                            .map((n: string) => n[0])
-                            .join("")}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
                             <h3 className="text-base font-semibold text-gray-900">
-                              {candidate.candidate?.full_name ||
-                                candidate.fullName}
                               {candidate.candidate?.full_name ||
                                 candidate.fullName}
                             </h3>
@@ -3377,12 +2781,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           <p className="text-sm text-gray-600 mt-1">
                             {candidate.candidate?.headline ||
                               candidate.headline}
-                            {candidate.candidate?.headline ||
-                              candidate.headline}
                           </p>
                           <p className="text-sm text-gray-500 mt-1">
-                            {candidate.candidate?.location ||
-                              `${candidate.location.city}, ${candidate.location.country}`}
                             {candidate.candidate?.location ||
                               `${candidate.location.city}, ${candidate.location.country}`}
                           </p>
@@ -3500,7 +2900,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   <div className="mt-4">
                     <div className="flex space-x-3">
                       <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-                        {user?.fullName?.[0] || "U"}
                         {user?.fullName?.[0] || "U"}
                       </div>
                       <div className="flex-1 flex space-x-2">
