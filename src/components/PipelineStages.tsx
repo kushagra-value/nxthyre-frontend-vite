@@ -1301,10 +1301,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                     </div>
                     <div>
                       <h2 className="text-lg font-bold text-gray-900">
-                        {selectedCandidate.fullName}
+                        {selectedCandidate.fullName || "N/A"}
                       </h2>
                       <p className="text-sm text-gray-600">
-                        {selectedCandidate.headline}
+                        {selectedCandidate.headline || "N/A"}
                       </p>
                       <p className="text-sm text-gray-500">
                         {selectedCandidate.location.city},{" "}
@@ -1317,7 +1317,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       <div className="flex items-center space-x-2">
                         <Mail className="w-4 h-4 text-gray-500" />
                         <span className="text-sm text-gray-700 truncate">
-                          {selectedCandidate.email}
+                          {selectedCandidate.email || "N/A"}
                         </span>
                       </div>
                       <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
@@ -1326,7 +1326,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       <div className="flex items-center space-x-2">
                         <Phone className="w-4 h-4 text-gray-500" />
                         <span className="text-sm text-gray-700">
-                          {selectedCandidate.phone.number}
+                          {selectedCandidate.phone?.number || "N/A"}
                         </span>
                       </div>
                       <div className="flex space-x-2">
