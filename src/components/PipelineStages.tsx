@@ -439,8 +439,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         city: candidateData.location.split(", ")[0] || "",
       },
       industry: "",
-      email: candidateData.resume_url || "",
-      phone: { type: "mobile", number: "" },
+      email: candidateData.email || "",
+      phone: { type: "number", number: "" },
       positions: candidateData.experience.map((exp: any) => ({
         title: exp.job_title,
         companyName: exp.company,
@@ -829,7 +829,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           </div>
         );
       case "Invites Sent":
-        const inviteData = stageData.invitesSent;
         return (
           <div className="space-y-4">
             <div className="flex space-x-2">
@@ -1053,7 +1052,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           </div>
         );
       case "Applied":
-        const appliedData = stageData.applied;
+        const appliedStageData = selectedCandidate.stageData.applied;
         return (
           <div className="space-y-4">
             <div className="flex space-x-2">
@@ -1073,7 +1072,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   Skills Match
                 </h5>
                 <p className="text-lg font-bold text-blue-600">
-                  {appliedData?.skillsMatch}
+                  {appliedStageData?.skillsMatch}
                 </p>
               </div>
               <div className="bg-gray-50 rounded-lg p-3">
@@ -1081,7 +1080,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   Experience Match
                 </h5>
                 <p className="text-lg font-bold text-green-600">
-                  {appliedData?.experienceMatch}
+                  {appliedStageData?.experienceMatch}
                 </p>
               </div>
             </div>
@@ -1090,7 +1089,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 Resume Highlights
               </h4>
               <div className="flex flex-wrap gap-2">
-                {appliedData?.highlights
+                {appliedStageData?.highlights
                   ?.split(", ")
                   .map((highlight: string, index: number) => (
                     <span
@@ -2822,7 +2821,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       <div className="flex items-center space-x-2">
                         <Mail className="w-4 h-4 text-gray-500" />
                         <span className="text-sm text-gray-700 truncate">
-                          {"N/A"}
+                          {selectedCandidate.email || "N/A"}
                         </span>
                       </div>
                       <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
