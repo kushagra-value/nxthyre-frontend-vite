@@ -33,6 +33,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
       setLoading(true);
       try {
         const data = await candidateService.getTemplates();
+        console.log('Fetched templates:', data);
         setTemplates(data);
       } catch (error) {
         showToast.error('Failed to fetch templates');
@@ -44,26 +45,28 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
   }, []);
 
   const handleTemplateSelect = (templateId: string) => {
-    if (templateId === 'create-new') {
-      setShowCreateTemplate(true);
-      return;
-    }
-    const template = templates.find(t => t.id === templateId);
-    if (template) {
-      setSelectedTemplate(templateId);
-      setTemplateName(template.name);
-      setSubject(template.initial_subject);
-      setBody(template.initial_body.replace('[candidateName]', candidate.full_name));
-      setFollowUpTemplates(template.follow_up_steps || []);
-      setCanSendEmail(template.can_be_sent_via_email);
-      setCanSendWhatsApp(template.can_be_sent_via_whatsapp);
-      setCanSendCall(template.can_be_sent_via_call);
-      // Set default channel based on available options
-      if (template.can_be_sent_via_email) setSelectedChannel('Email');
-      else if (template.can_be_sent_via_whatsapp) setSelectedChannel('WhatsApp');
-      else if (template.can_be_sent_via_call) setSelectedChannel('Call');
-    }
-  };
+  console.log('Selected template ID:', templateId);
+  if (templateId === 'create-new') {
+    setShowCreateTemplate(true);
+    return;
+  }
+  const template = templates.find(t => t.id === templateId);
+  if (template) {
+    setSelectedTemplate(templateId);
+    setTemplateName(template.name);
+    setSubject(template.initial_subject);
+    setBody(template.initial_body.replace('[candidateName]', candidate.full_name));
+    setFollowUpTemplates(template.follow_up_steps || []);
+    setCanSendEmail(template.can_be_sent_via_email);
+    setCanSendWhatsApp(template.can_be_sent_via_whatsapp);
+    setCanSendCall(template.can_be_sent_via_call);
+    if (template.can_be_sent_via_email) setSelectedChannel('Email');
+    else if (template.can_be_sent_via_whatsapp) setSelectedChannel('WhatsApp');
+    else if (template.can_be_sent_via_call) setSelectedChannel('Call');
+  } else {
+    console.log('Template not found for ID:', templateId);
+  }
+};
 
   const handleSaveTemplate = async () => {
     if (!templateName.trim()) {
@@ -103,6 +106,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
   };
 
   const handleSendInvite = async () => {
+    console.log('Job ID:', jobId);
+    console.log('Candidate ID:', candidate.id);
     if (!jobId || !candidate.id) {
       showToast.error('Job ID and Candidate ID are required');
       return;
@@ -114,9 +119,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
     setLoading(true);
     try {
       const response = await candidateService.sendInvite({
-        candidateId: candidate.id,
-        templateId: selectedTemplate,
-        jobId: jobId,
+        candidate_id: candidate.id,
+        template_id: selectedTemplate || undefined,
+        job_id: jobId,
         subject,
         body,
         channel: selectedChannel,
@@ -167,6 +172,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
           <label className="block text-sm font-medium text-gray-700 mb-2">Select Template</label>
           <div className="relative">
             <select
+              key={selectedTemplate}
               value={selectedTemplate}
               onChange={(e) => handleTemplateSelect(e.target.value)}
               className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
@@ -238,9 +244,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
             value={body}
             onChange={(e) => setBody(e.target.value)}
             placeholder="Enter email body..."
-            className={`text-sm w-full px-3 py-2 border-l border-r border-b border-gray-300 shadow-xl rounded-b-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${
-              isBodyExpanded ? 'h-80' : 'h-40'
-            }`}
+            className={`text-sm w-full px-3 py-2 border-l border-r border-b border-gray-300 shadow-xl rounded-b-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${isBodyExpanded ? 'h-80' : 'h-40'}`}
             disabled={loading}
           />
           {!isBodyExpanded && body.length > 150 && (
@@ -386,7 +390,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
             <button
               onClick={handleSendInvite}
               className="w-full px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center font-medium"
-              disabled={loading}
+              disabled={loading || !jobId || !candidate.id}
             >
               <Send className="w-4 h-4 mr-2" />
               Send Invite

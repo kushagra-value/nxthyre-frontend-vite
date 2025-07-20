@@ -239,9 +239,9 @@ class CandidateService {
   }
 
   async sendInvite(data: { 
-    candidateId: string; 
-    templateId?: string; 
-    jobId: string; 
+    candidate_id: string; 
+    template_id?: string; 
+    job_id: string; 
     subject: string; 
     body: string; 
     channel: string; 
