@@ -402,7 +402,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
             className={`bg-white h-full transform transition-transform duration-300 ease-out ${
               showCreateTemplate ? 'translate-x-0' : 'translate-x-full'
             }`}
-            style={{ width: '400px' }}
+            style={{ width: '500px' }}
           >
             <div className="p-6 h-full flex flex-col">
               <div className="flex items-center justify-between mb-6">
