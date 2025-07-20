@@ -1317,7 +1317,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       <div className="flex items-center space-x-2">
                         <Mail className="w-4 h-4 text-gray-500" />
                         <span className="text-sm text-gray-700 truncate">
-                          {selectedCandidate.email || "N/A"}
+                          {"N/A"}
                         </span>
                       </div>
                       <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
