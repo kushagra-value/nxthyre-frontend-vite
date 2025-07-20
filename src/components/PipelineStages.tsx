@@ -842,160 +842,179 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <MessageCircle className="w-4 h-4" />
               </button>
             </div>
-            <div>
-              <h4 className="font-medium text-gray-900 mb-2">Notes</h4>
-              <div className="space-y-2">
-                {selectedCandidate?.stageData?.invitesSent?.notes}
+
+            {/* Stage wise notes section */}
+            {selectedCandidate?.stageData?.invitesSent?.notes && (
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">Notes</h4>
+                <div className="space-y-2">
+                  {selectedCandidate.stageData.invitesSent.notes}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Experience */}
-            <div>
-              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
-                Experience
-              </h3>
-              <div className="ml-2">
-                {selectedCandidate?.positions?.length > 0 ? (
-                  selectedCandidate?.positions.map((exp, index) => (
+            {selectedCandidate?.positions?.length > 0 && (
+              <div>
+                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                  <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
+                  Experience
+                </h3>
+                <div className="ml-2">
+                  {selectedCandidate.positions.map((exp, index) => (
                     <div
                       key={index}
                       className="border-l-2 border-gray-200 pl-4 relative pb-2"
                     >
                       <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      <h4 className="font-medium text-gray-900 text-sm">
-                        {exp?.title}
-                      </h4>
-                      <p className="text-sm text-gray-600">{`${exp?.companyName} | ${exp?.location}`}</p>
-                      <p className="text-sm text-gray-500">
-                        {exp?.startDate
-                          ? `${exp.startDate.month}/${exp.startDate.year}`
-                          : ""}
-                        {" - "}
-                        {exp?.endDate
-                          ? `${exp.endDate.month}/${exp.endDate.year}`
-                          : "Present"}
-                      </p>
-                      <p className="text-sm text-gray-700 mt-1">
-                        {exp?.description}
-                      </p>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-500">
-                    No experience details available
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Education */}
-            <div>
-              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
-                Education
-              </h3>
-              <div className="ml-2">
-                {selectedCandidate?.educations?.length > 0 ? (
-                  selectedCandidate?.educations.map((edu, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      <h4 className="font-medium text-gray-900 text-sm">
-                        {edu?.degreeName}
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        {edu?.fieldOfStudy}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {edu?.startDate?.year} - {edu?.endDate?.year}
-                      </p>
-                      {edu?.schoolName && (
+                      {exp?.title && (
+                        <h4 className="font-medium text-gray-900 text-sm">
+                          {exp.title}
+                        </h4>
+                      )}
+                      {(exp?.companyName || exp?.location) && (
+                        <p className="text-sm text-gray-600">
+                          {exp?.companyName && exp.companyName}
+                          {exp?.companyName && exp?.location && " | "}
+                          {exp?.location && exp.location}
+                        </p>
+                      )}
+                      {(exp?.startDate || exp?.endDate) && (
                         <p className="text-sm text-gray-500">
-                          {edu?.schoolName}
+                          {exp?.startDate
+                            ? `${exp.startDate.month}/${exp.startDate.year}`
+                            : ""}
+                          {" - "}
+                          {exp?.endDate
+                            ? `${exp.endDate.month}/${exp.endDate.year}`
+                            : "Present"}
+                        </p>
+                      )}
+                      {exp?.description && (
+                        <p className="text-sm text-gray-700 mt-1">
+                          {exp.description}
                         </p>
                       )}
                     </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-500">
-                    No education details available
-                  </p>
-                )}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Certifications */}
-            <div>
-              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                <Award className="w-4 h-4 mr-2 text-gray-800" />
-                Certifications
-              </h3>
-              <div className="ml-2">
-                {selectedCandidate?.certifications?.length > 0 ? (
-                  selectedCandidate?.certifications.map((cert, index) => (
+            {/* Education */}
+            {selectedCandidate?.educations?.length > 0 && (
+              <div>
+                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                  <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
+                  Education
+                </h3>
+                <div className="ml-2">
+                  {selectedCandidate.educations.map((edu, index) => (
                     <div
                       key={index}
                       className="border-l-2 border-gray-200 pl-4 relative pb-2"
                     >
                       <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      <h4 className="font-medium text-gray-900 text-sm">
-                        {cert?.name}
-                      </h4>
-                      <p className="text-sm text-gray-600">{cert?.authority}</p>
-                      <p className="text-sm text-gray-500">
-                        {cert?.startDate
-                          ? `${cert.startDate.month}/${cert.startDate.year}`
-                          : ""}
-                        {" - "}
-                        {cert?.endDate
-                          ? `${cert.endDate.month}/${cert.endDate.year}`
-                          : "Present"}
-                      </p>
+                      {edu?.degreeName && (
+                        <h4 className="font-medium text-gray-900 text-sm">
+                          {edu.degreeName}
+                        </h4>
+                      )}
+                      {edu?.fieldOfStudy && (
+                        <p className="text-sm text-gray-600">
+                          {edu.fieldOfStudy}
+                        </p>
+                      )}
+                      {(edu?.startDate?.year || edu?.endDate?.year) && (
+                        <p className="text-sm text-gray-500">
+                          {edu?.startDate?.year || ""} -{" "}
+                          {edu?.endDate?.year || ""}
+                        </p>
+                      )}
+                      {edu?.schoolName && (
+                        <p className="text-sm text-gray-500">
+                          {edu.schoolName}
+                        </p>
+                      )}
                     </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-500">
-                    No certifications available
-                  </p>
-                )}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Certifications */}
+            {selectedCandidate?.certifications?.length > 0 && (
+              <div>
+                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                  <Award className="w-4 h-4 mr-2 text-gray-800" />
+                  Certifications
+                </h3>
+                <div className="ml-2">
+                  {selectedCandidate.certifications.map((cert, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      {cert?.name && (
+                        <h4 className="font-medium text-gray-900 text-sm">
+                          {cert.name}
+                        </h4>
+                      )}
+                      {cert?.authority && (
+                        <p className="text-sm text-gray-600">
+                          {cert.authority}
+                        </p>
+                      )}
+                      {(cert?.startDate || cert?.endDate) && (
+                        <p className="text-sm text-gray-500">
+                          {cert?.startDate
+                            ? `${cert.startDate.month}/${cert.startDate.year}`
+                            : ""}
+                          {" - "}
+                          {cert?.endDate
+                            ? `${cert.endDate.month}/${cert.endDate.year}`
+                            : "Present"}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Skills Section */}
-            <div>
-              <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
-                <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
-                Skills
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {selectedCandidate?.skills?.length > 0 ? (
-                  selectedCandidate?.skills.map((skill, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                    >
-                      {skill?.name}{" "}
-                      {/*({skill?.endorsementCount} endorsements)*/}
-                    </span>
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-500">No skills listed</p>
-                )}
+            {selectedCandidate?.skills?.length > 0 && (
+              <div>
+                <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
+                  <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
+                  Skills
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {selectedCandidate.skills.map(
+                    (skill, index) =>
+                      skill?.name && (
+                        <span
+                          key={index}
+                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                        >
+                          {skill.name}
+                        </span>
+                      )
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Recommendations */}
-            <div>
-              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
-                Recommendations
-              </h3>
-              <div className="space-y-2">
-                {selectedCandidate?.recommendations?.received?.length > 0 ? (
-                  selectedCandidate.recommendations.received.map(
+            {selectedCandidate?.recommendations?.received?.length > 0 && (
+              <div>
+                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                  <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
+                  Recommendations
+                </h3>
+                <div className="space-y-2">
+                  {selectedCandidate.recommendations.received.map(
                     (rec, index) => (
                       <div key={index} className="bg-gray-50 rounded-lg p-3">
                         <div className="flex items-start space-x-2">
@@ -1003,30 +1022,34 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             <User className="w-3 h-3 text-white" />
                           </div>
                           <div className="flex-1">
-                            <h4 className="font-medium text-gray-900 text-sm">
-                              {rec?.recommender_name}
-                            </h4>
-                            <p className="text-xs text-gray-700">
-                              {rec?.recommender_title}
-                            </p>
-                            <p className="text-sm text-gray-800 mt-1">
-                              "{rec?.feedback}"
-                            </p>
-                            <p className="text-xs text-gray-600 mt-1">
-                              {rec?.date_received}
-                            </p>
+                            {rec?.recommender_name && (
+                              <h4 className="font-medium text-gray-900 text-sm">
+                                {rec.recommender_name}
+                              </h4>
+                            )}
+                            {rec?.recommender_title && (
+                              <p className="text-xs text-gray-700">
+                                {rec.recommender_title}
+                              </p>
+                            )}
+                            {rec?.feedback && (
+                              <p className="text-sm text-gray-800 mt-1">
+                                "{rec.feedback}"
+                              </p>
+                            )}
+                            {rec?.date_received && (
+                              <p className="text-xs text-gray-600 mt-1">
+                                {rec.date_received}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </div>
                     )
-                  )
-                ) : (
-                  <p className="text-sm text-gray-500">
-                    No recommendations available
-                  </p>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="flex justify-between w-full">
               <button
