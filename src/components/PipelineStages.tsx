@@ -131,7 +131,98 @@ interface PipelineCandidate {
     source: string;
     scopesGranted: string[];
   };
-  stageData: { [key: string]: any };
+  stageData: {
+    uncontacted?: {
+      notes: string[];
+    };
+    invitesSent?: {
+      currentStatus: string;
+      notes: string[];
+      dateSent: string;
+      responseStatus: string;
+    };
+    applied?: {
+      appliedDate: string;
+      resumeScore: number;
+      skillsMatch: string;
+      experienceMatch: string;
+      highlights: string;
+      notes: string[];
+    };
+    aiInterview?: {
+      interviewedDate: string;
+      resumeScore: number;
+      knowledgeScore: number;
+      communicationScore: number;
+      integrityScore: number;
+      proctoring: {
+        deviceUsage: number;
+        assistance: number;
+        referenceMaterial: number;
+        environment: number;
+      };
+      questions: string[];
+      notes: string[];
+    };
+    shortlisted?: {
+      interviewedDate: string;
+      resumeScore: number;
+      knowledgeScore: number;
+      communicationScore: number;
+      integrityScore: number;
+      proctoring: {
+        deviceUsage: number;
+        assistance: number;
+        referenceMaterial: number;
+        environment: number;
+      };
+      questions: string[];
+      notes: string[];
+    };
+    firstInterview?: {
+      followups: string[];
+      interviewNotes: string[];
+      interviewDate: string;
+      interviewerName: string;
+      interviewerEmail: string;
+    };
+    otherInterviews?: {
+      followups: string[];
+      interviewNotes: string[];
+      interviewDate: string;
+      interviewerName: string;
+      interviewerEmail: string;
+    };
+    hrRound?: {
+      followups: string[];
+      interviewNotes: string[];
+      interviewDate: string;
+      interviewerName: string;
+      interviewerEmail: string;
+    };
+    salaryNegotiation?: {
+      salary: string;
+      negotiation: string;
+      followups: string[];
+      interviewNotes: string[];
+      interviewDate: string;
+      interviewerName: string;
+      interviewerEmail: string;
+    };
+    offerSent?: {
+      offerAcceptanceStatus: string;
+      offerSentDate: string;
+      followups: string[];
+      interviewNotes: string[];
+      interviewerName: string;
+      interviewerEmail: string;
+    };
+    archived?: {
+      reason: string;
+      archivedDate: string;
+      notes: string[];
+    };
+  };
 }
 
 interface PipelineStagesProps {
@@ -534,26 +625,186 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <MessageCircle className="w-4 h-4" />
               </button>
             </div>
+
+            {/* Experience */}
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">Experience</h4>
-              {selectedCandidate.positions.map((pos, index) => (
-                <div key={index} className="text-sm text-gray-700">
-                  <p className="font-medium">{pos.title}</p>
-                  <p className="text-gray-600">
-                    {pos.companyName} | {pos.location}
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
+                Experience
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.positions?.length > 0 ? (
+                  selectedCandidate?.positions.map((exp, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {exp?.title}
+                      </h4>
+                      <p className="text-sm text-gray-600">{`${exp?.companyName} | ${exp?.location}`}</p>
+                      <p className="text-sm text-gray-500">
+                        {exp?.startDate
+                          ? `${exp.startDate.month}/${exp.startDate.year}`
+                          : ""}
+                        {" - "}
+                        {exp?.endDate
+                          ? `${exp.endDate.month}/${exp.endDate.year}`
+                          : "Present"}
+                      </p>
+                      <p className="text-sm text-gray-700 mt-1">
+                        {exp?.description}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No experience details available
                   </p>
-                </div>
-              ))}
+                )}
+              </div>
             </div>
+
+            {/* Education */}
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">Education</h4>
-              {selectedCandidate.educations.map((edu, index) => (
-                <div key={index} className="text-sm text-gray-700">
-                  <p className="font-medium">{edu.degreeName}</p>
-                  <p className="text-gray-600">{edu.schoolName}</p>
-                </div>
-              ))}
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
+                Education
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.educations?.length > 0 ? (
+                  selectedCandidate?.educations.map((edu, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {edu?.degreeName}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {edu?.fieldOfStudy}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {edu?.startDate?.year} - {edu?.endDate?.year}
+                      </p>
+                      {edu?.schoolName && (
+                        <p className="text-sm text-gray-500">
+                          {edu?.schoolName}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No education details available
+                  </p>
+                )}
+              </div>
             </div>
+
+            {/* Certifications */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <Award className="w-4 h-4 mr-2 text-gray-800" />
+                Certifications
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.certifications?.length > 0 ? (
+                  selectedCandidate?.certifications.map((cert, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {cert?.name}
+                      </h4>
+                      <p className="text-sm text-gray-600">{cert?.authority}</p>
+                      <p className="text-sm text-gray-500">
+                        {cert?.startDate
+                          ? `${cert.startDate.month}/${cert.startDate.year}`
+                          : ""}
+                        {" - "}
+                        {cert?.endDate
+                          ? `${cert.endDate.month}/${cert.endDate.year}`
+                          : "Present"}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No certifications available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Skills Section */}
+            <div>
+              <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
+                <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
+                Skills
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {selectedCandidate?.skills?.length > 0 ? (
+                  selectedCandidate?.skills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                    >
+                      {skill?.name}{" "}
+                      {/*({skill?.endorsementCount} endorsements)*/}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No skills listed</p>
+                )}
+              </div>
+            </div>
+
+            {/* Recommendations */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
+                Recommendations
+              </h3>
+              <div className="space-y-2">
+                {selectedCandidate?.recommendations?.received?.length > 0 ? (
+                  selectedCandidate.recommendations.received.map(
+                    (rec, index) => (
+                      <div key={index} className="bg-gray-50 rounded-lg p-3">
+                        <div className="flex items-start space-x-2">
+                          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <User className="w-3 h-3 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900 text-sm">
+                              {rec?.recommender_name}
+                            </h4>
+                            <p className="text-xs text-gray-700">
+                              {rec?.recommender_title}
+                            </p>
+                            <p className="text-sm text-gray-800 mt-1">
+                              "{rec?.feedback}"
+                            </p>
+                            <p className="text-xs text-gray-600 mt-1">
+                              {rec?.date_received}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  )
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No recommendations available
+                  </p>
+                )}
+              </div>
+            </div>
+
             <div className="flex justify-between w-full">
               <button
                 onClick={() => {
@@ -595,14 +846,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Notes</h4>
               <div className="space-y-2">
-                {inviteData?.notes?.map((note: any, index: number) => (
-                  <div
-                    key={index}
-                    className="bg-gray-50 rounded p-2 text-sm text-gray-700"
-                  >
-                    {note.comment || "No comment available"}
-                  </div>
-                ))}
+                {selectedCandidate?.stageData?.invitesSent?.notes}
               </div>
             </div>
 
@@ -734,7 +978,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       key={index}
                       className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
                     >
-                      {skill?.name} ({skill?.endorsementCount} endorsements)
+                      {skill?.name}{" "}
+                      {/*({skill?.endorsementCount} endorsements)*/}
                     </span>
                   ))
                 ) : (
@@ -857,6 +1102,186 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   ))}
               </div>
             </div>
+
+            {/* Experience */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
+                Experience
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.positions?.length > 0 ? (
+                  selectedCandidate?.positions.map((exp, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {exp?.title}
+                      </h4>
+                      <p className="text-sm text-gray-600">{`${exp?.companyName} | ${exp?.location}`}</p>
+                      <p className="text-sm text-gray-500">
+                        {exp?.startDate
+                          ? `${exp.startDate.month}/${exp.startDate.year}`
+                          : ""}
+                        {" - "}
+                        {exp?.endDate
+                          ? `${exp.endDate.month}/${exp.endDate.year}`
+                          : "Present"}
+                      </p>
+                      <p className="text-sm text-gray-700 mt-1">
+                        {exp?.description}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No experience details available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Education */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
+                Education
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.educations?.length > 0 ? (
+                  selectedCandidate?.educations.map((edu, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {edu?.degreeName}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {edu?.fieldOfStudy}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {edu?.startDate?.year} - {edu?.endDate?.year}
+                      </p>
+                      {edu?.schoolName && (
+                        <p className="text-sm text-gray-500">
+                          {edu?.schoolName}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No education details available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Certifications */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <Award className="w-4 h-4 mr-2 text-gray-800" />
+                Certifications
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.certifications?.length > 0 ? (
+                  selectedCandidate?.certifications.map((cert, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {cert?.name}
+                      </h4>
+                      <p className="text-sm text-gray-600">{cert?.authority}</p>
+                      <p className="text-sm text-gray-500">
+                        {cert?.startDate
+                          ? `${cert.startDate.month}/${cert.startDate.year}`
+                          : ""}
+                        {" - "}
+                        {cert?.endDate
+                          ? `${cert.endDate.month}/${cert.endDate.year}`
+                          : "Present"}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No certifications available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Skills Section */}
+            <div>
+              <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
+                <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
+                Skills
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {selectedCandidate?.skills?.length > 0 ? (
+                  selectedCandidate?.skills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                    >
+                      {skill?.name}{" "}
+                      {/*({skill?.endorsementCount} endorsements)*/}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No skills listed</p>
+                )}
+              </div>
+            </div>
+
+            {/* Recommendations */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
+                Recommendations
+              </h3>
+              <div className="space-y-2">
+                {selectedCandidate?.recommendations?.received?.length > 0 ? (
+                  selectedCandidate.recommendations.received.map(
+                    (rec, index) => (
+                      <div key={index} className="bg-gray-50 rounded-lg p-3">
+                        <div className="flex items-start space-x-2">
+                          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <User className="w-3 h-3 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900 text-sm">
+                              {rec?.recommender_name}
+                            </h4>
+                            <p className="text-xs text-gray-700">
+                              {rec?.recommender_title}
+                            </p>
+                            <p className="text-sm text-gray-800 mt-1">
+                              "{rec?.feedback}"
+                            </p>
+                            <p className="text-xs text-gray-600 mt-1">
+                              {rec?.date_received}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  )
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No recommendations available
+                  </p>
+                )}
+              </div>
+            </div>
+
             <div>
               <button className="mt-1 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 Resend Interview Link
@@ -948,6 +1373,186 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* Experience */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
+                Experience
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.positions?.length > 0 ? (
+                  selectedCandidate?.positions.map((exp, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {exp?.title}
+                      </h4>
+                      <p className="text-sm text-gray-600">{`${exp?.companyName} | ${exp?.location}`}</p>
+                      <p className="text-sm text-gray-500">
+                        {exp?.startDate
+                          ? `${exp.startDate.month}/${exp.startDate.year}`
+                          : ""}
+                        {" - "}
+                        {exp?.endDate
+                          ? `${exp.endDate.month}/${exp.endDate.year}`
+                          : "Present"}
+                      </p>
+                      <p className="text-sm text-gray-700 mt-1">
+                        {exp?.description}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No experience details available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Education */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
+                Education
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.educations?.length > 0 ? (
+                  selectedCandidate?.educations.map((edu, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {edu?.degreeName}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {edu?.fieldOfStudy}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {edu?.startDate?.year} - {edu?.endDate?.year}
+                      </p>
+                      {edu?.schoolName && (
+                        <p className="text-sm text-gray-500">
+                          {edu?.schoolName}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No education details available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Certifications */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <Award className="w-4 h-4 mr-2 text-gray-800" />
+                Certifications
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.certifications?.length > 0 ? (
+                  selectedCandidate?.certifications.map((cert, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {cert?.name}
+                      </h4>
+                      <p className="text-sm text-gray-600">{cert?.authority}</p>
+                      <p className="text-sm text-gray-500">
+                        {cert?.startDate
+                          ? `${cert.startDate.month}/${cert.startDate.year}`
+                          : ""}
+                        {" - "}
+                        {cert?.endDate
+                          ? `${cert.endDate.month}/${cert.endDate.year}`
+                          : "Present"}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No certifications available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Skills Section */}
+            <div>
+              <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
+                <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
+                Skills
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {selectedCandidate?.skills?.length > 0 ? (
+                  selectedCandidate?.skills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                    >
+                      {skill?.name}{" "}
+                      {/*({skill?.endorsementCount} endorsements)*/}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No skills listed</p>
+                )}
+              </div>
+            </div>
+
+            {/* Recommendations */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
+                Recommendations
+              </h3>
+              <div className="space-y-2">
+                {selectedCandidate?.recommendations?.received?.length > 0 ? (
+                  selectedCandidate.recommendations.received.map(
+                    (rec, index) => (
+                      <div key={index} className="bg-gray-50 rounded-lg p-3">
+                        <div className="flex items-start space-x-2">
+                          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <User className="w-3 h-3 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900 text-sm">
+                              {rec?.recommender_name}
+                            </h4>
+                            <p className="text-xs text-gray-700">
+                              {rec?.recommender_title}
+                            </p>
+                            <p className="text-sm text-gray-800 mt-1">
+                              "{rec?.feedback}"
+                            </p>
+                            <p className="text-xs text-gray-600 mt-1">
+                              {rec?.date_received}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  )
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No recommendations available
+                  </p>
+                )}
+              </div>
+            </div>
+
             <div className="flex justify-between w-full">
               <button
                 onClick={() => {
@@ -1009,6 +1614,186 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 )}
               </div>
             </div>
+
+            {/* Experience */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
+                Experience
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.positions?.length > 0 ? (
+                  selectedCandidate?.positions.map((exp, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {exp?.title}
+                      </h4>
+                      <p className="text-sm text-gray-600">{`${exp?.companyName} | ${exp?.location}`}</p>
+                      <p className="text-sm text-gray-500">
+                        {exp?.startDate
+                          ? `${exp.startDate.month}/${exp.startDate.year}`
+                          : ""}
+                        {" - "}
+                        {exp?.endDate
+                          ? `${exp.endDate.month}/${exp.endDate.year}`
+                          : "Present"}
+                      </p>
+                      <p className="text-sm text-gray-700 mt-1">
+                        {exp?.description}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No experience details available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Education */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
+                Education
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.educations?.length > 0 ? (
+                  selectedCandidate?.educations.map((edu, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {edu?.degreeName}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {edu?.fieldOfStudy}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {edu?.startDate?.year} - {edu?.endDate?.year}
+                      </p>
+                      {edu?.schoolName && (
+                        <p className="text-sm text-gray-500">
+                          {edu?.schoolName}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No education details available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Certifications */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <Award className="w-4 h-4 mr-2 text-gray-800" />
+                Certifications
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.certifications?.length > 0 ? (
+                  selectedCandidate?.certifications.map((cert, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {cert?.name}
+                      </h4>
+                      <p className="text-sm text-gray-600">{cert?.authority}</p>
+                      <p className="text-sm text-gray-500">
+                        {cert?.startDate
+                          ? `${cert.startDate.month}/${cert.startDate.year}`
+                          : ""}
+                        {" - "}
+                        {cert?.endDate
+                          ? `${cert.endDate.month}/${cert.endDate.year}`
+                          : "Present"}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No certifications available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Skills Section */}
+            <div>
+              <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
+                <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
+                Skills
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {selectedCandidate?.skills?.length > 0 ? (
+                  selectedCandidate?.skills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                    >
+                      {skill?.name}{" "}
+                      {/*({skill?.endorsementCount} endorsements)*/}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No skills listed</p>
+                )}
+              </div>
+            </div>
+
+            {/* Recommendations */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
+                Recommendations
+              </h3>
+              <div className="space-y-2">
+                {selectedCandidate?.recommendations?.received?.length > 0 ? (
+                  selectedCandidate.recommendations.received.map(
+                    (rec, index) => (
+                      <div key={index} className="bg-gray-50 rounded-lg p-3">
+                        <div className="flex items-start space-x-2">
+                          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <User className="w-3 h-3 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900 text-sm">
+                              {rec?.recommender_name}
+                            </h4>
+                            <p className="text-xs text-gray-700">
+                              {rec?.recommender_title}
+                            </p>
+                            <p className="text-sm text-gray-800 mt-1">
+                              "{rec?.feedback}"
+                            </p>
+                            <p className="text-xs text-gray-600 mt-1">
+                              {rec?.date_received}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  )
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No recommendations available
+                  </p>
+                )}
+              </div>
+            </div>
+
             <div className="flex justify-between w-full">
               <button
                 onClick={() => {
@@ -1063,6 +1848,186 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 )}
               </div>
             </div>
+
+            {/* Experience */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
+                Experience
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.positions?.length > 0 ? (
+                  selectedCandidate?.positions.map((exp, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {exp?.title}
+                      </h4>
+                      <p className="text-sm text-gray-600">{`${exp?.companyName} | ${exp?.location}`}</p>
+                      <p className="text-sm text-gray-500">
+                        {exp?.startDate
+                          ? `${exp.startDate.month}/${exp.startDate.year}`
+                          : ""}
+                        {" - "}
+                        {exp?.endDate
+                          ? `${exp.endDate.month}/${exp.endDate.year}`
+                          : "Present"}
+                      </p>
+                      <p className="text-sm text-gray-700 mt-1">
+                        {exp?.description}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No experience details available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Education */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
+                Education
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.educations?.length > 0 ? (
+                  selectedCandidate?.educations.map((edu, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {edu?.degreeName}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {edu?.fieldOfStudy}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {edu?.startDate?.year} - {edu?.endDate?.year}
+                      </p>
+                      {edu?.schoolName && (
+                        <p className="text-sm text-gray-500">
+                          {edu?.schoolName}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No education details available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Certifications */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <Award className="w-4 h-4 mr-2 text-gray-800" />
+                Certifications
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.certifications?.length > 0 ? (
+                  selectedCandidate?.certifications.map((cert, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {cert?.name}
+                      </h4>
+                      <p className="text-sm text-gray-600">{cert?.authority}</p>
+                      <p className="text-sm text-gray-500">
+                        {cert?.startDate
+                          ? `${cert.startDate.month}/${cert.startDate.year}`
+                          : ""}
+                        {" - "}
+                        {cert?.endDate
+                          ? `${cert.endDate.month}/${cert.endDate.year}`
+                          : "Present"}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No certifications available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Skills Section */}
+            <div>
+              <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
+                <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
+                Skills
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {selectedCandidate?.skills?.length > 0 ? (
+                  selectedCandidate?.skills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                    >
+                      {skill?.name}{" "}
+                      {/*({skill?.endorsementCount} endorsements)*/}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No skills listed</p>
+                )}
+              </div>
+            </div>
+
+            {/* Recommendations */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
+                Recommendations
+              </h3>
+              <div className="space-y-2">
+                {selectedCandidate?.recommendations?.received?.length > 0 ? (
+                  selectedCandidate.recommendations.received.map(
+                    (rec, index) => (
+                      <div key={index} className="bg-gray-50 rounded-lg p-3">
+                        <div className="flex items-start space-x-2">
+                          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <User className="w-3 h-3 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900 text-sm">
+                              {rec?.recommender_name}
+                            </h4>
+                            <p className="text-xs text-gray-700">
+                              {rec?.recommender_title}
+                            </p>
+                            <p className="text-sm text-gray-800 mt-1">
+                              "{rec?.feedback}"
+                            </p>
+                            <p className="text-xs text-gray-600 mt-1">
+                              {rec?.date_received}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  )
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No recommendations available
+                  </p>
+                )}
+              </div>
+            </div>
+
             <div className="flex justify-between w-full">
               <button
                 onClick={() => {
@@ -1117,6 +2082,186 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 )}
               </div>
             </div>
+
+            {/* Experience */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
+                Experience
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.positions?.length > 0 ? (
+                  selectedCandidate?.positions.map((exp, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {exp?.title}
+                      </h4>
+                      <p className="text-sm text-gray-600">{`${exp?.companyName} | ${exp?.location}`}</p>
+                      <p className="text-sm text-gray-500">
+                        {exp?.startDate
+                          ? `${exp.startDate.month}/${exp.startDate.year}`
+                          : ""}
+                        {" - "}
+                        {exp?.endDate
+                          ? `${exp.endDate.month}/${exp.endDate.year}`
+                          : "Present"}
+                      </p>
+                      <p className="text-sm text-gray-700 mt-1">
+                        {exp?.description}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No experience details available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Education */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
+                Education
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.educations?.length > 0 ? (
+                  selectedCandidate?.educations.map((edu, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {edu?.degreeName}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {edu?.fieldOfStudy}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {edu?.startDate?.year} - {edu?.endDate?.year}
+                      </p>
+                      {edu?.schoolName && (
+                        <p className="text-sm text-gray-500">
+                          {edu?.schoolName}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No education details available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Certifications */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <Award className="w-4 h-4 mr-2 text-gray-800" />
+                Certifications
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.certifications?.length > 0 ? (
+                  selectedCandidate?.certifications.map((cert, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {cert?.name}
+                      </h4>
+                      <p className="text-sm text-gray-600">{cert?.authority}</p>
+                      <p className="text-sm text-gray-500">
+                        {cert?.startDate
+                          ? `${cert.startDate.month}/${cert.startDate.year}`
+                          : ""}
+                        {" - "}
+                        {cert?.endDate
+                          ? `${cert.endDate.month}/${cert.endDate.year}`
+                          : "Present"}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No certifications available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Skills Section */}
+            <div>
+              <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
+                <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
+                Skills
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {selectedCandidate?.skills?.length > 0 ? (
+                  selectedCandidate?.skills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                    >
+                      {skill?.name}{" "}
+                      {/*({skill?.endorsementCount} endorsements)*/}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No skills listed</p>
+                )}
+              </div>
+            </div>
+
+            {/* Recommendations */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
+                Recommendations
+              </h3>
+              <div className="space-y-2">
+                {selectedCandidate?.recommendations?.received?.length > 0 ? (
+                  selectedCandidate.recommendations.received.map(
+                    (rec, index) => (
+                      <div key={index} className="bg-gray-50 rounded-lg p-3">
+                        <div className="flex items-start space-x-2">
+                          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <User className="w-3 h-3 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900 text-sm">
+                              {rec?.recommender_name}
+                            </h4>
+                            <p className="text-xs text-gray-700">
+                              {rec?.recommender_title}
+                            </p>
+                            <p className="text-sm text-gray-800 mt-1">
+                              "{rec?.feedback}"
+                            </p>
+                            <p className="text-xs text-gray-600 mt-1">
+                              {rec?.date_received}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  )
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No recommendations available
+                  </p>
+                )}
+              </div>
+            </div>
+
             {offerData?.offerAcceptanceStatus === "Pending" && (
               <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 Follow Up on Offer
@@ -1137,6 +2282,185 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               >
                 <MessageCircle className="w-4 h-4" />
               </button>
+            </div>
+
+            {/* Experience */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
+                Experience
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.positions?.length > 0 ? (
+                  selectedCandidate?.positions.map((exp, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {exp?.title}
+                      </h4>
+                      <p className="text-sm text-gray-600">{`${exp?.companyName} | ${exp?.location}`}</p>
+                      <p className="text-sm text-gray-500">
+                        {exp?.startDate
+                          ? `${exp.startDate.month}/${exp.startDate.year}`
+                          : ""}
+                        {" - "}
+                        {exp?.endDate
+                          ? `${exp.endDate.month}/${exp.endDate.year}`
+                          : "Present"}
+                      </p>
+                      <p className="text-sm text-gray-700 mt-1">
+                        {exp?.description}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No experience details available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Education */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
+                Education
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.educations?.length > 0 ? (
+                  selectedCandidate?.educations.map((edu, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {edu?.degreeName}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {edu?.fieldOfStudy}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {edu?.startDate?.year} - {edu?.endDate?.year}
+                      </p>
+                      {edu?.schoolName && (
+                        <p className="text-sm text-gray-500">
+                          {edu?.schoolName}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No education details available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Certifications */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <Award className="w-4 h-4 mr-2 text-gray-800" />
+                Certifications
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate?.certifications?.length > 0 ? (
+                  selectedCandidate?.certifications.map((cert, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {cert?.name}
+                      </h4>
+                      <p className="text-sm text-gray-600">{cert?.authority}</p>
+                      <p className="text-sm text-gray-500">
+                        {cert?.startDate
+                          ? `${cert.startDate.month}/${cert.startDate.year}`
+                          : ""}
+                        {" - "}
+                        {cert?.endDate
+                          ? `${cert.endDate.month}/${cert.endDate.year}`
+                          : "Present"}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No certifications available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Skills Section */}
+            <div>
+              <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
+                <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
+                Skills
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {selectedCandidate?.skills?.length > 0 ? (
+                  selectedCandidate?.skills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                    >
+                      {skill?.name}{" "}
+                      {/*({skill?.endorsementCount} endorsements)*/}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No skills listed</p>
+                )}
+              </div>
+            </div>
+
+            {/* Recommendations */}
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+                <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
+                Recommendations
+              </h3>
+              <div className="space-y-2">
+                {selectedCandidate?.recommendations?.received?.length > 0 ? (
+                  selectedCandidate.recommendations.received.map(
+                    (rec, index) => (
+                      <div key={index} className="bg-gray-50 rounded-lg p-3">
+                        <div className="flex items-start space-x-2">
+                          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <User className="w-3 h-3 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900 text-sm">
+                              {rec?.recommender_name}
+                            </h4>
+                            <p className="text-xs text-gray-700">
+                              {rec?.recommender_title}
+                            </p>
+                            <p className="text-sm text-gray-800 mt-1">
+                              "{rec?.feedback}"
+                            </p>
+                            <p className="text-xs text-gray-600 mt-1">
+                              {rec?.date_received}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  )
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No recommendations available
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         );
