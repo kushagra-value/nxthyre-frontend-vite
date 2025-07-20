@@ -21,7 +21,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
   const [showTestEmail, setShowTestEmail] = useState(false);
   const [showAdvanceOptions, setShowAdvanceOptions] = useState(false);
   const [testEmail, setTestEmail] = useState('');
-  const [selectedChannel, setSelectedChannel] = useState<'Email' | 'WhatsApp' | 'Call'>('Email');
+  const [selectedChannel, setSelectedChannel] = useState<'email' | 'whatsApp' | 'call'>('email');
   const [followUpTemplates, setFollowUpTemplates] = useState<{ id?: string; send_after_hours: number; mode: 'EMAIL' | 'WHATSAPP' | 'CALL'; subject: string; body: string; order: number }[]>([]);
   const [loading, setLoading] = useState(false);
   const [canSendEmail, setCanSendEmail] = useState(true);
@@ -60,9 +60,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
     setCanSendEmail(template.can_be_sent_via_email);
     setCanSendWhatsApp(template.can_be_sent_via_whatsapp);
     setCanSendCall(template.can_be_sent_via_call);
-    if (template.can_be_sent_via_email) setSelectedChannel('Email');
-    else if (template.can_be_sent_via_whatsapp) setSelectedChannel('WhatsApp');
-    else if (template.can_be_sent_via_call) setSelectedChannel('Call');
+    if (template.can_be_sent_via_email) setSelectedChannel('email');
+    else if (template.can_be_sent_via_whatsapp) setSelectedChannel('whatsApp');
+    else if (template.can_be_sent_via_call) setSelectedChannel('call');
   } else {
     console.log('Template not found for ID:', templateId);
   }
@@ -344,7 +344,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
         {/* Channel Selection */}
         <div>
           <p className="text-sm text-gray-600 mb-2">The following will be sent to candidate via</p>
-          {/* <div className="flex justify-between">
+          <div className="flex justify-between">
             {[
               { name: 'Email', icon: Mail, color: 'bg-blue-100 text-blue-800', enabled: canSendEmail },
               { name: 'WhatsApp', icon: MessageSquare, color: 'bg-green-100 text-green-800', enabled: canSendWhatsApp },
@@ -352,51 +352,19 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
             ].map((channel) => (
               <button
                 key={channel.name}
-                onClick={() => channel.enabled && setSelectedChannel(channel.name as 'Email' | 'WhatsApp' | 'Call')}
+                onClick={() => channel.enabled && setSelectedChannel(channel.name as 'email' | 'whatsApp' | 'call')}
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   selectedChannel === channel.name
                     ? channel.color
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                } ${!channel.enabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={!channel.enabled || loading}
+                } `}
               >
                 <channel.icon className="w-4 h-4 inline mr-1" />
                 {channel.name}
               </button>
             ))}
-          </div> */}
-          <div className="space-y-2">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={canSendEmail}
-                        onChange={(e) => setCanSendEmail(e.target.checked)}
-                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                        disabled={loading}
-                      />
-                      <span className="ml-2 text-sm text-gray-700">Email</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={canSendWhatsApp}
-                        onChange={(e) => setCanSendWhatsApp(e.target.checked)}
-                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                        disabled={loading}
-                      />
-                      <span className="ml-2 text-sm text-gray-700">WhatsApp</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={canSendCall}
-                        onChange={(e) => setCanSendCall(e.target.checked)}
-                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                        disabled={loading}
-                      />
-                      <span className="ml-2 text-sm text-gray-700">Call</span>
-                    </label>
-                  </div>
+          </div>
+          
         </div>
 
         {/* Action Buttons */}
