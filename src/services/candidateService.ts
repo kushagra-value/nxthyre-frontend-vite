@@ -147,11 +147,21 @@ export interface ShareableProfileSensitiveCandidate {
 
 
 export interface Template {
-  id: string;
+  id?: string;
   name: string;
-  subject: string;
-  body: string;
-  followUp?: string[];
+  initial_subject: string;
+  initial_body: string;
+  can_be_sent_via_email: boolean;
+  can_be_sent_via_whatsapp: boolean;
+  can_be_sent_via_call: boolean;
+  follow_up_steps?: {
+    id?: string;
+    send_after_hours: number;
+    mode: 'EMAIL' | 'WHATSAPP' | 'CALL';
+    subject: string;
+    body: string;
+    order: number;
+  }[];
 }
 
 export interface InviteResponse {
@@ -216,7 +226,27 @@ class CandidateService {
     return response.data;
   }
 
-  async sendInvite(data: { candidateId: string; templateId?: string; subject: string; body: string; channel: string; followUpTemplates: string[] }): Promise<InviteResponse> {
+  async saveTemplate(template: Template): Promise<Template> {
+    if (template.id) {
+      // Update existing template
+      const response = await apiClient.put(`/api/jobs/notification-templates/${template.id}/`, template);
+      return response.data;
+    } else {
+      // Create new template
+      const response = await apiClient.post('/api/jobs/notification-templates/', template);
+      return response.data;
+    }
+  }
+
+  async sendInvite(data: { 
+    candidateId: string; 
+    templateId?: string; 
+    jobId: string; 
+    subject: string; 
+    body: string; 
+    channel: string; 
+    followUpTemplates: { send_after_hours: number; mode: 'EMAIL' | 'WHATSAPP' | 'CALL'; subject: string; body: string; order: number }[] 
+  }): Promise<InviteResponse> {
     const response = await apiClient.post('/jobs/invite/', data);
     return response.data;
   }

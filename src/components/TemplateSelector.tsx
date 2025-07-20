@@ -1,23 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, Bold, Italic, Link, List, MoreHorizontal, ArrowLeft, Mail, MessageSquare, Phone, Bot, Eye, Settings, Send, X } from 'lucide-react';
 import { showToast } from '../utils/toast';
-import { CandidateListItem, candidateService } from '../services/candidateService';
+import { CandidateListItem, Template, candidateService } from '../services/candidateService';
 
 interface TemplateSelectorProps {
   candidate: CandidateListItem;
   onBack: () => void;
   updateCandidateEmail: (candidateId: string, email: string) => void;
+  jobId: string; // Added to satisfy the required field
 }
 
-interface Template {
-  id: string;
-  name: string;
-  subject: string;
-  body: string;
-  followUp?: string[];
-}
-
-const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, updateCandidateEmail }) => {
+const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, updateCandidateEmail, jobId }) => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [templateName, setTemplateName] = useState('');
@@ -28,51 +21,18 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
   const [showTestEmail, setShowTestEmail] = useState(false);
   const [showAdvanceOptions, setShowAdvanceOptions] = useState(false);
   const [testEmail, setTestEmail] = useState('');
-  const [selectedChannel, setSelectedChannel] = useState('Email');
-  const [followUpTemplates, setFollowUpTemplates] = useState<string[]>([]);
+  const [selectedChannel, setSelectedChannel] = useState<'Email' | 'WhatsApp' | 'Call'>('Email');
+  const [followUpTemplates, setFollowUpTemplates] = useState<{ id?: string; send_after_hours: number; mode: 'EMAIL' | 'WHATSAPP' | 'CALL'; subject: string; body: string; order: number }[]>([]);
   const [loading, setLoading] = useState(false);
-
-//   const templates: Template[] = [
-//     {
-//       id: '1',
-//       name: 'Drip Campaign - Head of Finance',
-//       subject: 'Exciting Opportunity at Weekday: Head of Finance in Pune',
-//       body: `Hi [candidatename],
-
-// I hope this message finds you well! At Weekday, we're a small team with a big heart, dedicated to making a positive impact on the world. We're currently looking for a Head of Finance who can bring their expertise in Finance to our dynamic online marketplace, with strong networks.`
-//     },
-//     {
-//       id: '2',
-//       name: 'Follow-up Template',
-//       subject: 'Following up on our Finance opportunity',
-//       body: `Hi [candidatename],
-
-// I wanted to follow up on the Head of Finance position we discussed. We're excited about the possibility of you joining our team at Weekday.
-
-// Would you be available for a quick call this week to discuss the role in more detail?
-
-// Best regards,
-// [Your Name]`
-//     },
-//     {
-//       id: '3',
-//       name: 'Initial Outreach',
-//       subject: 'Finance Leadership Role at Weekday',
-//       body: `Hello [candidatename],
-
-// I came across your profile and was impressed by your background in finance. We have an exciting Head of Finance position at Weekday that I think would be a great fit for your skills.
-
-// Would you be interested in learning more about this opportunity?
-
-// Looking forward to hearing from you.`
-//     }
-//   ];
+  const [canSendEmail, setCanSendEmail] = useState(true);
+  const [canSendWhatsApp, setCanSendWhatsApp] = useState(false);
+  const [canSendCall, setCanSendCall] = useState(false);
 
   useEffect(() => {
     const fetchTemplates = async () => {
       setLoading(true);
       try {
-        const data = await candidateService.getTemplates(); // Assume this API exists
+        const data = await candidateService.getTemplates();
         setTemplates(data);
       } catch (error) {
         showToast.error('Failed to fetch templates');
@@ -83,35 +43,54 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
     fetchTemplates();
   }, []);
 
-    const handleTemplateSelect = (templateId: string) => {
+  const handleTemplateSelect = (templateId: string) => {
     if (templateId === 'create-new') {
       setShowCreateTemplate(true);
       return;
     }
     const template = templates.find(t => t.id === templateId);
-      if (template) {
-        setSelectedTemplate(templateId);
-        setSubject(template.subject);
-        setBody(template.body.replace('[candidatename]', candidate.full_name));
-        setFollowUpTemplates(template.followUp || []);
-      }
+    if (template) {
+      setSelectedTemplate(templateId);
+      setTemplateName(template.name);
+      setSubject(template.initial_subject);
+      setBody(template.initial_body.replace('[candidateName]', candidate.full_name));
+      setFollowUpTemplates(template.follow_up_steps || []);
+      setCanSendEmail(template.can_be_sent_via_email);
+      setCanSendWhatsApp(template.can_be_sent_via_whatsapp);
+      setCanSendCall(template.can_be_sent_via_call);
+      // Set default channel based on available options
+      if (template.can_be_sent_via_email) setSelectedChannel('Email');
+      else if (template.can_be_sent_via_whatsapp) setSelectedChannel('WhatsApp');
+      else if (template.can_be_sent_via_call) setSelectedChannel('Call');
+    }
   };
 
-  const handleSaveTemplate = () => {
+  const handleSaveTemplate = async () => {
     if (!templateName.trim()) {
       showToast.error('Please enter a template name');
       return;
     }
-    const newTemplate: Template = {
-      id: Date.now().toString(),
-      name: templateName,
-      subject: subject,
-      body: body,
-      followUp: followUpTemplates,
-    };
-    setTemplates([...templates, newTemplate]);
-    setShowCreateTemplate(false);
-    showToast.success('Template saved successfully!');
+    setLoading(true);
+    try {
+      const newTemplate: Template = {
+        id: selectedTemplate || undefined, // Keep as optional, handled by backend
+        name: templateName,
+        initial_subject: subject,
+        initial_body: body,
+        can_be_sent_via_email: canSendEmail,
+        can_be_sent_via_whatsapp: canSendWhatsApp,
+        can_be_sent_via_call: canSendCall,
+        follow_up_steps: followUpTemplates,
+      };
+      const savedTemplate = await candidateService.saveTemplate(newTemplate);
+      setTemplates(templates.map(t => t.id === savedTemplate.id ? savedTemplate : t));
+      setShowCreateTemplate(false);
+      showToast.success('Template saved successfully!');
+    } catch (error) {
+      showToast.error('Failed to save template');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSendTestEmail = () => {
@@ -124,6 +103,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
   };
 
   const handleSendInvite = async () => {
+    if (!jobId || !candidate.id) {
+      showToast.error('Job ID and Candidate ID are required');
+      return;
+    }
     if (!selectedTemplate && !body) {
       showToast.error('Please select a template or enter email content');
       return;
@@ -132,7 +115,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
     try {
       const response = await candidateService.sendInvite({
         candidateId: candidate.id,
-        templateId: selectedTemplate || undefined,
+        templateId: selectedTemplate,
+        jobId: jobId,
         subject,
         body,
         channel: selectedChannel,
@@ -140,6 +124,20 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
       });
       showToast.success(`Invite sent successfully! Invite ID: ${response.invite_id}. Follow-ups scheduled.`);
       updateCandidateEmail(candidate.id, response.candidate_email);
+      // Save template if edited
+      if (selectedTemplate) {
+        const updatedTemplate: Template = {
+          id: selectedTemplate,
+          name: templateName,
+          initial_subject: subject,
+          initial_body: body,
+          can_be_sent_via_email: canSendEmail,
+          can_be_sent_via_whatsapp: canSendWhatsApp,
+          can_be_sent_via_call: canSendCall,
+          follow_up_steps: followUpTemplates,
+        };
+        await candidateService.saveTemplate(updatedTemplate);
+      }
     } catch (error) {
       showToast.error('Failed to send invite');
     } finally {
@@ -178,7 +176,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
               <option value="create-new" className="font-bold text-blue-600">+ Create New Template</option>
               {templates.map((template) => (
                 <option key={template.id} value={template.id} className="hover:bg-blue-300">
-                  {template.name} 
+                  {template.name}
                 </option>
               ))}
             </select>
@@ -213,8 +211,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
         {/* Body */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Body</label>
-          
-          {/* Toolbar */}
           <div className="border border-gray-300 rounded-t-lg bg-gray-50 px-3 py-2 flex items-center space-x-2">
             <select className="text-sm border-none bg-transparent">
               <option>Paragraph</option>
@@ -238,8 +234,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
               <MoreHorizontal className="w-4 h-4" />
             </button>
           </div>
-
-          {/* Text Area */}
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
@@ -249,7 +243,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
             }`}
             disabled={loading}
           />
-          
           {!isBodyExpanded && body.length > 150 && (
             <div className="flex justify-center">
               <button
@@ -260,7 +253,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
               </button>
             </div>
           )}
-          
           {isBodyExpanded && (
             <div className="flex justify-center">
               <button
@@ -273,47 +265,59 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
           )}
         </div>
 
-
-
-        {/* Channel Selection */}
+        {/* Follow-up Templates */}
         <div>
-          <p className="text-sm text-gray-600 mb-2">The following will be sent to candidate via</p>
-          <div className="flex justify-between">
-            {[
-              { name: 'Email', icon: Mail, color: 'bg-blue-100 text-blue-800' },
-              { name: 'WhatsApp', icon: MessageSquare, color: 'bg-green-100 text-green-800' },
-              { name: 'Call', icon: Phone, color: 'bg-orange-100 text-orange-800' }
-            ].map((channel) => (
-              <button
-                key={channel.name}
-                onClick={() => setSelectedChannel(channel.name)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedChannel === channel.name
-                    ? channel.color
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <channel.icon className="w-4 h-4 inline mr-1" />
-                {channel.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-                <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Follow-up Templates</label>
           {followUpTemplates.map((followUp, index) => (
-            <div key={index} className="flex items-center mb-2">
+            <div key={index} className="flex items-center mb-2 space-x-2">
+              <input
+                type="number"
+                value={followUp.send_after_hours}
+                onChange={(e) => {
+                  const updated = [...followUpTemplates];
+                  updated[index] = { ...updated[index], send_after_hours: Number(e.target.value) };
+                  setFollowUpTemplates(updated);
+                }}
+                className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Hours"
+                disabled={loading}
+              />
+              <select
+                value={followUp.mode}
+                onChange={(e) => {
+                  const updated = [...followUpTemplates];
+                  updated[index] = { ...updated[index], mode: e.target.value as 'EMAIL' | 'WHATSAPP' | 'CALL' };
+                  setFollowUpTemplates(updated);
+                }}
+                className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                disabled={loading}
+              >
+                <option value="EMAIL">Email</option>
+                <option value="WHATSAPP">WhatsApp</option>
+                <option value="CALL">Call</option>
+              </select>
               <input
                 type="text"
-                value={followUp}
+                value={followUp.subject}
                 onChange={(e) => {
-                  const updatedFollowUps = [...followUpTemplates];
-                  updatedFollowUps[index] = e.target.value;
-                  setFollowUpTemplates(updatedFollowUps);
+                  const updated = [...followUpTemplates];
+                  updated[index] = { ...updated[index], subject: e.target.value };
+                  setFollowUpTemplates(updated);
                 }}
-                className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter follow-up content"
+                className="text-sm flex-1 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Subject"
+                disabled={loading}
+              />
+              <input
+                type="text"
+                value={followUp.body}
+                onChange={(e) => {
+                  const updated = [...followUpTemplates];
+                  updated[index] = { ...updated[index], body: e.target.value };
+                  setFollowUpTemplates(updated);
+                }}
+                className="text-sm flex-1 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Body"
                 disabled={loading}
               />
               <button
@@ -325,12 +329,38 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
             </div>
           ))}
           <button
-            onClick={() => setFollowUpTemplates([...followUpTemplates, ''])}
+            onClick={() => setFollowUpTemplates([...followUpTemplates, { send_after_hours: 0, mode: 'EMAIL', subject: '', body: '', order: followUpTemplates.length }])}
             className="text-sm text-blue-600 hover:text-blue-700 mt-2"
             disabled={loading}
           >
             + Add Follow-up
           </button>
+        </div>
+
+        {/* Channel Selection */}
+        <div>
+          <p className="text-sm text-gray-600 mb-2">The following will be sent to candidate via</p>
+          <div className="flex justify-between">
+            {[
+              { name: 'Email', icon: Mail, color: 'bg-blue-100 text-blue-800', enabled: canSendEmail },
+              { name: 'WhatsApp', icon: MessageSquare, color: 'bg-green-100 text-green-800', enabled: canSendWhatsApp },
+              { name: 'Call', icon: Phone, color: 'bg-orange-100 text-orange-800', enabled: canSendCall },
+            ].map((channel) => (
+              <button
+                key={channel.name}
+                onClick={() => channel.enabled && setSelectedChannel(channel.name as 'Email' | 'WhatsApp' | 'Call')}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  selectedChannel === channel.name
+                    ? channel.color
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                } ${!channel.enabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={!channel.enabled || loading}
+              >
+                <channel.icon className="w-4 h-4 inline mr-1" />
+                {channel.name}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Action Buttons */}
@@ -342,10 +372,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
               disabled={loading}
             >
               <Settings className="w-4 h-4 mr-2" />
-              View Advance Options 
+              View Advance Options
             </button>
           </div>
-          
           <div className="flex justify-between space-x-8">
             <button
               onClick={() => setShowTestEmail(true)}
@@ -354,7 +383,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
             >
               Send test email
             </button>
-  
             <button
               onClick={handleSendInvite}
               className="w-full px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center font-medium"
@@ -386,7 +414,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              
               <div className="space-y-4 flex-1">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Template Name</label>
@@ -396,143 +423,174 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
                     onChange={(e) => setTemplateName(e.target.value)}
                     placeholder="Enter template name"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={loading}
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
                   <input
                     type="text"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
                     placeholder="Enter email subject"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={loading}
                   />
                 </div>
-
-                <textarea
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder="Enter email body..."
-            className={`text-sm w-full px-3 py-2 border-l border-r border-b border-gray-300 shadow-xl rounded-b-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${
-              isBodyExpanded ? 'h-80' : 'h-40'
-            }`}
-            disabled={loading}
-          />
-          
-          {!isBodyExpanded && body.length > 150 && (
-            <div className="flex justify-center">
-              <button
-                onClick={() => setIsBodyExpanded(true)}
-                className="mt-1 text-sm text-blue-600 hover:text-blue-700"
-              >
-                View more
-              </button>
-            </div>
-          )}
-          
-          {isBodyExpanded && (
-            <div className="flex justify-center">
-              <button
-                onClick={() => setIsBodyExpanded(false)}
-                className="mt-1 text-sm text-blue-600 hover:text-blue-700"
-              >
-                View less
-              </button>
-            </div>
-          )}
-        </div>
-
-
-
-        {/* Channel Selection */}
-        <div>
-          <p className="text-sm text-gray-600 mb-2">The following will be sent to candidate via</p>
-          <div className="flex justify-between">
-            {[
-              { name: 'Email', icon: Mail, color: 'bg-blue-100 text-blue-800' },
-              { name: 'WhatsApp', icon: MessageSquare, color: 'bg-green-100 text-green-800' },
-              { name: 'Call', icon: Phone, color: 'bg-orange-100 text-orange-800' }
-            ].map((channel) => (
-              <button
-                key={channel.name}
-                onClick={() => setSelectedChannel(channel.name)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedChannel === channel.name
-                    ? channel.color
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <channel.icon className="w-4 h-4 inline mr-1" />
-                {channel.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
                 <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Follow-up Templates</label>
-          {followUpTemplates.map((followUp, index) => (
-            <div key={index} className="flex items-center mb-2">
-              <input
-                type="text"
-                value={followUp}
-                onChange={(e) => {
-                  const updatedFollowUps = [...followUpTemplates];
-                  updatedFollowUps[index] = e.target.value;
-                  setFollowUpTemplates(updatedFollowUps);
-                }}
-                className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter follow-up content"
-                disabled={loading}
-              />
-              <button
-                onClick={() => setFollowUpTemplates(followUpTemplates.filter((_, i) => i !== index))}
-                className="ml-2 p-1 text-red-500 hover:text-red-700"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
-          <button
-            onClick={() => setFollowUpTemplates([...followUpTemplates, ''])}
-            className="text-sm text-blue-600 hover:text-blue-700 mt-2"
-            disabled={loading}
-          >
-            + Add Follow-up
-          </button>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="space-y-2 pt-4 border-t border-gray-200">
-          <div className="w-full flex justify-end">
-            <button
-              onClick={() => setShowAdvanceOptions(true)}
-              className="text-blue-600 text-xs hover:bg-blue-50 transition-colors flex items-center justify-end"
-              disabled={loading}
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              View Advance Options 
-            </button>
-          </div>
-          
-          <div className="flex justify-between space-x-8">
-            <button
-              onClick={() => setShowTestEmail(true)}
-              className="w-full px-4 py-2 text-xs text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"
-              disabled={loading}
-            >
-              Send test email
-            </button>
-  
-            <button
-              onClick={handleSendInvite}
-              className="w-full px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center font-medium"
-              disabled={loading}
-            >
-              <Send className="w-4 h-4 mr-2" />
-              Send Invite
-            </button>
-          </div>
-        </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Body</label>
+                  <textarea
+                    value={body}
+                    onChange={(e) => setBody(e.target.value)}
+                    placeholder="Enter email body..."
+                    className={`text-sm w-full px-3 py-2 border-l border-r border-b border-gray-300 shadow-xl rounded-b-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${
+                      isBodyExpanded ? 'h-80' : 'h-40'
+                    }`}
+                    disabled={loading}
+                  />
+                  {!isBodyExpanded && body.length > 150 && (
+                    <div className="flex justify-center">
+                      <button
+                        onClick={() => setIsBodyExpanded(true)}
+                        className="mt-1 text-sm text-blue-600 hover:text-blue-700"
+                      >
+                        View more
+                      </button>
+                    </div>
+                  )}
+                  {isBodyExpanded && (
+                    <div className="flex justify-center">
+                      <button
+                        onClick={() => setIsBodyExpanded(false)}
+                        className="mt-1 text-sm text-blue-600 hover:text-blue-700"
+                      >
+                        View less
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Channel Options</label>
+                  <div className="space-y-2">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={canSendEmail}
+                        onChange={(e) => setCanSendEmail(e.target.checked)}
+                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                        disabled={loading}
+                      />
+                      <span className="ml-2 text-sm text-gray-700">Email</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={canSendWhatsApp}
+                        onChange={(e) => setCanSendWhatsApp(e.target.checked)}
+                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                        disabled={loading}
+                      />
+                      <span className="ml-2 text-sm text-gray-700">WhatsApp</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={canSendCall}
+                        onChange={(e) => setCanSendCall(e.target.checked)}
+                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                        disabled={loading}
+                      />
+                      <span className="ml-2 text-sm text-gray-700">Call</span>
+                    </label>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Follow-up Templates</label>
+                  {followUpTemplates.map((followUp, index) => (
+                    <div key={index} className="flex items-center mb-2 space-x-2">
+                      <input
+                        type="number"
+                        value={followUp.send_after_hours}
+                        onChange={(e) => {
+                          const updated = [...followUpTemplates];
+                          updated[index] = { ...updated[index], send_after_hours: Number(e.target.value) };
+                          setFollowUpTemplates(updated);
+                        }}
+                        className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Hours"
+                        disabled={loading}
+                      />
+                      <select
+                        value={followUp.mode}
+                        onChange={(e) => {
+                          const updated = [...followUpTemplates];
+                          updated[index] = { ...updated[index], mode: e.target.value as 'EMAIL' | 'WHATSAPP' | 'CALL' };
+                          setFollowUpTemplates(updated);
+                        }}
+                        className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        disabled={loading}
+                      >
+                        <option value="EMAIL">Email</option>
+                        <option value="WHATSAPP">WhatsApp</option>
+                        <option value="CALL">Call</option>
+                      </select>
+                      <input
+                        type="text"
+                        value={followUp.subject}
+                        onChange={(e) => {
+                          const updated = [...followUpTemplates];
+                          updated[index] = { ...updated[index], subject: e.target.value };
+                          setFollowUpTemplates(updated);
+                        }}
+                        className="text-sm flex-1 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Subject"
+                        disabled={loading}
+                      />
+                      <input
+                        type="text"
+                        value={followUp.body}
+                        onChange={(e) => {
+                          const updated = [...followUpTemplates];
+                          updated[index] = { ...updated[index], body: e.target.value };
+                          setFollowUpTemplates(updated);
+                        }}
+                        className="text-sm flex-1 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Body"
+                        disabled={loading}
+                      />
+                      <button
+                        onClick={() => setFollowUpTemplates(followUpTemplates.filter((_, i) => i !== index))}
+                        className="ml-2 p-1 text-red-500 hover:text-red-700"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => setFollowUpTemplates([...followUpTemplates, { send_after_hours: 0, mode: 'EMAIL', subject: '', body: '', order: followUpTemplates.length }])}
+                    className="text-sm text-blue-600 hover:text-blue-700 mt-2"
+                    disabled={loading}
+                  >
+                    + Add Follow-up
+                  </button>
+                </div>
+              </div>
+              <div className="flex space-x-3 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => setShowCreateTemplate(false)}
+                  className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  disabled={loading}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveTemplate}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  disabled={loading}
+                >
+                  Save Template
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -557,7 +615,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              
               <div className="space-y-4 flex-1">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Test Email Address</label>
@@ -567,20 +624,22 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
                     onChange={(e) => setTestEmail(e.target.value)}
                     placeholder="Enter email address"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={loading}
                   />
                 </div>
               </div>
-              
               <div className="flex space-x-3 pt-4 border-t border-gray-200">
                 <button
                   onClick={() => setShowTestEmail(false)}
                   className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  disabled={loading}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSendTestEmail}
                   className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  disabled={loading}
                 >
                   Send Test
                 </button>
