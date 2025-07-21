@@ -433,6 +433,42 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             contextualDetails.match_analysis?.matched_skills?.join(", ") || "",
           notes: contextualDetails.candidate_notes || [],
         };
+      case "ai-interview":
+      case "shortlisted":
+        return {
+          interviewedDate: "", // Placeholder; no interview date provided in API
+          resumeScore:
+            Number(contextualDetails.ai_interview_report?.resume_score) || 0,
+          knowledgeScore:
+            Number(contextualDetails.ai_interview_report?.knowledge_score) || 0,
+          communicationScore:
+            Number(
+              contextualDetails.ai_interview_report?.communication_score
+            ) || 0,
+          integrityScore:
+            Number(contextualDetails.ai_interview_report?.integrity_score) || 0,
+          proctoring: {
+            deviceUsage:
+              Number(
+                contextualDetails.ai_interview_report?.proctoring?.device_usage
+              ) || 0,
+            assistance:
+              Number(
+                contextualDetails.ai_interview_report?.proctoring?.assistance
+              ) || 0,
+            referenceMaterial:
+              Number(
+                contextualDetails.ai_interview_report?.proctoring
+                  ?.reference_material
+              ) || 0,
+            environment:
+              Number(
+                contextualDetails.ai_interview_report?.proctoring?.environment
+              ) || 0,
+          },
+          questions: contextualDetails.ai_interview_report?.questions || [],
+          notes: contextualDetails.candidate_notes || [],
+        };
       default:
         return contextualDetails; // Fallback for other stages
     }
