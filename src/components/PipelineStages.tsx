@@ -418,10 +418,36 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     }
   };
 
+  const mapStageData = (slug: string, contextualDetails: any) => {
+    switch (slug) {
+      case "applied":
+        return {
+          appliedDate: "", // Placeholder; could be derived if application date is added to API
+          resumeScore: 0, // Placeholder; no score provided in API
+          skillsMatch:
+            contextualDetails.match_analysis?.skill_match_percentage || "N/A",
+          experienceMatch:
+            contextualDetails.match_analysis?.experience_match_percentage ||
+            "N/A",
+          highlights:
+            contextualDetails.match_analysis?.matched_skills?.join(", ") || "",
+          notes: contextualDetails.candidate_notes || [],
+        };
+      default:
+        return contextualDetails; // Fallback for other stages
+    }
+  };
+
   // Helper to map candidate details
   // Map API response to PipelineCandidate
   const mapCandidateDetails = (data: any): PipelineCandidate => {
     const candidateData = data.candidate;
+    const stageProperty = data.current_stage_details.slug; // Use slug directly
+    const mappedStageData = mapStageData(
+      data.current_stage_details.slug,
+      data.contextual_details
+    );
+
     return {
       id: data.id.toString(),
       firstName: candidateData.full_name.split(" ")[0] || "",
@@ -497,7 +523,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         scopesGranted: [],
       },
       stageData: {
-        [data.current_stage_details.slug]: data.contextual_details,
+        [stageProperty]: mappedStageData,
       },
     };
   };
@@ -867,7 +893,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">Notes</h4>
                 <div className="space-y-2">
-                  {selectedCandidate.stageData.invitesSent.notes}
+                  {stageData.candidate_notes.map((note: any, index: number) => (
+                    <div key={index} className="bg-gray-50 p-2 rounded">
+                      {note}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
