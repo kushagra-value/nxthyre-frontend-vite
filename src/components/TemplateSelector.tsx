@@ -6,8 +6,8 @@ import { CandidateListItem, Template, candidateService } from '../services/candi
 interface TemplateSelectorProps {
   candidate: CandidateListItem;
   onBack: () => void;
-  updateCandidateEmail: (candidateId: string, email: string) => void;
-  jobId: string; // Added to satisfy the required field
+  updateCandidateEmail: (candidateId: string, candidate_email: string, candidate_phone: string) => void;
+  jobId: string;
 }
 
 const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, updateCandidateEmail, jobId }) => {
@@ -21,12 +21,11 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
   const [showTestEmail, setShowTestEmail] = useState(false);
   const [showAdvanceOptions, setShowAdvanceOptions] = useState(false);
   const [testEmail, setTestEmail] = useState('');
-  const [selectedChannel, setSelectedChannel] = useState<'email' | 'whatsApp' | 'call'>('email');
+  const [sendViaEmail, setSendViaEmail] = useState(true);
+  const [sendViaWhatsApp, setSendViaWhatsApp] = useState(false);
+  const [sendViaPhone, setSendViaPhone] = useState(false);
   const [followUpTemplates, setFollowUpTemplates] = useState<{ id?: string; send_after_hours: number; mode: 'EMAIL' | 'WHATSAPP' | 'CALL'; subject: string; body: string; order: number }[]>([]);
   const [loading, setLoading] = useState(false);
-  const [canSendEmail, setCanSendEmail] = useState(true);
-  const [canSendWhatsApp, setCanSendWhatsApp] = useState(false);
-  const [canSendCall, setCanSendCall] = useState(false);
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -45,28 +44,33 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
   }, []);
 
   const handleTemplateSelect = (templateId: string) => {
-  console.log('Selected template ID:', templateId);
-  if (templateId === 'create-new') {
-    setShowCreateTemplate(true);
-    return;
-  }
-  const template = templates.find(t => t.id === templateId);
-  if (template) {
-    setSelectedTemplate(templateId);
-    setTemplateName(template.name);
-    setSubject(template.initial_subject);
-    setBody(template.initial_body.replace('[candidateName]', candidate.full_name));
-    setFollowUpTemplates(template.follow_up_steps || []);
-    setCanSendEmail(template.can_be_sent_via_email);
-    setCanSendWhatsApp(template.can_be_sent_via_whatsapp);
-    setCanSendCall(template.can_be_sent_via_call);
-    if (template.can_be_sent_via_email) setSelectedChannel('email');
-    else if (template.can_be_sent_via_whatsapp) setSelectedChannel('whatsApp');
-    else if (template.can_be_sent_via_call) setSelectedChannel('call');
-  } else {
-    console.log('Template not found for ID:', templateId);
-  }
-};
+    console.log('Selected template ID:', templateId);
+    if (templateId === 'create-new') {
+      setShowCreateTemplate(true);
+      setSelectedTemplate('');
+      setTemplateName('');
+      setSubject('');
+      setBody('');
+      setSendViaEmail(true);
+      setSendViaWhatsApp(false);
+      setSendViaPhone(false);
+      setFollowUpTemplates([]);
+      return;
+    }
+    const template = templates.find(t => t.id === templateId);
+    if (template) {
+      setSelectedTemplate(templateId);
+      setTemplateName(template.name);
+      setSubject(template.initial_subject);
+      setBody(template.initial_body.replace('[candidateName]', candidate.full_name));
+      setSendViaEmail(template.can_be_sent_via_email);
+      setSendViaWhatsApp(template.can_be_sent_via_whatsapp);
+      setSendViaPhone(template.can_be_sent_via_call);
+      setFollowUpTemplates(template.follow_up_steps || []);
+    } else {
+      console.log('Template not found for ID:', templateId);
+    }
+  };
 
   const handleSaveTemplate = async () => {
     if (!templateName.trim()) {
@@ -76,21 +80,21 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
     setLoading(true);
     try {
       const newTemplate: Template = {
-        id: selectedTemplate || undefined, // Keep as optional, handled by backend
+        id: selectedTemplate || undefined,
         name: templateName,
         initial_subject: subject,
         initial_body: body,
-        can_be_sent_via_email: canSendEmail,
-        can_be_sent_via_whatsapp: canSendWhatsApp,
-        can_be_sent_via_call: canSendCall,
+        can_be_sent_via_email: sendViaEmail,
+        can_be_sent_via_whatsapp: sendViaWhatsApp,
+        can_be_sent_via_call: sendViaPhone,
         follow_up_steps: followUpTemplates,
       };
       const savedTemplate = await candidateService.saveTemplate(newTemplate);
-      setTemplates(templates.map(t => t.id === savedTemplate.id ? savedTemplate : t));
+      setTemplates([...templates.filter(t => t.id !== savedTemplate.id), savedTemplate]);
       setShowCreateTemplate(false);
       showToast.success('Template saved successfully!');
     } catch (error) {
-      showToast.error('Failed to save template');
+      showToast.error('Failed to season template');
     } finally {
       setLoading(false);
     }
@@ -124,11 +128,13 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
         job_id: jobId,
         subject,
         body,
-        channel: selectedChannel,
+        send_via_email: sendViaEmail,
+        send_via_whatsapp: sendViaWhatsApp,
+        send_via_phone: sendViaPhone,
         followUpTemplates,
       });
       showToast.success(`Invite sent successfully! Invite ID: ${response.invite_id}. Follow-ups scheduled.`);
-      updateCandidateEmail(candidate.id, response.candidate_email);
+      updateCandidateEmail(candidate.id, response.candidate_email, response.candidate_email);
       // Save template if edited
       if (selectedTemplate) {
         const updatedTemplate: Template = {
@@ -136,9 +142,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
           name: templateName,
           initial_subject: subject,
           initial_body: body,
-          can_be_sent_via_email: canSendEmail,
-          can_be_sent_via_whatsapp: canSendWhatsApp,
-          can_be_sent_via_call: canSendCall,
+          can_be_sent_via_email: sendViaEmail,
+          can_be_sent_via_whatsapp: sendViaWhatsApp,
+          can_be_sent_via_call: sendViaPhone,
           follow_up_steps: followUpTemplates,
         };
         await candidateService.saveTemplate(updatedTemplate);
@@ -346,25 +352,41 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
           <p className="text-sm text-gray-600 mb-2">The following will be sent to candidate via</p>
           <div className="flex justify-between">
             {[
-              { name: 'Email', icon: Mail, color: 'bg-blue-100 text-blue-800', enabled: canSendEmail },
-              { name: 'WhatsApp', icon: MessageSquare, color: 'bg-green-100 text-green-800', enabled: canSendWhatsApp },
-              { name: 'Call', icon: Phone, color: 'bg-orange-100 text-orange-800', enabled: canSendCall },
+              { name: 'email', icon: Mail, color: 'bg-blue-100 text-blue-800' },
+              { name: 'whatsApp', icon: MessageSquare, color: 'bg-green-100 text-green-800' },
+              { name: 'phone', icon: Phone, color: 'bg-orange-100 text-orange-800' },
             ].map((channel) => (
               <button
                 key={channel.name}
-                onClick={() => channel.enabled && setSelectedChannel(channel.name as 'email' | 'whatsApp' | 'call')}
+                onClick={() => {
+                  if (channel.name === 'email') {
+                    setSendViaEmail(true);
+                    setSendViaWhatsApp(false);
+                    setSendViaPhone(false);
+                  } else if (channel.name === 'whatsApp') {
+                    setSendViaEmail(false);
+                    setSendViaWhatsApp(true);
+                    setSendViaPhone(false);
+                  } else if (channel.name === 'phone') {
+                    setSendViaEmail(false);
+                    setSendViaWhatsApp(false);
+                    setSendViaPhone(true);
+                  }
+                }}
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedChannel === channel.name
+                  (channel.name === 'email' && sendViaEmail) ||
+                  (channel.name === 'whatsApp' && sendViaWhatsApp) ||
+                  (channel.name === 'phone' && sendViaPhone)
                     ? channel.color
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                } `}
+                }`}
+                disabled={loading}
               >
                 <channel.icon className="w-4 h-4 inline mr-1" />
                 {channel.name}
               </button>
             ))}
           </div>
-          
         </div>
 
         {/* Action Buttons */}
@@ -479,8 +501,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
                     <label className="flex items-center">
                       <input
                         type="checkbox"
-                        checked={canSendEmail}
-                        onChange={(e) => setCanSendEmail(e.target.checked)}
+                        checked={sendViaEmail}
+                        onChange={(e) => setSendViaEmail(e.target.checked)}
                         className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
                         disabled={loading}
                       />
@@ -489,8 +511,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
                     <label className="flex items-center">
                       <input
                         type="checkbox"
-                        checked={canSendWhatsApp}
-                        onChange={(e) => setCanSendWhatsApp(e.target.checked)}
+                        checked={sendViaWhatsApp}
+                        onChange={(e) => setSendViaWhatsApp(e.target.checked)}
                         className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
                         disabled={loading}
                       />
@@ -499,8 +521,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
                     <label className="flex items-center">
                       <input
                         type="checkbox"
-                        checked={canSendCall}
-                        onChange={(e) => setCanSendCall(e.target.checked)}
+                        checked={sendViaPhone}
+                        onChange={(e) => setSendViaPhone(e.target.checked)}
                         className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
                         disabled={loading}
                       />

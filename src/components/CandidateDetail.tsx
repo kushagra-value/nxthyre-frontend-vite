@@ -9,7 +9,7 @@ interface CandidateDetailProps {
   candidate: CandidateListItem | null;
   candidates: CandidateListItem[];
   onSendInvite: () => void;
-  updateCandidateEmail: (candidateId: string, email: string) => void;
+  updateCandidateEmail: (candidateId: string, candidate_email: string, candidate_phone:string) => void;
   deductCredits: () => Promise<void>;
 }
 
@@ -180,7 +180,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
   const getAvatarColor = (name: string) => {
     return 'bg-blue-500';
   };
-  
+
   const handleSendInviteClick = async () => {
     await deductCredits();
     onSendInvite();

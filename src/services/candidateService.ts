@@ -3,7 +3,8 @@ import apiClient from "./api";
 export interface CandidateListItem {
   id: string;
   full_name: string;
-  email?: string;
+  candidate_email: string;
+  candidate_phone:string;
   avatar: string;
   headline: string;
   location: string;
@@ -34,7 +35,8 @@ export interface CandidateDetailData {
   candidate: {
     id: string;
     full_name: string;
-    email?: string;
+    candidate_email: string;
+    candidate_phone:string;
     headline: string;
     location: string;
     profile_picture_url: string;
@@ -169,6 +171,7 @@ export interface InviteResponse {
   invite_id: number;
   candidate_email: string;
   candidate_name: string;
+  candidate_phone: string;
 }
 
 class CandidateService {
@@ -244,7 +247,9 @@ class CandidateService {
     job_id: string; 
     subject: string; 
     body: string; 
-    channel: string; 
+    send_via_email: boolean;
+    send_via_whatsapp: boolean;
+    send_via_phone: boolean;
     followUpTemplates: { send_after_hours: number; mode: 'EMAIL' | 'WHATSAPP' | 'CALL'; subject: string; body: string; order: number }[] 
   }): Promise<InviteResponse> {
     const response = await apiClient.post('/jobs/invite/', data);

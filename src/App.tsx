@@ -394,14 +394,14 @@ function MainApp() {
     }
   }, []);
 
-  const updateCandidateEmail = (candidateId: string, email: string) => {
+  const updateCandidateEmail = (candidateId: string, candidate_email: string, candidate_phone: string) => {
     setCandidates((prevCandidates) =>
       prevCandidates.map((cand) =>
-        cand.id === candidateId ? { ...cand, email } : cand
+        cand.id === candidateId ? { ...cand, candidate_email, candidate_phone} : cand
       )
     );
     if (selectedCandidate?.id === candidateId) {
-      setSelectedCandidate((prev) => prev ? { ...prev, email } : prev);
+      setSelectedCandidate((prev) => prev ? { ...prev, candidate_email, candidate_phone} : prev);
     }
   };
 
