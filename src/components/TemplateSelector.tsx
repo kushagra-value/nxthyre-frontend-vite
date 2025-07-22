@@ -1,21 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown, Bold, Italic, Link, List, MoreHorizontal, ArrowLeft, Mail, MessageSquare, Phone, Bot, Eye, Settings, Send, X } from 'lucide-react';
 import { showToast } from '../utils/toast';
-import { CandidateListItem } from '../services/candidateService';
+import { CandidateListItem, Template, candidateService } from '../services/candidateService';
 
 interface TemplateSelectorProps {
   candidate: CandidateListItem;
   onBack: () => void;
+  updateCandidateEmail: (candidateId: string, candidate_email: string, candidate_phone: string) => void;
+  jobId: string;
 }
 
-interface Template {
-  id: string;
-  name: string;
-  subject: string;
-  body: string;
-}
-
-const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack }) => {
+const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, updateCandidateEmail, jobId }) => {
+  const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [templateName, setTemplateName] = useState('');
   const [subject, setSubject] = useState('');
@@ -25,65 +21,83 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack }
   const [showTestEmail, setShowTestEmail] = useState(false);
   const [showAdvanceOptions, setShowAdvanceOptions] = useState(false);
   const [testEmail, setTestEmail] = useState('');
-  const [selectedChannel, setSelectedChannel] = useState('Email');
+  const [sendViaEmail, setSendViaEmail] = useState(true);
+  const [sendViaWhatsApp, setSendViaWhatsApp] = useState(false);
+  const [sendViaPhone, setSendViaPhone] = useState(false);
+  const [followUpTemplates, setFollowUpTemplates] = useState<{send_after_hours: number; followup_mode: 'EMAIL' | 'WHATSAPP' | 'CALL';  followup_body: string; order_no: number }[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const templates: Template[] = [
-    {
-      id: '1',
-      name: 'Drip Campaign - Head of Finance',
-      subject: 'Exciting Opportunity at Weekday: Head of Finance in Pune',
-      body: `Hi [candidatename],
-
-I hope this message finds you well! At Weekday, we're a small team with a big heart, dedicated to making a positive impact on the world. We're currently looking for a Head of Finance who can bring their expertise in Finance to our dynamic online marketplace, with strong networks.`
-    },
-    {
-      id: '2',
-      name: 'Follow-up Template',
-      subject: 'Following up on our Finance opportunity',
-      body: `Hi [candidatename],
-
-I wanted to follow up on the Head of Finance position we discussed. We're excited about the possibility of you joining our team at Weekday.
-
-Would you be available for a quick call this week to discuss the role in more detail?
-
-Best regards,
-[Your Name]`
-    },
-    {
-      id: '3',
-      name: 'Initial Outreach',
-      subject: 'Finance Leadership Role at Weekday',
-      body: `Hello [candidatename],
-
-I came across your profile and was impressed by your background in finance. We have an exciting Head of Finance position at Weekday that I think would be a great fit for your skills.
-
-Would you be interested in learning more about this opportunity?
-
-Looking forward to hearing from you.`
-    }
-  ];
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      setLoading(true);
+      try {
+        const data = await candidateService.getTemplates();
+        console.log('Fetched templates:', data);
+        setTemplates(data);
+      } catch (error) {
+        showToast.error('Failed to fetch templates');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTemplates();
+  }, []);
 
   const handleTemplateSelect = (templateId: string) => {
+    console.log('Selected template ID:', templateId);
     if (templateId === 'create-new') {
       setShowCreateTemplate(true);
+      setSelectedTemplate('');
+      setTemplateName('');
+      setSubject('');
+      setBody('');
+      setSendViaEmail(true);
+      setSendViaWhatsApp(false);
+      setSendViaPhone(false);
+      setFollowUpTemplates([]);
       return;
     }
-    
     const template = templates.find(t => t.id === templateId);
     if (template) {
       setSelectedTemplate(templateId);
-      setSubject(template.subject);
-      setBody(template.body.replace('[candidatename]', candidate.full_name));
+      setTemplateName(template.name);
+      setSubject(template.initial_subject);
+      setBody(template.initial_body.replace('[candidateName]', candidate.full_name));
+      setSendViaEmail(template.can_be_sent_via_email);
+      setSendViaWhatsApp(template.can_be_sent_via_whatsapp);
+      setSendViaPhone(template.can_be_sent_via_call);
+      setFollowUpTemplates(template.follow_up_steps || []);
+    } else {
+      console.log('Template not found for ID:', templateId);
     }
   };
 
-  const handleSaveTemplate = () => {
+  const handleSaveTemplate = async () => {
     if (!templateName.trim()) {
       showToast.error('Please enter a template name');
       return;
     }
-    setShowCreateTemplate(false);
-    showToast.success('Template saved successfully!');
+    setLoading(true);
+    try {
+      const newTemplate: Template = {
+        id: selectedTemplate || undefined,
+        name: templateName,
+        initial_subject: subject,
+        initial_body: body,
+        can_be_sent_via_email: sendViaEmail,
+        can_be_sent_via_whatsapp: sendViaWhatsApp,
+        can_be_sent_via_call: sendViaPhone,
+        follow_up_steps: followUpTemplates,
+      };
+      const savedTemplate = await candidateService.saveTemplate(newTemplate);
+      setTemplates([...templates.filter(t => t.id !== savedTemplate.id), savedTemplate]);
+      setShowCreateTemplate(false);
+      showToast.success('Template saved successfully!');
+    } catch (error) {
+      showToast.error('Failed to season template');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSendTestEmail = () => {
@@ -95,13 +109,52 @@ Looking forward to hearing from you.`
     showToast.success(`Test email sent to ${testEmail}`);
   };
 
-  const handleSendInvite = () => {
+  const handleSendInvite = async () => {
+    console.log('Job ID:', jobId);
+    console.log('Candidate ID:', candidate.id);
+    if (!jobId || !candidate.id) {
+      showToast.error('Job ID and Candidate ID are required');
+      return;
+    }
     if (!selectedTemplate && !body) {
       showToast.error('Please select a template or enter email content');
       return;
     }
-    showToast.success(`Invite sent to ${candidate.full_name} via ${selectedChannel}`);
-    onBack();
+    setLoading(true);
+    try {
+      const response = await candidateService.sendInvite({
+        candidate_id: candidate.id,
+        template_id: selectedTemplate || undefined,
+        job_id: jobId,
+        subject,
+        message_body: body,
+        send_via_email: sendViaEmail,
+        send_via_whatsapp: sendViaWhatsApp,
+        send_via_phone: sendViaPhone,
+        followups:followUpTemplates,
+      });
+      showToast.success(`Invite sent successfully! Invite ID: ${response.invite_id}. Follow-ups scheduled.`);
+      updateCandidateEmail(candidate.id, response.candidate_email, response.candidate_email);
+      // Save template if edited
+      if (selectedTemplate) {
+        const updatedTemplate: Template = {
+          id: selectedTemplate,
+          name: templateName,
+          initial_subject: subject,
+          initial_body: body,
+          can_be_sent_via_email: sendViaEmail,
+          can_be_sent_via_whatsapp: sendViaWhatsApp,
+          can_be_sent_via_call: sendViaPhone,
+          follow_up_steps: followUpTemplates,
+        };
+        await candidateService.saveTemplate(updatedTemplate);
+      }
+    } catch (error) {
+      showToast.error('Failed to send invite');
+    } finally {
+      setLoading(false);
+      onBack();
+    }
   };
 
   return (
@@ -125,15 +178,17 @@ Looking forward to hearing from you.`
           <label className="block text-sm font-medium text-gray-700 mb-2">Select Template</label>
           <div className="relative">
             <select
+              key={selectedTemplate}
               value={selectedTemplate}
               onChange={(e) => handleTemplateSelect(e.target.value)}
               className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+              disabled={loading}
             >
               <option value="">Choose a template</option>
               <option value="create-new" className="font-bold text-blue-600">+ Create New Template</option>
               {templates.map((template) => (
                 <option key={template.id} value={template.id} className="hover:bg-blue-300">
-                  {template.name} 
+                  {template.name}
                 </option>
               ))}
             </select>
@@ -146,7 +201,7 @@ Looking forward to hearing from you.`
           <label className="block text-sm font-medium text-gray-700 mb-2">From</label>
           <input
             type="email"
-            value="shivanshi@weekday.works"
+            value="yuvraj@nxthyre.com"
             readOnly
             className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
           />
@@ -161,14 +216,13 @@ Looking forward to hearing from you.`
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Enter email subject"
             className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            disabled={loading}
           />
         </div>
 
         {/* Body */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Body</label>
-          
-          {/* Toolbar */}
           <div className="border border-gray-300 rounded-t-lg bg-gray-50 px-3 py-2 flex items-center space-x-2">
             <select className="text-sm border-none bg-transparent">
               <option>Paragraph</option>
@@ -192,17 +246,13 @@ Looking forward to hearing from you.`
               <MoreHorizontal className="w-4 h-4" />
             </button>
           </div>
-
-          {/* Text Area */}
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
             placeholder="Enter email body..."
-            className={`text-sm w-full px-3 py-2 border-l border-r border-b border-gray-300 shadow-xl rounded-b-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${
-              isBodyExpanded ? 'h-80' : 'h-40'
-            }`}
+            className={`text-sm w-full px-3 py-2 border-l border-r border-b border-gray-300 shadow-xl rounded-b-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${isBodyExpanded ? 'h-80' : 'h-40'}`}
+            disabled={loading}
           />
-          
           {!isBodyExpanded && body.length > 150 && (
             <div className="flex justify-center">
               <button
@@ -213,7 +263,6 @@ Looking forward to hearing from you.`
               </button>
             </div>
           )}
-          
           {isBodyExpanded && (
             <div className="flex justify-center">
               <button
@@ -226,23 +275,94 @@ Looking forward to hearing from you.`
           )}
         </div>
 
+        {/* Follow-up Templates */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Follow-up Templates</label>
+          {followUpTemplates.map((followUp, index) => (
+            <div key={index} className="flex items-center mb-2 space-x-2">
+              <input
+                type="number"
+                value={followUp.send_after_hours}
+                onChange={(e) => {
+                  const updated = [...followUpTemplates];
+                  updated[index] = { ...updated[index], send_after_hours: Number(e.target.value) };
+                  setFollowUpTemplates(updated);
+                }}
+                className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Hours"
+                disabled={loading}
+              />
+              <select
+                value={followUp.followup_mode}
+                onChange={(e) => {
+                  const updated = [...followUpTemplates];
+                  updated[index] = { ...updated[index], followup_mode: e.target.value as 'EMAIL' | 'WHATSAPP' | 'CALL' };
+                  setFollowUpTemplates(updated);
+                }}
+                className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                disabled={loading}
+              >
+                <option value="EMAIL">Email</option>
+                <option value="WHATSAPP">WhatsApp</option>
+                <option value="CALL">Call</option>
+              </select>
+              <input
+                type="text"
+                value={followUp.followup_body}
+                onChange={(e) => {
+                  const updated = [...followUpTemplates];
+                  updated[index] = { ...updated[index], followup_body: e.target.value };
+                  setFollowUpTemplates(updated);
+                }}
+                className="text-sm flex-1 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Body"
+                disabled={loading}
+              />
+              <button
+                onClick={() => setFollowUpTemplates(followUpTemplates.filter((_, i) => i !== index))}
+                className="ml-2 p-1 text-red-500 hover:text-red-700"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+          <button
+            onClick={() => setFollowUpTemplates([...followUpTemplates, { send_after_hours: 0, followup_mode: 'EMAIL', followup_body: '', order_no: followUpTemplates.length }])}
+            className="text-sm text-blue-600 hover:text-blue-700 mt-2"
+            disabled={loading}
+          >
+            + Add Follow-up
+          </button>
+        </div>
+
         {/* Channel Selection */}
         <div>
           <p className="text-sm text-gray-600 mb-2">The following will be sent to candidate via</p>
           <div className="flex justify-between">
             {[
-              { name: 'Email', icon: Mail, color: 'bg-blue-100 text-blue-800' },
-              { name: 'WhatsApp', icon: MessageSquare, color: 'bg-green-100 text-green-800' },
-              { name: 'Call', icon: Phone, color: 'bg-orange-100 text-orange-800' }
+              { name: 'email', icon: Mail, color: 'bg-blue-100 text-blue-800' },
+              { name: 'whatsApp', icon: MessageSquare, color: 'bg-green-100 text-green-800' },
+              { name: 'phone', icon: Phone, color: 'bg-orange-100 text-orange-800' },
             ].map((channel) => (
               <button
                 key={channel.name}
-                onClick={() => setSelectedChannel(channel.name)}
+                onClick={() => {
+                  if (channel.name === 'email') {
+                    setSendViaEmail(true);
+                  } else if (channel.name === 'whatsApp') {
+                    setSendViaWhatsApp(true);
+                  } else if (channel.name === 'phone') {
+                    setSendViaPhone(true);
+                  }
+                }}
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedChannel === channel.name
+                  (channel.name === 'email' && sendViaEmail) ||
+                  (channel.name === 'whatsApp' && sendViaWhatsApp) ||
+                  (channel.name === 'phone' && sendViaPhone)
                     ? channel.color
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
+                disabled={loading}
               >
                 <channel.icon className="w-4 h-4 inline mr-1" />
                 {channel.name}
@@ -257,23 +377,24 @@ Looking forward to hearing from you.`
             <button
               onClick={() => setShowAdvanceOptions(true)}
               className="text-blue-600 text-xs hover:bg-blue-50 transition-colors flex items-center justify-end"
+              disabled={loading}
             >
               <Settings className="w-4 h-4 mr-2" />
-              View Advance Options 
+              View Advance Options
             </button>
           </div>
-          
           <div className="flex justify-between space-x-8">
             <button
               onClick={() => setShowTestEmail(true)}
               className="w-full px-4 py-2 text-xs text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"
+              disabled={loading}
             >
               Send test email
             </button>
-  
             <button
               onClick={handleSendInvite}
               className="w-full px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center font-medium"
+              disabled={loading || !jobId || !candidate.id}
             >
               <Send className="w-4 h-4 mr-2" />
               Send Invite
@@ -289,7 +410,7 @@ Looking forward to hearing from you.`
             className={`bg-white h-full transform transition-transform duration-300 ease-out ${
               showCreateTemplate ? 'translate-x-0' : 'translate-x-full'
             }`}
-            style={{ width: '400px' }}
+            style={{ width: '500px' }}
           >
             <div className="p-6 h-full flex flex-col">
               <div className="flex items-center justify-between mb-6">
@@ -301,7 +422,6 @@ Looking forward to hearing from you.`
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              
               <div className="space-y-4 flex-1">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Template Name</label>
@@ -311,37 +431,158 @@ Looking forward to hearing from you.`
                     onChange={(e) => setTemplateName(e.target.value)}
                     placeholder="Enter template name"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={loading}
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
                   <input
                     type="text"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
                     placeholder="Enter email subject"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={loading}
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Body</label>
                   <textarea
+                    value={body}
+                    onChange={(e) => setBody(e.target.value)}
                     placeholder="Enter email body..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none h-40"
+                    className={`text-sm w-full px-3 py-2 border-l border-r border-b border-gray-300 shadow-xl rounded-b-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${
+                      isBodyExpanded ? 'h-80' : 'h-40'
+                    }`}
+                    disabled={loading}
                   />
+                  {!isBodyExpanded && body.length > 150 && (
+                    <div className="flex justify-center">
+                      <button
+                        onClick={() => setIsBodyExpanded(true)}
+                        className="mt-1 text-sm text-blue-600 hover:text-blue-700"
+                      >
+                        View more
+                      </button>
+                    </div>
+                  )}
+                  {isBodyExpanded && (
+                    <div className="flex justify-center">
+                      <button
+                        onClick={() => setIsBodyExpanded(false)}
+                        className="mt-1 text-sm text-blue-600 hover:text-blue-700"
+                      >
+                        View less
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Channel Options</label>
+                  <div className="space-y-2">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={sendViaEmail}
+                        onChange={(e) => setSendViaEmail(e.target.checked)}
+                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                        disabled={loading}
+                      />
+                      <span className="ml-2 text-sm text-gray-700">Email</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={sendViaWhatsApp}
+                        onChange={(e) => setSendViaWhatsApp(e.target.checked)}
+                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                        disabled={loading}
+                      />
+                      <span className="ml-2 text-sm text-gray-700">WhatsApp</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={sendViaPhone}
+                        onChange={(e) => setSendViaPhone(e.target.checked)}
+                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                        disabled={loading}
+                      />
+                      <span className="ml-2 text-sm text-gray-700">Call</span>
+                    </label>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Follow-up Templates</label>
+                  {followUpTemplates.map((followUp, index) => (
+                    <div key={index} className="flex items-center mb-2 space-x-2">
+                      <input
+                        type="number"
+                        value={followUp.send_after_hours}
+                        onChange={(e) => {
+                          const updated = [...followUpTemplates];
+                          updated[index] = { ...updated[index], send_after_hours: Number(e.target.value) };
+                          setFollowUpTemplates(updated);
+                        }}
+                        className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Hours"
+                        disabled={loading}
+                      />
+                      <select
+                        value={followUp.followup_mode}
+                        onChange={(e) => {
+                          const updated = [...followUpTemplates];
+                          updated[index] = { ...updated[index], followup_mode: e.target.value as 'EMAIL' | 'WHATSAPP' | 'CALL' };
+                          setFollowUpTemplates(updated);
+                        }}
+                        className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        disabled={loading}
+                      >
+                        <option value="EMAIL">Email</option>
+                        <option value="WHATSAPP">WhatsApp</option>
+                        <option value="CALL">Call</option>
+                      </select>
+                      <input
+                        type="text"
+                        value={followUp.followup_body}
+                        onChange={(e) => {
+                          const updated = [...followUpTemplates];
+                          updated[index] = { ...updated[index], followup_body: e.target.value };
+                          setFollowUpTemplates(updated);
+                        }}
+                        className="text-sm flex-1 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Body"
+                        disabled={loading}
+                      />
+                      <button
+                        onClick={() => setFollowUpTemplates(followUpTemplates.filter((_, i) => i !== index))}
+                        className="ml-2 p-1 text-red-500 hover:text-red-700"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => setFollowUpTemplates([...followUpTemplates, { send_after_hours: 0, followup_mode: 'EMAIL',  followup_body: '', order_no: followUpTemplates.length }])}
+                    className="text-sm text-blue-600 hover:text-blue-700 mt-2"
+                    disabled={loading}
+                  >
+                    + Add Follow-up
+                  </button>
                 </div>
               </div>
-              
               <div className="flex space-x-3 pt-4 border-t border-gray-200">
                 <button
                   onClick={() => setShowCreateTemplate(false)}
                   className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  disabled={loading}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveTemplate}
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  disabled={loading}
                 >
                   Save Template
                 </button>
@@ -370,7 +611,6 @@ Looking forward to hearing from you.`
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              
               <div className="space-y-4 flex-1">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Test Email Address</label>
@@ -380,20 +620,22 @@ Looking forward to hearing from you.`
                     onChange={(e) => setTestEmail(e.target.value)}
                     placeholder="Enter email address"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={loading}
                   />
                 </div>
               </div>
-              
               <div className="flex space-x-3 pt-4 border-t border-gray-200">
                 <button
                   onClick={() => setShowTestEmail(false)}
                   className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  disabled={loading}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSendTestEmail}
                   className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  disabled={loading}
                 >
                   Send Test
                 </button>
@@ -422,7 +664,6 @@ Looking forward to hearing from you.`
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              
               <div className="space-y-4 flex-1">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -443,14 +684,12 @@ Looking forward to hearing from you.`
                     </select>
                   </div>
                 </div>
-                
                 <div>
                   <label className="flex items-center">
                     <input type="checkbox" className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500" />
                     <span className="ml-2 text-sm text-gray-700">Track email opens</span>
                   </label>
                 </div>
-                
                 <div>
                   <label className="flex items-center">
                     <input type="checkbox" className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500" />
@@ -458,7 +697,6 @@ Looking forward to hearing from you.`
                   </label>
                 </div>
               </div>
-              
               <div className="flex space-x-3 pt-4 border-t border-gray-200">
                 <button
                   onClick={() => setShowAdvanceOptions(false)}

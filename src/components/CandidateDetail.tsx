@@ -9,9 +9,11 @@ interface CandidateDetailProps {
   candidate: CandidateListItem | null;
   candidates: CandidateListItem[];
   onSendInvite: () => void;
+  updateCandidateEmail: (candidateId: string, candidate_email: string, candidate_phone:string) => void;
+  deductCredits: () => Promise<void>;
 }
 
-const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates = [], onSendInvite }) => {
+const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates = [], onSendInvite, updateCandidateEmail, deductCredits }) => {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [detailedCandidate, setDetailedCandidate] = useState<CandidateDetailData | null>(null);
@@ -179,6 +181,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
     return 'bg-blue-500';
   };
 
+  const handleSendInviteClick = async () => {
+    await deductCredits();
+    onSendInvite();
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-3 space-y-6 min-h-[81vh] relative overflow-hidden">
       {/* Header */}
@@ -231,7 +238,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
       <div className="space-y-2">
         <div className="flex space-x-2">
           <button 
-            onClick={onSendInvite}
+            onClick={handleSendInviteClick}
             className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             style={{ width: '75%' }}
           >

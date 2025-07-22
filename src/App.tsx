@@ -394,6 +394,17 @@ function MainApp() {
     }
   }, []);
 
+  const updateCandidateEmail = (candidateId: string, candidate_email: string, candidate_phone: string) => {
+    setCandidates((prevCandidates) =>
+      prevCandidates.map((cand) =>
+        cand.id === candidateId ? { ...cand, candidate_email, candidate_phone} : cand
+      )
+    );
+    if (selectedCandidate?.id === candidateId) {
+      setSelectedCandidate((prev) => prev ? { ...prev, candidate_email, candidate_phone} : prev);
+    }
+  };
+
   const deductCredits = async () => {
     try {
       const data = await creditService.getCreditBalance();
@@ -875,12 +886,16 @@ function MainApp() {
                             <TemplateSelector
                               candidate={selectedCandidate}
                               onBack={handleBackFromTemplate}
+                              updateCandidateEmail={updateCandidateEmail}
+                              jobId={filters.jobId}
                             />
                           ) : (
                             <CandidateDetail
                               candidate={selectedCandidate}
                               candidates={candidates}
                               onSendInvite={handleSendInvite}
+                              updateCandidateEmail={updateCandidateEmail}
+                              deductCredits={deductCredits}
                             />
                           )}
                         </div>
