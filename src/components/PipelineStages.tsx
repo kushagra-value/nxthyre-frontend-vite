@@ -438,12 +438,16 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         return {
           interviewedDate: "", // Placeholder; no interview date provided in API
           resumeScore:
-            Number(contextualDetails.ai_interview_report?.resume_score) || 0,
+            Number(contextualDetails.ai_interview_report?.score?.resume) || 0,
           knowledgeScore:
-            Number(contextualDetails.ai_interview_report?.knowledge_score) || 0,
+            Number(contextualDetails.ai_interview_report?.score?.knowledge) ||
+            0,
+          technicalScore:
+            Number(contextualDetails.ai_interview_report?.score?.technical) ||
+            0,
           communicationScore:
             Number(
-              contextualDetails.ai_interview_report?.communication_score
+              contextualDetails.ai_interview_report?.score?.communication
             ) || 0,
           integrityScore:
             Number(contextualDetails.ai_interview_report?.integrity_score) || 0,
