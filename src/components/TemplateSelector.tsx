@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, Bold, Italic, Link, List, MoreHorizontal, ArrowLeft, Mail, MessageSquare, Phone, Bot, Eye, Settings, Send, X } from 'lucide-react';
+import { ChevronDown, Bold, Italic, Link, List, MoreHorizontal, ArrowLeft, Mail, MessageSquare, Phone, Settings, Send, X } from 'lucide-react';
 import { showToast } from '../utils/toast';
 import { CandidateListItem, Template, candidateService } from '../services/candidateService';
+import CKEditor from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 interface TemplateSelectorProps {
   candidate: CandidateListItem;
@@ -16,23 +18,19 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
   const [templateName, setTemplateName] = useState('');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
-  const [isBodyExpanded, setIsBodyExpanded] = useState(false);
-  const [showCreateTemplate, setShowCreateTemplate] = useState(false);
-  const [showTestEmail, setShowTestEmail] = useState(false);
-  const [showAdvanceOptions, setShowAdvanceOptions] = useState(false);
-  const [testEmail, setTestEmail] = useState('');
   const [sendViaEmail, setSendViaEmail] = useState(true);
   const [sendViaWhatsApp, setSendViaWhatsApp] = useState(false);
   const [sendViaPhone, setSendViaPhone] = useState(false);
-  const [followUpTemplates, setFollowUpTemplates] = useState<{send_after_hours: number; followup_mode: 'EMAIL' | 'WHATSAPP' | 'CALL';  followup_body: string; order_no: number }[]>([]);
+  const [followUpTemplates, setFollowUpTemplates] = useState<{ send_after_hours: number; followup_mode: 'EMAIL' | 'WHATSAPP' | 'CALL'; followup_body: string; order_no: number }[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showCreateTemplate, setShowCreateTemplate] = useState(false);
+  const [showAdvanceOptions, setShowAdvanceOptions] = useState(false);
 
   useEffect(() => {
     const fetchTemplates = async () => {
       setLoading(true);
       try {
         const data = await candidateService.getTemplates();
-        console.log('Fetched templates:', data);
         setTemplates(data);
       } catch (error) {
         showToast.error('Failed to fetch templates');
@@ -44,7 +42,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
   }, []);
 
   const handleTemplateSelect = (templateId: string) => {
-    console.log('Selected template ID:', templateId);
     if (templateId === 'create-new') {
       setShowCreateTemplate(true);
       setSelectedTemplate('');
@@ -67,14 +64,16 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
       setSendViaWhatsApp(template.can_be_sent_via_whatsapp);
       setSendViaPhone(template.can_be_sent_via_call);
       setFollowUpTemplates(template.follow_up_steps || []);
-    } else {
-      console.log('Template not found for ID:', templateId);
     }
   };
 
   const handleSaveTemplate = async () => {
     if (!templateName.trim()) {
       showToast.error('Please enter a template name');
+      return;
+    }
+    if (!sendViaEmail && !sendViaWhatsApp && !sendViaPhone) {
+      showToast.error('Please select at least one channel');
       return;
     }
     setLoading(true);
@@ -94,30 +93,19 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
       setShowCreateTemplate(false);
       showToast.success('Template saved successfully!');
     } catch (error) {
-      showToast.error('Failed to season template');
+      showToast.error('Failed to save template');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSendTestEmail = () => {
-    if (!testEmail) {
-      showToast.error('Please enter a test email address');
-      return;
-    }
-    setShowTestEmail(false);
-    showToast.success(`Test email sent to ${testEmail}`);
-  };
-
   const handleSendInvite = async () => {
-    console.log('Job ID:', jobId);
-    console.log('Candidate ID:', candidate.id);
     if (!jobId || !candidate.id) {
       showToast.error('Job ID and Candidate ID are required');
       return;
     }
-    if (!selectedTemplate && !body) {
-      showToast.error('Please select a template or enter email content');
+    if (!subject || !body || (!sendViaEmail && !sendViaWhatsApp && !sendViaPhone)) {
+      showToast.error('Please fill all fields and select at least one channel');
       return;
     }
     setLoading(true);
@@ -131,11 +119,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
         send_via_email: sendViaEmail,
         send_via_whatsapp: sendViaWhatsApp,
         send_via_phone: sendViaPhone,
-        followups:followUpTemplates,
+        followups: followUpTemplates,
       });
       showToast.success(`Invite sent successfully! Invite ID: ${response.invite_id}. Follow-ups scheduled.`);
-      updateCandidateEmail(candidate.id, response.candidate_email, response.candidate_email);
-      // Save template if edited
+      updateCandidateEmail(candidate.id, response.candidate_email, response.candidate_phone);
       if (selectedTemplate) {
         const updatedTemplate: Template = {
           id: selectedTemplate,
@@ -157,565 +144,182 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
     }
   };
 
+  const addFollowUp = () => {
+    setFollowUpTemplates([...followUpTemplates, { send_after_hours: 0, followup_mode: 'EMAIL', followup_body: '', order_no: followUpTemplates.length }]);
+  };
+
+  const updateFollowUp = (index: number, field: string, value: any) => {
+    const updated = [...followUpTemplates];
+    updated[index] = { ...updated[index], [field]: value };
+    setFollowUpTemplates(updated);
+  };
+
+  const removeFollowUp = (index: number) => {
+    setFollowUpTemplates(followUpTemplates.filter((_, i) => i !== index));
+  };
+
   return (
-    <>
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-4 h-fit">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <button 
-              onClick={onBack}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 text-gray-600" />
-            </button>
-            <h2 className="text-lg font-semibold text-gray-900">Send Invite</h2>
-          </div>
-        </div>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-lg">
+          <ArrowLeft className="w-4 h-4 text-gray-600" />
+        </button>
+        <h2 className="text-lg font-semibold text-gray-900">Create New Template</h2>
+        <div />
+      </div>
 
-        {/* Template Selection */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Select Template</label>
-          <div className="relative">
-            <select
-              key={selectedTemplate}
-              value={selectedTemplate}
-              onChange={(e) => handleTemplateSelect(e.target.value)}
-              className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
-              disabled={loading}
-            >
-              <option value="">Choose a template</option>
-              <option value="create-new" className="font-bold text-blue-600">+ Create New Template</option>
-              {templates.map((template) => (
-                <option key={template.id} value={template.id} className="hover:bg-blue-300">
-                  {template.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-          </div>
-        </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Template name</label>
+        <input
+          type="text"
+          value={templateName}
+          onChange={(e) => setTemplateName(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Enter template name"
+          disabled={loading}
+        />
+      </div>
 
-        {/* From Email */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">From</label>
-          <input
-            type="email"
-            value="yuvraj@nxthyre.com"
-            readOnly
-            className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
-          />
-        </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+        <CKEditor
+          editor={ClassicEditor}
+          data={subject}
+          onChange={(event:any, editor:any) => setSubject(editor.getData())}
+          config={{
+            toolbar: ['bold', 'italic', 'link', 'bulletedList', 'numberedList', 'undo', 'redo'],
+          }}
+        />
+      </div>
 
-        {/* Subject */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
-          <input
-            type="text"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            placeholder="Enter email subject"
-            className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            disabled={loading}
-          />
-        </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Paragraph</label>
+        <CKEditor
+          editor={ClassicEditor}
+          data={body}
+          onChange={(event:any, editor:any) => setBody(editor.getData())}
+          config={{
+            toolbar: ['bold', 'italic', 'link', 'bulletedList', 'numberedList', 'undo', 'redo'],
+          }}
+        />
+      </div>
 
-        {/* Body */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Body</label>
-          <div className="border border-gray-300 rounded-t-lg bg-gray-50 px-3 py-2 flex items-center space-x-2">
-            <select className="text-sm border-none bg-transparent">
-              <option>Paragraph</option>
-              <option>Heading 1</option>
-              <option>Heading 2</option>
-            </select>
-            <div className="w-px h-4 bg-gray-300"></div>
-            <button className="p-1 hover:bg-gray-200 rounded">
-              <Bold className="w-4 h-4" />
-            </button>
-            <button className="p-1 hover:bg-gray-200 rounded">
-              <Italic className="w-4 h-4" />
-            </button>
-            <button className="p-1 hover:bg-gray-200 rounded">
-              <Link className="w-4 h-4" />
-            </button>
-            <button className="p-1 hover:bg-gray-200 rounded">
-              <List className="w-4 h-4" />
-            </button>
-            <button className="p-1 hover:bg-gray-200 rounded">
-              <MoreHorizontal className="w-4 h-4" />
-            </button>
-          </div>
-          <textarea
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder="Enter email body..."
-            className={`text-sm w-full px-3 py-2 border-l border-r border-b border-gray-300 shadow-xl rounded-b-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${isBodyExpanded ? 'h-80' : 'h-40'}`}
-            disabled={loading}
-          />
-          {!isBodyExpanded && body.length > 150 && (
-            <div className="flex justify-center">
-              <button
-                onClick={() => setIsBodyExpanded(true)}
-                className="mt-1 text-sm text-blue-600 hover:text-blue-700"
-              >
-                View more
-              </button>
-            </div>
-          )}
-          {isBodyExpanded && (
-            <div className="flex justify-center">
-              <button
-                onClick={() => setIsBodyExpanded(false)}
-                className="mt-1 text-sm text-blue-600 hover:text-blue-700"
-              >
-                View less
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Follow-up Templates */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Follow-up Templates</label>
-          {followUpTemplates.map((followUp, index) => (
-            <div key={index} className="flex items-center mb-2 space-x-2">
-              <input
-                type="number"
-                value={followUp.send_after_hours}
-                onChange={(e) => {
-                  const updated = [...followUpTemplates];
-                  updated[index] = { ...updated[index], send_after_hours: Number(e.target.value) };
-                  setFollowUpTemplates(updated);
-                }}
-                className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Hours"
-                disabled={loading}
-              />
-              <select
-                value={followUp.followup_mode}
-                onChange={(e) => {
-                  const updated = [...followUpTemplates];
-                  updated[index] = { ...updated[index], followup_mode: e.target.value as 'EMAIL' | 'WHATSAPP' | 'CALL' };
-                  setFollowUpTemplates(updated);
-                }}
-                className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                disabled={loading}
-              >
-                <option value="EMAIL">Email</option>
-                <option value="WHATSAPP">WhatsApp</option>
-                <option value="CALL">Call</option>
-              </select>
-              <input
-                type="text"
-                value={followUp.followup_body}
-                onChange={(e) => {
-                  const updated = [...followUpTemplates];
-                  updated[index] = { ...updated[index], followup_body: e.target.value };
-                  setFollowUpTemplates(updated);
-                }}
-                className="text-sm flex-1 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Body"
-                disabled={loading}
-              />
-              <button
-                onClick={() => setFollowUpTemplates(followUpTemplates.filter((_, i) => i !== index))}
-                className="ml-2 p-1 text-red-500 hover:text-red-700"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
+      <div>
+        <p className="text-sm text-gray-600 mb-2">The following will be sent to candidate via</p>
+        <div className="flex space-x-2">
           <button
-            onClick={() => setFollowUpTemplates([...followUpTemplates, { send_after_hours: 0, followup_mode: 'EMAIL', followup_body: '', order_no: followUpTemplates.length }])}
-            className="text-sm text-blue-600 hover:text-blue-700 mt-2"
+            onClick={() => setSendViaEmail(!sendViaEmail)}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendViaEmail ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
             disabled={loading}
           >
-            + Add Follow-up
+            <Mail className="w-4 h-4 inline mr-1" /> Email
           </button>
-        </div>
-
-        {/* Channel Selection */}
-        <div>
-          <p className="text-sm text-gray-600 mb-2">The following will be sent to candidate via</p>
-          <div className="flex justify-between">
-            {[
-              { name: 'email', icon: Mail, color: 'bg-blue-100 text-blue-800' },
-              { name: 'whatsApp', icon: MessageSquare, color: 'bg-green-100 text-green-800' },
-              { name: 'phone', icon: Phone, color: 'bg-orange-100 text-orange-800' },
-            ].map((channel) => (
-              <button
-                key={channel.name}
-                onClick={() => {
-                  if (channel.name === 'email') {
-                    setSendViaEmail(true);
-                  } else if (channel.name === 'whatsApp') {
-                    setSendViaWhatsApp(true);
-                  } else if (channel.name === 'phone') {
-                    setSendViaPhone(true);
-                  }
-                }}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  (channel.name === 'email' && sendViaEmail) ||
-                  (channel.name === 'whatsApp' && sendViaWhatsApp) ||
-                  (channel.name === 'phone' && sendViaPhone)
-                    ? channel.color
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-                disabled={loading}
-              >
-                <channel.icon className="w-4 h-4 inline mr-1" />
-                {channel.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="space-y-2 pt-4 border-t border-gray-200">
-          <div className="w-full flex justify-end">
-            <button
-              onClick={() => setShowAdvanceOptions(true)}
-              className="text-blue-600 text-xs hover:bg-blue-50 transition-colors flex items-center justify-end"
-              disabled={loading}
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              View Advance Options
-            </button>
-          </div>
-          <div className="flex justify-between space-x-8">
-            <button
-              onClick={() => setShowTestEmail(true)}
-              className="w-full px-4 py-2 text-xs text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"
-              disabled={loading}
-            >
-              Send test email
-            </button>
-            <button
-              onClick={handleSendInvite}
-              className="w-full px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center font-medium"
-              disabled={loading || !jobId || !candidate.id}
-            >
-              <Send className="w-4 h-4 mr-2" />
-              Send Invite
-            </button>
-          </div>
+          <button
+            onClick={() => setSendViaWhatsApp(!sendViaWhatsApp)}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendViaWhatsApp ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+            disabled={loading}
+          >
+            <MessageSquare className="w-4 h-4 inline mr-1" /> WhatsApp
+          </button>
+          <button
+            onClick={() => setSendViaPhone(!sendViaPhone)}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendViaPhone ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+            disabled={loading}
+          >
+            <Phone className="w-4 h-4 inline mr-1" /> Call
+          </button>
         </div>
       </div>
 
-      {/* Create Template Slide Panel */}
-      {showCreateTemplate && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-          <div 
-            className={`bg-white h-full transform transition-transform duration-300 ease-out ${
-              showCreateTemplate ? 'translate-x-0' : 'translate-x-full'
-            }`}
-            style={{ width: '500px' }}
-          >
-            <div className="p-6 h-full flex flex-col">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold">Create New Template</h3>
-                <button
-                  onClick={() => setShowCreateTemplate(false)}
-                  className="p-1 hover:bg-gray-100 rounded"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="space-y-4 flex-1">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Template Name</label>
-                  <input
-                    type="text"
-                    value={templateName}
-                    onChange={(e) => setTemplateName(e.target.value)}
-                    placeholder="Enter template name"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    disabled={loading}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                  <input
-                    type="text"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    placeholder="Enter email subject"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    disabled={loading}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Body</label>
-                  <textarea
-                    value={body}
-                    onChange={(e) => setBody(e.target.value)}
-                    placeholder="Enter email body..."
-                    className={`text-sm w-full px-3 py-2 border-l border-r border-b border-gray-300 shadow-xl rounded-b-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${
-                      isBodyExpanded ? 'h-80' : 'h-40'
-                    }`}
-                    disabled={loading}
-                  />
-                  {!isBodyExpanded && body.length > 150 && (
-                    <div className="flex justify-center">
-                      <button
-                        onClick={() => setIsBodyExpanded(true)}
-                        className="mt-1 text-sm text-blue-600 hover:text-blue-700"
-                      >
-                        View more
-                      </button>
-                    </div>
-                  )}
-                  {isBodyExpanded && (
-                    <div className="flex justify-center">
-                      <button
-                        onClick={() => setIsBodyExpanded(false)}
-                        className="mt-1 text-sm text-blue-600 hover:text-blue-700"
-                      >
-                        View less
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Channel Options</label>
-                  <div className="space-y-2">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={sendViaEmail}
-                        onChange={(e) => setSendViaEmail(e.target.checked)}
-                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                        disabled={loading}
-                      />
-                      <span className="ml-2 text-sm text-gray-700">Email</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={sendViaWhatsApp}
-                        onChange={(e) => setSendViaWhatsApp(e.target.checked)}
-                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                        disabled={loading}
-                      />
-                      <span className="ml-2 text-sm text-gray-700">WhatsApp</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={sendViaPhone}
-                        onChange={(e) => setSendViaPhone(e.target.checked)}
-                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                        disabled={loading}
-                      />
-                      <span className="ml-2 text-sm text-gray-700">Call</span>
-                    </label>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Follow-up Templates</label>
-                  {followUpTemplates.map((followUp, index) => (
-                    <div key={index} className="flex items-center mb-2 space-x-2">
-                      <input
-                        type="number"
-                        value={followUp.send_after_hours}
-                        onChange={(e) => {
-                          const updated = [...followUpTemplates];
-                          updated[index] = { ...updated[index], send_after_hours: Number(e.target.value) };
-                          setFollowUpTemplates(updated);
-                        }}
-                        className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Hours"
-                        disabled={loading}
-                      />
-                      <select
-                        value={followUp.followup_mode}
-                        onChange={(e) => {
-                          const updated = [...followUpTemplates];
-                          updated[index] = { ...updated[index], followup_mode: e.target.value as 'EMAIL' | 'WHATSAPP' | 'CALL' };
-                          setFollowUpTemplates(updated);
-                        }}
-                        className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        disabled={loading}
-                      >
-                        <option value="EMAIL">Email</option>
-                        <option value="WHATSAPP">WhatsApp</option>
-                        <option value="CALL">Call</option>
-                      </select>
-                      <input
-                        type="text"
-                        value={followUp.followup_body}
-                        onChange={(e) => {
-                          const updated = [...followUpTemplates];
-                          updated[index] = { ...updated[index], followup_body: e.target.value };
-                          setFollowUpTemplates(updated);
-                        }}
-                        className="text-sm flex-1 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Body"
-                        disabled={loading}
-                      />
-                      <button
-                        onClick={() => setFollowUpTemplates(followUpTemplates.filter((_, i) => i !== index))}
-                        className="ml-2 p-1 text-red-500 hover:text-red-700"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    onClick={() => setFollowUpTemplates([...followUpTemplates, { send_after_hours: 0, followup_mode: 'EMAIL',  followup_body: '', order_no: followUpTemplates.length }])}
-                    className="text-sm text-blue-600 hover:text-blue-700 mt-2"
-                    disabled={loading}
-                  >
-                    + Add Follow-up
-                  </button>
-                </div>
-              </div>
-              <div className="flex space-x-3 pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => setShowCreateTemplate(false)}
-                  className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  disabled={loading}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveTemplate}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  disabled={loading}
-                >
-                  Save Template
-                </button>
-              </div>
-            </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Follow Up 1</label>
+        {followUpTemplates.map((followUp, index) => (
+          <div key={index} className="flex items-center mb-2 space-x-2">
+            <input
+              type="number"
+              value={followUp.send_after_hours}
+              onChange={(e) => updateFollowUp(index, 'send_after_hours', Number(e.target.value))}
+              className="w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Hours"
+              disabled={loading}
+            />
+            <select
+              value={followUp.followup_mode}
+              onChange={(e) => updateFollowUp(index, 'followup_mode', e.target.value as 'EMAIL' | 'WHATSAPP' | 'CALL')}
+              className="w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              disabled={loading}
+            >
+              <option value="EMAIL">Email</option>
+              <option value="WHATSAPP">WhatsApp</option>
+              <option value="CALL">Call</option>
+            </select>
+            <CKEditor
+              editor={ClassicEditor}
+              data={followUp.followup_body}
+              onChange={(event:any, editor:any) => updateFollowUp(index, 'followup_body', editor.getData())}
+              config={{
+                toolbar: ['bold', 'italic', 'link', 'bulletedList', 'numberedList', 'undo', 'redo'],
+              }}
+            />
+            <button onClick={() => removeFollowUp(index)} className="p-1 text-red-500 hover:text-red-700">
+              <X className="w-4 h-4" />
+            </button>
           </div>
-        </div>
-      )}
+        ))}
+        <button onClick={addFollowUp} className="text-sm text-blue-600 hover:text-blue-700 mt-2" disabled={loading}>
+          + Add Follow-up
+        </button>
+      </div>
 
-      {/* Test Email Slide Panel */}
-      {showTestEmail && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-          <div 
-            className={`bg-white h-full transform transition-transform duration-300 ease-out ${
-              showTestEmail ? 'translate-x-0' : 'translate-x-full'
-            }`}
-            style={{ width: '400px' }}
-          >
-            <div className="p-6 h-full flex flex-col">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold">Send Test Email</h3>
-                <button
-                  onClick={() => setShowTestEmail(false)}
-                  className="p-1 hover:bg-gray-100 rounded"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="space-y-4 flex-1">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Test Email Address</label>
-                  <input
-                    type="email"
-                    value={testEmail}
-                    onChange={(e) => setTestEmail(e.target.value)}
-                    placeholder="Enter email address"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-              <div className="flex space-x-3 pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => setShowTestEmail(false)}
-                  className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  disabled={loading}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSendTestEmail}
-                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                  disabled={loading}
-                >
-                  Send Test
-                </button>
-              </div>
+      <div className="border-t pt-4">
+        <button
+          onClick={() => setShowAdvanceOptions(!showAdvanceOptions)}
+          className="text-blue-600 text-xs hover:bg-blue-50 flex items-center"
+        >
+          <Settings className="w-4 h-4 mr-2" /> {showAdvanceOptions ? 'Hide' : 'View'} Advance Options
+        </button>
+        {showAdvanceOptions && (
+          <div className="mt-2 space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <select className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                <option>Immediate</option>
+                <option>1 hour</option>
+                <option>1 day</option>
+                <option>1 week</option>
+              </select>
+              <select className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                <option>Normal</option>
+                <option>High</option>
+                <option>Low</option>
+              </select>
             </div>
+            <label className="flex items-center">
+              <input type="checkbox" className="w-4 h-4 text-blue-500" /> <span className="ml-2 text-sm">Track email opens</span>
+            </label>
+            <label className="flex items-center">
+              <input type="checkbox" className="w-4 h-4 text-blue-500" /> <span className="ml-2 text-sm">Track link clicks</span>
+            </label>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Advance Options Slide Panel */}
-      {showAdvanceOptions && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-          <div 
-            className={`bg-white h-full transform transition-transform duration-300 ease-out ${
-              showAdvanceOptions ? 'translate-x-0' : 'translate-x-full'
-            }`}
-            style={{ width: '400px' }}
-          >
-            <div className="p-6 h-full flex flex-col">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold">Advanced Options</h3>
-                <button
-                  onClick={() => setShowAdvanceOptions(false)}
-                  className="p-1 hover:bg-gray-100 rounded"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="space-y-4 flex-1">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Send Delay</label>
-                    <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                      <option>Immediate</option>
-                      <option>1 hour</option>
-                      <option>1 day</option>
-                      <option>1 week</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-                    <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                      <option>Normal</option>
-                      <option>High</option>
-                      <option>Low</option>
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500" />
-                    <span className="ml-2 text-sm text-gray-700">Track email opens</span>
-                  </label>
-                </div>
-                <div>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500" />
-                    <span className="ml-2 text-sm text-gray-700">Track link clicks</span>
-                  </label>
-                </div>
-              </div>
-              <div className="flex space-x-3 pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => setShowAdvanceOptions(false)}
-                  className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => setShowAdvanceOptions(false)}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Apply Settings
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+      <div className="flex justify-between space-x-2">
+        <button
+          onClick={onBack}
+          className="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+          disabled={loading}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSaveTemplate}
+          className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          disabled={loading || !templateName || !subject || !body || (!sendViaEmail && !sendViaWhatsApp && !sendViaPhone)}
+        >
+          <Send className="w-4 h-4 inline mr-1" /> Send
+        </button>
+      </div>
+    </div>
   );
 };
 
