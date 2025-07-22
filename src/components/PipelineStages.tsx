@@ -658,10 +658,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       );
     }
 
-    const stageData =
-      selectedCandidate.stageData[
-        selectedStage.toLowerCase().replace(" ", "-")
-      ];
+    const stageData = selectedCandidate.stageData;
 
     switch (selectedStage) {
       case "Uncontacted":
