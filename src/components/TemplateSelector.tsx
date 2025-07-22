@@ -194,7 +194,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Paragraph</label>
-        <CKEditorComponent
+        <CKEditor
           editor={ClassicEditor}
           data={body}
           onChange={(event:any, editor:any) => setBody(editor.getData())}
