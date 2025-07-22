@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, Bold, Italic, Link, List, MoreHorizontal, ArrowLeft, Mail, MessageSquare, Phone, Settings, Send, X } from 'lucide-react';
 import { showToast } from '../utils/toast';
 import { CandidateListItem, Template, candidateService } from '../services/candidateService';
-import CKEditor from '@ckeditor/ckeditor5-react';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 interface TemplateSelectorProps {
@@ -194,7 +194,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Paragraph</label>
-        <CKEditor
+        <CKEditorComponent
           editor={ClassicEditor}
           data={body}
           onChange={(event:any, editor:any) => setBody(editor.getData())}
