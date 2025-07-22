@@ -3,6 +3,8 @@ import apiClient from "./api";
 export interface CandidateListItem {
   id: string;
   full_name: string;
+  candidate_email: string;
+  candidate_phone:string;
   avatar: string;
   headline: string;
   location: string;
@@ -33,6 +35,8 @@ export interface CandidateDetailData {
   candidate: {
     id: string;
     full_name: string;
+    candidate_email: string;
+    candidate_phone:string;
     headline: string;
     location: string;
     profile_picture_url: string;
@@ -143,6 +147,31 @@ export interface ShareableProfileSensitiveCandidate {
   }[];
 }
 
+
+export interface Template {
+  id?: string;
+  name: string;
+  initial_subject: string;
+  initial_body: string;
+  can_be_sent_via_email: boolean;
+  can_be_sent_via_whatsapp: boolean;
+  can_be_sent_via_call: boolean;
+  follow_up_steps?: {
+    send_after_hours: number;
+    followup_mode: 'EMAIL' | 'WHATSAPP' | 'CALL';
+    followup_body: string;
+    order_no: number;
+  }[];
+}
+
+export interface InviteResponse {
+  success: string;
+  invite_id: number;
+  candidate_email: string;
+  candidate_name: string;
+  candidate_phone: string;
+}
+
 class CandidateService {
   async getCandidates(filters: any): Promise<{ results: CandidateListItem[]; count: number }> {
     try {
@@ -191,6 +220,38 @@ class CandidateService {
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to fetch shareable profile");
     }
+  }
+
+  async getTemplates(): Promise<Template[]> {
+    const response = await apiClient.get('/jobs/notification-templates/');
+    return response.data;
+  }
+
+  async saveTemplate(template: Template): Promise<Template> {
+    if (template.id) {
+      // Update existing template
+      const response = await apiClient.put(`/jobs/notification-templates/${template.id}/`, template);
+      return response.data;
+    } else {
+      // Create new template
+      const response = await apiClient.post('/jobs/notification-templates/', template);
+      return response.data;
+    }
+  }
+
+  async sendInvite(data: { 
+    candidate_id: string; 
+    template_id?: string; 
+    job_id: string; 
+    subject: string; 
+    message_body: string; 
+    send_via_email: boolean;
+    send_via_whatsapp: boolean;
+    send_via_phone: boolean;
+    followups: { send_after_hours: number; followup_mode: 'EMAIL' | 'WHATSAPP' | 'CALL'; followup_body: string; order_no: number }[] 
+  }): Promise<InviteResponse> {
+    const response = await apiClient.post('/jobs/invite/', data);
+    return response.data;
   }
 }
 
