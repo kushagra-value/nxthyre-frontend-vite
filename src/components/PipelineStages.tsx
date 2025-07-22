@@ -418,7 +418,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     }
   };
 
-  const mapStageData = (slug: string, contextualDetails: any) => {
+  const mapStageData = (
+    slug: string,
+    contextualDetails: any,
+    aiInterviewReport?: any
+  ) => {
     switch (slug) {
       case "applied":
         return {
@@ -435,42 +439,24 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         };
       case "ai-interview":
       case "shortlisted":
+        const report =
+          aiInterviewReport || contextualDetails.ai_interview_report || {};
         return {
           interviewedDate: "", // Placeholder; no interview date provided in API
-          resumeScore:
-            Number(contextualDetails.ai_interview_report?.score?.resume) || 0,
-          knowledgeScore:
-            Number(contextualDetails.ai_interview_report?.score?.knowledge) ||
-            0,
-          technicalScore:
-            Number(contextualDetails.ai_interview_report?.score?.technical) ||
-            0,
-          communicationScore:
-            Number(
-              contextualDetails.ai_interview_report?.score?.communication
-            ) || 0,
-          integrityScore:
-            Number(contextualDetails.ai_interview_report?.integrity_score) || 0,
+          resumeScore: Number(report.score?.resume) || 0,
+          knowledgeScore: Number(report.score?.knowledge) || 0,
+          technicalScore: Number(report.score?.technical) || 0,
+          communicationScore: Number(report.score?.communication) || 0,
+          integrityScore: Number(report.integrity_score) || 0,
           proctoring: {
-            deviceUsage:
-              Number(
-                contextualDetails.ai_interview_report?.proctoring?.device_usage
-              ) || 0,
-            assistance:
-              Number(
-                contextualDetails.ai_interview_report?.proctoring?.assistance
-              ) || 0,
+            deviceUsage: Number(report.integrity_score?.device_usage) || 0,
+            assistance: Number(report.integrity_score?.assistance) || 0,
             referenceMaterial:
-              Number(
-                contextualDetails.ai_interview_report?.proctoring
-                  ?.reference_material
-              ) || 0,
+              Number(report.integrity_score?.reference_materials) || 0,
             environment:
-              Number(
-                contextualDetails.ai_interview_report?.proctoring?.environment
-              ) || 0,
+              Number(report.integrity_score?.environmental_assistance) || 0,
           },
-          questions: contextualDetails.ai_interview_report?.questions || [],
+          questions: report.QA_analysis || [],
           notes: contextualDetails.candidate_notes || [],
         };
       default:
@@ -485,7 +471,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     const stageProperty = data.current_stage_details.slug; // Use slug directly
     const mappedStageData = mapStageData(
       data.current_stage_details.slug,
-      data.contextual_details
+      data.contextual_details,
+      data.candidate.ai_interview_report
     );
 
     return {
