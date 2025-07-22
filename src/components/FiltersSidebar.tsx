@@ -665,20 +665,20 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 onChange={(e) => updateFilters("minSalary", e.target.value)}
                 className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="5">5 LPA</option>
-                <option value="10">10 LPA</option>
-                <option value="15">15 LPA</option>
-                <option value="20">20 LPA</option>
+                <option value="500000">5 LPA</option>
+                <option value="1000000">10 LPA</option>
+                <option value="1500000">15 LPA</option>
+                <option value="2000000">20 LPA</option>
               </select>
               <select
                 value={filters.maxSalary}
                 onChange={(e) => updateFilters("maxSalary", e.target.value)}
                 className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="10">10 LPA</option>
-                <option value="20">20 LPA</option>
-                <option value="30">30 LPA</option>
-                <option value="50">50 LPA</option>
+                <option value="1000000">10 LPA</option>
+                <option value="2000000">20 LPA</option>
+                <option value="3000000">30 LPA</option>
+                <option value="5000000">50 LPA</option>
               </select>
             </div>
           </div>
