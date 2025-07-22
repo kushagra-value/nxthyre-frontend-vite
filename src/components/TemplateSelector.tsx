@@ -59,7 +59,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
       setFollowUpTemplates([]);
       return;
     }
-    const template = templates.find(t => t.id === templateId);
+    const template = templates.find(t => t.id === Number(templateId));
     if (template) {
       setSelectedTemplate(templateId);
       setTemplateName(template.name);
@@ -68,7 +68,12 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
       setSendViaEmail(template.can_be_sent_via_email);
       setSendViaWhatsApp(template.can_be_sent_via_whatsapp);
       setSendViaPhone(template.can_be_sent_via_call);
-      setFollowUpTemplates(template.follow_up_steps || []);
+      setFollowUpTemplates(template.follow_up_steps.map(step => ({
+        send_after_hours: step.send_after_hours,
+        followup_mode: step.mode as 'EMAIL' | 'WHATSAPP' | 'CALL', // Adjust casing
+        followup_body: step.body,
+        order_no: step.order,
+      })));
     } else {
       console.log('Template not found for ID:', templateId);
     }
@@ -86,14 +91,21 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
     setLoading(true);
     try {
       const newTemplate: Template = {
-        id: selectedTemplate || undefined,
+        id: selectedTemplate ? Number(selectedTemplate) : 0,
         name: templateName,
         initial_subject: subject,
         initial_body: body,
         can_be_sent_via_email: sendViaEmail,
         can_be_sent_via_whatsapp: sendViaWhatsApp,
         can_be_sent_via_call: sendViaPhone,
-        follow_up_steps: followUpTemplates,
+        follow_up_steps: followUpTemplates.map((step, index) => ({
+          id: step.order_no + 1, // Adjust ID logic as per your API
+          send_after_hours: step.send_after_hours,
+          mode: step.followup_mode,
+          subject: '', // Add subject if required by API
+          body: step.followup_body,
+          order: index,
+        })),
       };
       const savedTemplate = await candidateService.saveTemplate(newTemplate);
       setTemplates([...templates.filter(t => t.id !== savedTemplate.id), savedTemplate]);
@@ -143,14 +155,21 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
       updateCandidateEmail(candidate.id, response.candidate_email, response.candidate_phone);
       if (selectedTemplate) {
         const updatedTemplate: Template = {
-          id: selectedTemplate,
+          id: Number(selectedTemplate),
           name: templateName,
           initial_subject: subject,
           initial_body: body,
           can_be_sent_via_email: sendViaEmail,
           can_be_sent_via_whatsapp: sendViaWhatsApp,
           can_be_sent_via_call: sendViaPhone,
-          follow_up_steps: followUpTemplates,
+          follow_up_steps: followUpTemplates.map((step, index) => ({
+            id: step.order_no + 1,
+            send_after_hours: step.send_after_hours,
+            mode: step.followup_mode,
+            subject: '', // Add subject if required
+            body: step.followup_body,
+            order: index,
+          })),
         };
         await candidateService.saveTemplate(updatedTemplate);
       }
@@ -581,78 +600,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
             </div>
           </div>
         </div>
-      )}
-
-      {/* Advance Options Slide Panel */}
-      {showAdvanceOptions && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-          <div 
-            className={`bg-white h-full transform transition-transform duration-300 ease-out ${
-              showAdvanceOptions ? 'translate-x-0' : 'translate-x-full'
-            }`}
-            style={{ width: '400px' }}
-          >
-            <div className="p-6 h-full flex flex-col">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold">Advanced Options</h3>
-                <button
-                  onClick={() => setShowAdvanceOptions(false)}
-                  className="p-1 hover:bg-gray-100 rounded"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="space-y-4 flex-1">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Send Delay</label>
-                    <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                      <option>Immediate</option>
-                      <option>1 hour</option>
-                      <option>1 day</option>
-                      <option>1 week</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-                    <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                      <option>Normal</option>
-                      <option>High</option>
-                      <option>Low</option>
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500" />
-                    <span className="ml-2 text-sm text-gray-700">Track email opens</span>
-                  </label>
-                </div>
-                <div>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500" />
-                    <span className="ml-2 text-sm text-gray-700">Track link clicks</span>
-                  </label>
-                </div>
-              </div>
-              <div className="flex space-x-3 pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => setShowAdvanceOptions(false)}
-                  className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => setShowAdvanceOptions(false)}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Apply Settings
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      )}      
     </>
   );
 };
