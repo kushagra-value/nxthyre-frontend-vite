@@ -157,12 +157,10 @@ export interface Template {
   can_be_sent_via_whatsapp: boolean;
   can_be_sent_via_call: boolean;
   follow_up_steps?: {
-    id?: string;
     send_after_hours: number;
-    mode: 'EMAIL' | 'WHATSAPP' | 'CALL';
-    subject: string;
-    body: string;
-    order: number;
+    followup_mode: 'EMAIL' | 'WHATSAPP' | 'CALL';
+    followup_body: string;
+    order_no: number;
   }[];
 }
 
@@ -246,11 +244,11 @@ class CandidateService {
     template_id?: string; 
     job_id: string; 
     subject: string; 
-    body: string; 
+    message_body: string; 
     send_via_email: boolean;
     send_via_whatsapp: boolean;
     send_via_phone: boolean;
-    followUpTemplates: { send_after_hours: number; mode: 'EMAIL' | 'WHATSAPP' | 'CALL'; subject: string; body: string; order: number }[] 
+    followups: { send_after_hours: number; followup_mode: 'EMAIL' | 'WHATSAPP' | 'CALL'; followup_body: string; order_no: number }[] 
   }): Promise<InviteResponse> {
     const response = await apiClient.post('/jobs/invite/', data);
     return response.data;

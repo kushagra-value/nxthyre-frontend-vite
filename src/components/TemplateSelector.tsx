@@ -24,7 +24,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
   const [sendViaEmail, setSendViaEmail] = useState(true);
   const [sendViaWhatsApp, setSendViaWhatsApp] = useState(false);
   const [sendViaPhone, setSendViaPhone] = useState(false);
-  const [followUpTemplates, setFollowUpTemplates] = useState<{ id?: string; send_after_hours: number; mode: 'EMAIL' | 'WHATSAPP' | 'CALL'; subject: string; body: string; order: number }[]>([]);
+  const [followUpTemplates, setFollowUpTemplates] = useState<{send_after_hours: number; followup_mode: 'EMAIL' | 'WHATSAPP' | 'CALL';  followup_body: string; order_no: number }[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -127,11 +127,11 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
         template_id: selectedTemplate || undefined,
         job_id: jobId,
         subject,
-        body,
+        message_body: body,
         send_via_email: sendViaEmail,
         send_via_whatsapp: sendViaWhatsApp,
         send_via_phone: sendViaPhone,
-        followUpTemplates,
+        followups:followUpTemplates,
       });
       showToast.success(`Invite sent successfully! Invite ID: ${response.invite_id}. Follow-ups scheduled.`);
       updateCandidateEmail(candidate.id, response.candidate_email, response.candidate_email);
@@ -293,10 +293,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
                 disabled={loading}
               />
               <select
-                value={followUp.mode}
+                value={followUp.followup_mode}
                 onChange={(e) => {
                   const updated = [...followUpTemplates];
-                  updated[index] = { ...updated[index], mode: e.target.value as 'EMAIL' | 'WHATSAPP' | 'CALL' };
+                  updated[index] = { ...updated[index], followup_mode: e.target.value as 'EMAIL' | 'WHATSAPP' | 'CALL' };
                   setFollowUpTemplates(updated);
                 }}
                 className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -308,22 +308,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
               </select>
               <input
                 type="text"
-                value={followUp.subject}
+                value={followUp.followup_body}
                 onChange={(e) => {
                   const updated = [...followUpTemplates];
-                  updated[index] = { ...updated[index], subject: e.target.value };
-                  setFollowUpTemplates(updated);
-                }}
-                className="text-sm flex-1 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Subject"
-                disabled={loading}
-              />
-              <input
-                type="text"
-                value={followUp.body}
-                onChange={(e) => {
-                  const updated = [...followUpTemplates];
-                  updated[index] = { ...updated[index], body: e.target.value };
+                  updated[index] = { ...updated[index], followup_body: e.target.value };
                   setFollowUpTemplates(updated);
                 }}
                 className="text-sm flex-1 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -339,7 +327,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
             </div>
           ))}
           <button
-            onClick={() => setFollowUpTemplates([...followUpTemplates, { send_after_hours: 0, mode: 'EMAIL', subject: '', body: '', order: followUpTemplates.length }])}
+            onClick={() => setFollowUpTemplates([...followUpTemplates, { send_after_hours: 0, followup_mode: 'EMAIL', followup_body: '', order_no: followUpTemplates.length }])}
             className="text-sm text-blue-600 hover:text-blue-700 mt-2"
             disabled={loading}
           >
@@ -361,15 +349,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
                 onClick={() => {
                   if (channel.name === 'email') {
                     setSendViaEmail(true);
-                    setSendViaWhatsApp(false);
-                    setSendViaPhone(false);
                   } else if (channel.name === 'whatsApp') {
-                    setSendViaEmail(false);
                     setSendViaWhatsApp(true);
-                    setSendViaPhone(false);
                   } else if (channel.name === 'phone') {
-                    setSendViaEmail(false);
-                    setSendViaWhatsApp(false);
                     setSendViaPhone(true);
                   }
                 }}
@@ -547,10 +529,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
                         disabled={loading}
                       />
                       <select
-                        value={followUp.mode}
+                        value={followUp.followup_mode}
                         onChange={(e) => {
                           const updated = [...followUpTemplates];
-                          updated[index] = { ...updated[index], mode: e.target.value as 'EMAIL' | 'WHATSAPP' | 'CALL' };
+                          updated[index] = { ...updated[index], followup_mode: e.target.value as 'EMAIL' | 'WHATSAPP' | 'CALL' };
                           setFollowUpTemplates(updated);
                         }}
                         className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -562,22 +544,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
                       </select>
                       <input
                         type="text"
-                        value={followUp.subject}
+                        value={followUp.followup_body}
                         onChange={(e) => {
                           const updated = [...followUpTemplates];
-                          updated[index] = { ...updated[index], subject: e.target.value };
-                          setFollowUpTemplates(updated);
-                        }}
-                        className="text-sm flex-1 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Subject"
-                        disabled={loading}
-                      />
-                      <input
-                        type="text"
-                        value={followUp.body}
-                        onChange={(e) => {
-                          const updated = [...followUpTemplates];
-                          updated[index] = { ...updated[index], body: e.target.value };
+                          updated[index] = { ...updated[index], followup_body: e.target.value };
                           setFollowUpTemplates(updated);
                         }}
                         className="text-sm flex-1 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -593,7 +563,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
                     </div>
                   ))}
                   <button
-                    onClick={() => setFollowUpTemplates([...followUpTemplates, { send_after_hours: 0, mode: 'EMAIL', subject: '', body: '', order: followUpTemplates.length }])}
+                    onClick={() => setFollowUpTemplates([...followUpTemplates, { send_after_hours: 0, followup_mode: 'EMAIL',  followup_body: '', order_no: followUpTemplates.length }])}
                     className="text-sm text-blue-600 hover:text-blue-700 mt-2"
                     disabled={loading}
                   >
