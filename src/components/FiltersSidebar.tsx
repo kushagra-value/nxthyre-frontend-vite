@@ -287,7 +287,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       } finally {
         setIsLoading(false);
       }
-    }, 1000),
+    }, 3000),
     [setCandidates]
   );
 
@@ -309,16 +309,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         filterParams.is_top_tier_college = filters.topTierUniversities;
       if (filters.hasCertification)
         filterParams.has_certification = filters.hasCertification;
-      if (!isLocationManuallyEdited) {
-          let newLocation = "";
-          if (filters.city && filters.country) {
-            newLocation = `${filters.city}, ${filters.country}`; // Case 3
-          } else if (filters.city) {
-            newLocation = filters.city; // Case 1
-          } else if (filters.country) {
-            newLocation = filters.country; // Case 2
-          }
-        }
+      if (filters.location) filterParams.location = filters.location;
       if (filters.selectedSkills.length > 0)
         filterParams.skills = filters.selectedSkills.join(",");
       if (filters.companies)
@@ -371,8 +362,28 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   };
 
   const updateFilters = (key: string, value: any) => {
-    const newFilters = { ...filters, [key]: value };
+    let newFilters = { ...filters, [key]: value };
     // Validate numeric fields
+    
+    if (key === "city" || key === "country") {
+      setIsLocationManuallyEdited(false);
+      const newCity = key === "city" ? value : filters.city;
+      const newCountry = key === "country" ? value : filters.country;
+      let newLocation = "";
+      if (newCity && newCountry) {
+        newLocation = `${newCity}, ${newCountry}`; // Case 3
+      } else if (newCity) {
+        newLocation = newCity; // Case 1
+      } else if (newCountry) {
+        newLocation = newCountry; // Case 2
+      }
+      newFilters = { ...newFilters, location: newLocation };
+    }
+
+    if (key === "location") {
+      setIsLocationManuallyEdited(true);
+    }
+    
     if (
       key === "minTotalExp" &&
       newFilters.maxTotalExp &&
@@ -406,13 +417,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       return;
     }
 
-    if (key === "location") {
-      setIsLocationManuallyEdited(true);
-    }
-    // Reset manual edit flag if city or country is changed
-    if (key === "city" || key === "country") {
-      setIsLocationManuallyEdited(false);
-    }
 
     onFiltersChange(newFilters);
   };
