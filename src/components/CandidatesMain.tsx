@@ -663,7 +663,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   {showDropdown === candidate.id && (
                     <div 
                       ref={dropdownRef}
-                      className="absolute left-0 mt-10 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+                      className="absolute left-16 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
                     >
                       <div className="py-1">
                         {pipelineStages.map((stage) => (
