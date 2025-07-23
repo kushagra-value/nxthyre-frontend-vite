@@ -318,10 +318,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           } else if (filters.country) {
             newLocation = filters.country; // Case 2
           }
-          // Update location only if it differs from the current value to avoid infinite loops
-          if (newLocation !== filters.location) {
-            onFiltersChange({ ...filters, location: newLocation });
-          }
         }
       if (filters.selectedSkills.length > 0)
         filterParams.skills = filters.selectedSkills.join(",");
