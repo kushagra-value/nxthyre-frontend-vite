@@ -89,10 +89,20 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
             domain: org.domain || null,
           })
         );
+
+        // Filter organizations based on user roles
+        const userOrgIds =
+          userStatus?.roles
+            ?.filter((role: any) => role.scope === "ORGANIZATION")
+            ?.map((role: any) => role.organization_id) || [];
+        const authorizedOrganizations = fetchedOrganizations.filter((org) =>
+          userOrgIds.includes(org.id)
+        );
+
         if (mounted) {
-          setOrganizations(fetchedOrganizations);
+          setOrganizations(authorizedOrganizations);
         }
-        console.log("Organizations fetched:", fetchedOrganizations);
+        console.log("Authorized organizations:", authorizedOrganizations);
 
         const fetchWorkspacesWithRetry = async (
           orgId: number,
@@ -118,13 +128,14 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
               await new Promise((resolve) => setTimeout(resolve, 2000));
               return fetchWorkspacesWithRetry(orgId, retries - 1);
             }
-            throw new Error(
+            console.error(
               `Failed to fetch workspaces for org ${orgId}: ${error.message}`
             );
+            return []; // Return empty array to continue with other organizations
           }
         };
 
-        const workspacePromises = fetchedOrganizations.map((org) =>
+        const workspacePromises = authorizedOrganizations.map((org) =>
           fetchWorkspacesWithRetry(org.id)
         );
         const allWorkspaces = (await Promise.all(workspacePromises)).flat();
@@ -135,9 +146,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
       } catch (error: any) {
         console.error("Error fetching data:", error);
         if (mounted) {
-          showToast.error(
-            "Failed to load organizations and workspaces. Please try refreshing."
-          );
+          showToast.error("Failed to load data. Please try refreshing.");
         }
       } finally {
         if (mounted) {
