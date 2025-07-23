@@ -189,6 +189,12 @@ export interface PipelineResponse {
   updated_at: string;
 }
 
+export interface BulkPipelineResponse {
+  message: string;
+  added_count: number;
+  skipped_count: number;
+}
+
 class CandidateService {
   async getCandidates(filters: any): Promise<{ results: CandidateListItem[]; count: number }> {
     try {
@@ -303,6 +309,18 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to save candidate to pipeline");
+    }
+  }
+
+  async bulkAddToPipeline(jobId: number, candidateIds: string[]): Promise<BulkPipelineResponse> {
+    try {
+      const response = await apiClient.post('/jobs/bulk-add-to-pipeline/', {
+        job: jobId,
+        candidate_ids: candidateIds
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to add candidates to pipeline");
     }
   }
 }

@@ -12,7 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { candidateService, CandidateListItem, PipelineResponse } from "../services/candidateService";
+import { candidateService, CandidateListItem, PipelineResponse, BulkPipelineResponse } from "../services/candidateService";
 import { showToast } from '../utils/toast';
 
 interface CandidatesMainProps {
@@ -83,6 +83,22 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       setSelectedCandidates(currentCandidates.map((candidate) => candidate.id));
     } else {
       setSelectedCandidates([]);
+    }
+  };
+
+  const handleBulkAddToPipeline = async () => {
+    if (selectedCandidates.length === 0) {
+      showToast.error('Please select at least one candidate');
+      return;
+    }
+
+    try {
+      const response: BulkPipelineResponse = await candidateService.bulkAddToPipeline(parseInt(jobId), selectedCandidates);
+      showToast.success(response.message);
+      setSelectedCandidates([]);
+      setSelectAll(false);
+    } catch (error: any) {
+      showToast.error(error.message || 'Failed to add candidates to pipeline');
     }
   };
 
@@ -205,7 +221,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 />
                 <span className="ml-2 text-sm text-gray-600">Select all</span>
               </label>
-              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
+              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center" onClick={handleBulkAddToPipeline}>
                 Add To Pipeline
               </button>
               <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
@@ -315,7 +331,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 />
                 <span className="ml-2 text-sm text-gray-600">Select all</span>
               </label>
-              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
+              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center" onClick={handleBulkAddToPipeline}>
                 Add To Pipeline
               </button>
               <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
@@ -424,7 +440,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               />
               <span className="ml-2 text-sm text-gray-600">Select all</span>
             </label>
-            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
+            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center" >
               Add To Pipeline
             </button>
             <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
