@@ -12,7 +12,8 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { candidateService, CandidateListItem } from "../services/candidateService";
+import { candidateService, CandidateListItem, PipelineResponse } from "../services/candidateService";
+import { showToast } from '../utils/toast';
 
 interface CandidatesMainProps {
   activeTab: string;
@@ -94,6 +95,15 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const handleCandidateClick = async (candidate: CandidateListItem) => {
     setSelectedCandidate(candidate);
     await deductCredits();
+  };
+
+  const handleSaveToPipeline = async (candidateId: string) => {
+    try {
+      const response: PipelineResponse = await candidateService.saveToPipeline(parseInt(jobId), candidateId);
+      showToast.success(`Candidate successfully added to pipeline (ID: ${response.id})`);
+    } catch (error: any) {
+      showToast.error(error.message || 'Failed to save candidate to pipeline');
+    }
   };
 
   const getAvatarColor = (name: string) => "bg-blue-500";
@@ -602,7 +612,10 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   ))}
                 </div>
                 <div className="rounded-md flex space-x-2 rounde-lg border border-blue-400 hover:border-blue-600 transition-colors">
-                  <button className="pl-3 pr-2 py-1.5 bg-white text-blue-600 text-sm font-medium flex items-center rounded-md">
+                  <button className="pl-3 pr-2 py-1.5 bg-white text-blue-600 text-sm font-medium flex items-center rounded-md" onClick={(e) => {
+                      e.stopPropagation();
+                      handleSaveToPipeline(candidate.id);
+                    }}>
                     <Bookmark className="w-4 h-4 mr-1" />
                     Save to Pipeline
                   </button>

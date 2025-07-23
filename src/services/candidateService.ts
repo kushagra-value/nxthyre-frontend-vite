@@ -178,6 +178,17 @@ export interface InviteResponse {
   candidate_phone: string;
 }
 
+export interface PipelineResponse {
+  id: number;
+  job: number;
+  candidate: string;
+  current_stage: number;
+  status: string;
+  added_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
 class CandidateService {
   async getCandidates(filters: any): Promise<{ results: CandidateListItem[]; count: number }> {
     try {
@@ -280,6 +291,18 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to update template");
+    }
+  }
+
+  async saveToPipeline(jobId: number, candidateId: string): Promise<PipelineResponse> {
+    try {
+      const response = await apiClient.post('/jobs/applications/', {
+        job: jobId,
+        candidate: candidateId
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to save candidate to pipeline");
     }
   }
 }
