@@ -287,7 +287,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       } finally {
         setIsLoading(false);
       }
-    }, 3000),
+    }, 1000),
     [setCandidates]
   );
 
