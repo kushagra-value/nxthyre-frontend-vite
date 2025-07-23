@@ -69,6 +69,9 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   const setSearchTerm = propSetSearchTerm || setLocalSearchTerm;
 
   useEffect(() => {
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000);
     const fetchData = async () => {
       // Wait until authentication is confirmed and userStatus is available
       if (!isAuthenticated || !userStatus) {
