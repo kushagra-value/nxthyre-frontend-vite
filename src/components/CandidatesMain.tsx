@@ -656,13 +656,14 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     <Bookmark className="w-4 h-4 mr-1" />
                     Save to Pipeline
                   </button>
+                  <div className="relative">
                   <button className="border-l border-l-blue-400 pl-1.5 pr-2 py-1.5" onClick={(e) => handleDropdownToggle(candidate.id, e)}>
                     <ChevronDown className="w-4 h-4 ml-1 mt-[2px] text-blue-600" />
                   </button>
                   {showDropdown === candidate.id && (
                     <div 
                       ref={dropdownRef}
-                      className="absolute right-0 mt-10 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+                      className="absolute left-0 mt-10 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
                     >
                       <div className="py-1">
                         {pipelineStages.map((stage) => (
@@ -680,6 +681,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                       </div>
                     </div>
                   )}
+                  </div>
                 </div>
               </div>
             </div>
