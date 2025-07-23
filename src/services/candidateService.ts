@@ -317,7 +317,7 @@ class CandidateService {
       if (stageId) {
         payload.current_stage = stageId;
       }
-      const response = await apiClient.post('/pipeline/', payload);
+      const response = await apiClient.post('/jobs/applications/', payload);
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to save candidate to pipeline");
