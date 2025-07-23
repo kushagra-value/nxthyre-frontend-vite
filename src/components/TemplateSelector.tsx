@@ -275,16 +275,15 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Follow-up Templates</label>
           {followUpTemplates.map((followUp, index) => (
-            <div key={index} className="flex flex-col items-center mb-2 space-x-2">
-              
-              <div>
+            <div key={index} className="flex flex-col items-start mb-2 space-x-2">
+              <div className='flex items-center mb-2 space-x-2'>
                 <button
                   onClick={() => removeFollowUp(index)}
                   className="ml-2 p-1 text-red-500 hover:text-red-700"
                 >
                   <X className="w-4 h-4" />
                 </button>
-              </div>
+              
               <div className='flex items-center gap-2'>
                 <span className="text-xs text-gray-500">Send After</span>
                 <input
@@ -317,6 +316,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
                   <option value="WHATSAPP">WhatsApp</option>
                   <option value="CALL">Call</option>
                 </select>
+              </div>
               </div>
               <div className='flex items-center gap-2'>
                 <span className="text-xs text-gray-500">Body</span>
