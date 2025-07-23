@@ -407,7 +407,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
      {showCreateTemplate && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
           <div 
-            className={`bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-md h-full transform transition-transform duration-300 ease-out p-4 space-y-4 ${
+            className={`bg-white w-full max-w-md w-full h-full transform transition-transform duration-300 ease-out p-4 space-y-4 ${
               showCreateTemplate ? 'translate-x-0' : 'translate-x-full'
             }`}
           >
