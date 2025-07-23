@@ -318,7 +318,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
           <label className="block text-sm font-medium text-gray-700 mb-2">Follow-ups</label>
           {followUpTemplates.map((followUp, index) => (
             <div key={index} className="flex flex-col items-start mb-2 space-x-2">
-              <div className='flex justify-between items-center'>
+              <div className='flex items-center mb-2 space-x-4'>
                 <button
                   onClick={() => removeFollowUp(index)}
                   className="ml-2 p-1 text-red-500 hover:text-red-700"
@@ -360,7 +360,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
                 </select>
               </div>
               </div>
-              <div className='flex items-center gap-2'>
+              <div className='flex items-center gap-2 w-full'>
                 <CKEditor
                 editor={ClassicEditor}
                 className="w-full"
@@ -383,7 +383,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
           </button>
         </div>
 
-
+        
           <div className="flex justify-between space-x-8">
             <button
               onClick={() => setShowTestEmail(true)}
