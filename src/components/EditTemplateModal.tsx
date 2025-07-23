@@ -179,9 +179,9 @@ Best regards,
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
       <div 
-        className={`bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-md h-full transform transition-transform duration-300 ease-out p-4 space-y-4 ${
+        className={`bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-xl max-h-[calc(100vh-2rem)] h-full transform transition-transform duration-300 ease-out p-4 space-y-4 ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -197,6 +197,7 @@ Best regards,
           </div>
         </div>
 
+        <div className="flex-1 overflow-y-auto space-y-4">
         {templates.length === 0 ? (
           <div className="text-center text-gray-600 py-8">
             No templates created yet. Please create a template.
@@ -239,7 +240,7 @@ Best regards,
               <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
               <CKEditor
                 editor={ClassicEditor}
-                data={formData.subject}
+                data={formData.templateName}
                 onChange={(event: any, editor: any) => setFormData({ ...formData, subject: editor.getData() })}
                 config={{
                   toolbar: ['bold', 'italic', 'link', 'bulletedList', 'numberedList', 'undo', 'redo'],
@@ -395,6 +396,7 @@ Best regards,
             </div>
           </>
         )}
+        </div>
       </div>
 
       {showTestEmail && (
