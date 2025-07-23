@@ -69,20 +69,18 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   const setSearchTerm = propSetSearchTerm || setLocalSearchTerm;
 
   useEffect(() => {
-    setTimeout(() => {
-      setLoading(false);
-    }, 2000);
+    let mounted = true;
+    let timeoutId: NodeJS.Timeout | null = null;
+
     const fetchData = async () => {
-      // Wait until authentication is confirmed and userStatus is available
-      if (!isAuthenticated || !userStatus) {
-        console.log("Authentication or user status not ready yet.");
+      if (!isAuthenticated || !userStatus || !mounted) {
+        console.log("Waiting for auth:", { isAuthenticated, userStatus });
         return;
       }
 
       try {
         setLoading(true);
-
-        // Fetch organizations
+        console.log("Fetching organizations...");
         const orgResponse = await organizationService.getOrganizations();
         const fetchedOrganizations: Organization[] = orgResponse.map(
           (org: any) => ({
@@ -91,14 +89,17 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
             domain: org.domain || null,
           })
         );
-        setOrganizations(fetchedOrganizations);
+        if (mounted) {
+          setOrganizations(fetchedOrganizations);
+        }
+        console.log("Organizations fetched:", fetchedOrganizations);
 
-        // Fetch workspaces with retry mechanism
         const fetchWorkspacesWithRetry = async (
           orgId: number,
           retries = 3
         ): Promise<Workspace[]> => {
           try {
+            console.log(`Fetching workspaces for org ${orgId}...`);
             const workspaceResponse = await organizationService.getWorkspaces(
               orgId
             );
@@ -112,13 +113,13 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
           } catch (error: any) {
             if (error.response?.status === 403 && retries > 0) {
               console.warn(
-                `403 Forbidden for org ${orgId}, retrying... (${retries} attempts left)`
+                `403 Forbidden for org ${orgId}, retrying... (${retries} left)`
               );
-              await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
+              await new Promise((resolve) => setTimeout(resolve, 2000));
               return fetchWorkspacesWithRetry(orgId, retries - 1);
             }
             throw new Error(
-              `Failed to fetch workspaces for organization ${orgId}: ${error.message}`
+              `Failed to fetch workspaces for org ${orgId}: ${error.message}`
             );
           }
         };
@@ -127,18 +128,37 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
           fetchWorkspacesWithRetry(org.id)
         );
         const allWorkspaces = (await Promise.all(workspacePromises)).flat();
-        setWorkspaces(allWorkspaces);
+        console.log("Workspaces fetched:", allWorkspaces);
+        if (mounted) {
+          setWorkspaces(allWorkspaces);
+        }
       } catch (error: any) {
         console.error("Error fetching data:", error);
-        showToast.error(
-          "Failed to load organizations and workspaces. Please try refreshing."
-        );
+        if (mounted) {
+          showToast.error(
+            "Failed to load organizations and workspaces. Please try refreshing."
+          );
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchData();
+    // Delay the fetch to ensure token is ready
+    timeoutId = setTimeout(() => {
+      if (mounted) {
+        fetchData();
+      }
+    }, 2000);
+
+    return () => {
+      mounted = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [isAuthenticated, userStatus]);
 
   if (loading) {
