@@ -440,7 +440,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               />
               <span className="ml-2 text-sm text-gray-600">Select all</span>
             </label>
-            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center" >
+            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center" onClick={handleBulkAddToPipeline} >
               Add To Pipeline
             </button>
             <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
