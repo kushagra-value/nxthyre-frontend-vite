@@ -404,136 +404,148 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
       </div>
 
       {/* Create Template Slide Panel */}
-      {showCreateTemplate && (
+     {showCreateTemplate && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
           <div 
-            className={`bg-white w-full h-full transform transition-transform duration-300 ease-out ${
+            className={`bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-md h-full transform transition-transform duration-300 ease-out p-4 space-y-4 ${
               showCreateTemplate ? 'translate-x-0' : 'translate-x-full'
             }`}
           >
-            <div className="p-6 h-full flex flex-col">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold">Create New Template</h3>
-                <button
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <button 
                   onClick={() => setShowCreateTemplate(false)}
-                  className="p-1 hover:bg-gray-100 rounded"
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <X className="w-4 h-4" />
+                  <ArrowLeft className="w-4 h-4 text-gray-600" />
+                </button>
+                <h2 className="text-lg font-semibold text-gray-900">Create New Template</h2>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Template Name</label>
+              <input
+                type="text"
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                placeholder="Enter template name"
+                className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+              <CKEditor
+                editor={ClassicEditor}
+                data={subject}
+                onChange={(event: any, editor: any) => setSubject(editor.getData())}
+                config={{
+                  toolbar: ['bold', 'italic', 'link', 'bulletedList', 'numberedList', 'undo', 'redo'],
+                }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Body</label>
+              <CKEditor
+                editor={ClassicEditor}
+                data={body}
+                onChange={(event: any, editor: any) => setBody(editor.getData())}
+                config={{
+                  toolbar: ['bold', 'italic', 'link', 'bulletedList', 'numberedList', 'undo', 'redo'],
+                }}
+              />
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-600 mb-2">The following will be sent to candidate via</p>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setSendViaEmail(!sendViaEmail)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendViaEmail ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                  disabled={loading}
+                >
+                  <Mail className="w-4 h-4 inline mr-1" /> Email
+                </button>
+                <button
+                  onClick={() => setSendViaWhatsApp(!sendViaWhatsApp)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendViaWhatsApp ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                  disabled={loading}
+                >
+                  <MessageSquare className="w-4 h-4 inline mr-1" /> WhatsApp
+                </button>
+                <button
+                  onClick={() => setSendViaPhone(!sendViaPhone)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendViaPhone ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                  disabled={loading}
+                >
+                  <Phone className="w-4 h-4 inline mr-1" /> Call
                 </button>
               </div>
-              <div className="space-y-4 flex-1">
+            </div>
+
+            <div className="space-y-2 pt-4 border-t border-gray-200">
+              <div className="w-full flex justify-end">
+                <button
+                  onClick={() => setShowAdvanceOptions(!showAdvanceOptions)}
+                  className="text-blue-600 text-xs hover:bg-blue-50 transition-colors flex items-center justify-end"
+                  disabled={loading}
+                >
+                  <Settings className="w-4 h-4 mr-2" /> {showAdvanceOptions ? 'Hide' : 'View'} Advance Options
+                </button>
+              </div>
+
+              {showAdvanceOptions && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Template Name</label>
-                  <input
-                    type="text"
-                    value={templateName}
-                    onChange={(e) => setTemplateName(e.target.value)}
-                    placeholder="Enter template name"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    disabled={loading}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                  <CKEditor
-                    editor={ClassicEditor}
-                    data={subject}
-                    onChange={(event: any, editor: any) => setSubject(editor.getData())}
-                    config={{
-                      toolbar: ['bold', 'italic', 'link', 'bulletedList', 'numberedList', 'undo', 'redo'],
-                    }}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Body</label>
-                  <CKEditor
-                    editor={ClassicEditor}
-                    data={body}
-                    onChange={(event: any, editor: any) => setBody(editor.getData())}
-                    config={{
-                      toolbar: ['bold', 'italic', 'link', 'bulletedList', 'numberedList', 'undo', 'redo'],
-                    }}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Channel Options</label>
-                  <div className="space-y-2">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={sendViaEmail}
-                        onChange={(e) => setSendViaEmail(e.target.checked)}
-                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                        disabled={loading}
-                      />
-                      <span className="ml-2 text-sm text-gray-700">Email</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={sendViaWhatsApp}
-                        onChange={(e) => setSendViaWhatsApp(e.target.checked)}
-                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                        disabled={loading}
-                      />
-                      <span className="ml-2 text-sm text-gray-700">WhatsApp</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={sendViaPhone}
-                        onChange={(e) => setSendViaPhone(e.target.checked)}
-                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                        disabled={loading}
-                      />
-                      <span className="ml-2 text-sm text-gray-700">Call</span>
-                    </label>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Follow-up Templates</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Follow-ups</label>
                   {followUpTemplates.map((followUp, index) => (
-                    <div key={index} className="flex items-center mb-2 space-x-2">
-                      <input
-                        type="number"
-                        value={followUp.send_after_hours}
-                        onChange={(e) => {
-                          const updated = [...followUpTemplates];
-                          updated[index] = { ...updated[index], send_after_hours: Number(e.target.value) };
-                          setFollowUpTemplates(updated);
-                        }}
-                        className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Hours"
-                        disabled={loading}
-                      />
-                      <select
-                        value={followUp.followup_mode}
-                        onChange={(e) => {
-                          const updated = [...followUpTemplates];
-                          updated[index] = { ...updated[index], followup_mode: e.target.value as 'EMAIL' | 'WHATSAPP' | 'CALL' };
-                          setFollowUpTemplates(updated);
-                        }}
-                        className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        disabled={loading}
-                      >
-                        <option value="EMAIL">Email</option>
-                        <option value="WHATSAPP">WhatsApp</option>
-                        <option value="CALL">Call</option>
-                      </select>
-                      <CKEditor
-                        editor={ClassicEditor}
-                        data={followUp.followup_body}
-                        onChange={(event: any, editor: any) => updateFollowUp(index, 'followup_body', editor.getData())}
-                        config={{
-                          toolbar: ['bold', 'italic', 'link', 'bulletedList', 'numberedList', 'undo', 'redo'],
-                        }}
-                      />
-                      <button
-                        onClick={() => removeFollowUp(index)}
-                        className="ml-2 p-1 text-red-500 hover:text-red-700"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                    <div key={index} className="flex flex-col items-start mb-2 space-x-2">
+                      <div className='flex items-center mb-2 space-x-4'>
+                        <button
+                          onClick={() => removeFollowUp(index)}
+                          className="ml-2 p-1 text-red-500 hover:text-red-700"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                        <div className='flex items-center gap-2'>
+                          <span className="text-xs text-gray-500">Send After</span>
+                          <input
+                            type="number"
+                            value={followUp.send_after_hours}
+                            onChange={(e) => updateFollowUp(index, 'send_after_hours', Number(e.target.value))}
+                            className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Hours"
+                            disabled={loading}
+                          />
+                          <span className="text-xs text-gray-500">hrs</span>
+                        </div>
+                        <div className='flex items-center gap-2'>
+                          <span className="text-xs text-gray-500">Mode of Followup</span>
+                          <select
+                            value={followUp.followup_mode}
+                            onChange={(e) => updateFollowUp(index, 'followup_mode', e.target.value as 'EMAIL' | 'WHATSAPP' | 'CALL')}
+                            className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            disabled={loading}
+                          >
+                            <option value="EMAIL">Email</option>
+                            <option value="WHATSAPP">WhatsApp</option>
+                            <option value="CALL">Call</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className='flex items-center gap-2 w-full'>
+                        <CKEditor
+                          editor={ClassicEditor}
+                          className="w-full"
+                          data={followUp.followup_body}
+                          onChange={(event: any, editor: any) => updateFollowUp(index, 'followup_body', editor.getData())}
+                          config={{
+                            toolbar: ['bold', 'italic', 'link', 'bulletedList', 'numberedList', 'undo', 'redo'],
+                          }}
+                        />
+                      </div>
                     </div>
                   ))}
                   <button
@@ -544,18 +556,19 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
                     + Add Follow-up
                   </button>
                 </div>
-              </div>
-              <div className="flex space-x-3 pt-4 border-t border-gray-200">
+              )}
+
+              <div className="flex justify-between space-x-8">
                 <button
                   onClick={() => setShowCreateTemplate(false)}
-                  className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="w-full px-4 py-2 text-xs text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"
                   disabled={loading}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveTemplate}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="w-full px-4 py-2 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center font-medium"
                   disabled={loading}
                 >
                   Save Template
