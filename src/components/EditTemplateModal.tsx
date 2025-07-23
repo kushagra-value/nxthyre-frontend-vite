@@ -181,7 +181,7 @@ Best regards,
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
       <div 
-        className={`bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-5xl max-h-[calc(100vh-2rem)] h-full transform transition-transform duration-300 ease-out p-4 flex flex-col ${
+        className={`bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-4xl max-h-[calc(100vh-2rem)] h-full transform transition-transform duration-300 ease-out p-4 flex flex-col ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
