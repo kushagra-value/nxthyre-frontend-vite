@@ -135,7 +135,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     }
 
     try {
-      const stages = await candidateService.getPipelineStages();
+      const stages = await candidateService.getPipelineStages(parseInt(jobId));
       setPipelineStages(stages);
       setShowDropdown(candidateId);
     } catch (error: any) {

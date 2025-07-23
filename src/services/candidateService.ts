@@ -336,9 +336,9 @@ class CandidateService {
     }
   }
 
-   async getPipelineStages(): Promise<PipelineStage[]> {
+    async getPipelineStages(jobId: number): Promise<PipelineStage[]> {
     try {
-      const response = await apiClient.get('/jobs/applications/stages/');
+      const response = await apiClient.get(`/jobs/applications/stages/?job_id=${jobId}`);
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to fetch pipeline stages");
