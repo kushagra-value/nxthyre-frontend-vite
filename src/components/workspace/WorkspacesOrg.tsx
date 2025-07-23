@@ -70,7 +70,11 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!isAuthenticated || !userStatus) return;
+      // Wait until authentication is confirmed and userStatus is available
+      if (!isAuthenticated || !userStatus) {
+        console.log("Authentication or user status not ready yet.");
+        return;
+      }
 
       try {
         setLoading(true);
@@ -86,24 +90,46 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
         );
         setOrganizations(fetchedOrganizations);
 
-        // Fetch workspaces for all organizations
-        const workspacePromises = fetchedOrganizations.map(async (org) => {
-          const workspaceResponse = await organizationService.getWorkspaces(
-            org.id
-          );
-          return workspaceResponse.map((ws: any) => ({
-            id: ws.id,
-            name: ws.name,
-            organization: org.id,
-            members: ws.members || [],
-            createdAt: ws.createdAt,
-          }));
-        });
+        // Fetch workspaces with retry mechanism
+        const fetchWorkspacesWithRetry = async (
+          orgId: number,
+          retries = 3
+        ): Promise<Workspace[]> => {
+          try {
+            const workspaceResponse = await organizationService.getWorkspaces(
+              orgId
+            );
+            return workspaceResponse.map((ws: any) => ({
+              id: ws.id,
+              name: ws.name,
+              organization: orgId,
+              members: ws.members || [],
+              createdAt: ws.createdAt,
+            }));
+          } catch (error: any) {
+            if (error.response?.status === 403 && retries > 0) {
+              console.warn(
+                `403 Forbidden for org ${orgId}, retrying... (${retries} attempts left)`
+              );
+              await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
+              return fetchWorkspacesWithRetry(orgId, retries - 1);
+            }
+            throw new Error(
+              `Failed to fetch workspaces for organization ${orgId}: ${error.message}`
+            );
+          }
+        };
+
+        const workspacePromises = fetchedOrganizations.map((org) =>
+          fetchWorkspacesWithRetry(org.id)
+        );
         const allWorkspaces = (await Promise.all(workspacePromises)).flat();
         setWorkspaces(allWorkspaces);
       } catch (error: any) {
         console.error("Error fetching data:", error);
-        showToast.error("Failed to load organizations and workspaces");
+        showToast.error(
+          "Failed to load organizations and workspaces. Please try refreshing."
+        );
       } finally {
         setLoading(false);
       }
