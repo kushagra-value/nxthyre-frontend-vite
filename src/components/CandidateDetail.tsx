@@ -262,6 +262,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
             <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
             <span className="text-sm text-gray-700">{displayPhone}</span>
           </div>
+          <div>
           <button
               className={`p-1 ${
                 hasContactInfo ? 'text-gray-400 hover:text-gray-600' : 'text-gray-300 cursor-not-allowed'
@@ -280,6 +281,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
             >
               <Copy className="w-4 h-4" />
             </button>
+            </div>
         </div>
       </div>
 

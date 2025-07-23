@@ -275,34 +275,52 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Follow-up Templates</label>
           {followUpTemplates.map((followUp, index) => (
-            <div key={index} className="flex items-center mb-2 space-x-2">
-              <input
-                type="number"
-                value={followUp.send_after_hours}
-                onChange={(e) => {
-                  const updated = [...followUpTemplates];
-                  updated[index] = { ...updated[index], send_after_hours: Number(e.target.value) };
-                  setFollowUpTemplates(updated);
-                }}
-                className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Hours"
-                disabled={loading}
-              />
-              <select
-                value={followUp.followup_mode}
-                onChange={(e) => {
-                  const updated = [...followUpTemplates];
-                  updated[index] = { ...updated[index], followup_mode: e.target.value as 'EMAIL' | 'WHATSAPP' | 'CALL' };
-                  setFollowUpTemplates(updated);
-                }}
-                className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                disabled={loading}
-              >
-                <option value="EMAIL">Email</option>
-                <option value="WHATSAPP">WhatsApp</option>
-                <option value="CALL">Call</option>
-              </select>
-              <CKEditor
+            <div key={index} className="flex flex-col items-center mb-2 space-x-2">
+              
+              <div>
+                <button
+                  onClick={() => removeFollowUp(index)}
+                  className="ml-2 p-1 text-red-500 hover:text-red-700"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className='flex items-center gap-2'>
+                <span className="text-xs text-gray-500">Send After</span>
+                <input
+                  type="number"
+                  value={followUp.send_after_hours}
+                  onChange={(e) => {
+                    const updated = [...followUpTemplates];
+                    updated[index] = { ...updated[index], send_after_hours: Number(e.target.value) };
+                    setFollowUpTemplates(updated);
+                  }}
+                  className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Hours"
+                  disabled={loading}
+                />
+                <span className="text-xs text-gray-500">hrs</span>
+              </div>
+              <div className='flex items-center gap-2'>
+                <span className="text-xs text-gray-500">Mode of Followup</span>
+                <select
+                  value={followUp.followup_mode}
+                  onChange={(e) => {
+                    const updated = [...followUpTemplates];
+                    updated[index] = { ...updated[index], followup_mode: e.target.value as 'EMAIL' | 'WHATSAPP' | 'CALL' };
+                    setFollowUpTemplates(updated);
+                  }}
+                  className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={loading}
+                >
+                  <option value="EMAIL">Email</option>
+                  <option value="WHATSAPP">WhatsApp</option>
+                  <option value="CALL">Call</option>
+                </select>
+              </div>
+              <div className='flex items-center gap-2'>
+                <span className="text-xs text-gray-500">Body</span>
+                <CKEditor
                 editor={ClassicEditor}
                 data={followUp.followup_body}
                 onChange={(event: any, editor: any) => updateFollowUp(index, 'followup_body', editor.getData())}
@@ -310,12 +328,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ candidate, onBack, 
                   toolbar: ['bold', 'italic', 'link', 'bulletedList', 'numberedList', 'undo', 'redo'],
                 }}
               />
-              <button
-                onClick={() => removeFollowUp(index)}
-                className="ml-2 p-1 text-red-500 hover:text-red-700"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              </div>
+
             </div>
           ))}
           <button
