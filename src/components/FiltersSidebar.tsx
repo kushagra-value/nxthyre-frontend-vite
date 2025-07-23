@@ -307,11 +307,17 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         filterParams.is_top_tier_college = filters.topTierUniversities;
       if (filters.hasCertification)
         filterParams.has_certification = filters.hasCertification;
-      if (filters.city || filters.country)
+      if (filters.city || filters.country){
         filterParams.location = `${filters.city}${
           filters.city && filters.country ? ", " : ""
         }${filters.country}`;
-      if (filters.location) filterParams.location = filters.location;
+        filters.location="";
+      }
+      if (filters.location) {filterParams.location = filters.location;
+        filters.city="";
+        filters.country="";
+      }
+
       if (filters.selectedSkills.length > 0)
         filterParams.skills = filters.selectedSkills.join(",");
       if (filters.companies)
