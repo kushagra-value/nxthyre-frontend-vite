@@ -260,13 +260,15 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     location: true,
     companies: false,
     salary: false,
-    skills: false,
+    skills: true,
     notice: false,
     colleges: false,
     spotlight: false,
     moreFilters: false,
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  const [isLocationManuallyEdited, setIsLocationManuallyEdited] = useState(false);
 
   // Debounced fetch candidates
   const debouncedFetchCandidates = useCallback(
@@ -285,7 +287,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       } finally {
         setIsLoading(false);
       }
-    }, 1000),
+    }, 3000),
     [setCandidates]
   );
 
@@ -307,10 +309,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         filterParams.is_top_tier_college = filters.topTierUniversities;
       if (filters.hasCertification)
         filterParams.has_certification = filters.hasCertification;
-      if (filters.city || filters.country)
-        filterParams.location = `${filters.city}${
-          filters.city && filters.country ? ", " : ""
-        }${filters.country}`;
       if (filters.location) filterParams.location = filters.location;
       if (filters.selectedSkills.length > 0)
         filterParams.skills = filters.selectedSkills.join(",");
@@ -364,8 +362,28 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   };
 
   const updateFilters = (key: string, value: any) => {
-    const newFilters = { ...filters, [key]: value };
+    let newFilters = { ...filters, [key]: value };
     // Validate numeric fields
+    
+    if (key === "city" || key === "country") {
+      setIsLocationManuallyEdited(false);
+      const newCity = key === "city" ? value : filters.city;
+      const newCountry = key === "country" ? value : filters.country;
+      let newLocation = "";
+      if (newCity && newCountry) {
+        newLocation = `${newCity}, ${newCountry}`; // Case 3
+      } else if (newCity) {
+        newLocation = newCity; // Case 1
+      } else if (newCountry) {
+        newLocation = newCountry; // Case 2
+      }
+      newFilters = { ...newFilters, location: newLocation };
+    }
+
+    if (key === "location") {
+      setIsLocationManuallyEdited(true);
+    }
+    
     if (
       key === "minTotalExp" &&
       newFilters.maxTotalExp &&
@@ -398,10 +416,13 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       console.warn("Max salary cannot be less than min salary");
       return;
     }
+
+
     onFiltersChange(newFilters);
   };
 
   const resetFilters = () => {
+    setIsLocationManuallyEdited(false);
     onFiltersChange({
       keywords: "",
       booleanSearch: false,
@@ -592,6 +613,42 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         )}
       </div>
 
+          {/* Skills */}
+
+      <div
+          className="flex items-center justify-between cursor-pointer mb-2"
+          onClick={() => toggleSection("skills")}
+        >
+          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
+            <Award className="w-4 h-4 mr-2 text-gray-800" />
+            Skills
+          </h3>
+          {expandedSections.skills ? (
+            <ChevronUp className="w-4 h-4 text-gray-500" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-gray-500" />
+          )}
+        </div>
+      <div>
+        
+        {expandedSections.skills && (
+          <div className="mt-2">
+            <input
+              type="text"
+              placeholder="Add skills (comma-separated)"
+              value={filters.selectedSkills.join(", ")}
+              onChange={(e) =>
+                updateFilters(
+                  "selectedSkills",
+                  e.target.value.split(",").map((s) => s.trim())
+                )
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+            />
+          </div>
+        )}
+      </div>
+
       {/* Companies/Industries */}
       <div>
         <div
@@ -720,41 +777,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         )}
       </div>
 
-      {/* Skills */}
-
-      <div
-          className="flex items-center justify-between cursor-pointer mb-2"
-          onClick={() => toggleSection("skills")}
-        >
-          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
-            <Award className="w-4 h-4 mr-2 text-gray-800" />
-            Skills
-          </h3>
-          {expandedSections.skills ? (
-            <ChevronUp className="w-4 h-4 text-gray-500" />
-          ) : (
-            <ChevronDown className="w-4 h-4 text-gray-500" />
-          )}
-        </div>
-      <div>
-        
-        {expandedSections.skills && (
-          <div className="mt-2">
-            <input
-              type="text"
-              placeholder="Add skills (comma-separated)"
-              value={filters.selectedSkills.join(", ")}
-              onChange={(e) =>
-                updateFilters(
-                  "selectedSkills",
-                  e.target.value.split(",").map((s) => s.trim())
-                )
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-            />
-          </div>
-        )}
-      </div>
+  
 
 
 

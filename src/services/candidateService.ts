@@ -147,21 +147,27 @@ export interface ShareableProfileSensitiveCandidate {
   }[];
 }
 
+export interface FollowUpStep {
+  id: number;
+  send_after_hours: number;
+  mode: 'EMAIL' | 'WHATSAPP' | 'CALL';
+  subject: string;
+  body: string;
+  order: number;
+}
+
 
 export interface Template {
-  id?: string;
+  id: number;
   name: string;
   initial_subject: string;
   initial_body: string;
   can_be_sent_via_email: boolean;
   can_be_sent_via_whatsapp: boolean;
   can_be_sent_via_call: boolean;
-  follow_up_steps?: {
-    send_after_hours: number;
-    followup_mode: 'EMAIL' | 'WHATSAPP' | 'CALL';
-    followup_body: string;
-    order_no: number;
-  }[];
+  follow_up_steps: FollowUpStep[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface InviteResponse {
@@ -252,6 +258,29 @@ class CandidateService {
   }): Promise<InviteResponse> {
     const response = await apiClient.post('/jobs/invite/', data);
     return response.data;
+  }
+
+  async updateTemplate(template: Template): Promise<Template> {
+    try {
+      const response = await apiClient.put(`/jobs/notification-templates/${template.id}/`, {
+        name: template.name,
+        initial_subject: template.initial_subject,
+        initial_body: template.initial_body,
+        can_be_sent_via_email: template.can_be_sent_via_email,
+        can_be_sent_via_whatsapp: template.can_be_sent_via_whatsapp,
+        can_be_sent_via_call: template.can_be_sent_via_call,
+        follow_up_steps: template.follow_up_steps.map(step => ({
+          send_after_hours: step.send_after_hours,
+          mode: step.mode,
+          subject: step.subject,
+          body: step.body,
+          order: step.order,
+        })),
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to update template");
+    }
   }
 }
 
