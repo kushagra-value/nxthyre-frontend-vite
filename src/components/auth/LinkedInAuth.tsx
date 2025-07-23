@@ -199,6 +199,8 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
               </div>
             </div>
           </div>
+
+          {/* Right Side - Form */}
           <div className="bg-white rounded-2xl p-8 shadow-2xl">
             <button
               onClick={() => onNavigate("/")}
