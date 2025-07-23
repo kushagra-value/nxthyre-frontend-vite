@@ -2801,6 +2801,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           onCreateRole={handleCreateJobRole}
           onOpenLogoutModal={handleOpenLogoutModal}
           credits={credits}
+          onBack={onBack}
         />
       </div>
 
