@@ -17,30 +17,118 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     const fetchAvailableWorkspaces = async () => {
-      if (!userStatus?.organization?.id) return;
+      if (!userStatus || !mounted) {
+        console.log("Waiting for userStatus:", { userStatus });
+        return;
+      }
 
       try {
         setLoading(true);
-        const allWorkspaces = await organizationService.getWorkspaces(
-          userStatus.organization.id
+        console.log("Fetching organizations...");
+        const orgResponse = await organizationService.getOrganizations();
+        const fetchedOrganizations = orgResponse.map((org: any) => ({
+          id: org.id,
+          name: org.name,
+          domain: org.domain || null,
+        }));
+
+        // Filter organizations based on user roles
+        const userOrgIds =
+          userStatus?.roles
+            ?.filter((role: any) => role.scope === "ORGANIZATION")
+            ?.map((role: any) => role.organization_id) || [];
+        const authorizedOrganizations = fetchedOrganizations.filter(
+          (org: any) => userOrgIds.includes(org.id)
         );
+        console.log("Authorized organizations:", authorizedOrganizations);
+
+        if (authorizedOrganizations.length === 0) {
+          showToast.error("No authorized organizations found.");
+          if (mounted) {
+            setAvailableWorkspaces([]);
+          }
+          return;
+        }
+
         const joinedWorkspaceIds = userStatus.roles
           .filter((role: any) => role.scope === "WORKSPACE")
           .map((role: any) => role.workspace_id);
+
+        const fetchWorkspacesWithRetry = async (
+          orgId: number,
+          retries = 3
+        ): Promise<any[]> => {
+          try {
+            console.log(`Fetching workspaces for org ${orgId}...`);
+            const workspaceResponse = await organizationService.getWorkspaces(
+              orgId
+            );
+            return workspaceResponse.map((ws: any) => ({
+              id: ws.id,
+              name: ws.name,
+              organization: {
+                id: orgId,
+                name: ws.organization?.name || "Unknown",
+              },
+              members: ws.members || [],
+              createdAt: ws.createdAt,
+            }));
+          } catch (error: any) {
+            if (error.response?.status === 403 && retries > 0) {
+              console.warn(
+                `403 Forbidden for org ${orgId}, retrying... (${retries} left)`
+              );
+              await new Promise((resolve) => setTimeout(resolve, 2000));
+              return fetchWorkspacesWithRetry(orgId, retries - 1);
+            }
+            console.error(
+              `Failed to fetch workspaces for org ${orgId}: ${error.message}`
+            );
+            return [];
+          }
+        };
+
+        const workspacePromises = authorizedOrganizations.map((org: any) =>
+          fetchWorkspacesWithRetry(org.id)
+        );
+        const allWorkspaces = (await Promise.all(workspacePromises)).flat();
         const available = allWorkspaces.filter(
           (ws: any) => !joinedWorkspaceIds.includes(ws.id)
         );
-        setAvailableWorkspaces(available);
+        console.log("Available workspaces:", available);
+
+        if (mounted) {
+          setAvailableWorkspaces(available);
+          if (available.length === 0) {
+            showToast.info("No available workspaces to join.");
+          }
+        }
       } catch (error: any) {
         console.error("Error fetching workspaces:", error);
-        showToast.error("Failed to load available workspaces");
+        if (mounted) {
+          showToast.error("Failed to load available workspaces.");
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchAvailableWorkspaces();
+    // Delay fetch to ensure token is ready
+    const timeoutId = setTimeout(() => {
+      if (mounted) {
+        fetchAvailableWorkspaces();
+      }
+    }, 2000);
+
+    return () => {
+      mounted = false;
+      clearTimeout(timeoutId);
+    };
   }, [userStatus]);
 
   if (!user || !userStatus) {
