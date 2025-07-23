@@ -27,6 +27,8 @@ import {
   Trash2,
 } from "lucide-react";
 import Header from "./Header";
+import { creditService } from "../services/creditService";
+import { useAuth } from "../hooks/useAuth";
 import CategoryDropdown from "./CategoryDropdown";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
@@ -34,6 +36,7 @@ import { pipelineStages, pipelineCandidates } from "../data/pipelineData";
 import { useAuthContext } from "../context/AuthContext";
 import apiClient from "../services/api";
 import { jobPostService } from "../services/jobPostService"; // Import jobPostService
+import { showToast } from "../utils/toast";
 
 // Define interfaces for API responses
 interface Stage {
@@ -2751,14 +2754,53 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     },
   ];
 
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [credits, setCredits] = useState<number>(0);
+
+  const {
+    user: firebaseUser,
+    userStatus,
+    isAuthenticated,
+    signOut,
+    isOnboarded,
+    loading: authLoading,
+  } = useAuth();
+
+  // Fetch credit balance
+  useEffect(() => {
+    const fetchCreditBalance = async () => {
+      try {
+        const data = await creditService.getCreditBalance();
+        setCredits(data.credit_balance);
+      } catch (error) {
+        showToast.error("Failed to fetch credit balance");
+      }
+    };
+    if (isAuthenticated) {
+      fetchCreditBalance();
+    }
+  }, [isAuthenticated]);
+
+  const deductCredits = async () => {
+    try {
+      const data = await creditService.getCreditBalance();
+      setCredits(data.credit_balance);
+    } catch (error) {
+      showToast.error("Failed to update credit balance");
+    }
+  };
+
+  const handleOpenLogoutModal = () => {
+    setShowLogoutModal(true);
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="sticky top-0 z-20 bg-white will-change-transform">
         <Header
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
           onCreateRole={handleCreateJobRole}
-          onOpenLogoutModal={onOpenLogoutModal}
+          onOpenLogoutModal={handleOpenLogoutModal}
+          credits={credits}
         />
       </div>
 
