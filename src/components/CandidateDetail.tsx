@@ -30,7 +30,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
         setLoading(true);
         try {
           const data = await candidateService.getCandidateDetails(candidate.id);
-          setDetailedCandidate(data);
+          setDetailedCandidate({
+            ...data,
+            candidate: {
+              ...data.candidate,
+              candidate_email: candidate.candidate_email,
+              candidate_phone: candidate.candidate_phone,
+            },
+          });
         } catch (error) {
           console.error("Error fetching candidate details:", error);
         } finally {
@@ -39,7 +46,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
       };
       fetchCandidateDetails();
     }
-  }, [candidate?.id]);
+  }, [candidate?.id, candidate?.candidate_email, candidate?.candidate_phone]);
 
 
   useEffect(() => {
@@ -186,6 +193,27 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
     onSendInvite();
   };
 
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast.success('Copied to clipboard!');
+    }).catch(() => {
+      showToast.error('Failed to copy');
+    });
+  };
+
+  const handleWhatsApp = (phone: string) => {
+    const formattedPhone = phone.replace(/[^0-9+]/g, '');
+    window.open(`https://wa.me/${formattedPhone}`, '_blank');
+  };
+
+  const hasContactInfo = !!detailedCandidate.candidate.candidate_email && !!detailedCandidate.candidate.candidate_phone;
+  const displayEmail = hasContactInfo
+    ? detailedCandidate.candidate.candidate_email
+    : `${detailedCandidate.candidate.full_name?.slice(0, 2)}***************.****`;
+  const displayPhone = hasContactInfo
+    ? detailedCandidate.candidate.candidate_phone
+    : '+91-**********';
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-3 space-y-6 min-h-[81vh] relative overflow-hidden">
       {/* Header */}
@@ -216,21 +244,42 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
-            <span className="text-sm text-gray-700 truncate">{detailedCandidate?.candidate?.full_name?.slice(0,2)}***************.****</span>
+
+            <span className="text-sm text-gray-700 truncate">{displayEmail}</span>
           </div>
-          <button className="flex space-x-2 ml-auto p-1 text-gray-400 hover:text-gray-600 flex-shrink-0">
+         <button
+            className={`flex space-x-2 ml-auto p-1 ${
+              hasContactInfo ? 'text-gray-400 hover:text-gray-600' : 'text-gray-300 cursor-not-allowed'
+            }`}
+            onClick={() => hasContactInfo && handleCopy(displayEmail)}
+            disabled={!hasContactInfo}
+          >
             <Copy className="w-4 h-4" />
           </button>
         </div>
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
-            <span className="text-sm text-gray-700">+91-**********</span>
+            <span className="text-sm text-gray-700">{displayPhone}</span>
           </div>
-          <button className="flex space-x-2 ml-auto p-1 text-gray-400 hover:text-gray-600 flex-shrink-0">
-            <FontAwesomeIcon icon={faWhatsapp} />
-            <Copy className="w-4 h-4" />
-          </button>
+          <button
+              className={`p-1 ${
+                hasContactInfo ? 'text-gray-400 hover:text-gray-600' : 'text-gray-300 cursor-not-allowed'
+              }`}
+              onClick={() => hasContactInfo && handleWhatsApp(displayPhone)}
+              disabled={!hasContactInfo}
+            >
+              <FontAwesomeIcon icon={faWhatsapp} />
+            </button>
+            <button
+              className={`p-1 ${
+                hasContactInfo ? 'text-gray-400 hover:text-gray-600' : 'text-gray-300 cursor-not-allowed'
+              }`}
+              onClick={() => hasContactInfo && handleCopy(displayPhone)}
+              disabled={!hasContactInfo}
+            >
+              <Copy className="w-4 h-4" />
+            </button>
         </div>
       </div>
 
