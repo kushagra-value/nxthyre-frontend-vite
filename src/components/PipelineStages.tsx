@@ -2866,8 +2866,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       </div>
 
       <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-2">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-full">
-          <div className="lg:col-span-3 order-2 lg:order-1">
+        <div className="flex w-full gap-3 h-full">
+          <div className="lg:w-[25%] order-2 lg:order-1">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3">
               <div
                 className="flex items-center space-x-2 cursor-pointer"
@@ -2958,7 +2958,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             </div>
           </div>
 
-          <div className="lg:col-span-6 order-1 lg:order-2">
+          <div className="lg:w-[45%] order-1 lg:order-2">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
               <div className="p-3 lg:p-4 border-b border-gray-200">
                 <div className="flex items-center justify-between flex-wrap gap-2">
@@ -3060,7 +3060,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             </div>
           </div>
 
-          <div className="lg:col-span-3 order-3 relative">
+          <div className="lg:w-[30%] order-3 relative">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-4 min-h-[81vh]">
               {selectedCandidate ? (
                 <>
