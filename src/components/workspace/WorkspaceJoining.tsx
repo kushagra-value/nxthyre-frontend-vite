@@ -56,6 +56,7 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
         const joinedWorkspaceIds = userStatus.roles
           .filter((role: any) => role.scope === "WORKSPACE")
           .map((role: any) => role.workspace_id);
+        console.log("Joined workspace IDs:", joinedWorkspaceIds);
 
         const fetchWorkspacesWithRetry = async (
           orgId: number,
@@ -79,6 +80,7 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
               },
               members: ws.members || [],
               createdAt: ws.createdAt,
+              join_status: ws.join_status || "NOT_REQUESTED",
             }));
           } catch (error: any) {
             if (error.response?.status === 403 && retries > 0) {
@@ -99,13 +101,24 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
           fetchWorkspacesWithRetry(org.id)
         );
         const allWorkspaces = (await Promise.all(workspacePromises)).flat();
+        console.log("All workspaces:", allWorkspaces);
+
+        // Filter out workspaces already joined and those with pending/approved join requests
         const available = allWorkspaces.filter(
-          (ws: any) => !joinedWorkspaceIds.includes(ws.id)
+          (ws: any) =>
+            !joinedWorkspaceIds.includes(ws.id) &&
+            ws.join_status !== "PENDING" &&
+            ws.join_status !== "APPROVED"
         );
         console.log("Available workspaces:", available);
 
         if (mounted) {
           setAvailableWorkspaces(available);
+          // Update requestedWorkspaces based on API data
+          const pendingRequests = allWorkspaces
+            .filter((ws: any) => ws.join_status === "PENDING")
+            .map((ws: any) => ws.id);
+          setRequestedWorkspaces(new Set(pendingRequests));
           if (available.length === 0) {
             showToast.info("No available workspaces to join.");
           }
@@ -162,7 +175,6 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
   }
 
   const handleRequestJoin = async (workspaceId: number) => {
-    // Validate workspace ID
     const workspace = availableWorkspaces.find((ws) => ws.id === workspaceId);
     if (!workspace) {
       showToast.error("Invalid workspace selected.");
@@ -173,21 +185,23 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
     }
 
     try {
-      await organizationService.requestJoinWorkspace(workspaceId);
+      await organizationService.requestJoinWorkspace(workspaceId, user?.id);
       setRequestedWorkspaces((prev) => new Set(prev).add(workspaceId));
       showToast.success(`Join request sent for workspace "${workspace.name}".`);
     } catch (error: any) {
-      console.error("Join request error:", error);
+      console.error(
+        `Join request error for workspace ${workspaceId}:`,
+        error.response?.data || error.message
+      );
       const errorMessage =
         error.response?.status === 500
           ? "Server error occurred while sending join request. Please try again later."
-          : error.message || "Failed to send join request.";
+          : error.response?.data?.error || "Failed to send join request.";
       showToast.error(errorMessage);
     }
   };
 
   const handleWithdrawRequest = async (workspaceId: number) => {
-    // Validate workspace ID
     const workspace = availableWorkspaces.find((ws) => ws.id === workspaceId);
     if (!workspace) {
       showToast.error("Invalid workspace selected for withdrawal.");
@@ -208,11 +222,14 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
         `Join request withdrawn for workspace "${workspace.name}".`
       );
     } catch (error: any) {
-      console.error("Withdraw request error:", error);
+      console.error(
+        `Withdraw request error for workspace ${workspaceId}:`,
+        error.response?.data || error.message
+      );
       const errorMessage =
         error.response?.status === 500
           ? "Server error occurred while withdrawing request. Please try again later."
-          : error.message || "Failed to withdraw request.";
+          : error.response?.data?.error || "Failed to withdraw request.";
       showToast.error(errorMessage);
     }
   };
@@ -285,6 +302,7 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
                 <div
                   key={workspace.id}
                   className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+                  data-workspace-id={workspace.id}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-4">
