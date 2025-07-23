@@ -71,7 +71,11 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
               name: ws.name,
               organization: {
                 id: orgId,
-                name: ws.organization?.name || "Unknown",
+                name:
+                  ws.organization?.name ||
+                  fetchedOrganizations.find((org: any) => org.id === orgId)
+                    ?.name ||
+                  "Unknown",
               },
               members: ws.members || [],
               createdAt: ws.createdAt,
@@ -132,6 +136,7 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
   }, [userStatus]);
 
   if (!user || !userStatus) {
+    showToast.error("User not authenticated. Please log in.");
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -143,7 +148,10 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
             Please log in to join a workspace or return to the dashboard.
           </p>
           <button
-            onClick={() => onNavigate("login")}
+            onClick={() => {
+              onNavigate("login");
+              showToast.info("Navigating to login.");
+            }}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
             Go to Login
@@ -154,17 +162,41 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
   }
 
   const handleRequestJoin = async (workspaceId: number) => {
+    // Validate workspace ID
+    const workspace = availableWorkspaces.find((ws) => ws.id === workspaceId);
+    if (!workspace) {
+      showToast.error("Invalid workspace selected.");
+      console.error(
+        `Workspace ID ${workspaceId} not found in availableWorkspaces.`
+      );
+      return;
+    }
+
     try {
       await organizationService.requestJoinWorkspace(workspaceId);
       setRequestedWorkspaces((prev) => new Set(prev).add(workspaceId));
-      showToast.success("Join request sent to workspace owner!");
+      showToast.success(`Join request sent for workspace "${workspace.name}".`);
     } catch (error: any) {
       console.error("Join request error:", error);
-      showToast.error(error.message || "Failed to send join request");
+      const errorMessage =
+        error.response?.status === 500
+          ? "Server error occurred while sending join request. Please try again later."
+          : error.message || "Failed to send join request.";
+      showToast.error(errorMessage);
     }
   };
 
   const handleWithdrawRequest = async (workspaceId: number) => {
+    // Validate workspace ID
+    const workspace = availableWorkspaces.find((ws) => ws.id === workspaceId);
+    if (!workspace) {
+      showToast.error("Invalid workspace selected for withdrawal.");
+      console.error(
+        `Workspace ID ${workspaceId} not found in availableWorkspaces.`
+      );
+      return;
+    }
+
     try {
       await organizationService.withdrawJoinRequest(workspaceId);
       setRequestedWorkspaces((prev) => {
@@ -172,10 +204,16 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
         newSet.delete(workspaceId);
         return newSet;
       });
-      showToast.info("Join request withdrawn");
+      showToast.success(
+        `Join request withdrawn for workspace "${workspace.name}".`
+      );
     } catch (error: any) {
       console.error("Withdraw request error:", error);
-      showToast.error(error.message || "Failed to withdraw request");
+      const errorMessage =
+        error.response?.status === 500
+          ? "Server error occurred while withdrawing request. Please try again later."
+          : error.message || "Failed to withdraw request.";
+      showToast.error(errorMessage);
     }
   };
 
@@ -196,7 +234,10 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16">
             <button
-              onClick={() => onNavigate("workspaces-org")}
+              onClick={() => {
+                onNavigate("workspaces-org");
+                showToast.info("Returning to dashboard.");
+              }}
               className="flex items-center text-gray-600 hover:text-gray-800 mr-4"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -237,7 +278,6 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
         <div className="space-y-4">
           {availableWorkspaces.length > 0 ? (
             availableWorkspaces.map((workspace) => {
-              const organization = userStatus?.organization;
               const memberCount = workspace.members?.length || 0;
               const isRequested = requestedWorkspaces.has(workspace.id);
 
@@ -256,7 +296,7 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
                           {workspace.name}
                         </h3>
                         <p className="text-sm text-gray-600 mb-2">
-                          {organization?.name || "No Organization"}
+                          {workspace.organization?.name || "No Organization"}
                         </p>
                         <div className="flex items-center text-sm text-gray-500">
                           <Users className="w-4 h-4 mr-1" />
@@ -296,7 +336,10 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
                 available.
               </p>
               <button
-                onClick={() => onNavigate("workspace-creation")}
+                onClick={() => {
+                  onNavigate("workspace-creation");
+                  showToast.info("Navigating to create a new workspace.");
+                }}
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Create a Workspace
