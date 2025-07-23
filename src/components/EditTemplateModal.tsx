@@ -179,9 +179,9 @@ Best regards,
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
       <div 
-        className={`bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-md max-h-[calc(100vh-2rem)] h-full transform transition-transform duration-300 ease-out p-4 flex flex-col ${
+        className={`bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-5xl max-h-[calc(100vh-2rem)] h-full transform transition-transform duration-300 ease-out p-4 flex flex-col ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -339,20 +339,7 @@ Best regards,
                             </select>
                           </div>
                         </div>
-                        {followUp.followup_mode === 'EMAIL' && (
-                          <div className="w-full mb-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Follow-up Subject</label>
-                            <CKEditor
-                              editor={ClassicEditor}
-                              data={followUp.followup_subject}
-                              onChange={(event: any, editor: any) => updateFollowUp(index, 'followup_subject', editor.getData())}
-                              config={{
-                                toolbar: ['bold', 'italic', 'link', 'bulletedList', 'numberedList', 'undo', 'redo'],
-                              }}
-                              disabled={loading}
-                            />
-                          </div>
-                        )}
+                        
                         <div className="flex items-center gap-2 w-full">
                           <CKEditor
                             editor={ClassicEditor}
