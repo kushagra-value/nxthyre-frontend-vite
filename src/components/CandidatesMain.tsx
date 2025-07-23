@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback,useRef } from "react";
 import {
   Filter,
   ChevronDown,
@@ -12,7 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { candidateService, CandidateListItem, PipelineResponse, BulkPipelineResponse } from "../services/candidateService";
+import { candidateService, CandidateListItem, PipelineResponse, BulkPipelineResponse, PipelineStage } from "../services/candidateService";
 import { showToast } from '../utils/toast';
 
 interface CandidatesMainProps {
@@ -50,6 +50,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [pipelineStages, setPipelineStages] = useState<PipelineStage[]>([]);
+  const [showDropdown, setShowDropdown] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const candidatesPerPage = 20;
   const maxVisiblePages = 5;
 
@@ -113,12 +116,30 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     await deductCredits();
   };
 
-  const handleSaveToPipeline = async (candidateId: string) => {
+  const handleSaveToPipeline = async (candidateId: string, stageId?: number) => {
     try {
-      const response: PipelineResponse = await candidateService.saveToPipeline(parseInt(jobId), candidateId);
-      showToast.success(`Candidate successfully added to pipeline (ID: ${response.id})`);
+      const response: PipelineResponse = await candidateService.saveToPipeline(parseInt(jobId), candidateId, stageId);
+      const stageName = stageId ? pipelineStages.find(stage => stage.id === stageId)?.name : 'default stage';
+      showToast.success(`Candidate successfully added to pipeline${stageId ? ` (${stageName})` : ''} (ID: ${response.id})`);
+      setShowDropdown(null);
     } catch (error: any) {
       showToast.error(error.message || 'Failed to save candidate to pipeline');
+    }
+  };
+
+  const handleDropdownToggle = async (candidateId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (showDropdown === candidateId) {
+      setShowDropdown(null);
+      return;
+    }
+
+    try {
+      const stages = await candidateService.getPipelineStages();
+      setPipelineStages(stages);
+      setShowDropdown(candidateId);
+    } catch (error: any) {
+      showToast.error(error.message || 'Failed to fetch pipeline stages');
     }
   };
 
@@ -635,9 +656,30 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     <Bookmark className="w-4 h-4 mr-1" />
                     Save to Pipeline
                   </button>
-                  <button className="border-l border-l-blue-400 pl-1.5 pr-2 py-1.5">
+                  <button className="border-l border-l-blue-400 pl-1.5 pr-2 py-1.5" onClick={(e) => handleDropdownToggle(candidate.id, e)}>
                     <ChevronDown className="w-4 h-4 ml-1 mt-[2px] text-blue-600" />
                   </button>
+                  {showDropdown === candidate.id && (
+                    <div 
+                      ref={dropdownRef}
+                      className="absolute right-0 mt-10 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+                    >
+                      <div className="py-1">
+                        {pipelineStages.map((stage) => (
+                          <button
+                            key={stage.id}
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSaveToPipeline(candidate.id, stage.id);
+                            }}
+                          >
+                            {stage.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -195,6 +195,14 @@ export interface BulkPipelineResponse {
   skipped_count: number;
 }
 
+export interface PipelineStage {
+  id: number;
+  name: string;
+  slug: string;
+  sort_order: number;
+  candidate_count: number;
+}
+
 class CandidateService {
   async getCandidates(filters: any): Promise<{ results: CandidateListItem[]; count: number }> {
     try {
@@ -300,12 +308,16 @@ class CandidateService {
     }
   }
 
-  async saveToPipeline(jobId: number, candidateId: string): Promise<PipelineResponse> {
+  async saveToPipeline(jobId: number, candidateId: string, stageId?: number): Promise<PipelineResponse> {
     try {
-      const response = await apiClient.post('/jobs/applications/', {
+      const payload: { job: number; candidate: string; current_stage?: number } = {
         job: jobId,
         candidate: candidateId
-      });
+      };
+      if (stageId) {
+        payload.current_stage = stageId;
+      }
+      const response = await apiClient.post('/pipeline/', payload);
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to save candidate to pipeline");
@@ -323,6 +335,16 @@ class CandidateService {
       throw new Error(error.response?.data?.error || "Failed to add candidates to pipeline");
     }
   }
+
+   async getPipelineStages(): Promise<PipelineStage[]> {
+    try {
+      const response = await apiClient.get('/jobs/applications/stages/');
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to fetch pipeline stages");
+    }
+  }
+
 }
 
 export const candidateService = new CandidateService();
