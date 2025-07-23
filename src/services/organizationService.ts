@@ -71,7 +71,7 @@ class OrganizationService {
 
   async getOrganizations(): Promise<Organization[]> {
     try {
-      const response = await apiClient.get("/organization/");
+      const response = await apiClient.get("/organization/all/");
       return response.data.map((org: any) => ({
         id: org.id,
         name: org.name,
@@ -109,9 +109,12 @@ class OrganizationService {
   // Create organization
   async createOrganization(name: string): Promise<CreateOrganizationResponse> {
     try {
-      const response = await apiClient.post("/organization/create/", {
-        name,
-      });
+      const response = await apiClient.post(
+        "/organization/organization-create/",
+        {
+          name,
+        }
+      );
       return response.data;
     } catch (error: any) {
       throw new Error(
@@ -142,11 +145,13 @@ class OrganizationService {
 
   // Request to join workspace
   async requestJoinWorkspace(
-    workspaceId: number
+    workspaceId: number,
+    userId?: string
   ): Promise<JoinRequestResponse> {
     try {
       const response = await apiClient.post(
-        `/workspaces/${workspaceId}/join-request/`
+        `organization/workspaces/${workspaceId}/join-request/`,
+        userId ? { userId } : {}
       );
       return response.data;
     } catch (error: any) {
@@ -176,7 +181,7 @@ class OrganizationService {
   ): Promise<ManageRequestResponse> {
     try {
       const response = await apiClient.post(
-        `/organization/${organizationId}/workspaces/${workspaceId}/requests/${requestId}/manage/`,
+        `/organization/workspaces/${workspaceId}/requests/${requestId}/manage/`,
         { action }
       );
       return response.data;

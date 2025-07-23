@@ -16,12 +16,14 @@ interface HeaderProps {
   onCreateRole: () => void;
   onOpenLogoutModal: () => void;
   credits: number;
+  onBack?: () => void; // Optional prop for back button
 }
 
 const Header: React.FC<HeaderProps> = ({
   onCreateRole,
   onOpenLogoutModal,
   credits,
+  onBack,
 }) => {
   const { isAuthenticated, user, signOut } = useAuthContext();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -60,7 +62,6 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-full mx-auto px-7 py-1.5">
           <div className="flex items-center justify-between">
@@ -68,7 +69,7 @@ const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center">
               <h1
                 className="text-xl lg:text-2xl font-bold text-blue-600 cursor-pointer"
-                onClick={handleGoToDashboard}
+                onClick={onBack}
               >
                 NxtHyre
               </h1>
@@ -90,8 +91,6 @@ const Header: React.FC<HeaderProps> = ({
                 </div>
               )}
 
-              
-
               {/* Create Role Button - Only show when authenticated */}
               {isAuthenticated && (
                 <button
@@ -102,12 +101,12 @@ const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
               {isAuthenticated && user && (
-              <div className="flex items-center gap-1 bg-gray-100 px-4 py-2 rounded-lg">
-                <span className="text-xs">🪙</span>
-                <p className="text-xs text-gray-500">
-                  <span className="font-semibold">{credits}</span>
-                </p>
-              </div>
+                <div className="flex items-center gap-1 bg-gray-100 px-4 py-2 rounded-lg">
+                  <span className="text-xs">🪙</span>
+                  <p className="text-xs text-gray-500">
+                    <span className="font-semibold">{credits}</span>
+                  </p>
+                </div>
               )}
               {/* Authentication Section */}
               {isAuthenticated && user ? (
@@ -144,7 +143,6 @@ const Header: React.FC<HeaderProps> = ({
                           <p className="text-xs text-gray-500">
                             {user.email || "user@example.com"}
                           </p>
-                          
                         </div>
 
                         {/* Workspace & Organization */}

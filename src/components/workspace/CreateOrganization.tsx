@@ -2,18 +2,18 @@ import React, { useState } from "react";
 import { ArrowLeft, Building2, Search, Check, X } from "lucide-react";
 import { organizationService } from "../../services/organizationService";
 import { showToast } from "../../utils/toast";
+import { useAuthContext } from "../../context/AuthContext";
 
 interface CreateOrganizationProps {
   onNavigate: (flow: string, data?: any) => void;
-  user: any;
   onComplete?: (user: any) => void;
 }
 
 const CreateOrganization: React.FC<CreateOrganizationProps> = ({
   onNavigate,
-  user,
   onComplete,
 }) => {
+  const { user } = useAuthContext();
   const [formData, setFormData] = useState({
     organizationName: "",
     industry: "",
@@ -51,9 +51,6 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
   const handleNameChange = (value: string) => {
     setFormData((prev) => ({ ...prev, organizationName: value }));
     setErrors((prev) => ({ ...prev, organizationName: "" }));
-
-    // TODO: Implement organization search API
-    // For now, we'll skip the similar organizations check
     setShowSimilar(false);
     setSimilarOrgs([]);
   };
@@ -76,7 +73,6 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
   };
 
   const handleSelectExisting = (org: any) => {
-    // TODO: Implement join existing organization API
     showToast.success(`Joined existing organization: ${org.name}`);
     if (onComplete) {
       onComplete(user);
@@ -90,26 +86,20 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
 
     try {
       const status = await organizationService.getOnboardingStatus();
-      if (status.status === "ONBOARDED") {
-        showToast.error("Already in an organization");
+      if (
+        status.status === "ONBOARDED" ||
+        status.status === "ORGANIZATION_EXISTS"
+      ) {
+        showToast.error("You are already part of an organization");
         setIsLoading(false);
         return;
       }
-    } catch (error: any) {
-      console.error("Error checking onboarding status:", error);
-      showToast.error("Failed to check onboarding status");
-      setIsLoading(false);
-      return;
-    }
 
-    try {
       const response = await organizationService.createOrganization(
         formData.organizationName
       );
-
       showToast.success("Organization created successfully!");
 
-      // Update user with organization
       const updatedUser = {
         ...user,
         organizationId: response.id.toString(),
@@ -118,6 +108,7 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
       if (onComplete) {
         onComplete(updatedUser);
       }
+      onNavigate("workspaces-org");
     } catch (error: any) {
       console.error("Create organization error:", error);
       setErrors({ general: error.message || "Failed to create organization" });
@@ -138,7 +129,6 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16">
@@ -156,7 +146,6 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="text-center mb-6">
@@ -172,7 +161,6 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
           </div>
 
           <div className="space-y-6">
-            {/* Organization Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Organization Name *
@@ -200,7 +188,6 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
               )}
             </div>
 
-            {/* Industry */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Industry *
@@ -229,7 +216,6 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
               )}
             </div>
 
-            {/* Company Size */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Company Size *
@@ -261,7 +247,6 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
               )}
             </div>
 
-            {/* Website */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Website (Optional)
@@ -277,7 +262,6 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
               />
             </div>
 
-            {/* Description */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Description (Optional)
@@ -296,7 +280,6 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
               />
             </div>
 
-            {/* Similar Organizations */}
             {showSimilar && (
               <div className="border border-yellow-200 rounded-lg p-4 bg-yellow-50">
                 <h3 className="text-sm font-medium text-yellow-800 mb-3">
@@ -340,7 +323,6 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
               </div>
             )}
 
-            {/* Action Buttons */}
             {!showSimilar && (
               <div className="flex space-x-4">
                 <button
@@ -366,7 +348,6 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
               </div>
             )}
 
-            {/* Info Box */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h4 className="text-sm font-medium text-blue-900 mb-2">
                 What happens next?

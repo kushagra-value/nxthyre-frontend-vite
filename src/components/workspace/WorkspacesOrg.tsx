@@ -5,7 +5,6 @@ import {
   Building2,
   Settings,
   Search,
-  User,
   ChevronDown,
   MoreHorizontal,
   LogOut,
@@ -28,6 +27,8 @@ interface Workspace {
   id: number;
   name: string;
   organization: number;
+  members: string[];
+  createdAt: string;
 }
 
 interface WorkspacesOrgProps {
@@ -46,7 +47,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   const { user, userStatus, isAuthenticated, signOut } = useAuthContext();
   const [activeTab, setActiveTab] = useState("workspaces");
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showLogoutModal, setShowLogoutModal] = useState(false); // Add logout modal
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [localSearchTerm, setLocalSearchTerm] = useState(propSearchTerm || "");
   const [showDeleteModal, setShowDeleteModal] = useState<{
     type: "org" | "workspace";
@@ -60,7 +61,6 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   const [editFormData, setEditFormData] = useState<any>({});
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [onboardingStatus, setOnboardingStatus] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -69,17 +69,18 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   const setSearchTerm = propSetSearchTerm || setLocalSearchTerm;
 
   useEffect(() => {
+    let mounted = true;
+    let timeoutId: NodeJS.Timeout | null = null;
+
     const fetchData = async () => {
-      if (!isAuthenticated || !userStatus) return;
+      if (!isAuthenticated || !userStatus || !mounted) {
+        console.log("Waiting for auth:", { isAuthenticated, userStatus });
+        return;
+      }
 
       try {
         setLoading(true);
-
-        // Fetch onboarding status
-        const status = await organizationService.getOnboardingStatus();
-        setOnboardingStatus(status);
-
-        // Fetch organizations
+        console.log("Fetching organizations...");
         const orgResponse = await organizationService.getOrganizations();
         const fetchedOrganizations: Organization[] = orgResponse.map(
           (org: any) => ({
@@ -88,54 +89,86 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
             domain: org.domain || null,
           })
         );
-        setOrganizations(fetchedOrganizations);
-        console.log("Fetched Organizations:", fetchedOrganizations);
 
-        // Fetch workspaces for all organizations
-        const workspacePromises = fetchedOrganizations.map(async (org) => {
-          console.log("Raw Workspace Response for org", org.id, ":");
-          const workspaceResponse = await organizationService.getWorkspaces(
-            org.id
-          );
-          console.log(
-            "Raw Workspace Response for org",
-            org.id,
-            ":",
-            workspaceResponse
-          );
+        // Filter organizations based on user roles
+        const userOrgIds =
+          userStatus?.roles
+            ?.filter((role: any) => role.scope === "ORGANIZATION")
+            ?.map((role: any) => role.organization_id) || [];
+        const authorizedOrganizations = fetchedOrganizations.filter((org) =>
+          userOrgIds.includes(org.id)
+        );
 
-          // Map the workspace response directly since it’s an array
-          return workspaceResponse.map((ws: any) => ({
-            id: ws.id,
-            name: ws.name,
-            organization: ws.organization, // This should now retain the value
-          }));
-        });
+        if (mounted) {
+          setOrganizations(authorizedOrganizations);
+        }
+        console.log("Authorized organizations:", authorizedOrganizations);
+
+        const fetchWorkspacesWithRetry = async (
+          orgId: number,
+          retries = 3
+        ): Promise<Workspace[]> => {
+          try {
+            console.log(`Fetching workspaces for org ${orgId}...`);
+            const workspaceResponse = await organizationService.getWorkspaces(
+              orgId
+            );
+            return workspaceResponse.map((ws: any) => ({
+              id: ws.id,
+              name: ws.name,
+              organization: orgId,
+              members: ws.members || [],
+              createdAt: ws.createdAt,
+            }));
+          } catch (error: any) {
+            if (error.response?.status === 403 && retries > 0) {
+              console.warn(
+                `403 Forbidden for org ${orgId}, retrying... (${retries} left)`
+              );
+              await new Promise((resolve) => setTimeout(resolve, 2000));
+              return fetchWorkspacesWithRetry(orgId, retries - 1);
+            }
+            console.error(
+              `Failed to fetch workspaces for org ${orgId}: ${error.message}`
+            );
+            return []; // Return empty array to continue with other organizations
+          }
+        };
+
+        const workspacePromises = authorizedOrganizations.map((org) =>
+          fetchWorkspacesWithRetry(org.id)
+        );
         const allWorkspaces = (await Promise.all(workspacePromises)).flat();
-        setWorkspaces(allWorkspaces);
-        console.log("Fetched Workspaces:", allWorkspaces);
+        console.log("Workspaces fetched:", allWorkspaces);
+        if (mounted) {
+          setWorkspaces(allWorkspaces);
+        }
       } catch (error: any) {
         console.error("Error fetching data:", error);
-        showToast.error("Failed to load organizations and workspaces");
+        if (mounted) {
+          showToast.error("Failed to load data. Please try refreshing.");
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchData();
-  }, [isAuthenticated, userStatus]);
+    // Delay the fetch to ensure token is ready
+    timeoutId = setTimeout(() => {
+      if (mounted) {
+        fetchData();
+      }
+    }, 2000);
 
-  // Provide default values if user data is missing
-  // const safeUser = {
-  //   id: firebaseUser?.uid || "temp-user",
-  //   fullName: userStatus?.full_name || user?.fullName || "User",
-  //   email: userStatus?.email || user?.email || "user@example.com",
-  //   role: userStatus?.roles?.[0]?.name?.toLowerCase() || user?.role || "team",
-  //   organizationId:
-  //     userStatus?.organization?.id?.toString() || user?.organizationId || null,
-  //   workspaceIds: user?.workspaceIds || [],
-  //   ...user,
-  // };
+    return () => {
+      mounted = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [isAuthenticated, userStatus]);
 
   if (loading) {
     return (
@@ -151,9 +184,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   const handleCreateWorkspace = () => onNavigate("workspace-creation");
   const handleJoinWorkspace = () => onNavigate("workspace-joining");
   const handleCreateOrganization = () => onNavigate("create-organization");
-  const handleGoToDashboard = () => {
-    navigate("/");
-  };
+  const handleGoToDashboard = () => navigate("/");
 
   const handleLogoutRequest = async () => {
     setShowLogoutModal(false);
@@ -178,39 +209,31 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
     if (!showDeleteModal) return;
 
     const { type, id, name } = showDeleteModal;
-
     try {
-      // TODO: Implement actual delete API calls
       showToast.success(
         `${
           type === "org" ? "Organization" : "Workspace"
         } "${name}" deleted successfully`
       );
-      await refreshUserStatus();
     } catch (error) {
       showToast.error(`Failed to delete ${type}`);
     }
-
     setShowDeleteModal(null);
   };
 
   const handleEditSubmit = async () => {
     if (!showEditModal) return;
 
-    const { type, item } = showEditModal;
-
+    const { type } = showEditModal;
     try {
-      // TODO: Implement actual update API calls
       showToast.success(
         `${type === "org" ? "Organization" : "Workspace"} "${
           editFormData.name
         }" updated successfully`
       );
-      await refreshUserStatus();
     } catch (error) {
       showToast.error(`Failed to update ${type}`);
     }
-
     setShowEditModal(null);
     setEditFormData({});
   };
@@ -228,10 +251,21 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
     setShowDeleteModal({ type, id, name });
   };
 
+  // Filter joined workspaces and sort by createdAt descending
+  const joinedWorkspaceIds =
+    userStatus?.roles
+      ?.filter((role: any) => role.scope === "WORKSPACE")
+      ?.map((role: any) => role.workspace_id) || [];
+  const joinedWorkspaces = workspaces
+    .filter((ws) => joinedWorkspaceIds.includes(ws.id))
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
   return (
     <>
       <div className="min-h-screen bg-gray-50">
-        {/* Header */}
         <header className="bg-white shadow-sm border-b border-gray-200">
           <div className="w-full px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
@@ -254,21 +288,19 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                     className="bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none w-40"
                   />
                 </div>
-                <div>
-                  <button
-                    onClick={onCreateRole}
-                    className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                  >
-                    Create Role
-                  </button>
-                </div>
+                <button
+                  onClick={onCreateRole}
+                  className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                >
+                  Create Role
+                </button>
                 <div className="relative">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100"
                   >
                     <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                      {user?.fullName?.[0] || "U"} {/* Use user's initial */}
+                      {user?.fullName?.[0] || "U"}
                     </div>
                     <span className="text-sm font-medium text-gray-700">
                       {user?.fullName || "User"}
@@ -304,7 +336,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                         <button
                           onClick={() => {
                             setShowUserMenu(false);
-                            setShowLogoutModal(true); // Show logout modal
+                            setShowLogoutModal(true);
                           }}
                           className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
                         >
@@ -320,7 +352,6 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
           </div>
         </header>
 
-        {/* Main Content */}
         <div className="px-4 sm:px-6 lg:px-8 py-8">
           <div className="border-b border-gray-200 mb-6">
             <nav className="-mb-px flex space-x-8">
@@ -349,240 +380,254 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
 
           {activeTab === "workspaces" && (
             <div className="space-y-6">
-              <div className="flex space-x-4">
-                <button
-                  onClick={handleCreateWorkspace}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Workspace
-                </button>
-                <button
-                  onClick={handleJoinWorkspace}
-                  className="bg-white text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors flex items-center"
-                >
-                  <Users className="w-4 h-4 mr-2" />
-                  Join Workspace
-                </button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {workspaces.length > 0 ? (
-                  workspaces.map((workspace) => {
-                    const organization = organizations.find(
-                      (org) => org.id === workspace.organization
-                    );
-                    const isOwner = userStatus?.roles?.some(
-                      (role: any) =>
-                        role.name === "ADMIN" &&
-                        role.scope === "WORKSPACE" &&
-                        role.workspace_id === workspace.id
-                    );
-
-                    return (
-                      <div
-                        key={workspace.id}
-                        className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
-                      >
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <Users className="w-6 h-6 text-blue-600" />
-                          </div>
-                          {isOwner && (
-                            <div className="relative">
-                              <button className="p-1 text-gray-400 hover:text-gray-600 rounded">
-                                <MoreHorizontal className="w-4 h-4" />
-                              </button>
-                              <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10 opacity-0 hover:opacity-100 transition-opacity">
-                                <button
-                                  onClick={() =>
-                                    openEditModal("workspace", workspace)
-                                  }
-                                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                >
-                                  <Edit className="w-3 h-3 mr-2" />
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    openDeleteModal(
-                                      "workspace",
-                                      workspace.id.toString(),
-                                      workspace.name
-                                    )
-                                  }
-                                  className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
-                                >
-                                  <Trash2 className="w-3 h-3 mr-2" />
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          {workspace.name}
-                        </h3>
-                        {/* <p className="text-sm text-gray-600 mb-4">
-                          {organization?.name || "No Organization"}
-                        </p> */}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center text-sm text-gray-500">
-                            <Users className="w-4 h-4 mr-1" />0 member
-                            {/* {memberCount} member{memberCount !== 1 ? "s" : ""} */}
-                          </div>
-                          <button
-                            onClick={handleGoToDashboard}
-                            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                          >
-                            Open
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="col-span-full text-center py-12">
-                    <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      No workspaces yet
-                    </h3>
-                    <p className="text-gray-600 mb-4">
-                      Create your first workspace or join an existing one
-                    </p>
-                    <div className="flex justify-center space-x-4">
-                      <button
-                        onClick={handleCreateWorkspace}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        Create Workspace
-                      </button>
-                      <button
-                        onClick={handleJoinWorkspace}
-                        className="bg-white text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
-                      >
-                        Join Workspace
-                      </button>
-                    </div>
+              {organizations.length === 0 ? (
+                <div className="text-center py-12">
+                  <Building2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No organization found
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    You need to create an organization first to manage
+                    workspaces.
+                  </p>
+                  <button
+                    onClick={handleCreateOrganization}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Create Organization
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex space-x-4">
+                    <button
+                      onClick={handleCreateWorkspace}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Workspace
+                    </button>
+                    <button
+                      onClick={handleJoinWorkspace}
+                      className="bg-white text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors flex items-center"
+                    >
+                      <Users className="w-4 h-4 mr-2" />
+                      Join Workspace
+                    </button>
                   </div>
-                )}
-              </div>
+                  {joinedWorkspaces.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {joinedWorkspaces.map((workspace) => {
+                        const organization = organizations.find(
+                          (org) => org.id === workspace.organization
+                        );
+                        const isOwner = userStatus?.roles?.some(
+                          (role: any) =>
+                            role.name === "ADMIN" &&
+                            role.scope === "WORKSPACE" &&
+                            role.workspace_id === workspace.id
+                        );
+
+                        return (
+                          <div
+                            key={workspace.id}
+                            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                          >
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <Users className="w-6 h-6 text-blue-600" />
+                              </div>
+                              {isOwner && (
+                                <div className="relative group">
+                                  <button className="p-1 text-gray-400 hover:text-gray-600 rounded">
+                                    <MoreHorizontal className="w-4 h-4" />
+                                  </button>
+                                  <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                      onClick={() =>
+                                        openEditModal("workspace", workspace)
+                                      }
+                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                    >
+                                      <Edit className="w-3 h-3 mr-2" />
+                                      Edit
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        openDeleteModal(
+                                          "workspace",
+                                          workspace.id.toString(),
+                                          workspace.name
+                                        )
+                                      }
+                                      className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                                    >
+                                      <Trash2 className="w-3 h-3 mr-2" />
+                                      Delete
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              {workspace.name}
+                            </h3>
+                            <p className="text-sm text-gray-600 mb-4">
+                              {organization?.name || "No Organization"}
+                            </p>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center text-sm text-gray-500">
+                                <Users className="w-4 h-4 mr-1" />
+                                {workspace.members.length} member
+                                {workspace.members.length !== 1 ? "s" : ""}
+                              </div>
+                              <button
+                                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                                onClick={handleGoToDashboard}
+                              >
+                                Open
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        No workspaces yet
+                      </h3>
+                      <p className="text-gray-600 mb-4">
+                        Create your first workspace or join an existing one
+                      </p>
+                      <div className="flex justify-center space-x-4">
+                        <button
+                          onClick={handleCreateWorkspace}
+                          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          Create Workspace
+                        </button>
+                        <button
+                          onClick={handleJoinWorkspace}
+                          className="bg-white text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                        >
+                          Join Workspace
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
 
           {activeTab === "organizations" && (
             <div className="space-y-6">
-              <div className="flex space-x-4">
-                <button
-                  onClick={handleCreateOrganization}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Organization
-                </button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {organizations.length > 0 ? (
-                  organizations.map((org) => {
-                    const isOwner = userStatus?.roles?.some(
-                      (role: any) =>
-                        role.name === "OWNER" &&
-                        role.scope === "ORGANIZATION" &&
-                        role.organization_id === org.id
-                    );
+              {organizations.length === 0 ? (
+                <div className="text-center py-12">
+                  <Building2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No organization found
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Create an organization to get started
+                  </p>
+                  <button
+                    onClick={handleCreateOrganization}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Create Organization
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {organizations.map((org) => {
+                      const isOwner = userStatus?.roles?.some(
+                        (role: any) =>
+                          role.name === "OWNER" &&
+                          role.scope === "ORGANIZATION" &&
+                          role.organization_id === org.id
+                      );
 
-                    return (
-                      <div
-                        key={org.id}
-                        className="w-full bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
-                      >
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <Building2 className="w-6 h-6 text-blue-500" />
-                          </div>
-                          {isOwner && (
-                            <div className="relative group">
-                              <button className="p-1 text-gray-400 hover:text-gray-600 rounded">
-                                <MoreHorizontal className="w-4 h-4" />
-                              </button>
-                              <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                  onClick={() => openEditModal("org", org)}
-                                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                >
-                                  <Edit className="w-3 h-3 mr-2" />
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    openDeleteModal(
-                                      "org",
-                                      org.id.toString(),
-                                      org.name
-                                    )
-                                  }
-                                  className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
-                                >
-                                  <Trash2 className="w-3 h-3 mr-2" />
-                                  Delete
-                                </button>
-                              </div>
+                      return (
+                        <div
+                          key={org.id}
+                          className="w-full bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                              <Building2 className="w-6 h-6 text-blue-500" />
                             </div>
-                          )}
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          {org.name}
-                        </h3>
-                        <p className="text-sm text-gray-600 mb-4">
-                          @{org.domain || "unknown"}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center text-sm text-gray-500">
-                            <Users className="w-4 h-4 mr-1" />
-                            {
-                              workspaces.filter(
-                                (ws) => ws.organization === org.id
-                              ).length
-                            }{" "}
-                            workspace
-                            {workspaces.filter(
-                              (ws) => ws.organization === org.id
-                            ).length !== 1
-                              ? "s"
-                              : ""}
+                            {isOwner && (
+                              <div className="relative group">
+                                <button className="p-1 text-gray-400 hover:text-gray-600 rounded">
+                                  <MoreHorizontal className="w-4 h-4" />
+                                </button>
+                                <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    onClick={() => openEditModal("org", org)}
+                                    className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                  >
+                                    <Edit className="w-3 h-3 mr-2" />
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      openDeleteModal(
+                                        "org",
+                                        org.id.toString(),
+                                        org.name
+                                      )
+                                    }
+                                    className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                                  >
+                                    <Trash2 className="w-3 h-3 mr-2" />
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                          {isOwner && (
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                              Owner
-                            </span>
-                          )}
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            {org.name}
+                          </h3>
+                          <p className="text-sm text-gray-600 mb-4">
+                            @{org.domain || "unknown"}
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center text-sm text-gray-500">
+                              <Users className="w-4 h-4 mr-1" />
+                              {
+                                workspaces.filter(
+                                  (ws) => ws.organization === org.id
+                                ).length
+                              }{" "}
+                              workspace
+                              {workspaces.filter(
+                                (ws) => ws.organization === org.id
+                              ).length !== 1
+                                ? "s"
+                                : ""}
+                            </div>
+                            {isOwner && (
+                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                Owner
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="col-span-full text-center py-12">
-                    <Building2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      No organizations exist
-                    </h3>
-                    <p className="text-gray-600 mb-4">
-                      Please create one to get started
-                    </p>
-                    <button
-                      onClick={handleCreateOrganization}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Create Organization
-                    </button>
+                      );
+                    })}
                   </div>
-                )}
-              </div>
+                </>
+              )}
             </div>
           )}
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
@@ -617,7 +662,6 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
         </div>
       )}
 
-      {/* Edit Modal */}
       {showEditModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
@@ -645,56 +689,22 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                 />
               </div>
               {showEditModal.type === "org" && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Industry
-                    </label>
-                    <input
-                      type="text"
-                      value={editFormData.industry || ""}
-                      onChange={(e) =>
-                        setEditFormData((prev: any) => ({
-                          ...prev,
-                          industry: e.target.value,
-                        }))
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Website
-                    </label>
-                    <input
-                      type="url"
-                      value={editFormData.website || ""}
-                      onChange={(e) =>
-                        setEditFormData((prev: any) => ({
-                          ...prev,
-                          website: e.target.value,
-                        }))
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Description
-                    </label>
-                    <textarea
-                      value={editFormData.description || ""}
-                      onChange={(e) =>
-                        setEditFormData((prev: any) => ({
-                          ...prev,
-                          description: e.target.value,
-                        }))
-                      }
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                </>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Domain
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.domain || ""}
+                    onChange={(e) =>
+                      setEditFormData((prev: any) => ({
+                        ...prev,
+                        domain: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
               )}
             </div>
             <div className="flex space-x-3 mt-6">
@@ -718,7 +728,6 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
         </div>
       )}
 
-      {/* Logout Confirmation Modal */}
       {showLogoutModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
@@ -756,6 +765,3 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
 };
 
 export default WorkspacesOrg;
-function refreshUserStatus() {
-  throw new Error("Function not implemented.");
-}

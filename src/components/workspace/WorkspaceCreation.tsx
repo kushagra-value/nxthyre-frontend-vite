@@ -2,16 +2,16 @@ import React, { useState } from "react";
 import { ArrowLeft, Users, Mail, Copy, Check, X, Plus } from "lucide-react";
 import { organizationService } from "../../services/organizationService";
 import { showToast } from "../../utils/toast";
+import { useAuthContext } from "../../context/AuthContext";
 
 interface WorkspaceCreationProps {
   onNavigate: (flow: string, data?: any) => void;
-  user: any;
 }
 
 const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
   onNavigate,
-  user,
 }) => {
+  const { userStatus } = useAuthContext();
   const [step, setStep] = useState(1);
   const [workspaceName, setWorkspaceName] = useState("");
   const [inviteEmails, setInviteEmails] = useState<string[]>([]);
@@ -73,17 +73,19 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
   };
 
   const handleSendInvites = async () => {
+    if (!userStatus?.organization?.id) {
+      showToast.error(
+        "You must be part of an organization to create a workspace"
+      );
+      return;
+    }
+
     setIsLoading(true);
-
     try {
-      // Create workspace
-      const organizationId = parseInt(user.organizationId || "1");
-      console.log(user.organizationId, organizationId);
+      const organizationId = userStatus.organization.id;
       await organizationService.createWorkspace(organizationId, workspaceName);
-
       showToast.success("Workspace created successfully!");
 
-      // TODO: Send invites if any emails were added
       if (inviteEmails.length > 0) {
         showToast.info(
           `Invites sent to ${inviteEmails.length} email${
@@ -112,7 +114,6 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16">
@@ -132,9 +133,7 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Progress Steps */}
         <div className="mb-8">
           <div className="flex items-center">
             <div
@@ -167,7 +166,6 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
           </div>
         </div>
 
-        {/* Step 1: Workspace Name */}
         {step === 1 && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="text-center mb-6">
@@ -226,7 +224,6 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
           </div>
         )}
 
-        {/* Step 2: Invite Members */}
         {step === 2 && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="text-center mb-6">
@@ -242,7 +239,6 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
             </div>
 
             <div className="space-y-6">
-              {/* Email Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Email Addresses
@@ -277,7 +273,6 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
                   )}
                 </div>
 
-                {/* Email Tags */}
                 {inviteEmails.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {inviteEmails.map((email, index) => (
@@ -298,7 +293,6 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
                 )}
               </div>
 
-              {/* Invite Link */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Or share invite link
@@ -333,7 +327,6 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex space-x-4 pt-4">
                 <button
                   onClick={handleCancel}
