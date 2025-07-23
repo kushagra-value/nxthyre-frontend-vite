@@ -322,123 +322,144 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
 
           {activeTab === "workspaces" && (
             <div className="space-y-6">
-              <div className="flex space-x-4">
-                <button
-                  onClick={handleCreateWorkspace}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Workspace
-                </button>
-                <button
-                  onClick={handleJoinWorkspace}
-                  className="bg-white text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors flex items-center"
-                >
-                  <Users className="w-4 h-4 mr-2" />
-                  Join Workspace
-                </button>
-              </div>
-              {joinedWorkspaces.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {joinedWorkspaces.map((workspace) => {
-                    const organization = organizations.find(
-                      (org) => org.id === workspace.organization
-                    );
-                    const isOwner = userStatus?.roles?.some(
-                      (role: any) =>
-                        role.name === "ADMIN" &&
-                        role.scope === "WORKSPACE" &&
-                        role.workspace_id === workspace.id
-                    );
-
-                    return (
-                      <div
-                        key={workspace.id}
-                        className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
-                      >
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <Users className="w-6 h-6 text-blue-600" />
-                          </div>
-                          {isOwner && (
-                            <div className="relative group">
-                              <button className="p-1 text-gray-400 hover:text-gray-600 rounded">
-                                <MoreHorizontal className="w-4 h-4" />
-                              </button>
-                              <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                  onClick={() =>
-                                    openEditModal("workspace", workspace)
-                                  }
-                                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                >
-                                  <Edit className="w-3 h-3 mr-2" />
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    openDeleteModal(
-                                      "workspace",
-                                      workspace.id.toString(),
-                                      workspace.name
-                                    )
-                                  }
-                                  className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
-                                >
-                                  <Trash2 className="w-3 h-3 mr-2" />
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          {workspace.name}
-                        </h3>
-                        <p className="text-sm text-gray-600 mb-4">
-                          {organization?.name || "No Organization"}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center text-sm text-gray-500">
-                            <Users className="w-4 h-4 mr-1" />
-                            {workspace.members.length} member
-                            {workspace.members.length !== 1 ? "s" : ""}
-                          </div>
-                          <button
-                            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                            onClick={handleGoToDashboard}
-                          >
-                            Open
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
+              {organizations.length === 0 ? (
                 <div className="text-center py-12">
-                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <Building2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No workspaces yet
+                    No organization found
                   </h3>
                   <p className="text-gray-600 mb-4">
-                    Create your first workspace or join an existing one
+                    You need to create an organization first to manage
+                    workspaces.
                   </p>
-                  <div className="flex justify-center space-x-4">
+                  <button
+                    onClick={handleCreateOrganization}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Create Organization
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex space-x-4">
                     <button
                       onClick={handleCreateWorkspace}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
                     >
+                      <Plus className="w-4 h-4 mr-2" />
                       Create Workspace
                     </button>
                     <button
                       onClick={handleJoinWorkspace}
-                      className="bg-white text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                      className="bg-white text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors flex items-center"
                     >
+                      <Users className="w-4 h-4 mr-2" />
                       Join Workspace
                     </button>
                   </div>
-                </div>
+                  {joinedWorkspaces.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {joinedWorkspaces.map((workspace) => {
+                        const organization = organizations.find(
+                          (org) => org.id === workspace.organization
+                        );
+                        const isOwner = userStatus?.roles?.some(
+                          (role: any) =>
+                            role.name === "ADMIN" &&
+                            role.scope === "WORKSPACE" &&
+                            role.workspace_id === workspace.id
+                        );
+
+                        return (
+                          <div
+                            key={workspace.id}
+                            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                          >
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <Users className="w-6 h-6 text-blue-600" />
+                              </div>
+                              {isOwner && (
+                                <div className="relative group">
+                                  <button className="p-1 text-gray-400 hover:text-gray-600 rounded">
+                                    <MoreHorizontal className="w-4 h-4" />
+                                  </button>
+                                  <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                      onClick={() =>
+                                        openEditModal("workspace", workspace)
+                                      }
+                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                    >
+                                      <Edit className="w-3 h-3 mr-2" />
+                                      Edit
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        openDeleteModal(
+                                          "workspace",
+                                          workspace.id.toString(),
+                                          workspace.name
+                                        )
+                                      }
+                                      className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                                    >
+                                      <Trash2 className="w-3 h-3 mr-2" />
+                                      Delete
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              {workspace.name}
+                            </h3>
+                            <p className="text-sm text-gray-600 mb-4">
+                              {organization?.name || "No Organization"}
+                            </p>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center text-sm text-gray-500">
+                                <Users className="w-4 h-4 mr-1" />
+                                {workspace.members.length} member
+                                {workspace.members.length !== 1 ? "s" : ""}
+                              </div>
+                              <button
+                                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                                onClick={handleGoToDashboard}
+                              >
+                                Open
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        No workspaces yet
+                      </h3>
+                      <p className="text-gray-600 mb-4">
+                        Create your first workspace or join an existing one
+                      </p>
+                      <div className="flex justify-center space-x-4">
+                        <button
+                          onClick={handleCreateWorkspace}
+                          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          Create Workspace
+                        </button>
+                        <button
+                          onClick={handleJoinWorkspace}
+                          className="bg-white text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                        >
+                          Join Workspace
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
