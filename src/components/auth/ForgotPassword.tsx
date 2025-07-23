@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { XCircle, CheckCircle, Mail, Sparkles } from "lucide-react";
+import {
+  XCircle,
+  CheckCircle,
+  Mail,
+  Sparkles,
+  Mic,
+  MessageCircle,
+  Volume2,
+} from "lucide-react";
 import { authService } from "../../services/authService";
 import { showToast } from "../../utils/toast";
 
@@ -67,7 +75,81 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onNavigate }) => {
         <div className="absolute bottom-60 right-60 w-2 h-2 bg-white/20 rounded-full"></div>
 
         <div className="relative z-10 min-h-screen flex items-center justify-center p-8">
-          <div className="w-full max-w-md">
+          <div className="w-full max-w-7xl flex items-center gap-16">
+            {/* Left Side - Branding Content */}
+            <div className="flex-1 text-white">
+              {/* Logo */}
+              <div className="flex items-center mb-16">
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mr-3">
+                  <Sparkles className="w-6 h-6" />
+                </div>
+                <span className="text-2xl font-bold">NxtHyre </span>
+              </div>
+
+              {/* Main Content */}
+              <div className="max-w-4xl">
+                <div className="flex items-center mb-6">
+                  <h1 className="text-5xl font-bold mr-4">JOIN THE</h1>
+                  <Sparkles className="w-8 h-8 text-yellow-300" />
+                </div>
+                <h2 className="text-5xl font-bold mb-8 bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                  Hiring Revolution
+                </h2>
+
+                {/* Feature Cards - Side by Side */}
+                <div className="flex gap-6 mb-12">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 flex-1">
+                    <div className="flex items-center mb-3">
+                      <div className="w-12 h-12 bg-blue-500/30 rounded-lg flex items-center justify-center mr-4">
+                        <Mic className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-xl font-semibold">AI Recruiting</h3>
+                    </div>
+                    <p className="text-blue-100 text-sm">
+                      Intelligent candidate matching in 60+ industries
+                    </p>
+                  </div>
+
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 flex-1">
+                    <div className="flex items-center mb-3">
+                      <div className="w-12 h-12 bg-blue-500/30 rounded-lg flex items-center justify-center mr-4">
+                        <MessageCircle className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-xl font-semibold">Smart Screening</h3>
+                    </div>
+                    <p className="text-blue-100 text-sm">
+                      Automated interviews and skill assessments
+                    </p>
+                  </div>
+
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 flex-1">
+                    <div className="flex items-center mb-3">
+                      <div className="w-12 h-12 bg-blue-500/30 rounded-lg flex items-center justify-center mr-4">
+                        <Volume2 className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-xl font-semibold">
+                        Team Collaboration
+                      </h3>
+                    </div>
+                    <p className="text-blue-100 text-sm">
+                      Seamless workflow management for hiring teams
+                    </p>
+                  </div>
+                </div>
+
+                {/* Contact */}
+                <div className="mt-16">
+                  <p className="text-blue-200 text-sm">
+                    Facing any issue?{" "}
+                    <button className="underline hover:text-white">
+                      Contact Us
+                    </button>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side - Form */}
             <div className="bg-white rounded-2xl p-8 shadow-2xl text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Mail className="w-8 h-8 text-green-600" />
