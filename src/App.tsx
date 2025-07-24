@@ -154,12 +154,12 @@ function MainApp() {
         setActiveCategoryId(mappedCategories[0].id);
         await fetchJobDetailsAndSetFilters(mappedCategories[0].id);
       } else {
-      const hasSeenGuide = localStorage.getItem("hasSeenGuideModal");
-      if (!hasSeenGuide) {
-        setShowGuideModal(true);
-        // Set the flag in localStorage to prevent showing again
-        localStorage.setItem("hasSeenGuideModal", "true");
-      }
+        const hasSeenGuide = localStorage.getItem("hasSeenGuideModal");
+        if (!hasSeenGuide) {
+          setShowGuideModal(true);
+          // Set the flag in localStorage to prevent showing again
+          localStorage.setItem("hasSeenGuideModal", "true");
+        }
       }
     } catch (error) {
       showToast.error("Failed to fetch job categories");
@@ -399,14 +399,22 @@ function MainApp() {
     }
   }, []);
 
-  const updateCandidateEmail = (candidateId: string, candidate_email: string, candidate_phone: string) => {
+  const updateCandidateEmail = (
+    candidateId: string,
+    candidate_email: string,
+    candidate_phone: string
+  ) => {
     setCandidates((prevCandidates) =>
       prevCandidates.map((cand) =>
-        cand.id === candidateId ? { ...cand, candidate_email, candidate_phone} : cand
+        cand.id === candidateId
+          ? { ...cand, candidate_email, candidate_phone }
+          : cand
       )
     );
     if (selectedCandidate?.id === candidateId) {
-      setSelectedCandidate((prev) => prev ? { ...prev, candidate_email, candidate_phone} : prev);
+      setSelectedCandidate((prev) =>
+        prev ? { ...prev, candidate_email, candidate_phone } : prev
+      );
     }
   };
 
@@ -557,14 +565,7 @@ function MainApp() {
   };
 
   const handleSharePipelines = (jobId: number) => {
-    const job = categories.find((cat) => cat.id === jobId);
-    if (job) {
-      const pipelineId = job.name
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[^a-z0-9-]/g, "");
-      window.location.href = `/pipelines/${pipelineId}`;
-    }
+    window.location.href = `/pipelines/${jobId}`;
   };
 
   const handleShareLoaderComplete = () => {

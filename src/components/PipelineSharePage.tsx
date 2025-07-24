@@ -18,6 +18,8 @@ import {
   Clock,
 } from "lucide-react";
 import { showToast } from "../utils/toast";
+import apiClient from "../api/api"; // Adjust path as necessary
+import { useAuthContext } from "../context/AuthContext"; // Adjust path as necessary
 
 interface DraggedCandidate {
   candidate: any;
@@ -33,6 +35,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   pipelineId,
   onBack,
 }) => {
+  const { isAuthenticated, loading: authLoading } = useAuthContext();
+  const [isFetching, setIsFetching] = useState(false);
   const [draggedCandidate, setDraggedCandidate] =
     useState<DraggedCandidate | null>(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -47,7 +51,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [stageCandidates, setStageCandidates] = useState({});
   const [stageIdMap, setStageIdMap] = useState<{ [key: string]: number }>({});
 
-  const jobId = pipelineId; // Assuming pipelineId is the numeric jobId
+  const jobId = pipelineId;
 
   const shareableStages = [
     {
@@ -119,13 +123,15 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   };
 
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const fetchData = async () => {
+      setIsFetching(true);
       try {
-        const response = await fetch(
-          `https://nxthyre-server-staging-863630644667.asia-south1.run.app/api/jobs/applications/kanban-view/?job_id=${jobId}`
+        const response = await apiClient.get(
+          `/jobs/applications/kanban-view/?job_id=${jobId}`
         );
-        if (!response.ok) throw new Error("Failed to fetch kanban data");
-        const data = await response.json();
+        const data = response.data;
 
         const stageIdMapTemp: { [key: string]: number } = {};
         data.forEach((stage: any) => {
@@ -166,13 +172,19 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           }
         });
         setStageCandidates(processedData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        showToast.error("Failed to load pipeline data");
+      } catch (error: any) {
+        if (error.response?.status === 403) {
+          showToast.error("You don't have permission to view this pipeline.");
+        } else {
+          console.error("Error fetching data:", error);
+          showToast.error("Failed to load pipeline data");
+        }
+      } finally {
+        setIsFetching(false);
       }
     };
     fetchData();
-  }, [jobId]);
+  }, [jobId, isAuthenticated]);
 
   const handleDragStart = (candidate: any, fromStage: string) => {
     setDraggedCandidate({ candidate, fromStage });
@@ -214,21 +226,16 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     }
 
     try {
-      const response = await fetch(
-        `https://nxthyre-server-staging-863630644667.asia-south1.run.app/api/jobs/applications/${feedbackData.candidate.id}/?view=kanban`,
+      const response = await apiClient.patch(
+        `/jobs/applications/${feedbackData.candidate.id}/?view=kanban`,
         {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            current_stage: toStageId,
-            feedback: {
-              subject: `Moving to ${feedbackData.toStage}`,
-              comment: feedbackComment.trim(),
-            },
-          }),
+          current_stage: toStageId,
+          feedback: {
+            subject: `Moving to ${feedbackData.toStage}`,
+            comment: feedbackComment.trim(),
+          },
         }
       );
-      if (!response.ok) throw new Error("Failed to move candidate");
 
       setStageCandidates((prevStages: any) => {
         const newStages = { ...prevStages };
@@ -254,9 +261,13 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       setShowFeedbackModal(false);
       setFeedbackData(null);
       setFeedbackComment("");
-    } catch (error) {
-      console.error("Error moving candidate:", error);
-      showToast.error("Failed to move candidate");
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        showToast.error("You don't have permission to perform this action.");
+      } else {
+        console.error("Error moving candidate:", error);
+        showToast.error("Failed to move candidate");
+      }
     }
   };
 
@@ -372,6 +383,18 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
   const getStageCount = (stageName: string) =>
     stageCandidates[stageName]?.length || 0;
+
+  if (authLoading) {
+    return <div>Loading authentication...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return <div>You need to be logged in to view this page.</div>;
+  }
+
+  if (isFetching) {
+    return <div>Loading pipeline data...</div>;
+  }
 
   return (
     <>
