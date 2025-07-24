@@ -345,6 +345,24 @@ class CandidateService {
     }
   }
 
+  async getKeywordSuggestions(query: string): Promise<string[]> {
+    try {
+      const response = await apiClient.get(`/candidates/keyword-suggestions/?q=${encodeURIComponent(query)}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to fetch keyword suggestions");
+    }
+  }
+
+  async getRecentSearches(): Promise<{ id: number; query: string; created_at: string }[]> {
+    try {
+      const response = await apiClient.get(`/candidates/recent-searches/`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to fetch recent searches");
+    }
+  }
+
 }
 
 export const candidateService = new CandidateService();
