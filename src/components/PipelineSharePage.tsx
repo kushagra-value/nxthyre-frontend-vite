@@ -47,7 +47,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [activeProfileTab, setActiveProfileTab] = useState("profile");
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [accessEmail, setAccessEmail] = useState("");
-  const [accessLevel, setAccessLevel] = useState("view");
+  const [accessLevel, setAccessLevel] = useState<"view" | "edit">("view");
+  const [isSharing, setIsSharing] = useState(false); // Added for loading state
   const [stageCandidates, setStageCandidates] = useState({});
   const [stageIdMap, setStageIdMap] = useState<{ [key: string]: number }>({});
 
@@ -283,17 +284,41 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     setActiveProfileTab("profile");
   };
 
-  const handleAccessSubmit = () => {
+  const handleAccessSubmit = async () => {
     if (!accessEmail.trim()) {
       showToast.error("Please enter an email address");
       return;
     }
-    showToast.success(
-      `Access granted to ${accessEmail} with ${accessLevel} permissions`
-    );
-    setShowAccessModal(false);
-    setAccessEmail("");
-    setAccessLevel("view");
+    if (!accessEmail.includes("@")) {
+      showToast.error("Please enter a valid email address");
+      return;
+    }
+    setIsSharing(true);
+    try {
+      const accessLevelMap = {
+        view: "VIEW_ONLY",
+        edit: "CAN_EDIT",
+      };
+      const mappedAccessLevel = accessLevelMap[accessLevel] || "VIEW_ONLY";
+      await apiClient.post(`/jobs/roles/${jobId}/share-pipeline/`, {
+        email: accessEmail,
+        access_level: mappedAccessLevel,
+      });
+      const displayAccessLevel =
+        accessLevel === "edit" ? "Can Edit" : "View Only";
+      showToast.success(
+        `Access granted to ${accessEmail} with ${displayAccessLevel} permissions`
+      );
+      setShowAccessModal(false);
+      setAccessEmail("");
+      setAccessLevel("view");
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.detail || "Failed to share access";
+      showToast.error(errorMessage);
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   const renderCandidateCard = (candidate: any, stage: string) => (
@@ -521,7 +546,9 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                       type="radio"
                       value="view"
                       checked={accessLevel === "view"}
-                      onChange={(e) => setAccessLevel(e.target.value)}
+                      onChange={(e) =>
+                        setAccessLevel(e.target.value as "view" | "edit")
+                      }
                       className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">
@@ -533,7 +560,9 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                       type="radio"
                       value="edit"
                       checked={accessLevel === "edit"}
-                      onChange={(e) => setAccessLevel(e.target.value)}
+                      onChange={(e) =>
+                        setAccessLevel(e.target.value as "view" | "edit")
+                      }
                       className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">Can Edit</span>
@@ -549,9 +578,12 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                 </button>
                 <button
                   onClick={handleAccessSubmit}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  disabled={isSharing}
+                  className={`flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 ${
+                    isSharing ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                 >
-                  Share Access
+                  {isSharing ? "Sharing..." : "Share Access"}
                 </button>
               </div>
             </div>
