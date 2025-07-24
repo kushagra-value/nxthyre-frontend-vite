@@ -148,6 +148,17 @@ interface PipelineCandidate {
     scopesGranted: string[];
   };
   external_notes: Note[];
+  feedbackNotes: Array<{
+    subject: string;
+    comment: string;
+    author: string;
+    date: string;
+  }>;
+  candidateNotes: Array<{
+    comment: string;
+    author: string;
+    date: string;
+  }>;
   stageData: {
     uncontacted?: {
       notes: string[];
@@ -567,11 +578,36 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         scopesGranted: [],
       },
       external_notes: data.contextual_details.candidate_notes || [],
+      feedbackNotes: data.contextual_details.feedback_notes || [],
+      candidateNotes: data.candidate.notes || [],
       stageData: {
         [stageProperty]: mappedStageData,
       },
     };
   };
+
+  const mapToComment = (
+    note: any,
+    index: number,
+    type: "feedback" | "note"
+  ) => ({
+    id: `${type}-${index}`,
+    text: note.comment || "",
+    author: note.author || "Unknown",
+    date: note.date ? new Date(note.date).toLocaleDateString() : "Unknown date",
+    avatar: note.author ? note.author[0].toUpperCase() : "U",
+    subject: note.subject || "", // Optional for feedback_notes
+  });
+
+  // Compute comments from selectedCandidate
+  const feedbackComments =
+    selectedCandidate?.feedbackNotes?.map((note, index) =>
+      mapToComment(note, index, "feedback")
+    ) || [];
+  const candidateComments =
+    selectedCandidate?.candidateNotes?.map((note, index) =>
+      mapToComment(note, index, "note")
+    ) || [];
 
   const handleStageSelect = (stage: string) => {
     setSelectedStage(stage);
@@ -3184,26 +3220,75 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                     </button>
                   </div>
                   <div className="flex-1 overflow-y-auto space-y-4">
-                    {existingComments.map((comment) => (
-                      <div key={comment.id} className="flex space-x-3">
-                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-                          {comment.avatar}
-                        </div>
-                        <div className="flex-1">
-                          <div className="bg-gray-100 rounded-2xl px-4 py-2 mr-2">
-                            <p className="font-medium text-sm text-gray-900">
-                              {comment.author}
-                            </p>
-                            <p className="text-sm text-gray-800 mt-1">
-                              {comment.text}
+                    {/* Kanban board notes */}
+                    <h4 className="text-lg font-semibold text-gray-900">
+                      Kanban board notes
+                    </h4>
+                    {feedbackComments.length > 0 ? (
+                      feedbackComments.map((comment) => (
+                        <div key={comment.id} className="flex space-x-3">
+                          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
+                            {comment.avatar}
+                          </div>
+                          <div className="flex-1">
+                            <div className="bg-gray-100 rounded-2xl px-4 py-2 mr-2">
+                              <p className="font-medium text-sm text-gray-900">
+                                {comment.author}
+                              </p>
+                              {comment.subject && (
+                                <p className="text-sm text-gray-700 mt-1 font-medium">
+                                  {comment.subject}
+                                </p>
+                              )}
+                              <p className="text-sm text-gray-800 mt-1">
+                                {comment.text}
+                              </p>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1 ml-4">
+                              {comment.date}
                             </p>
                           </div>
-                          <p className="text-xs text-gray-500 mt-1 ml-4">
-                            {comment.date}
-                          </p>
                         </div>
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">
+                        No Kanban board notes
+                      </p>
+                    )}
+
+                    {/* Notes */}
+                    <h4 className="text-lg font-semibold text-gray-900">
+                      Notes
+                    </h4>
+                    {candidateComments.length > 0 ? (
+                      candidateComments.map((comment) => (
+                        <div key={comment.id} className="flex space-x-3">
+                          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
+                            {comment.avatar}
+                          </div>
+                          <div className="flex-1">
+                            <div className="bg-gray-100 rounded-2xl px-4 py-2 mr-2">
+                              <p className="font-medium text-sm text-gray-900">
+                                {comment.author}
+                              </p>
+                              {comment.subject && (
+                                <p className="text-sm text-gray-700 mt-1 font-medium">
+                                  {comment.subject}
+                                </p>
+                              )}
+                              <p className="text-sm text-gray-800 mt-1">
+                                {comment.text}
+                              </p>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1 ml-4">
+                              {comment.date}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">No notes</p>
+                    )}
                   </div>
                   <div className="mt-4">
                     <div className="flex space-x-3">
