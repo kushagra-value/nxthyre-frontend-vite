@@ -570,6 +570,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 placeholder="For Ex: Gen AI Specialist, and Gen AI engineer"
                 value={filters.keywords}
                 onChange={(e) => updateFilters("keywords", e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
             </div>
