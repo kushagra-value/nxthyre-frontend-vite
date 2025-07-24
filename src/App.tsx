@@ -154,7 +154,12 @@ function MainApp() {
         setActiveCategoryId(mappedCategories[0].id);
         await fetchJobDetailsAndSetFilters(mappedCategories[0].id);
       } else {
+      const hasSeenGuide = localStorage.getItem("hasSeenGuideModal");
+      if (!hasSeenGuide) {
         setShowGuideModal(true);
+        // Set the flag in localStorage to prevent showing again
+        localStorage.setItem("hasSeenGuideModal", "true");
+      }
       }
     } catch (error) {
       showToast.error("Failed to fetch job categories");

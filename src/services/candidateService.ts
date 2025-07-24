@@ -178,6 +178,31 @@ export interface InviteResponse {
   candidate_phone: string;
 }
 
+export interface PipelineResponse {
+  id: number;
+  job: number;
+  candidate: string;
+  current_stage: number;
+  status: string;
+  added_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BulkPipelineResponse {
+  message: string;
+  added_count: number;
+  skipped_count: number;
+}
+
+export interface PipelineStage {
+  id: number;
+  name: string;
+  slug: string;
+  sort_order: number;
+  candidate_count: number;
+}
+
 class CandidateService {
   async getCandidates(filters: any): Promise<{ results: CandidateListItem[]; count: number }> {
     try {
@@ -282,6 +307,44 @@ class CandidateService {
       throw new Error(error.response?.data?.error || "Failed to update template");
     }
   }
+
+  async saveToPipeline(jobId: number, candidateId: string, stageId?: number): Promise<PipelineResponse> {
+    try {
+      const payload: { job: number; candidate: string; current_stage?: number } = {
+        job: jobId,
+        candidate: candidateId
+      };
+      if (stageId) {
+        payload.current_stage = stageId;
+      }
+      const response = await apiClient.post('/jobs/applications/', payload);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to save candidate to pipeline");
+    }
+  }
+
+  async bulkAddToPipeline(jobId: number, candidateIds: string[]): Promise<BulkPipelineResponse> {
+    try {
+      const response = await apiClient.post('/jobs/bulk-add-to-pipeline/', {
+        job: jobId,
+        candidate_ids: candidateIds
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to add candidates to pipeline");
+    }
+  }
+
+    async getPipelineStages(jobId: number): Promise<PipelineStage[]> {
+    try {
+      const response = await apiClient.get(`/jobs/applications/stages/?job_id=${jobId}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to fetch pipeline stages");
+    }
+  }
+
 }
 
 export const candidateService = new CandidateService();
