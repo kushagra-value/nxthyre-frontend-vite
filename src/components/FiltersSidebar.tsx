@@ -37,6 +37,7 @@ interface FiltersSidebarProps {
     city: string;
     country: string;
     location: string;
+    locations: string[];
     selectedSkills: string[];
     skillLevel: string;
     noticePeriod: string;
@@ -292,67 +293,67 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   );
 
   // Fetch candidates when filters change
-  useEffect(() => {
-    if (filters.jobId) {
-      const filterParams: any = {
-        job_id: filters.jobId,
-        application_type: filters.application_type,
-      };
-      if (filters.keywords) filterParams.q = [filters.keywords];
-      if (filters.minTotalExp)
-        filterParams.experience_min = Number(filters.minTotalExp);
-      if (filters.maxTotalExp)
-        filterParams.experience_max = Number(filters.maxTotalExp);
-      if (filters.minExperience)
-        filterParams.exp_in_current_company_min = Number(filters.minExperience);
-      if (filters.topTierUniversities)
-        filterParams.is_top_tier_college = filters.topTierUniversities;
-      if (filters.hasCertification)
-        filterParams.has_certification = filters.hasCertification;
-      if (filters.location) filterParams.location = filters.location;
-      if (filters.selectedSkills.length > 0)
-        filterParams.skills = filters.selectedSkills.join(",");
-      if (filters.companies)
-        filterParams.companies = filters.companies
-          .split(",")
-          .map((c: string) => c.trim());
-      if (filters.industries)
-        filterParams.industries = filters.industries
-          .split(",")
-          .map((i: string) => i.trim());
-      if (filters.minSalary) filterParams.salary_min = filters.minSalary;
-      if (filters.maxSalary) filterParams.salary_max = filters.maxSalary;
-      if (filters.colleges)
-        filterParams.colleges = filters.colleges
-          .split(",")
-          .map((c: string) => c.trim());
-      if (filters.showFemaleCandidates) filterParams.is_female_only = true;
-      if (filters.recentlyPromoted) filterParams.is_recently_promoted = true;
-      if (filters.backgroundVerified)
-        filterParams.is_background_verified = true;
-      if (filters.hasLinkedIn) filterParams.has_linkedin = true;
-      if (filters.hasTwitter) filterParams.has_twitter = true;
-      if (filters.hasPortfolio) filterParams.has_portfolio = true;
-      if (filters.computerScienceGraduates) filterParams.is_cs_graduate = true;
-      if (filters.hasResearchPaper) filterParams.has_research_paper = true;
-      if (filters.hasBehance) filterParams.has_behance = true;
-      if (filters.is_prevetted) filterParams.is_prevetted = true;
-      if (filters.is_active) filterParams.is_active = true;
-      if (filters.noticePeriod) {
-        const days = {
-          "15 days": 15,
-          "30 days": 30,
-          "45 days": 45,
-          "60 days": 60,
-          "90 days": 90,
-          Immediate: 0,
-        }[filters.noticePeriod];
-        if (days !== undefined) filterParams.notice_period_max_days = days;
-      }
+  // useEffect(() => {
+  //   if (filters.jobId) {
+  //     const filterParams: any = {
+  //       job_id: filters.jobId,
+  //       application_type: filters.application_type,
+  //     };
+  //     if (filters.keywords) filterParams.q = [filters.keywords];
+  //     if (filters.minTotalExp)
+  //       filterParams.experience_min = Number(filters.minTotalExp);
+  //     if (filters.maxTotalExp)
+  //       filterParams.experience_max = Number(filters.maxTotalExp);
+  //     if (filters.minExperience)
+  //       filterParams.exp_in_current_company_min = Number(filters.minExperience);
+  //     if (filters.topTierUniversities)
+  //       filterParams.is_top_tier_college = filters.topTierUniversities;
+  //     if (filters.hasCertification)
+  //       filterParams.has_certification = filters.hasCertification;
+  //     if (filters.location) filterParams.location = filters.location;
+  //     if (filters.selectedSkills.length > 0)
+  //       filterParams.skills = filters.selectedSkills.join(",");
+  //     if (filters.companies)
+  //       filterParams.companies = filters.companies
+  //         .split(",")
+  //         .map((c: string) => c.trim());
+  //     if (filters.industries)
+  //       filterParams.industries = filters.industries
+  //         .split(",")
+  //         .map((i: string) => i.trim());
+  //     if (filters.minSalary) filterParams.salary_min = filters.minSalary;
+  //     if (filters.maxSalary) filterParams.salary_max = filters.maxSalary;
+  //     if (filters.colleges)
+  //       filterParams.colleges = filters.colleges
+  //         .split(",")
+  //         .map((c: string) => c.trim());
+  //     if (filters.showFemaleCandidates) filterParams.is_female_only = true;
+  //     if (filters.recentlyPromoted) filterParams.is_recently_promoted = true;
+  //     if (filters.backgroundVerified)
+  //       filterParams.is_background_verified = true;
+  //     if (filters.hasLinkedIn) filterParams.has_linkedin = true;
+  //     if (filters.hasTwitter) filterParams.has_twitter = true;
+  //     if (filters.hasPortfolio) filterParams.has_portfolio = true;
+  //     if (filters.computerScienceGraduates) filterParams.is_cs_graduate = true;
+  //     if (filters.hasResearchPaper) filterParams.has_research_paper = true;
+  //     if (filters.hasBehance) filterParams.has_behance = true;
+  //     if (filters.is_prevetted) filterParams.is_prevetted = true;
+  //     if (filters.is_active) filterParams.is_active = true;
+  //     if (filters.noticePeriod) {
+  //       const days = {
+  //         "15 days": 15,
+  //         "30 days": 30,
+  //         "45 days": 45,
+  //         "60 days": 60,
+  //         "90 days": 90,
+  //         Immediate: 0,
+  //       }[filters.noticePeriod];
+  //       if (days !== undefined) filterParams.notice_period_max_days = days;
+  //     }
 
-      debouncedFetchCandidates(filterParams);
-    }
-  }, [filters, debouncedFetchCandidates]);
+  //     debouncedFetchCandidates(filterParams);
+  //   }
+  // }, [filters, debouncedFetchCandidates]);
 
   const toggleSection = (section: SectionKey) => {
     setExpandedSections((prev) => ({
@@ -363,25 +364,34 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
   const updateFilters = (key: string, value: any) => {
     let newFilters = { ...filters, [key]: value };
-    // Validate numeric fields
-    
-    if (key === "city" || key === "country") {
-      setIsLocationManuallyEdited(false);
+
+    // Handle location and city/country
+    if (key === "city" || key === "country" || key === "location") {
+      setIsLocationManuallyEdited(key === "location");
       const newCity = key === "city" ? value : filters.city;
       const newCountry = key === "country" ? value : filters.country;
-      let newLocation = "";
-      if (newCity && newCountry) {
-        newLocation = `${newCity}, ${newCountry}`; // Case 3
-      } else if (newCity) {
-        newLocation = newCity; // Case 1
-      } else if (newCountry) {
-        newLocation = newCountry; // Case 2
-      }
-      newFilters = { ...newFilters, location: newLocation };
-    }
+      const newLocation = key === "location" ? value : filters.location;
 
-    if (key === "location") {
-      setIsLocationManuallyEdited(true);
+      // Construct locations array
+      const locations = [];
+      if (newCity) {
+        locations.push(newCity); // City from dropdown as first element
+      }
+      if (newLocation) {
+        const manualLocations = newLocation
+          .split(",")
+          .map((loc: string) => loc.trim())
+          .filter((loc: string) => loc && loc !== newCity); // Avoid duplicating city
+        locations.push(...manualLocations);
+      }
+
+      newFilters = {
+        ...newFilters,
+        city: newCity,
+        country: newCountry,
+        location: newLocation,
+        locations, // Add locations array to filters for use in API call
+      };
     }
     
     if (
@@ -436,6 +446,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       city: "",
       country: "",
       location: "",
+      locations: [],
       selectedSkills: [],
       skillLevel: "",
       noticePeriod: "",
@@ -460,6 +471,70 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       is_prevetted: activeTab === "prevetted",
       is_active: activeTab === "active",
     });
+  };
+
+  const applyFilters = () => {
+    if (filters.jobId) {
+      const filterParams: any = {
+        job_id: filters.jobId,
+        application_type: filters.application_type,
+      };
+      if (filters.keywords) filterParams.q = [filters.keywords];
+      if (filters.minTotalExp)
+        filterParams.experience_min = Number(filters.minTotalExp);
+      if (filters.maxTotalExp)
+        filterParams.experience_max = Number(filters.maxTotalExp);
+      if (filters.minExperience)
+        filterParams.exp_in_current_company_min = Number(filters.minExperience);
+      if (filters.topTierUniversities)
+        filterParams.is_top_tier_college = filters.topTierUniversities;
+      if (filters.hasCertification)
+        filterParams.has_certification = filters.hasCertification;
+      if (filters.country) filterParams.country = filters.country;
+      if (filters.locations && filters.locations.length > 0)
+        filterParams.locations = filters.locations; // Use locations array
+      if (filters.selectedSkills.length > 0)
+        filterParams.skills = filters.selectedSkills.join(",");
+      if (filters.companies)
+        filterParams.companies = filters.companies
+          .split(",")
+          .map((c: string) => c.trim());
+      if (filters.industries)
+        filterParams.industries = filters.industries
+          .split(",")
+          .map((i: string) => i.trim());
+      if (filters.minSalary) filterParams.salary_min = filters.minSalary;
+      if (filters.maxSalary) filterParams.salary_max = filters.maxSalary;
+      if (filters.colleges)
+        filterParams.colleges = filters.colleges
+          .split(",")
+          .map((c: string) => c.trim());
+      if (filters.showFemaleCandidates) filterParams.is_female_only = true;
+      if (filters.recentlyPromoted) filterParams.is_recently_promoted = true;
+      if (filters.backgroundVerified)
+        filterParams.is_background_verified = true;
+      if (filters.hasLinkedIn) filterParams.has_linkedin = true;
+      if (filters.hasTwitter) filterParams.has_twitter = true;
+      if (filters.hasPortfolio) filterParams.has_portfolio = true;
+      if (filters.computerScienceGraduates) filterParams.is_cs_graduate = true;
+      if (filters.hasResearchPaper) filterParams.has_research_paper = true;
+      if (filters.hasBehance) filterParams.has_behance = true;
+      if (filters.is_prevetted) filterParams.is_prevetted = true;
+      if (filters.is_active) filterParams.is_active = true;
+      if (filters.noticePeriod) {
+        const days = {
+          "15 days": 15,
+          "30 days": 30,
+          "45 days": 45,
+          "60 days": 60,
+          "90 days": 90,
+          Immediate: 0,
+        }[filters.noticePeriod];
+        if (days !== undefined) filterParams.notice_period_max_days = days;
+      }
+
+      debouncedFetchCandidates(filterParams);
+    }
   };
 
   const noticePeriodOptions = [
@@ -987,7 +1062,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         {/* Apply Filters */}
         <div className="w-full border border-blue-400 rounded-lg">
           <button
-            onClick={() => debouncedFetchCandidates(filters)}
+            onClick={applyFilters}
             className="w-full p-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center justify-center"
           >
             <Filter className="w-4 h-4 mr-2" />
