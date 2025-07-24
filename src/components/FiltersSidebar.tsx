@@ -121,7 +121,7 @@ const JobTitlesSlider: React.FC<{ recentSearches: { id: number; query: string }[
               <button
                 key={search.id}
                 onClick={() => onSelectSearch(search.query)}
-                className="w-28 px-2 py-1 bg-white text-xs text-gray-600 rounded border hover:bg-gray-50 whitespace-nowrap text-center"
+                className="w-full px-2 py-1 bg-white text-xs text-gray-600 rounded border hover:bg-gray-50 whitespace-nowrap text-center"
               >
                 {search.query}
               </button>
@@ -276,7 +276,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       } finally {
         setIsLoading(false);
       }
-    }, 5000),
+    }, 3000),
     [setCandidates]
   );
 
@@ -359,9 +359,10 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   // Fetch keyword suggestions
   const fetchKeywordSuggestions = useCallback(
     debounce(async (query: string) => {
-      if (query.length >= 2) {
+      const lastKeyword = query.split(",").pop()?.trim() || "";
+      if (lastKeyword.length >= 2) {
         try {
-          const suggestions = await candidateService.getKeywordSuggestions(query);
+          const suggestions = await candidateService.getKeywordSuggestions(lastKeyword);
           setKeywordSuggestions(suggestions);
           setShowSuggestions(true);
         } catch (error) {
@@ -372,7 +373,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         setKeywordSuggestions([]);
         setShowSuggestions(false);
       }
-    }, 300),
+    }, 3000),
     []
   );
 
@@ -473,20 +474,25 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   };
 
   const handleKeywordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^a-zA-Z0-9\s]/g, ""); // Allow only alphanumeric and spaces
+    const value = e.target.value.replace(/[^a-zA-Z0-9\s,]/g, ""); // Allow only alphanumeric, commas and spaces
     updateFilters("keywords", value);
   };
 
   const handleSelectSuggestion = (suggestion: string) => {
-    updateFilters("keywords", suggestion);
+    // Append the selected suggestion to existing keywords, preserving previous ones
+    const keywordsArray = filters.keywords.split(",").map(k => k.trim()).filter(k => k);
+    keywordsArray.pop(); // Remove the last incomplete keyword
+    keywordsArray.push(suggestion);
+    const newKeywords = keywordsArray.join(", ");
+    updateFilters("keywords", newKeywords);
     setShowSuggestions(false);
     applyFilters(); // Trigger search on suggestion select
   };
 
   const handleSelectRecentSearch = (query: string) => {
     updateFilters("keywords", query);
-    setShowSuggestions(false);
     applyFilters(); // Trigger search on recent search select
+    setShowSuggestions(false);
   }
 
   const handleKeywordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
