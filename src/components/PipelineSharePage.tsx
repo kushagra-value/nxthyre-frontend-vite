@@ -186,12 +186,27 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     fetchData();
   }, [jobId, isAuthenticated]);
 
-  const handleDragStart = (candidate: any, fromStage: string) => {
+  const handleDragStart = (
+    e: React.DragEvent,
+    candidate: any,
+    fromStage: string
+  ) => {
     setDraggedCandidate({ candidate, fromStage });
+    e.dataTransfer.setData("fromStage", fromStage);
+    e.dataTransfer.setData("candidateId", candidate.id.toString());
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
+  const handleDragOver = (e: React.DragEvent, toStage: string) => {
+    const fromStage = e.dataTransfer.getData("fromStage");
+    if (!fromStage) return;
+    const fromOrder = stageOrder[fromStage];
+    const toOrder = stageOrder[toStage];
+    if (toOrder > fromOrder) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+    } else {
+      e.dataTransfer.dropEffect = "none";
+    }
   };
 
   const handleDrop = (e: React.DragEvent, toStage: string) => {
@@ -206,9 +221,13 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
     const fromOrder = stageOrder[fromStage];
     const toOrder = stageOrder[toStage];
-    const isMovingForward = toOrder > fromOrder;
+    if (toOrder <= fromOrder) {
+      showToast.error("You can only move candidates to forward stages.");
+      setDraggedCandidate(null);
+      return;
+    }
 
-    setFeedbackData({ candidate, fromStage, toStage, isMovingForward });
+    setFeedbackData({ candidate, fromStage, toStage, isMovingForward: true });
     setShowFeedbackModal(true);
     setDraggedCandidate(null);
   };
@@ -294,7 +313,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     <div
       key={candidate.id}
       draggable
-      onDragStart={() => handleDragStart(candidate, stage)}
+      onDragStart={(e) => handleDragStart(e, candidate, stage)}
       className="bg-white border border-gray-200 rounded-lg p-2 mb-2 cursor-move hover:shadow-lg transition-all duration-200 relative"
     >
       <div className="space-y-1">
@@ -438,7 +457,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                   <div
                     key={stage.name}
                     className="w-72 flex-shrink-0 h-[80vh]"
-                    onDragOver={handleDragOver}
+                    onDragOver={(e) => handleDragOver(e, stage.name)}
                     onDrop={(e) => handleDrop(e, stage.name)}
                   >
                     <div className={`${stage.color} rounded-lg p-3`}>
@@ -557,9 +576,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           <div className="bg-white h-[70vh] w-[50vw] shadow-xl rounded-md">
             <div className="p-6 h-full flex flex-col">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold">
-                  {feedbackData.isMovingForward ? "Move Ahead Feedback" : ""}
-                </h3>
+                <h3 className="text-lg font-semibold">Move Ahead Feedback</h3>
                 <button
                   onClick={() => setShowFeedbackModal(false)}
                   className="p-1 hover:bg-gray-100 rounded"
