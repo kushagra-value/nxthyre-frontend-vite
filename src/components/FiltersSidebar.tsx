@@ -650,7 +650,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <div className="relative">
               <input
                 type="text"
-                placeholder="For Ex: Gen AI Specialist, and Gen AI engineer"
+                placeholder="Seperated by comma, For Ex: Gen AI Specialist, and Gen AI engineer"
                 value={filters.keywords}
                 onChange={handleKeywordInputChange}
                 onKeyDown={handleKeywordKeyDown}
