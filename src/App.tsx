@@ -176,7 +176,7 @@ function MainApp() {
       setFilters((prev) => ({
         ...prev,
         jobId: job.id.toString(),
-        keywords: job.skills ? job.skills.join(",") : "",
+        keywords: job.skills ? job.skills.join(", ") : "",
         minTotalExp: job.experience_min_years
           ? job.experience_min_years.toString()
           : "",
@@ -206,7 +206,12 @@ function MainApp() {
           job_id: filters.jobId,
           application_type: filters.application_type,
         };
-        if (filters.keywords) filterParams.q = [filters.keywords];
+        if (filters.keywords) {
+          filterParams.q = filters.keywords
+            .split(",")
+            .map((k: string) => k.trim())
+            .filter((k: string) => k);
+        }
         if (filters.minTotalExp)
           filterParams.experience_min = filters.minTotalExp;
         if (filters.maxTotalExp)
