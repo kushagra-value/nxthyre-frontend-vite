@@ -176,7 +176,7 @@ function MainApp() {
       setFilters((prev) => ({
         ...prev,
         jobId: job.id.toString(),
-        keywords: job.skills ? job.skills.join(" ") : "",
+        keywords: job.skills ? job.skills.join(",") : "",
         minTotalExp: job.experience_min_years
           ? job.experience_min_years.toString()
           : "",
