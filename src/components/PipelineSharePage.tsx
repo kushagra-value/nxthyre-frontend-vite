@@ -558,9 +558,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
             <div className="p-6 h-full flex flex-col">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold">
-                  {feedbackData.isMovingForward
-                    ? "Move Ahead Feedback"
-                    : "Move Behind Feedback"}
+                  {feedbackData.isMovingForward ? "Move Ahead Feedback" : ""}
                 </h3>
                 <button
                   onClick={() => setShowFeedbackModal(false)}
