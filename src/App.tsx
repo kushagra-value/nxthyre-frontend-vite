@@ -115,7 +115,6 @@ function MainApp() {
     country: "",
     location: "",
     locations: [] as string[],
-    selectedSkills: [] as string[],
     skillLevel: "",
     noticePeriod: "",
     companies: "",
@@ -177,7 +176,7 @@ function MainApp() {
       setFilters((prev) => ({
         ...prev,
         jobId: job.id.toString(),
-        selectedSkills: job.skills || [],
+        keywords: job.skills ? job.skills.join(", ") : "",
         minTotalExp: job.experience_min_years
           ? job.experience_min_years.toString()
           : "",
@@ -221,8 +220,6 @@ function MainApp() {
         if (filters.country) filterParams.country = filters.country;
         if (filters.locations && filters.locations.length > 0)
           filterParams.locations = filters.locations;
-        if (filters.selectedSkills.length > 0)
-          filterParams.skills = filters.selectedSkills.join(",");
         if (filters.companies)
           filterParams.companies = filters.companies
             .split(",")
@@ -289,7 +286,6 @@ function MainApp() {
       filters.hasCertification,
       filters.country,
       filters.locations,
-      filters.selectedSkills,
       filters.companies,
       filters.industries,
       filters.minSalary,
@@ -461,7 +457,6 @@ function MainApp() {
         country: "",
         location: "",
         locations: [],
-        selectedSkills: [],
         skillLevel: "",
         noticePeriod: "",
         companies: "",
