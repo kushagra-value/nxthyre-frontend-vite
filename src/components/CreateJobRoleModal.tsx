@@ -81,11 +81,67 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
     }));
   };
 
+  const validateStep1 = () => {
+    const requiredFields = {
+      title: formData.title.trim(),
+      skills: formData.skills.length > 0,
+      location: formData.location.trim(),
+      seniority: formData.seniority.trim(),
+      department: formData.department.trim(),
+      minExp: formData.minExp.trim() && !isNaN(parseInt(formData.minExp)),
+      maxExp: formData.maxExp.trim() && !isNaN(parseInt(formData.maxExp)),
+      minSalary: formData.confidential ? true : formData.minSalary.trim(),
+      maxSalary: formData.confidential ? true : formData.maxSalary.trim(),
+      jobDescription: formData.uploadType === 'paste' ? formData.jobDescription.trim() : true, // Adjust for file upload if needed
+    };
+
+    const errors: string[] = [];
+
+    if (!requiredFields.title) errors.push('Job title is required.');
+    if (!requiredFields.skills) errors.push('At least one skill is required.');
+    if (!requiredFields.location) errors.push('Location is required.');
+    if (!requiredFields.seniority) errors.push('Seniority is required.');
+    if (!requiredFields.department) errors.push('Department is required.');
+    if (!requiredFields.minExp) errors.push('Minimum experience is required and must be a valid number.');
+    if (!requiredFields.maxExp) errors.push('Maximum experience is required and must be a valid number.');
+    if (!requiredFields.minSalary) errors.push('Minimum salary is required unless confidential.');
+    if (!requiredFields.maxSalary) errors.push('Maximum salary is required unless confidential.');
+    if (!requiredFields.jobDescription) errors.push('Job description is required when pasting text.');
+
+    // Additional validation for experience range
+    if (requiredFields.minExp && requiredFields.maxExp) {
+      const minExp = parseInt(formData.minExp);
+      const maxExp = parseInt(formData.maxExp);
+      if (minExp > maxExp) {
+        errors.push('Minimum experience cannot be greater than maximum experience.');
+      }
+    }
+
+    // Additional validation for salary range
+    if (requiredFields.minSalary && requiredFields.maxSalary && !formData.confidential) {
+      const minSalary = parseFloat(formData.minSalary);
+      const maxSalary = parseFloat(formData.maxSalary);
+      if (isNaN(minSalary) || isNaN(maxSalary)) {
+        errors.push('Salary fields must be valid numbers.');
+      } else if (minSalary > maxSalary) {
+        errors.push('Minimum salary cannot be greater than maximum salary.');
+      }
+    }
+
+    return errors;
+  };
+
+
   const removeCompetency = (index: number) => {
     setCompetencies(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleNext = () => {
+    const errors = validateStep1();
+    if (errors.length > 0) {
+      showToast.error(errors.join(' '));
+      return;
+    }
     setCurrentStep(2);
   };
 
@@ -94,6 +150,11 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
   };
 
   const handleCreate = async () => {
+    const errors = validateStep1();
+    if (errors.length > 0) {
+      showToast.error(errors.join(' '));
+      return;
+    }
     setIsLoading(true);
     try {
       const jobData: CreateJobData = {
@@ -126,6 +187,11 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
   };
 
   const handleCreateAndPublish = () => {
+    const errors = validateStep1();
+    if (errors.length > 0) {
+      showToast.error(errors.join(' '));
+      return;
+    }
     showToast.success('Job role created and published successfully!');
     onClose();
   };
@@ -224,7 +290,10 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                   )}
                 </div>
                 <div className="relative">
-                  <label className="flex items-center cursor-pointer">
+                  <label className="flex items-center cursor-pointer"
+                    onMouseEnter={() => setShowTooltip('shareExternally')}
+                    onMouseLeave={() => setShowTooltip(null)}
+                    >
                     <input
                       type="checkbox"
                       checked={formData.shareExternally}
@@ -233,6 +302,11 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                     />
                     <span className="ml-2 text-sm font-medium text-gray-700">SHARE EXTERNALLY</span>
                   </label>
+                  {showTooltip === 'shareExternally' && (
+                    <div className="absolute top-full left-0 mt-2 w-80 p-3 bg-gray-900 text-white text-sm rounded-lg shadow-lg z-10">
+                      Allow Sharing this job externally, so that it can be posted on Linkedin and Naukri job portals
+                    </div>
+                  )}
                 </div>
 
               </div>
