@@ -18,7 +18,7 @@ import {
   Clock,
 } from "lucide-react";
 import { showToast } from "../utils/toast";
-import apiClient from "../api/api"; // Adjust path as necessary
+import apiClient from "../services/api"; // Adjust path as necessary
 import { useAuthContext } from "../context/AuthContext"; // Adjust path as necessary
 
 interface DraggedCandidate {
