@@ -66,19 +66,7 @@ interface FiltersSidebarProps {
   activeTab: string;
 }
 
-const JobTitlesSlider: React.FC = () => {
-  const jobTitles = [
-    "Software Engineer",
-    "Product Manager",
-    "Data Scientist",
-    "Designer",
-  ];
-  const repeatedJobTitles = [
-    ...jobTitles,
-    ...jobTitles,
-    ...jobTitles,
-    ...jobTitles,
-  ];
+const JobTitlesSlider: React.FC<{ recentSearches: { id: number; query: string }[], onSelectSearch: (query: string) => void }> = ({ recentSearches, onSelectSearch }) => {
   const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -129,12 +117,13 @@ const JobTitlesSlider: React.FC = () => {
           }}
         >
           <div className="slider flex gap-1">
-            {repeatedJobTitles.map((title, index) => (
+            {recentSearches.map((search) => (
               <button
-                key={index}
+                key={search.id}
+                onClick={() => onSelectSearch(search.query)}
                 className="w-28 px-2 py-1 bg-white text-xs text-gray-600 rounded border hover:bg-gray-50 whitespace-nowrap text-center"
               >
-                {title}
+                {search.query}
               </button>
             ))}
           </div>
@@ -264,8 +253,11 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     moreFilters: false,
   });
   const [isLoading, setIsLoading] = useState(false);
-
   const [isLocationManuallyEdited, setIsLocationManuallyEdited] = useState(false);
+  const [keywordSuggestions, setKeywordSuggestions] = useState<string[]>([]);
+  const [recentSearches, setRecentSearches] = useState<{ id: number; query: string }[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
 
   // Debounced fetch candidates
   const debouncedFetchCandidates = useCallback(
@@ -284,7 +276,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       } finally {
         setIsLoading(false);
       }
-    }, 3000),
+    }, 5000),
     [setCandidates]
   );
 
@@ -350,6 +342,56 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   //     debouncedFetchCandidates(filterParams);
   //   }
   // }, [filters, debouncedFetchCandidates]);
+
+  // Fetch recent searches
+  useEffect(() => {
+    const fetchRecentSearches = async () => {
+      try {
+        const searches = await candidateService.getRecentSearches();
+        setRecentSearches(searches);
+      } catch (error) {
+        console.error("Error fetching recent searches:", error);
+      }
+    };
+    fetchRecentSearches();
+  }, []);
+
+  // Fetch keyword suggestions
+  const fetchKeywordSuggestions = useCallback(
+    debounce(async (query: string) => {
+      if (query.length >= 2) {
+        try {
+          const suggestions = await candidateService.getKeywordSuggestions(query);
+          setKeywordSuggestions(suggestions);
+          setShowSuggestions(true);
+        } catch (error) {
+          console.error("Error fetching keyword suggestions:", error);
+          setKeywordSuggestions([]);
+        }
+      } else {
+        setKeywordSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }, 300),
+    []
+  );
+
+  // Handle click outside to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const toggleSection = (section: SectionKey) => {
     setExpandedSections((prev) => ({
@@ -425,10 +467,39 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
 
     onFiltersChange(newFilters);
+    if (key === "keywords") {
+      fetchKeywordSuggestions(value);
+    }
+  };
+
+  const handleKeywordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^a-zA-Z0-9\s]/g, ""); // Allow only alphanumeric and spaces
+    updateFilters("keywords", value);
+  };
+
+  const handleSelectSuggestion = (suggestion: string) => {
+    updateFilters("keywords", suggestion);
+    setShowSuggestions(false);
+    applyFilters(); // Trigger search on suggestion select
+  };
+
+  const handleSelectRecentSearch = (query: string) => {
+    updateFilters("keywords", query);
+    setShowSuggestions(false);
+    applyFilters(); // Trigger search on recent search select
+  }
+
+  const handleKeywordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      applyFilters();
+    }
   };
 
   const resetFilters = () => {
     setIsLocationManuallyEdited(false);
+    setKeywordSuggestions([]);
+    setShowSuggestions(false);
     onFiltersChange({
       keywords: "",
       booleanSearch: false,
@@ -569,14 +640,29 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 type="text"
                 placeholder="For Ex: Gen AI Specialist, and Gen AI engineer"
                 value={filters.keywords}
-                onChange={(e) => updateFilters("keywords", e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
+                onChange={handleKeywordInputChange}
+                onKeyDown={handleKeywordKeyDown}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
-            </div>
+              {showSuggestions && keywordSuggestions.length > 0 && (
+                <div
+                  ref={suggestionsRef}
+                  className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto"
+                >
+                  {keywordSuggestions.map((suggestion, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleSelectSuggestion(suggestion)}
+                      className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                    >
+                      {suggestion}
+                    </div>
+                  ))}
+                </div>
+              )}
 
-            <JobTitlesSlider />
-          </div>
+            </div>
+          <JobTitlesSlider recentSearches={recentSearches} onSelectSearch={handleSelectRecentSearch} />          </div>
         )}
       </div>
 
