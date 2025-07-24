@@ -38,8 +38,6 @@ interface FiltersSidebarProps {
     country: string;
     location: string;
     locations: string[];
-    selectedSkills: string[];
-    skillLevel: string;
     noticePeriod: string;
     companies: string;
     industries: string;
@@ -239,7 +237,6 @@ type SectionKey =
   | "location"
   | "companies"
   | "salary"
-  | "skills"
   | "notice"
   | "colleges"
   | "spotlight"
@@ -261,7 +258,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     location: true,
     companies: false,
     salary: false,
-    skills: true,
     notice: false,
     colleges: false,
     spotlight: false,
@@ -447,8 +443,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       country: "",
       location: "",
       locations: [],
-      selectedSkills: [],
-      skillLevel: "",
       noticePeriod: "",
       companies: "",
       industries: "",
@@ -493,8 +487,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       if (filters.country) filterParams.country = filters.country;
       if (filters.locations && filters.locations.length > 0)
         filterParams.locations = filters.locations; // Use locations array
-      if (filters.selectedSkills.length > 0)
-        filterParams.skills = filters.selectedSkills.join(",");
       if (filters.companies)
         filterParams.companies = filters.companies
           .split(",")
@@ -688,41 +680,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         )}
       </div>
 
-          {/* Skills */}
-
-      <div
-          className="flex items-center justify-between cursor-pointer mb-2"
-          onClick={() => toggleSection("skills")}
-        >
-          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
-            <Award className="w-4 h-4 mr-2 text-gray-800" />
-            Skills
-          </h3>
-          {expandedSections.skills ? (
-            <ChevronUp className="w-4 h-4 text-gray-500" />
-          ) : (
-            <ChevronDown className="w-4 h-4 text-gray-500" />
-          )}
-        </div>
-      <div>
-        
-        {expandedSections.skills && (
-          <div className="mt-2">
-            <input
-              type="text"
-              placeholder="Add skills (comma-separated)"
-              value={filters.selectedSkills.join(", ")}
-              onChange={(e) =>
-                updateFilters(
-                  "selectedSkills",
-                  e.target.value.split(",").map((s) => s.trim())
-                )
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-            />
-          </div>
-        )}
-      </div>
 
       {/* Companies/Industries */}
       <div>
