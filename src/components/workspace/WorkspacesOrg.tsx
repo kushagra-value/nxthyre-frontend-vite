@@ -11,6 +11,7 @@ import {
   Home,
   Edit,
   Trash2,
+  X,
 } from "lucide-react";
 import { useAuthContext } from "../../context/AuthContext";
 import { organizationService } from "../../services/organizationService";
@@ -28,6 +29,14 @@ interface Workspace {
   name: string;
   organization: number;
   members: string[];
+  createdAt: string;
+}
+
+interface JoinRequest {
+  id: number;
+  workspaceId: number;
+  workspaceName: string;
+  requesterEmail: string;
   createdAt: string;
 }
 
@@ -62,6 +71,8 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pendingRequests, setPendingRequests] = useState<JoinRequest[]>([]);
+  const [showManageModal, setShowManageModal] = useState(false);
   const navigate = useNavigate();
 
   const searchTerm =
@@ -80,7 +91,6 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
 
       try {
         setLoading(true);
-        console.log("Fetching organizations...");
         const orgResponse = await organizationService.getOrganizations();
         const fetchedOrganizations: Organization[] = orgResponse.map(
           (org: any) => ({
@@ -90,7 +100,6 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
           })
         );
 
-        // Filter organizations based on user roles
         const userOrgIds =
           userStatus?.roles
             ?.filter((role: any) => role.scope === "ORGANIZATION")
@@ -99,17 +108,13 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
           userOrgIds.includes(org.id)
         );
 
-        if (mounted) {
-          setOrganizations(authorizedOrganizations);
-        }
-        console.log("Authorized organizations:", authorizedOrganizations);
+        if (mounted) setOrganizations(authorizedOrganizations);
 
         const fetchWorkspacesWithRetry = async (
           orgId: number,
           retries = 3
         ): Promise<Workspace[]> => {
           try {
-            console.log(`Fetching workspaces for org ${orgId}...`);
             const workspaceResponse = await organizationService.getWorkspaces(
               orgId
             );
@@ -122,16 +127,10 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
             }));
           } catch (error: any) {
             if (error.response?.status === 403 && retries > 0) {
-              console.warn(
-                `403 Forbidden for org ${orgId}, retrying... (${retries} left)`
-              );
               await new Promise((resolve) => setTimeout(resolve, 2000));
               return fetchWorkspacesWithRetry(orgId, retries - 1);
             }
-            console.error(
-              `Failed to fetch workspaces for org ${orgId}: ${error.message}`
-            );
-            return []; // Return empty array to continue with other organizations
+            return [];
           }
         };
 
@@ -139,47 +138,25 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
           fetchWorkspacesWithRetry(org.id)
         );
         const allWorkspaces = (await Promise.all(workspacePromises)).flat();
-        console.log("Workspaces fetched:", allWorkspaces);
-        if (mounted) {
-          setWorkspaces(allWorkspaces);
-        }
+        if (mounted) setWorkspaces(allWorkspaces);
       } catch (error: any) {
         console.error("Error fetching data:", error);
-        if (mounted) {
+        if (mounted)
           showToast.error("Failed to load data. Please try refreshing.");
-        }
       } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
     };
 
-    // Delay the fetch to ensure token is ready
     timeoutId = setTimeout(() => {
-      if (mounted) {
-        fetchData();
-      }
+      if (mounted) fetchData();
     }, 2000);
 
     return () => {
       mounted = false;
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+      if (timeoutId) clearTimeout(timeoutId);
     };
   }, [isAuthenticated, userStatus]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading workspace data...</p>
-        </div>
-      </div>
-    );
-  }
 
   const handleCreateWorkspace = () => onNavigate("workspace-creation");
   const handleJoinWorkspace = () => onNavigate("workspace-joining");
@@ -199,16 +176,11 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   };
 
   const onCreateRole =
-    propOnCreateRole ||
-    (() =>
-      showToast.info(
-        "Create Role clicked - implement this in the parent component"
-      ));
+    propOnCreateRole || (() => showToast.info("Create Role clicked"));
 
   const handleDeleteConfirm = async () => {
     if (!showDeleteModal) return;
-
-    const { type, id, name } = showDeleteModal;
+    const { type, name } = showDeleteModal;
     try {
       showToast.success(
         `${
@@ -223,7 +195,6 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
 
   const handleEditSubmit = async () => {
     if (!showEditModal) return;
-
     const { type } = showEditModal;
     try {
       showToast.success(
@@ -251,7 +222,76 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
     setShowDeleteModal({ type, id, name });
   };
 
-  // Filter joined workspaces and sort by createdAt descending
+  const handleManageWorkspace = async () => {
+    try {
+      const adminWorkspaceIds =
+        userStatus?.roles
+          ?.filter(
+            (role: any) => role.name === "ADMIN" && role.scope === "WORKSPACE"
+          )
+          ?.map((role: any) => role.workspace_id) || [];
+      const adminWorkspaces = workspaces.filter((ws) =>
+        adminWorkspaceIds.includes(ws.id)
+      );
+
+      const requestsPromises = adminWorkspaces.map(async (ws) => {
+        const requests = await organizationService.getPendingJoinRequests(
+          ws.id
+        );
+        return requests.map((req: any) => ({
+          id: req.id,
+          workspaceId: ws.id,
+          workspaceName: ws.name,
+          requesterEmail: req.recruiter.email,
+          createdAt: req.created_at,
+        }));
+      });
+
+      const allRequests = (await Promise.all(requestsPromises)).flat();
+      setPendingRequests(allRequests);
+      setShowManageModal(true);
+    } catch (error) {
+      console.error("Failed to fetch pending requests:", error);
+      showToast.error("Failed to load pending requests");
+    }
+  };
+
+  const handleApproveRequest = async (
+    workspaceId: number,
+    requestId: number
+  ) => {
+    try {
+      await organizationService.manageJoinRequest(
+        workspaceId,
+        requestId,
+        "approve"
+      );
+      showToast.success("Request approved");
+      setPendingRequests((prev) => prev.filter((req) => req.id !== requestId));
+    } catch (error) {
+      console.error("Failed to approve request:", error);
+      showToast.error("Failed to approve request");
+    }
+  };
+
+  const handleRejectRequest = async (
+    workspaceId: number,
+    requestId: number
+  ) => {
+    try {
+      await organizationService.manageJoinRequest(
+        workspaceId,
+        requestId,
+        "reject"
+      );
+      showToast.success("Request rejected");
+      setPendingRequests((prev) => prev.filter((req) => req.id !== requestId));
+    } catch (error) {
+      console.error("Failed to reject request:", error);
+      showToast.error("Failed to reject request");
+    }
+  };
+
   const joinedWorkspaceIds =
     userStatus?.roles
       ?.filter((role: any) => role.scope === "WORKSPACE")
@@ -262,6 +302,17 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading workspace data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -414,6 +465,13 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                       <Users className="w-4 h-4 mr-2" />
                       Join Workspace
                     </button>
+                    <button
+                      onClick={handleManageWorkspace}
+                      className="bg-white text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors flex items-center"
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Manage Workspace
+                    </button>
                   </div>
                   {joinedWorkspaces.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -541,87 +599,85 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                   </button>
                 </div>
               ) : (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {organizations.map((org) => {
-                      const isOwner = userStatus?.roles?.some(
-                        (role: any) =>
-                          role.name === "OWNER" &&
-                          role.scope === "ORGANIZATION" &&
-                          role.organization_id === org.id
-                      );
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {organizations.map((org) => {
+                    const isOwner = userStatus?.roles?.some(
+                      (role: any) =>
+                        role.name === "OWNER" &&
+                        role.scope === "ORGANIZATION" &&
+                        role.organization_id === org.id
+                    );
 
-                      return (
-                        <div
-                          key={org.id}
-                          className="w-full bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
-                        >
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                              <Building2 className="w-6 h-6 text-blue-500" />
-                            </div>
-                            {isOwner && (
-                              <div className="relative group">
-                                <button className="p-1 text-gray-400 hover:text-gray-600 rounded">
-                                  <MoreHorizontal className="w-4 h-4" />
+                    return (
+                      <div
+                        key={org.id}
+                        className="w-full bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <Building2 className="w-6 h-6 text-blue-500" />
+                          </div>
+                          {isOwner && (
+                            <div className="relative group">
+                              <button className="p-1 text-gray-400 hover:text-gray-600 rounded">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </button>
+                              <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  onClick={() => openEditModal("org", org)}
+                                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                >
+                                  <Edit className="w-3 h-3 mr-2" />
+                                  Edit
                                 </button>
-                                <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button
-                                    onClick={() => openEditModal("org", org)}
-                                    className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                  >
-                                    <Edit className="w-3 h-3 mr-2" />
-                                    Edit
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      openDeleteModal(
-                                        "org",
-                                        org.id.toString(),
-                                        org.name
-                                      )
-                                    }
-                                    className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
-                                  >
-                                    <Trash2 className="w-3 h-3 mr-2" />
-                                    Delete
-                                  </button>
-                                </div>
+                                <button
+                                  onClick={() =>
+                                    openDeleteModal(
+                                      "org",
+                                      org.id.toString(),
+                                      org.name
+                                    )
+                                  }
+                                  className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                                >
+                                  <Trash2 className="w-3 h-3 mr-2" />
+                                  Delete
+                                </button>
                               </div>
-                            )}
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            {org.name}
-                          </h3>
-                          <p className="text-sm text-gray-600 mb-4">
-                            @{org.domain || "unknown"}
-                          </p>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center text-sm text-gray-500">
-                              <Users className="w-4 h-4 mr-1" />
-                              {
-                                workspaces.filter(
-                                  (ws) => ws.organization === org.id
-                                ).length
-                              }{" "}
-                              workspace
-                              {workspaces.filter(
-                                (ws) => ws.organization === org.id
-                              ).length !== 1
-                                ? "s"
-                                : ""}
                             </div>
-                            {isOwner && (
-                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                                Owner
-                              </span>
-                            )}
-                          </div>
+                          )}
                         </div>
-                      );
-                    })}
-                  </div>
-                </>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          {org.name}
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                          @{org.domain || "unknown"}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center text-sm text-gray-500">
+                            <Users className="w-4 h-4 mr-1" />
+                            {
+                              workspaces.filter(
+                                (ws) => ws.organization === org.id
+                              ).length
+                            }{" "}
+                            workspace
+                            {workspaces.filter(
+                              (ws) => ws.organization === org.id
+                            ).length !== 1
+                              ? "s"
+                              : ""}
+                          </div>
+                          {isOwner && (
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                              Owner
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
           )}
@@ -724,6 +780,64 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                 Save Changes
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showManageModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Manage Workspace Join Requests
+              </h3>
+              <button
+                onClick={() => setShowManageModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            {pendingRequests.length === 0 ? (
+              <p className="text-gray-600">No pending join requests.</p>
+            ) : (
+              <div className="space-y-4">
+                {pendingRequests.map((request) => (
+                  <div
+                    key={request.id}
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {request.requesterEmail}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Workspace: {request.workspaceName} | Requested on{" "}
+                        {new Date(request.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() =>
+                          handleApproveRequest(request.workspaceId, request.id)
+                        }
+                        className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleRejectRequest(request.workspaceId, request.id)
+                        }
+                        className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

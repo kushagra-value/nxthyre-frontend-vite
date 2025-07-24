@@ -174,7 +174,6 @@ class OrganizationService {
 
   // Manage join request (approve/reject)
   async manageJoinRequest(
-    organizationId: number,
     workspaceId: number,
     requestId: number,
     action: "approve" | "reject"
@@ -190,6 +189,13 @@ class OrganizationService {
         error.response?.data?.error || "Failed to manage join request"
       );
     }
+  }
+
+  async getPendingJoinRequests(workspaceId: number): Promise<any[]> {
+    const response = await apiClient.get(
+      `/organization/workspaces/${workspaceId}/join-request/`
+    );
+    return response.data.filter((req: any) => req.status === "PENDING");
   }
 }
 
