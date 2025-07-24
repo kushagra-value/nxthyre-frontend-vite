@@ -114,6 +114,7 @@ function MainApp() {
     city: "",
     country: "",
     location: "",
+    locations: [] as string[],
     selectedSkills: [] as string[],
     skillLevel: "",
     noticePeriod: "",
@@ -184,8 +185,9 @@ function MainApp() {
           ? job.experience_max_years.toString()
           : "",
         location: job.location || "",
-        city: job.location ? job.location.split(",")[0]?.trim() || "" : "",
-        country: job.location ? job.location.split(",")[1]?.trim() || "" : "",
+        // city: job.location ? job.location.split(",")[0]?.trim() || "" : "",
+        // country: job.location ? job.location.split(",")[1]?.trim() || "" : "",
+        locations: job.location ? [job.location.split(",")[0]?.trim()].filter(Boolean) : [], // Initialize locations with city
         application_type: activeTab,
       }));
     } catch (error) {
@@ -216,11 +218,9 @@ function MainApp() {
           filterParams.is_top_tier_college = filters.topTierUniversities;
         if (filters.hasCertification)
           filterParams.has_certification = filters.hasCertification;
-        if (filters.city || filters.country)
-          filterParams.location = `${filters.city}${
-            filters.city && filters.country ? ", " : ""
-          }${filters.country}`;
-        if (filters.location) filterParams.location = filters.location;
+        if (filters.country) filterParams.country = filters.country;
+        if (filters.locations && filters.locations.length > 0)
+          filterParams.locations = filters.locations;
         if (filters.selectedSkills.length > 0)
           filterParams.skills = filters.selectedSkills.join(",");
         if (filters.companies)
@@ -287,9 +287,8 @@ function MainApp() {
       filters.minExperience,
       filters.topTierUniversities,
       filters.hasCertification,
-      filters.city,
       filters.country,
-      filters.location,
+      filters.locations,
       filters.selectedSkills,
       filters.companies,
       filters.industries,
@@ -453,6 +452,7 @@ function MainApp() {
         city: "",
         country: "",
         location: "",
+        locations: [],
         selectedSkills: [],
         skillLevel: "",
         noticePeriod: "",
