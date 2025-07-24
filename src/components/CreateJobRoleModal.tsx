@@ -186,14 +186,41 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
     }
   };
 
-  const handleCreateAndPublish = () => {
+  const handleCreateAndPublish = async () => {
     const errors = validateStep1();
     if (errors.length > 0) {
       showToast.error(errors.join(' '));
       return;
     }
-    showToast.success('Job role created and published successfully!');
-    onClose();
+    setIsLoading(true);
+    try {
+      const jobData: CreateJobData = {
+        title: formData.title,
+        location: formData.location,
+        is_hybrid: formData.hybrid,
+        seniority: formData.seniority,
+        department: parseInt(formData.department) || 1, // Assuming department ID 1 as default
+        experience_min_years: parseInt(formData.minExp) || 0,
+        experience_max_years: parseInt(formData.maxExp) || 0,
+        salary_min: formData.minSalary,
+        salary_max: formData.maxSalary,
+        is_salary_confidential: formData.confidential,
+        visibility: formData.keepPrivate ? 'PRIVATE' : 'PUBLIC',
+        enable_ai_interviews: formData.aiInterviews,
+        description: formData.jobDescription,
+        skill_names: formData.skills,
+        status: formData.shareExternally ? 'PUBLISHED' : 'DRAFT',
+        workspace: 1, // Assuming default workspace ID
+      };
+
+      await jobPostService.createJob(jobData);
+      showToast.success(formData.shareExternally ? 'Job role created and published successfully!' : 'Job role created successfully!');
+      onClose();
+    } catch (error: any) {
+      showToast.error(error.message || 'Failed to create job role');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRegenerate = () => {
@@ -622,8 +649,9 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                 <button
                   onClick={formData.shareThirdParty ? handleCreateAndPublish : handleCreate}
                   className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  disabled={isLoading}
                 >
-                  {formData.shareExternally ? 'Create & Publish' : 'Create'}
+                  {isLoading ? 'Loading...' : (formData.shareExternally ? 'Create & Publish' : 'Create')}
                 </button>
               </div>
             </div>
