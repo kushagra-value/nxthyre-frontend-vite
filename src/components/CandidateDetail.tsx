@@ -379,7 +379,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
         <div className="flex flex-wrap gap-2">{detailedCandidate?.candidate?.skills_data?.skills_mentioned?.length > 0 ? (
           detailedCandidate?.candidate?.skills_data.skills_mentioned.map((skill, index) => (
             <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-              {skill?.skill} ({skill?.number_of_endorsements} endorsements)
+              {skill?.skill}
+              {/* {skill?.skill} ({skill?.number_of_endorsements} endorsements) */}
             </span>
           ))
           ) : (
