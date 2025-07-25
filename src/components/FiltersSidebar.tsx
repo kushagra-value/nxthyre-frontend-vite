@@ -37,8 +37,7 @@ interface FiltersSidebarProps {
     city: string;
     country: string;
     location: string;
-    selectedSkills: string[];
-    skillLevel: string;
+    locations: string[];
     noticePeriod: string;
     companies: string;
     industries: string;
@@ -67,19 +66,7 @@ interface FiltersSidebarProps {
   activeTab: string;
 }
 
-const JobTitlesSlider: React.FC = () => {
-  const jobTitles = [
-    "Software Engineer",
-    "Product Manager",
-    "Data Scientist",
-    "Designer",
-  ];
-  const repeatedJobTitles = [
-    ...jobTitles,
-    ...jobTitles,
-    ...jobTitles,
-    ...jobTitles,
-  ];
+const JobTitlesSlider: React.FC<{ recentSearches: { id: number; query: string }[], onSelectSearch: (query: string) => void }> = ({ recentSearches, onSelectSearch }) => {
   const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -130,12 +117,13 @@ const JobTitlesSlider: React.FC = () => {
           }}
         >
           <div className="slider flex gap-1">
-            {repeatedJobTitles.map((title, index) => (
+            {recentSearches.map((search) => (
               <button
-                key={index}
-                className="w-28 px-2 py-1 bg-white text-xs text-gray-600 rounded border hover:bg-gray-50 whitespace-nowrap text-center"
+                key={search.id}
+                onClick={() => onSelectSearch(search.query)}
+                className="w-full px-2 py-1 bg-white text-xs text-gray-600 rounded border hover:bg-gray-50 whitespace-nowrap text-center"
               >
-                {title}
+                {search.query}
               </button>
             ))}
           </div>
@@ -238,7 +226,6 @@ type SectionKey =
   | "location"
   | "companies"
   | "salary"
-  | "skills"
   | "notice"
   | "colleges"
   | "spotlight"
@@ -260,15 +247,17 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     location: true,
     companies: false,
     salary: false,
-    skills: true,
     notice: false,
     colleges: false,
     spotlight: false,
     moreFilters: false,
   });
   const [isLoading, setIsLoading] = useState(false);
-
   const [isLocationManuallyEdited, setIsLocationManuallyEdited] = useState(false);
+  const [keywordSuggestions, setKeywordSuggestions] = useState<string[]>([]);
+  const [recentSearches, setRecentSearches] = useState<{ id: number; query: string }[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
 
   // Debounced fetch candidates
   const debouncedFetchCandidates = useCallback(
@@ -292,13 +281,282 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   );
 
   // Fetch candidates when filters change
+  // useEffect(() => {
+  //   if (filters.jobId) {
+  //     const filterParams: any = {
+  //       job_id: filters.jobId,
+  //       application_type: filters.application_type,
+  //     };
+  //     if (filters.keywords) filterParams.q = [filters.keywords];
+  //     if (filters.minTotalExp)
+  //       filterParams.experience_min = Number(filters.minTotalExp);
+  //     if (filters.maxTotalExp)
+  //       filterParams.experience_max = Number(filters.maxTotalExp);
+  //     if (filters.minExperience)
+  //       filterParams.exp_in_current_company_min = Number(filters.minExperience);
+  //     if (filters.topTierUniversities)
+  //       filterParams.is_top_tier_college = filters.topTierUniversities;
+  //     if (filters.hasCertification)
+  //       filterParams.has_certification = filters.hasCertification;
+  //     if (filters.location) filterParams.location = filters.location;
+  //     if (filters.selectedSkills.length > 0)
+  //       filterParams.skills = filters.selectedSkills.join(",");
+  //     if (filters.companies)
+  //       filterParams.companies = filters.companies
+  //         .split(",")
+  //         .map((c: string) => c.trim());
+  //     if (filters.industries)
+  //       filterParams.industries = filters.industries
+  //         .split(",")
+  //         .map((i: string) => i.trim());
+  //     if (filters.minSalary) filterParams.salary_min = filters.minSalary;
+  //     if (filters.maxSalary) filterParams.salary_max = filters.maxSalary;
+  //     if (filters.colleges)
+  //       filterParams.colleges = filters.colleges
+  //         .split(",")
+  //         .map((c: string) => c.trim());
+  //     if (filters.showFemaleCandidates) filterParams.is_female_only = true;
+  //     if (filters.recentlyPromoted) filterParams.is_recently_promoted = true;
+  //     if (filters.backgroundVerified)
+  //       filterParams.is_background_verified = true;
+  //     if (filters.hasLinkedIn) filterParams.has_linkedin = true;
+  //     if (filters.hasTwitter) filterParams.has_twitter = true;
+  //     if (filters.hasPortfolio) filterParams.has_portfolio = true;
+  //     if (filters.computerScienceGraduates) filterParams.is_cs_graduate = true;
+  //     if (filters.hasResearchPaper) filterParams.has_research_paper = true;
+  //     if (filters.hasBehance) filterParams.has_behance = true;
+  //     if (filters.is_prevetted) filterParams.is_prevetted = true;
+  //     if (filters.is_active) filterParams.is_active = true;
+  //     if (filters.noticePeriod) {
+  //       const days = {
+  //         "15 days": 15,
+  //         "30 days": 30,
+  //         "45 days": 45,
+  //         "60 days": 60,
+  //         "90 days": 90,
+  //         Immediate: 0,
+  //       }[filters.noticePeriod];
+  //       if (days !== undefined) filterParams.notice_period_max_days = days;
+  //     }
+
+  //     debouncedFetchCandidates(filterParams);
+  //   }
+  // }, [filters, debouncedFetchCandidates]);
+
+  // Fetch recent searches
   useEffect(() => {
+    const fetchRecentSearches = async () => {
+      try {
+        const searches = await candidateService.getRecentSearches();
+        setRecentSearches(searches);
+      } catch (error) {
+        console.error("Error fetching recent searches:", error);
+      }
+    };
+    fetchRecentSearches();
+  }, []);
+
+  // Fetch keyword suggestions
+  const fetchKeywordSuggestions = useCallback(
+    debounce(async (query: string) => {
+      const lastKeyword = query.split(",").pop()?.trim() || "";
+      if (lastKeyword.length >= 2) {
+        try {
+          const suggestions = await candidateService.getKeywordSuggestions(lastKeyword);
+          setKeywordSuggestions(suggestions);
+          setShowSuggestions(true);
+        } catch (error) {
+          console.error("Error fetching keyword suggestions:", error);
+          setKeywordSuggestions([]);
+        }
+      } else {
+        setKeywordSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }, 3000),
+    []
+  );
+
+  // Handle click outside to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const toggleSection = (section: SectionKey) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
+
+  const updateFilters = (key: string, value: any) => {
+    let newFilters = { ...filters, [key]: value };
+
+    // Handle location and city/country
+    if (key === "city" || key === "country" || key === "location") {
+      setIsLocationManuallyEdited(key === "location");
+      const newCity = key === "city" ? value : filters.city;
+      const newCountry = key === "country" ? value : filters.country;
+      const newLocation = key === "location" ? value : filters.location;
+
+      // Construct locations array
+      const locations = [];
+      if (newCity) {
+        locations.push(newCity); // City from dropdown as first element
+      }
+      if (newLocation) {
+        const manualLocations = newLocation
+          .split(",")
+          .map((loc: string) => loc.trim())
+          .filter((loc: string) => loc && loc !== newCity); // Avoid duplicating city
+        locations.push(...manualLocations);
+      }
+
+      newFilters = {
+        ...newFilters,
+        city: newCity,
+        country: newCountry,
+        location: newLocation,
+        locations, // Add locations array to filters for use in API call
+      };
+    }
+    
+    if (
+      key === "minTotalExp" &&
+      newFilters.maxTotalExp &&
+      Number(value) > Number(newFilters.maxTotalExp)
+    ) {
+      console.warn("Min experience cannot be greater than max experience");
+      return;
+    }
+    if (
+      key === "maxTotalExp" &&
+      newFilters.minTotalExp &&
+      Number(value) < Number(newFilters.minTotalExp)
+    ) {
+      console.warn("Max experience cannot be less than min experience");
+      return;
+    }
+    if (
+      key === "minSalary" &&
+      newFilters.maxSalary &&
+      Number(value) > Number(newFilters.maxSalary)
+    ) {
+      console.warn("Min salary cannot be greater than max salary");
+      return;
+    }
+    if (
+      key === "maxSalary" &&
+      newFilters.minSalary &&
+      Number(value) < Number(newFilters.minSalary)
+    ) {
+      console.warn("Max salary cannot be less than min salary");
+      return;
+    }
+
+
+    onFiltersChange(newFilters);
+    if (key === "keywords") {
+      fetchKeywordSuggestions(value);
+    }
+  };
+
+  const handleKeywordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^a-zA-Z0-9\s,]/g, ""); // Allow only alphanumeric, commas and spaces
+    updateFilters("keywords", value);
+  };
+
+  const handleSelectSuggestion = (suggestion: string) => {
+    // Append the selected suggestion to existing keywords, preserving previous ones
+    const keywordsArray = filters.keywords.split(",").map(k => k.trim()).filter(k => k);
+    keywordsArray.pop(); // Remove the last incomplete keyword
+    keywordsArray.push(suggestion);
+    const newKeywords = keywordsArray.join(", ");
+    updateFilters("keywords", newKeywords);
+    setShowSuggestions(false);
+    applyFilters(); // Trigger search on suggestion select
+  };
+
+  const handleSelectRecentSearch = (query: string) => {
+    updateFilters("keywords", query);
+    applyFilters(); // Trigger search on recent search select
+    setShowSuggestions(false);
+  }
+
+  const handleKeywordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      applyFilters();
+    }
+  };
+
+  const resetFilters = () => {
+    setIsLocationManuallyEdited(false);
+    setKeywordSuggestions([]);
+    setShowSuggestions(false);
+    onFiltersChange({
+      keywords: "",
+      booleanSearch: false,
+      semanticSearch: false,
+      selectedCategories: [],
+      minExperience: "",
+      maxExperience: "",
+      funInCurrentCompany: false,
+      minTotalExp: "",
+      maxTotalExp: "",
+      city: "",
+      country: "",
+      location: "",
+      locations: [],
+      noticePeriod: "",
+      companies: "",
+      industries: "",
+      minSalary: "",
+      maxSalary: "",
+      colleges: "",
+      topTierUniversities: false,
+      computerScienceGraduates: false,
+      showFemaleCandidates: false,
+      recentlyPromoted: false,
+      backgroundVerified: false,
+      hasCertification: false,
+      hasResearchPaper: false,
+      hasLinkedIn: false,
+      hasBehance: false,
+      hasTwitter: false,
+      hasPortfolio: false,
+      jobId: filters.jobId,
+      application_type: activeTab,
+      is_prevetted: activeTab === "prevetted",
+      is_active: activeTab === "active",
+    });
+  };
+
+  const applyFilters = () => {
     if (filters.jobId) {
       const filterParams: any = {
         job_id: filters.jobId,
         application_type: filters.application_type,
       };
-      if (filters.keywords) filterParams.q = [filters.keywords];
+      if (filters.keywords) {
+        // Split keywords by comma and trim each, preserving multi-word phrases
+        filterParams.q = filters.keywords
+          .split(",")
+          .map((k: string) => k.trim())
+          .filter((k: string) => k);
+      }
       if (filters.minTotalExp)
         filterParams.experience_min = Number(filters.minTotalExp);
       if (filters.maxTotalExp)
@@ -309,9 +567,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         filterParams.is_top_tier_college = filters.topTierUniversities;
       if (filters.hasCertification)
         filterParams.has_certification = filters.hasCertification;
-      if (filters.location) filterParams.location = filters.location;
-      if (filters.selectedSkills.length > 0)
-        filterParams.skills = filters.selectedSkills.join(",");
+      if (filters.country) filterParams.country = filters.country;
+      if (filters.locations && filters.locations.length > 0)
+        filterParams.locations = filters.locations; // Use locations array
       if (filters.companies)
         filterParams.companies = filters.companies
           .split(",")
@@ -352,114 +610,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
       debouncedFetchCandidates(filterParams);
     }
-  }, [filters, debouncedFetchCandidates]);
-
-  const toggleSection = (section: SectionKey) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
-
-  const updateFilters = (key: string, value: any) => {
-    let newFilters = { ...filters, [key]: value };
-    // Validate numeric fields
-    
-    if (key === "city" || key === "country") {
-      setIsLocationManuallyEdited(false);
-      const newCity = key === "city" ? value : filters.city;
-      const newCountry = key === "country" ? value : filters.country;
-      let newLocation = "";
-      if (newCity && newCountry) {
-        newLocation = `${newCity}, ${newCountry}`; // Case 3
-      } else if (newCity) {
-        newLocation = newCity; // Case 1
-      } else if (newCountry) {
-        newLocation = newCountry; // Case 2
-      }
-      newFilters = { ...newFilters, location: newLocation };
-    }
-
-    if (key === "location") {
-      setIsLocationManuallyEdited(true);
-    }
-    
-    if (
-      key === "minTotalExp" &&
-      newFilters.maxTotalExp &&
-      Number(value) > Number(newFilters.maxTotalExp)
-    ) {
-      console.warn("Min experience cannot be greater than max experience");
-      return;
-    }
-    if (
-      key === "maxTotalExp" &&
-      newFilters.minTotalExp &&
-      Number(value) < Number(newFilters.minTotalExp)
-    ) {
-      console.warn("Max experience cannot be less than min experience");
-      return;
-    }
-    if (
-      key === "minSalary" &&
-      newFilters.maxSalary &&
-      Number(value) > Number(newFilters.maxSalary)
-    ) {
-      console.warn("Min salary cannot be greater than max salary");
-      return;
-    }
-    if (
-      key === "maxSalary" &&
-      newFilters.minSalary &&
-      Number(value) < Number(newFilters.minSalary)
-    ) {
-      console.warn("Max salary cannot be less than min salary");
-      return;
-    }
-
-
-    onFiltersChange(newFilters);
-  };
-
-  const resetFilters = () => {
-    setIsLocationManuallyEdited(false);
-    onFiltersChange({
-      keywords: "",
-      booleanSearch: false,
-      semanticSearch: false,
-      selectedCategories: [],
-      minExperience: "",
-      maxExperience: "",
-      funInCurrentCompany: false,
-      minTotalExp: "",
-      maxTotalExp: "",
-      city: "",
-      country: "",
-      location: "",
-      selectedSkills: [],
-      skillLevel: "",
-      noticePeriod: "",
-      companies: "",
-      industries: "",
-      minSalary: "",
-      maxSalary: "",
-      colleges: "",
-      topTierUniversities: false,
-      computerScienceGraduates: false,
-      showFemaleCandidates: false,
-      recentlyPromoted: false,
-      backgroundVerified: false,
-      hasCertification: false,
-      hasResearchPaper: false,
-      hasLinkedIn: false,
-      hasBehance: false,
-      hasTwitter: false,
-      hasPortfolio: false,
-      jobId: filters.jobId,
-      application_type: activeTab,
-      is_prevetted: activeTab === "prevetted",
-      is_active: activeTab === "active",
-    });
   };
 
   const noticePeriodOptions = [
@@ -500,15 +650,31 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <div className="relative">
               <input
                 type="text"
-                placeholder="For Ex: Gen AI Specialist, and Gen AI engineer"
+                placeholder="Seperated by comma, For Ex: Gen AI Specialist, and Gen AI engineer"
                 value={filters.keywords}
-                onChange={(e) => updateFilters("keywords", e.target.value)}
+                onChange={handleKeywordInputChange}
+                onKeyDown={handleKeywordKeyDown}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
-            </div>
+              {showSuggestions && keywordSuggestions.length > 0 && (
+                <div
+                  ref={suggestionsRef}
+                  className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto"
+                >
+                  {keywordSuggestions.map((suggestion, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleSelectSuggestion(suggestion)}
+                      className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                    >
+                      {suggestion}
+                    </div>
+                  ))}
+                </div>
+              )}
 
-            <JobTitlesSlider />
-          </div>
+            </div>
+          <JobTitlesSlider recentSearches={recentSearches} onSelectSearch={handleSelectRecentSearch} />          </div>
         )}
       </div>
 
@@ -613,41 +779,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         )}
       </div>
 
-          {/* Skills */}
-
-      <div
-          className="flex items-center justify-between cursor-pointer mb-2"
-          onClick={() => toggleSection("skills")}
-        >
-          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
-            <Award className="w-4 h-4 mr-2 text-gray-800" />
-            Skills
-          </h3>
-          {expandedSections.skills ? (
-            <ChevronUp className="w-4 h-4 text-gray-500" />
-          ) : (
-            <ChevronDown className="w-4 h-4 text-gray-500" />
-          )}
-        </div>
-      <div>
-        
-        {expandedSections.skills && (
-          <div className="mt-2">
-            <input
-              type="text"
-              placeholder="Add skills (comma-separated)"
-              value={filters.selectedSkills.join(", ")}
-              onChange={(e) =>
-                updateFilters(
-                  "selectedSkills",
-                  e.target.value.split(",").map((s) => s.trim())
-                )
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-            />
-          </div>
-        )}
-      </div>
 
       {/* Companies/Industries */}
       <div>
@@ -987,7 +1118,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         {/* Apply Filters */}
         <div className="w-full border border-blue-400 rounded-lg">
           <button
-            onClick={() => debouncedFetchCandidates(filters)}
+            onClick={applyFilters}
             className="w-full p-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center justify-center"
           >
             <Filter className="w-4 h-4 mr-2" />

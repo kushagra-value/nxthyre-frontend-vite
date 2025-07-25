@@ -114,7 +114,7 @@ function MainApp() {
     city: "",
     country: "",
     location: "",
-    selectedSkills: [] as string[],
+    locations: [] as string[],
     skillLevel: "",
     noticePeriod: "",
     companies: "",
@@ -176,7 +176,7 @@ function MainApp() {
       setFilters((prev) => ({
         ...prev,
         jobId: job.id.toString(),
-        selectedSkills: job.skills || [],
+        keywords: job.skills ? job.skills.join(", ") : "",
         minTotalExp: job.experience_min_years
           ? job.experience_min_years.toString()
           : "",
@@ -184,8 +184,9 @@ function MainApp() {
           ? job.experience_max_years.toString()
           : "",
         location: job.location || "",
-        city: job.location ? job.location.split(",")[0]?.trim() || "" : "",
-        country: job.location ? job.location.split(",")[1]?.trim() || "" : "",
+        // city: job.location ? job.location.split(",")[0]?.trim() || "" : "",
+        // country: job.location ? job.location.split(",")[1]?.trim() || "" : "",
+        locations: job.location ? [job.location.split(",")[0]?.trim()].filter(Boolean) : [], // Initialize locations with city
         application_type: activeTab,
       }));
     } catch (error) {
@@ -205,7 +206,12 @@ function MainApp() {
           job_id: filters.jobId,
           application_type: filters.application_type,
         };
-        if (filters.keywords) filterParams.q = [filters.keywords];
+        if (filters.keywords) {
+          filterParams.q = filters.keywords
+            .split(",")
+            .map((k: string) => k.trim())
+            .filter((k: string) => k);
+        }
         if (filters.minTotalExp)
           filterParams.experience_min = filters.minTotalExp;
         if (filters.maxTotalExp)
@@ -216,13 +222,9 @@ function MainApp() {
           filterParams.is_top_tier_college = filters.topTierUniversities;
         if (filters.hasCertification)
           filterParams.has_certification = filters.hasCertification;
-        if (filters.city || filters.country)
-          filterParams.location = `${filters.city}${
-            filters.city && filters.country ? ", " : ""
-          }${filters.country}`;
-        if (filters.location) filterParams.location = filters.location;
-        if (filters.selectedSkills.length > 0)
-          filterParams.skills = filters.selectedSkills.join(",");
+        if (filters.country) filterParams.country = filters.country;
+        if (filters.locations && filters.locations.length > 0)
+          filterParams.locations = filters.locations;
         if (filters.companies)
           filterParams.companies = filters.companies
             .split(",")
@@ -287,10 +289,8 @@ function MainApp() {
       filters.minExperience,
       filters.topTierUniversities,
       filters.hasCertification,
-      filters.city,
       filters.country,
-      filters.location,
-      filters.selectedSkills,
+      filters.locations,
       filters.companies,
       filters.industries,
       filters.minSalary,
@@ -461,7 +461,7 @@ function MainApp() {
         city: "",
         country: "",
         location: "",
-        selectedSkills: [],
+        locations: [],
         skillLevel: "",
         noticePeriod: "",
         companies: "",
