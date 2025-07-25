@@ -39,6 +39,21 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
 
   const seniorityOptions = ['JUNIOR', 'SENIOR', 'LEAD', 'HEAD'];
   const departmentOptions = ['Marketing', 'Finance', 'Sales', 'Ops', 'Engineering', 'Admin', 'Others'];
+  const departmentMap: { [key: number]: string } = {
+    1: 'Marketing',
+    2: 'Finance',
+    3: 'Sales',
+    4: 'Ops',
+    5: 'Engineering',
+    6: 'Admin',
+    7: 'Others',
+  };
+
+  // Reverse mapping for form submission (Name to ID)
+  const departmentNameToId: { [key: string]: number } = Object.fromEntries(
+    Object.entries(departmentMap).map(([id, name]) => [name, parseInt(id)])
+  );
+
 
   const dummyJD = `We are seeking a talented Head of Finance to join our dynamic team...`;
   const keyCompetencies = [
@@ -63,7 +78,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
             location: job.location,
             hybrid: job.is_hybrid,
             seniority: job.seniority,
-            department: job.department.toString(),
+            department: departmentMap[job.department] || 'Others',
             aiInterviews: job.enable_ai_interviews,
             minExp: job.experience_min_years.toString(),
             maxExp: job.experience_max_years.toString(),
@@ -121,7 +136,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
         location: formData.location,
         is_hybrid: formData.hybrid,
         seniority: formData.seniority || "null",
-        department: parseInt(formData.department) || 1,
+        department: departmentNameToId[formData.department] || 1,
         experience_min_years: parseInt(formData.minExp) || 0,
         experience_max_years: parseInt(formData.maxExp) || 0,
         salary_min: formData.minSalary,
