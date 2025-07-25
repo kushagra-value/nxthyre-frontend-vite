@@ -147,6 +147,22 @@ export interface ShareableProfileSensitiveCandidate {
   }[];
 }
 
+export interface ExportCandidateResponse {
+  data: {
+    full_name: string;
+    email: string;
+    phone: string;
+    headline: string;
+    location: string;
+    total_experience_years: string;
+    current_role: string;
+    current_company: string;
+    skills: string;
+    job_applied_for: string;
+    current_pipeline_stage: string;
+  }[];
+}
+
 export interface FollowUpStep {
   id: number;
   send_after_hours: number;
@@ -360,6 +376,17 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to fetch recent searches");
+    }
+  }
+
+  async exportCandidates(applicationIds: string[]): Promise<ExportCandidateResponse> {
+    try {
+      const response = await apiClient.post('/jobs/applications/export/', {
+        application_ids: applicationIds
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to export candidates");
     }
   }
 

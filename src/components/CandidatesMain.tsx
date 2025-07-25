@@ -12,8 +12,22 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { candidateService, CandidateListItem, PipelineResponse, BulkPipelineResponse, PipelineStage } from "../services/candidateService";
+import { candidateService, CandidateListItem, PipelineResponse, BulkPipelineResponse, PipelineStage, ExportCandidateResponse } from "../services/candidateService";
 import { showToast } from '../utils/toast';
+
+const downloadFile = (data: string, fileName: string, type: 'csv' | 'xlsx') => {
+  const blob = new Blob([data], { 
+    type: type === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+  });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};
 
 interface CandidatesMainProps {
   activeTab: string;
@@ -55,6 +69,10 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const candidatesPerPage = 20;
   const maxVisiblePages = 5;
+
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+
 
   const tabs = [
     { id: "outbound", label: "Outbound", count: activeTab === "outbound" ? totalCount : 0 },
@@ -140,6 +158,85 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       setShowDropdown(candidateId);
     } catch (error: any) {
       showToast.error(error.message || 'Failed to fetch pipeline stages');
+    }
+  };
+
+  const handleExportCandidates = async (format: 'csv' | 'xlsx') => {
+    if (selectedCandidates.length === 0) {
+      showToast.error('Please select at least one candidate');
+      return;
+    }
+
+    setExportLoading(true);
+    try {
+      const response: ExportCandidateResponse = await candidateService.exportCandidates(selectedCandidates);
+      
+      // Convert response data to CSV format
+      if (format === 'csv') {
+        const headers = [
+          'Full Name',
+          'Email',
+          'Phone',
+          'Headline',
+          'Location',
+          'Total Experience (Years)',
+          'Current Role',
+          'Current Company',
+          'Skills',
+          'Job Applied For',
+          'Current Pipeline Stage'
+        ];
+        
+        const csvContent = [
+          headers.join(','),
+          ...response.data.map(row => 
+            Object.values(row)
+              .map(value => `"${value?.toString().replace(/"/g, '""') || ''}"`)
+              .join(',')
+          )
+        ].join('\n');
+
+        downloadFile(csvContent, `candidates_export_${Date.now()}.csv`, 'csv');
+      } 
+      // For Excel, we'll need to use a library like SheetJS (xlsx)
+      else {
+        // Note: For proper Excel export, you would typically use a library like SheetJS
+        // This is a simplified version that creates a CSV with .xlsx extension
+        // For production, you should integrate SheetJS or similar
+        const headers = [
+          'Full Name',
+          'Email',
+          'Phone',
+          'Headline',
+          'Location',
+          'Total Experience (Years)',
+          'Current Role',
+          'Current Company',
+          'Skills',
+          'Job Applied For',
+          'Current Pipeline Stage'
+        ];
+        
+        const csvContent = [
+          headers.join(','),
+          ...response.data.map(row => 
+            Object.values(row)
+              .map(value => `"${value?.toString().replace(/"/g, '""') || ''}"`)
+              .join(',')
+          )
+        ].join('\n');
+
+        downloadFile(csvContent, `candidates_export_${Date.now()}.xlsx`, 'xlsx');
+      }
+
+      showToast.success(`Candidates exported successfully as ${format.toUpperCase()}`);
+      setShowExportDialog(false);
+      setSelectedCandidates([]);
+      setSelectAll(false);
+    } catch (error: any) {
+      showToast.error(error.message || 'Failed to export candidates');
+    } finally {
+      setExportLoading(false);
     }
   };
 
@@ -245,7 +342,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center" onClick={handleBulkAddToPipeline}>
                 Add To Pipeline
               </button>
-              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
+              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center" onClick={() => setShowExportDialog(true)}>
                 Export Candidates
               </button>
             </div>
@@ -355,7 +452,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center" onClick={handleBulkAddToPipeline}>
                 Add To Pipeline
               </button>
-              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
+              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center" onClick={() => setShowExportDialog(true)}>
                 Export Candidates
               </button>
             </div>
@@ -464,7 +561,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center" onClick={handleBulkAddToPipeline} >
               Add To Pipeline
             </button>
-            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
+            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center" onClick={() => setShowExportDialog(true)}>
               Export Candidates
             </button>
           </div>
@@ -475,7 +572,58 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             </button>
           </div>
         </div>
-      </div>
+      </div> 
+
+      {/* Export Confirmation Dialog */}
+      {showExportDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Export {selectedCandidates.length} Candidate{selectedCandidates.length !== 1 ? 's' : ''}
+            </h3>
+            <p className="text-sm text-gray-600 mt-2">
+              Please choose the export format for the selected candidates.
+            </p>
+            <div className="mt-4 flex justify-end space-x-2">
+              <button
+                className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300 transition-colors"
+                onClick={() => setShowExportDialog(false)}
+                disabled={exportLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                onClick={() => handleExportCandidates('csv')}
+                disabled={exportLoading}
+              >
+                {exportLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Exporting...
+                  </>
+                ) : (
+                  'Export as CSV'
+                )}
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                onClick={() => handleExportCandidates('xlsx')}
+                disabled={exportLoading}
+              >
+                {exportLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Exporting...
+                  </>
+                ) : (
+                  'Export as Excel'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}  
 
       <div className="divide-y divide-gray-200">
         {candidates.map((candidate) => (
