@@ -616,7 +616,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 </div>
               </div>
             </div>
-            <div className="p-3 lg:pl-8 lg:py-4 bg-gradient-to-r from-gray-100 via-white to-white">
+            <div className="p-3 lg:pl-8 lg:py-4 bg-white">
               <div className="mt-2 grid grid-cols-1 gap-2 text-sm ml-1">
                 <div className="flex justify-between">
                   <div className="flex space-x-12">
@@ -642,9 +642,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   {candidate.skills_list?.slice(0, 3).map((skill, index) => (
                     <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
                       {skill}
-                      {Array.from({ length: getStarCount(skill) }).map((_, i) => (
+                      {/* {Array.from({ length: getStarCount(skill) }).map((_, i) => (
                         <Star key={i} size={11} className="inline-block ml-1 mb-1 text-blue-600" />
-                      ))}
+                      ))} */}
                     </span>
                   ))}
                 </div>
