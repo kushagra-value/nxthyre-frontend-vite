@@ -42,23 +42,25 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
 
   // Department ID to Name mapping
   const departmentMap: { [key: number]: string } = {
-    1: 'Marketing',
-    2: 'Finance',
-    3: 'Sales',
-    4: 'Ops',
-    5: 'Engineering',
-    6: 'Admin',
-    7: 'Others',
+    1: 'Human Resources',
+    2: 'Marketing',
+    3: 'Finance',
+    4: 'Sales',
+    5: 'Ops',
+    6: 'Engineering',
+    7: 'Admin',
+    8: 'Others',
   };
 
   const departmentNameToId: { [key: string]: number } = {
-    'Marketing':1,
-     'Finance':2,
-    'Sales': 3,
-    'Ops':4,
-    'Engineering':5,
-    'Admin':6,
-    'Others':7,
+    'Human Resources': 1,
+    'Marketing': 2,
+    'Finance': 3,
+    'Sales': 4,
+    'Ops': 5,
+    'Engineering': 6,
+    'Admin': 7,
+    'Others': 8,
   };
 
   const dummyJD = `We are seeking a talented Head of Finance to join our dynamic team...`;

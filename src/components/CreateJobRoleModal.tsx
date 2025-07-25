@@ -36,7 +36,31 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, onClose
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const seniorityOptions = ['JUNIOR', 'SENIOR', 'LEAD', 'HEAD'];
-  const departmentOptions = ['Marketing', 'Finance', 'Sales', 'Ops', 'Engineering', 'Admin', 'Others'];
+  const departmentOptions = ['Human Resources', 'Marketing', 'Finance', 'Sales', 'Ops', 'Engineering', 'Admin', 'Others'];
+
+  // Department ID to Name mapping
+  const departmentMap: { [key: number]: string } = {
+    1: 'Human Resources',
+    2: 'Marketing',
+    3: 'Finance',
+    4: 'Sales',
+    5: 'Ops',
+    6: 'Engineering',
+    7: 'Admin',
+    8: 'Others',
+  };
+
+  // Department Name to ID mapping
+  const departmentNameToId: { [key: string]: number } = {
+    'Human Resources': 1,
+    'Marketing': 2,
+    'Finance': 3,
+    'Sales': 4,
+    'Ops': 5,
+    'Engineering': 6,
+    'Admin': 7,
+    'Others': 8,
+  };
 
   const dummyJD = `We are seeking a talented Head of Finance to join our dynamic team. The ideal candidate will have extensive experience in financial planning, analysis, and strategic decision-making.
 
@@ -162,7 +186,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
         location: formData.location,
         is_hybrid: formData.hybrid,
         seniority: formData.seniority,
-        department: parseInt(formData.department) || 1, // Assuming department ID 1 as default
+        department: departmentNameToId[formData.department] || 8, // Assuming department ID 1 as default
         experience_min_years: parseInt(formData.minExp) || 0,
         experience_max_years: parseInt(formData.maxExp) || 0,
         salary_min: formData.minSalary,
