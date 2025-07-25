@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import posthog from 'posthog-js';
+import posthog from "posthog-js";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
@@ -187,7 +187,9 @@ function MainApp() {
         location: job.location || "",
         // city: job.location ? job.location.split(",")[0]?.trim() || "" : "",
         // country: job.location ? job.location.split(",")[1]?.trim() || "" : "",
-        locations: job.location ? [job.location.split(",")[0]?.trim()].filter(Boolean) : [], // Initialize locations with city
+        locations: job.location
+          ? [job.location.split(",")[0]?.trim()].filter(Boolean)
+          : [], // Initialize locations with city
         application_type: activeTab,
       }));
     } catch (error) {
@@ -437,18 +439,17 @@ function MainApp() {
   };
 
   const handleLogoutConfirm = async () => {
-
     const currentUserId = currentUser?.id || "";
 
-    posthog.capture('logout', {
-      email: /* user’s email */,
+    posthog.capture("logout", {
+      email: currentUser?.email,
       timestamp: new Date().toISOString(),
       user_id: currentUserId,
     });
 
     // Optionally, clear the distinct id so next visitor is anonymous again:
     posthog.reset();
-    
+
     setShowLogoutModal(false);
     try {
       await signOut();
