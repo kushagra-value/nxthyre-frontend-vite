@@ -616,7 +616,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 </div>
               </div>
             </div>
-            <div className="p-3 lg:pl-8 lg:py-4 bg-gradient-to-r from-gray-100 via-white to-white">
+            <div className="p-3 lg:pl-8 lg:py-4 bg-white">
               <div className="mt-2 grid grid-cols-1 gap-2 text-sm ml-1">
                 <div className="flex justify-between">
                   <div className="flex space-x-12">
