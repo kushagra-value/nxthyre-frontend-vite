@@ -584,14 +584,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             <p className="text-sm text-gray-600 mt-2">
               Please choose the export format for the selected candidates.
             </p>
-            <div className="mt-4 flex justify-end space-x-2">
-              <button
-                className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300 transition-colors"
-                onClick={() => setShowExportDialog(false)}
-                disabled={exportLoading}
-              >
-                Cancel
-              </button>
+            <div className="mt-4 flex justify-between space-x-2">
               <button
                 className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
                 onClick={() => handleExportCandidates('csv')}
@@ -619,6 +612,13 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 ) : (
                   'Export as Excel'
                 )}
+              </button>
+              <button
+                className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300 transition-colors"
+                onClick={() => setShowExportDialog(false)}
+                disabled={exportLoading}
+              >
+                Cancel
               </button>
             </div>
           </div>
