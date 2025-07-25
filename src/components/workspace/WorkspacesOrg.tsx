@@ -470,7 +470,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                       className="bg-white text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors flex items-center"
                     >
                       <Settings className="w-4 h-4 mr-2" />
-                      Manage Workspace
+                      Pending Requests
                     </button>
                   </div>
                   {joinedWorkspaces.length > 0 ? (
