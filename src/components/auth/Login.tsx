@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import posthog from "posthog-js";
 import {
   Eye,
   EyeOff,
@@ -48,6 +49,12 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
 
     if (!validateForm()) return;
 
+    // 1) User is trying to log in
+    posthog.capture("login_attempted", {
+      email: formData.email,
+      timestamp: new Date().toISOString(),
+    });
+
     setIsLoading(true);
 
     try {
@@ -76,6 +83,18 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
           firebaseUser.metadata.creationTime || new Date().toISOString(),
       };
 
+      // 2) Identify the real user now that we have their UID
+      posthog.identify(firebaseUser.uid, {
+        email: formData.email,
+      });
+
+      // 3) Login succeeded
+      posthog.capture("login_successful", {
+        email: formData.email,
+        timestamp: new Date().toISOString(),
+        user_id: firebaseUser.uid,
+      });
+
       onLogin(user);
 
       if (userStatus.is_onboarded) {
@@ -87,6 +106,14 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
       }
     } catch (error: any) {
       console.error("Login error:", error);
+
+      // 4) Login failed
+      posthog.capture("login_failed", {
+        email: formData.email,
+        timestamp: new Date().toISOString(),
+        reason: error.message || "Unknown error",
+      });
+
       setErrors({ general: error.message || "Login failed" });
       showToast.error("Login failed. Please try again later.");
     } finally {
