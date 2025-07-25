@@ -38,7 +38,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
   const [isFetching, setIsFetching] = useState(false);
 
   const seniorityOptions = ['JUNIOR', 'SENIOR', 'LEAD', 'HEAD'];
-  const departmentOptions = ['Marketing', 'Finance', 'Sales', 'Ops', 'Engineering', 'Admin', 'Others'];
+  const departmentOptions = ["Human Resources",'Marketing', 'Finance', 'Sales', 'Ops', 'Engineering', 'Admin', 'Others'];
 
   // Department ID to Name mapping
   const departmentMap: { [key: number]: string } = {
