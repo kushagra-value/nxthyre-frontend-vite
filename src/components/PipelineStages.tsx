@@ -2853,7 +2853,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           </div>
         ) : (
           <div className="hidden md:flex items-center space-x-2">
-            {categories.slice(0, 5).map((category) => (
+            {categories.slice(0, 4).map((category) => (
               <div
                 key={category.id}
                 className="relative"
