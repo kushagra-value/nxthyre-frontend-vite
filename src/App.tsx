@@ -324,6 +324,10 @@ function MainApp() {
     }
   };
 
+  const handleJobCreatedOrUpdated = () => {
+    fetchCategories(); // Refresh categories after job creation or update
+  };
+
   // Fetch categories on auth change
   useEffect(() => {
     if (isAuthenticated) {
@@ -911,6 +915,7 @@ function MainApp() {
                     <CreateJobRoleModal
                       isOpen={showCreateJobRole}
                       onClose={() => setShowCreateJobRole(false)}
+                      onJobCreated={handleJobCreatedOrUpdated}
                     />
                     <EditJobRoleModal
                       isOpen={showEditJobRole}
@@ -919,6 +924,7 @@ function MainApp() {
                         setEditingJobId(null);
                       }}
                       jobId={editingJobId || 0}
+                      onJobUpdated={handleJobCreatedOrUpdated}
                     />
                     <EditTemplateModal
                       isOpen={showEditTemplate}
