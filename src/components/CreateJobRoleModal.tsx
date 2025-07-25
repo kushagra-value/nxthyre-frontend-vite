@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { X, Upload, FileText, ChevronDown, RotateCcw, ArrowLeft, ArrowRight, Info } from 'lucide-react';
+import { X, Upload, FileText, RotateCcw, ArrowLeft, ArrowRight, Info } from 'lucide-react';
 import { showToast } from '../utils/toast';
 import { jobPostService, CreateJobData } from '../services/jobPostService';
 
 interface CreateJobRoleModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onJobCreated?: () => void; // Callback to refresh categories
 }
 
-const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, onClose }) => {
+const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, onClose, onJobCreated }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     allowInbound: true,
@@ -38,7 +39,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, onClose
   const seniorityOptions = ['JUNIOR', 'SENIOR', 'LEAD', 'HEAD'];
   const departmentOptions = ['Human Resources', 'Marketing', 'Finance', 'Sales', 'Ops', 'Engineering', 'Admin', 'Others'];
 
-  // Department ID to Name mapping
+  // Department mappings
   const departmentMap: { [key: number]: string } = {
     1: 'Human Resources',
     2: 'Marketing',
@@ -50,7 +51,6 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, onClose
     8: 'Others',
   };
 
-  // Department Name to ID mapping
   const departmentNameToId: { [key: string]: number } = {
     'Human Resources': 1,
     'Marketing': 2,
@@ -81,15 +81,28 @@ Requirements:
 We offer competitive compensation, comprehensive benefits, and opportunities for professional growth in a collaborative environment.`;
 
   const keyCompetencies = [
-    'Financial Planning', 'Budget Management', 'Risk Assessment', 'Strategic Analysis', 
+    'Financial Planning', 'Budget Management', 'Risk Assessment', 'Strategic Analysis',
     'Team Leadership', 'Regulatory Compliance', 'Cash Flow Management', 'Investment Strategy'
   ];
 
   const [competencies, setCompetencies] = useState(keyCompetencies);
-  const [editableJD, setEditableJD] = useState(dummyJD); // State for editable job description
+  const [editableJD, setEditableJD] = useState(dummyJD);
+
+  // Validation for text inputs (allow only alphanumeric, comma, space)
+  const isValidTextInput = (value: string): boolean => /^[a-zA-Z0-9, ]*$/.test(value);
+
+  // Validation for number inputs (only digits, no +,-,e)
+  const isValidNumberInput = (value: string): boolean => /^[0-9]*$/.test(value);
+
+  // Safe integer range for JavaScript (Number.MAX_SAFE_INTEGER)
+  const MAX_SAFE_INTEGER = 999999999999;
 
   const handleSkillAdd = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && skillInput.trim()) {
+      if (!isValidTextInput(skillInput)) {
+        showToast.error('Skills can only contain letters, numbers, commas, and spaces.');
+        return;
+      }
       setFormData(prev => ({
         ...prev,
         skills: [...prev.skills, skillInput.trim()]
@@ -111,37 +124,43 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
       skills: formData.skills.length > 0,
       location: formData.location.trim(),
       seniority: formData.seniority.trim(),
-      department: formData.department.trim(),
-      minExp: formData.minExp.trim() && !isNaN(parseInt(formData.minExp)),
-      maxExp: formData.maxExp.trim() && !isNaN(parseInt(formData.maxExp)),
-      minSalary: formData.confidential ? true : formData.minSalary.trim(),
-      maxSalary: formData.confidential ? true : formData.maxSalary.trim(),
-      jobDescription: formData.uploadType === 'paste' ? formData.jobDescription.trim() : true, // Adjust for file upload if needed
+      department: formData.department.trim() && departmentNameToId[formData.department],
+      minExp: formData.minExp.trim() && isValidNumberInput(formData.minExp),
+      maxExp: formData.maxExp.trim() && isValidNumberInput(formData.maxExp),
+      minSalary: formData.confidential ? true : formData.minSalary.trim() && isValidNumberInput(formData.minSalary),
+      maxSalary: formData.confidential ? true : formData.maxSalary.trim() && isValidNumberInput(formData.maxSalary),
+      jobDescription: formData.uploadType === 'paste' ? formData.jobDescription.trim() : true,
     };
 
     const errors: string[] = [];
 
     if (!requiredFields.title) errors.push('Job title is required.');
+    if (!isValidTextInput(formData.title)) errors.push('Job title contains invalid characters.');
     if (!requiredFields.skills) errors.push('At least one skill is required.');
     if (!requiredFields.location) errors.push('Location is required.');
+    if (!isValidTextInput(formData.location)) errors.push('Location contains invalid characters.');
     if (!requiredFields.seniority) errors.push('Seniority is required.');
-    if (!requiredFields.department) errors.push('Department is required.');
+    if (!requiredFields.department) errors.push('Please select a valid department.');
     if (!requiredFields.minExp) errors.push('Minimum experience is required and must be a valid number.');
     if (!requiredFields.maxExp) errors.push('Maximum experience is required and must be a valid number.');
     if (!requiredFields.minSalary) errors.push('Minimum salary is required unless confidential.');
     if (!requiredFields.maxSalary) errors.push('Maximum salary is required unless confidential.');
     if (!requiredFields.jobDescription) errors.push('Job description is required when pasting text.');
 
-    // Additional validation for experience range
+    // Validate experience range
     if (requiredFields.minExp && requiredFields.maxExp) {
       const minExp = parseInt(formData.minExp);
       const maxExp = parseInt(formData.maxExp);
-      if (minExp > maxExp) {
+      if (isNaN(minExp) || isNaN(maxExp)) {
+        errors.push('Experience fields must be valid numbers.');
+      } else if (minExp > maxExp) {
         errors.push('Minimum experience cannot be greater than maximum experience.');
+      } else if (minExp < 0 || maxExp < 0 || minExp > MAX_SAFE_INTEGER || maxExp > MAX_SAFE_INTEGER) {
+        errors.push('Experience values must be within valid integer range (0 to 999999999999).');
       }
     }
 
-    // Additional validation for salary range
+    // Validate salary range
     if (requiredFields.minSalary && requiredFields.maxSalary && !formData.confidential) {
       const minSalary = parseFloat(formData.minSalary);
       const maxSalary = parseFloat(formData.maxSalary);
@@ -149,17 +168,17 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
         errors.push('Salary fields must be valid numbers.');
       } else if (minSalary > maxSalary) {
         errors.push('Minimum salary cannot be greater than maximum salary.');
+      } else if (minSalary < 0 || maxSalary < 0 || minSalary > MAX_SAFE_INTEGER || maxSalary > MAX_SAFE_INTEGER) {
+        errors.push('Salary values must be within valid integer range (0 to 999999999999).');
       }
     }
 
     return errors;
   };
 
-
   const removeCompetency = (index: number) => {
     setCompetencies(prev => prev.filter((_, i) => i !== index));
   };
-
   const handleNext = () => {
     const errors = validateStep1();
     if (errors.length > 0) {
@@ -186,7 +205,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
         location: formData.location,
         is_hybrid: formData.hybrid,
         seniority: formData.seniority,
-        department: departmentNameToId[formData.department] || 8, // Assuming department ID 1 as default
+        department: departmentNameToId[formData.department] || 8,
         experience_min_years: parseInt(formData.minExp) || 0,
         experience_max_years: parseInt(formData.maxExp) || 0,
         salary_min: formData.minSalary,
@@ -197,19 +216,24 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
         description: formData.jobDescription,
         skill_names: formData.skills,
         status: formData.shareExternally ? 'PUBLISHED' : 'DRAFT',
-        workspace: 1, // Assuming default workspace ID
+        workspace: 1,
       };
 
       await jobPostService.createJob(jobData);
       showToast.success(formData.shareExternally ? 'Job role created and published successfully!' : 'Job role created successfully!');
+      onJobCreated?.(); // Trigger refresh of categories
       onClose();
     } catch (error: any) {
-      showToast.error(error.message || 'Failed to create job role');
+      
+      const errorMessage = error.response?.data?.department
+        ? `Department error: ${error.response.data.department.join(' ')}`
+        : error.message || 'Failed to create job role';
+      showToast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   const handleCreateAndPublish = async () => {
     const errors = validateStep1();
     if (errors.length > 0) {
@@ -241,7 +265,10 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
       showToast.success(formData.shareExternally ? 'Job role created and published successfully!' : 'Job role created successfully!');
       onClose();
     } catch (error: any) {
-      showToast.error(error.message || 'Failed to create job role');
+      const errorMessage = error.response?.data?.department
+        ? `Department error: ${error.response.data.department.join(' ')}`
+        : error.message || 'Failed to create job role';
+      showToast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -260,16 +287,14 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="px-6 py-5 border-b border-gray-200">
           <div className="flex justify-between">
             <h2></h2>
-            {/* Progress Indicator */}
             <div className="flex ml-8 mb-4 justify-center items-center space-x-3">
               <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
                 currentStep >= 1 ? 'bg-blue-400 text-white' : 'bg-gray-200 text-gray-600'
               }`}>
-                1 
+                1
               </div>
               <span>Basic Details</span>
               <div className={`w-20 h-[1px] mt-1 ${currentStep >= 2 ? 'bg-blue-400' : 'bg-gray-900'}`}></div>
@@ -281,7 +306,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
               <span>Update & Refine JD</span>
             </div>
             <div>
-              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg" disabled={isLoading}>
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
@@ -308,12 +333,13 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                       checked={formData.allowInbound}
                       onChange={() => setFormData(prev => ({ ...prev, allowInbound: true, keepPrivate: false }))}
                       className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      disabled={isLoading}
                     />
                     <span className="ml-2 text-sm font-medium text-gray-700">ALLOW INBOUND APPLICATIONS</span>
                   </label>
                   {showTooltip === 'inbound' && (
                     <div className="absolute top-full left-0 mt-2 w-80 p-3 bg-gray-900 text-white text-sm rounded-lg shadow-lg z-10">
-                      NxtHyre can post your jobs on social sites like LinkedIn to get high number of job applicants (along with your LinkedIn as hiring POC)
+                      NxtHyre can post your jobs on social sites like LinkedIn to get a high number of job applicants (along with your LinkedIn as hiring POC)
                     </div>
                   )}
                 </div>
@@ -331,25 +357,28 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                       checked={formData.keepPrivate}
                       onChange={() => setFormData(prev => ({ ...prev, allowInbound: false, keepPrivate: true }))}
                       className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      disabled={isLoading}
                     />
                     <span className="ml-2 text-sm font-medium text-gray-700">KEEP IT PRIVATE</span>
                   </label>
                   {showTooltip === 'private' && (
                     <div className="absolute top-full left-0 mt-2 w-80 p-3 bg-gray-900 text-white text-sm rounded-lg shadow-lg z-10">
-                      NxtHyre will not post LinkedIn on NxtHyre job portal
+                       NxtHyre will not post LinkedIn on NxtHyre job portal
                     </div>
                   )}
                 </div>
                 <div className="relative">
-                  <label className="flex items-center cursor-pointer"
+                  <label 
+                    className="flex items-center cursor-pointer"
                     onMouseEnter={() => setShowTooltip('shareExternally')}
                     onMouseLeave={() => setShowTooltip(null)}
-                    >
+                  >
                     <input
                       type="checkbox"
                       checked={formData.shareExternally}
                       onChange={(e) => setFormData(prev => ({ ...prev, shareExternally: e.target.checked }))}
                       className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      disabled={isLoading}
                     />
                     <span className="ml-2 text-sm font-medium text-gray-700">SHARE EXTERNALLY</span>
                   </label>
@@ -359,25 +388,31 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                     </div>
                   )}
                 </div>
-
               </div>
 
-              {/* Title */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Title <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   placeholder="Job title"
                   value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  onChange={(e) => {
+                    if (isValidTextInput(e.target.value)) {
+                      setFormData(prev => ({ ...prev, title: e.target.value }));
+                    }
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isLoading}
                 />
               </div>
 
-              {/* Skills, Location, Hybrid */}
               <div className="grid grid-cols-12 gap-4">
                 <div className="col-span-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Skills</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Skills <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     placeholder="Enter skills and press Enter"
@@ -385,12 +420,13 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                     onChange={(e) => setSkillInput(e.target.value)}
                     onKeyPress={handleSkillAdd}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={isLoading}
                   />
                   <div className="flex flex-wrap gap-2 mt-2 max-h-20 overflow-hidden">
                     {formData.skills.map((skill, index) => (
                       <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center">
                         {skill}
-                        <button onClick={() => removeSkill(index)} className="ml-1 text-blue-600 hover:text-blue-800">
+                        <button onClick={() => removeSkill(index)} className="ml-1 text-blue-600 hover:text-blue-800" disabled={isLoading}>
                           <X className="w-3 h-3" />
                         </button>
                       </span>
@@ -398,59 +434,72 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                   </div>
                 </div>
                 <div className="col-span-5">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Location <span className="text-red-500">*</span>
+                  </label>
                   <div className="flex">
                     <input
                       type="text"
                       placeholder="Enter location"
                       value={formData.location}
-                      onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                      onChange={(e) => {
+                        if (isValidTextInput(e.target.value)) {
+                          setFormData(prev => ({ ...prev, location: e.target.value }));
+                        }
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
                 <div className="col-span-1 pt-5">
-                      <span className="text-xs text-gray-700 font-semibold ml-3">Hybrid</span>
-                      <div className="flex justify-end">
-                        <button
-                        onClick={() => setFormData(prev => ({ ...prev, hybrid: !prev.hybrid }))}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          formData.hybrid ? 'bg-blue-500' : 'bg-gray-300'
+                  <span className="text-xs text-gray-700 font-semibold ml-3">Hybrid</span>
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => setFormData(prev => ({ ...prev, hybrid: !prev.hybrid }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        formData.hybrid ? 'bg-blue-500' : 'bg-gray-300'
+                      }`}
+                      role="switch"
+                      aria-checked={formData.hybrid}
+                      disabled={isLoading}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          formData.hybrid ? 'translate-x-6' : 'translate-x-1'
                         }`}
-                        role="switch"
-                        aria-checked={formData.hybrid}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            formData.hybrid ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                      </div>
-                    </div>
+                      />
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              {/* Seniority and Department */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Seniority</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Seniority <span className="text-red-500">*</span>
+                  </label>
                   <select
                     value={formData.seniority}
                     onChange={(e) => setFormData(prev => ({ ...prev, seniority: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mr-3"
+                    disabled={isLoading}
                   >
                     <option value="">Select seniority</option>
                     {seniorityOptions.map(option => (
                       <option key={option} value={option}>{option}</option>
-                    ))} 
+                    ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Department <span className="text-red-500">*</span>
+                  </label>
                   <select
                     value={formData.department}
                     onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={isLoading}
                   >
                     <option value="">Select department</option>
                     {departmentOptions.map(option => (
@@ -460,7 +509,6 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                 </div>
               </div>
 
-              {/* AI Interviews */}
               <div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">AI Interviews</span>
@@ -469,6 +517,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                       formData.aiInterviews ? 'bg-blue-600' : 'bg-gray-300'
                     }`}
+                    disabled={isLoading}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -477,33 +526,44 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                     />
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Turning on this feature will enable AI interview, as a initial screening round</p>
+                <p className="text-xs text-gray-500 mt-1">Turning on this feature will enable AI interview as an initial screening round</p>
               </div>
 
-              {/* Experience Range, Salary Range, Confidential */}
               <div className="grid grid-cols-12 gap-4">
                 <div className="col-span-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Enter Exp Range</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Enter Exp Range <span className="text-red-500">*</span>
+                  </label>
                   <div className="flex space-x-2">
                     <input
-                      type="number"
+                      type="text"
                       placeholder="Min exp"
                       value={formData.minExp}
-                      onChange={(e) => setFormData(prev => ({ ...prev, minExp: e.target.value }))}
+                      onChange={(e) => {
+                        if (isValidNumberInput(e.target.value)) {
+                          setFormData(prev => ({ ...prev, minExp: e.target.value }));
+                        }
+                      }}
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled={isLoading}
                     />
                     <input
-                      type="number"
+                      type="text"
                       placeholder="Max exp"
                       value={formData.maxExp}
-                      onChange={(e) => setFormData(prev => ({ ...prev, maxExp: e.target.value }))}
+                      onChange={(e) => {
+                        if (isValidNumberInput(e.target.value)) {
+                          setFormData(prev => ({ ...prev, maxExp: e.target.value }));
+                        }
+                      }}
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
                 <div className="col-span-6">
                   <label className="block flex justify-between text-sm font-medium text-gray-700 mb-2">
-                    Enter Salary Range
+                    Enter Salary Range {formData.confidential ? '' : <span className="text-red-500">*</span>}
                     <div className="flex items-end">
                       <label className="flex items-center">
                         <input
@@ -511,6 +571,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                           checked={formData.confidential}
                           onChange={(e) => setFormData(prev => ({ ...prev, confidential: e.target.checked }))}
                           className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          disabled={isLoading}
                         />
                         <span className="ml-1 text-sm text-gray-700">Keep it confidential</span>
                       </label>
@@ -521,30 +582,42 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                       type="text"
                       placeholder="Min salary"
                       value={formData.minSalary}
-                      onChange={(e) => setFormData(prev => ({ ...prev, minSalary: e.target.value }))}
+                      onChange={(e) => {
+                        if (isValidNumberInput(e.target.value)) {
+                          setFormData(prev => ({ ...prev, minSalary: e.target.value }));
+                        }
+                      }}
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled={isLoading || formData.confidential}
                     />
                     <input
                       type="text"
                       placeholder="Max salary"
                       value={formData.maxSalary}
-                      onChange={(e) => setFormData(prev => ({ ...prev, maxSalary: e.target.value }))}
+                      onChange={(e) => {
+                        if (isValidNumberInput(e.target.value)) {
+                          setFormData(prev => ({ ...prev, maxSalary: e.target.value }));
+                        }
+                      }}
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled={isLoading || formData.confidential}
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Job Description Upload/Paste */}
               <div>
                 <div className="flex items-center space-x-4 mb-3">
-                  <span className="text-sm font-medium text-gray-700">Job Description</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Job Description <span className="text-red-500">*</span>
+                  </span>
                   <div className="flex bg-gray-100 rounded-lg p-1">
                     <button
                       onClick={() => setFormData(prev => ({ ...prev, uploadType: 'paste' }))}
                       className={`px-3 py-1 text-sm rounded-md transition-colors ${
                         formData.uploadType === 'paste' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'
                       }`}
+                      disabled={isLoading}
                     >
                       Paste Text
                     </button>
@@ -553,6 +626,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                       className={`px-3 py-1 text-sm rounded-md transition-colors ${
                         formData.uploadType === 'upload' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'
                       }`}
+                      disabled={isLoading}
                     >
                       Upload File
                     </button>
@@ -565,51 +639,51 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                     value={formData.jobDescription}
                     onChange={(e) => setFormData(prev => ({ ...prev, jobDescription: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-32 resize-none"
+                    disabled={isLoading}
                   />
                 ) : (
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
                     <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                     <p className="text-sm text-gray-600">Drag and drop your job description file here</p>
                     <p className="text-xs text-gray-500 mt-1">or click to browse</p>
-                    <input type="file" className="hidden" accept=".pdf,.doc,.docx,.txt" />
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept=".pdf,.doc,.docx,.txt"
+                      disabled={isLoading}
+                    />
                   </div>
                 )}
               </div>
 
               <div className="flex justify-between">
-                {/* Cancel Button */}
-                <div className="flex justify-end">
-                  <button
-                    onClick={onClose}
-                    className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Cancel
-                  </button>
-                </div>
-                
-                {/* Next Button */}
-                <div className="flex justify-end">
-                  <button
-                    onClick={handleNext}
-                    className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                  >
-                    Next
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </button>
-                </div>
+                <button
+                  onClick={onClose}
+                  className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                  disabled={isLoading}
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Cancel
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                  disabled={isLoading}
+                >
+                  Next
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </button>
               </div>
-              
             </div>
           ) : (
             <div className="space-y-6">
-              {/* AI Generated JD */}
               <div className="bg-gray-100 p-6 rounded-lg">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-lg font-semibold text-gray-900">AI-Generated Job Description</h3>
                   <button
                     onClick={handleRegenerate}
                     className="px-3 py-1.5 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors flex items-center text-sm"
+                    disabled={isLoading}
                   >
                     <RotateCcw className="w-4 h-4 mr-1" />
                     Regenerate
@@ -627,14 +701,13 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                 </div>
               </div>
 
-              {/* Key Competencies */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Key Competencies</h3>
                 <div className="flex flex-wrap gap-2">
                   {competencies.map((competency, index) => (
                     <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center">
                       {competency}
-                      <button onClick={() => removeCompetency(index)} className="ml-2 text-blue-600 hover:text-blue-800">
+                      <button onClick={() => removeCompetency(index)} className="ml-2 text-blue-600 hover:text-blue-800" disabled={isLoading}>
                         <X className="w-3 h-3" />
                       </button>
                     </span>
@@ -642,7 +715,6 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                 </div>
               </div>
 
-              {/* Refinement Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Refine JD (e.g. 'Add remote work details')</label>
                 <div className="flex justify-between">
@@ -651,21 +723,23 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                     value={refinementInput}
                     onChange={(e) => setRefinementInput(e.target.value)}
                     className="w-[87%] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-11 resize-none"
+                    disabled={isLoading}
                   />
                   <button
                     onClick={handleUpdate}
                     className="px-[20px] py-[9px] bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                    disabled={isLoading}
                   >
                     Update
                   </button>
                 </div>
               </div>
- 
-              {/* Action Buttons */}
+
               <div className="flex justify-between pt-4 border-t border-gray-200">
                 <button
                   onClick={handleBack}
                   className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center"
+                  disabled={isLoading}
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back
