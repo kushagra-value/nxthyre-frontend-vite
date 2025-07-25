@@ -353,7 +353,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Title <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   placeholder="Job title"
