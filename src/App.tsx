@@ -383,7 +383,7 @@ function MainApp() {
   // Ensure fetchCandidates runs when searchQuery changes
   useEffect(() => {
     fetchCandidates(currentPage);
-  }, [filters.jobId, currentPage, debouncedSearchQuery]);
+  }, [filters.jobId, currentPage, debouncedSearchQuery, isAuthenticated]);
 
   // Handle search change
   const handleSearchChange = (query: string) => {
