@@ -28,6 +28,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isPasswordLimitReached, setIsPasswordLimitReached] = useState(false);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -112,6 +113,12 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setFormData({ ...formData, password: newPassword });
+    setIsPasswordLimitReached(newPassword.length >= 32);
   };
 
   return (
@@ -256,10 +263,8 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                     <input
                       type={showPassword ? "text" : "password"}
                       value={formData.password}
-                      onChange={(e) =>
-                        setFormData({ ...formData, password: e.target.value })
-                      }
-                      maxLength={8}
+                      onChange={handlePasswordChange}
+                      maxLength={32}
                       className={`w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${
                         errors.password ? "border-red乡-500" : ""
                       }`}
@@ -281,6 +286,12 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                     <p className="mt-1 text-sm text-red-500 flex items-center">
                       <XCircle className="w-4 h-4 mr-1" />
                       {errors.password}
+                    </p>
+                  )}
+                  {isPasswordLimitReached && (
+                    <p className="mt-1 text-sm text-red-500 flex items-center">
+                      <XCircle className="w-4 h-4 mr-1" />
+                      Password cannot exceed 32 characters
                     </p>
                   )}
                 </div>
