@@ -107,7 +107,7 @@ function MainApp() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchLoading, setSearchLoading] = useState(false); // New state for search loading
   // Debounce universalSearchQuery
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+  const debouncedSearchQuery = useDebounce(searchQuery, 1000);
 
   const [sortBy, setSortBy] = useState<string>("");
 
@@ -375,7 +375,6 @@ function MainApp() {
       filters.is_active,
       filters.noticePeriod,
       selectedCandidate,
-      searchQuery,
       debouncedSearchQuery, // Use the debounced search query
       sortBy,
     ]
@@ -386,13 +385,11 @@ function MainApp() {
     if (filters.jobId) {
       fetchCandidates(currentPage);
     }
-  }, [filters.jobId, currentPage, fetchCandidates, debouncedSearchQuery]);
+  }, [filters.jobId, currentPage, debouncedSearchQuery]);
 
   // Handle search change
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
-    // setIsSearching(query.trim() !== "");
-    candidateService.universalSearch(searchQuery);
     setCurrentPage(1); // Reset to first page on search
   };
 
