@@ -63,6 +63,9 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
       // Get user status from backend
       const userStatus = await authService.getUserStatus();
 
+      // Fetch workspaces
+      const myWorkspacesCount = await organizationService.getMyWorkspaces();
+
       // Debug: Log the type and value of is_onboarded
       console.log("is_onboarded type:", typeof userStatus.is_onboarded);
       console.log("is_onboarded value:", userStatus.is_onboarded);
@@ -86,14 +89,11 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
       // Call onLogin to update authentication state
       onLogin(user);
 
-      // Fetch workspaces
-      const myWorkspaces = await organizationService.getMyWorkspaces();
-
       // Debug: Log workspaces to verify the response
-      console.log("myWorkspaces:", myWorkspaces);
+      console.log("myWorkspaces:", myWorkspacesCount);
 
       // Navigate based on onboarding status and workspaces
-      if (userStatus.is_onboarded && myWorkspaces.length > 0) {
+      if (userStatus.is_onboarded && myWorkspacesCount.length > 0) {
         console.log("Redirecting to dashboard...");
         navigate("/"); // Redirect to dashboard if workspaces exist
       } else {
