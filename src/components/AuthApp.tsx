@@ -66,7 +66,7 @@ const AuthApp: React.FC<AuthAppProps> = ({
   const [flowData, setFlowData] = useState<any>(null);
 
   const handleNavigate = (flow: string, data?: any) => {
-    console.log("Navigating to:", flow);
+    console.log("Navigating to in AuthApp.tsx for flow :", flow);
     setAuthState((prev) => ({ ...prev, currentFlow: flow }));
     setFlowData(data);
   };

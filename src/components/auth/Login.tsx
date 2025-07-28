@@ -88,8 +88,11 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
         window.location.href = "/";
       } else {
         // User needs onboarding
-        console.log("Navigating to workspaces-org...");
+        console.log(
+          "Navigating to workspaces-org in Login.tsx condition check ..."
+        );
         onNavigate("workspaces-org");
+        console.log("Navigating to workspaces-org -after navigation");
       }
     } catch (error: any) {
       console.error("Login error:", error);
