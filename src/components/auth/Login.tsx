@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Eye,
   EyeOff,
@@ -17,6 +18,7 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -80,19 +82,18 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
           firebaseUser.metadata.creationTime || new Date().toISOString(),
       };
 
+      // Call onLogin to update authentication state
       onLogin(user);
 
+      // Navigate based on onboarding status
       if (userStatus.is_onboarded) {
-        // User is fully onboarded, go to main dashboard
         console.log("Redirecting to dashboard...");
-        window.location.href = "/";
+        navigate("/");
       } else {
-        // User needs onboarding
         console.log(
           "Navigating to workspaces-org in Login.tsx condition check ..."
         );
-        window.location.href = "/workspaces-org";
-        onNavigate("workspaces-org");
+        navigate("/workspaces-org");
         console.log("Navigating to workspaces-org -after navigation");
       }
     } catch (error: any) {
@@ -213,7 +214,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
               </p>
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-4">
                 {/* General Error */}
                 {errors.general && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-3">
@@ -224,7 +225,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                   </div>
                 )}
 
-                {/* Email Field*/}
+                {/* Email Field */}
                 <div>
                   <input
                     type="email"
@@ -255,7 +256,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                         setFormData({ ...formData, password: e.target.value })
                       }
                       className={`w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${
-                        errors.password ? "border-red-500" : ""
+                        errors.password ? "border-red乡-500" : ""
                       }`}
                       placeholder="Enter your password"
                     />
@@ -308,7 +309,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
 
                 {/* Submit Button */}
                 <button
-                  type="submit"
+                  onClick={handleSubmit}
                   disabled={isLoading}
                   className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -377,7 +378,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                     </button>
                   </p>
                 </div>
-              </form>
+              </div>
             </div>
           </div>
         </div>
