@@ -1,4 +1,4 @@
-import React, { useState, Component, ReactNode } from "react";
+import React, { useState, useEffect, Component, ReactNode } from "react";
 import SignUp from "./auth/SignUp";
 import Login from "./auth/Login";
 import OTPVerification from "./auth/OTPVerification";
@@ -147,7 +147,14 @@ const AuthApp: React.FC<AuthAppProps> = ({
     }
   };
 
-  return <div className="auth-app">{renderCurrentFlow()}</div>;
+  useEffect(() => {
+    console.log(
+      "Current flow after updateeeeeeeeeeeeeeeeeeeeeeeeee:",
+      authState.currentFlow
+    );
+  }, [authState.currentFlow]);
+
+  return renderCurrentFlow();
 };
 
 export default AuthApp;
