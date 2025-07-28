@@ -91,6 +91,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
         console.log(
           "Navigating to workspaces-org in Login.tsx condition check ..."
         );
+        window.location.href = "/workspaces-org";
         onNavigate("workspaces-org");
         console.log("Navigating to workspaces-org -after navigation");
       }
