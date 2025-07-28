@@ -60,6 +60,8 @@ interface CandidatesMainProps {
   onSearchChange: (query: string) => void; // Added for search integration
   sortBy: string;
   setSortBy: (sortBy: string) => void;
+  loadingCandidates: boolean;
+
 }
 
 const CandidatesMain: React.FC<CandidatesMainProps> = ({
@@ -79,6 +81,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   onSearchChange,
   sortBy,
   setSortBy,
+  loadingCandidates,
 }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
@@ -373,287 +376,6 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const startIndex = (currentPage - 1) * candidatesPerPage;
   const endIndex = Math.min(startIndex + candidatesPerPage, candidates.length);
 
-  if (loading) {
-    return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="border-b border-gray-200">
-          <div className="flex items-center justify-between p-3 lg:p-4 pb-0">
-            <div className="flex space-x-1 overflow-x-auto">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-3 py-2 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? "text-blue-600 border-b-2 border-blue-500 bg-blue-50"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
-                >
-                  {tab.label}
-                  {tab.count > 0 && (
-                    <span className="ml-2 px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded-full">
-                      {tab.count}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-            <div>
-              <button
-                onClick={onPipelinesClick}
-                className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-              >
-                Pipelines
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-3 lg:p-4 border-b border-gray-200">
-          <div className="mt-0 flex items-center justify-between flex-wrap gap-2">
-            <div className="flex space-x-3">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={selectAll}
-                  onChange={(e) => handleSelectAll(e.target.checked)}
-                  className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
-                />
-                <span className="ml-2 text-sm text-gray-600">Select all</span>
-              </label>
-              <button
-                className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
-                onClick={handleBulkAddToPipeline}
-              >
-                Add To Pipeline
-              </button>
-              <button
-                className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
-                onClick={() => setShowExportDialog(true)}
-              >
-                Export Candidates
-              </button>
-            </div>
-            <div className="relative flex space-x-2">
-              <button
-                className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
-                onClick={() => setShowSortDropdown(!showSortDropdown)}
-              >
-                Sort By - <span className="text-blue-600 font-semibold ml-1 mr-1">{sortOptions.find(opt => opt.value === sortBy)?.label || 'Relevance'}</span>
-                <ChevronDown className="w-4 h-4 mt-1" />
-              </button>
-              {showSortDropdown && (
-                <div
-                  ref={sortDropdownRef}
-                  className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
-                >
-                  <div className="py-1">
-                    {sortOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => handleSortSelect(option.value)}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="bg-white p-4 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-gray-600 mt-2">Loading candidates...</p>
-        </div>
-        <div className="p-3 lg:p-4 flex items-center justify-between border-t border-gray-200">
-          <div className="text-sm text-gray-600">
-            Showing {startIndex + 1} to {Math.min(endIndex, totalCount)} of{" "}
-            {totalCount} candidates
-          </div>
-          <div className="flex space-x-2">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-            >
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Previous
-            </button>
-            {getPageNumbers().map((page, index) => (
-              <button
-                key={index}
-                onClick={() =>
-                  typeof page === "number" && handlePageChange(page)
-                }
-                className={`px-3 py-1 text-sm rounded-lg transition-colors ${
-                  page === currentPage
-                    ? "bg-blue-600 text-white"
-                    : typeof page === "number"
-                    ? "text-gray-600 hover:bg-gray-100"
-                    : "text-gray-600 cursor-default"
-                }`}
-                disabled={typeof page !== "number"}
-              >
-                {page}
-              </button>
-            ))}
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-            >
-              Next
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!candidates.length) {
-    return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="border-b border-gray-200">
-          <div className="flex items-center justify-between p-3 lg:p-4 pb-0">
-            <div className="flex space-x-1 overflow-x-auto">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-3 py-2 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? "text-blue-600 border-b-2 border-blue-500 bg-blue-50"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
-                >
-                  {tab.label}
-                  {tab.count > 0 && (
-                    <span className="ml-2 px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded-full">
-                      {tab.count}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-            <div>
-              <button
-                onClick={onPipelinesClick}
-                className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-              >
-                Pipelines
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-3 lg:p-4 border-b border-gray-200">
-          <div className="mt-0 flex items-center justify-between flex-wrap gap-2">
-            <div className="flex space-x-3">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={selectAll}
-                  onChange={(e) => handleSelectAll(e.target.checked)}
-                  className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
-                />
-                <span className="ml-2 text-sm text-gray-600">Select all</span>
-              </label>
-              <button
-                className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
-                onClick={handleBulkAddToPipeline}
-              >
-                Add To Pipeline
-              </button>
-              <button
-                className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
-                onClick={() => setShowExportDialog(true)}
-              >
-                Export Candidates
-              </button>
-            </div>
-            <div className="relative flex space-x-2">
-              <button
-                className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
-                onClick={() => setShowSortDropdown(!showSortDropdown)}
-              >
-                Sort By - <span className="text-blue-600 font-semibold ml-1 mr-1">{sortOptions.find(opt => opt.value === sortBy)?.label || 'Relevance'}</span>
-                <ChevronDown className="w-4 h-4 mt-1" />
-              </button>
-              {showSortDropdown && (
-                <div
-                  ref={sortDropdownRef}
-                  className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
-                >
-                  <div className="py-1">
-                    {sortOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => handleSortSelect(option.value)}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center">
-          <p className="text-base font-medium">No candidates found</p>
-          <p className="text-sm text-gray-500 mt-1">
-            Try adjusting your filters or search term.
-          </p>
-        </div>
-        <div className="p-3 lg:p-4 flex items-center justify-between border-t border-gray-200">
-          <div className="text-sm text-gray-600">
-            Showing 0 to 0 of {totalCount} candidates
-          </div>
-          <div className="flex space-x-2">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-            >
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Previous
-            </button>
-            {getPageNumbers().map((page, index) => (
-              <button
-                key={index}
-                onClick={() =>
-                  typeof page === "number" && handlePageChange(page)
-                }
-                className={`px-3 py-1 text-sm rounded-lg transition-colors ${
-                  page === currentPage
-                    ? "bg-blue-600 text-white"
-                    : typeof page === "number"
-                    ? "text-gray-600 hover:bg-gray-100"
-                    : "text-gray-600 cursor-default"
-                }`}
-                disabled={typeof page !== "number"}
-              >
-                {page}
-              </button>
-            ))}
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-            >
-              Next
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200">
       <div className="border-b border-gray-200">
@@ -808,6 +530,17 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         </div>
       )}
 
+      {loadingCandidates ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="ml-4 text-gray-600">Loading candidates...</p>
+        </div>
+      ) : candidates.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-gray-600">No candidates found.</p>
+        </div>
+      ) : (
+      <>
       <div className="divide-y divide-gray-200">
         {candidates.map((candidate) => (
           <div
@@ -1059,7 +792,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
           </div>
         ))}
       </div>
-
+      </>
+      )}
       {totalPages > 1 ? (
         <div className="p-3 lg:p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">

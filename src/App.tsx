@@ -46,6 +46,44 @@ interface Category {
   count: number;
 }
 
+interface Filters {
+  keywords: string;
+  booleanSearch: boolean;
+  semanticSearch: boolean;
+  selectedCategories: string[];
+  minExperience: string;
+  maxExperience: string;
+  funInCurrentCompany: boolean;
+  minTotalExp: string;
+  maxTotalExp: string;
+  city: string;
+  country: string;
+  location: string;
+  locations: string[];
+  noticePeriod: string;
+  companies: string;
+  industries: string;
+  minSalary: string;
+  maxSalary: string;
+  colleges: string;
+  topTierUniversities: boolean;
+  computerScienceGraduates: boolean;
+  showFemaleCandidates: boolean;
+  recentlyPromoted: boolean;
+  backgroundVerified: boolean;
+  hasCertification: boolean;
+  hasResearchPaper: boolean;
+  hasLinkedIn: boolean;
+  hasBehance: boolean;
+  hasTwitter: boolean;
+  hasPortfolio: boolean;
+  jobId: string;
+  application_type: string;
+  is_prevetted: boolean;
+  is_active: boolean;
+  sort_by: string;
+}
+
 function MainApp() {
   const navigate = useNavigate();
   const {
@@ -107,7 +145,7 @@ function MainApp() {
 
   const [sortBy, setSortBy] = useState<string>("");
 
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<Filters>({
     keywords: "",
     booleanSearch: false,
     semanticSearch: false,
@@ -121,7 +159,6 @@ function MainApp() {
     country: "",
     location: "",
     locations: [] as string[],
-    skillLevel: "",
     noticePeriod: "",
     companies: "",
     industries: "",
@@ -176,11 +213,11 @@ function MainApp() {
   };
 
   // Fetch job details and set filters
-  const fetchJobDetailsAndSetFilters = async (jobId: number) => {
+ const fetchJobDetailsAndSetFilters = async (jobId: number) => {
     try {
       const job = await jobPostService.getJob(jobId);
-      setFilters((prev) => ({
-        ...prev,
+      const newFilters = {
+        ...filters,
         jobId: job.id.toString(),
         keywords: job.skills ? job.skills.join(", ") : "",
         minTotalExp: job.experience_min_years
@@ -195,9 +232,12 @@ function MainApp() {
           : [],
         application_type: activeTab,
         sort_by: sortBy,
-      }));
+      };
+      setFilters(newFilters);
+      // Automatically apply filters after setting them
+      await fetchCandidates(1, newFilters);
     } catch (error) {
-      showToast.error(`Failed to fetch job details ${error}`);
+      showToast.error("Failed to fetch job details");
       console.error("Error fetching job details:", error);
     }
   };
@@ -233,7 +273,6 @@ function MainApp() {
             country: "",
             location: "",
             locations: [],
-            skillLevel: "",
             noticePeriod: "",
             companies: "",
             industries: "",
@@ -262,7 +301,7 @@ function MainApp() {
             page,
             page_size: 20,
             job_id: appliedFilters.jobId,
-            application_type: appliedFilters.application_type,
+            tab: appliedFilters.application_type,
             sort_by: sortBy
           };
 
@@ -274,12 +313,15 @@ function MainApp() {
               .map((k: string) => k.trim())
               .filter((k: string) => k);
           }
-          if (appliedFilters.minTotalExp)
+          if (appliedFilters.minTotalExp && isValidNumber(appliedFilters.minTotalExp)) {
             filterParams.experience_min = appliedFilters.minTotalExp;
-          if (appliedFilters.maxTotalExp)
+          }
+          if (appliedFilters.maxTotalExp && isValidNumber(appliedFilters.maxTotalExp)) {
             filterParams.experience_max = appliedFilters.maxTotalExp;
-          if (appliedFilters.minExperience)
+          }
+          if (appliedFilters.minExperience && isValidNumber(appliedFilters.minExperience)) {
             filterParams.exp_in_current_company_min = appliedFilters.minExperience;
+          }
           if (appliedFilters.topTierUniversities)
             filterParams.is_top_tier_college = appliedFilters.topTierUniversities;
           if (appliedFilters.hasCertification)
@@ -295,8 +337,10 @@ function MainApp() {
             filterParams.industries = appliedFilters.industries
               .split(",")
               .map((i: string) => i.trim());
-          if (appliedFilters.minSalary) filterParams.salary_min = appliedFilters.minSalary;
-          if (appliedFilters.maxSalary) filterParams.salary_max = appliedFilters.maxSalary;
+          if (appliedFilters.minSalary && isValidNumber(appliedFilters.minSalary))
+            filterParams.salary_min = appliedFilters.minSalary;
+          if (appliedFilters.maxSalary && isValidNumber(appliedFilters.maxSalary))
+            filterParams.salary_max = appliedFilters.maxSalary;
           if (appliedFilters.colleges)
             filterParams.colleges = appliedFilters.colleges
               .split(",")
@@ -316,38 +360,39 @@ function MainApp() {
           if (appliedFilters.is_prevetted) filterParams.is_prevetted = true;
           if (appliedFilters.is_active) filterParams.is_active = true;
           if (appliedFilters.noticePeriod) {
-          const noticePeriodOptions = [
-            "Immediate",
-            "15 days",
-            "30 days",
-            "45 days",
-            "60 days",
-            "90 days",
-          ] as const;
-          type NoticePeriod = typeof noticePeriodOptions[number];
-          
-          const days: Record<NoticePeriod, number> = {
-            "Immediate": 0,
-            "15 days": 15,
-            "30 days": 30,
-            "45 days": 45,
-            "60 days": 60,
-            "90 days": 90,
-          };
+            const noticePeriodOptions = [
+              "Immediate",
+              "15 days",
+              "30 days",
+              "45 days",
+              "60 days",
+              "90 days",
+            ] as const;
+            type NoticePeriod = typeof noticePeriodOptions[number];
 
-          // Ensure noticePeriod is a valid key
-          if (noticePeriodOptions.includes(appliedFilters.noticePeriod as NoticePeriod)) {
-            filterParams.notice_period_max_days = days[appliedFilters.noticePeriod as NoticePeriod];
-          } else {
-            console.warn("Invalid notice period:", appliedFilters.noticePeriod);
-          }
+            const days: Record<NoticePeriod, number> = {
+              "Immediate": 0,
+              "15 days": 15,
+              "30 days": 30,
+              "45 days": 45,
+              "60 days": 60,
+              "90 days": 90,
+            };
+
+            if (noticePeriodOptions.includes(appliedFilters.noticePeriod as NoticePeriod)) {
+              filterParams.notice_period_max_days = days[appliedFilters.noticePeriod as NoticePeriod];
+            } else {
+              console.warn("Invalid notice period:", appliedFilters.noticePeriod);
+            }
           }
 
           console.log("Fetching candidates with params:", filterParams);
           response = await candidateService.searchCandidates(filterParams);
           setCandidates(response.results);
           setTotalCount(response.count);
-          if (response.results.length > 0 && !selectedCandidate) {
+          if (response.results.length === 0) {
+            showToast.error("No results found for the applied filters.");
+          } else if (response.results.length > 0 && !selectedCandidate) {
             setSelectedCandidate(response.results[0]);
           }
         }
@@ -364,6 +409,7 @@ function MainApp() {
       selectedCandidate,
       searchQuery,
       sortBy,
+      filters
     ]
   );
 
@@ -520,7 +566,6 @@ function MainApp() {
         country: "",
         location: "",
         locations: [],
-        skillLevel: "",
         noticePeriod: "",
         companies: "",
         industries: "",
@@ -683,7 +728,7 @@ function MainApp() {
     // Check if any filter is selected
     const isFilterSelected = Object.keys(newFilters).some((key) => {
       if (key === "jobId" || key === "application_type" || key === "is_prevetted" || key === "is_active" || key === "sort_by") return false;
-      const value = newFilters[key];
+      const value = newFilters[key as keyof Filters];
       if (Array.isArray(value)) return value.length > 0;
       if (typeof value === "boolean") return value;
       if (typeof value === "string") return value.trim() !== "";
@@ -983,6 +1028,7 @@ function MainApp() {
                             onSearchChange={handleSearchChange}
                             sortBy={sortBy}
                             setSortBy={setSortBy}
+                            loadingCandidates={loadingCandidates}
                           />
                         </div>
                         <div className="lg:w-[30%] order-3 sticky top-16 self-start will-change-transform">
