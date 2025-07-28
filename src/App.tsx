@@ -748,6 +748,8 @@ function MainApp() {
                         onCreateRole={handleCreateJobRole}
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
+                        searchQuery={searchQuery}
+                        setSearchQuery={setSearchQuery}
                       />
                     </div>
 
