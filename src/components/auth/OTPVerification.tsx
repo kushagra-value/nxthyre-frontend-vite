@@ -100,8 +100,8 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
         response = await authService.verifyOTP(
           data?.email || "",
           otpToVerify,
-          data?.full_name,
-          data?.password
+          data?.userData?.fullName,
+          data?.userData?.password
         );
         showToast.success("Email verified successfully!");
 
