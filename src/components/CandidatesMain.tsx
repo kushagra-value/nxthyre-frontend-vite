@@ -365,7 +365,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 Export Candidates
               </button>
             </div>
-            <div className="flex space-x-2">
+            <div className="relative flex space-x-2">
               <button
                 className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
@@ -496,7 +496,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 Export Candidates
               </button>
             </div>
-            <div className="flex space-x-2">
+            <div className="relative flex space-x-2">
               <button
                 className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
@@ -626,7 +626,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               Export Candidates
             </button>
           </div>
-          <div className="flex space-x-2">
+          <div className="relative flex space-x-2">
             <button
                 className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
