@@ -86,22 +86,19 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
       // Call onLogin to update authentication state
       onLogin(user);
 
-      // Navigate based on onboarding status
-      if (userStatus.is_onboarded) {
-        const myWorkspaces = organizationService.getMyWorkspaces();
-        if ((await myWorkspaces).length > 0) {
-          console.log("Redirecting to dashboard...");
-          navigate("/");
-        } else {
-          console.log("Redirecting to workspaces-org...");
-          onNavigate("workspaces-org");
-        }
+      // Fetch workspaces
+      const myWorkspaces = await organizationService.getMyWorkspaces();
+
+      // Debug: Log workspaces to verify the response
+      console.log("myWorkspaces:", myWorkspaces);
+
+      // Navigate based on onboarding status and workspaces
+      if (userStatus.is_onboarded && myWorkspaces.length > 0) {
+        console.log("Redirecting to dashboard...");
+        navigate("/"); // Redirect to dashboard if workspaces exist
       } else {
-        console.log(
-          "Navigating to workspaces-org in Login.tsx condition check ..."
-        );
-        navigate("/workspaces-org");
-        console.log("Navigating to workspaces-org -after navigation");
+        console.log("Redirecting to workspaces-org...");
+        navigate("/workspaces-org"); // Redirect to workspaces-org if no workspaces or not onboarded
       }
     } catch (error: any) {
       console.error("Login error:", error);
