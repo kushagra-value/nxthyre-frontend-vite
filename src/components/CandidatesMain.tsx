@@ -89,10 +89,10 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
   const sortOptions = [
     { value: '', label: 'Relevance' },
-    { value: 'experience_asc', label: 'Experience (Ascending)' },
-    { value: 'experience_desc', label: 'Experience (Descending)' },
-    { value: 'notice_period_asc', label: 'Notice Period (Ascending)' },
-    { value: 'notice_period_desc', label: 'Notice Period (Descending)' },
+    { value: 'experience_asc', label: 'Experience(Asc)' },
+    { value: 'experience_desc', label: 'Experience(Desc)' },
+    { value: 'notice_period_asc', label: 'Notice Period(Asc)' },
+    { value: 'notice_period_desc', label: 'Notice Period(Desc)' },
   ];
 
   useEffect(() => {
