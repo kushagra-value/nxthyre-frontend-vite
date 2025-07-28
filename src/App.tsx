@@ -330,11 +330,13 @@ function MainApp() {
           }
 
           console.log("Fetching candidates with params:", filterParams);
-          response = await candidateService.searchCandidates(filterParams);
-          setCandidates(response.results);
-          setTotalCount(response.count);
-          if (response.results.length > 0 && !selectedCandidate) {
-            setSelectedCandidate(response.results[0]);
+          if (isAuthenticated) {
+            response = await candidateService.searchCandidates(filterParams);
+            setCandidates(response.results);
+            setTotalCount(response.count);
+            if (response.results.length > 0 && !selectedCandidate) {
+              setSelectedCandidate(response.results[0]);
+            }
           }
         }
       } catch (error) {
