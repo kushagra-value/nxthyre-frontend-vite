@@ -204,8 +204,8 @@ function MainApp() {
       } else {
         const hasSeenGuide = localStorage.getItem("hasSeenGuideModal");
         if (!hasSeenGuide) {
-          setShowGuideModal(true);
-          localStorage.setItem("hasSeenGuideModal", "true");
+          // setShowGuideModal(true);
+          // localStorage.setItem("hasSeenGuideModal", "true");
         }
       }
     } catch (error) {
@@ -217,7 +217,7 @@ function MainApp() {
   };
 
   // Fetch job details and set filters
- const fetchJobDetailsAndSetFilters = async (jobId: number) => {
+  const fetchJobDetailsAndSetFilters = async (jobId: number) => {
     try {
       const job = await jobPostService.getJob(jobId);
       const newFilters = {
@@ -308,10 +308,10 @@ function MainApp() {
             page_size: 20,
             job_id: appliedFilters.jobId,
             tab: appliedFilters.application_type,
-            sort_by: sortBy
+            sort_by: sortBy,
           };
 
-           const isValidNumber = (value: string) => /^\d+$/.test(value);
+          const isValidNumber = (value: string) => /^\d+$/.test(value);
 
           if (appliedFilters.keywords) {
             filterParams.q = appliedFilters.keywords
@@ -319,20 +319,32 @@ function MainApp() {
               .map((k: string) => k.trim())
               .filter((k: string) => k);
           }
-          if (appliedFilters.minTotalExp && isValidNumber(appliedFilters.minTotalExp)) {
+          if (
+            appliedFilters.minTotalExp &&
+            isValidNumber(appliedFilters.minTotalExp)
+          ) {
             filterParams.experience_min = appliedFilters.minTotalExp;
           }
-          if (appliedFilters.maxTotalExp && isValidNumber(appliedFilters.maxTotalExp)) {
+          if (
+            appliedFilters.maxTotalExp &&
+            isValidNumber(appliedFilters.maxTotalExp)
+          ) {
             filterParams.experience_max = appliedFilters.maxTotalExp;
           }
-          if (appliedFilters.minExperience && isValidNumber(appliedFilters.minExperience)) {
-            filterParams.exp_in_current_company_min = appliedFilters.minExperience;
+          if (
+            appliedFilters.minExperience &&
+            isValidNumber(appliedFilters.minExperience)
+          ) {
+            filterParams.exp_in_current_company_min =
+              appliedFilters.minExperience;
           }
           if (appliedFilters.topTierUniversities)
-            filterParams.is_top_tier_college = appliedFilters.topTierUniversities;
+            filterParams.is_top_tier_college =
+              appliedFilters.topTierUniversities;
           if (appliedFilters.hasCertification)
             filterParams.has_certification = appliedFilters.hasCertification;
-          if (appliedFilters.country) filterParams.country = appliedFilters.country;
+          if (appliedFilters.country)
+            filterParams.country = appliedFilters.country;
           if (appliedFilters.locations && appliedFilters.locations.length > 0)
             filterParams.locations = appliedFilters.locations;
           if (appliedFilters.companies)
@@ -343,15 +355,22 @@ function MainApp() {
             filterParams.industries = appliedFilters.industries
               .split(",")
               .map((i: string) => i.trim());
-          if (appliedFilters.minSalary && isValidNumber(appliedFilters.minSalary))
+          if (
+            appliedFilters.minSalary &&
+            isValidNumber(appliedFilters.minSalary)
+          )
             filterParams.salary_min = appliedFilters.minSalary;
-          if (appliedFilters.maxSalary && isValidNumber(appliedFilters.maxSalary))
+          if (
+            appliedFilters.maxSalary &&
+            isValidNumber(appliedFilters.maxSalary)
+          )
             filterParams.salary_max = appliedFilters.maxSalary;
           if (appliedFilters.colleges)
             filterParams.colleges = appliedFilters.colleges
               .split(",")
               .map((c: string) => c.trim());
-          if (appliedFilters.showFemaleCandidates) filterParams.is_female_only = true;
+          if (appliedFilters.showFemaleCandidates)
+            filterParams.is_female_only = true;
           if (appliedFilters.recentlyPromoted)
             filterParams.is_recently_promoted = true;
           if (appliedFilters.backgroundVerified)
@@ -361,7 +380,8 @@ function MainApp() {
           if (appliedFilters.hasPortfolio) filterParams.has_portfolio = true;
           if (appliedFilters.computerScienceGraduates)
             filterParams.is_cs_graduate = true;
-          if (appliedFilters.hasResearchPaper) filterParams.has_research_paper = true;
+          if (appliedFilters.hasResearchPaper)
+            filterParams.has_research_paper = true;
           if (appliedFilters.hasBehance) filterParams.has_behance = true;
           if (appliedFilters.is_prevetted) filterParams.is_prevetted = true;
           if (appliedFilters.is_active) filterParams.is_active = true;
@@ -374,10 +394,10 @@ function MainApp() {
               "60 days",
               "90 days",
             ] as const;
-            type NoticePeriod = typeof noticePeriodOptions[number];
+            type NoticePeriod = (typeof noticePeriodOptions)[number];
 
             const days: Record<NoticePeriod, number> = {
-              "Immediate": 0,
+              Immediate: 0,
               "15 days": 15,
               "30 days": 30,
               "45 days": 45,
@@ -385,10 +405,18 @@ function MainApp() {
               "90 days": 90,
             };
 
-            if (noticePeriodOptions.includes(appliedFilters.noticePeriod as NoticePeriod)) {
-              filterParams.notice_period_max_days = days[appliedFilters.noticePeriod as NoticePeriod];
+            if (
+              noticePeriodOptions.includes(
+                appliedFilters.noticePeriod as NoticePeriod
+              )
+            ) {
+              filterParams.notice_period_max_days =
+                days[appliedFilters.noticePeriod as NoticePeriod];
             } else {
-              console.warn("Invalid notice period:", appliedFilters.noticePeriod);
+              console.warn(
+                "Invalid notice period:",
+                appliedFilters.noticePeriod
+              );
             }
           }
 
@@ -398,9 +426,9 @@ function MainApp() {
             setCandidates(response.results);
             setTotalCount(response.count);
             if (response.results.length === 0) {
-            setSelectedCandidate(null);
-            showToast.error("No results found for the applied filters.");
-          } else if (response.results.length > 0) {
+              setSelectedCandidate(null);
+              showToast.error("No results found for the applied filters.");
+            } else if (response.results.length > 0) {
               setSelectedCandidate(response.results[0]);
             }
           }
@@ -420,7 +448,7 @@ function MainApp() {
       debouncedSearchQuery, // Use the debounced search query
       sortBy,
       filters,
-      activeTab
+      activeTab,
     ]
   );
   // Handle search change
@@ -466,7 +494,13 @@ function MainApp() {
     if (activeCategoryId) {
       fetchCandidates(1, newFilters);
     }
-  }, [activeTab, sortBy, activeCategoryId, debouncedSearchQuery, isAuthenticated]);
+  }, [
+    activeTab,
+    sortBy,
+    activeCategoryId,
+    debouncedSearchQuery,
+    isAuthenticated,
+  ]);
 
   useEffect(() => {
     const fetchCreditBalance = async () => {
@@ -741,7 +775,14 @@ function MainApp() {
   const handleApplyFilters = (newFilters: any) => {
     // Check if any filter is selected
     const isFilterSelected = Object.keys(newFilters).some((key) => {
-      if (key === "jobId" || key === "application_type" || key === "is_prevetted" || key === "is_active" || key === "sort_by") return false;
+      if (
+        key === "jobId" ||
+        key === "application_type" ||
+        key === "is_prevetted" ||
+        key === "is_active" ||
+        key === "sort_by"
+      )
+        return false;
       const value = newFilters[key as keyof Filters];
       if (Array.isArray(value)) return value.length > 0;
       if (typeof value === "boolean") return value;
@@ -750,7 +791,9 @@ function MainApp() {
     });
 
     if (!isFilterSelected) {
-      showToast.error("Please select at least one filter in the filter section.");
+      showToast.error(
+        "Please select at least one filter in the filter section."
+      );
       return;
     }
 
@@ -761,7 +804,9 @@ function MainApp() {
       (newFilters.maxTotalExp && !isValidNumber(newFilters.maxTotalExp)) ||
       (newFilters.minExperience && !isValidNumber(newFilters.minExperience))
     ) {
-      showToast.error("No results found due to invalid input in experience fields.");
+      showToast.error(
+        "No results found due to invalid input in experience fields."
+      );
       setCandidates([]);
       setTotalCount(0);
       setSelectedCandidate(null);
