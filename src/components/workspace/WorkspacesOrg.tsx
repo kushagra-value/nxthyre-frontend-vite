@@ -398,13 +398,13 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                       <Users className="w-4 h-4 mr-2" />
                       Join Workspace
                     </button>
-                    <button
+                    {/* <button
                       onClick={handleManageWorkspace}
                       className="bg-white text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors flex items-center"
                     >
                       <Settings className="w-4 h-4 mr-2" />
                       Pending Requests
-                    </button>
+                    </button> */}
                   </div>
                   {workspaces.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

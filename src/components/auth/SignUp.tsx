@@ -28,6 +28,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isPasswordLimitReached, setIsPasswordLimitReached] = useState(false);
 
   // Keep the confirmPassword error in sync in real time:
   useEffect(() => {
@@ -168,6 +169,12 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
       text: strengthTexts[strength - 1] || "",
       color: colors[strength - 1] || "#6b7280",
     };
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setFormData({ ...formData, password: newPassword });
+    setIsPasswordLimitReached(newPassword.length >= 32);
   };
 
   const passwordStrength = getPasswordStrength();
@@ -322,9 +329,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                     <input
                       type={showPassword ? "text" : "password"}
                       value={formData.password}
-                      onChange={(e) =>
-                        setFormData({ ...formData, password: e.target.value })
-                      }
+                      onChange={handlePasswordChange}
                       className={`w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${
                         errors.password ? "border-red-500" : ""
                       }`}
@@ -413,6 +418,12 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                     <p className="mt-1 text-sm text-red-500 flex items-center">
                       <XCircle className="w-4 h-4 mr-1" />
                       {errors.confirmPassword}
+                    </p>
+                  )}
+                  {isPasswordLimitReached && (
+                    <p className="mt-1 text-sm text-red-500 flex items-center">
+                      <XCircle className="w-4 h-4 mr-1" />
+                      Password cannot exceed 32 characters
                     </p>
                   )}
                 </div>
