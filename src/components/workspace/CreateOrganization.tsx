@@ -13,6 +13,7 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
   onNavigate,
   onComplete,
 }) => {
+  console.log("Rendering CreateOrganizationnnnnnnnnnnnnn");
   const { user } = useAuthContext();
   const [formData, setFormData] = useState({
     organizationName: "",

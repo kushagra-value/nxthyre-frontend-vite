@@ -66,6 +66,7 @@ const AuthApp: React.FC<AuthAppProps> = ({
   const [flowData, setFlowData] = useState<any>(null);
 
   const handleNavigate = (flow: string, data?: any) => {
+    console.log("Navigating to:", flow);
     setAuthState((prev) => ({ ...prev, currentFlow: flow }));
     setFlowData(data);
   };
@@ -92,6 +93,7 @@ const AuthApp: React.FC<AuthAppProps> = ({
   };
 
   const renderCurrentFlow = () => {
+    console.log("Current flow:", authState.currentFlow);
     switch (authState.currentFlow) {
       case "signup":
         return <SignUp onNavigate={handleNavigate} />;

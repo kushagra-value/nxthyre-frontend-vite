@@ -125,7 +125,7 @@ function MainApp() {
   const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
     null
   );
-  const [showGuideModal, setShowGuideModal] = useState(false);
+  // const [showGuideModal, setShowGuideModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
 
   const [showShareLoader, setShowShareLoader] = useState(false);
@@ -202,11 +202,11 @@ function MainApp() {
         setActiveCategoryId(mappedCategories[0].id);
         await fetchJobDetailsAndSetFilters(mappedCategories[0].id);
       } else {
-        const hasSeenGuide = localStorage.getItem("hasSeenGuideModal");
-        if (!hasSeenGuide) {
-          // setShowGuideModal(true);
-          // localStorage.setItem("hasSeenGuideModal", "true");
-        }
+        // const hasSeenGuide = localStorage.getItem("hasSeenGuideModal");
+        // if (!hasSeenGuide) {
+        // setShowGuideModal(true);
+        // localStorage.setItem("hasSeenGuideModal", "true");
+        // }
       }
     } catch (error) {
       showToast.error("Failed to fetch job categories");
@@ -672,7 +672,7 @@ function MainApp() {
   };
 
   const handleCreateJobRole = () => {
-    setShowGuideModal(false);
+    // setShowGuideModal(false);
     setShowCreateJobRole(true);
   };
 
@@ -1175,7 +1175,7 @@ function MainApp() {
                         </div>
                       </div>
                     )}
-                    {showGuideModal && (
+                    {/* {showGuideModal && (
                       <div className="fixed inset-0 bg-black bg-opacity-50 z-[100]  p-4 flex items-start justify-end">
                         <div className="relative top-16 bg-white rounded-xl shadow-xl max-w-md w-full p-4 mr-6 ">
                           <div className="text-center">
@@ -1206,7 +1206,7 @@ function MainApp() {
                           </div>
                         </div>
                       </div>
-                    )}
+                    )} */}
                     {showDeleteModal && (
                       <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
                         <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
