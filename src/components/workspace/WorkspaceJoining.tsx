@@ -58,11 +58,16 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
     );
   }
 
-  const handleRequestJoin = async (workspaceId: number, userId?: string) => {
+  const handleRequestJoin = async (
+    workspaceId: number,
+    userId: string,
+    organizationId: number
+  ) => {
     try {
       const response = await organizationService.requestJoinWorkspace(
         workspaceId,
-        userId
+        userId,
+        organizationId
       );
       setAvailableWorkspaces((prev) =>
         prev.map((ws) =>
@@ -192,9 +197,11 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
                     ) : (
                       <button
                         onClick={() =>
+                          user.id &&
                           handleRequestJoin(
                             workspace.id,
-                            user?.id // Pass user id as the second argument if available
+                            user.id, // Pass user id as the second argument if available
+                            workspace.organizationId // Pass organization id as the third argument if available
                           )
                         }
                         className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"

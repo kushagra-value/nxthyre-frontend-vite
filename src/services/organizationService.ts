@@ -185,11 +185,12 @@ class OrganizationService {
   // Request to join workspace
   async requestJoinWorkspace(
     workspaceId: number,
-    userId?: string
+    userId: string,
+    organizationId: number
   ): Promise<JoinRequestResponse> {
     try {
       const response = await apiClient.post(
-        `organization/workspaces/${workspaceId}/join-request/`,
+        `organization/${organizationId}/workspaces/${workspaceId}/join-request/`,
         userId ? { userId } : {}
       );
       return response.data;

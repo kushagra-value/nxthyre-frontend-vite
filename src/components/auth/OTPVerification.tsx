@@ -97,7 +97,12 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
         onNavigate("reset-password", { email: data.email, otp: otpToVerify });
       } else {
         // Use regular OTP verification for signup flow
-        response = await authService.verifyOTP(data?.email || "", otpToVerify);
+        response = await authService.verifyOTP(
+          data?.email || "",
+          otpToVerify,
+          data?.full_name,
+          data?.password
+        );
         showToast.success("Email verified successfully!");
 
         if (data?.type === "signup") {
