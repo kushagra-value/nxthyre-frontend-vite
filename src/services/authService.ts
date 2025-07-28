@@ -77,16 +77,16 @@ class AuthService {
   // Verify OTP
   async verifyOTP(
     email: string,
+    fullName: string,
     otp: string,
-    password: string,
-    fullName: string
+    password: string
   ): Promise<OTPVerifyResponse> {
     try {
       const response = await apiClient.post("/auth/otp/verify/", {
         email,
+        full_name: fullName,
         otp,
         password,
-        full_name: fullName,
       });
       return response.data;
     } catch (error: any) {
