@@ -83,7 +83,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
         window.location.href = "/";
       } else {
         // User needs onboarding
-        onNavigate("workspaces-org");
+        onNavigate("create-organization");
       }
     } catch (error: any) {
       console.error("Login error:", error);

@@ -1,18 +1,21 @@
-import React, { useState, Component, ReactNode } from 'react';
-import SignUp from './auth/SignUp';
-import Login from './auth/Login';
-import OTPVerification from './auth/OTPVerification';
-import ForgotPassword from './auth/ForgotPassword';
-import ResetPassword from './auth/ResetPassword';
-import LinkedInAuth from './auth/LinkedInAuth';
-import WorkspacesOrg from './workspace/WorkspacesOrg';
-import WorkspaceJoining from './workspace/WorkspaceJoining';
-import WorkspaceCreation from './workspace/WorkspaceCreation';
-import CreateOrganization from './workspace/CreateOrganization';
-import { AuthState, User } from '../types/auth';
+import React, { useState, Component, ReactNode } from "react";
+import SignUp from "./auth/SignUp";
+import Login from "./auth/Login";
+import OTPVerification from "./auth/OTPVerification";
+import ForgotPassword from "./auth/ForgotPassword";
+import ResetPassword from "./auth/ResetPassword";
+import LinkedInAuth from "./auth/LinkedInAuth";
+import WorkspacesOrg from "./workspace/WorkspacesOrg";
+import WorkspaceJoining from "./workspace/WorkspaceJoining";
+import WorkspaceCreation from "./workspace/WorkspaceCreation";
+import CreateOrganization from "./workspace/CreateOrganization";
+import { AuthState, User } from "../types/auth";
 
 // Error Boundary Component
-class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+class ErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
   state = { hasError: false };
 
   static getDerivedStateFromError() {
@@ -20,7 +23,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
+    console.error("Error caught by boundary:", error, errorInfo);
   }
 
   render() {
@@ -28,7 +31,10 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
       return (
         <div className="p-4 text-red-600">
           <h2>Something went wrong.</h2>
-          <p>Please try refreshing the page or contact support if the issue persists.</p>
+          <p>
+            Please try refreshing the page or contact support if the issue
+            persists.
+          </p>
         </div>
       );
     }
@@ -44,23 +50,23 @@ interface AuthAppProps {
   onLogout?: () => void;
 }
 
-const AuthApp: React.FC<AuthAppProps> = ({ 
-  initialFlow = 'login',
+const AuthApp: React.FC<AuthAppProps> = ({
+  initialFlow = "login",
   initialUser = null,
   onAuthSuccess,
   onClose,
-  onLogout
+  onLogout,
 }) => {
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: !!initialUser,
     user: initialUser || null,
     currentFlow: initialFlow,
-    otpAttempts: 3
+    otpAttempts: 3,
   });
   const [flowData, setFlowData] = useState<any>(null);
 
   const handleNavigate = (flow: string, data?: any) => {
-    setAuthState(prev => ({ ...prev, currentFlow: flow }));
+    setAuthState((prev) => ({ ...prev, currentFlow: flow }));
     setFlowData(data);
   };
 
@@ -77,8 +83,8 @@ const AuthApp: React.FC<AuthAppProps> = ({
     setAuthState({
       isAuthenticated: false,
       user: null,
-      currentFlow: 'login',
-      otpAttempts: 3
+      currentFlow: "login",
+      otpAttempts: 3,
     });
     setFlowData(null);
     onLogout?.();
@@ -87,25 +93,33 @@ const AuthApp: React.FC<AuthAppProps> = ({
 
   const renderCurrentFlow = () => {
     switch (authState.currentFlow) {
-      case 'signup':
+      case "signup":
         return <SignUp onNavigate={handleNavigate} />;
-      
-      case 'login':
+
+      case "login":
         return <Login onNavigate={handleNavigate} onLogin={handleLogin} />;
-      
-      case 'otp-verification':
-        return <OTPVerification onNavigate={handleNavigate} onLogin={handleLogin} data={flowData} />;
-      
-      case 'forgot-password':
+
+      case "otp-verification":
+        return (
+          <OTPVerification
+            onNavigate={handleNavigate}
+            onLogin={handleLogin}
+            data={flowData}
+          />
+        );
+
+      case "forgot-password":
         return <ForgotPassword onNavigate={handleNavigate} />;
-      
-      case 'reset-password':
+
+      case "reset-password":
         return <ResetPassword onNavigate={handleNavigate} data={flowData} />;
-      
-      case 'linkedin-auth':
-        return <LinkedInAuth onNavigate={handleNavigate} onLogin={handleLogin} />;
-      
-      case 'workspaces-org':
+
+      case "linkedin-auth":
+        return (
+          <LinkedInAuth onNavigate={handleNavigate} onLogin={handleLogin} />
+        );
+
+      case "workspaces-org":
         return (
           <ErrorBoundary>
             <WorkspacesOrg
@@ -115,42 +129,35 @@ const AuthApp: React.FC<AuthAppProps> = ({
             />
           </ErrorBoundary>
         );
-      
-      case 'workspace-joining':
+
+      case "workspace-joining":
         return (
-          <WorkspaceJoining 
-            onNavigate={handleNavigate} 
+          <WorkspaceJoining onNavigate={handleNavigate} user={authState.user} />
+        );
+
+      case "workspace-creation":
+        return (
+          <WorkspaceCreation
+            onNavigate={handleNavigate}
             user={authState.user}
           />
         );
-      
-      case 'workspace-creation':
+
+      case "create-organization":
         return (
-          <WorkspaceCreation 
-            onNavigate={handleNavigate} 
-            user={authState.user}
-          />
-        );
-      
-      case 'create-organization':
-        return (
-          <CreateOrganization 
-            onNavigate={handleNavigate} 
+          <CreateOrganization
+            onNavigate={handleNavigate}
             user={authState.user}
             onComplete={handleLogin}
           />
         );
-      
+
       default:
         return <Login onNavigate={handleNavigate} onLogin={handleLogin} />;
     }
   };
 
-  return (
-    <div className="auth-app">
-      {renderCurrentFlow()}
-    </div>
-  );
+  return <div className="auth-app">{renderCurrentFlow()}</div>;
 };
 
 export default AuthApp;
