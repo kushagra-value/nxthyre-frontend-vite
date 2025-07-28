@@ -99,9 +99,9 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
         // Use regular OTP verification for signup flow
         response = await authService.verifyOTP(
           data?.email || "",
-          data?.userData?.fullName,
           otpToVerify,
-          data?.userData?.password
+          data?.userData?.password || "",
+          data?.userData?.fullName || ""
         );
         showToast.success("Email verified successfully!");
 

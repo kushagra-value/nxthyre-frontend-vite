@@ -59,12 +59,14 @@ class AuthService {
   // Sign up with email
   async signUpWithEmail(
     email: string,
+    otp: string,
     password: string,
     fullName: string
   ): Promise<SignUpResponse> {
     try {
       const response = await apiClient.post("/auth/signup/", {
         email,
+        otp,
         password,
         full_name: fullName,
       });
@@ -77,16 +79,16 @@ class AuthService {
   // Verify OTP
   async verifyOTP(
     email: string,
-    fullName: string,
     otp: string,
-    password: string
+    password: string,
+    fullName: string
   ): Promise<OTPVerifyResponse> {
     try {
       const response = await apiClient.post("/auth/otp/verify/", {
         email,
-        full_name: fullName,
         otp,
         password,
+        full_name: fullName,
       });
       return response.data;
     } catch (error: any) {

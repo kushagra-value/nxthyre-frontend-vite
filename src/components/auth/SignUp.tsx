@@ -107,8 +107,9 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
     try {
       await authService.signUpWithEmail(
         formData.email,
-        formData.fullName,
-        formData.password
+        "", // Placeholder for OTP, adjust if API requires a specific value
+        formData.password,
+        formData.fullName
       );
       showToast.success(
         "Sign-up successful! Please check your email for verification."
