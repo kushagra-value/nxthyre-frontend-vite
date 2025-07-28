@@ -60,6 +60,10 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
       // Get user status from backend
       const userStatus = await authService.getUserStatus();
 
+      // Debug: Log the type and value of is_onboarded
+      console.log("is_onboarded type:", typeof userStatus.is_onboarded);
+      console.log("is_onboarded value:", userStatus.is_onboarded);
+
       // Create user object for compatibility with existing code
       const user = {
         id: firebaseUser.uid,
@@ -80,9 +84,11 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
 
       if (userStatus.is_onboarded) {
         // User is fully onboarded, go to main dashboard
+        console.log("Redirecting to dashboard...");
         window.location.href = "/";
       } else {
         // User needs onboarding
+        console.log("Navigating to create-organization...");
         onNavigate("create-organization");
       }
     } catch (error: any) {
