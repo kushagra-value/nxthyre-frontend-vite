@@ -108,6 +108,7 @@ function MainApp() {
   const [searchLoading, setSearchLoading] = useState(false); // New state for search loading
   // Debounce universalSearchQuery
   const debouncedSearchQuery = useDebounce(searchQuery, 1000);
+  const controller = new AbortController();
 
   const [sortBy, setSortBy] = useState<string>("");
 
@@ -215,7 +216,8 @@ function MainApp() {
           setSearchLoading(true); // Start search loading
           // Universal search from Header, ignoring filters
           const candidates = await candidateService.universalSearch(
-            debouncedSearchQuery
+            debouncedSearchQuery,
+            controller.signal
           );
           setCandidates(candidates);
           setTotalCount(candidates.length);
