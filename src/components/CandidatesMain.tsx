@@ -43,6 +43,8 @@ interface CandidatesMainProps {
   onCandidatesUpdate: (candidates: CandidateListItem[], totalCount: number) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
+  sortBy: string;
+  setSortBy: (sortBy: string) => void;
 }
 
 const CandidatesMain: React.FC<CandidatesMainProps> = ({
@@ -59,6 +61,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   onCandidatesUpdate,
   currentPage,
   setCurrentPage,
+  sortBy,
+  setSortBy,
 }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
@@ -66,7 +70,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const [loading, setLoading] = useState(false);
   const [pipelineStages, setPipelineStages] = useState<PipelineStage[]>([]);
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
   const candidatesPerPage = 20;
   const maxVisiblePages = 5;
 
@@ -79,6 +85,14 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     { id: "active", label: "Active", count: activeTab === "active" ? totalCount : 0 },
     { id: "inbound", label: "Inbound", count: activeTab === "inbound" ? totalCount : 0 },
     { id: "prevetted", label: "Prevetted", count: activeTab === "prevetted" ? totalCount : 0 },
+  ];
+
+  const sortOptions = [
+    { value: '', label: 'Relevance' },
+    { value: 'experience_asc', label: 'Experience (Ascending)' },
+    { value: 'experience_desc', label: 'Experience (Descending)' },
+    { value: 'notice_period_asc', label: 'Notice Period (Ascending)' },
+    { value: 'notice_period_desc', label: 'Notice Period (Descending)' },
   ];
 
   useEffect(() => {
@@ -159,6 +173,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     } catch (error: any) {
       showToast.error(error.message || 'Failed to fetch pipeline stages');
     }
+  };
+
+  const handleSortSelect = (sortValue: string) => {
+    setSortBy(sortValue);
+    setShowSortDropdown(false);
   };
 
   const handleExportCandidates = async (format: 'csv' | 'xlsx') => {
@@ -347,10 +366,31 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               </button>
             </div>
             <div className="flex space-x-2">
-              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
-                Sort By - <span className="text-blue-600 font-semibold ml-1 mr-1">Relevance</span>
+              <button
+                className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
+                onClick={() => setShowSortDropdown(!showSortDropdown)}
+              >
+                Sort By - <span className="text-blue-600 font-semibold ml-1 mr-1">{sortOptions.find(opt => opt.value === sortBy)?.label || 'Relevance'}</span>
                 <ChevronDown className="w-4 h-4 mt-1" />
               </button>
+              {showSortDropdown && (
+                <div
+                  ref={sortDropdownRef}
+                  className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+                >
+                  <div className="py-1">
+                    {sortOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => handleSortSelect(option.value)}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -457,10 +497,31 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               </button>
             </div>
             <div className="flex space-x-2">
-              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
-                Sort By - <span className="text-blue-600 font-semibold ml-1 mr-1">Relevance</span>
+              <button
+                className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
+                onClick={() => setShowSortDropdown(!showSortDropdown)}
+              >
+                Sort By - <span className="text-blue-600 font-semibold ml-1 mr-1">{sortOptions.find(opt => opt.value === sortBy)?.label || 'Relevance'}</span>
                 <ChevronDown className="w-4 h-4 mt-1" />
               </button>
+              {showSortDropdown && (
+                <div
+                  ref={sortDropdownRef}
+                  className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+                >
+                  <div className="py-1">
+                    {sortOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => handleSortSelect(option.value)}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -566,10 +627,31 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             </button>
           </div>
           <div className="flex space-x-2">
-            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center">
-              Sort By - <span className="text-blue-600 font-semibold ml-1 mr-1">Relevance</span>
-              <ChevronDown className="w-4 h-4 mt-1" />
-            </button>
+            <button
+                className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
+                onClick={() => setShowSortDropdown(!showSortDropdown)}
+              >
+                Sort By - <span className="text-blue-600 font-semibold ml-1 mr-1">{sortOptions.find(opt => opt.value === sortBy)?.label || 'Relevance'}</span>
+                <ChevronDown className="w-4 h-4 mt-1" />
+              </button>
+              {showSortDropdown && (
+                <div
+                  ref={sortDropdownRef}
+                  className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+                >
+                  <div className="py-1">
+                    {sortOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => handleSortSelect(option.value)}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
           </div>
         </div>
       </div> 

@@ -101,6 +101,8 @@ function MainApp() {
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [sortBy, setSortBy] = useState<string>("");
+
   const [filters, setFilters] = useState({
     keywords: "",
     booleanSearch: false,
@@ -137,6 +139,7 @@ function MainApp() {
     application_type: "",
     is_prevetted: false,
     is_active: false,
+    sort_by: "",
   });
 
   // Fetch job categories
@@ -205,6 +208,7 @@ function MainApp() {
           page_size: 20,
           job_id: filters.jobId,
           application_type: filters.application_type,
+          sort_by: sortBy,
         };
         if (filters.keywords) {
           filterParams.q = filters.keywords
@@ -309,6 +313,7 @@ function MainApp() {
       filters.is_active,
       filters.noticePeriod,
       selectedCandidate,
+      sortBy,
     ]
   );
 
@@ -349,8 +354,9 @@ function MainApp() {
       application_type: activeTab,
       is_prevetted: activeTab === "prevetted",
       is_active: activeTab === "active",
+      sort_by: sortBy,
     }));
-  }, [activeTab]);
+  }, [activeTab,sortBy]);
 
   // Fetch credit balance
   useEffect(() => {
@@ -452,6 +458,7 @@ function MainApp() {
       setShowEditTemplate(false);
       setShowPipelineStages(false);
       setSearchTerm("");
+      setSortBy("");
       setFilters({
         keywords: "",
         booleanSearch: false,
@@ -488,6 +495,7 @@ function MainApp() {
         application_type: "",
         is_prevetted: false,
         is_active: false,
+        sort_by: "",
       });
       showToast.success("Successfully logged out");
       navigate("/");
@@ -889,6 +897,8 @@ function MainApp() {
                             onCandidatesUpdate={handleCandidatesUpdate}
                             currentPage={currentPage}
                             setCurrentPage={setCurrentPage}
+                            sortBy={sortBy}
+                            setSortBy={setSortBy}
                           />
                         </div>
                         <div className="lg:w-[30%] order-3 sticky top-16 self-start will-change-transform">

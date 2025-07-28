@@ -379,10 +379,10 @@ class CandidateService {
     }
   }
 
-  async exportCandidates(applicationIds: string[]): Promise<ExportCandidateResponse> {
+  async exportCandidates(candidateIds: string[]): Promise<ExportCandidateResponse> {
     try {
       const response = await apiClient.post('/jobs/applications/export/', {
-        application_ids: applicationIds
+        candidate_ids: candidateIds
       });
       return response.data;
     } catch (error: any) {
