@@ -408,6 +408,7 @@ function MainApp() {
       }
     },
     [
+      selectedCandidate,
       searchQuery,
       sortBy,
       filters,
@@ -461,7 +462,7 @@ function MainApp() {
     if (activeCategoryId) {
       fetchCandidates(1, newFilters);
     }
-  }, [activeTab, sortBy, activeCategoryId, fetchCandidates]);
+  }, [activeTab, sortBy, activeCategoryId]);
 
   useEffect(() => {
     const fetchCreditBalance = async () => {
