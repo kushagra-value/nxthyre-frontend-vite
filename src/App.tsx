@@ -222,6 +222,8 @@ function MainApp() {
           if (candidates.length > 0 && !selectedCandidate) {
             setSelectedCandidate(candidates[0]);
           }
+
+          setSearchLoading(false);
           // Reset filters to null as per task requirement (optional, see note below)
           setFilters({
             keywords: "",
