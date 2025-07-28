@@ -329,7 +329,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                 </h1>
               </div>
               <div className="flex items-center space-x-4">
-                <div className="hidden sm:flex items-center bg-gray-100 rounded-lg px-3 py-2">
+                {/* <div className="hidden sm:flex items-center bg-gray-100 rounded-lg px-3 py-2">
                   <Search className="w-4 h-4 text-gray-500 mr-2" />
                   <input
                     type="text"
@@ -338,7 +338,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none w-40"
                   />
-                </div>
+                </div> */}
                 <button
                   onClick={onCreateRole}
                   className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"

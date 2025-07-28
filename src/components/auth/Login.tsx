@@ -349,7 +349,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                       onClick={() => onNavigate("signup")}
                       className="text-blue-600 hover:text-blue-500 font-medium underline"
                     >
-                      Sign Up
+                      Sign Up Here
                     </button>
                   </span>
                 </div>

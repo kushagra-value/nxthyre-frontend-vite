@@ -4,7 +4,7 @@ export interface CandidateListItem {
   id: string;
   full_name: string;
   candidate_email: string;
-  candidate_phone:string;
+  candidate_phone: string;
   avatar: string;
   headline: string;
   location: string;
@@ -36,7 +36,7 @@ export interface CandidateDetailData {
     id: string;
     full_name: string;
     candidate_email: string;
-    candidate_phone:string;
+    candidate_phone: string;
     headline: string;
     location: string;
     profile_picture_url: string;
@@ -99,7 +99,13 @@ export interface CandidateDetailData {
     }[];
     skills_data: {
       skills_mentioned: { skill: string; number_of_endorsements: number }[];
-      endorsements: { skill_endorsed: string; endorser_name: string; endorser_title: string; endorser_company: string, endorser_profile_pic_url: string; }[];
+      endorsements: {
+        skill_endorsed: string;
+        endorser_name: string;
+        endorser_title: string;
+        endorser_company: string;
+        endorser_profile_pic_url: string;
+      }[];
     };
     current_stage_in_job: string | null;
     gender: string;
@@ -107,11 +113,11 @@ export interface CandidateDetailData {
     is_background_verified: boolean;
     is_active: boolean;
     is_prevetted: boolean;
-    notice_period_days: number; 
+    notice_period_days: number;
     application_type: string;
     stage: string;
     ai_interview_report: string | null;
-  }
+  };
 }
 
 export interface ShareableProfileSensitiveCandidate {
@@ -166,12 +172,11 @@ export interface ExportCandidateResponse {
 export interface FollowUpStep {
   id: number;
   send_after_hours: number;
-  mode: 'EMAIL' | 'WHATSAPP' | 'CALL';
+  mode: "EMAIL" | "WHATSAPP" | "CALL";
   subject: string;
   body: string;
   order: number;
 }
-
 
 export interface Template {
   id: number;
@@ -220,9 +225,11 @@ export interface PipelineStage {
 }
 
 class CandidateService {
-  async getCandidates(filters: any): Promise<{ results: CandidateListItem[]; count: number }> {
+  async getCandidates(
+    filters: any
+  ): Promise<{ results: CandidateListItem[]; count: number }> {
     try {
-      const response = await apiClient.post("/candidates/search/", {filters});
+      const response = await apiClient.post("/candidates/search/", { filters });
       if (Array.isArray(response.data)) {
         return {
           results: response.data,
@@ -231,24 +238,46 @@ class CandidateService {
       }
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch candidates");
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch candidates"
+      );
     }
   }
 
-  async searchCandidates(params: any): Promise<{ results: CandidateListItem[]; count: number }> {
+  async searchCandidates(
+    params: any
+  ): Promise<{ results: CandidateListItem[]; count: number }> {
     try {
       const { page, ...body } = params;
-      const response = await apiClient.post(`/candidates/search/?page=${page || 1}`, body);
-     
+      const response = await apiClient.post(
+        `/candidates/search/?page=${page || 1}`,
+        body
+      );
+
       if (Array.isArray(response.data)) {
         return {
           results: response.data,
           count: response.data.length,
         };
       }
-       return response.data;
+      return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to search candidates");
+      throw new Error(
+        error.response?.data?.error || "Failed to search candidates"
+      );
+    }
+  }
+
+  async universalSearch(query: string): Promise<CandidateListItem[]> {
+    try {
+      const response = await apiClient.get("/candidates/universal-search/", {
+        params: { query },
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to search candidates"
+      );
     }
   }
 
@@ -257,139 +286,191 @@ class CandidateService {
       const response = await apiClient.get(`/candidates/${candidateId}/`);
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch candidate details");
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch candidate details"
+      );
     }
   }
-  async getShareableProfile(candidateId: string): Promise<ShareableProfileSensitiveCandidate> {
+  async getShareableProfile(
+    candidateId: string
+  ): Promise<ShareableProfileSensitiveCandidate> {
     try {
       const response = await apiClient.get(`/candidates/share/${candidateId}/`);
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch shareable profile");
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch shareable profile"
+      );
     }
   }
 
   async getTemplates(): Promise<Template[]> {
-    const response = await apiClient.get('/jobs/notification-templates/');
+    const response = await apiClient.get("/jobs/notification-templates/");
     return response.data;
   }
 
   async saveTemplate(template: Template): Promise<Template> {
     if (template.id) {
       // Update existing template
-      const response = await apiClient.put(`/jobs/notification-templates/${template.id}/`, template);
+      const response = await apiClient.put(
+        `/jobs/notification-templates/${template.id}/`,
+        template
+      );
       return response.data;
     } else {
       // Create new template
-      const response = await apiClient.post('/jobs/notification-templates/', template);
+      const response = await apiClient.post(
+        "/jobs/notification-templates/",
+        template
+      );
       return response.data;
     }
   }
 
-  async sendInvite(data: { 
-    candidate_id: string; 
-    template_id?: string; 
-    job_id: string; 
-    subject: string; 
-    message_body: string; 
+  async sendInvite(data: {
+    candidate_id: string;
+    template_id?: string;
+    job_id: string;
+    subject: string;
+    message_body: string;
     send_via_email: boolean;
     send_via_whatsapp: boolean;
     send_via_phone: boolean;
-    followups: { send_after_hours: number; followup_mode: 'EMAIL' | 'WHATSAPP' | 'CALL'; followup_body: string; order_no: number }[] 
+    followups: {
+      send_after_hours: number;
+      followup_mode: "EMAIL" | "WHATSAPP" | "CALL";
+      followup_body: string;
+      order_no: number;
+    }[];
   }): Promise<InviteResponse> {
-    const response = await apiClient.post('/jobs/invite/', data);
+    const response = await apiClient.post("/jobs/invite/", data);
     return response.data;
   }
 
   async updateTemplate(template: Template): Promise<Template> {
     try {
-      const response = await apiClient.put(`/jobs/notification-templates/${template.id}/`, {
-        name: template.name,
-        initial_subject: template.initial_subject,
-        initial_body: template.initial_body,
-        can_be_sent_via_email: template.can_be_sent_via_email,
-        can_be_sent_via_whatsapp: template.can_be_sent_via_whatsapp,
-        can_be_sent_via_call: template.can_be_sent_via_call,
-        follow_up_steps: template.follow_up_steps.map(step => ({
-          send_after_hours: step.send_after_hours,
-          mode: step.mode,
-          subject: step.subject,
-          body: step.body,
-          order: step.order,
-        })),
-      });
+      const response = await apiClient.put(
+        `/jobs/notification-templates/${template.id}/`,
+        {
+          name: template.name,
+          initial_subject: template.initial_subject,
+          initial_body: template.initial_body,
+          can_be_sent_via_email: template.can_be_sent_via_email,
+          can_be_sent_via_whatsapp: template.can_be_sent_via_whatsapp,
+          can_be_sent_via_call: template.can_be_sent_via_call,
+          follow_up_steps: template.follow_up_steps.map((step) => ({
+            send_after_hours: step.send_after_hours,
+            mode: step.mode,
+            subject: step.subject,
+            body: step.body,
+            order: step.order,
+          })),
+        }
+      );
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to update template");
+      throw new Error(
+        error.response?.data?.error || "Failed to update template"
+      );
     }
   }
 
-  async saveToPipeline(jobId: number, candidateId: string, stageId?: number): Promise<PipelineResponse> {
+  async saveToPipeline(
+    jobId: number,
+    candidateId: string,
+    stageId?: number
+  ): Promise<PipelineResponse> {
     try {
-      const payload: { job: number; candidate: string; current_stage?: number } = {
+      const payload: {
+        job: number;
+        candidate: string;
+        current_stage?: number;
+      } = {
         job: jobId,
-        candidate: candidateId
+        candidate: candidateId,
       };
       if (stageId) {
         payload.current_stage = stageId;
       }
-      const response = await apiClient.post('/jobs/applications/', payload);
+      const response = await apiClient.post("/jobs/applications/", payload);
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to save candidate to pipeline");
+      throw new Error(
+        error.response?.data?.error || "Failed to save candidate to pipeline"
+      );
     }
   }
 
-  async bulkAddToPipeline(jobId: number, candidateIds: string[]): Promise<BulkPipelineResponse> {
+  async bulkAddToPipeline(
+    jobId: number,
+    candidateIds: string[]
+  ): Promise<BulkPipelineResponse> {
     try {
-      const response = await apiClient.post('/jobs/bulk-add-to-pipeline/', {
+      const response = await apiClient.post("/jobs/bulk-add-to-pipeline/", {
         job: jobId,
-        candidate_ids: candidateIds
+        candidate_ids: candidateIds,
       });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to add candidates to pipeline");
+      throw new Error(
+        error.response?.data?.error || "Failed to add candidates to pipeline"
+      );
     }
   }
 
-    async getPipelineStages(jobId: number): Promise<PipelineStage[]> {
+  async getPipelineStages(jobId: number): Promise<PipelineStage[]> {
     try {
-      const response = await apiClient.get(`/jobs/applications/stages/?job_id=${jobId}`);
+      const response = await apiClient.get(
+        `/jobs/applications/stages/?job_id=${jobId}`
+      );
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch pipeline stages");
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch pipeline stages"
+      );
     }
   }
 
   async getKeywordSuggestions(query: string): Promise<string[]> {
     try {
-      const response = await apiClient.get(`/candidates/keyword-suggestions/?q=${encodeURIComponent(query)}`);
+      const response = await apiClient.get(
+        `/candidates/keyword-suggestions/?q=${encodeURIComponent(query)}`
+      );
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch keyword suggestions");
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch keyword suggestions"
+      );
     }
   }
 
-  async getRecentSearches(): Promise<{ id: number; query: string; created_at: string }[]> {
+  async getRecentSearches(): Promise<
+    { id: number; query: string; created_at: string }[]
+  > {
     try {
       const response = await apiClient.get(`/candidates/recent-searches/`);
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch recent searches");
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch recent searches"
+      );
     }
   }
 
-  async exportCandidates(applicationIds: string[]): Promise<ExportCandidateResponse> {
+  async exportCandidates(
+    applicationIds: string[]
+  ): Promise<ExportCandidateResponse> {
     try {
-      const response = await apiClient.post('/jobs/applications/export/', {
-        application_ids: applicationIds
+      const response = await apiClient.post("/jobs/applications/export/", {
+        application_ids: applicationIds,
       });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to export candidates");
+      throw new Error(
+        error.response?.data?.error || "Failed to export candidates"
+      );
     }
   }
-
 }
 
 export const candidateService = new CandidateService();
