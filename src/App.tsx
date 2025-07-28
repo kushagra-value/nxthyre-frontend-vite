@@ -254,6 +254,7 @@ function MainApp() {
             application_type: "",
             is_prevetted: false,
             is_active: false,
+            sort_by: "",
           });
         } else {
           const filterParams: any = {
