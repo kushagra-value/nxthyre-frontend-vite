@@ -391,8 +391,9 @@ function MainApp() {
           setCandidates(response.results);
           setTotalCount(response.count);
           if (response.results.length === 0) {
+            setSelectedCandidate(null);
             showToast.error("No results found for the applied filters.");
-          } else if (response.results.length > 0 && !selectedCandidate) {
+          } else if (response.results.length > 0) {
             setSelectedCandidate(response.results[0]);
           }
         }
@@ -401,15 +402,16 @@ function MainApp() {
         console.error("Error fetching candidates:", error);
         setCandidates([]);
         setTotalCount(0);
+        setSelectedCandidate(null);
       } finally {
         setLoadingCandidates(false);
       }
     },
     [
-      selectedCandidate,
       searchQuery,
       sortBy,
-      filters
+      filters,
+      activeTab
     ]
   );
 
@@ -420,6 +422,7 @@ function MainApp() {
     // setIsSearching(query.trim() !== "");
     candidateService.universalSearch(searchQuery);
     setCurrentPage(1); // Reset to first page on search
+    fetchCandidates(1, filters);
   };
 
   // Handle candidates update from CandidatesMain
@@ -429,8 +432,10 @@ function MainApp() {
   ) => {
     setCandidates(newCandidates);
     setTotalCount(count);
-    if (newCandidates.length > 0 && !selectedCandidate) {
+    if (newCandidates.length > 0) {
       setSelectedCandidate(newCandidates[0]);
+    } else {
+      setSelectedCandidate(null);
     }
   };
 
@@ -445,14 +450,18 @@ function MainApp() {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    setFilters((prev) => ({
-      ...prev,
+    const newFilters = {
+      ...filters,
       application_type: activeTab,
       is_prevetted: activeTab === "prevetted",
       is_active: activeTab === "active",
       sort_by: sortBy,
-    }));
-  }, [activeTab,sortBy]);
+    };
+    setFilters(newFilters);
+    if (activeCategoryId) {
+      fetchCandidates(1, newFilters);
+    }
+  }, [activeTab, sortBy, activeCategoryId, fetchCandidates]);
 
   useEffect(() => {
     const fetchCreditBalance = async () => {
@@ -750,6 +759,7 @@ function MainApp() {
       showToast.error("No results found due to invalid input in experience fields.");
       setCandidates([]);
       setTotalCount(0);
+      setSelectedCandidate(null);
       return;
     }
 
