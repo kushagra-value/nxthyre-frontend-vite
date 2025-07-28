@@ -104,25 +104,25 @@ class OrganizationService {
     }
   }
 
-  async getWorkspaces(organizationId: number): Promise<Workspace[]> {
-    try {
-      const response = await apiClient.get(
-        `/organization/${organizationId}/workspaces/`
-      );
-      return response.data.map((ws: any) => ({
-        id: ws.id,
-        name: ws.name,
-        organizationId: ws.organizationId,
-        ownerId: ws.ownerId || "",
-        members: ws.members || [],
-        createdAt: ws.createdAt || new Date().toISOString(),
-      }));
-    } catch (error: any) {
-      throw new Error(
-        error.response?.data?.error || "Failed to fetch workspaces"
-      );
-    }
-  }
+  // async getWorkspaces(organizationId: number): Promise<Workspace[]> {
+  //   try {
+  //     const response = await apiClient.get(
+  //       `/organization/${organizationId}/workspaces/`
+  //     );
+  //     return response.data.map((ws: any) => ({
+  //       id: ws.id,
+  //       name: ws.name,
+  //       organizationId: ws.organizationId,
+  //       ownerId: ws.ownerId || "",
+  //       members: ws.members || [],
+  //       createdAt: ws.createdAt || new Date().toISOString(),
+  //     }));
+  //   } catch (error: any) {
+  //     throw new Error(
+  //       error.response?.data?.error || "Failed to fetch workspaces"
+  //     );
+  //   }
+  // }
 
   // Create organization
   async createOrganization(name: string): Promise<CreateOrganizationResponse> {
