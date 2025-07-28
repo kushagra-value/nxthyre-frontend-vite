@@ -74,6 +74,19 @@ export interface DiscoverWorkspace {
   join_request_status: string;
 }
 
+export interface PendingJoinRequest {
+  id: number;
+  workspace_id: number;
+  workspace_name: string;
+  recruiter: {
+    id: string;
+    full_name: string;
+    email: string;
+  };
+  status: string;
+  created_at: string;
+}
+
 class OrganizationService {
   // Get onboarding status...
   async getOnboardingStatus(): Promise<OnboardingStatusResponse> {
@@ -232,14 +245,9 @@ class OrganizationService {
     }
   }
 
-  async getPendingJoinRequests(
-    organizationId: number,
-    workspaceId: number
-  ): Promise<any[]> {
+  async getPendingJoinRequests(): Promise<PendingJoinRequest[]> {
     try {
-      const response = await apiClient.get(
-        `/organization/${organizationId}/workspaces/${workspaceId}/join-request/`
-      );
+      const response = await apiClient.get("/organization/requests/pending/");
       return response.data.filter((req: any) => req.status === "PENDING");
     } catch (error: any) {
       throw new Error(

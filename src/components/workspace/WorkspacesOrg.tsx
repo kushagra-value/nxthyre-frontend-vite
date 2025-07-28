@@ -201,24 +201,16 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
 
   const handleManageWorkspace = async () => {
     try {
-      const adminWorkspaces = workspaces.filter(
-        (ws) => ws.user_role === "ADMIN"
-      );
-      const requestsPromises = adminWorkspaces.map(async (ws) => {
-        const requests = await organizationService.getPendingJoinRequests(
-          ws.organization,
-          ws.id
-        );
-        return requests.map((req: any) => ({
-          id: req.id,
-          workspaceId: ws.id,
-          workspaceName: ws.name,
-          requesterEmail: req.recruiter.email,
-          createdAt: req.created_at,
-        }));
-      });
-      const allRequests = (await Promise.all(requestsPromises)).flat();
-      setPendingRequests(allRequests);
+      // Fetch all pending join requests using the new API endpoint
+      const requests = await organizationService.getPendingJoinRequests();
+      const formattedRequests = requests.map((req: any) => ({
+        id: req.id,
+        workspaceId: req.workspace_id,
+        workspaceName: req.workspace_name,
+        requesterEmail: req.recruiter.email,
+        createdAt: req.created_at,
+      }));
+      setPendingRequests(formattedRequests);
       setShowManageModal(true);
     } catch (error) {
       showToast.error("Failed to load pending requests");
@@ -398,13 +390,13 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                       <Users className="w-4 h-4 mr-2" />
                       Join Workspace
                     </button>
-                    {/* <button
+                    <button
                       onClick={handleManageWorkspace}
                       className="bg-white text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors flex items-center"
                     >
                       <Settings className="w-4 h-4 mr-2" />
                       Pending Requests
-                    </button> */}
+                    </button>
                   </div>
                   {workspaces.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
