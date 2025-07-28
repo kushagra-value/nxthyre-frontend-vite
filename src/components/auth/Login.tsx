@@ -259,6 +259,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                       onChange={(e) =>
                         setFormData({ ...formData, password: e.target.value })
                       }
+                      maxLength={8}
                       className={`w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${
                         errors.password ? "border-red乡-500" : ""
                       }`}
