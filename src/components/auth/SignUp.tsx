@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Eye,
   EyeOff,
@@ -29,6 +29,22 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
+  // Keep the confirmPassword error in sync in real time:
+  useEffect(() => {
+    // if nothing typed yet, clear any stale error
+    if (!formData.confirmPassword) {
+      setErrors((e) => ({ ...e, confirmPassword: "" }));
+      return;
+    }
+
+    // if they match, clear the error; otherwise set it
+    if (formData.password === formData.confirmPassword) {
+      setErrors((e) => ({ ...e, confirmPassword: "" }));
+    } else {
+      setErrors((e) => ({ ...e, confirmPassword: "Passwords do not match" }));
+    }
+  }, [formData.password, formData.confirmPassword]);
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -49,6 +65,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
         "Password must be at least 8 characters with uppercase, lowercase, and number";
     }
 
+    // We still enforce on submit if they don't match
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
     }

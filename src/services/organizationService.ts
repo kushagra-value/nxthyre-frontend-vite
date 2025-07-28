@@ -56,6 +56,24 @@ export interface ManageRequestResponse {
   status: string;
 }
 
+export interface MyWorkspace {
+  id: number;
+  name: string;
+  organization: number;
+  member_count: number;
+  created_by: string;
+  user_role: string;
+}
+
+export interface DiscoverWorkspace {
+  id: number;
+  name: string;
+  organization: number;
+  member_count: number;
+  created_by: string | null;
+  join_request_status: string;
+}
+
 class OrganizationService {
   // Get onboarding status...
   async getOnboardingStatus(): Promise<OnboardingStatusResponse> {
@@ -86,35 +104,32 @@ class OrganizationService {
     }
   }
 
-  async getWorkspaces(organizationId: number): Promise<Workspace[]> {
-    try {
-      const response = await apiClient.get(
-        `/organization/${organizationId}/workspaces/`
-      );
-      return response.data.map((ws: any) => ({
-        id: ws.id,
-        name: ws.name,
-        organizationId: ws.organizationId,
-        ownerId: ws.ownerId || "",
-        members: ws.members || [],
-        createdAt: ws.createdAt || new Date().toISOString(),
-      }));
-    } catch (error: any) {
-      throw new Error(
-        error.response?.data?.error || "Failed to fetch workspaces"
-      );
-    }
-  }
+  // async getWorkspaces(organizationId: number): Promise<Workspace[]> {
+  //   try {
+  //     const response = await apiClient.get(
+  //       `/organization/${organizationId}/workspaces/`
+  //     );
+  //     return response.data.map((ws: any) => ({
+  //       id: ws.id,
+  //       name: ws.name,
+  //       organizationId: ws.organizationId,
+  //       ownerId: ws.ownerId || "",
+  //       members: ws.members || [],
+  //       createdAt: ws.createdAt || new Date().toISOString(),
+  //     }));
+  //   } catch (error: any) {
+  //     throw new Error(
+  //       error.response?.data?.error || "Failed to fetch workspaces"
+  //     );
+  //   }
+  // }
 
   // Create organization
   async createOrganization(name: string): Promise<CreateOrganizationResponse> {
     try {
-      const response = await apiClient.post(
-        "/organization/organization-create/",
-        {
-          name,
-        }
-      );
+      const response = await apiClient.post("/organization/create/", {
+        name,
+      });
       return response.data;
     } catch (error: any) {
       throw new Error(
@@ -139,6 +154,30 @@ class OrganizationService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error || "Failed to create workspace"
+      );
+    }
+  }
+
+  async getMyWorkspaces(): Promise<MyWorkspace[]> {
+    try {
+      const response = await apiClient.get("/organization/my-workspaces/");
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch my workspaces"
+      );
+    }
+  }
+
+  async getDiscoverWorkspaces(): Promise<DiscoverWorkspace[]> {
+    try {
+      const response = await apiClient.get(
+        "/organization/discover-workspaces/"
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch discover workspaces"
       );
     }
   }
@@ -174,13 +213,14 @@ class OrganizationService {
 
   // Manage join request (approve/reject)
   async manageJoinRequest(
+    organizationId: number,
     workspaceId: number,
     requestId: number,
     action: "approve" | "reject"
   ): Promise<ManageRequestResponse> {
     try {
       const response = await apiClient.post(
-        `/organization/workspaces/${workspaceId}/requests/${requestId}/manage/`,
+        `/organization/${organizationId}/workspaces/${workspaceId}/requests/${requestId}/manage/`,
         { action }
       );
       return response.data;
@@ -191,11 +231,20 @@ class OrganizationService {
     }
   }
 
-  async getPendingJoinRequests(workspaceId: number): Promise<any[]> {
-    const response = await apiClient.get(
-      `/organization/workspaces/${workspaceId}/join-request/`
-    );
-    return response.data.filter((req: any) => req.status === "PENDING");
+  async getPendingJoinRequests(
+    organizationId: number,
+    workspaceId: number
+  ): Promise<any[]> {
+    try {
+      const response = await apiClient.get(
+        `/organization/${organizationId}/workspaces/${workspaceId}/join-request/`
+      );
+      return response.data.filter((req: any) => req.status === "PENDING");
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch pending join requests"
+      );
+    }
   }
 }
 

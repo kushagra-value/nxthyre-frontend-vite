@@ -10,142 +10,26 @@ interface WorkspaceJoiningProps {
 
 const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
   const { user, userStatus } = useAuthContext();
-  const [requestedWorkspaces, setRequestedWorkspaces] = useState<Set<number>>(
-    new Set()
-  );
   const [availableWorkspaces, setAvailableWorkspaces] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true;
-
     const fetchAvailableWorkspaces = async () => {
-      if (!userStatus || !mounted) {
-        console.log("Waiting for userStatus:", { userStatus });
+      if (!userStatus) {
         return;
       }
-
       try {
         setLoading(true);
-        console.log("Fetching organizations...");
-        const orgResponse = await organizationService.getOrganizations();
-        const fetchedOrganizations = orgResponse.map((org: any) => ({
-          id: org.id,
-          name: org.name,
-          domain: org.domain || null,
-        }));
-
-        // Filter organizations based on user roles
-        const userOrgIds =
-          userStatus?.roles
-            ?.filter((role: any) => role.scope === "ORGANIZATION")
-            ?.map((role: any) => role.organization_id) || [];
-        const authorizedOrganizations = fetchedOrganizations.filter(
-          (org: any) => userOrgIds.includes(org.id)
-        );
-        console.log("Authorized organizations:", authorizedOrganizations);
-
-        if (authorizedOrganizations.length === 0) {
-          showToast.error("No authorized organizations found.");
-          if (mounted) {
-            setAvailableWorkspaces([]);
-          }
-          return;
-        }
-
-        const joinedWorkspaceIds = userStatus.roles
-          .filter((role: any) => role.scope === "WORKSPACE")
-          .map((role: any) => role.workspace_id);
-        console.log("Joined workspace IDs:", joinedWorkspaceIds);
-
-        const fetchWorkspacesWithRetry = async (
-          orgId: number,
-          retries = 3
-        ): Promise<any[]> => {
-          try {
-            console.log(`Fetching workspaces for org ${orgId}...`);
-            const workspaceResponse = await organizationService.getWorkspaces(
-              orgId
-            );
-            return workspaceResponse.map((ws: any) => ({
-              id: ws.id,
-              name: ws.name,
-              organization: {
-                id: orgId,
-                name:
-                  ws.organization?.name ||
-                  fetchedOrganizations.find((org: any) => org.id === orgId)
-                    ?.name ||
-                  "Unknown",
-              },
-              members: ws.members || [],
-              createdAt: ws.createdAt,
-              join_status: ws.join_status || "NOT_REQUESTED",
-            }));
-          } catch (error: any) {
-            if (error.response?.status === 403 && retries > 0) {
-              console.warn(
-                `403 Forbidden for org ${orgId}, retrying... (${retries} left)`
-              );
-              await new Promise((resolve) => setTimeout(resolve, 2000));
-              return fetchWorkspacesWithRetry(orgId, retries - 1);
-            }
-            console.error(
-              `Failed to fetch workspaces for org ${orgId}: ${error.message}`
-            );
-            return [];
-          }
-        };
-
-        const workspacePromises = authorizedOrganizations.map((org: any) =>
-          fetchWorkspacesWithRetry(org.id)
-        );
-        const allWorkspaces = (await Promise.all(workspacePromises)).flat();
-        console.log("All workspaces:", allWorkspaces);
-
-        // Filter out workspaces already joined and those with pending/approved join requests
-        const available = allWorkspaces.filter(
-          (ws: any) =>
-            !joinedWorkspaceIds.includes(ws.id) &&
-            ws.join_status !== "PENDING" &&
-            ws.join_status !== "APPROVED"
-        );
-        console.log("Available workspaces:", available);
-
-        if (mounted) {
-          setAvailableWorkspaces(available);
-          // Update requestedWorkspaces based on API data
-          const pendingRequests = allWorkspaces
-            .filter((ws: any) => ws.join_status === "PENDING")
-            .map((ws: any) => ws.id);
-          setRequestedWorkspaces(new Set(pendingRequests));
-          if (available.length === 0) {
-            showToast.info("No available workspaces to join.");
-          }
-        }
+        const discoverWorkspaces =
+          await organizationService.getDiscoverWorkspaces();
+        setAvailableWorkspaces(discoverWorkspaces);
       } catch (error: any) {
-        console.error("Error fetching workspaces:", error);
-        if (mounted) {
-          showToast.error("Failed to load available workspaces.");
-        }
+        showToast.error("Failed to load available workspaces.");
       } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     };
-
-    // Delay fetch to ensure token is ready
-    const timeoutId = setTimeout(() => {
-      if (mounted) {
-        fetchAvailableWorkspaces();
-      }
-    }, 2000);
-
-    return () => {
-      mounted = false;
-      clearTimeout(timeoutId);
-    };
+    fetchAvailableWorkspaces();
   }, [userStatus]);
 
   if (!user || !userStatus) {
@@ -174,63 +58,38 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
     );
   }
 
-  const handleRequestJoin = async (workspaceId: number) => {
-    const workspace = availableWorkspaces.find((ws) => ws.id === workspaceId);
-    if (!workspace) {
-      showToast.error("Invalid workspace selected.");
-      console.error(
-        `Workspace ID ${workspaceId} not found in availableWorkspaces.`
-      );
-      return;
-    }
-
+  const handleRequestJoin = async (workspaceId: number, userId?: string) => {
     try {
-      await organizationService.requestJoinWorkspace(workspaceId, user?.id);
-      setRequestedWorkspaces((prev) => new Set(prev).add(workspaceId));
-      showToast.success(`Join request sent for workspace "${workspace.name}".`);
-    } catch (error: any) {
-      console.error(
-        `Join request error for workspace ${workspaceId}:`,
-        error.response?.data || error.message
+      const response = await organizationService.requestJoinWorkspace(
+        workspaceId,
+        userId
       );
-      const errorMessage =
-        error.response?.status === 500
-          ? "Server error occurred while sending join request. Please try again later."
-          : error.response?.data?.error || "Failed to send join request.";
-      showToast.error(errorMessage);
+      setAvailableWorkspaces((prev) =>
+        prev.map((ws) =>
+          ws.id === workspaceId ? { ...ws, join_request_status: "PENDING" } : ws
+        )
+      );
+      showToast.success("Join request sent.");
+    } catch (error: any) {
+      showToast.error("Failed to send join request.");
     }
   };
 
+  // Note: The API doesn't provide a withdraw endpoint, so this is a placeholder
   const handleWithdrawRequest = async (workspaceId: number) => {
-    const workspace = availableWorkspaces.find((ws) => ws.id === workspaceId);
-    if (!workspace) {
-      showToast.error("Invalid workspace selected for withdrawal.");
-      console.error(
-        `Workspace ID ${workspaceId} not found in availableWorkspaces.`
-      );
-      return;
-    }
-
     try {
-      await organizationService.withdrawJoinRequest(workspaceId);
-      setRequestedWorkspaces((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(workspaceId);
-        return newSet;
-      });
-      showToast.success(
-        `Join request withdrawn for workspace "${workspace.name}".`
+      // Uncomment and implement if backend supports withdraw endpoint
+      // await organizationService.withdrawJoinRequest(workspaceId);
+      setAvailableWorkspaces((prev) =>
+        prev.map((ws) =>
+          ws.id === workspaceId
+            ? { ...ws, join_request_status: "NOT_REQUESTED" }
+            : ws
+        )
       );
+      showToast.success("Join request withdrawn.");
     } catch (error: any) {
-      console.error(
-        `Withdraw request error for workspace ${workspaceId}:`,
-        error.response?.data || error.message
-      );
-      const errorMessage =
-        error.response?.status === 500
-          ? "Server error occurred while withdrawing request. Please try again later."
-          : error.response?.data?.error || "Failed to withdraw request.";
-      showToast.error(errorMessage);
+      showToast.error("Failed to withdraw request.");
     }
   };
 
@@ -244,6 +103,10 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
       </div>
     );
   }
+
+  const pendingRequests = availableWorkspaces.filter(
+    (ws) => ws.join_request_status === "PENDING"
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -275,7 +138,7 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
           <p className="text-gray-600">Request to join existing workspaces</p>
         </div>
 
-        {requestedWorkspaces.size > 0 && (
+        {pendingRequests.length > 0 && (
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Pending Requests
@@ -284,8 +147,8 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
               <div className="flex items-center">
                 <Clock className="w-5 h-5 text-yellow-600 mr-2" />
                 <span className="text-sm text-yellow-800">
-                  You have {requestedWorkspaces.size} pending request
-                  {requestedWorkspaces.size !== 1 ? "s" : ""}
+                  You have {pendingRequests.length} pending request
+                  {pendingRequests.length !== 1 ? "s" : ""}
                 </span>
               </div>
             </div>
@@ -294,55 +157,55 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
 
         <div className="space-y-4">
           {availableWorkspaces.length > 0 ? (
-            availableWorkspaces.map((workspace) => {
-              const memberCount = workspace.members?.length || 0;
-              const isRequested = requestedWorkspaces.has(workspace.id);
-
-              return (
-                <div
-                  key={workspace.id}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-                  data-workspace-id={workspace.id}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-4">
-                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Users className="w-6 h-6 text-blue-600" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                          {workspace.name}
-                        </h3>
-                        <p className="text-sm text-gray-600 mb-2">
-                          {workspace.organization?.name || "No Organization"}
-                        </p>
-                        <div className="flex items-center text-sm text-gray-500">
-                          <Users className="w-4 h-4 mr-1" />
-                          {memberCount} member{memberCount !== 1 ? "s" : ""}
-                        </div>
-                      </div>
+            availableWorkspaces.map((workspace) => (
+              <div
+                key={workspace.id}
+                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Users className="w-6 h-6 text-blue-600" />
                     </div>
-                    <div className="flex items-center space-x-2">
-                      {isRequested ? (
-                        <button
-                          onClick={() => handleWithdrawRequest(workspace.id)}
-                          className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium"
-                        >
-                          Withdraw Request
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleRequestJoin(workspace.id)}
-                          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                        >
-                          Request to Join
-                        </button>
-                      )}
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                        {workspace.name}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Organization ID: {workspace.organization}
+                      </p>
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Users className="w-4 h-4 mr-1" />
+                        {workspace.member_count} member
+                        {workspace.member_count !== 1 ? "s" : ""}
+                      </div>
                     </div>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    {workspace.join_request_status === "PENDING" ? (
+                      <button
+                        onClick={() => handleWithdrawRequest(workspace.id)}
+                        className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium"
+                      >
+                        Withdraw Request
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() =>
+                          handleRequestJoin(
+                            workspace.id,
+                            user?.id // Pass user id as the second argument if available
+                          )
+                        }
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                      >
+                        Request to Join
+                      </button>
+                    )}
+                  </div>
                 </div>
-              );
-            })
+              </div>
+            ))
           ) : (
             <div className="text-center py-12">
               <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -350,18 +213,8 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
                 No Available Workspaces
               </h3>
               <p className="text-gray-600 mb-4">
-                You are already a member of all workspaces or none are
-                available.
+                There are no workspaces available to join at the moment.
               </p>
-              <button
-                onClick={() => {
-                  onNavigate("workspace-creation");
-                  showToast.info("Navigating to create a new workspace.");
-                }}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Create a Workspace
-              </button>
             </div>
           )}
         </div>

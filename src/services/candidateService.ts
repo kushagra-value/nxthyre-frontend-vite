@@ -268,13 +268,19 @@ class CandidateService {
     }
   }
 
-  async universalSearch(query: string): Promise<CandidateListItem[]> {
+  async universalSearch(
+    query: string,
+    signal?: AbortSignal
+  ): Promise<CandidateListItem[]> {
     try {
-      const response = await apiClient.get("/candidates/universal-search/", {
-        params: { query },
-      });
+      const rawUrl = `/candidates/universal-search/?query=${query}`;
+      const response = await apiClient.get(rawUrl, { signal });
       return response.data;
     } catch (error: any) {
+      if (error.name === "AbortError") {
+        // Request was aborted, do nothing
+        return [];
+      }
       throw new Error(
         error.response?.data?.error || "Failed to search candidates"
       );
@@ -457,10 +463,12 @@ class CandidateService {
     }
   }
 
-  async exportCandidates(candidateIds: string[]): Promise<ExportCandidateResponse> {
+  async exportCandidates(
+    candidateIds: string[]
+  ): Promise<ExportCandidateResponse> {
     try {
-      const response = await apiClient.post('/jobs/applications/export/', {
-        candidate_ids: candidateIds
+      const response = await apiClient.post("/jobs/applications/export/", {
+        candidate_ids: candidateIds,
       });
       return response.data;
     } catch (error: any) {

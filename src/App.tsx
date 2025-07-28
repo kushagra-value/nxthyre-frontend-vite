@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./hooks/useAuth";
+import useDebounce from "./hooks/useDebounce"; // Import the new hook
 import { authService } from "./services/authService";
 import { creditService } from "./services/creditService";
 import { jobPostService } from "./services/jobPostService";
@@ -142,6 +143,9 @@ function MainApp() {
   // New states for search
   // const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  // Debounce universalSearchQuery
+  const debouncedSearchQuery = useDebounce(searchQuery, 1000);
+  const controller = new AbortController();
 
   const [sortBy, setSortBy] = useState<string>("");
 
@@ -248,16 +252,18 @@ function MainApp() {
       setLoadingCandidates(true);
       try {
         let response;
-        if (searchQuery.trim() !== "") {
+        if (debouncedSearchQuery.trim() !== "") {
           // Universal search from Header, ignoring filters
           const candidates = await candidateService.universalSearch(
-            searchQuery
+            debouncedSearchQuery,
+            controller.signal
           );
           setCandidates(candidates);
           setTotalCount(candidates.length);
           if (candidates.length > 0 && !selectedCandidate) {
             setSelectedCandidate(candidates[0]);
           }
+
           // Reset filters to null as per task requirement (optional, see note below)
           setFilters({
             keywords: "",
@@ -290,7 +296,7 @@ function MainApp() {
             hasBehance: false,
             hasTwitter: false,
             hasPortfolio: false,
-            jobId: filters.jobId, // Preserve jobId if needed
+            jobId: "", // Preserve jobId if needed
             application_type: "",
             is_prevetted: false,
             is_active: false,
@@ -387,14 +393,16 @@ function MainApp() {
           }
 
           console.log("Fetching candidates with params:", filterParams);
-          response = await candidateService.searchCandidates(filterParams);
-          setCandidates(response.results);
-          setTotalCount(response.count);
-          if (response.results.length === 0) {
+          if (isAuthenticated) {
+            response = await candidateService.searchCandidates(filterParams);
+            setCandidates(response.results);
+            setTotalCount(response.count);
+            if (response.results.length === 0) {
             setSelectedCandidate(null);
             showToast.error("No results found for the applied filters.");
           } else if (response.results.length > 0) {
-            setSelectedCandidate(response.results[0]);
+              setSelectedCandidate(response.results[0]);
+            }
           }
         }
       } catch (error) {
@@ -409,19 +417,15 @@ function MainApp() {
     },
     [
       selectedCandidate,
-      searchQuery,
+      debouncedSearchQuery, // Use the debounced search query
       sortBy,
       filters,
       activeTab
     ]
   );
-
-  
   // Handle search change
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
-    // setIsSearching(query.trim() !== "");
-    candidateService.universalSearch(searchQuery);
     setCurrentPage(1); // Reset to first page on search
     fetchCandidates(1, filters);
   };
@@ -462,7 +466,7 @@ function MainApp() {
     if (activeCategoryId) {
       fetchCandidates(1, newFilters);
     }
-  }, [activeTab, sortBy, activeCategoryId]);
+  }, [activeTab, sortBy, activeCategoryId, debouncedSearchQuery, isAuthenticated]);
 
   useEffect(() => {
     const fetchCreditBalance = async () => {
