@@ -102,7 +102,7 @@ function MainApp() {
   const [currentPage, setCurrentPage] = useState(1);
 
   // New states for search
-  const [isSearching, setIsSearching] = useState(false);
+  // const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const [sortBy, setSortBy] = useState<string>("");
@@ -207,7 +207,8 @@ function MainApp() {
       setLoadingCandidates(true);
       try {
         let response;
-        if (isSearching) {
+        if (searchQuery.trim() !== "") {
+          // Universal search from Header, ignoring filters
           const candidates = await candidateService.universalSearch(
             searchQuery
           );
@@ -216,6 +217,44 @@ function MainApp() {
           if (candidates.length > 0 && !selectedCandidate) {
             setSelectedCandidate(candidates[0]);
           }
+          // Reset filters to null as per task requirement (optional, see note below)
+          setFilters({
+            keywords: "",
+            booleanSearch: false,
+            semanticSearch: false,
+            selectedCategories: [],
+            minExperience: "",
+            maxExperience: "",
+            funInCurrentCompany: false,
+            minTotalExp: "",
+            maxTotalExp: "",
+            city: "",
+            country: "",
+            location: "",
+            locations: [],
+            skillLevel: "",
+            noticePeriod: "",
+            companies: "",
+            industries: "",
+            minSalary: "",
+            maxSalary: "",
+            colleges: "",
+            topTierUniversities: false,
+            computerScienceGraduates: false,
+            showFemaleCandidates: false,
+            recentlyPromoted: false,
+            backgroundVerified: false,
+            hasCertification: false,
+            hasResearchPaper: false,
+            hasLinkedIn: false,
+            hasBehance: false,
+            hasTwitter: false,
+            hasPortfolio: false,
+            jobId: filters.jobId, // Preserve jobId if needed
+            application_type: "",
+            is_prevetted: false,
+            is_active: false,
+          });
         } else {
           const filterParams: any = {
             page,
@@ -329,16 +368,22 @@ function MainApp() {
       filters.is_active,
       filters.noticePeriod,
       selectedCandidate,
-      isSearching,
       searchQuery,
       sortBy,
     ]
   );
 
+  // Ensure fetchCandidates runs when searchQuery changes
+  useEffect(() => {
+    if (filters.jobId) {
+      fetchCandidates(currentPage);
+    }
+  }, [filters.jobId, currentPage, fetchCandidates, searchQuery]);
+
   // Handle search change
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
-    setIsSearching(query.trim() !== "");
+    // setIsSearching(query.trim() !== "");
     candidateService.universalSearch(searchQuery);
     setCurrentPage(1); // Reset to first page on search
   };

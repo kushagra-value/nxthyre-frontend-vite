@@ -550,19 +550,6 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         </div>
 
         <div className="p-3 lg:p-4 border-b border-gray-200">
-          <div className="hidden sm:flex items-center bg-gray-100 rounded-lg px-3 py-2">
-            <Search className="w-4 h-4 text-gray-500 mr-2" />
-            <input
-              type="text"
-              placeholder="LinkedIn Contact Finder..."
-              value={localSearchTerm}
-              onChange={(e) => {
-                setLocalSearchTerm(e.target.value);
-                onSearchChange(e.target.value);
-              }}
-              className="bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none w-40"
-            />
-          </div>
           <div className="mt-0 flex items-center justify-between flex-wrap gap-2">
             <div className="flex space-x-3">
               <label className="flex items-center">
@@ -703,7 +690,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       </div>
 
       <div className="p-3 lg:p-4 border-b border-gray-200">
-        <div className="hidden sm:flex items-center bg-gray-100 rounded-lg px-3 py-2">
+        {/* <div className="hidden sm:flex items-center bg-gray-100 rounded-lg px-3 py-2">
           <Search className="w-4 h-4 text-gray-500 mr-2" />
           <input
             type="text"
@@ -715,7 +702,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             }}
             className="bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none w-40"
           />
-        </div>
+        </div> */}
         <div className="mt-0 flex items-center justify-between flex-wrap gap-2">
           <div className="flex space-x-3">
             <label className="flex items-center">
