@@ -105,7 +105,6 @@ function MainApp() {
   // New states for search
   // const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchLoading, setSearchLoading] = useState(false); // New state for search loading
   // Debounce universalSearchQuery
   const debouncedSearchQuery = useDebounce(searchQuery, 1000);
   const controller = new AbortController();
@@ -213,7 +212,6 @@ function MainApp() {
       try {
         let response;
         if (debouncedSearchQuery.trim() !== "") {
-          setSearchLoading(true); // Start search loading
           // Universal search from Header, ignoring filters
           const candidates = await candidateService.universalSearch(
             debouncedSearchQuery,
@@ -225,7 +223,6 @@ function MainApp() {
             setSelectedCandidate(candidates[0]);
           }
 
-          setSearchLoading(false);
           // Reset filters to null as per task requirement (optional, see note below)
           setFilters({
             keywords: "",
@@ -259,7 +256,7 @@ function MainApp() {
             hasBehance: false,
             hasTwitter: false,
             hasPortfolio: false,
-            jobId: filters.jobId, // Preserve jobId if needed
+            jobId: "", // Preserve jobId if needed
             application_type: "",
             is_prevetted: false,
             is_active: false,
@@ -347,7 +344,6 @@ function MainApp() {
         setTotalCount(0);
       } finally {
         setLoadingCandidates(false);
-        setSearchLoading(false); // Stop search loading
       }
     },
     [
@@ -386,9 +382,7 @@ function MainApp() {
 
   // Ensure fetchCandidates runs when searchQuery changes
   useEffect(() => {
-    if (filters.jobId) {
-      fetchCandidates(currentPage);
-    }
+    fetchCandidates(currentPage);
   }, [filters.jobId, currentPage, debouncedSearchQuery]);
 
   // Handle search change
@@ -423,7 +417,7 @@ function MainApp() {
     if (filters.jobId) {
       fetchCandidates(currentPage);
     }
-  }, [filters.jobId, currentPage, sortBy, fetchCandidates]);
+  }, [filters.jobId, currentPage, sortBy]);
 
   useEffect(() => {
     setFilters((prev) => ({
@@ -812,7 +806,6 @@ function MainApp() {
                         credits={credits}
                         searchQuery={searchQuery}
                         setSearchQuery={setSearchQuery}
-                        searchLoading={searchLoading} // Pass searchLoading
                       />
                     </div>
 
