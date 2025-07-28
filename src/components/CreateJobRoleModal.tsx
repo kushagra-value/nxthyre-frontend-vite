@@ -223,6 +223,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
       showToast.success(formData.shareExternally ? 'Job role created and published successfully!' : 'Job role created successfully!');
       onJobCreated?.(); // Trigger refresh of categories
       onClose();
+      setCurrentStep(1);
     } catch (error: any) {
       
       const errorMessage = error.response?.data?.department
