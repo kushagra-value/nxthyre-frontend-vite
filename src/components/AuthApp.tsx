@@ -122,32 +122,20 @@ const AuthApp: React.FC<AuthAppProps> = ({
       case "workspaces-org":
         return (
           <ErrorBoundary>
-            <WorkspacesOrg
-              onNavigate={handleNavigate}
-              user={authState.user}
-              onLogout={onLogout || handleLogout}
-            />
+            <WorkspacesOrg onNavigate={handleNavigate} />
           </ErrorBoundary>
         );
 
       case "workspace-joining":
-        return (
-          <WorkspaceJoining onNavigate={handleNavigate} user={authState.user} />
-        );
+        return <WorkspaceJoining onNavigate={handleNavigate} />;
 
       case "workspace-creation":
-        return (
-          <WorkspaceCreation
-            onNavigate={handleNavigate}
-            user={authState.user}
-          />
-        );
+        return <WorkspaceCreation onNavigate={handleNavigate} />;
 
       case "create-organization":
         return (
           <CreateOrganization
             onNavigate={handleNavigate}
-            user={authState.user}
             onComplete={handleLogin}
           />
         );
