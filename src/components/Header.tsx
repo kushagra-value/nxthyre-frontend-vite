@@ -17,6 +17,8 @@ interface HeaderProps {
   onOpenLogoutModal: () => void;
   credits: number;
   onBack?: () => void; // Optional prop for back button
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -24,6 +26,8 @@ const Header: React.FC<HeaderProps> = ({
   onOpenLogoutModal,
   credits,
   onBack,
+  searchQuery,
+  setSearchQuery,
 }) => {
   const { isAuthenticated, user, signOut } = useAuthContext();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -84,8 +88,8 @@ const Header: React.FC<HeaderProps> = ({
                   <input
                     type="text"
                     placeholder="LinkedIn Contact Finder..."
-                    value=""
-                    onChange={() => {}}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     className="bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none w-40"
                   />
                 </div>

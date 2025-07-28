@@ -176,9 +176,12 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
               <div className="mt-16">
                 <p className="text-blue-200 text-sm">
                   Facing any issue?{" "}
-                  <button className="underline hover:text-white">
-                    Contact Us
-                  </button>
+                  <a
+                    href="mailto:support@nxyhyre.com?subject=Login%20Request&body=Hello%20Support%20Team,%0D%0A%0D%0APlease%20assist%20with%20my%20issue:%0D%0A[Describe%20your%20issue%20here]%0D%0A%0D%0AThank%20you!"
+                    className="underline hover:text-white"
+                  >
+                    Contact Support
+                  </a>
                 </p>
               </div>
             </div>
@@ -346,7 +349,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                       onClick={() => onNavigate("signup")}
                       className="text-blue-600 hover:text-blue-500 font-medium underline"
                     >
-                      Create a new account here
+                      Sign Up Here
                     </button>
                   </span>
                 </div>

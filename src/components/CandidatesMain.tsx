@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback,useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Filter,
   ChevronDown,
@@ -11,16 +11,27 @@ import {
   Linkedin,
   ChevronLeft,
   ChevronRight,
+  Search,
 } from "lucide-react";
-import { candidateService, CandidateListItem, PipelineResponse, BulkPipelineResponse, PipelineStage, ExportCandidateResponse } from "../services/candidateService";
-import { showToast } from '../utils/toast';
+import {
+  candidateService,
+  CandidateListItem,
+  PipelineResponse,
+  BulkPipelineResponse,
+  PipelineStage,
+  ExportCandidateResponse,
+} from "../services/candidateService";
+import { showToast } from "../utils/toast";
 
-const downloadFile = (data: string, fileName: string, type: 'csv' | 'xlsx') => {
-  const blob = new Blob([data], { 
-    type: type === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+const downloadFile = (data: string, fileName: string, type: "csv" | "xlsx") => {
+  const blob = new Blob([data], {
+    type:
+      type === "csv"
+        ? "text/csv"
+        : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
   const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
   link.download = fileName;
   document.body.appendChild(link);
@@ -40,9 +51,13 @@ interface CandidatesMainProps {
   jobId: string;
   onPipelinesClick?: () => void;
   deductCredits: () => Promise<void>;
-  onCandidatesUpdate: (candidates: CandidateListItem[], totalCount: number) => void;
+  onCandidatesUpdate: (
+    candidates: CandidateListItem[],
+    totalCount: number
+  ) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
+  onSearchChange: (query: string) => void; // Added for search integration
   sortBy: string;
   setSortBy: (sortBy: string) => void;
 }
@@ -61,6 +76,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   onCandidatesUpdate,
   currentPage,
   setCurrentPage,
+  onSearchChange,
   sortBy,
   setSortBy,
 }) => {
@@ -79,12 +95,30 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
 
+  // Local state for search input
+  const [localSearchTerm, setLocalSearchTerm] = useState("");
 
   const tabs = [
-    { id: "outbound", label: "Outbound", count: activeTab === "outbound" ? totalCount : 0 },
-    { id: "active", label: "Active", count: activeTab === "active" ? totalCount : 0 },
-    { id: "inbound", label: "Inbound", count: activeTab === "inbound" ? totalCount : 0 },
-    { id: "prevetted", label: "Prevetted", count: activeTab === "prevetted" ? totalCount : 0 },
+    {
+      id: "outbound",
+      label: "Outbound",
+      count: activeTab === "outbound" ? totalCount : 0,
+    },
+    {
+      id: "active",
+      label: "Active",
+      count: activeTab === "active" ? totalCount : 0,
+    },
+    {
+      id: "inbound",
+      label: "Inbound",
+      count: activeTab === "inbound" ? totalCount : 0,
+    },
+    {
+      id: "prevetted",
+      label: "Prevetted",
+      count: activeTab === "prevetted" ? totalCount : 0,
+    },
   ];
 
   const sortOptions = [
@@ -104,7 +138,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
   const handleCandidateSelect = (candidateId: string) => {
     setSelectedCandidates((prev) =>
-      prev.includes(candidateId) ? prev.filter((id) => id !== candidateId) : [...prev, candidateId]
+      prev.includes(candidateId)
+        ? prev.filter((id) => id !== candidateId)
+        : [...prev, candidateId]
     );
   };
 
@@ -123,17 +159,21 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
   const handleBulkAddToPipeline = async () => {
     if (selectedCandidates.length === 0) {
-      showToast.error('Please select at least one candidate');
+      showToast.error("Please select at least one candidate");
       return;
     }
 
     try {
-      const response: BulkPipelineResponse = await candidateService.bulkAddToPipeline(parseInt(jobId), selectedCandidates);
+      const response: BulkPipelineResponse =
+        await candidateService.bulkAddToPipeline(
+          parseInt(jobId),
+          selectedCandidates
+        );
       showToast.success(response.message);
       setSelectedCandidates([]);
       setSelectAll(false);
     } catch (error: any) {
-      showToast.error(error.message || 'Failed to add candidates to pipeline');
+      showToast.error(error.message || "Failed to add candidates to pipeline");
     }
   };
 
@@ -148,18 +188,34 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     await deductCredits();
   };
 
-  const handleSaveToPipeline = async (candidateId: string, stageId?: number) => {
+  const handleSaveToPipeline = async (
+    candidateId: string,
+    stageId?: number
+  ) => {
     try {
-      const response: PipelineResponse = await candidateService.saveToPipeline(parseInt(jobId), candidateId, stageId);
-      const stageName = stageId ? pipelineStages.find(stage => stage.id === stageId)?.name : 'default stage';
-      showToast.success(`Candidate successfully added to pipeline${stageId ? ` (${stageName})` : ''} (ID: ${response.id})`);
+      const response: PipelineResponse = await candidateService.saveToPipeline(
+        parseInt(jobId),
+        candidateId,
+        stageId
+      );
+      const stageName = stageId
+        ? pipelineStages.find((stage) => stage.id === stageId)?.name
+        : "default stage";
+      showToast.success(
+        `Candidate successfully added to pipeline${
+          stageId ? ` (${stageName})` : ""
+        } (ID: ${response.id})`
+      );
       setShowDropdown(null);
     } catch (error: any) {
-      showToast.error(error.message || 'Failed to save candidate to pipeline');
+      showToast.error(error.message || "Failed to save candidate to pipeline");
     }
   };
 
-  const handleDropdownToggle = async (candidateId: string, e: React.MouseEvent) => {
+  const handleDropdownToggle = async (
+    candidateId: string,
+    e: React.MouseEvent
+  ) => {
     e.stopPropagation();
     if (showDropdown === candidateId) {
       setShowDropdown(null);
@@ -171,7 +227,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       setPipelineStages(stages);
       setShowDropdown(candidateId);
     } catch (error: any) {
-      showToast.error(error.message || 'Failed to fetch pipeline stages');
+      showToast.error(error.message || "Failed to fetch pipeline stages");
     }
   };
 
@@ -180,80 +236,85 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     setShowSortDropdown(false);
   };
 
-  const handleExportCandidates = async (format: 'csv' | 'xlsx') => {
+  const handleExportCandidates = async (format: "csv" | "xlsx") => {
     if (selectedCandidates.length === 0) {
-      showToast.error('Please select at least one candidate');
+      showToast.error("Please select at least one candidate");
       return;
     }
 
     setExportLoading(true);
     try {
-      const response: ExportCandidateResponse = await candidateService.exportCandidates(selectedCandidates);
-      
-      // Convert response data to CSV format
-      if (format === 'csv') {
-        const headers = [
-          'Full Name',
-          'Email',
-          'Phone',
-          'Headline',
-          'Location',
-          'Total Experience (Years)',
-          'Current Role',
-          'Current Company',
-          'Skills',
-          'Job Applied For',
-          'Current Pipeline Stage'
-        ];
-        
-        const csvContent = [
-          headers.join(','),
-          ...response.data.map(row => 
-            Object.values(row)
-              .map(value => `"${value?.toString().replace(/"/g, '""') || ''}"`)
-              .join(',')
-          )
-        ].join('\n');
+      const response: ExportCandidateResponse =
+        await candidateService.exportCandidates(selectedCandidates);
 
-        downloadFile(csvContent, `candidates_export_${Date.now()}.csv`, 'csv');
-      } 
-      // For Excel, we'll need to use a library like SheetJS (xlsx)
-      else {
-        // Note: For proper Excel export, you would typically use a library like SheetJS
-        // This is a simplified version that creates a CSV with .xlsx extension
-        // For production, you should integrate SheetJS or similar
+      if (format === "csv") {
         const headers = [
-          'Full Name',
-          'Email',
-          'Phone',
-          'Headline',
-          'Location',
-          'Total Experience (Years)',
-          'Current Role',
-          'Current Company',
-          'Skills',
-          'Job Applied For',
-          'Current Pipeline Stage'
+          "Full Name",
+          "Email",
+          "Phone",
+          "Headline",
+          "Location",
+          "Total Experience (Years)",
+          "Current Role",
+          "Current Company",
+          "Skills",
+          "Job Applied For",
+          "Current Pipeline Stage",
         ];
-        
-        const csvContent = [
-          headers.join(','),
-          ...response.data.map(row => 
-            Object.values(row)
-              .map(value => `"${value?.toString().replace(/"/g, '""') || ''}"`)
-              .join(',')
-          )
-        ].join('\n');
 
-        downloadFile(csvContent, `candidates_export_${Date.now()}.xlsx`, 'xlsx');
+        const csvContent = [
+          headers.join(","),
+          ...response.data.map((row) =>
+            Object.values(row)
+              .map(
+                (value) => `"${value?.toString().replace(/"/g, '""') || ""}"`
+              )
+              .join(",")
+          ),
+        ].join("\n");
+
+        downloadFile(csvContent, `candidates_export_${Date.now()}.csv`, "csv");
+      } else {
+        const headers = [
+          "Full Name",
+          "Email",
+          "Phone",
+          "Headline",
+          "Location",
+          "Total Experience (Years)",
+          "Current Role",
+          "Current Company",
+          "Skills",
+          "Job Applied For",
+          "Current Pipeline Stage",
+        ];
+
+        const csvContent = [
+          headers.join(","),
+          ...response.data.map((row) =>
+            Object.values(row)
+              .map(
+                (value) => `"${value?.toString().replace(/"/g, '""') || ""}"`
+              )
+              .join(",")
+          ),
+        ].join("\n");
+
+        downloadFile(
+          csvContent,
+          `candidates_export_${Date.now()}.xlsx`,
+          "xlsx"
+        );
       }
 
-      showToast.success(`Candidates exported successfully as ${format.toUpperCase()}`);
+      showToast.success(
+        `Candidates exported successfully as ${format.toUpperCase()}`
+      );
       setShowExportDialog(false);
       setSelectedCandidates([]);
       setSelectAll(false);
     } catch (error: any) {
-      showToast.error(error.message || 'Failed to export candidates');
+      showToast.error(error.message || "Failed to export candidates");
     } finally {
       setExportLoading(false);
     }
@@ -262,7 +323,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const getAvatarColor = (name: string) => "bg-blue-500";
 
   const getStarCount = (skill: string) => {
-    const sum = skill.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const sum = skill
+      .split("")
+      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return (sum % 5) + 1;
   };
 
@@ -358,10 +421,16 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 />
                 <span className="ml-2 text-sm text-gray-600">Select all</span>
               </label>
-              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center" onClick={handleBulkAddToPipeline}>
+              <button
+                className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
+                onClick={handleBulkAddToPipeline}
+              >
                 Add To Pipeline
               </button>
-              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center" onClick={() => setShowExportDialog(true)}>
+              <button
+                className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
+                onClick={() => setShowExportDialog(true)}
+              >
                 Export Candidates
               </button>
             </div>
@@ -400,7 +469,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         </div>
         <div className="p-3 lg:p-4 flex items-center justify-between border-t border-gray-200">
           <div className="text-sm text-gray-600">
-            Showing {startIndex + 1} to {Math.min(endIndex, totalCount)} of {totalCount} candidates
+            Showing {startIndex + 1} to {Math.min(endIndex, totalCount)} of{" "}
+            {totalCount} candidates
           </div>
           <div className="flex space-x-2">
             <button
@@ -414,7 +484,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             {getPageNumbers().map((page, index) => (
               <button
                 key={index}
-                onClick={() => typeof page === "number" && handlePageChange(page)}
+                onClick={() =>
+                  typeof page === "number" && handlePageChange(page)
+                }
                 className={`px-3 py-1 text-sm rounded-lg transition-colors ${
                   page === currentPage
                     ? "bg-blue-600 text-white"
@@ -478,6 +550,19 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         </div>
 
         <div className="p-3 lg:p-4 border-b border-gray-200">
+          <div className="hidden sm:flex items-center bg-gray-100 rounded-lg px-3 py-2">
+            <Search className="w-4 h-4 text-gray-500 mr-2" />
+            <input
+              type="text"
+              placeholder="LinkedIn Contact Finder..."
+              value={localSearchTerm}
+              onChange={(e) => {
+                setLocalSearchTerm(e.target.value);
+                onSearchChange(e.target.value);
+              }}
+              className="bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none w-40"
+            />
+          </div>
           <div className="mt-0 flex items-center justify-between flex-wrap gap-2">
             <div className="flex space-x-3">
               <label className="flex items-center">
@@ -489,10 +574,16 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 />
                 <span className="ml-2 text-sm text-gray-600">Select all</span>
               </label>
-              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center" onClick={handleBulkAddToPipeline}>
+              <button
+                className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
+                onClick={handleBulkAddToPipeline}
+              >
                 Add To Pipeline
               </button>
-              <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center" onClick={() => setShowExportDialog(true)}>
+              <button
+                className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
+                onClick={() => setShowExportDialog(true)}
+              >
                 Export Candidates
               </button>
             </div>
@@ -527,7 +618,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center">
           <p className="text-base font-medium">No candidates found</p>
-          <p className="text-sm text-gray-500 mt-1">Try adjusting your filters or search term.</p>
+          <p className="text-sm text-gray-500 mt-1">
+            Try adjusting your filters or search term.
+          </p>
         </div>
         <div className="p-3 lg:p-4 flex items-center justify-between border-t border-gray-200">
           <div className="text-sm text-gray-600">
@@ -545,7 +638,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             {getPageNumbers().map((page, index) => (
               <button
                 key={index}
-                onClick={() => typeof page === "number" && handlePageChange(page)}
+                onClick={() =>
+                  typeof page === "number" && handlePageChange(page)
+                }
                 className={`px-3 py-1 text-sm rounded-lg transition-colors ${
                   page === currentPage
                     ? "bg-blue-600 text-white"
@@ -608,6 +703,19 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       </div>
 
       <div className="p-3 lg:p-4 border-b border-gray-200">
+        <div className="hidden sm:flex items-center bg-gray-100 rounded-lg px-3 py-2">
+          <Search className="w-4 h-4 text-gray-500 mr-2" />
+          <input
+            type="text"
+            placeholder="LinkedIn Contact Finder..."
+            value={localSearchTerm}
+            onChange={(e) => {
+              setLocalSearchTerm(e.target.value);
+              onSearchChange(e.target.value);
+            }}
+            className="bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none w-40"
+          />
+        </div>
         <div className="mt-0 flex items-center justify-between flex-wrap gap-2">
           <div className="flex space-x-3">
             <label className="flex items-center">
@@ -619,10 +727,16 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               />
               <span className="ml-2 text-sm text-gray-600">Select all</span>
             </label>
-            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center" onClick={handleBulkAddToPipeline} >
+            <button
+              className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
+              onClick={handleBulkAddToPipeline}
+            >
               Add To Pipeline
             </button>
-            <button className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center" onClick={() => setShowExportDialog(true)}>
+            <button
+              className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
+              onClick={() => setShowExportDialog(true)}
+            >
               Export Candidates
             </button>
           </div>
@@ -654,14 +768,14 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               )}
           </div>
         </div>
-      </div> 
+      </div>
 
-      {/* Export Confirmation Dialog */}
       {showExportDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-semibold text-gray-900">
-              Export {selectedCandidates.length} Candidate{selectedCandidates.length !== 1 ? 's' : ''}
+              Export {selectedCandidates.length} Candidate
+              {selectedCandidates.length !== 1 ? "s" : ""}
             </h3>
             <p className="text-sm text-gray-600 mt-2">
               Please choose the export format for the selected candidates.
@@ -669,7 +783,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             <div className="mt-4 flex justify-start space-x-2">
               <button
                 className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                onClick={() => handleExportCandidates('csv')}
+                onClick={() => handleExportCandidates("csv")}
                 disabled={exportLoading}
               >
                 {exportLoading ? (
@@ -678,12 +792,12 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     Exporting...
                   </>
                 ) : (
-                  'Export as CSV'
+                  "Export as CSV"
                 )}
               </button>
               <button
                 className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                onClick={() => handleExportCandidates('xlsx')}
+                onClick={() => handleExportCandidates("xlsx")}
                 disabled={exportLoading}
               >
                 {exportLoading ? (
@@ -692,7 +806,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     Exporting...
                   </>
                 ) : (
-                  'Export as Excel'
+                  "Export as Excel"
                 )}
               </button>
               <button
@@ -705,14 +819,16 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             </div>
           </div>
         </div>
-      )}  
+      )}
 
       <div className="divide-y divide-gray-200">
         {candidates.map((candidate) => (
           <div
             key={candidate.id}
             className={`p-3 lg:p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
-              selectedCandidate?.id === candidate.id ? "bg-blue-50 border-l-4 border-blue-500" : ""
+              selectedCandidate?.id === candidate.id
+                ? "bg-blue-50 border-l-4 border-blue-500"
+                : ""
             }`}
             onClick={() => handleCandidateClick(candidate)}
           >
@@ -724,13 +840,19 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mt-1"
                 onClick={(e) => e.stopPropagation()}
               />
-              <div className={`w-14 h-14 ${getAvatarColor(candidate.full_name)} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
+              <div
+                className={`w-14 h-14 ${getAvatarColor(
+                  candidate.full_name
+                )} rounded-full flex items-center justify-center text-white font-semibold text-sm`}
+              >
                 {candidate.avatar}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center space-x-2 flex-wrap">
-                    <h3 className="text-base font-semibold text-gray-900">{candidate.full_name}</h3>
+                    <h3 className="text-base font-semibold text-gray-900">
+                      {candidate.full_name}
+                    </h3>
                     {candidate.is_background_verified && (
                       <div className="flex space-x-1">
                         <span className="mt-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
@@ -792,7 +914,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     )}
                     <span
                       className={`mt-1 px-2 py-1 text-xs rounded-full ${
-                        candidate.experience_years?.includes("Available") ? "bg-blue-100 text-blue-800" : "bg-blue-100 text-blue-800"
+                        candidate.experience_years?.includes("Available")
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-blue-100 text-blue-800"
                       }`}
                     >
                       {candidate.experience_years}
@@ -802,7 +926,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     {candidate.social_links?.github && (
                       <button
                         className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
-                        onClick={() => window.open(candidate.social_links?.github, "_blank")}
+                        onClick={() =>
+                          window.open(candidate.social_links?.github, "_blank")
+                        }
                       >
                         <Github className="w-4 h-4" />
                       </button>
@@ -810,7 +936,12 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     {candidate.social_links?.linkedin && (
                       <button
                         className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
-                        onClick={() => window.open(candidate.social_links?.linkedin, "_blank")}
+                        onClick={() =>
+                          window.open(
+                            candidate.social_links?.linkedin,
+                            "_blank"
+                          )
+                        }
                       >
                         <Linkedin className="w-4 h-4" />
                       </button>
@@ -818,7 +949,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     {candidate.social_links?.resume && (
                       <button
                         className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
-                        onClick={() => window.open(candidate.social_links?.resume, "_blank")}
+                        onClick={() =>
+                          window.open(candidate.social_links?.resume, "_blank")
+                        }
                       >
                         <File className="w-4 h-4" />
                       </button>
@@ -826,7 +959,12 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     {candidate.social_links?.portfolio && (
                       <button
                         className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
-                        onClick={() => window.open(candidate.social_links?.portfolio, "_blank")}
+                        onClick={() =>
+                          window.open(
+                            candidate.social_links?.portfolio,
+                            "_blank"
+                          )
+                        }
                       >
                         <Link className="w-4 h-4" />
                       </button>
@@ -851,66 +989,82 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 <div className="flex justify-between">
                   <div className="flex space-x-12">
                     <span className="text-gray-500">Experience</span>
-                    <p className="text-gray-900 max-w-[36ch] truncate">{candidate.experience_summary?.title}</p>
+                    <p className="text-gray-900 max-w-[36ch] truncate">
+                      {candidate.experience_summary?.title}
+                    </p>
                   </div>
-                  <p className="text-gray-900 truncate">{candidate.experience_summary?.date_range}</p>
+                  <p className="text-gray-900 truncate">
+                    {candidate.experience_summary?.date_range}
+                  </p>
                 </div>
                 <div className="flex justify-between">
                   <div className="flex space-x-12">
                     <span className="text-gray-500 mr-[5px]">Education</span>
-                    <p className="text-gray-900 max-w-[36ch] truncate">{candidate.education_summary?.title}</p>
+                    <p className="text-gray-900 max-w-[36ch] truncate">
+                      {candidate.education_summary?.title}
+                    </p>
                   </div>
-                  <p className="text-gray-900 truncate">{candidate.education_summary?.date_range}</p>
+                  <p className="text-gray-900 truncate">
+                    {candidate.education_summary?.date_range}
+                  </p>
                 </div>
                 <div className="flex space-x-6">
                   <span className="text-gray-500 mr-[5px]">Notice Period</span>
-                  <p className="text-gray-900">{candidate.notice_period_summary}</p>
+                  <p className="text-gray-900">
+                    {candidate.notice_period_summary}
+                  </p>
                 </div>
               </div>
               <div className="mt-3 flex items-center justify-between space-x-2 flex-wrap gap-2">
                 <div className="mt-3 flex flex-wrap gap-1">
                   {candidate.skills_list?.slice(0, 3).map((skill, index) => (
-                    <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                    <span
+                      key={index}
+                      className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                    >
                       {skill}
-                      {/* {Array.from({ length: getStarCount(skill) }).map((_, i) => (
-                        <Star key={i} size={11} className="inline-block ml-1 mb-1 text-blue-600" />
-                      ))} */}
                     </span>
                   ))}
                 </div>
                 <div className="rounded-md flex space-x-2 rounde-lg border border-blue-400 hover:border-blue-600 transition-colors">
-                  <button className="pl-3 pr-2 py-1.5 bg-white text-blue-600 text-sm font-medium flex items-center rounded-md" onClick={(e) => {
+                  <button
+                    className="pl-3 pr-2 py-1.5 bg-white text-blue-600 text-sm font-medium flex items-center rounded-md"
+                    onClick={(e) => {
                       e.stopPropagation();
                       handleSaveToPipeline(candidate.id);
-                    }}>
+                    }}
+                  >
                     <Bookmark className="w-4 h-4 mr-1" />
                     Save to Pipeline
                   </button>
                   <div className="relative">
-                  <button className="border-l border-l-blue-400 pl-1.5 pr-2 py-1.5" onClick={(e) => handleDropdownToggle(candidate.id, e)}>
-                    <ChevronDown className="w-4 h-4 ml-1 mt-[2px] text-blue-600" />
-                  </button>
-                  {showDropdown === candidate.id && (
-                    <div 
-                      ref={dropdownRef}
-                      className="absolute mt-2 right-0 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+                    <button
+                      className="border-l border-l-blue-400 pl-1.5 pr-2 py-1.5"
+                      onClick={(e) => handleDropdownToggle(candidate.id, e)}
                     >
-                      <div className="py-1">
-                        {pipelineStages.map((stage) => (
-                          <button
-                            key={stage.id}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSaveToPipeline(candidate.id, stage.id);
-                            }}
-                          >
-                            {stage.name}
-                          </button>
-                        ))}
+                      <ChevronDown className="w-4 h-4 ml-1 mt-[2px] text-blue-600" />
+                    </button>
+                    {showDropdown === candidate.id && (
+                      <div
+                        ref={dropdownRef}
+                        className="absolute mt-2 right-0 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+                      >
+                        <div className="py-1">
+                          {pipelineStages.map((stage) => (
+                            <button
+                              key={stage.id}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSaveToPipeline(candidate.id, stage.id);
+                              }}
+                            >
+                              {stage.name}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                   </div>
                 </div>
               </div>
@@ -923,7 +1077,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         <div className="p-3 lg:p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-600">
-              Showing {startIndex + 1} to {Math.min(endIndex, totalCount)+startIndex} of {totalCount} candidates
+              Showing {startIndex + 1} to{" "}
+              {Math.min(endIndex, totalCount) + startIndex} of {totalCount}{" "}
+              candidates
             </div>
             <div className="flex items-center space-x-2">
               <button
@@ -936,7 +1092,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               {getPageNumbers().map((page, index) => (
                 <button
                   key={index}
-                  onClick={() => typeof page === "number" && handlePageChange(page)}
+                  onClick={() =>
+                    typeof page === "number" && handlePageChange(page)
+                  }
                   className={`px-3 py-1 text-sm rounded-lg transition-colors ${
                     page === currentPage
                       ? "bg-blue-600 text-white"
@@ -959,11 +1117,13 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             </div>
           </div>
         </div>
-      ):(
+      ) : (
         <div className="p-3 lg:p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-600">
-              Showing {startIndex + 1} to {Math.min(endIndex, totalCount)+startIndex} of {totalCount} candidates
+              Showing {startIndex + 1} to{" "}
+              {Math.min(endIndex, totalCount) + startIndex} of {totalCount}{" "}
+              candidates
             </div>
             <div className="flex items-center space-x-2">
               <button
@@ -976,7 +1136,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               {getPageNumbers().map((page, index) => (
                 <button
                   key={index}
-                  onClick={() => typeof page === "number" && handlePageChange(page)}
+                  onClick={() =>
+                    typeof page === "number" && handlePageChange(page)
+                  }
                   className={`px-3 py-1 text-sm rounded-lg transition-colors ${
                     page === currentPage
                       ? "bg-blue-600 text-white"

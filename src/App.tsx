@@ -101,6 +101,10 @@ function MainApp() {
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
 
+  // New states for search
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [sortBy, setSortBy] = useState<string>("");
 
   const [filters, setFilters] = useState({
@@ -160,7 +164,6 @@ function MainApp() {
         const hasSeenGuide = localStorage.getItem("hasSeenGuideModal");
         if (!hasSeenGuide) {
           setShowGuideModal(true);
-          // Set the flag in localStorage to prevent showing again
           localStorage.setItem("hasSeenGuideModal", "true");
         }
       }
@@ -187,9 +190,9 @@ function MainApp() {
           ? job.experience_max_years.toString()
           : "",
         location: job.location || "",
-        // city: job.location ? job.location.split(",")[0]?.trim() || "" : "",
-        // country: job.location ? job.location.split(",")[1]?.trim() || "" : "",
-        locations: job.location ? [job.location.split(",")[0]?.trim()].filter(Boolean) : [], // Initialize locations with city
+        locations: job.location
+          ? [job.location.split(",")[0]?.trim()].filter(Boolean)
+          : [],
         application_type: activeTab,
       }));
     } catch (error) {
@@ -198,82 +201,94 @@ function MainApp() {
     }
   };
 
-  // Fetch candidates based on filters and page
+  // Fetch candidates based on filters, page, and search
   const fetchCandidates = useCallback(
     async (page: number = 1) => {
       setLoadingCandidates(true);
       try {
-        const filterParams: any = {
-          page,
-          page_size: 20,
-          job_id: filters.jobId,
-          application_type: filters.application_type,
-          sort_by: sortBy,
-        };
-        if (filters.keywords) {
-          filterParams.q = filters.keywords
-            .split(",")
-            .map((k: string) => k.trim())
-            .filter((k: string) => k);
-        }
-        if (filters.minTotalExp)
-          filterParams.experience_min = filters.minTotalExp;
-        if (filters.maxTotalExp)
-          filterParams.experience_max = filters.maxTotalExp;
-        if (filters.minExperience)
-          filterParams.exp_in_current_company_min = filters.minExperience;
-        if (filters.topTierUniversities)
-          filterParams.is_top_tier_college = filters.topTierUniversities;
-        if (filters.hasCertification)
-          filterParams.has_certification = filters.hasCertification;
-        if (filters.country) filterParams.country = filters.country;
-        if (filters.locations && filters.locations.length > 0)
-          filterParams.locations = filters.locations;
-        if (filters.companies)
-          filterParams.companies = filters.companies
-            .split(",")
-            .map((c: string) => c.trim());
-        if (filters.industries)
-          filterParams.industries = filters.industries
-            .split(",")
-            .map((i: string) => i.trim());
-        if (filters.minSalary) filterParams.salary_min = filters.minSalary;
-        if (filters.maxSalary) filterParams.salary_max = filters.maxSalary;
-        if (filters.colleges)
-          filterParams.colleges = filters.colleges
-            .split(",")
-            .map((c: string) => c.trim());
-        if (filters.showFemaleCandidates) filterParams.is_female_only = true;
-        if (filters.recentlyPromoted) filterParams.is_recently_promoted = true;
-        if (filters.backgroundVerified)
-          filterParams.is_background_verified = true;
-        if (filters.hasLinkedIn) filterParams.has_linkedin = true;
-        if (filters.hasTwitter) filterParams.has_twitter = true;
-        if (filters.hasPortfolio) filterParams.has_portfolio = true;
-        if (filters.computerScienceGraduates)
-          filterParams.is_cs_graduate = true;
-        if (filters.hasResearchPaper) filterParams.has_research_paper = true;
-        if (filters.hasBehance) filterParams.has_behance = true;
-        if (filters.is_prevetted) filterParams.is_prevetted = true;
-        if (filters.is_active) filterParams.is_active = true;
-        if (filters.noticePeriod) {
-          const days = {
-            "15 days": 15,
-            "30 days": 30,
-            "45 days": 45,
-            "60 days": 60,
-            "90 days": 90,
-            Immediate: 0,
-          }[filters.noticePeriod];
-          if (days !== undefined) filterParams.notice_period_max_days = days;
-        }
+        let response;
+        if (isSearching) {
+          const candidates = await candidateService.universalSearch(
+            searchQuery
+          );
+          setCandidates(candidates);
+          setTotalCount(candidates.length);
+          if (candidates.length > 0 && !selectedCandidate) {
+            setSelectedCandidate(candidates[0]);
+          }
+        } else {
+          const filterParams: any = {
+            page,
+            page_size: 20,
+            job_id: filters.jobId,
+            application_type: filters.application_type,
+          };
+          if (filters.keywords) {
+            filterParams.q = filters.keywords
+              .split(",")
+              .map((k: string) => k.trim())
+              .filter((k: string) => k);
+          }
+          if (filters.minTotalExp)
+            filterParams.experience_min = filters.minTotalExp;
+          if (filters.maxTotalExp)
+            filterParams.experience_max = filters.maxTotalExp;
+          if (filters.minExperience)
+            filterParams.exp_in_current_company_min = filters.minExperience;
+          if (filters.topTierUniversities)
+            filterParams.is_top_tier_college = filters.topTierUniversities;
+          if (filters.hasCertification)
+            filterParams.has_certification = filters.hasCertification;
+          if (filters.country) filterParams.country = filters.country;
+          if (filters.locations && filters.locations.length > 0)
+            filterParams.locations = filters.locations;
+          if (filters.companies)
+            filterParams.companies = filters.companies
+              .split(",")
+              .map((c: string) => c.trim());
+          if (filters.industries)
+            filterParams.industries = filters.industries
+              .split(",")
+              .map((i: string) => i.trim());
+          if (filters.minSalary) filterParams.salary_min = filters.minSalary;
+          if (filters.maxSalary) filterParams.salary_max = filters.maxSalary;
+          if (filters.colleges)
+            filterParams.colleges = filters.colleges
+              .split(",")
+              .map((c: string) => c.trim());
+          if (filters.showFemaleCandidates) filterParams.is_female_only = true;
+          if (filters.recentlyPromoted)
+            filterParams.is_recently_promoted = true;
+          if (filters.backgroundVerified)
+            filterParams.is_background_verified = true;
+          if (filters.hasLinkedIn) filterParams.has_linkedin = true;
+          if (filters.hasTwitter) filterParams.has_twitter = true;
+          if (filters.hasPortfolio) filterParams.has_portfolio = true;
+          if (filters.computerScienceGraduates)
+            filterParams.is_cs_graduate = true;
+          if (filters.hasResearchPaper) filterParams.has_research_paper = true;
+          if (filters.hasBehance) filterParams.has_behance = true;
+          if (filters.is_prevetted) filterParams.is_prevetted = true;
+          if (filters.is_active) filterParams.is_active = true;
+          if (filters.noticePeriod) {
+            const days = {
+              "15 days": 15,
+              "30 days": 30,
+              "45 days": 45,
+              "60 days": 60,
+              "90 days": 90,
+              Immediate: 0,
+            }[filters.noticePeriod];
+            if (days !== undefined) filterParams.notice_period_max_days = days;
+          }
 
-        console.log("Fetching candidates with params:", filterParams);
-        const response = await candidateService.searchCandidates(filterParams);
-        setCandidates(response.results);
-        setTotalCount(response.count);
-        if (response.results.length > 0 && !selectedCandidate) {
-          setSelectedCandidate(response.results[0]);
+          console.log("Fetching candidates with params:", filterParams);
+          response = await candidateService.searchCandidates(filterParams);
+          setCandidates(response.results);
+          setTotalCount(response.count);
+          if (response.results.length > 0 && !selectedCandidate) {
+            setSelectedCandidate(response.results[0]);
+          }
         }
       } catch (error) {
         showToast.error("Failed to fetch candidates");
@@ -313,9 +328,19 @@ function MainApp() {
       filters.is_active,
       filters.noticePeriod,
       selectedCandidate,
+      isSearching,
+      searchQuery,
       sortBy,
     ]
   );
+
+  // Handle search change
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setIsSearching(query.trim() !== "");
+    candidateService.universalSearch(searchQuery);
+    setCurrentPage(1); // Reset to first page on search
+  };
 
   // Handle candidates update from CandidatesMain
   const handleCandidatesUpdate = (
@@ -330,24 +355,21 @@ function MainApp() {
   };
 
   const handleJobCreatedOrUpdated = () => {
-    fetchCategories(); // Refresh categories after job creation or update
+    fetchCategories();
   };
 
-  // Fetch categories on auth change
   useEffect(() => {
     if (isAuthenticated) {
       fetchCategories();
     }
   }, [isAuthenticated]);
 
-  // Fetch candidates when filters.jobId or currentPage changes
   useEffect(() => {
     if (filters.jobId) {
       fetchCandidates(currentPage);
     }
   }, [filters.jobId, currentPage, fetchCandidates]);
 
-  // Update filters when activeTab changes
   useEffect(() => {
     setFilters((prev) => ({
       ...prev,
@@ -358,7 +380,6 @@ function MainApp() {
     }));
   }, [activeTab,sortBy]);
 
-  // Fetch credit balance
   useEffect(() => {
     const fetchCreditBalance = async () => {
       try {
@@ -373,7 +394,6 @@ function MainApp() {
     }
   }, [isAuthenticated]);
 
-  // Set current user
   useEffect(() => {
     if (isAuthenticated && userStatus) {
       const user: User = {
@@ -394,7 +414,6 @@ function MainApp() {
     }
   }, [isAuthenticated, userStatus, firebaseUser]);
 
-  // Handle URL-based navigation for pipelines and profiles
   useEffect(() => {
     const path = window.location.pathname;
     const pipelineMatch = path.match(/^\/pipelines\/(.+)$/);
@@ -632,7 +651,6 @@ function MainApp() {
     window.history.pushState({}, "", "/");
   };
 
-  // Conditional Rendering
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -737,6 +755,8 @@ function MainApp() {
                         onCreateRole={handleCreateJobRole}
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
+                        searchQuery={searchQuery}
+                        setSearchQuery={setSearchQuery}
                       />
                     </div>
 
@@ -758,7 +778,9 @@ function MainApp() {
                                     setActiveCategoryId(category.id);
                                     fetchJobDetailsAndSetFilters(category.id);
                                   }}
-                                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                                  className={`px- ”
+
+3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
                                     activeCategoryId === category.id
                                       ? "bg-blue-100 text-blue-700 shadow-sm"
                                       : "text-gray-600 hover:bg-gray-100"
@@ -897,6 +919,7 @@ function MainApp() {
                             onCandidatesUpdate={handleCandidatesUpdate}
                             currentPage={currentPage}
                             setCurrentPage={setCurrentPage}
+                            onSearchChange={handleSearchChange}
                             sortBy={sortBy}
                             setSortBy={setSortBy}
                           />
