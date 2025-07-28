@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./hooks/useAuth";
+import useDebounce from "./hooks/useDebounce"; // Import the new hook
 import { authService } from "./services/authService";
 import { creditService } from "./services/creditService";
 import { jobPostService } from "./services/jobPostService";
@@ -104,6 +105,9 @@ function MainApp() {
   // New states for search
   // const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchLoading, setSearchLoading] = useState(false); // New state for search loading
+  // Debounce universalSearchQuery
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   const [sortBy, setSortBy] = useState<string>("");
 
@@ -207,10 +211,11 @@ function MainApp() {
       setLoadingCandidates(true);
       try {
         let response;
-        if (searchQuery.trim() !== "") {
+        if (debouncedSearchQuery.trim() !== "") {
+          setSearchLoading(true); // Start search loading
           // Universal search from Header, ignoring filters
           const candidates = await candidateService.universalSearch(
-            searchQuery
+            debouncedSearchQuery
           );
           setCandidates(candidates);
           setTotalCount(candidates.length);
@@ -262,7 +267,7 @@ function MainApp() {
             page_size: 20,
             job_id: filters.jobId,
             application_type: filters.application_type,
-            sort_by: sortBy
+            sort_by: sortBy,
           };
           if (filters.keywords) {
             filterParams.q = filters.keywords
@@ -338,6 +343,7 @@ function MainApp() {
         setTotalCount(0);
       } finally {
         setLoadingCandidates(false);
+        setSearchLoading(false); // Stop search loading
       }
     },
     [
@@ -370,6 +376,7 @@ function MainApp() {
       filters.noticePeriod,
       selectedCandidate,
       searchQuery,
+      debouncedSearchQuery, // Use the debounced search query
       sortBy,
     ]
   );
@@ -379,7 +386,7 @@ function MainApp() {
     if (filters.jobId) {
       fetchCandidates(currentPage);
     }
-  }, [filters.jobId, currentPage, fetchCandidates, searchQuery]);
+  }, [filters.jobId, currentPage, fetchCandidates, debouncedSearchQuery]);
 
   // Handle search change
   const handleSearchChange = (query: string) => {
@@ -415,7 +422,7 @@ function MainApp() {
     if (filters.jobId) {
       fetchCandidates(currentPage);
     }
-  }, [filters.jobId, currentPage,sortBy, fetchCandidates]);
+  }, [filters.jobId, currentPage, sortBy, fetchCandidates]);
 
   useEffect(() => {
     setFilters((prev) => ({
@@ -425,7 +432,7 @@ function MainApp() {
       is_active: activeTab === "active",
       sort_by: sortBy,
     }));
-  }, [activeTab,sortBy]);
+  }, [activeTab, sortBy]);
 
   useEffect(() => {
     const fetchCreditBalance = async () => {
@@ -804,6 +811,7 @@ function MainApp() {
                         credits={credits}
                         searchQuery={searchQuery}
                         setSearchQuery={setSearchQuery}
+                        searchLoading={searchLoading} // Pass searchLoading
                       />
                     </div>
 
