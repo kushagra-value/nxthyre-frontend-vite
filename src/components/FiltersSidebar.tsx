@@ -15,7 +15,6 @@ import {
   Clock10,
   Briefcase,
   Star,
-  Award,
 } from "lucide-react";
 import { debounce } from "lodash";
 import {
@@ -23,7 +22,6 @@ import {
   CandidateListItem,
 } from "../services/candidateService";
 import { showToast } from "../utils/toast";
-
 
 interface FiltersSidebarProps {
   filters: {
@@ -69,7 +67,10 @@ interface FiltersSidebarProps {
   activeTab: string;
 }
 
-const JobTitlesSlider: React.FC<{ recentSearches: { id: number; query: string }[], onSelectSearch: (query: string) => void }> = ({ recentSearches, onSelectSearch }) => {
+const JobTitlesSlider: React.FC<{
+  recentSearches: { id: number; query: string }[];
+  onSelectSearch: (query: string) => void;
+}> = ({ recentSearches, onSelectSearch }) => {
   const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -363,7 +364,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         return; // Ignore invalid input
       }
     }
-    
+
     if (
       key === "minTotalExp" &&
       newFilters.maxTotalExp &&
@@ -410,9 +411,11 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   };
 
   const handleSelectSuggestion = (suggestion: string) => {
-    // Append the selected suggestion to existing keywords, preserving previous ones
-    const keywordsArray = filters.keywords.split(",").map(k => k.trim()).filter(k => k);
-    keywordsArray.pop(); // Remove the last incomplete keyword
+    const keywordsArray = tempFilters.keywords
+      .split(",")
+      .map((k) => k.trim())
+      .filter((k) => k);
+    keywordsArray.pop();
     keywordsArray.push(suggestion);
     const newKeywords = keywordsArray.join(", ");
     updateTempFilters("keywords", newKeywords);
@@ -421,9 +424,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
   const handleSelectRecentSearch = (query: string) => {
     updateTempFilters("keywords", query);
-    applyFilters(); // Trigger search on recent search select
     setShowSuggestions(false);
-  }
+  };
 
   const handleKeywordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -471,13 +473,13 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       application_type: activeTab,
       is_prevetted: activeTab === "prevetted",
       is_active: activeTab === "active",
-      sort_by:"",
+      sort_by: "",
     });
     setCandidates([]);
     setShowSuggestions(false);
   };
 
-   const applyFilters = () => {
+  const applyFilters = () => {
     onApplyFilters(tempFilters);
   };
 
@@ -501,7 +503,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             Keywords
           </h3>
           <div className="flex gap-2 cursor-pointer">
-            <FilterMenu filters={filters} updateTempFilters={updateTempFilters} />
+            <FilterMenu filters={tempFilters} updateTempFilters={updateTempFilters} />
             <div
               className="cursor-pointer"
               onClick={() => toggleSection("keywords")}
@@ -519,8 +521,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <div className="relative">
               <input
                 type="text"
-                placeholder="Seperated by comma, For Ex: Gen AI Specialist, and Gen AI engineer"
-                value={filters.keywords}
+                placeholder="Seperated by comma, For Ex: Gen AI Specialist, Gen AI engineer"
+                value={tempFilters.keywords}
                 onChange={handleKeywordInputChange}
                 onKeyDown={handleKeywordKeyDown}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -543,7 +545,11 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               )}
 
             </div>
-          <JobTitlesSlider recentSearches={recentSearches} onSelectSearch={handleSelectRecentSearch} />          </div>
+            <JobTitlesSlider
+              recentSearches={recentSearches}
+              onSelectSearch={handleSelectRecentSearch}
+            />
+          </div>
         )}
       </div>
 
@@ -593,14 +599,18 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         )}
 
         <div className="mt-2">
-          <input
-            type="number"
-            placeholder="Years of Exp in Current Company"
-            value={filters.minExperience}
-            onChange={(e) => updateTempFilters("minExperience", e.target.value)}
-            className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
+            <input
+              type="text"
+              placeholder="Years of Exp in Current Company"
+              value={tempFilters.minExperience}
+              onChange={(e) => updateTempFilters("minExperience", e.target.value)}
+              className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              pattern="\d*"
+              onInput={(e) => {
+                e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, "");
+              }}
+            />
+          </div>
       </div>
 
       {/* Location */}
@@ -623,7 +633,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           <div className="space-y-2">
             <div className="flex space-x-2">
               <select
-                value={filters.city}
+                value={tempFilters.city}
                 onChange={(e) => updateTempFilters("city", e.target.value)}
                 className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
@@ -634,7 +644,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 <option value="Hyderabad">Hyderabad</option>
               </select>
               <select
-                value={filters.country}
+                value={tempFilters.country}
                 onChange={(e) => updateTempFilters("country", e.target.value)}
                 className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
@@ -648,7 +658,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <input
               type="text"
               placeholder="Enter Location like Ahmedabad"
-              value={filters.location}
+              value={tempFilters.location}
               onChange={(e) => updateTempFilters("location", e.target.value)}
               className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
@@ -683,7 +693,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               <input
                 type="text"
                 placeholder="Search Companies"
-                value={filters.companies}
+                value={tempFilters.companies}
                 onChange={(e) => updateTempFilters("companies", e.target.value)}
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
@@ -696,7 +706,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               <input
                 type="text"
                 placeholder="Search Industries"
-                value={filters.industries}
+                value={tempFilters.industries}
                 onChange={(e) => updateTempFilters("industries", e.target.value)}
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
@@ -721,25 +731,26 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
         </div>
-
         {expandedSections.salary && (
           <div className="space-y-2">
             <div className="flex space-x-2">
               <select
-                value={filters.minSalary}
+                value={tempFilters.minSalary}
                 onChange={(e) => updateTempFilters("minSalary", e.target.value)}
                 className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
+                <option value="">Select Min Salary</option>
                 <option value="500000">5 LPA</option>
                 <option value="1000000">10 LPA</option>
                 <option value="1500000">15 LPA</option>
                 <option value="2000000">20 LPA</option>
               </select>
               <select
-                value={filters.maxSalary}
+                value={tempFilters.maxSalary}
                 onChange={(e) => updateTempFilters("maxSalary", e.target.value)}
                 className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
+                <option value="">Select Max Salary</option>
                 <option value="1000000">10 LPA</option>
                 <option value="2000000">20 LPA</option>
                 <option value="3000000">30 LPA</option>
@@ -766,11 +777,10 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
         </div>
-
         {expandedSections.notice && (
           <div>
             <select
-              value={filters.noticePeriod}
+              value={tempFilters.noticePeriod}
               onChange={(e) => updateTempFilters("noticePeriod", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
             >
@@ -785,10 +795,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         )}
       </div>
 
-  
-
-
-
+      {/* Colleges */}
       <div>
         <div
           className="flex items-center justify-between cursor-pointer mb-2"
@@ -804,20 +811,19 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
         </div>
-
         {expandedSections.colleges && (
           <div className="space-y-2">
             <input
               type="text"
               placeholder="Search Colleges"
-              value={filters.colleges}
+              value={tempFilters.colleges}
               onChange={(e) => updateTempFilters("colleges", e.target.value)}
               className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
             <label className="flex items-center">
               <input
                 type="checkbox"
-                checked={filters.topTierUniversities}
+                checked={tempFilters.topTierUniversities}
                 onChange={(e) =>
                   updateTempFilters("topTierUniversities", e.target.checked)
                 }
@@ -830,7 +836,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <label className="flex items-center">
               <input
                 type="checkbox"
-                checked={filters.computerScienceGraduates}
+                checked={tempFilters.computerScienceGraduates}
                 onChange={(e) =>
                   updateTempFilters("computerScienceGraduates", e.target.checked)
                 }
@@ -860,13 +866,12 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
         </div>
-
         {expandedSections.spotlight && (
           <div className="space-y-2">
             <label className="flex items-center">
               <input
                 type="checkbox"
-                checked={filters.showFemaleCandidates}
+                checked={tempFilters.showFemaleCandidates}
                 onChange={(e) =>
                   updateTempFilters("showFemaleCandidates", e.target.checked)
                 }
@@ -879,7 +884,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <label className="flex items-center">
               <input
                 type="checkbox"
-                checked={filters.recentlyPromoted}
+                checked={tempFilters.recentlyPromoted}
                 onChange={(e) =>
                   updateTempFilters("recentlyPromoted", e.target.checked)
                 }
@@ -892,7 +897,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <label className="flex items-center">
               <input
                 type="checkbox"
-                checked={filters.backgroundVerified}
+                checked={tempFilters.backgroundVerified}
                 onChange={(e) =>
                   updateTempFilters("backgroundVerified", e.target.checked)
                 }
@@ -922,13 +927,12 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
         </div>
-
         {expandedSections.moreFilters && (
           <div className="space-y-2">
             <label className="flex items-center">
               <input
                 type="checkbox"
-                checked={filters.hasCertification}
+                checked={tempFilters.hasCertification}
                 onChange={(e) =>
                   updateTempFilters("hasCertification", e.target.checked)
                 }
@@ -941,7 +945,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <label className="flex items-center">
               <input
                 type="checkbox"
-                checked={filters.hasResearchPaper}
+                checked={tempFilters.hasResearchPaper}
                 onChange={(e) =>
                   updateTempFilters("hasResearchPaper", e.target.checked)
                 }
@@ -951,11 +955,10 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 Must have Research Paper
               </span>
             </label>
-
             <label className="flex items-center">
               <input
                 type="checkbox"
-                checked={filters.hasBehance}
+                checked={tempFilters.hasBehance}
                 onChange={(e) => updateTempFilters("hasBehance", e.target.checked)}
                 className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
@@ -966,7 +969,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <label className="flex items-center">
               <input
                 type="checkbox"
-                checked={filters.hasTwitter}
+                checked={tempFilters.hasTwitter}
                 onChange={(e) => updateTempFilters("hasTwitter", e.target.checked)}
                 className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
@@ -977,7 +980,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <label className="flex items-center">
               <input
                 type="checkbox"
-                checked={filters.hasPortfolio}
+                checked={tempFilters.hasPortfolio}
                 onChange={(e) =>
                   updateTempFilters("hasPortfolio", e.target.checked)
                 }
@@ -994,13 +997,13 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       <div className="flex gap-2 border-t border-gray-200">
         {/* Apply Filters */}
         <div className="w-full border border-blue-400 rounded-lg">
-          <button
-            onClick={applyFilters}
+        <button
+          onClick={applyFilters}
             className="w-full p-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center justify-center"
-          >
-            <Filter className="w-4 h-4 mr-2" />
-            Apply Filters
-          </button>
+        >
+          <Filter className="w-4 h-4 mr-2" />
+          Apply Filters
+        </button>
         </div>
 
         {/* Clear Filters */}
