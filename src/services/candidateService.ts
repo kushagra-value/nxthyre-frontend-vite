@@ -273,10 +273,8 @@ class CandidateService {
     signal?: AbortSignal
   ): Promise<CandidateListItem[]> {
     try {
-      const response = await apiClient.get("/candidates/universal-search/", {
-        params: { query },
-        signal,
-      });
+      const rawUrl = `/candidates/universal-search/?query=${query}`;
+      const response = await apiClient.get(rawUrl, { signal });
       return response.data;
     } catch (error: any) {
       if (error.name === "AbortError") {
