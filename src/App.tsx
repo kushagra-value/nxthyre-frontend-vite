@@ -222,6 +222,7 @@ function MainApp() {
             page_size: 20,
             job_id: filters.jobId,
             application_type: filters.application_type,
+            sort_by: sortBy
           };
           if (filters.keywords) {
             filterParams.q = filters.keywords
@@ -368,7 +369,7 @@ function MainApp() {
     if (filters.jobId) {
       fetchCandidates(currentPage);
     }
-  }, [filters.jobId, currentPage, fetchCandidates]);
+  }, [filters.jobId, currentPage,sortBy, fetchCandidates]);
 
   useEffect(() => {
     setFilters((prev) => ({
