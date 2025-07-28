@@ -194,16 +194,17 @@ function MainApp() {
           ? [job.location.split(",")[0]?.trim()].filter(Boolean)
           : [],
         application_type: activeTab,
+        sort_by: sortBy,
       }));
     } catch (error) {
-      showToast.error("Failed to fetch job details");
+      showToast.error(`Failed to fetch job details ${error}`);
       console.error("Error fetching job details:", error);
     }
   };
 
   // Fetch candidates based on filters, page, and search
   const fetchCandidates = useCallback(
-    async (page: number = 1) => {
+    async (page: number = 1, appliedFilters: any) => {
       setLoadingCandidates(true);
       try {
         let response;
@@ -260,67 +261,86 @@ function MainApp() {
           const filterParams: any = {
             page,
             page_size: 20,
-            job_id: filters.jobId,
-            application_type: filters.application_type,
+            job_id: appliedFilters.jobId,
+            application_type: appliedFilters.application_type,
             sort_by: sortBy
           };
-          if (filters.keywords) {
-            filterParams.q = filters.keywords
+
+           const isValidNumber = (value: string) => /^\d+$/.test(value);
+
+          if (appliedFilters.keywords) {
+            filterParams.q = appliedFilters.keywords
               .split(",")
               .map((k: string) => k.trim())
               .filter((k: string) => k);
           }
-          if (filters.minTotalExp)
-            filterParams.experience_min = filters.minTotalExp;
-          if (filters.maxTotalExp)
-            filterParams.experience_max = filters.maxTotalExp;
-          if (filters.minExperience)
-            filterParams.exp_in_current_company_min = filters.minExperience;
-          if (filters.topTierUniversities)
-            filterParams.is_top_tier_college = filters.topTierUniversities;
-          if (filters.hasCertification)
-            filterParams.has_certification = filters.hasCertification;
-          if (filters.country) filterParams.country = filters.country;
-          if (filters.locations && filters.locations.length > 0)
-            filterParams.locations = filters.locations;
-          if (filters.companies)
-            filterParams.companies = filters.companies
+          if (appliedFilters.minTotalExp)
+            filterParams.experience_min = appliedFilters.minTotalExp;
+          if (appliedFilters.maxTotalExp)
+            filterParams.experience_max = appliedFilters.maxTotalExp;
+          if (appliedFilters.minExperience)
+            filterParams.exp_in_current_company_min = appliedFilters.minExperience;
+          if (appliedFilters.topTierUniversities)
+            filterParams.is_top_tier_college = appliedFilters.topTierUniversities;
+          if (appliedFilters.hasCertification)
+            filterParams.has_certification = appliedFilters.hasCertification;
+          if (appliedFilters.country) filterParams.country = appliedFilters.country;
+          if (appliedFilters.locations && appliedFilters.locations.length > 0)
+            filterParams.locations = appliedFilters.locations;
+          if (appliedFilters.companies)
+            filterParams.companies = appliedFilters.companies
               .split(",")
               .map((c: string) => c.trim());
-          if (filters.industries)
-            filterParams.industries = filters.industries
+          if (appliedFilters.industries)
+            filterParams.industries = appliedFilters.industries
               .split(",")
               .map((i: string) => i.trim());
-          if (filters.minSalary) filterParams.salary_min = filters.minSalary;
-          if (filters.maxSalary) filterParams.salary_max = filters.maxSalary;
-          if (filters.colleges)
-            filterParams.colleges = filters.colleges
+          if (appliedFilters.minSalary) filterParams.salary_min = appliedFilters.minSalary;
+          if (appliedFilters.maxSalary) filterParams.salary_max = appliedFilters.maxSalary;
+          if (appliedFilters.colleges)
+            filterParams.colleges = appliedFilters.colleges
               .split(",")
               .map((c: string) => c.trim());
-          if (filters.showFemaleCandidates) filterParams.is_female_only = true;
-          if (filters.recentlyPromoted)
+          if (appliedFilters.showFemaleCandidates) filterParams.is_female_only = true;
+          if (appliedFilters.recentlyPromoted)
             filterParams.is_recently_promoted = true;
-          if (filters.backgroundVerified)
+          if (appliedFilters.backgroundVerified)
             filterParams.is_background_verified = true;
-          if (filters.hasLinkedIn) filterParams.has_linkedin = true;
-          if (filters.hasTwitter) filterParams.has_twitter = true;
-          if (filters.hasPortfolio) filterParams.has_portfolio = true;
-          if (filters.computerScienceGraduates)
+          if (appliedFilters.hasLinkedIn) filterParams.has_linkedin = true;
+          if (appliedFilters.hasTwitter) filterParams.has_twitter = true;
+          if (appliedFilters.hasPortfolio) filterParams.has_portfolio = true;
+          if (appliedFilters.computerScienceGraduates)
             filterParams.is_cs_graduate = true;
-          if (filters.hasResearchPaper) filterParams.has_research_paper = true;
-          if (filters.hasBehance) filterParams.has_behance = true;
-          if (filters.is_prevetted) filterParams.is_prevetted = true;
-          if (filters.is_active) filterParams.is_active = true;
-          if (filters.noticePeriod) {
-            const days = {
-              "15 days": 15,
-              "30 days": 30,
-              "45 days": 45,
-              "60 days": 60,
-              "90 days": 90,
-              Immediate: 0,
-            }[filters.noticePeriod];
-            if (days !== undefined) filterParams.notice_period_max_days = days;
+          if (appliedFilters.hasResearchPaper) filterParams.has_research_paper = true;
+          if (appliedFilters.hasBehance) filterParams.has_behance = true;
+          if (appliedFilters.is_prevetted) filterParams.is_prevetted = true;
+          if (appliedFilters.is_active) filterParams.is_active = true;
+          if (appliedFilters.noticePeriod) {
+          const noticePeriodOptions = [
+            "Immediate",
+            "15 days",
+            "30 days",
+            "45 days",
+            "60 days",
+            "90 days",
+          ] as const;
+          type NoticePeriod = typeof noticePeriodOptions[number];
+          
+          const days: Record<NoticePeriod, number> = {
+            "Immediate": 0,
+            "15 days": 15,
+            "30 days": 30,
+            "45 days": 45,
+            "60 days": 60,
+            "90 days": 90,
+          };
+
+          // Ensure noticePeriod is a valid key
+          if (noticePeriodOptions.includes(appliedFilters.noticePeriod as NoticePeriod)) {
+            filterParams.notice_period_max_days = days[appliedFilters.noticePeriod as NoticePeriod];
+          } else {
+            console.warn("Invalid notice period:", appliedFilters.noticePeriod);
+          }
           }
 
           console.log("Fetching candidates with params:", filterParams);
@@ -341,46 +361,13 @@ function MainApp() {
       }
     },
     [
-      filters.jobId,
-      filters.application_type,
-      filters.keywords,
-      filters.minTotalExp,
-      filters.maxTotalExp,
-      filters.minExperience,
-      filters.topTierUniversities,
-      filters.hasCertification,
-      filters.country,
-      filters.locations,
-      filters.companies,
-      filters.industries,
-      filters.minSalary,
-      filters.maxSalary,
-      filters.colleges,
-      filters.showFemaleCandidates,
-      filters.recentlyPromoted,
-      filters.backgroundVerified,
-      filters.hasLinkedIn,
-      filters.hasTwitter,
-      filters.hasPortfolio,
-      filters.computerScienceGraduates,
-      filters.hasResearchPaper,
-      filters.hasBehance,
-      filters.is_prevetted,
-      filters.is_active,
-      filters.noticePeriod,
       selectedCandidate,
       searchQuery,
       sortBy,
     ]
   );
 
-  // Ensure fetchCandidates runs when searchQuery changes
-  useEffect(() => {
-    if (filters.jobId) {
-      fetchCandidates(currentPage);
-    }
-  }, [filters.jobId, currentPage, fetchCandidates, searchQuery]);
-
+  
   // Handle search change
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
@@ -410,12 +397,6 @@ function MainApp() {
       fetchCategories();
     }
   }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (filters.jobId) {
-      fetchCandidates(currentPage);
-    }
-  }, [filters.jobId, currentPage,sortBy, fetchCandidates]);
 
   useEffect(() => {
     setFilters((prev) => ({
@@ -698,6 +679,39 @@ function MainApp() {
     window.history.pushState({}, "", "/");
   };
 
+  const handleApplyFilters = (newFilters: any) => {
+    // Check if any filter is selected
+    const isFilterSelected = Object.keys(newFilters).some((key) => {
+      if (key === "jobId" || key === "application_type" || key === "is_prevetted" || key === "is_active" || key === "sort_by") return false;
+      const value = newFilters[key];
+      if (Array.isArray(value)) return value.length > 0;
+      if (typeof value === "boolean") return value;
+      if (typeof value === "string") return value.trim() !== "";
+      return false;
+    });
+
+    if (!isFilterSelected) {
+      showToast.error("Please select at least one filter in the filter section.");
+      return;
+    }
+
+    // Check for invalid experience inputs
+    const isValidNumber = (value: string) => /^\d+$/.test(value);
+    if (
+      (newFilters.minTotalExp && !isValidNumber(newFilters.minTotalExp)) ||
+      (newFilters.maxTotalExp && !isValidNumber(newFilters.maxTotalExp)) ||
+      (newFilters.minExperience && !isValidNumber(newFilters.minExperience))
+    ) {
+      showToast.error("No results found due to invalid input in experience fields.");
+      setCandidates([]);
+      setTotalCount(0);
+      return;
+    }
+
+    setFilters(newFilters);
+    fetchCandidates(1, newFilters);
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -945,7 +959,7 @@ function MainApp() {
                         <div className="lg:w-[25%] order-2 lg:order-1 sticky top-16 self-start will-change-transform">
                           <FiltersSidebar
                             filters={filters}
-                            onFiltersChange={setFilters}
+                            onApplyFilters={handleApplyFilters}
                             setCandidates={setCandidates}
                             candidates={candidates}
                             activeTab={activeTab}

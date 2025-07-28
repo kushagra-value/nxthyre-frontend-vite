@@ -22,6 +22,8 @@ import {
   candidateService,
   CandidateListItem,
 } from "../services/candidateService";
+import { showToast } from "../utils/toast";
+
 
 interface FiltersSidebarProps {
   filters: {
@@ -59,8 +61,9 @@ interface FiltersSidebarProps {
     application_type: string;
     is_prevetted: boolean;
     is_active: boolean;
+    sort_by: string;
   };
-  onFiltersChange: (filters: any) => void;
+  onApplyFilters: (filters: any) => void;
   setCandidates: (candidates: CandidateListItem[]) => void;
   candidates: CandidateListItem[];
   activeTab: string;
@@ -138,10 +141,10 @@ const JobTitlesSlider: React.FC<{ recentSearches: { id: number; query: string }[
 
 interface FilterMenuProps {
   filters: FiltersSidebarProps["filters"];
-  updateFilters: (key: string, value: any) => void;
+  updateTempFilters: (key: string, value: any) => void;
 }
 
-const FilterMenu: React.FC<FilterMenuProps> = ({ filters, updateFilters }) => {
+const FilterMenu: React.FC<FilterMenuProps> = ({ filters, updateTempFilters }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -182,7 +185,7 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ filters, updateFilters }) => {
               <span>Semantic Search</span>
               <button
                 onClick={() =>
-                  updateFilters("semanticSearch", !filters.semanticSearch)
+                  updateTempFilters("semanticSearch", !filters.semanticSearch)
                 }
                 className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
                   filters.semanticSearch ? "bg-blue-500" : "bg-gray-300"
@@ -199,7 +202,7 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ filters, updateFilters }) => {
               <span>Boolean Search</span>
               <button
                 onClick={() =>
-                  updateFilters("booleanSearch", !filters.booleanSearch)
+                  updateTempFilters("booleanSearch", !filters.booleanSearch)
                 }
                 className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
                   filters.booleanSearch ? "bg-blue-500" : "bg-gray-300"
@@ -233,7 +236,7 @@ type SectionKey =
 
 const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   filters,
-  onFiltersChange,
+  onApplyFilters,
   setCandidates,
   candidates,
   activeTab,
@@ -258,92 +261,12 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const [recentSearches, setRecentSearches] = useState<{ id: number; query: string }[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+  const [tempFilters, setTempFilters] = useState(filters);
 
-  // Debounced fetch candidates
-  const debouncedFetchCandidates = useCallback(
-    debounce(async (filterParams: any) => {
-      setIsLoading(true);
-      try {
-        console.log("Fetching candidates with params:", filterParams);
-        const response = await candidateService.searchCandidates({
-          ...filterParams,
-          page: 1,
-        });
-        setCandidates(response.results);
-      } catch (error) {
-        console.error("Error fetching filtered candidates:", error);
-        setCandidates([]);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 3000),
-    [setCandidates]
-  );
+  useEffect(() => {
+    setTempFilters(filters);
+  }, [filters]);
 
-  // Fetch candidates when filters change
-  // useEffect(() => {
-  //   if (filters.jobId) {
-  //     const filterParams: any = {
-  //       job_id: filters.jobId,
-  //       application_type: filters.application_type,
-  //     };
-  //     if (filters.keywords) filterParams.q = [filters.keywords];
-  //     if (filters.minTotalExp)
-  //       filterParams.experience_min = Number(filters.minTotalExp);
-  //     if (filters.maxTotalExp)
-  //       filterParams.experience_max = Number(filters.maxTotalExp);
-  //     if (filters.minExperience)
-  //       filterParams.exp_in_current_company_min = Number(filters.minExperience);
-  //     if (filters.topTierUniversities)
-  //       filterParams.is_top_tier_college = filters.topTierUniversities;
-  //     if (filters.hasCertification)
-  //       filterParams.has_certification = filters.hasCertification;
-  //     if (filters.location) filterParams.location = filters.location;
-  //     if (filters.selectedSkills.length > 0)
-  //       filterParams.skills = filters.selectedSkills.join(",");
-  //     if (filters.companies)
-  //       filterParams.companies = filters.companies
-  //         .split(",")
-  //         .map((c: string) => c.trim());
-  //     if (filters.industries)
-  //       filterParams.industries = filters.industries
-  //         .split(",")
-  //         .map((i: string) => i.trim());
-  //     if (filters.minSalary) filterParams.salary_min = filters.minSalary;
-  //     if (filters.maxSalary) filterParams.salary_max = filters.maxSalary;
-  //     if (filters.colleges)
-  //       filterParams.colleges = filters.colleges
-  //         .split(",")
-  //         .map((c: string) => c.trim());
-  //     if (filters.showFemaleCandidates) filterParams.is_female_only = true;
-  //     if (filters.recentlyPromoted) filterParams.is_recently_promoted = true;
-  //     if (filters.backgroundVerified)
-  //       filterParams.is_background_verified = true;
-  //     if (filters.hasLinkedIn) filterParams.has_linkedin = true;
-  //     if (filters.hasTwitter) filterParams.has_twitter = true;
-  //     if (filters.hasPortfolio) filterParams.has_portfolio = true;
-  //     if (filters.computerScienceGraduates) filterParams.is_cs_graduate = true;
-  //     if (filters.hasResearchPaper) filterParams.has_research_paper = true;
-  //     if (filters.hasBehance) filterParams.has_behance = true;
-  //     if (filters.is_prevetted) filterParams.is_prevetted = true;
-  //     if (filters.is_active) filterParams.is_active = true;
-  //     if (filters.noticePeriod) {
-  //       const days = {
-  //         "15 days": 15,
-  //         "30 days": 30,
-  //         "45 days": 45,
-  //         "60 days": 60,
-  //         "90 days": 90,
-  //         Immediate: 0,
-  //       }[filters.noticePeriod];
-  //       if (days !== undefined) filterParams.notice_period_max_days = days;
-  //     }
-
-  //     debouncedFetchCandidates(filterParams);
-  //   }
-  // }, [filters, debouncedFetchCandidates]);
-
-  // Fetch recent searches
   useEffect(() => {
     const fetchRecentSearches = async () => {
       try {
@@ -373,7 +296,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         setKeywordSuggestions([]);
         setShowSuggestions(false);
       }
-    }, 3000),
+    }, 300),
     []
   );
 
@@ -401,15 +324,15 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     }));
   };
 
-  const updateFilters = (key: string, value: any) => {
-    let newFilters = { ...filters, [key]: value };
+  const updateTempFilters = (key: string, value: any) => {
+    let newFilters = { ...tempFilters, [key]: value };
 
     // Handle location and city/country
     if (key === "city" || key === "country" || key === "location") {
       setIsLocationManuallyEdited(key === "location");
-      const newCity = key === "city" ? value : filters.city;
-      const newCountry = key === "country" ? value : filters.country;
-      const newLocation = key === "location" ? value : filters.location;
+      const newCity = key === "city" ? value : tempFilters.city;
+      const newCountry = key === "country" ? value : tempFilters.country;
+      const newLocation = key === "location" ? value : tempFilters.location;
 
       // Construct locations array
       const locations = [];
@@ -432,13 +355,21 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         locations, // Add locations array to filters for use in API call
       };
     }
+
+    // Validate experience inputs
+    if (["minTotalExp", "maxTotalExp", "minExperience"].includes(key)) {
+      const isValidNumber = (val: string) => /^\d*$/.test(val);
+      if (!isValidNumber(value)) {
+        return; // Ignore invalid input
+      }
+    }
     
     if (
       key === "minTotalExp" &&
       newFilters.maxTotalExp &&
       Number(value) > Number(newFilters.maxTotalExp)
     ) {
-      console.warn("Min experience cannot be greater than max experience");
+      showToast.error("Min experience cannot be greater than max experience");
       return;
     }
     if (
@@ -446,7 +377,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       newFilters.minTotalExp &&
       Number(value) < Number(newFilters.minTotalExp)
     ) {
-      console.warn("Max experience cannot be less than min experience");
+      showToast.error("Max experience cannot be less than min experience");
       return;
     }
     if (
@@ -454,7 +385,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       newFilters.maxSalary &&
       Number(value) > Number(newFilters.maxSalary)
     ) {
-      console.warn("Min salary cannot be greater than max salary");
+      showToast.error("Min salary cannot be greater than max salary");
       return;
     }
     if (
@@ -462,12 +393,12 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       newFilters.minSalary &&
       Number(value) < Number(newFilters.minSalary)
     ) {
-      console.warn("Max salary cannot be less than min salary");
+      showToast.error("Max salary cannot be less than min salary");
       return;
     }
 
 
-    onFiltersChange(newFilters);
+    setTempFilters(newFilters);
     if (key === "keywords") {
       fetchKeywordSuggestions(value);
     }
@@ -475,7 +406,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
   const handleKeywordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^a-zA-Z0-9\s,]/g, ""); // Allow only alphanumeric, commas and spaces
-    updateFilters("keywords", value);
+    updateTempFilters("keywords", value);
   };
 
   const handleSelectSuggestion = (suggestion: string) => {
@@ -484,13 +415,12 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     keywordsArray.pop(); // Remove the last incomplete keyword
     keywordsArray.push(suggestion);
     const newKeywords = keywordsArray.join(", ");
-    updateFilters("keywords", newKeywords);
+    updateTempFilters("keywords", newKeywords);
     setShowSuggestions(false);
-    applyFilters(); // Trigger search on suggestion select
   };
 
   const handleSelectRecentSearch = (query: string) => {
-    updateFilters("keywords", query);
+    updateTempFilters("keywords", query);
     applyFilters(); // Trigger search on recent search select
     setShowSuggestions(false);
   }
@@ -506,7 +436,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     setIsLocationManuallyEdited(false);
     setKeywordSuggestions([]);
     setShowSuggestions(false);
-    onFiltersChange({
+    setTempFilters({
       keywords: "",
       booleanSearch: false,
       semanticSearch: false,
@@ -541,75 +471,14 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       application_type: activeTab,
       is_prevetted: activeTab === "prevetted",
       is_active: activeTab === "active",
+      sort_by:"",
     });
+    setCandidates([]);
+    setShowSuggestions(false);
   };
 
-  const applyFilters = () => {
-    if (filters.jobId) {
-      const filterParams: any = {
-        job_id: filters.jobId,
-        application_type: filters.application_type,
-      };
-      if (filters.keywords) {
-        // Split keywords by comma and trim each, preserving multi-word phrases
-        filterParams.q = filters.keywords
-          .split(",")
-          .map((k: string) => k.trim())
-          .filter((k: string) => k);
-      }
-      if (filters.minTotalExp)
-        filterParams.experience_min = Number(filters.minTotalExp);
-      if (filters.maxTotalExp)
-        filterParams.experience_max = Number(filters.maxTotalExp);
-      if (filters.minExperience)
-        filterParams.exp_in_current_company_min = Number(filters.minExperience);
-      if (filters.topTierUniversities)
-        filterParams.is_top_tier_college = filters.topTierUniversities;
-      if (filters.hasCertification)
-        filterParams.has_certification = filters.hasCertification;
-      if (filters.country) filterParams.country = filters.country;
-      if (filters.locations && filters.locations.length > 0)
-        filterParams.locations = filters.locations; // Use locations array
-      if (filters.companies)
-        filterParams.companies = filters.companies
-          .split(",")
-          .map((c: string) => c.trim());
-      if (filters.industries)
-        filterParams.industries = filters.industries
-          .split(",")
-          .map((i: string) => i.trim());
-      if (filters.minSalary) filterParams.salary_min = filters.minSalary;
-      if (filters.maxSalary) filterParams.salary_max = filters.maxSalary;
-      if (filters.colleges)
-        filterParams.colleges = filters.colleges
-          .split(",")
-          .map((c: string) => c.trim());
-      if (filters.showFemaleCandidates) filterParams.is_female_only = true;
-      if (filters.recentlyPromoted) filterParams.is_recently_promoted = true;
-      if (filters.backgroundVerified)
-        filterParams.is_background_verified = true;
-      if (filters.hasLinkedIn) filterParams.has_linkedin = true;
-      if (filters.hasTwitter) filterParams.has_twitter = true;
-      if (filters.hasPortfolio) filterParams.has_portfolio = true;
-      if (filters.computerScienceGraduates) filterParams.is_cs_graduate = true;
-      if (filters.hasResearchPaper) filterParams.has_research_paper = true;
-      if (filters.hasBehance) filterParams.has_behance = true;
-      if (filters.is_prevetted) filterParams.is_prevetted = true;
-      if (filters.is_active) filterParams.is_active = true;
-      if (filters.noticePeriod) {
-        const days = {
-          "15 days": 15,
-          "30 days": 30,
-          "45 days": 45,
-          "60 days": 60,
-          "90 days": 90,
-          Immediate: 0,
-        }[filters.noticePeriod];
-        if (days !== undefined) filterParams.notice_period_max_days = days;
-      }
-
-      debouncedFetchCandidates(filterParams);
-    }
+   const applyFilters = () => {
+    onApplyFilters(tempFilters);
   };
 
   const noticePeriodOptions = [
@@ -632,7 +501,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             Keywords
           </h3>
           <div className="flex gap-2 cursor-pointer">
-            <FilterMenu filters={filters} updateFilters={updateFilters} />
+            <FilterMenu filters={filters} updateTempFilters={updateTempFilters} />
             <div
               className="cursor-pointer"
               onClick={() => toggleSection("keywords")}
@@ -698,18 +567,26 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           <div className="space-y-2">
             <div className="flex space-x-2">
               <input
-                type="number"
+                type="text"
                 placeholder="Min Exp (in years)"
-                value={filters.minTotalExp}
-                onChange={(e) => updateFilters("minTotalExp", e.target.value)}
+                value={tempFilters.minTotalExp}
+                onChange={(e) => updateTempFilters("minTotalExp", e.target.value)}
                 className="w-1/3 flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                pattern="\d*"
+                onInput={(e) => {
+                  e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, "");
+                }}
               />
               <input
-                type="number"
+                type="text"
                 placeholder="Max Exp (in years)"
-                value={filters.maxTotalExp}
-                onChange={(e) => updateFilters("maxTotalExp", e.target.value)}
+                value={tempFilters.maxTotalExp}
+                onChange={(e) => updateTempFilters("maxTotalExp", e.target.value)}
                 className="w-1/3 flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                pattern="\d*"
+                onInput={(e) => {
+                  e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, "");
+                }}
               />
             </div>
           </div>
@@ -720,7 +597,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             type="number"
             placeholder="Years of Exp in Current Company"
             value={filters.minExperience}
-            onChange={(e) => updateFilters("minExperience", e.target.value)}
+            onChange={(e) => updateTempFilters("minExperience", e.target.value)}
             className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
@@ -747,7 +624,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <div className="flex space-x-2">
               <select
                 value={filters.city}
-                onChange={(e) => updateFilters("city", e.target.value)}
+                onChange={(e) => updateTempFilters("city", e.target.value)}
                 className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">City</option>
@@ -758,7 +635,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               </select>
               <select
                 value={filters.country}
-                onChange={(e) => updateFilters("country", e.target.value)}
+                onChange={(e) => updateTempFilters("country", e.target.value)}
                 className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Country</option>
@@ -772,7 +649,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               type="text"
               placeholder="Enter Location like Ahmedabad"
               value={filters.location}
-              onChange={(e) => updateFilters("location", e.target.value)}
+              onChange={(e) => updateTempFilters("location", e.target.value)}
               className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -807,7 +684,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 type="text"
                 placeholder="Search Companies"
                 value={filters.companies}
-                onChange={(e) => updateFilters("companies", e.target.value)}
+                onChange={(e) => updateTempFilters("companies", e.target.value)}
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -820,7 +697,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 type="text"
                 placeholder="Search Industries"
                 value={filters.industries}
-                onChange={(e) => updateFilters("industries", e.target.value)}
+                onChange={(e) => updateTempFilters("industries", e.target.value)}
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -850,7 +727,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <div className="flex space-x-2">
               <select
                 value={filters.minSalary}
-                onChange={(e) => updateFilters("minSalary", e.target.value)}
+                onChange={(e) => updateTempFilters("minSalary", e.target.value)}
                 className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="500000">5 LPA</option>
@@ -860,7 +737,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               </select>
               <select
                 value={filters.maxSalary}
-                onChange={(e) => updateFilters("maxSalary", e.target.value)}
+                onChange={(e) => updateTempFilters("maxSalary", e.target.value)}
                 className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="1000000">10 LPA</option>
@@ -894,7 +771,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           <div>
             <select
               value={filters.noticePeriod}
-              onChange={(e) => updateFilters("noticePeriod", e.target.value)}
+              onChange={(e) => updateTempFilters("noticePeriod", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
             >
               <option value="">Select Notice Period</option>
@@ -934,7 +811,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               type="text"
               placeholder="Search Colleges"
               value={filters.colleges}
-              onChange={(e) => updateFilters("colleges", e.target.value)}
+              onChange={(e) => updateTempFilters("colleges", e.target.value)}
               className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
             <label className="flex items-center">
@@ -942,7 +819,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 type="checkbox"
                 checked={filters.topTierUniversities}
                 onChange={(e) =>
-                  updateFilters("topTierUniversities", e.target.checked)
+                  updateTempFilters("topTierUniversities", e.target.checked)
                 }
                 className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
@@ -955,7 +832,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 type="checkbox"
                 checked={filters.computerScienceGraduates}
                 onChange={(e) =>
-                  updateFilters("computerScienceGraduates", e.target.checked)
+                  updateTempFilters("computerScienceGraduates", e.target.checked)
                 }
                 className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
@@ -991,7 +868,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 type="checkbox"
                 checked={filters.showFemaleCandidates}
                 onChange={(e) =>
-                  updateFilters("showFemaleCandidates", e.target.checked)
+                  updateTempFilters("showFemaleCandidates", e.target.checked)
                 }
                 className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
@@ -1004,7 +881,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 type="checkbox"
                 checked={filters.recentlyPromoted}
                 onChange={(e) =>
-                  updateFilters("recentlyPromoted", e.target.checked)
+                  updateTempFilters("recentlyPromoted", e.target.checked)
                 }
                 className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
@@ -1017,7 +894,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 type="checkbox"
                 checked={filters.backgroundVerified}
                 onChange={(e) =>
-                  updateFilters("backgroundVerified", e.target.checked)
+                  updateTempFilters("backgroundVerified", e.target.checked)
                 }
                 className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
@@ -1053,7 +930,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 type="checkbox"
                 checked={filters.hasCertification}
                 onChange={(e) =>
-                  updateFilters("hasCertification", e.target.checked)
+                  updateTempFilters("hasCertification", e.target.checked)
                 }
                 className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
@@ -1066,7 +943,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 type="checkbox"
                 checked={filters.hasResearchPaper}
                 onChange={(e) =>
-                  updateFilters("hasResearchPaper", e.target.checked)
+                  updateTempFilters("hasResearchPaper", e.target.checked)
                 }
                 className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
@@ -1079,7 +956,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               <input
                 type="checkbox"
                 checked={filters.hasBehance}
-                onChange={(e) => updateFilters("hasBehance", e.target.checked)}
+                onChange={(e) => updateTempFilters("hasBehance", e.target.checked)}
                 className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
               <span className="ml-2 text-xs text-gray-700">
@@ -1090,7 +967,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               <input
                 type="checkbox"
                 checked={filters.hasTwitter}
-                onChange={(e) => updateFilters("hasTwitter", e.target.checked)}
+                onChange={(e) => updateTempFilters("hasTwitter", e.target.checked)}
                 className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
               <span className="ml-2 text-xs text-gray-700">
@@ -1102,7 +979,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 type="checkbox"
                 checked={filters.hasPortfolio}
                 onChange={(e) =>
-                  updateFilters("hasPortfolio", e.target.checked)
+                  updateTempFilters("hasPortfolio", e.target.checked)
                 }
                 className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
               />
