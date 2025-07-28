@@ -94,11 +94,19 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
           onboardingStatus.status === "ORGANIZATION_EXISTS" &&
           onboardingStatus.organization
         ) {
-          setOrganization({
-            id: onboardingStatus.organization.id,
-            name: onboardingStatus.organization.name,
-            domain: onboardingStatus.organization.domain || null,
-          });
+          // setOrganization({
+          //   id: onboardingStatus.organization.id,
+          //   name: onboardingStatus.organization.name,
+          //   domain: onboardingStatus.organization.domain || null,
+          // });
+          setOrganization(organization);
+          console.log("Organization 11111111111111:", organization);
+        }
+
+        const getOrganizations = await organizationService.getOrganizations();
+        if (getOrganizations.length > 0) {
+          setOrganization(getOrganizations[0]);
+          console.log("Organization 2222222222222222:", organization);
         }
 
         // Fetch workspaces the user is a member of
