@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { ArrowLeft, Building2, Search, Check, X } from "lucide-react";
 import { organizationService } from "../../services/organizationService";
+import { authService } from "../../services/authService";
 import { showToast } from "../../utils/toast";
 import { useAuthContext } from "../../context/AuthContext";
+import toast from "react-hot-toast";
 
 interface CreateOrganizationProps {
   onNavigate: (flow: string, data?: any) => void;
@@ -85,31 +87,64 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
 
     setIsLoading(true);
 
+    // try {
+    //   const status = await organizationService.getOnboardingStatus();
+    //   if (
+    //     status.status === "ONBOARDED" ||
+    //     status.status === "ORGANIZATION_EXISTS"
+    //   ) {
+    //     showToast.error("You are already part of an organization");
+    //     setIsLoading(false);
+    //     return;
+    //   }
+
+    //   const response = await organizationService.createOrganization(
+    //     formData.organizationName
+    //   );
+    //   showToast.success("Organization created successfully!");
+
+    //   const updatedUser = {
+    //     ...user,
+    //     organizationId: response.id.toString(),
+    //   };
+
+    //   if (onComplete) {
+    //     onComplete(updatedUser);
+    //   }
+    //   onNavigate("workspaces-org");
+    // } catch (error: any) {
+    //   console.error("Create organization error:", error);
+    //   setErrors({ general: error.message || "Failed to create organization" });
+    //   showToast.error(error.message || "Failed to create organization");
+    // } finally {
+    //   setIsLoading(false);
+    // }
+
     try {
-      const status = await organizationService.getOnboardingStatus();
-      if (
-        status.status === "ONBOARDED" ||
-        status.status === "ORGANIZATION_EXISTS"
-      ) {
-        showToast.error("You are already part of an organization");
-        setIsLoading(false);
-        return;
+      // Get user status from backend
+      const userStatus = await authService.getUserStatus();
+      if (userStatus.is_onboarded) {
+        console.log("User is already onboarded, redirecting to dashboard");
+        toast.error("You are already onboarded.");
+      } else {
+        console.log(
+          "User is not onboarded, proceeding with organization creation"
+        );
+        const response = await organizationService.createOrganization(
+          formData.organizationName
+        );
+        showToast.success("Organization created successfully!");
+
+        const updatedUser = {
+          ...user,
+          organizationId: response.id.toString(),
+        };
+
+        if (onComplete) {
+          onComplete(updatedUser);
+        }
+        onNavigate("workspaces-org");
       }
-
-      const response = await organizationService.createOrganization(
-        formData.organizationName
-      );
-      showToast.success("Organization created successfully!");
-
-      const updatedUser = {
-        ...user,
-        organizationId: response.id.toString(),
-      };
-
-      if (onComplete) {
-        onComplete(updatedUser);
-      }
-      onNavigate("workspaces-org");
     } catch (error: any) {
       console.error("Create organization error:", error);
       setErrors({ general: error.message || "Failed to create organization" });
