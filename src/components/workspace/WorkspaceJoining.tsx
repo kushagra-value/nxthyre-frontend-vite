@@ -201,7 +201,7 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
                           handleRequestJoin(
                             workspace.id,
                             user.id, // Pass user id as the second argument if available
-                            workspace.organizationId // Pass organization id as the third argument if available
+                            workspace.organization // Pass organization id as the third argument if available
                           )
                         }
                         className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
