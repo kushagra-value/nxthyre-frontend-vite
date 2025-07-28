@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { authService } from "../../services/authService";
 import { showToast } from "../../utils/toast";
+import organizationService from "../../services/organizationService";
 
 interface LoginProps {
   onNavigate: (flow: string, data?: any) => void;
@@ -87,8 +88,14 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
 
       // Navigate based on onboarding status
       if (userStatus.is_onboarded) {
-        console.log("Redirecting to dashboard...");
-        navigate("/");
+        const myWorkspaces = organizationService.getMyWorkspaces();
+        if ((await myWorkspaces).length > 0) {
+          console.log("Redirecting to dashboard...");
+          navigate("/");
+        } else {
+          console.log("Redirecting to workspaces-org...");
+          onNavigate("workspaces-org");
+        }
       } else {
         console.log(
           "Navigating to workspaces-org in Login.tsx condition check ..."
