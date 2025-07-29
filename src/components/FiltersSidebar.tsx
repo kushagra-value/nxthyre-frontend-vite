@@ -555,10 +555,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               )}
 
             </div>
-            <JobTitlesSlider
-              recentSearches={recentSearches}
-              onSelectSearch={handleSelectRecentSearch}
-            />
           </div>
         )}
       </div>
