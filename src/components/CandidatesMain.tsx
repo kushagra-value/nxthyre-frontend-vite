@@ -212,7 +212,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
     try {
       const stages = await candidateService.getPipelineStages(parseInt(jobId));
-      setPipelineStages(stages);
+      setPipelineStages(stages.slice(0, 5));
       setShowDropdown(candidateId);
     } catch (error: any) {
       showToast.error(error.message || "Failed to fetch pipeline stages");
