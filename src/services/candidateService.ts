@@ -153,21 +153,7 @@ export interface ShareableProfileSensitiveCandidate {
   }[];
 }
 
-export interface ExportCandidateResponse {
-  data: {
-    full_name: string;
-    email: string;
-    phone: string;
-    headline: string;
-    location: string;
-    total_experience_years: string;
-    current_role: string;
-    current_company: string;
-    skills: string;
-    job_applied_for: string;
-    current_pipeline_stage: string;
-  }[];
-}
+export type ExportCandidateResponse = string;
 
 export interface FollowUpStep {
   id: number;
@@ -464,13 +450,13 @@ class CandidateService {
   }
 
   async exportCandidates(
-    candidateIds: string[]
+  candidateIds: string[]
   ): Promise<ExportCandidateResponse> {
     try {
-      const response = await apiClient.post("/jobs/applications/export/", {
+      const response = await apiClient.post("/candidates/export-selected/", {
         candidate_ids: candidateIds,
       });
-      return response.data;
+      return response.data; 
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error || "Failed to export candidates"
