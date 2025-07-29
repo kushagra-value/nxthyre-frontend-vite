@@ -467,7 +467,7 @@ class CandidateService {
     candidateIds: string[]
   ): Promise<ExportCandidateResponse> {
     try {
-      const response = await apiClient.post("/jobs/applications/export/", {
+      const response = await apiClient.post("/candidates/export-selected/", {
         candidate_ids: candidateIds,
       });
       return response.data;
