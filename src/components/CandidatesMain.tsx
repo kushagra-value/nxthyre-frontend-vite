@@ -24,22 +24,6 @@ import {
 } from "../services/candidateService";
 import { showToast } from "../utils/toast";
 
-const downloadFile = (data: string, fileName: string, type: "csv" | "xlsx") => {
-  const blob = new Blob([data], {
-    type:
-      type === "csv"
-        ? "text/csv"
-        : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  });
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
-};
 
 interface CandidatesMainProps {
   activeTab: string;
@@ -259,85 +243,67 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 };
 
 const handleExportCandidates = async (format: "csv" | "xlsx") => {
-    if (selectedCandidates.length === 0) {
-      showToast.error("Please select at least one candidate");
-      return;
+  if (selectedCandidates.length === 0) {
+    showToast.error("Please select at least one candidate");
+    return;
+  }
+
+  setExportLoading(true);
+  try {
+    const response: ExportCandidateResponse =
+      await candidateService.exportCandidates(selectedCandidates);
+
+    // Log the response to inspect its structure
+    console.log("API Response:", response);
+
+    if (typeof response !== "string") {
+      throw new Error("Invalid response format: Expected a CSV string");
     }
 
-    setExportLoading(true);
-    try {
-      const response: ExportCandidateResponse =
-        await candidateService.exportCandidates(selectedCandidates);
+    if (!response.trim()) {
+      throw new Error("No candidate data returned for export");
+    }
 
-      // Log the response to inspect its structure
-      console.log("API Response:", response);
+    if (format === "csv") {
+      // Use the response directly for CSV
+      downloadFile(response, `candidates_export_${Date.now()}.csv`, "csv");
+    } else {
+      // Simple CSV parsing
+      const lines = response.split("\n").filter((line) => line.trim());
+      const worksheetData = lines.map((line) =>
+        line.split(",").map((value) => value.replace(/^"|"$/g, "").replace(/""/g, '"'))
+      );
 
-      if (!Array.isArray(response)) {
-        throw new Error("Invalid response format: Expected an array");
-      }
-
-      if (response.length === 0) {
+      if (worksheetData.length < 2) {
         throw new Error("No candidate data returned for export");
       }
 
-      const headers = [
-        "Full Name",
-        "Email",
-        "Phone",
-        "Headline",
-        "Location",
-        "Total Experience (Years)",
-        "Current Role",
-        "Current Company",
-        "Skills",
-        "Job Applied For",
-        "Current Pipeline Stage",
-      ];
-
-      if (format === "csv") {
-        const csvContent = [
-          headers.join(","),
-          ...response.map((row) =>
-            Object.values(row)
-              .map(
-                (value) => `"${value?.toString().replace(/"/g, '""') || ""}"`
-              )
-              .join(",")
-          ),
-        ].join("\n");
-
-        downloadFile(csvContent, `candidates_export_${Date.now()}.csv`, "csv");
-      } else {
-        const worksheetData = [
-          headers,
-          ...response.map((row) => Object.values(row)),
-        ];
-        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Candidates");
-        const excelBuffer = XLSX.write(workbook, {
-          bookType: "xlsx",
-          type: "array",
-        });
-        const blob = new Blob([excelBuffer], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        });
-        downloadFile(blob, `candidates_export_${Date.now()}.xlsx`, "xlsx");
-      }
-
-      showToast.success(
-        `Candidates exported successfully as ${format.toUpperCase()}`
-      );
-      setShowExportDialog(false);
-      setSelectedCandidates([]);
-      setSelectAll(false);
-    } catch (error: any) {
-      console.error("Export Error:", error);
-      showToast.error(error.message || "Failed to export candidates");
-    } finally {
-      setExportLoading(false);
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Candidates");
+      const excelBuffer = XLSX.write(workbook, {
+        bookType: "xlsx",
+        type: "array",
+      });
+      const blob = new Blob([excelBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      downloadFile(blob, `candidates_export_${Date.now()}.xlsx`, "xlsx");
     }
-  };
+
+    showToast.success(
+      `Candidates exported successfully as ${format.toUpperCase()}`
+    );
+    setShowExportDialog(false);
+    setSelectedCandidates([]);
+    setSelectAll(false);
+  } catch (error: any) {
+    console.error("Export Error:", error);
+    showToast.error(error.message || "Failed to export candidates");
+  } finally {
+    setExportLoading(false);
+  }
+};
 
   const getAvatarColor = (name: string) => "bg-blue-500";
 
