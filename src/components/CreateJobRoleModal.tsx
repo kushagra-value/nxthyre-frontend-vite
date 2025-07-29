@@ -5,11 +5,12 @@ import { jobPostService, CreateJobData } from '../services/jobPostService';
 
 interface CreateJobRoleModalProps {
   isOpen: boolean;
+  workspaceId: number; 
   onClose: () => void;
   onJobCreated?: () => void; // Callback to refresh categories
 }
 
-const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, onClose, onJobCreated }) => {
+const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspaceId, onClose, onJobCreated }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     allowInbound: true,
@@ -216,7 +217,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
         description: formData.jobDescription,
         skill_names: formData.skills,
         status: formData.shareExternally ? 'PUBLISHED' : 'DRAFT',
-        workspace: 1,
+        workspace: workspaceId,
       };
 
       await jobPostService.createJob(jobData);
