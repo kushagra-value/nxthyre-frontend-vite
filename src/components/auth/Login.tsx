@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Eye,
   EyeOff,
@@ -10,6 +11,7 @@ import {
 } from "lucide-react";
 import { authService } from "../../services/authService";
 import { showToast } from "../../utils/toast";
+import organizationService from "../../services/organizationService";
 
 interface LoginProps {
   onNavigate: (flow: string, data?: any) => void;
@@ -17,6 +19,7 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -25,6 +28,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isPasswordLimitReached, setIsPasswordLimitReached] = useState(false);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -60,6 +64,13 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
       // Get user status from backend
       const userStatus = await authService.getUserStatus();
 
+      // Fetch workspaces
+      const myWorkspacesCount = await organizationService.getMyWorkspaces();
+
+      // Debug: Log the type and value of is_onboarded
+      console.log("is_onboarded type:", typeof userStatus.is_onboarded);
+      console.log("is_onboarded value:", userStatus.is_onboarded);
+
       // Create user object for compatibility with existing code
       const user = {
         id: firebaseUser.uid,
@@ -76,14 +87,19 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
           firebaseUser.metadata.creationTime || new Date().toISOString(),
       };
 
+      // Call onLogin to update authentication state
       onLogin(user);
 
-      if (userStatus.is_onboarded) {
-        // User is fully onboarded, go to main dashboard
-        window.location.href = "/";
+      // Debug: Log workspaces to verify the response
+      console.log("myWorkspaces:", myWorkspacesCount);
+
+      // Navigate based on onboarding status and workspaces
+      if (userStatus.is_onboarded && myWorkspacesCount.length > 0) {
+        console.log("Redirecting to dashboard...");
+        navigate("/"); // Redirect to dashboard if workspaces exist
       } else {
-        // User needs onboarding
-        onNavigate("workspaces-org");
+        console.log("Redirecting to workspaces-org...");
+        navigate("/workspaces-org"); // Redirect to workspaces-org if no workspaces or not onboarded
       }
     } catch (error: any) {
       console.error("Login error:", error);
@@ -97,6 +113,12 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setFormData({ ...formData, password: newPassword });
+    setIsPasswordLimitReached(newPassword.length >= 32);
   };
 
   return (
@@ -203,7 +225,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
               </p>
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-4">
                 {/* General Error */}
                 {errors.general && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-3">
@@ -214,7 +236,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                   </div>
                 )}
 
-                {/* Email Field*/}
+                {/* Email Field */}
                 <div>
                   <input
                     type="email"
@@ -241,11 +263,10 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                     <input
                       type={showPassword ? "text" : "password"}
                       value={formData.password}
-                      onChange={(e) =>
-                        setFormData({ ...formData, password: e.target.value })
-                      }
+                      onChange={handlePasswordChange}
+                      maxLength={32}
                       className={`w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${
-                        errors.password ? "border-red-500" : ""
+                        errors.password ? "border-red乡-500" : ""
                       }`}
                       placeholder="Enter your password"
                     />
@@ -265,6 +286,12 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                     <p className="mt-1 text-sm text-red-500 flex items-center">
                       <XCircle className="w-4 h-4 mr-1" />
                       {errors.password}
+                    </p>
+                  )}
+                  {isPasswordLimitReached && (
+                    <p className="mt-1 text-sm text-red-500 flex items-center">
+                      <XCircle className="w-4 h-4 mr-1" />
+                      Password cannot exceed 32 characters
                     </p>
                   )}
                 </div>
@@ -298,7 +325,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
 
                 {/* Submit Button */}
                 <button
-                  type="submit"
+                  onClick={handleSubmit}
                   disabled={isLoading}
                   className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -367,7 +394,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                     </button>
                   </p>
                 </div>
-              </form>
+              </div>
             </div>
           </div>
         </div>

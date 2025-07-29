@@ -11,26 +11,50 @@ interface WorkspaceJoiningProps {
 const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
   const { user, userStatus } = useAuthContext();
   const [availableWorkspaces, setAvailableWorkspaces] = useState<any[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAvailableWorkspaces = async () => {
-      if (!userStatus) {
+    const fetchData = async () => {
+      if (!userStatus || !user) {
         return;
       }
       try {
         setLoading(true);
+        // Fetch discoverable workspaces
         const discoverWorkspaces =
           await organizationService.getDiscoverWorkspaces();
         setAvailableWorkspaces(discoverWorkspaces);
+
+        // Fetch pending join requests for each workspace
+        const userPendingRequests: any[] = [];
+        await Promise.all(
+          discoverWorkspaces.map(async (workspace: any) => {
+            const requests = await organizationService.getPendingJoinRequests(
+              workspace.organization,
+              workspace.id
+            );
+            // Filter requests to find those belonging to the current user
+            const userRequest = requests.find(
+              (req: any) => req.userId === user.id
+            );
+            if (userRequest) {
+              userPendingRequests.push({
+                ...workspace,
+                join_request_details: userRequest,
+              });
+            }
+          })
+        );
+        setPendingRequests(userPendingRequests);
       } catch (error: any) {
-        showToast.error("Failed to load available workspaces.");
+        showToast.error("Failed to load data.");
       } finally {
         setLoading(false);
       }
     };
-    fetchAvailableWorkspaces();
-  }, [userStatus]);
+    fetchData();
+  }, [userStatus, user]);
 
   if (!user || !userStatus) {
     showToast.error("User not authenticated. Please log in.");
@@ -58,27 +82,37 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
     );
   }
 
-  const handleRequestJoin = async (workspaceId: number, userId?: string) => {
+  const handleRequestJoin = async (
+    workspaceId: number,
+    userId: string,
+    organizationId: number
+  ) => {
     try {
       const response = await organizationService.requestJoinWorkspace(
         workspaceId,
-        userId
+        userId,
+        organizationId
       );
       setAvailableWorkspaces((prev) =>
         prev.map((ws) =>
           ws.id === workspaceId ? { ...ws, join_request_status: "PENDING" } : ws
         )
       );
+      // Update pending requests
+      const workspace = availableWorkspaces.find((ws) => ws.id === workspaceId);
+      setPendingRequests((prev) => [
+        ...prev,
+        { ...workspace, join_request_details: { userId, status: "PENDING" } },
+      ]);
       showToast.success("Join request sent.");
     } catch (error: any) {
       showToast.error("Failed to send join request.");
     }
   };
 
-  // Note: The API doesn't provide a withdraw endpoint, so this is a placeholder
   const handleWithdrawRequest = async (workspaceId: number) => {
     try {
-      // Uncomment and implement if backend supports withdraw endpoint
+      // Placeholder: Assuming backend supports withdraw endpoint
       // await organizationService.withdrawJoinRequest(workspaceId);
       setAvailableWorkspaces((prev) =>
         prev.map((ws) =>
@@ -86,6 +120,9 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
             ? { ...ws, join_request_status: "NOT_REQUESTED" }
             : ws
         )
+      );
+      setPendingRequests((prev) =>
+        prev.filter((req) => req.id !== workspaceId)
       );
       showToast.success("Join request withdrawn.");
     } catch (error: any) {
@@ -103,10 +140,6 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
       </div>
     );
   }
-
-  const pendingRequests = availableWorkspaces.filter(
-    (ws) => ws.join_request_status === "PENDING"
-  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -182,7 +215,7 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    {workspace.join_request_status === "PENDING" ? (
+                    {pendingRequests.some((req) => req.id === workspace.id) ? (
                       <button
                         onClick={() => handleWithdrawRequest(workspace.id)}
                         className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium"
@@ -192,9 +225,11 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
                     ) : (
                       <button
                         onClick={() =>
+                          user.id &&
                           handleRequestJoin(
                             workspace.id,
-                            user?.id // Pass user id as the second argument if available
+                            user.id,
+                            workspace.organization
                           )
                         }
                         className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"

@@ -91,22 +91,15 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
         const onboardingStatus =
           await organizationService.getOnboardingStatus();
         if (
-          onboardingStatus.status === "ORGANIZATION_EXISTS" &&
+          onboardingStatus.status === "ONBOARDED" &&
           onboardingStatus.organization
         ) {
-          // setOrganization({
-          //   id: onboardingStatus.organization.id,
-          //   name: onboardingStatus.organization.name,
-          //   domain: onboardingStatus.organization.domain || null,
-          // });
-          setOrganization(organization);
+          setOrganization({
+            id: onboardingStatus.organization.id,
+            name: onboardingStatus.organization.name,
+            domain: onboardingStatus.organization.domain || null,
+          });
           console.log("Organization 11111111111111:", organization);
-        }
-
-        const getOrganizations = await organizationService.getOrganizations();
-        if (getOrganizations.length > 0) {
-          setOrganization(getOrganizations[0]);
-          console.log("Organization 2222222222222222:", organization);
         }
 
         // Fetch workspaces the user is a member of
@@ -208,24 +201,16 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
 
   const handleManageWorkspace = async () => {
     try {
-      const adminWorkspaces = workspaces.filter(
-        (ws) => ws.user_role === "ADMIN"
-      );
-      const requestsPromises = adminWorkspaces.map(async (ws) => {
-        const requests = await organizationService.getPendingJoinRequests(
-          ws.organization,
-          ws.id
-        );
-        return requests.map((req: any) => ({
-          id: req.id,
-          workspaceId: ws.id,
-          workspaceName: ws.name,
-          requesterEmail: req.recruiter.email,
-          createdAt: req.created_at,
-        }));
-      });
-      const allRequests = (await Promise.all(requestsPromises)).flat();
-      setPendingRequests(allRequests);
+      // Fetch all pending join requests using the new API endpoint
+      const requests = await organizationService.getPendingJoinRequests();
+      const formattedRequests = requests.map((req: any) => ({
+        id: req.id,
+        workspaceId: req.workspace_id,
+        workspaceName: req.workspace_name,
+        requesterEmail: req.recruiter.email,
+        createdAt: req.created_at,
+      }));
+      setPendingRequests(formattedRequests);
       setShowManageModal(true);
     } catch (error) {
       showToast.error("Failed to load pending requests");
