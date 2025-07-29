@@ -80,7 +80,7 @@ const JobTitlesSlider: React.FC<{
       const initialScroll = totalWidth / 2 - visibleWidth / 2;
       sliderRef.current.scrollTo({ left: initialScroll, behavior: "instant" });
     }
-  }, []);
+  }, [recentSearches]);
 
   const scrollLeft = () => {
     if (sliderRef.current) {
