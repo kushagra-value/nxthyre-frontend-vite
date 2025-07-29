@@ -523,7 +523,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
         </div>
       ) : (
       <>
-      <div className="divide-y divide-blue-500">
+      <div className="">
         {candidates.map((candidate) => (
           <div
             key={candidate.id}
