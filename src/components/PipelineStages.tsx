@@ -159,6 +159,7 @@ interface PipelineCandidate {
     author: string;
     date: string;
   }>;
+  interview_id?: string;
   stageData: {
     uncontacted?: {
       notes: string[];
@@ -580,6 +581,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       external_notes: data.contextual_details.candidate_notes || [],
       feedbackNotes: data.contextual_details.feedback_notes || [],
       candidateNotes: data.candidate.notes || [],
+      interview_id: data.interview_id,
       stageData: {
         [stageProperty]: mappedStageData,
       },
@@ -695,6 +697,24 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const handleCategorySelect = (categoryId: number) => {
     setActiveCategoryId(categoryId);
     setActiveJobId(categoryId);
+  };
+
+  const resendInterviewLink = async () => {
+    if (!selectedCandidate || !selectedCandidate.interview_id) {
+      showToast.error("No interview found to resend");
+      return;
+    }
+    try {
+      await apiClient.post("/candidates/schedule-interview/", {
+        candidate_id: selectedCandidate.publicIdentifier, // Candidate UUID
+        job_id: activeJobId,
+        interview_id: selectedCandidate.interview_id,
+      });
+      showToast.success("Interview link resent successfully");
+    } catch (error) {
+      console.error("Error resending interview link:", error);
+      showToast.error("Failed to resend interview link");
+    }
   };
 
   const renderStageDetails = () => {
@@ -1487,7 +1507,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               )}
 
               <div>
-                <button className="mt-1 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <button
+                  onClick={resendInterviewLink}
+                  className="mt-1 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
                   Resend Interview Link
                 </button>
               </div>
