@@ -63,7 +63,9 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
           setAuthStatus("error");
           setIsLoading(false);
           // Redirect to initial login page
-          window.location.href = "https://nxthyre-frontend-vite.vercel.app";
+          setTimeout(() => {
+            window.location.href = "https://nxthyre-frontend-vite.vercel.app";
+          }, 3000);
           return;
         }
 
@@ -103,7 +105,9 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
 
         setIsLoading(false);
         // Redirect to initial login page
-        window.location.href = "https://nxthyre-frontend-vite.vercel.app";
+        setTimeout(() => {
+          window.location.href = "https://nxthyre-frontend-vite.vercel.app";
+        }, 2000);
       } finally {
         setIsLoading(false);
       }
