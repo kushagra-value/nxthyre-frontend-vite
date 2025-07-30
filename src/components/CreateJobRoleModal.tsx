@@ -174,7 +174,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
     if (!requiredFields.maxExp) errors.push('Maximum experience is required and must be a valid number.');
     if (!requiredFields.minSalary) errors.push('Minimum salary is required unless confidential.');
     if (!requiredFields.maxSalary) errors.push('Maximum salary is required unless confidential.');
-    if (!requiredFields.jobDescription) errors.push('Job description is required when pasting text.');
+    if (!requiredFields.jobDescription) errors.push('Job description is required when pasting text. or uploading a file.');
 
     // Validate experience range
     if (requiredFields.minExp && requiredFields.maxExp) {
@@ -245,6 +245,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
         skill_names: formData.skills,
         status: formData.shareExternally ? 'PUBLISHED' : 'DRAFT',
         workspace: workspaceId,
+        ...(formData.uploadType === 'paste' ? { description_text: formData.jobDescription } : { description_file: file! }),
       };
 
       await jobPostService.createJob(jobData);
@@ -311,7 +312,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
   };
 
   const handleUpdate = () => {
-    showToast.success('Feature Coming Soon!');
+    showToast.info('Feature Coming Soon!');
   };
 
   if (!isOpen) return null;
