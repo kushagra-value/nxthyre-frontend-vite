@@ -212,7 +212,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
     try {
       const stages = await candidateService.getPipelineStages(parseInt(jobId));
-      setPipelineStages(stages);
+      setPipelineStages(stages.slice(0, 5));
       setShowDropdown(candidateId);
     } catch (error: any) {
       showToast.error(error.message || "Failed to fetch pipeline stages");
@@ -523,7 +523,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
         </div>
       ) : (
       <>
-      <div className="divide-y divide-gray-200">
+      <div className="border-b-1 border-gray-200">
         {candidates.map((candidate) => (
           <div
             key={candidate.id}

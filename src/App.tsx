@@ -1114,6 +1114,7 @@ function MainApp() {
 
                     <CreateJobRoleModal
                       isOpen={showCreateJobRole}
+                      workspaceId={currentUser?.organizationId ? parseInt(currentUser.organizationId) : 1} // Fallback to 1 if undefined
                       onClose={() => setShowCreateJobRole(false)}
                       onJobCreated={handleJobCreatedOrUpdated}
                     />
