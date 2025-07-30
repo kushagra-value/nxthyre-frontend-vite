@@ -100,7 +100,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
 
   // Safe integer range for JavaScript (Number.MAX_SAFE_INTEGER)
   const MAX_SAFE_INTEGER = 999999999999;
-
+  const MIN_DESCRIPTION_LENGTH = 10;
   const handleSkillAdd = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && skillInput.trim()) {
       if (!isValidTextInput(skillInput)) {
@@ -175,6 +175,10 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
     if (!requiredFields.minSalary) errors.push('Minimum salary is required unless confidential.');
     if (!requiredFields.maxSalary) errors.push('Maximum salary is required unless confidential.');
     if (!requiredFields.jobDescription) errors.push('Job description is required when pasting text. or uploading a file.');
+    if (!requiredFields.jobDescription) errors.push('Job description is required when pasting text or uploading a file.');
+    if (formData.uploadType === 'paste' && formData.jobDescription.trim().length < MIN_DESCRIPTION_LENGTH) {
+      errors.push(`Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`);
+    }
 
     // Validate experience range
     if (requiredFields.minExp && requiredFields.maxExp) {
@@ -197,8 +201,8 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
         errors.push('Salary fields must be valid numbers.');
       } else if (minSalary > maxSalary) {
         errors.push('Minimum salary cannot be greater than maximum salary.');
-      } else if (minSalary < 0 || maxSalary < 0 || minSalary > MAX_SAFE_INTEGER || maxSalary > MAX_SAFE_INTEGER) {
-        errors.push('Salary values must be within valid integer range (0 to 999999999999).');
+      } else if (minSalary < 999 || maxSalary < 999 || minSalary > MAX_SAFE_INTEGER || maxSalary > MAX_SAFE_INTEGER) {
+        errors.push('Salary values must be within valid integer range (1000 to 999999999999).');
       }
     }
 
@@ -227,6 +231,16 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
       showToast.error(errors.join(' '));
       return;
     }
+
+    if (formData.uploadType === 'upload' && !file) {
+      showToast.error('Please upload a file for the job description.');
+      return;
+    }
+    if (formData.uploadType === 'paste' && formData.jobDescription.trim().length < MIN_DESCRIPTION_LENGTH) {
+      showToast.error(`Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const jobData: CreateJobData = {
@@ -256,7 +270,11 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
       setFile(null);
     } catch (error: any) {
       
-      const errorMessage = error.response?.data?.department
+      const errorMessage = error.response?.data?.description
+        ? `Description error: ${error.response.data.description}`
+        : error.response?.data?.description_file
+        ? `File upload error: ${error.response.data.description_file}`
+        : error.response?.data?.department
         ? `Department error: ${error.response.data.department.join(' ')}`
         : error.message || 'Failed to create job role';
       showToast.error(errorMessage);
@@ -271,6 +289,18 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
       showToast.error(errors.join(' '));
       return;
     }
+
+    
+    if (formData.uploadType === 'upload' && !file) {
+      showToast.error('Please upload a file for the job description.');
+      return;
+    }
+    if (formData.uploadType === 'paste' && formData.jobDescription.trim().length < MIN_DESCRIPTION_LENGTH) {
+      showToast.error(`Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`);
+      return;
+    }
+
+
     setIsLoading(true);
     try {
       const jobData: CreateJobData = {
@@ -298,7 +328,11 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
       setCurrentStep(1);
       setFile(null);
     } catch (error: any) {
-      const errorMessage = error.response?.data?.department
+      const errorMessage = error.response?.data?.description
+        ? `Description error: ${error.response.data.description}`
+        : error.response?.data?.description_file
+        ? `File upload error: ${error.response.data.description_file}`
+        : error.response?.data?.department
         ? `Department error: ${error.response.data.department.join(' ')}`
         : error.message || 'Failed to create job role';
       showToast.error(errorMessage);
@@ -595,7 +629,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                   </div>
                 </div>
                 <div className="col-span-6">
-                  <label className="block flex justify-between text-sm font-medium text-gray-700 mb-2">
+                  <label className="block flex text-sm font-medium text-gray-700 mb-2">
                     Enter Salary Range {formData.confidential ? '' : <span className="text-red-500">*</span>}
                     <div className="flex items-end">
                       <label className="flex items-center">
