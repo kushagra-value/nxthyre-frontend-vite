@@ -245,7 +245,6 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
         skill_names: formData.skills,
         status: formData.shareExternally ? 'PUBLISHED' : 'DRAFT',
         workspace: workspaceId,
-        ...(formData.uploadType === 'paste' ? { description_text: formData.jobDescription } : { description_file: file! }),
       };
 
       await jobPostService.createJob(jobData);

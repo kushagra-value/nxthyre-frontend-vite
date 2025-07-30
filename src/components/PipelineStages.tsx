@@ -1486,11 +1486,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 </div>
               )}
 
-              <div>
+              {/* <div>
                 <button className="mt-1 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                   Resend Interview Link
                 </button>
-              </div>
+              </div> */}
               <div className="flex justify-between w-full">
                 <button
                   onClick={() => {

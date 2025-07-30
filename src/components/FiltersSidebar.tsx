@@ -80,7 +80,7 @@ const JobTitlesSlider: React.FC<{
       const initialScroll = totalWidth / 2 - visibleWidth / 2;
       sliderRef.current.scrollTo({ left: initialScroll, behavior: "instant" });
     }
-  }, []);
+  }, [recentSearches]);
 
   const scrollLeft = () => {
     if (sliderRef.current) {
@@ -479,8 +479,18 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     setShowSuggestions(false);
   };
 
-  const applyFilters = () => {
-    onApplyFilters(tempFilters);
+  const applyFilters = async () => {
+    try {
+      // Apply the filters by calling the parent component's callback
+      await onApplyFilters(tempFilters);
+
+      // Refetch recent searches to update the JobTitlesSlider
+      const searches = await candidateService.getRecentSearches();
+      setRecentSearches(searches);
+    } catch (error) {
+      console.error("Error applying filters or fetching recent searches:", error);
+      showToast.error("Failed to apply filters or update recent searches");
+    }
   };
 
   const noticePeriodOptions = [
@@ -545,10 +555,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               )}
 
             </div>
-            <JobTitlesSlider
-              recentSearches={recentSearches}
-              onSelectSearch={handleSelectRecentSearch}
-            />
           </div>
         )}
       </div>
