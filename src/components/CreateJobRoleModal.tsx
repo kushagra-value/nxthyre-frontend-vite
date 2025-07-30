@@ -124,10 +124,10 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    if (selectedFile && ['application/pdf', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(selectedFile.type)) {
+    if (selectedFile && [ 'text/plain'].includes(selectedFile.type)) {
       setFile(selectedFile);
     } else {
-      showToast.error('Please upload a valid file (.pdf, .doc, .docx, .txt)');
+      showToast.error('Please upload a valid file ( .txt)');
     }
   };
 
@@ -135,10 +135,10 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
     e.preventDefault();
     e.stopPropagation();
     const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile && ['application/pdf', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(droppedFile.type)) {
+    if (droppedFile && ['text/plain'].includes(droppedFile.type)) {
       setFile(droppedFile);
     } else {
-      showToast.error('Please upload a valid file (.pdf, .doc, .docx, .txt)');
+      showToast.error('Please upload a valid file ( .txt)');
     }
   };
 
