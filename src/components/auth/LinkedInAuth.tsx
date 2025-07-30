@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import {
   CheckCircle,
   XCircle,
@@ -65,7 +66,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
           // Redirect to initial login page
           setTimeout(() => {
             // window.location.href = "https://nxthyre-frontend-vite.vercel.app";
-            onNavigate("login");
+            onNavigate("/");
           }, 3000);
           return;
         }
@@ -108,7 +109,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
         // Redirect to initial login page
         setTimeout(() => {
           // window.location.href = "https://nxthyre-frontend-vite.vercel.app";
-          onNavigate("login");
+          onNavigate("/");
         }, 2000);
       } finally {
         setIsLoading(false);
@@ -153,6 +154,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
       <div className="absolute bottom-60 right-60 w-2 h-2 bg-white/20 rounded-full"></div>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center p-8">
+        <Toaster position="bottom-right" />
         <div className="w-full max-w-7xl flex items-center gap-16">
           {/* Left Side - Branding Content */}
           <div className="flex-1 text-white">
@@ -359,7 +361,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
                       onClick={() =>
                         // (window.location.href =
                         //   "https://nxthyre-frontend-vite.vercel.app")
-                        onNavigate("login")
+                        onNavigate("/")
                       }
                       className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
                     >
