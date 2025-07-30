@@ -64,7 +64,8 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
           setIsLoading(false);
           // Redirect to initial login page
           setTimeout(() => {
-            window.location.href = "https://nxthyre-frontend-vite.vercel.app";
+            // window.location.href = "https://nxthyre-frontend-vite.vercel.app";
+            onNavigate("login");
           }, 3000);
           return;
         }
@@ -106,7 +107,8 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
         setIsLoading(false);
         // Redirect to initial login page
         setTimeout(() => {
-          window.location.href = "https://nxthyre-frontend-vite.vercel.app";
+          // window.location.href = "https://nxthyre-frontend-vite.vercel.app";
+          onNavigate("login");
         }, 2000);
       } finally {
         setIsLoading(false);
@@ -355,8 +357,9 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
                     </button>
                     <button
                       onClick={() =>
-                        (window.location.href =
-                          "https://nxthyre-frontend-vite.vercel.app")
+                        // (window.location.href =
+                        //   "https://nxthyre-frontend-vite.vercel.app")
+                        onNavigate("login")
                       }
                       className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
                     >
