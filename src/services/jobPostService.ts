@@ -133,7 +133,7 @@ class JobPostService {
       if (data.workspace) formData.append("workspace", String(data.workspace));
       if (data.skill_names) {
         data.skill_names.forEach((skill, index) => {
-          formData.append(`skill_names[${index}]`, skill);
+          formData.append(`skills`, skill);
         });
       }
       if (data.description_text) {
