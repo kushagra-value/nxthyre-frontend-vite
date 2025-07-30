@@ -89,6 +89,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
 
         // Clean URL parameters to prevent re-processing
         navigate("/linkedin-auth", { replace: true });
+        console.log("second one - LinkedIn auth success:", linkedInUser);
 
         // Simulate redirect delay
         setTimeout(() => {
@@ -140,6 +141,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
     setIsLoading(true);
     setAuthStatus("loading");
     navigate("/linkedin-auth", { replace: true });
+    console.log("handle retry one - Retrying LinkedIn authentication...");
   };
 
   return (
