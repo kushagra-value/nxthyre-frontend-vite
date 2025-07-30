@@ -133,7 +133,8 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
       import.meta.env.VITE_LINKEDIN_REDIRECT_URI
     }&state=${state}&scope=${scope}`;
 
-    window.location.href = linkedInAuthUrl;
+    // window.location.href = linkedInAuthUrl;
+    window.location.href = "https://nxthyre-frontend-vite.vercel.app";
   };
 
   const handleRetry = () => {
