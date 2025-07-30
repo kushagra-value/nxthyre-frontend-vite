@@ -56,6 +56,10 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
             response.error ||
               "Registration with personal email addresses is not allowed. Please use your company email."
           );
+          console.log("LinkedIn auth error:", response.error);
+          console.log(
+            "Registration with personal email addresses is not allowed. Please use your company email."
+          );
           setAuthStatus("error");
           setIsLoading(false);
           // Redirect to initial login page
