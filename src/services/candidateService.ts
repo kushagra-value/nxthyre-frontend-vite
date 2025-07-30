@@ -259,7 +259,26 @@ class CandidateService {
     signal?: AbortSignal
   ): Promise<CandidateListItem[]> {
     try {
-      const rawUrl = `/candidates/universal-search/?query=${query}`;
+      let normalizedQuery = query;
+      // Check if the query is a LinkedIn URL
+      if (query.startsWith("https://www.linkedin.com/in/")) {
+        try {
+          const url = new URL(query);
+          // Ensure the pathname starts with "/in/" (LinkedIn profile URL pattern)
+          if (url.pathname.startsWith("/in/")) {
+            // Remove all trailing slashes from the pathname
+            while (url.pathname.endsWith("/")) {
+              url.pathname = url.pathname.slice(0, -1);
+            }
+            normalizedQuery = url.toString();
+          }
+        } catch (e) {
+          // If the URL is invalid, fall back to the original query
+        }
+      }
+      const rawUrl = `/candidates/universal-search/?query=${encodeURIComponent(
+        normalizedQuery
+      )}`;
       const response = await apiClient.get(rawUrl, { signal });
       return response.data;
     } catch (error: any) {
@@ -450,13 +469,13 @@ class CandidateService {
   }
 
   async exportCandidates(
-  candidateIds: string[]
+    candidateIds: string[]
   ): Promise<ExportCandidateResponse> {
     try {
       const response = await apiClient.post("/candidates/export-selected/", {
         candidate_ids: candidateIds,
       });
-      return response.data; 
+      return response.data;
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error || "Failed to export candidates"

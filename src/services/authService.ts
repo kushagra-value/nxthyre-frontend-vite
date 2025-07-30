@@ -19,6 +19,8 @@ export interface OTPVerifyResponse {
 }
 
 export interface LinkedInCallbackResponse {
+  error: string;
+  status: string;
   firebase_token: string;
   is_onboarded: boolean;
   recruiter_id: string;

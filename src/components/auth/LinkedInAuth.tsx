@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import {
   CheckCircle,
   XCircle,
@@ -50,6 +51,25 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
         // Exchange code for Firebase token
         const response = await authService.linkedInCallback(code, stateFromUrl);
 
+        // Check for NEEDS_COMPANY_EMAIL status
+        if (response.status === "NEEDS_COMPANY_EMAIL") {
+          showToast.error(
+            response.error ||
+              "Registration with personal email addresses is not allowed. Please use your company email."
+          );
+          console.log("LinkedIn auth error:", response.error);
+          console.log(
+            "Registration with personal email addresses is not allowed. Please use your company email."
+          );
+          setAuthStatus("error");
+          setIsLoading(false);
+          // Redirect to initial login page
+          setTimeout(() => {
+            window.location.href = "https://nxthyre-frontend-vite.vercel.app";
+          }, 3000);
+          return;
+        }
+
         // Sign in with Firebase custom token
         await authService.signInWithCustomToken(response.firebase_token);
 
@@ -69,6 +89,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
 
         // Clean URL parameters to prevent re-processing
         navigate("/linkedin-auth", { replace: true });
+        console.log("second one - LinkedIn auth success:", linkedInUser);
 
         // Simulate redirect delay
         setTimeout(() => {
@@ -83,6 +104,12 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
         console.error("LinkedIn auth error:", error);
         setAuthStatus("error");
         showToast.error(error.message || "LinkedIn authentication failed");
+
+        setIsLoading(false);
+        // Redirect to initial login page
+        setTimeout(() => {
+          window.location.href = "https://nxthyre-frontend-vite.vercel.app";
+        }, 3000);
       } finally {
         setIsLoading(false);
       }
@@ -114,6 +141,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
     setIsLoading(true);
     setAuthStatus("loading");
     navigate("/linkedin-auth", { replace: true });
+    console.log("handle retry one - Retrying LinkedIn authentication...");
   };
 
   return (
@@ -126,6 +154,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
       <div className="absolute bottom-60 right-60 w-2 h-2 bg-white/20 rounded-full"></div>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center p-8">
+        <Toaster position="bottom-right" />
         <div className="w-full max-w-7xl flex items-center gap-16">
           {/* Left Side - Branding Content */}
           <div className="flex-1 text-white">
@@ -206,7 +235,10 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
           {/* Right Side - Form */}
           <div className="bg-white rounded-2xl p-8 shadow-2xl">
             <button
-              onClick={() => onNavigate("/")}
+              onClick={() =>
+                (window.location.href =
+                  "https://nxthyre-frontend-vite.vercel.app")
+              }
               className="flex items-center text-gray-600 hover:text-gray-800 mb-6 transition-colors"
             >
               <svg
@@ -329,7 +361,10 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
                       Try Again
                     </button>
                     <button
-                      onClick={() => onNavigate("/")}
+                      onClick={() =>
+                        (window.location.href =
+                          "https://nxthyre-frontend-vite.vercel.app")
+                      }
                       className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
                     >
                       Back to Login
