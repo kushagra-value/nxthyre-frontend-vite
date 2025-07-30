@@ -137,7 +137,7 @@ class JobPostService {
         });
       }
       if (data.description_text) {
-        formData.append("description_text", data.description_text);
+        formData.append("description", data.description_text);
       } else if (data.description_file) {
         formData.append("description_file", data.description_file);
       }
