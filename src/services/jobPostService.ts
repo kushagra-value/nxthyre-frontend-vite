@@ -89,7 +89,7 @@ class JobPostService {
 
       // Append skills as a JSON string or individual entries based on API requirements
       data.skill_names.forEach((skill, index) => {
-        formData.append(`skills]`, skill);
+        formData.append(`skills`, skill);
       });
 
       // Append description_text or description_file
