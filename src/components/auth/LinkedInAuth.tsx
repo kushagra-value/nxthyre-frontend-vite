@@ -50,6 +50,19 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
         // Exchange code for Firebase token
         const response = await authService.linkedInCallback(code, stateFromUrl);
 
+        // Check for NEEDS_COMPANY_EMAIL status
+        if (response.status === "NEEDS_COMPANY_EMAIL") {
+          showToast.error(
+            response.error ||
+              "Registration with personal email addresses is not allowed. Please use your company email."
+          );
+          setAuthStatus("error");
+          setIsLoading(false);
+          // Redirect to initial login page
+          window.location.href = "https://nxthyre-frontend-vite.vercel.app";
+          return;
+        }
+
         // Sign in with Firebase custom token
         await authService.signInWithCustomToken(response.firebase_token);
 
@@ -83,6 +96,10 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
         console.error("LinkedIn auth error:", error);
         setAuthStatus("error");
         showToast.error(error.message || "LinkedIn authentication failed");
+
+        setIsLoading(false);
+        // Redirect to initial login page
+        window.location.href = "https://nxthyre-frontend-vite.vercel.app";
       } finally {
         setIsLoading(false);
       }
@@ -329,7 +346,10 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
                       Try Again
                     </button>
                     <button
-                      onClick={() => onNavigate("/")}
+                      onClick={() =>
+                        (window.location.href =
+                          "https://nxthyre-frontend-vite.vercel.app")
+                      }
                       className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
                     >
                       Back to Login
