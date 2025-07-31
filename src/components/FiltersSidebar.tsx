@@ -171,7 +171,7 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ filters, updateTempFilters }) =
   return (
     <div className="relative flex items-center justify-end px-2 pb-1">
       <button onClick={toggleMenu}>
-        <CircleEllipsis className="h-5 w-5 text-gray-400" />
+        <CircleEllipsis className="h-5 w-5 text-gray-500" />
       </button>
       {isMenuOpen && (
         <div
@@ -517,7 +517,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-4 h-fit">
 
       {/* Keywords */}
-      <div className="border-b border-gray-200  p-4 mb-4">
+      <div className="border-b border-gray-200 mb-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
             <Search className="w-4 h-4 mr-2 text-gray-500" />
@@ -530,9 +530,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               onClick={() => toggleSection("keywords")}
             >
               {expandedSections.keywords ? (
-                <ChevronUp className="w-4 h-4 text-gray-400" />
+                <ChevronUp className="w-4 h-4 text-gray-500" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-gray-400" />
+                <ChevronDown className="w-4 h-4 text-gray-500" />
               )}
             </div>
           </div>
@@ -581,9 +581,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             Total Experience
           </h3>
           {expandedSections.totalExp ? (
-            <ChevronUp className="w-4 h-4 text-gray-400" />
+            <ChevronUp className="w-4 h-4 text-gray-500" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-400" />
+            <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
         </div>
       {expandedSections.totalExp && (
@@ -647,9 +647,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             Location
           </h3>
           {expandedSections.location ? (
-            <ChevronUp className="w-4 h-4 text-gray-400" />
+            <ChevronUp className="w-4 h-4 text-gray-500" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-400" />
+            <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
         </div>
         {expandedSections.location && (
@@ -718,9 +718,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             Companies/Industries
           </h3>
           {expandedSections.companies ? (
-            <ChevronUp className="w-4 h-4 text-gray-400" />
+            <ChevronUp className="w-4 h-4 text-gray-500" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-400" />
+            <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
         </div>
         {expandedSections.companies && (
@@ -765,9 +765,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             Salary range
           </h3>
           {expandedSections.salary ? (
-            <ChevronUp className="w-4 h-4 text-gray-400" />
+            <ChevronUp className="w-4 h-4 text-gray-500" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-400" />
+            <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
         </div>
         {expandedSections.salary && (
@@ -811,9 +811,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             Notice period
           </h3>
           {expandedSections.notice ? (
-            <ChevronUp className="w-4 h-4 text-gray-400" />
+            <ChevronUp className="w-4 h-4 text-gray-500" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-400" />
+            <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
         </div>
         {expandedSections.notice && (
@@ -845,9 +845,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             Colleges
           </h3>
           {expandedSections.colleges ? (
-            <ChevronUp className="w-4 h-4 text-gray-400" />
+            <ChevronUp className="w-4 h-4 text-gray-500" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-400" />
+            <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
         </div>
         {expandedSections.colleges && (
@@ -900,9 +900,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             Spotlight
           </h3>
           {expandedSections.spotlight ? (
-            <ChevronUp className="w-4 h-4 text-gray-400" />
+            <ChevronUp className="w-4 h-4 text-gray-500" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-400" />
+            <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
         </div>
         {expandedSections.spotlight && (
@@ -961,9 +961,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             More Filters
           </h3>
           {expandedSections.moreFilters ? (
-            <ChevronUp className="w-4 h-4 text-gray-400" />
+            <ChevronUp className="w-4 h-4 text-gray-500" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-400" />
+            <ChevronDown className="w-4 h-4 text-gray-500" />
           )}
         </div>
         {expandedSections.moreFilters && (
