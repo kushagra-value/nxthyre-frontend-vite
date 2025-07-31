@@ -101,7 +101,7 @@ const Header: React.FC<HeaderProps> = ({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => setIsFocused(true)}
-                    onBlur={() => setTimeout(() => setIsFocused(false), 100)}
+                    // onBlur={() => setTimeout(() => setIsFocused(false), 100)}
                     className="bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none w-40"
                   />
                   {isFocused && candidates.length > 0 && (
