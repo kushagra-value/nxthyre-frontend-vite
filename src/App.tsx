@@ -916,7 +916,7 @@ function MainApp() {
                 <>
                   <Toaster />
                   <div className="bg-gray-50 min-h-screen">
-                    <div className="sticky top-0 z-20 bg-white will-change-transform">
+                    <div className="sticky top-0 z-30 bg-white will-change-transform">
                       <Header
                         onCreateRole={handleCreateJobRole}
                         onOpenLogoutModal={handleOpenLogoutModal}
@@ -929,7 +929,7 @@ function MainApp() {
                     <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3">
                       {categories.length > 0 && (
                         <div className="mb-4">
-                          <div className="sticky top-0 z-16 hidden md:flex items-center space-x-2 lg:order-1 top-16 self-start will-change-transform">
+                          <div className="sticky top-0 z-20 hidden md:flex items-center space-x-2 lg:order-1 top-16 self-start will-change-transform">
                             {categories.slice(0, 4).map((category) => (
                               <div
                                 key={category.id}
