@@ -523,7 +523,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
         </div>
       ) : (
       <>
-      <div className="border-b-1 border-gray-200 overflow-y-auto max-h-[calc(100vh-60px)] hide-scrollbar">
+      <div className="border-b-1 border-gray-200 overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar">
         {candidates.map((candidate) => (
           <div
             key={candidate.id}
