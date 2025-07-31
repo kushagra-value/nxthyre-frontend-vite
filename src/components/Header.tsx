@@ -84,7 +84,7 @@ const Header: React.FC<HeaderProps> = ({
             {/* Right Section */}
             <div className="flex items-center space-x-6">
               {/* Search - Only show when authenticated */}
-              {isAuthenticated && showCreateRoleButton && (
+              {isAuthenticated && (
                 <div className="hidden sm:flex items-center bg-gray-100 rounded-lg px-3 py-2">
                   <Search className="w-4 h-4 text-gray-500 mr-2" />
                   <input
