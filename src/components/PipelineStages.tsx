@@ -2838,9 +2838,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           onOpenLogoutModal={handleOpenLogoutModal}
           credits={credits}
           onBack={onBack}
-          showCreateRoleButton={false}
           searchQuery={""}
           setSearchQuery={() => {}}
+          showCreateRoleButton={false}
         />
       </div>
 
