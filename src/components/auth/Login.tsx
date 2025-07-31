@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Eye,
@@ -12,6 +12,12 @@ import {
 import { authService } from "../../services/authService";
 import { showToast } from "../../utils/toast";
 import organizationService from "../../services/organizationService";
+import { auth } from "../../config/firebase";
+import {
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
+} from "firebase/auth";
 
 interface LoginProps {
   onNavigate: (flow: string, data?: any) => void;
@@ -29,6 +35,42 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isPasswordLimitReached, setIsPasswordLimitReached] = useState(false);
+
+  // Check for existing authenticated user on mount
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        try {
+          const userStatus = await authService.getUserStatus();
+          const myWorkspacesCount = await organizationService.getMyWorkspaces();
+          const appUser = {
+            id: user.uid,
+            fullName: userStatus.full_name,
+            email: userStatus.email,
+            role:
+              userStatus.roles.length > 0
+                ? userStatus.roles[0].name.toLowerCase()
+                : "team",
+            organizationId: userStatus.organization?.id?.toString(),
+            workspaceIds: [],
+            isVerified: user.emailVerified,
+            createdAt: user.metadata.creationTime || new Date().toISOString(),
+          };
+          onLogin(appUser);
+          if (userStatus.is_onboarded && myWorkspacesCount.length > 0) {
+            navigate("/");
+          } else {
+            navigate("/workspaces-org");
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          await authService.signOut(); // Sign out if there's an error
+          setErrors({ general: "Session expired. Please log in again." });
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, [onLogin, navigate]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -55,6 +97,12 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
     setIsLoading(true);
 
     try {
+      // Set persistence based on "Remember me" checkbox
+      const persistence = formData.rememberMe
+        ? browserLocalPersistence
+        : browserSessionPersistence;
+      await setPersistence(auth, persistence);
+
       // Sign in with Firebase
       const firebaseUser = await authService.signInWithEmail(
         formData.email,
