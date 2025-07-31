@@ -359,7 +359,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
   const endIndex = Math.min(startIndex + candidatesPerPage, candidates.length);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 h-fit">
       <div className="border-b border-gray-200">
         <div className="flex items-center justify-between p-3 lg:p-4 pb-0">
           <div className="flex space-x-1 overflow-x-auto">
