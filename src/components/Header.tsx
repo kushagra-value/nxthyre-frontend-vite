@@ -113,7 +113,6 @@ const Header: React.FC<HeaderProps> = ({
                           onClick={() => {
                             onSelectCandidate(candidate);
                             setSearchQuery(candidate.full_name || "");
-                            // setIsFocused(false);
                           }}
                         >
                           {candidate.full_name || "Unnamed Candidate"}
