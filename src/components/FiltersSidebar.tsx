@@ -517,7 +517,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-4 h-fit">
 
       {/* Keywords */}
-      <div className="border-b border-gray-200 mb-4">
+      <div className="border-b border-gray-200 mb-4 pb-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
             <Search className="w-4 h-4 mr-2 text-gray-500" />
