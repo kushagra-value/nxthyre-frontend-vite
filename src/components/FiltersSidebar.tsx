@@ -15,6 +15,7 @@ import {
   Clock10,
   Briefcase,
   Star,
+  X,
 } from "lucide-react";
 import { debounce } from "lodash";
 import {
@@ -170,7 +171,7 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ filters, updateTempFilters }) =
   return (
     <div className="relative flex items-center justify-end px-2 pb-1">
       <button onClick={toggleMenu}>
-        <CircleEllipsis className="h-5 w-5 text-gray-600" />
+        <CircleEllipsis className="h-5 w-5 text-gray-400" />
       </button>
       {isMenuOpen && (
         <div
@@ -434,6 +435,16 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     }
   };
 
+  const removeLocationTag = (locationToRemove: string) => {
+    const updatedLocations = tempFilters.locations.filter(
+      (loc) => loc !== locationToRemove
+    );
+    const updatedLocationString = updatedLocations.join(", ");
+    
+    updateTempFilters("locations", updatedLocations);
+    updateTempFilters("location", updatedLocationString);
+  };
+
   const resetFilters = () => {
     setIsLocationManuallyEdited(false);
     setKeywordSuggestions([]);
@@ -503,13 +514,13 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-4 space-y-4 h-fit">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-4 h-fit">
 
       {/* Keywords */}
-      <div>
+      <div className="border-b border-gray-200  p-4 mb-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
-            <Search className="w-4 h-4 mr-2 text-gray-800" />
+          <h3 className="text-sm lg:text-base font-[400] font-medium text-gray-700 flex items-center">
+            <Search className="w-4 h-4 mr-2 text-gray-500" />
             Keywords
           </h3>
           <div className="flex gap-2 cursor-pointer">
@@ -519,9 +530,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               onClick={() => toggleSection("keywords")}
             >
               {expandedSections.keywords ? (
-                <ChevronUp className="w-4 h-4 text-gray-500" />
+                <ChevronUp className="w-4 h-4 text-gray-400" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-gray-500" />
+                <ChevronDown className="w-4 h-4 text-gray-400" />
               )}
             </div>
           </div>
@@ -560,79 +571,85 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       </div>
 
       {/* Total Experience */}
-      <div>
+      <div className={`bg-[#F5F9FB] rounded-t-lg  p-4 ${expandedSections.totalExp ? "my-4 rounded-lg" : "border-b border-gray-200"}`}>
         <div
-          className="flex items-center justify-between cursor-pointer mb-2"
+          className={`flex items-center justify-between cursor-pointer ${expandedSections.totalExp ? "mb-2" : ""}`}
           onClick={() => toggleSection("totalExp")}
         >
-          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
-            <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
+          <h3 className="text-sm lg:text-base font-[400] font-medium text-gray-700 flex items-center">
+            <Briefcase className="w-4 h-4 mr-2 text-gray-500" />
             Total Experience
           </h3>
           {expandedSections.totalExp ? (
-            <ChevronUp className="w-4 h-4 text-gray-500" />
+            <ChevronUp className="w-4 h-4 text-gray-400" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-500" />
+            <ChevronDown className="w-4 h-4 text-gray-400" />
           )}
         </div>
-        {expandedSections.totalExp && (
-          <div className="space-y-2">
-            <div className="flex space-x-2">
+      {expandedSections.totalExp && (
+        <div className="space-y-3">
+          <div className="flex space-x-3">
+            <div className="flex-1">
               <input
                 type="text"
-                placeholder="Min Exp (in years)"
+                placeholder="0 Years"
                 value={tempFilters.minTotalExp}
                 onChange={(e) => updateTempFilters("minTotalExp", e.target.value)}
-                className="w-1/3 flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 bg-white"
                 pattern="\d*"
                 onInput={(e) => {
                   e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, "");
                 }}
               />
+              <label className="text-xs text-gray-500 mt-1 block">Minimum Exp</label>
+            </div>
+            <div className="flex-1">
               <input
                 type="text"
-                placeholder="Max Exp (in years)"
+                placeholder="5 Years"
                 value={tempFilters.maxTotalExp}
                 onChange={(e) => updateTempFilters("maxTotalExp", e.target.value)}
-                className="w-1/3 flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 bg-white"
                 pattern="\d*"
                 onInput={(e) => {
                   e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, "");
                 }}
               />
+              <label className="text-xs text-gray-500 mt-1 block">Maximum Exp</label>
             </div>
           </div>
-        )}
-
-        <div className="mt-2">
+          <div>
             <input
               type="text"
-              placeholder="Years of Exp in Current Company"
+              placeholder="5 Years"
               value={tempFilters.minExperience}
               onChange={(e) => updateTempFilters("minExperience", e.target.value)}
-              className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 bg-white"
               pattern="\d*"
               onInput={(e) => {
                 e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, "");
               }}
             />
+            <label className="text-xs text-gray-500 mt-1 block">Experience in current company</label>
           </div>
+        </div>
+      )}
       </div>
 
       {/* Location */}
-      <div className="mb-4">
+      <div className={`bg-[#F5F9FB]  p-4 ${expandedSections.location ? "my-4 rounded-lg" : "border-b border-gray-200"}`}>
         <div
-          className="flex items-center justify-between cursor-pointer mb-2"
+          className={`flex items-center justify-between cursor-pointer ${expandedSections.location ? "mb-2" : ""}`}
           onClick={() => toggleSection("location")}
         >
-          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
-            <MapPin className="w-4 h-4 mr-2 text-gray-800" />
+          <h3 className="text-sm lg:text-base font-[400] font-medium text-gray-700 flex items-center">
+            <MapPin className="w-4 h-4 mr-2 text-gray-500" />
             Location
           </h3>
           {expandedSections.location ? (
-            <ChevronUp className="w-4 h-4 text-gray-500" />
+            <ChevronUp className="w-4 h-4 text-gray-400" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-500" />
+            <ChevronDown className="w-4 h-4 text-gray-400" />
           )}
         </div>
         {expandedSections.location && (
@@ -641,7 +658,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               <select
                 value={tempFilters.city}
                 onChange={(e) => updateTempFilters("city", e.target.value)}
-                className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
               >
                 <option value="">City</option>
                 <option value="Mumbai">Mumbai</option>
@@ -652,7 +669,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               <select
                 value={tempFilters.country}
                 onChange={(e) => updateTempFilters("country", e.target.value)}
-                className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
               >
                 <option value="">Country</option>
                 <option value="India">India</option>
@@ -668,28 +685,44 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               onChange={(e) => updateTempFilters("location", e.target.value)}
               className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
+
+            {tempFilters.locations.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {tempFilters.locations.map((location, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200"
+                    >
+                      <X 
+                        className="w-3 h-3 text-gray-400 mr-1 cursor-pointer hover:text-gray-600" 
+                        onClick={() => removeLocationTag(location)}
+                      />
+                      <span>{location}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
           </div>
         )}
       </div>
 
 
       {/* Companies/Industries */}
-      <div>
+      <div className={`bg-[#F5F9FB]  p-4 ${expandedSections.companies ? "my-4 rounded-lg" : "border-b border-gray-200"}`}>
         <div
-          className="flex items-center justify-between cursor-pointer mb-2"
+          className={`flex items-center justify-between cursor-pointer ${expandedSections.companies ? "mb-2": ""} `}
           onClick={() => toggleSection("companies")}
         >
-          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
-            <Building2 className="w-4 h-4 mr-2 text-gray-800" />
+          <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
+            <Building2 className="w-4 h-4 mr-2 text-gray-500" />
             Companies/Industries
           </h3>
           {expandedSections.companies ? (
-            <ChevronUp className="w-4 h-4 text-gray-500" />
+            <ChevronUp className="w-4 h-4 text-gray-400" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-500" />
+            <ChevronDown className="w-4 h-4 text-gray-400" />
           )}
         </div>
-
         {expandedSections.companies && (
           <div className="space-y-0">
             <div>
@@ -701,7 +734,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 placeholder="Search Companies"
                 value={tempFilters.companies}
                 onChange={(e) => updateTempFilters("companies", e.target.value)}
-                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
               />
             </div>
             <span className="flex justify-center text-gray-400">or</span>
@@ -714,7 +747,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 placeholder="Search Industries"
                 value={tempFilters.industries}
                 onChange={(e) => updateTempFilters("industries", e.target.value)}
-                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
               />
             </div>
           </div>
@@ -722,19 +755,19 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       </div>
 
       {/* Salary Range */}
-      <div>
+      <div className={`bg-[#F5F9FB] p-4  ${expandedSections.salary ? "my-4 rounded-lg" : "border-b border-gray-200"}`}>
         <div
-          className="flex items-center justify-between cursor-pointer mb-2"
+          className={`flex items-center justify-between cursor-pointer ${expandedSections.salary ? "mb-2": ""} `}
           onClick={() => toggleSection("salary")}
         >
-          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
-            <DollarSign className="w-4 h-4 mr-2 text-gray-800" />
+          <h3 className="text-sm lg:text-base font-[400] font-medium text-gray-700 flex items-center">
+            <DollarSign className="w-4 h-4 mr-2 text-gray-500" />
             Salary range
           </h3>
           {expandedSections.salary ? (
-            <ChevronUp className="w-4 h-4 text-gray-500" />
+            <ChevronUp className="w-4 h-4 text-gray-400" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-500" />
+            <ChevronDown className="w-4 h-4 text-gray-400" />
           )}
         </div>
         {expandedSections.salary && (
@@ -743,7 +776,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               <select
                 value={tempFilters.minSalary}
                 onChange={(e) => updateTempFilters("minSalary", e.target.value)}
-                className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-500"
               >
                 <option value="">Select Min Salary</option>
                 <option value="500000">5 LPA</option>
@@ -754,7 +787,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               <select
                 value={tempFilters.maxSalary}
                 onChange={(e) => updateTempFilters("maxSalary", e.target.value)}
-                className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-500"
               >
                 <option value="">Select Max Salary</option>
                 <option value="1000000">10 LPA</option>
@@ -768,19 +801,19 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       </div>
 
       {/* Notice Period */}
-      <div>
+      <div className={`bg-[#F5F9FB] p-4 ${expandedSections.notice ? "my-4 rounded-lg" : "border-b border-gray-200"}`}>
         <div
-          className="flex items-center justify-between cursor-pointer mb-2"
+          className={`flex items-center justify-between cursor-pointer ${expandedSections.notice ? "mb-2": ""} `}
           onClick={() => toggleSection("notice")}
         >
-          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
-            <Clock10 className="w-4 h-4 mr-2 text-gray-800" />
+          <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
+            <Clock10 className="w-4 h-4 mr-2 text-gray-500" />
             Notice period
           </h3>
           {expandedSections.notice ? (
-            <ChevronUp className="w-4 h-4 text-gray-500" />
+            <ChevronUp className="w-4 h-4 text-gray-400" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-500" />
+            <ChevronDown className="w-4 h-4 text-gray-400" />
           )}
         </div>
         {expandedSections.notice && (
@@ -788,7 +821,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <select
               value={tempFilters.noticePeriod}
               onChange={(e) => updateTempFilters("noticePeriod", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-500"
             >
               <option value="">Select Notice Period</option>
               {noticePeriodOptions.map((option) => (
@@ -802,19 +835,19 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       </div>
 
       {/* Colleges */}
-      <div>
+      <div className={`bg-[#F5F9FB] p-4 ${expandedSections.colleges ? "my-4  rounded-lg" : "border-b border-gray-200"}`}>
         <div
-          className="flex items-center justify-between cursor-pointer mb-2"
+          className={`flex items-center justify-between cursor-pointer ${expandedSections.colleges ? "mb-2": ""} `}
           onClick={() => toggleSection("colleges")}
         >
-          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
-            <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
+          <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
+            <GraduationCap className="w-4 h-4 mr-2 text-gray-500" />
             Colleges
           </h3>
           {expandedSections.colleges ? (
-            <ChevronUp className="w-4 h-4 text-gray-500" />
+            <ChevronUp className="w-4 h-4 text-gray-400" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-500" />
+            <ChevronDown className="w-4 h-4 text-gray-400" />
           )}
         </div>
         {expandedSections.colleges && (
@@ -857,19 +890,19 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       </div>
 
       {/* Spotlight */}
-      <div>
+      <div className={`bg-[#F5F9FB] p-4 ${expandedSections.spotlight ? "my-4 rounded-lg" : "border-b border-gray-200"}`} >
         <div
-          className="flex items-center justify-between cursor-pointer mb-2"
+          className={`flex items-center justify-between cursor-pointer ${expandedSections.spotlight ? "mb-2": ""} `}
           onClick={() => toggleSection("spotlight")}
         >
-          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
-            <Star className="w-4 h-4 mr-2 text-gray-800" />
+          <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
+            <Star className="w-4 h-4 mr-2 text-gray-500" />
             Spotlight
           </h3>
           {expandedSections.spotlight ? (
-            <ChevronUp className="w-4 h-4 text-gray-500" />
+            <ChevronUp className="w-4 h-4 text-gray-400" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-500" />
+            <ChevronDown className="w-4 h-4 text-gray-400" />
           )}
         </div>
         {expandedSections.spotlight && (
@@ -918,19 +951,19 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       </div>
 
       {/* More Filters */}
-      <div>
+      <div className={`bg-[#F5F9FB] rounded-b-lg p-4 mb-4 ${expandedSections.moreFilters ? "my-4 rounded-lg" : ""}`}>
         <div
-          className="flex items-center justify-between cursor-pointer mb-2"
+          className={`flex items-center justify-between cursor-pointer ${expandedSections.moreFilters ? "mb-2": ""} `}
           onClick={() => toggleSection("moreFilters")}
         >
-          <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
-            <Filter className="w-4 h-4 mr-2 text-gray-800" />
+          <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
+            <Filter className="w-4 h-4 mr-2 text-gray-500" />
             More Filters
           </h3>
           {expandedSections.moreFilters ? (
-            <ChevronUp className="w-4 h-4 text-gray-500" />
+            <ChevronUp className="w-4 h-4 text-gray-400" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-500" />
+            <ChevronDown className="w-4 h-4 text-gray-400" />
           )}
         </div>
         {expandedSections.moreFilters && (
@@ -1000,12 +1033,12 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         )}
       </div>
 
-      <div className="flex gap-2 border-t border-gray-200">
+      <div className="flex gap-2 border-t border-gray-200 pt-4">
         {/* Apply Filters */}
-        <div className="w-full border border-blue-400 rounded-lg">
+        <div className="w-full rounded-lg">
         <button
           onClick={applyFilters}
-            className="w-full p-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center justify-center"
+            className="w-full p-2 text-sm  bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700  transition-colors flex items-center justify-center"
         >
           <Filter className="w-4 h-4 mr-2" />
           Apply Filters
@@ -1013,11 +1046,11 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         </div>
 
         {/* Clear Filters */}
-        <div className="w-full  border border-blue-400 rounded-lg">
+        <div className="w-full rounded-lg">
           <div className="">
             <button
               onClick={resetFilters}
-              className="w-full p-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center justify-center"
+              className="w-full p-2 text-sm border border-blue-600 text-blue-600 hover:bg-blue-700 hover:text-white rounded-lg transition-colors flex items-center justify-center"
             >
               Clear All Filters
             </button>
