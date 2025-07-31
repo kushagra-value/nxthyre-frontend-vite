@@ -19,6 +19,7 @@ interface HeaderProps {
   onBack?: () => void; // Optional prop for back button
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  showCreateRoleButton?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -28,6 +29,7 @@ const Header: React.FC<HeaderProps> = ({
   onBack,
   searchQuery,
   setSearchQuery,
+  showCreateRoleButton,
 }) => {
   const { isAuthenticated, user, signOut } = useAuthContext();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -95,8 +97,8 @@ const Header: React.FC<HeaderProps> = ({
                 </div>
               )}
 
-              {/* Create Role Button - Only show when authenticated */}
-              {isAuthenticated && (
+              {/* Create Role Button - Only show when authenticated and on the home page */}
+              {isAuthenticated && showCreateRoleButton && (
                 <button
                   onClick={onCreateRole}
                   className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"

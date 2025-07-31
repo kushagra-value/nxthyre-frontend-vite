@@ -923,6 +923,7 @@ function MainApp() {
                         credits={credits}
                         searchQuery={searchQuery}
                         setSearchQuery={setSearchQuery}
+                        showCreateRoleButton={true}
                       />
                     </div>
 
@@ -1114,7 +1115,11 @@ function MainApp() {
 
                     <CreateJobRoleModal
                       isOpen={showCreateJobRole}
-                      workspaceId={currentUser?.organizationId ? parseInt(currentUser.organizationId) : 1} // Fallback to 1 if undefined
+                      workspaceId={
+                        currentUser?.organizationId
+                          ? parseInt(currentUser.organizationId)
+                          : 1
+                      } // Fallback to 1 if undefined
                       onClose={() => setShowCreateJobRole(false)}
                       onJobCreated={handleJobCreatedOrUpdated}
                     />
@@ -1124,7 +1129,11 @@ function MainApp() {
                         setShowEditJobRole(false);
                         setEditingJobId(null);
                       }}
-                      workspaceId={currentUser?.organizationId ? parseInt(currentUser.organizationId) : 1}
+                      workspaceId={
+                        currentUser?.organizationId
+                          ? parseInt(currentUser.organizationId)
+                          : 1
+                      }
                       jobId={editingJobId || 0}
                       onJobUpdated={handleJobCreatedOrUpdated}
                     />
