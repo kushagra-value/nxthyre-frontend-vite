@@ -2839,6 +2839,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           credits={credits}
           onBack={onBack}
           showCreateRoleButton={false}
+          searchQuery={""}
+          setSearchQuery={() => {}}
         />
       </div>
 
