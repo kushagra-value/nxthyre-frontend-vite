@@ -1061,7 +1061,7 @@ function MainApp() {
                       )}
 
                       <div className="flex w-full gap-3 h-full">
-                        <div className="lg:w-[25%] order-2 lg:order-1 top-16 self-start will-change-transform max-h-[calc(100vh-60px)] overflow-y-auto hide-scrollbar">
+                        <div className="lg:w-[25%] sticky order-2 lg:order-1 top-16 self-start will-change-transform ">
                           <FiltersSidebar
                             filters={filters}
                             onApplyFilters={handleApplyFilters}
@@ -1070,7 +1070,7 @@ function MainApp() {
                             activeTab={activeTab}
                           />
                         </div>
-                        <div className="lg:w-[45%] order-1 lg:order-2">
+                        <div className="lg:w-[45%] sticky order-1 lg:order-2">
                           <CandidatesMain
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}

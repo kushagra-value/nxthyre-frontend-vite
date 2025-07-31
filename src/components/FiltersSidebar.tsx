@@ -570,6 +570,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         )}
       </div>
 
+      <div className="max-h-[calc(100vh-60px)] overflow-y-auto hide-scrollbar">
+
       {/* Total Experience */}
       <div className={`bg-[#F5F9FB] rounded-t-lg  p-4 ${expandedSections.totalExp ? "my-4 rounded-lg" : "border-b border-gray-200"}`}>
         <div
@@ -1032,6 +1034,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           </div>
         )}
       </div>
+      
+      </div>
 
       <div className="flex gap-2 border-t border-gray-200 pt-4">
         {/* Apply Filters */}
@@ -1057,6 +1061,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           </div>
         </div>
       </div>
+
+      
     </div>
   );
 };
