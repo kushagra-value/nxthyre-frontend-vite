@@ -12,6 +12,8 @@ import { useAuthContext } from "../context/AuthContext"; // Adjust path
 import { useNavigate } from "react-router-dom";
 import { showToast } from "../utils/toast";
 
+import { CandidateListItem } from "../services/candidateService";
+
 interface HeaderProps {
   onCreateRole: () => void;
   onOpenLogoutModal: () => void;
@@ -20,6 +22,8 @@ interface HeaderProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   showCreateRoleButton?: boolean;
+  candidates: CandidateListItem[];
+  onSelectCandidate: (candidate: CandidateListItem) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -30,6 +34,8 @@ const Header: React.FC<HeaderProps> = ({
   searchQuery,
   setSearchQuery,
   showCreateRoleButton,
+  candidates,
+  onSelectCandidate,
 }) => {
   const { isAuthenticated, user, signOut } = useAuthContext();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -66,6 +72,8 @@ const Header: React.FC<HeaderProps> = ({
     navigate("/");
   };
 
+  const [isFocused, setIsFocused] = useState(false);
+
   return (
     <>
       <header className="bg-white shadow-sm border-b border-gray-200">
@@ -92,8 +100,26 @@ const Header: React.FC<HeaderProps> = ({
                     placeholder="LinkedIn Contact Finder..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setTimeout(() => setIsFocused(false), 100)}
                     className="bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none w-40"
                   />
+                  {isFocused && candidates.length > 0 && (
+                    <div className="absolute top-full left-0 w-full bg-white shadow-lg rounded-lg mt-1 z-10 max-h-60 overflow-y-auto">
+                      {candidates.map((candidate) => (
+                        <div
+                          key={candidate.id}
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => {
+                            onSelectCandidate(candidate);
+                            setIsFocused(false);
+                          }}
+                        >
+                          {candidate.full_name || "Unnamed Candidate"}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
