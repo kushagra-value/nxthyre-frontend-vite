@@ -1124,6 +1124,7 @@ function MainApp() {
                         setShowEditJobRole(false);
                         setEditingJobId(null);
                       }}
+                      workspaceId={currentUser?.organizationId ? parseInt(currentUser.organizationId) : 1}
                       jobId={editingJobId || 0}
                       onJobUpdated={handleJobCreatedOrUpdated}
                     />

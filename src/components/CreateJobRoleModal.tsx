@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { X, Upload, FileText, RotateCcw, ArrowLeft, ArrowRight, Info } from 'lucide-react';
 import { showToast } from '../utils/toast';
 import { jobPostService, CreateJobData } from '../services/jobPostService';
@@ -37,6 +37,9 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
   const [refinementInput, setRefinementInput] = useState('');
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [file, setFile] = useState<File | null>(null); // State for uploaded file
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const seniorityOptions = ['JUNIOR', 'SENIOR', 'LEAD', 'HEAD'];
   const departmentOptions = ['Human Resources', 'Marketing', 'Finance', 'Sales', 'Ops', 'Engineering', 'Admin', 'Others'];
 
@@ -97,7 +100,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
 
   // Safe integer range for JavaScript (Number.MAX_SAFE_INTEGER)
   const MAX_SAFE_INTEGER = 999999999999;
-
+  const MIN_DESCRIPTION_LENGTH = 10;
   const handleSkillAdd = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && skillInput.trim()) {
       if (!isValidTextInput(skillInput)) {
@@ -119,6 +122,31 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
     }));
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile && [ 'text/plain'].includes(selectedFile.type)) {
+      setFile(selectedFile);
+    } else {
+      showToast.error('Please upload a valid file ( .txt)');
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile && ['text/plain'].includes(droppedFile.type)) {
+      setFile(droppedFile);
+    } else {
+      showToast.error('Please upload a valid file ( .txt)');
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   const validateStep1 = () => {
     const requiredFields = {
       title: formData.title.trim(),
@@ -130,7 +158,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
       maxExp: formData.maxExp.trim() && isValidNumberInput(formData.maxExp),
       minSalary: formData.confidential ? true : formData.minSalary.trim() && isValidNumberInput(formData.minSalary),
       maxSalary: formData.confidential ? true : formData.maxSalary.trim() && isValidNumberInput(formData.maxSalary),
-      jobDescription: formData.uploadType === 'paste' ? formData.jobDescription.trim() : true,
+      jobDescription: formData.uploadType === 'paste' ? formData.jobDescription.trim() : !!file,
     };
 
     const errors: string[] = [];
@@ -146,7 +174,11 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
     if (!requiredFields.maxExp) errors.push('Maximum experience is required and must be a valid number.');
     if (!requiredFields.minSalary) errors.push('Minimum salary is required unless confidential.');
     if (!requiredFields.maxSalary) errors.push('Maximum salary is required unless confidential.');
-    if (!requiredFields.jobDescription) errors.push('Job description is required when pasting text.');
+    if (!requiredFields.jobDescription) errors.push('Job description is required when pasting text. or uploading a file.');
+    if (!requiredFields.jobDescription) errors.push('Job description is required when pasting text or uploading a file.');
+    if (formData.uploadType === 'paste' && formData.jobDescription.trim().length < MIN_DESCRIPTION_LENGTH) {
+      errors.push(`Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`);
+    }
 
     // Validate experience range
     if (requiredFields.minExp && requiredFields.maxExp) {
@@ -169,8 +201,8 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
         errors.push('Salary fields must be valid numbers.');
       } else if (minSalary > maxSalary) {
         errors.push('Minimum salary cannot be greater than maximum salary.');
-      } else if (minSalary < 0 || maxSalary < 0 || minSalary > MAX_SAFE_INTEGER || maxSalary > MAX_SAFE_INTEGER) {
-        errors.push('Salary values must be within valid integer range (0 to 999999999999).');
+      } else if (minSalary < 999 || maxSalary < 999 || minSalary > MAX_SAFE_INTEGER || maxSalary > MAX_SAFE_INTEGER) {
+        errors.push('Salary values must be within valid integer range (1000 to 999999999999).');
       }
     }
 
@@ -199,6 +231,16 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
       showToast.error(errors.join(' '));
       return;
     }
+
+    if (formData.uploadType === 'upload' && !file) {
+      showToast.error('Please upload a file for the job description.');
+      return;
+    }
+    if (formData.uploadType === 'paste' && formData.jobDescription.trim().length < MIN_DESCRIPTION_LENGTH) {
+      showToast.error(`Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const jobData: CreateJobData = {
@@ -214,10 +256,10 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
         is_salary_confidential: formData.confidential,
         visibility: formData.keepPrivate ? 'PRIVATE' : 'PUBLIC',
         enable_ai_interviews: formData.aiInterviews,
-        description: formData.jobDescription,
         skill_names: formData.skills,
         status: formData.shareExternally ? 'PUBLISHED' : 'DRAFT',
         workspace: workspaceId,
+        ...(formData.uploadType === 'paste' ? { description_text: formData.jobDescription } : { description_file: file! }),
       };
 
       await jobPostService.createJob(jobData);
@@ -225,9 +267,14 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
       onJobCreated?.(); // Trigger refresh of categories
       onClose();
       setCurrentStep(1);
+      setFile(null);
     } catch (error: any) {
       
-      const errorMessage = error.response?.data?.department
+      const errorMessage = error.response?.data?.description
+        ? `Description error: ${error.response.data.description}`
+        : error.response?.data?.description_file
+        ? `File upload error: ${error.response.data.description_file}`
+        : error.response?.data?.department
         ? `Department error: ${error.response.data.department.join(' ')}`
         : error.message || 'Failed to create job role';
       showToast.error(errorMessage);
@@ -242,6 +289,18 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
       showToast.error(errors.join(' '));
       return;
     }
+
+    
+    if (formData.uploadType === 'upload' && !file) {
+      showToast.error('Please upload a file for the job description.');
+      return;
+    }
+    if (formData.uploadType === 'paste' && formData.jobDescription.trim().length < MIN_DESCRIPTION_LENGTH) {
+      showToast.error(`Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`);
+      return;
+    }
+
+
     setIsLoading(true);
     try {
       const jobData: CreateJobData = {
@@ -257,17 +316,23 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
         is_salary_confidential: formData.confidential,
         visibility: formData.keepPrivate ? 'PRIVATE' : 'PUBLIC',
         enable_ai_interviews: formData.aiInterviews,
-        description: formData.jobDescription,
         skill_names: formData.skills,
         status: formData.shareExternally ? 'PUBLISHED' : 'DRAFT',
-        workspace: 1, // Assuming default workspace ID
+        workspace: workspaceId, // Assuming default workspace ID
+        ...(formData.uploadType === 'paste' ? { description_text: formData.jobDescription } : { description_file: file! }),
       };
 
       await jobPostService.createJob(jobData);
       showToast.success(formData.shareExternally ? 'Job role created and published successfully!' : 'Job role created successfully!');
       onClose();
+      setCurrentStep(1);
+      setFile(null);
     } catch (error: any) {
-      const errorMessage = error.response?.data?.department
+      const errorMessage = error.response?.data?.description
+        ? `Description error: ${error.response.data.description}`
+        : error.response?.data?.description_file
+        ? `File upload error: ${error.response.data.description_file}`
+        : error.response?.data?.department
         ? `Department error: ${error.response.data.department.join(' ')}`
         : error.message || 'Failed to create job role';
       showToast.error(errorMessage);
@@ -277,11 +342,11 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
   };
 
   const handleRegenerate = () => {
-    showToast.info('Job description regenerated!');
+    showToast.info('Feature coming Soon!');
   };
 
   const handleUpdate = () => {
-    showToast.success('Job description updated!');
+    showToast.info('Feature Coming Soon!');
   };
 
   if (!isOpen) return null;
@@ -564,7 +629,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                   </div>
                 </div>
                 <div className="col-span-6">
-                  <label className="block flex justify-between text-sm font-medium text-gray-700 mb-2">
+                  <label className="block flex text-sm font-medium text-gray-700 mb-2">
                     Enter Salary Range {formData.confidential ? '' : <span className="text-red-500">*</span>}
                     <div className="flex items-end">
                       <label className="flex items-center">
@@ -615,7 +680,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                   </span>
                   <div className="flex bg-gray-100 rounded-lg p-1">
                     <button
-                      onClick={() => setFormData(prev => ({ ...prev, uploadType: 'paste' }))}
+                      onClick={() => setFormData(prev => ({ ...prev, uploadType: 'paste', jobDescription: '' }))}
                       className={`px-3 py-1 text-sm rounded-md transition-colors ${
                         formData.uploadType === 'paste' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'
                       }`}
@@ -624,7 +689,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                       Paste Text
                     </button>
                     <button
-                      onClick={() => setFormData(prev => ({ ...prev, uploadType: 'upload' }))}
+                      onClick={() => setFormData(prev => ({ ...prev, uploadType: 'upload', jobDescription: '' }))}
                       className={`px-3 py-1 text-sm rounded-md transition-colors ${
                         formData.uploadType === 'upload' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'
                       }`}
@@ -644,14 +709,23 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                     disabled={isLoading}
                   />
                 ) : (
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
+                  <div
+                    className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors"
+                    onDrop={handleDrop}
+                    onDragOver={handleDragOver}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
                     <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Drag and drop your job description file here</p>
-                    <p className="text-xs text-gray-500 mt-1">or click to browse</p>
+                    <p className="text-sm text-gray-600">
+                      {file ? `Selected file: ${file.name}` : 'Drag and drop your job description file here'}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">or click to browse (.pdf, .doc, .docx, .txt)</p>
                     <input
                       type="file"
+                      ref={fileInputRef}
                       className="hidden"
                       accept=".pdf,.doc,.docx,.txt"
+                      onChange={handleFileChange}
                       disabled={isLoading}
                     />
                   </div>

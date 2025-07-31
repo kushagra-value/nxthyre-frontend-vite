@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Upload, FileText, ChevronDown, RotateCcw, ArrowLeft, ArrowRight, Info } from 'lucide-react';
 import { showToast } from '../utils/toast';
 import { jobPostService, Job, CreateJobData } from '../services/jobPostService';
@@ -6,11 +6,12 @@ import { jobPostService, Job, CreateJobData } from '../services/jobPostService';
 interface EditJobRoleModalProps {
   isOpen: boolean;
   onClose: () => void;
+  workspaceId: number;
   jobId: number;
-  onJobUpdated?: () => void; // Added callback for job update
+  onJobUpdated?: () => void;
 }
 
-const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jobId, onJobUpdated }) => {
+const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, workspaceId, jobId, onJobUpdated }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     allowInbound: true,
@@ -30,12 +31,15 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
     confidential: false,
     jobDescription: '',
     uploadType: 'paste' as 'paste' | 'upload',
+    shareThirdParty: false,
   });
 
   const [skillInput, setSkillInput] = useState('');
   const [refinementInput, setRefinementInput] = useState('');
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isFetching, setIsFetching] = useState(false);
 
   const seniorityOptions = ['JUNIOR', 'SENIOR', 'LEAD', 'HEAD'];
@@ -80,6 +84,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
     return /^[0-9]*$/.test(value) && value !== '' && parseInt(value) >= 0 && parseInt(value) <= 2147483647;
   };
 
+  const MAX_SAFE_INTEGER = 999999999999;
+
   useEffect(() => {
     if (isOpen && jobId) {
       setIsFetching(true);
@@ -102,8 +108,9 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
             maxSalary: job.salary_max,
             confidential: job.is_salary_confidential,
             jobDescription: job.description,
-            uploadType: 'paste',
-          });
+            uploadType: job.description ? 'paste' : 'upload',
+            shareThirdParty: false,
+            });
           setEditableJD(job.description);
         })
         .catch((error) => {
@@ -126,8 +133,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
       maxExp: formData.maxExp.trim() && validateNumberInput(formData.maxExp),
       minSalary: formData.confidential ? true : formData.minSalary.trim() && validateTextInput(formData.minSalary),
       maxSalary: formData.confidential ? true : formData.maxSalary.trim() && validateTextInput(formData.maxSalary),
-      jobDescription: formData.uploadType === 'paste' ? formData.jobDescription.trim() : true,
-    };
+      jobDescription: formData.uploadType === 'paste' ? formData.jobDescription.trim() : !!file,    };
 
     const errors: string[] = [];
 
@@ -142,13 +148,30 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
     if (!requiredFields.maxExp) errors.push('Maximum experience is required and must be a valid positive integer.');
     if (!requiredFields.minSalary) errors.push('Minimum salary is required unless confidential.');
     if (!requiredFields.maxSalary) errors.push('Maximum salary is required unless confidential.');
-    if (!requiredFields.jobDescription) errors.push('Job description is required when pasting text.');
+    if (!requiredFields.jobDescription) errors.push('Job description is required when pasting text or uploading a file.');
 
     if (requiredFields.minExp && requiredFields.maxExp) {
       const minExp = parseInt(formData.minExp);
       const maxExp = parseInt(formData.maxExp);
-      if (minExp > maxExp) {
+      if (isNaN(minExp) || isNaN(maxExp)) {
+        errors.push('Experience fields must be valid numbers.');
+      } else if (minExp > maxExp) {
         errors.push('Minimum experience cannot be greater than maximum experience.');
+      } else if (minExp < 0 || maxExp < 0 || minExp > MAX_SAFE_INTEGER || maxExp > MAX_SAFE_INTEGER) {
+        errors.push('Experience values must be within valid integer range (0 to 999999999999).');
+      }
+    }
+
+    // Validate salary range
+    if (requiredFields.minSalary && requiredFields.maxSalary && !formData.confidential) {
+      const minSalary = parseFloat(formData.minSalary);
+      const maxSalary = parseFloat(formData.maxSalary);
+      if (isNaN(minSalary) || isNaN(maxSalary)) {
+        errors.push('Salary fields must be valid numbers.');
+      } else if (minSalary > maxSalary) {
+        errors.push('Minimum salary cannot be greater than maximum salary.');
+      } else if (minSalary < 1000 || maxSalary < 1000 || minSalary > MAX_SAFE_INTEGER || maxSalary > MAX_SAFE_INTEGER) {
+        errors.push('Salary values must be within valid integer range (1000 to 999999999999).');
       }
     }
 
@@ -180,6 +203,33 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
     setCompetencies(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile && [ 'text/plain'].includes(selectedFile.type)) {
+      setFile(selectedFile);
+    } else {
+      showToast.error('Please upload a valid file (.txt)');
+    }
+  };
+
+  // Handle drag and drop
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile && [ 'text/plain'].includes(droppedFile.type)) {
+      setFile(droppedFile);
+    } else {
+      showToast.error('Please upload a valid file ( .txt)');
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+
   const handleNext = () => {
     const errors = validateStep1();
     if (errors.length > 0) {
@@ -206,7 +256,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
         location: formData.location,
         is_hybrid: formData.hybrid,
         seniority: formData.seniority || "null",
-        department: departmentNameToId[formData.department] || 1,
+        department: departmentNameToId[formData.department] || 8,
         experience_min_years: parseInt(formData.minExp) || 0,
         experience_max_years: parseInt(formData.maxExp) || 0,
         salary_min: formData.minSalary,
@@ -214,29 +264,34 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
         is_salary_confidential: formData.confidential,
         visibility: formData.keepPrivate ? 'PRIVATE' : 'PUBLIC',
         enable_ai_interviews: formData.aiInterviews,
-        description: formData.jobDescription,
         skill_names: formData.skills,
         status: formData.shareExternally ? 'PUBLISHED' : 'DRAFT',
-        workspace: 1,
+        workspace: workspaceId,
+        ...(formData.uploadType === 'paste' ? { description_text: formData.jobDescription } : { description_file: file! }),
       };
 
       await jobPostService.updateJob(jobId, jobData);
       showToast.success(formData.shareExternally ? 'Job role updated and published successfully!' : 'Job role updated successfully!');
       onJobUpdated?.(); // Trigger callback to refresh categories
       onClose();
+      setCurrentStep(1);
+      setFile(null);
     } catch (error: any) {
-      showToast.error(error.message || 'Failed to update job role');
+      const errorMessage = error.response?.data?.department
+        ? `Department error: ${error.response.data.department.join(' ')}`
+        : error.message || 'Failed to update job role';
+      showToast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleRegenerate = () => {
-    showToast.info('Job description regenerated!');
+    showToast.info('Feature Coming Soon!');
   };
 
   const handleUpdateJD = () => {
-    showToast.success('Job description updated!');
+    showToast.success('Feature Coming Soon!');
   };
 
   if (!isOpen) return null;
@@ -301,6 +356,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
                       checked={formData.allowInbound}
                       onChange={() => setFormData(prev => ({ ...prev, allowInbound: true, keepPrivate: false }))}
                       className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      disabled={isLoading}
                     />
                     <span className="ml-2 text-sm font-medium text-gray-700">ALLOW INBOUND APPLICATIONS</span>
                   </label>
@@ -324,6 +380,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
                       checked={formData.keepPrivate}
                       onChange={() => setFormData(prev => ({ ...prev, allowInbound: false, keepPrivate: true }))}
                       className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      disabled={isLoading}
                     />
                     <span className="ml-2 text-sm font-medium text-gray-700">KEEP IT PRIVATE</span>
                   </label>
@@ -341,6 +398,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
                       checked={formData.shareExternally}
                       onChange={(e) => setFormData(prev => ({ ...prev, shareExternally: e.target.checked }))}
                       className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      disabled={isLoading}
                     />
                     <span className="ml-2 text-sm font-medium text-gray-700">SHARE EXTERNALLY</span>
                     {showTooltip === 'shareExternally' && (
@@ -567,15 +625,19 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
                   </span>
                   <div className="flex bg-gray-100 rounded-lg p-1">
                     <button
-                      onClick={() => setFormData(prev => ({ ...prev, uploadType: 'paste' }))}
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${formData.uploadType === 'paste' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'}`}
+                      onClick={() => setFormData(prev => ({ ...prev, uploadType: 'paste', jobDescription: editableJD }))}
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                        formData.uploadType === 'paste' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'
+                      }`}
                       disabled={isLoading}
                     >
                       Paste Text
                     </button>
                     <button
-                      onClick={() => setFormData(prev => ({ ...prev, uploadType: 'upload' }))}
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${formData.uploadType === 'upload' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'}`}
+                      onClick={() => setFormData(prev => ({ ...prev, uploadType: 'upload', jobDescription: '' }))}
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                        formData.uploadType === 'upload' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'
+                      }`}
                       disabled={isLoading}
                     >
                       Upload File
@@ -592,11 +654,25 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, jo
                     disabled={isLoading}
                   />
                 ) : (
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
+                  <div
+                    className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors"
+                    onDrop={handleDrop}
+                    onDragOver={handleDragOver}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
                     <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Drag and drop your job description file here</p>
-                    <p className="text-xs text-gray-500 mt-1">or click to browse</p>
-                    <input type="file" className="hidden" accept=".pdf,.doc,.docx,.txt" disabled={isLoading} />
+                    <p className="text-sm text-gray-600">
+                      {file ? `Selected file: ${file.name}` : 'Drag and drop your job description file here'}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">or click to browse (.pdf, .doc, .docx, .txt)</p>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept=".pdf,.doc,.docx,.txt"
+                      onChange={handleFileChange}
+                      disabled={isLoading}
+                    />
                   </div>
                 )}
               </div>
