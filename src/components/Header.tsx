@@ -93,7 +93,7 @@ const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center space-x-6">
               {/* Search - Only show when authenticated */}
               {isAuthenticated && (
-                <div className="hidden sm:flex items-center bg-gray-100 rounded-lg px-3 py-2">
+                <div className="relative hidden sm:flex items-center bg-gray-100 rounded-lg px-3 py-2">
                   <Search className="w-4 h-4 text-gray-500 mr-2" />
                   <input
                     type="text"
@@ -105,7 +105,7 @@ const Header: React.FC<HeaderProps> = ({
                     className="bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none w-40"
                   />
                   {isFocused && candidates.length > 0 && (
-                    <div className="absolute top-full left-80 w-[15%] bg-white shadow-lg rounded-lg mt-1 z-10 max-h-40 overflow-y-auto">
+                    <div className="absolute top-full w-[15%] bg-white shadow-lg rounded-lg mt-1 z-10 max-h-40 overflow-y-auto">
                       {candidates.map((candidate) => (
                         <div
                           key={candidate.id}
