@@ -519,7 +519,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       {/* Keywords */}
       <div className="border-b border-gray-200  p-4 mb-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm lg:text-base font-[400] font-medium text-gray-700 flex items-center">
+          <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
             <Search className="w-4 h-4 mr-2 text-gray-500" />
             Keywords
           </h3>
@@ -576,7 +576,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           className={`flex items-center justify-between cursor-pointer ${expandedSections.totalExp ? "mb-2" : ""}`}
           onClick={() => toggleSection("totalExp")}
         >
-          <h3 className="text-sm lg:text-base font-[400] font-medium text-gray-700 flex items-center">
+          <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
             <Briefcase className="w-4 h-4 mr-2 text-gray-500" />
             Total Experience
           </h3>
@@ -642,7 +642,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           className={`flex items-center justify-between cursor-pointer ${expandedSections.location ? "mb-2" : ""}`}
           onClick={() => toggleSection("location")}
         >
-          <h3 className="text-sm lg:text-base font-[400] font-medium text-gray-700 flex items-center">
+          <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
             <MapPin className="w-4 h-4 mr-2 text-gray-500" />
             Location
           </h3>
@@ -760,7 +760,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           className={`flex items-center justify-between cursor-pointer ${expandedSections.salary ? "mb-2": ""} `}
           onClick={() => toggleSection("salary")}
         >
-          <h3 className="text-sm lg:text-base font-[400] font-medium text-gray-700 flex items-center">
+          <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
             <DollarSign className="w-4 h-4 mr-2 text-gray-500" />
             Salary range
           </h3>
