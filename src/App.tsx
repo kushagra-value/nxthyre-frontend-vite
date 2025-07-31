@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./hooks/useAuth";
-import useDebounce from "./hooks/useDebounce"; // Import the new hook
+import useDebounce from "./hooks/useDebounce";
 import { authService } from "./services/authService";
 import { creditService } from "./services/creditService";
 import { jobPostService } from "./services/jobPostService";
@@ -96,19 +96,15 @@ function MainApp() {
     loading: authLoading,
   } = useAuth();
 
-  // State management
   const [credits, setCredits] = useState<number>(0);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showAuthApp, setShowAuthApp] = useState(false);
   const [authFlow, setAuthFlow] = useState("login");
   const [showSettings, setShowSettings] = useState(false);
-
   const [showPipelineSharePage, setShowPipelineSharePage] = useState(false);
   const [currentPipelineId, setCurrentPipelineId] = useState("");
-
   const [showShareableProfile, setShowShareableProfile] = useState(false);
   const [currentCandidateId, setCurrentCandidateId] = useState("");
-
   const [selectedCandidate, setSelectedCandidate] =
     useState<CandidateListItem | null>(null);
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
@@ -125,12 +121,9 @@ function MainApp() {
   const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
     null
   );
-  // const [showGuideModal, setShowGuideModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
-
   const [showShareLoader, setShowShareLoader] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -139,21 +132,16 @@ function MainApp() {
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-
-  // New states for search
-  // const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  // Debounce universalSearchQuery
   const debouncedSearchQuery = useDebounce(searchQuery, 1000);
   const controller = new AbortController();
-
   const [sortBy, setSortBy] = useState<string>("");
 
   const [filters, setFilters] = useState<Filters>({
     keywords: "",
     booleanSearch: false,
     semanticSearch: false,
-    selectedCategories: [] as string[],
+    selectedCategories: [],
     minExperience: "",
     maxExperience: "",
     funInCurrentCompany: false,
@@ -162,7 +150,7 @@ function MainApp() {
     city: "",
     country: "",
     location: "",
-    locations: [] as string[],
+    locations: [],
     noticePeriod: "",
     companies: "",
     industries: "",
@@ -187,7 +175,6 @@ function MainApp() {
     sort_by: "",
   });
 
-  // Fetch job categories
   const fetchCategories = async () => {
     setLoadingCategories(true);
     try {
@@ -201,12 +188,6 @@ function MainApp() {
       if (mappedCategories.length > 0) {
         setActiveCategoryId(mappedCategories[0].id);
         await fetchJobDetailsAndSetFilters(mappedCategories[0].id);
-      } else {
-        // const hasSeenGuide = localStorage.getItem("hasSeenGuideModal");
-        // if (!hasSeenGuide) {
-        // setShowGuideModal(true);
-        // localStorage.setItem("hasSeenGuideModal", "true");
-        // }
       }
     } catch (error) {
       showToast.error("Failed to fetch job categories");
@@ -216,7 +197,6 @@ function MainApp() {
     }
   };
 
-  // Fetch job details and set filters
   const fetchJobDetailsAndSetFilters = async (jobId: number) => {
     try {
       const job = await jobPostService.getJob(jobId);
@@ -238,7 +218,6 @@ function MainApp() {
         sort_by: sortBy,
       };
       setFilters(newFilters);
-      // Automatically apply filters after setting them
       await fetchCandidates(1, newFilters);
     } catch (error) {
       showToast.error("Failed to fetch job details");
@@ -246,14 +225,12 @@ function MainApp() {
     }
   };
 
-  // Fetch candidates based on filters, page, and search
   const fetchCandidates = useCallback(
     async (page: number = 1, appliedFilters: any) => {
       setLoadingCandidates(true);
       try {
         let response;
         if (debouncedSearchQuery.trim() !== "") {
-          // Universal search from Header, ignoring filters
           const candidates = await candidateService.universalSearch(
             debouncedSearchQuery,
             controller.signal
@@ -263,8 +240,6 @@ function MainApp() {
           if (candidates.length > 0 && !selectedCandidate) {
             setSelectedCandidate(candidates[0]);
           }
-
-          // Reset filters to null as per task requirement (optional, see note below)
           setFilters({
             keywords: "",
             booleanSearch: false,
@@ -296,7 +271,7 @@ function MainApp() {
             hasBehance: false,
             hasTwitter: false,
             hasPortfolio: false,
-            jobId: "", // Preserve jobId if needed
+            jobId: "",
             application_type: "",
             is_prevetted: false,
             is_active: false,
@@ -395,7 +370,6 @@ function MainApp() {
               "90 days",
             ] as const;
             type NoticePeriod = (typeof noticePeriodOptions)[number];
-
             const days: Record<NoticePeriod, number> = {
               Immediate: 0,
               "15 days": 15,
@@ -404,7 +378,6 @@ function MainApp() {
               "60 days": 60,
               "90 days": 90,
             };
-
             if (
               noticePeriodOptions.includes(
                 appliedFilters.noticePeriod as NoticePeriod
@@ -443,22 +416,15 @@ function MainApp() {
         setLoadingCandidates(false);
       }
     },
-    [
-      selectedCandidate,
-      debouncedSearchQuery, // Use the debounced search query
-      sortBy,
-      filters,
-      activeTab,
-    ]
+    [selectedCandidate, debouncedSearchQuery, sortBy, filters, activeTab]
   );
-  // Handle search change
+
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
-    setCurrentPage(1); // Reset to first page on search
+    setCurrentPage(1);
     fetchCandidates(1, filters);
   };
 
-  // Handle candidates update from CandidatesMain
   const handleCandidatesUpdate = (
     newCandidates: CandidateListItem[],
     count: number
@@ -672,7 +638,6 @@ function MainApp() {
   };
 
   const handleCreateJobRole = () => {
-    // setShowGuideModal(false);
     setShowCreateJobRole(true);
   };
 
@@ -773,7 +738,6 @@ function MainApp() {
   };
 
   const handleApplyFilters = (newFilters: any) => {
-    // Check if any filter is selected
     const isFilterSelected = Object.keys(newFilters).some((key) => {
       if (
         key === "jobId" ||
@@ -797,7 +761,6 @@ function MainApp() {
       return;
     }
 
-    // Check for invalid experience inputs
     const isValidNumber = (value: string) => /^\d+$/.test(value);
     if (
       (newFilters.minTotalExp && !isValidNumber(newFilters.minTotalExp)) ||
@@ -923,6 +886,9 @@ function MainApp() {
                         credits={credits}
                         searchQuery={searchQuery}
                         setSearchQuery={setSearchQuery}
+                        showCreateRoleButton={true}
+                        candidates={candidates}
+                        onSelectCandidate={setSelectedCandidate}
                       />
                     </div>
 
@@ -1112,7 +1078,11 @@ function MainApp() {
 
                     <CreateJobRoleModal
                       isOpen={showCreateJobRole}
-                      workspaceId={currentUser?.organizationId ? parseInt(currentUser.organizationId) : 1} // Fallback to 1 if undefined
+                      workspaceId={
+                        currentUser?.organizationId
+                          ? parseInt(currentUser.organizationId)
+                          : 1
+                      }
                       onClose={() => setShowCreateJobRole(false)}
                       onJobCreated={handleJobCreatedOrUpdated}
                     />
@@ -1122,7 +1092,11 @@ function MainApp() {
                         setShowEditJobRole(false);
                         setEditingJobId(null);
                       }}
-                      workspaceId={currentUser?.organizationId ? parseInt(currentUser.organizationId) : 1}
+                      workspaceId={
+                        currentUser?.organizationId
+                          ? parseInt(currentUser.organizationId)
+                          : 1
+                      }
                       jobId={editingJobId || 0}
                       onJobUpdated={handleJobCreatedOrUpdated}
                     />
@@ -1175,38 +1149,6 @@ function MainApp() {
                         </div>
                       </div>
                     )}
-                    {/* {showGuideModal && (
-                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[100]  p-4 flex items-start justify-end">
-                        <div className="relative top-16 bg-white rounded-xl shadow-xl max-w-md w-full p-4 mr-6 ">
-                          <div className="text-center">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                              Create Your First Job Role
-                            </h3>
-                            <p className="text-gray-600 ">
-                              It looks like you haven't created any job roles
-                              yet.
-                              <br />
-                              Create a role to get started!
-                            </p>
-                            <div className="absolute top-[-35px] right-[320px] transform rotate-90">
-                              <ArrowLeft className="w-8 h-8 text-blue-600" />
-                            </div>
-
-                            {isAuthenticated && (
-                              <button
-                                onClick={() => {
-                                  setShowCreateJobRole(true);
-                                  setShowGuideModal(false);
-                                }}
-                                className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center absolute top-[-65px] right-[282px] "
-                              >
-                                Create Role
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )} */}
                     {showDeleteModal && (
                       <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
                         <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">

@@ -12,6 +12,8 @@ import { useAuthContext } from "../context/AuthContext"; // Adjust path
 import { useNavigate } from "react-router-dom";
 import { showToast } from "../utils/toast";
 
+import { CandidateListItem } from "../services/candidateService";
+
 interface HeaderProps {
   onCreateRole: () => void;
   onOpenLogoutModal: () => void;
@@ -19,6 +21,9 @@ interface HeaderProps {
   onBack?: () => void; // Optional prop for back button
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  showCreateRoleButton?: boolean;
+  candidates: CandidateListItem[];
+  onSelectCandidate: (candidate: CandidateListItem) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -28,6 +33,9 @@ const Header: React.FC<HeaderProps> = ({
   onBack,
   searchQuery,
   setSearchQuery,
+  showCreateRoleButton,
+  candidates,
+  onSelectCandidate,
 }) => {
   const { isAuthenticated, user, signOut } = useAuthContext();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -64,6 +72,8 @@ const Header: React.FC<HeaderProps> = ({
     navigate("/");
   };
 
+  const [isFocused, setIsFocused] = useState(false);
+
   return (
     <>
       <header className="bg-white shadow-sm border-b border-gray-200">
@@ -83,20 +93,38 @@ const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center space-x-6">
               {/* Search - Only show when authenticated */}
               {isAuthenticated && (
-                <div className="hidden sm:flex items-center bg-gray-100 rounded-lg px-3 py-2">
+                <div className="relative hidden sm:flex items-center bg-gray-100 rounded-lg px-3 py-2">
                   <Search className="w-4 h-4 text-gray-500 mr-2" />
                   <input
                     type="text"
                     placeholder="LinkedIn Contact Finder..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setTimeout(() => setIsFocused(false), 500)}
                     className="bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none w-40"
                   />
+                  {isFocused && candidates.length > 0 && (
+                    <div className="absolute left-[-1px] top-full w-full bg-white shadow-lg rounded-lg mt-1 z-10 max-h-40 overflow-y-auto">
+                      {candidates.map((candidate) => (
+                        <div
+                          key={candidate.id}
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => {
+                            onSelectCandidate(candidate);
+                            setSearchQuery(candidate.full_name || "");
+                          }}
+                        >
+                          {candidate.full_name || "Unnamed Candidate"}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* Create Role Button - Only show when authenticated */}
-              {isAuthenticated && (
+              {/* Create Role Button - Only show when authenticated and on the home page */}
+              {isAuthenticated && showCreateRoleButton && (
                 <button
                   onClick={onCreateRole}
                   className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"

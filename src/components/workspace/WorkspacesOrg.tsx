@@ -281,12 +281,12 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                 </h1>
               </div>
               <div className="flex items-center space-x-4">
-                <button
+                {/* <button
                   onClick={onCreateRole}
                   className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
                 >
                   Create Role
-                </button>
+                </button> */}
                 <div className="relative">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
