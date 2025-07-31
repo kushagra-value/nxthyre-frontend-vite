@@ -105,7 +105,7 @@ const Header: React.FC<HeaderProps> = ({
                     className="bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none w-40"
                   />
                   {isFocused && candidates.length > 0 && (
-                    <div className="absolute left-[-2px] top-full w-full bg-white shadow-lg rounded-lg mt-1 z-10 max-h-40 overflow-y-auto">
+                    <div className="absolute left-[-1px] top-full w-full bg-white shadow-lg rounded-lg mt-1 z-10 max-h-40 overflow-y-auto">
                       {candidates.map((candidate) => (
                         <div
                           key={candidate.id}
@@ -113,7 +113,7 @@ const Header: React.FC<HeaderProps> = ({
                           onClick={() => {
                             onSelectCandidate(candidate);
                             setSearchQuery(candidate.full_name || "");
-                            setIsFocused(false);
+                            // setIsFocused(false);
                           }}
                         >
                           {candidate.full_name || "Unnamed Candidate"}
