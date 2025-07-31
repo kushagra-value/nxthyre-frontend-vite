@@ -87,3 +87,15 @@ textarea:focus-visible {
   outline: 2px;
   outline-offset: 2px;
 }
+
+.hide-scrollbar {
+  /* Hide scrollbar for Firefox */
+  scrollbar-width: none;
+  /* Hide scrollbar for IE/Edge */
+  -ms-overflow-style: none;
+}
+
+/* Hide scrollbar for Chrome, Safari, and other Webkit browsers */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

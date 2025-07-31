@@ -1061,7 +1061,7 @@ function MainApp() {
                       )}
 
                       <div className="flex w-full gap-3 h-full">
-                        <div className="lg:w-[25%] order-2 lg:order-1 sticky top-16 self-start will-change-transform">
+                        <div className="lg:w-[25%] order-2 lg:order-1 top-16 self-start will-change-transform max-h-[calc(100vh-60px)] overflow-y-auto hide-scrollbar">
                           <FiltersSidebar
                             filters={filters}
                             onApplyFilters={handleApplyFilters}
