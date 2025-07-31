@@ -288,18 +288,28 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       if (lastKeyword.length >= 2) {
         try {
           const suggestions = await candidateService.getKeywordSuggestions(lastKeyword);
-          setKeywordSuggestions(suggestions);
-          setShowSuggestions(true);
+          const currentKeywords = tempFilters.keywords
+            .split(",")
+            .map((k) => k.trim().toLowerCase())
+            .filter((k) => k);
+          // Filter out suggestions that already exist in currentKeywords
+          const filteredSuggestions = suggestions.filter(
+            (suggestion) =>
+              !currentKeywords.includes(suggestion.toLowerCase())
+          );
+          setKeywordSuggestions(filteredSuggestions);
+          setShowSuggestions(filteredSuggestions.length > 0);
         } catch (error) {
           console.error("Error fetching keyword suggestions:", error);
           setKeywordSuggestions([]);
+          setShowSuggestions(false);
         }
       } else {
         setKeywordSuggestions([]);
         setShowSuggestions(false);
       }
     }, 300),
-    []
+    [tempFilters.keywords]
   );
 
   // Handle click outside to close suggestions
@@ -412,6 +422,18 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   };
 
   const handleSelectSuggestion = (suggestion: string) => {
+
+    const currentKeywords = tempFilters.keywords
+      .split(",")
+      .map((k) => k.trim().toLowerCase())
+      .filter((k) => k);
+
+    // Prevent adding duplicate suggestion
+    if (currentKeywords.includes(suggestion.toLowerCase())) {
+      showToast.error("This keyword is already added.");
+      return;
+    }
+    
     const keywordsArray = tempFilters.keywords
       .split(",")
       .map((k) => k.trim())
@@ -573,7 +595,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       <div className="max-h-[calc(100vh-60px)] overflow-y-auto hide-scrollbar">
 
       {/* Total Experience */}
-      <div className={`bg-[#F5F9FB] rounded-t-lg  p-4 ${expandedSections.totalExp ? "my-4 rounded-lg" : "border-b border-gray-200"}`}>
+      <div className={`bg-[#F5F9FB] rounded-t-lg  p-4 ${expandedSections.totalExp ? "mb-4 rounded-lg" : "border-b border-gray-200"}`}>
         <div
           className={`flex items-center justify-between cursor-pointer ${expandedSections.totalExp ? "mb-2" : ""}`}
           onClick={() => toggleSection("totalExp")}
