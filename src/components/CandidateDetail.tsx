@@ -179,7 +179,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const [showMore, setShowMore] = useState(false);
 
     return (
-      <div className="relative bg-gray-100">
+      <div className="relative bg-gray-100 p-2">
         <div
           className={`overflow-hidden ${showMore ? "" : "min-h-[40vh]"}`}
           style={{ transition: "max-height 0.3s ease" }}
