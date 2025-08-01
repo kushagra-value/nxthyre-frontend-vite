@@ -466,7 +466,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                             {note?.postedBy?.userName ||
                               note?.organisation?.orgName}
                           </h4>
-                          <p className="text-sm font-medium text-[#4B5563]">
+                          <p className="text-sm text-[#4B5563]">
                             {note?.organisation?.orgName || "Company"}
                           </p>
                         </div>
@@ -515,7 +515,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                             {note?.postedBy?.userName ||
                               note?.organisation?.orgName}
                           </h4>
-                          <p className="text-sm font-medium text-[#4B5563]">
+                          <p className="text-sm text-[#4B5563]">
                             {note?.organisation?.orgName || "Company"}
                           </p>
                         </div>
@@ -546,7 +546,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
 
         {/* Comment Input Section */}
-        <div className="mt-4 min-h-16 shadow-top bg-white rounded-tr-lg rounded-tl-lg sticky bottom-0 left-0 right-0 px-5 py-3">
+        <div className="mt-4 min-h-16 shadow-top bg-white rounded-tr-lg rounded-tl-lg sticky bottom-[-2] left-[-2] right-[-2] px-5 py-3">
           <div className="flex space-x-3 border border-gray-200 rounded-lg p-3">
             <input
               type="text"
