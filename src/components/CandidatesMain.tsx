@@ -515,7 +515,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
             }`}
             onClick={() => handleCandidateClick(candidate)}
           >
-            <div className="flex items-center space-x-3 border-b pb-4">
+            <div className="flex items-center space-x-3 pb-4">
               <input
                 type="checkbox"
                 checked={selectedCandidates.includes(candidate.id)}
@@ -523,17 +523,18 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mt-1"
                 onClick={(e) => e.stopPropagation()}
               />
+              <div className="border-b border-gray-200">
               <div
-                className={`w-14 h-14 ${getAvatarColor(
+                className={`w-12 h-12 ${getAvatarColor(
                   candidate.full_name
-                )} rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600]`}
+                )} rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600] `}
               >
                 {candidate.avatar}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
                   <div className="flex items-center space-x-2 flex-wrap">
-                    <h3 className="text-xs lg:text-base font-[600] text-gray-900">
+                    <h3 className="text-xs lg:text-base font-[400] text-gray-900">
                       {candidate.full_name}
                     </h3>
                     {candidate.is_background_verified && (
@@ -604,11 +605,18 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                   </div>
                   
                 </div>
-                <div className="flex space-x-1">
-                  <p className="text-xs lg:text-base font-[400] text-blue-600 mt-1 max-w-[58ch] truncate">
-                    {candidate.headline} |
+                <div className="flex space-x-2">
+                  <p className="text-sm font-[400] text-blue-600 mt-1 max-w-[58ch] truncate">
+                    {candidate.experience_summary?.title}
+                  </p>
+                  <p className="text-xs font-[400] text-blue-600 mt-1 max-w-[58ch] truncate">
+                    |
+                  </p> 
+                  <p className="text-sm font-[400] text-blue-600 mt-1 max-w-[58ch] truncate">
+                    {candidate.education_summary?.title}
                   </p>
                 </div>
+              </div>
               </div>
             </div>
             <div className="p-3 lg:pl-8 lg:py-4">
@@ -620,9 +628,6 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                       {candidate.experience_summary?.title}
                     </p>
                   </div>
-                  <p className="text-gray-900 truncate">
-                    {candidate.experience_summary?.date_range}
-                  </p>
                 </div>
                 <div className="flex justify-between">
                   <div className="flex space-x-12">
@@ -635,8 +640,8 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     {candidate.education_summary?.date_range}
                   </p>
                 </div>
-                <div className="flex space-x-6">
-                  <span className="text-gray-500 mr-[5px]">Notice Period</span>
+                <div className="flex flex-col">
+                  <p className="text-gray-500 mr-[5px]">Notice Period</p>
                   <p className="text-gray-900">
                     {candidate.notice_period_summary}
                   </p>
