@@ -921,7 +921,7 @@ function MainApp() {
                                 >
                                   {category.name}
                                   <span
-                                    className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                                    className={`ml-2 p-2 rounded-full text-xs lg:text-base font-[400] ${
                                       activeCategoryId === category.id
                                         ? "bg-blue-200 text-blue-800"
                                         : "bg-gray-200 text-gray-600"
@@ -1006,7 +1006,7 @@ function MainApp() {
                                       !showCategoryDropdown
                                     )
                                   }
-                                  className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
+                                  className="px-3 py-1.5 text-xs lg:text-base font-[400] text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
                                 >
                                   +{categories.length - 4} more
                                   <ChevronDown className="ml-1 w-4 h-4" />
@@ -1027,7 +1027,7 @@ function MainApp() {
                             <div>
                               <button
                                 onClick={handlePipelinesClick}
-                                className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                                className="px-3 py-1.5 bg-blue-600 text-white text-xs lg:text-base font-[400] rounded-lg hover:bg-blue-700 transition-colors flex items-center"
                               >
                                 Pipelines
                               </button>

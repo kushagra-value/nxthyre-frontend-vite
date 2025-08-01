@@ -368,7 +368,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-2 text-sm lg:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 ${
+                className={`py-2 text-sm lg:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 ${
                   activeTab === tab.id
                     ? "text-blue-600 border-blue-500"
                     : "text-gray-600 border-transparent hover:text-gray-700"
@@ -504,11 +504,11 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
         </div>
       ) : (
       <>
-      <div className="border-b-1 border-gray-200 overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar">
+      <div className="border-b-1 border-gray-200 overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
         {candidates.map((candidate) => (
           <div
             key={candidate.id}
-            className={`p-3 lg:p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
+            className={`p-3 lg:p-4 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg ${
               selectedCandidate?.id === candidate.id
                 ? "bg-blue-50 border-l-4 border-blue-500"
                 : ""
@@ -526,14 +526,14 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
               <div
                 className={`w-14 h-14 ${getAvatarColor(
                   candidate.full_name
-                )} rounded-full flex items-center justify-center text-white font-semibold text-sm`}
+                )} rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600]`}
               >
                 {candidate.avatar}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center space-x-2 flex-wrap">
-                    <h3 className="text-base font-semibold text-gray-900">
+                    <h3 className="text-xs lg:text-base font-[600] text-gray-900">
                       {candidate.full_name}
                     </h3>
                     {candidate.is_background_verified && (
@@ -594,18 +594,62 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                           </svg>
                         </span>
                       </div>
-                    )}
-                    <span
-                      className={`mt-1 px-2 py-1 text-xs rounded-full ${
-                        candidate.experience_years?.includes("Available")
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-blue-100 text-blue-800"
-                      }`}
-                    >
-                      {candidate.experience_years}
-                    </span>
+                    )}        
                   </div>
-                  <div className="flex items-center space-x-1">
+                  <div className="flex space-x-1">
+                    <p className="flex text-xs lg:text-base font-[400] text-gray-600 mt-1">
+                      <MapPin className="mt-1 w-4 h-3 ml-[-3px]" />
+                      {candidate.location?.split(",")[0]}
+                    </p>
+                  </div>
+                  
+                </div>
+                <div className="flex space-x-1">
+                  <p className="text-xs lg:text-base font-[400] text-blue-600 mt-1 max-w-[58ch] truncate">
+                    {candidate.headline} |
+                  </p>
+                </div>
+                <div className="flex space-x-1">
+                  <p className="flex text-sm text-gray-600 mt-1">
+                    <MapPin className="mt-1 w-4 h-3 ml-[-3px]" />
+                    {candidate.location?.split(",")[0]}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="p-3 lg:pl-8 lg:py-4 bg-white">
+              <div className="mt-2 grid grid-cols-1 gap-2 text-sm ml-1">
+                <div className="flex justify-between">
+                  <div className="flex space-x-12">
+                    <span className="text-gray-500">Experience</span>
+                    <p className="text-gray-900 max-w-[36ch] truncate">
+                      {candidate.experience_summary?.title}
+                    </p>
+                  </div>
+                  <p className="text-gray-900 truncate">
+                    {candidate.experience_summary?.date_range}
+                  </p>
+                </div>
+                <div className="flex justify-between">
+                  <div className="flex space-x-12">
+                    <span className="text-gray-500 mr-[5px]">Education</span>
+                    <p className="text-gray-900 max-w-[36ch] truncate">
+                      {candidate.education_summary?.title}
+                    </p>
+                  </div>
+                  <p className="text-gray-900 truncate">
+                    {candidate.education_summary?.date_range}
+                  </p>
+                </div>
+                <div className="flex space-x-6">
+                  <span className="text-gray-500 mr-[5px]">Notice Period</span>
+                  <p className="text-gray-900">
+                    {candidate.notice_period_summary}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-3 flex items-center justify-between space-x-2 flex-wrap gap-2">
+                <div className="flex items-center space-x-1">
                     {candidate.social_links?.github && (
                       <button
                         className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
@@ -653,62 +697,6 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                       </button>
                     )}
                   </div>
-                </div>
-                <div className="flex space-x-1">
-                  <p className="text-sm text-gray-600 mt-1 max-w-[58ch] truncate">
-                    {candidate.headline} |
-                  </p>
-                </div>
-                <div className="flex space-x-1">
-                  <p className="flex text-sm text-gray-600 mt-1">
-                    <MapPin className="mt-1 w-4 h-3 ml-[-3px]" />
-                    {candidate.location?.split(",")[0]}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="p-3 lg:pl-8 lg:py-4 bg-white">
-              <div className="mt-2 grid grid-cols-1 gap-2 text-sm ml-1">
-                <div className="flex justify-between">
-                  <div className="flex space-x-12">
-                    <span className="text-gray-500">Experience</span>
-                    <p className="text-gray-900 max-w-[36ch] truncate">
-                      {candidate.experience_summary?.title}
-                    </p>
-                  </div>
-                  <p className="text-gray-900 truncate">
-                    {candidate.experience_summary?.date_range}
-                  </p>
-                </div>
-                <div className="flex justify-between">
-                  <div className="flex space-x-12">
-                    <span className="text-gray-500 mr-[5px]">Education</span>
-                    <p className="text-gray-900 max-w-[36ch] truncate">
-                      {candidate.education_summary?.title}
-                    </p>
-                  </div>
-                  <p className="text-gray-900 truncate">
-                    {candidate.education_summary?.date_range}
-                  </p>
-                </div>
-                <div className="flex space-x-6">
-                  <span className="text-gray-500 mr-[5px]">Notice Period</span>
-                  <p className="text-gray-900">
-                    {candidate.notice_period_summary}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-3 flex items-center justify-between space-x-2 flex-wrap gap-2">
-                <div className="mt-3 flex flex-wrap gap-1">
-                  {candidate.skills_list?.slice(0, 3).map((skill, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
                 <div className="rounded-md flex space-x-2 rounde-lg border border-blue-400 hover:border-blue-600 transition-colors">
                   <button
                     className="pl-3 pr-2 py-1.5 bg-white text-blue-600 text-sm font-medium flex items-center rounded-md"
