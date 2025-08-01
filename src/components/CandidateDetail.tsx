@@ -180,7 +180,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const [showMore, setShowMore] = useState(false);
 
     return (
-      <div className="relative bg-gray-100 p-3 rounded-lg">
+      <div className="relative bg-[F0F0F0] p-3 rounded-lg">
         <div
           className={`overflow-hidden ${showMore ? "" : "min-h-[50vh]"}`}
           style={{ transition: "max-height 0.3s ease" }}
@@ -347,7 +347,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   const SkillsTab = () => (
     <div className="bg-gray-100 p-3 rounded-lg pb-6">
-      <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+      <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-3 flex items-center">
         <Star className="w-4 h-4 mr-2 text-gray-600" />
         Skills
       </h3>
@@ -358,7 +358,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             (skill, index) => (
               <span
                 key={index}
-                className="px-3 py-[5px] bg-gray-200 text-gray-600 text-xs rounded-full"
+                className="px-3 py-[5px] bg-blue-100 text-blue-800 text-xs rounded-full"
               >
                 {skill?.skill}
               </span>
