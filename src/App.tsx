@@ -896,7 +896,7 @@ function MainApp() {
 
                     <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3">
                       {categories.length > 0 && (
-                      <div className="sticky top-[64px] z-20 py-2 will-change-transform mb-4 bg-gray-50 border-b border-gray-200">
+                      <div className="sticky top-[64px] z-20 will-change-transform mb-4 bg-gray-50 border-b border-gray-200">
                         <div className="max-w-full mx-auto px-3 lg:px-6">
                           <div className="hidden md:flex items-center space-x-2">
                             {categories.slice(0, 4).map((category) => (
@@ -913,10 +913,10 @@ function MainApp() {
                                     setActiveCategoryId(category.id);
                                     fetchJobDetailsAndSetFilters(category.id);
                                   }}
-                                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                                  className={`px-3 py-1.5 text-xs lg:text-base font-[400] transition-all duration-200 ${
                                     activeCategoryId === category.id
-                                      ? "bg-blue-100 text-blue-700 shadow-sm"
-                                      : "text-gray-600 hover:bg-gray-100"
+                                      ? "border-b-2 border-blue-700 text-blue-700 shadow-sm"
+                                      : "text-gray-600 hover:border-b-2 border-gray-200"
                                   }`}
                                 >
                                   {category.name}
