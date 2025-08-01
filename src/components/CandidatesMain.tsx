@@ -363,7 +363,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
     <div className="bg-white rounded-xl  h-fit">
       <div className="border-b border-gray-200">
         <div className="flex items-center justify-between px-4 pt-4 pb-0">
-          <div className="flex space-x-1 overflow-x-auto">
+          <div className="flex space-x-6 overflow-x-auto">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -504,14 +504,14 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
         </div>
       ) : (
       <>
-      <div className="border-b-1 border-gray-200 overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
+      <div className="space-y-4 border-b-1 border-gray-200 overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
         {candidates.map((candidate) => (
           <div
             key={candidate.id}
             className={`p-3 lg:p-4 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg ${
               selectedCandidate?.id === candidate.id
                 ? "bg-blue-50 border-l-4 border-blue-500"
-                : ""
+                : "border border-gray-200"
             }`}
             onClick={() => handleCandidateClick(candidate)}
           >
@@ -531,7 +531,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 {candidate.avatar}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
                   <div className="flex items-center space-x-2 flex-wrap">
                     <h3 className="text-xs lg:text-base font-[600] text-gray-900">
                       {candidate.full_name}
@@ -609,15 +609,9 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     {candidate.headline} |
                   </p>
                 </div>
-                <div className="flex space-x-1">
-                  <p className="flex text-sm text-gray-600 mt-1">
-                    <MapPin className="mt-1 w-4 h-3 ml-[-3px]" />
-                    {candidate.location?.split(",")[0]}
-                  </p>
-                </div>
               </div>
             </div>
-            <div className="p-3 lg:pl-8 lg:py-4 bg-white">
+            <div className="p-3 lg:pl-8 lg:py-4">
               <div className="mt-2 grid grid-cols-1 gap-2 text-sm ml-1">
                 <div className="flex justify-between">
                   <div className="flex space-x-12">

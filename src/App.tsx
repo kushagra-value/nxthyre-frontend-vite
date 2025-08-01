@@ -913,7 +913,7 @@ function MainApp() {
                                     setActiveCategoryId(category.id);
                                     fetchJobDetailsAndSetFilters(category.id);
                                   }}
-                                  className={`px-3 py-1.5 text-xs lg:text-base font-[400] transition-all duration-200 ${
+                                  className={`py-1.5 text-xs lg:text-base font-[400] transition-all duration-200 ${
                                     activeCategoryId === category.id
                                       ? "border-b-2 border-blue-700 text-blue-700 shadow-sm"
                                       : "text-gray-600 hover:border-b-2 border-gray-200"
@@ -921,7 +921,7 @@ function MainApp() {
                                 >
                                   {category.name}
                                   <span
-                                    className={`ml-2 p-2 rounded-full text-xs lg:text-base font-[400] ${
+                                    className={`ml-2 px-2 py-1 rounded-full text-xs lg:text-base font-[400] ${
                                       activeCategoryId === category.id
                                         ? "bg-blue-200 text-blue-800"
                                         : "bg-gray-200 text-gray-600"
