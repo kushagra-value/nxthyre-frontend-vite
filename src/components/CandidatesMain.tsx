@@ -356,6 +356,16 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
     return pageNumbers;
   };
 
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLDivElement>,
+    candidate: CandidateListItem
+  ) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleCandidateClick(candidate);
+    }
+  };
+
   const startIndex = (currentPage - 1) * candidatesPerPage;
   const endIndex = Math.min(startIndex + candidatesPerPage, candidates.length);
 
@@ -368,11 +378,12 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-2 text-sm lg:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 ${
+                className={`py-2 text-sm lg:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 focus-visible:border-b-2 focus-visible:border-blue-600 ${
                   activeTab === tab.id
                     ? "text-blue-600 border-blue-500"
                     : "text-gray-600 border-transparent hover:text-gray-700"
                 }`}
+                aria-label={`Switch to ${tab.label} tab`}
               >
                 {tab.label}
                 {tab.count > 0 && (
@@ -393,28 +404,32 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 type="checkbox"
                 checked={selectAll}
                 onChange={(e) => handleSelectAll(e.target.checked)}
-                className="w-4 h-4 text-blue-200 border-gray-200 rounded focus:ring-blue-200"
+                className="w-4 h-4 text-blue-200 border-gray-200 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 "
+                aria-label="Select all candidates"
               />
               <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">Select all</span>
             </label>
             <div className="flex space-x-3">
             <button
-              className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center"
+              className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
               onClick={handleBulkAddToPipeline}
+              aria-label="Add selected candidates to pipeline"
             >
               Add To Pipeline
             </button>
             <button
-              className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center"
+              className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
               onClick={() => setShowExportDialog(true)}
+              aria-label="Export selected candidates"
             >
               Export Candidates
             </button>
           
           <div className="relative flex space-x-2">
             <button
-                className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center"
+                className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
+                aria-label="Sort candidates"
               >
                 Sort By - <span className="text-gray-400 font-[400] ml-1 mr-1">{sortOptions.find(opt => opt.value === sortBy)?.label || 'Relevance'}</span>
                 <ChevronDown className="w-4 h-4 mt-1" />
@@ -428,8 +443,9 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     {sortOptions.map((option) => (
                       <button
                         key={option.value}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() => handleSortSelect(option.value)}
+                        aria-label={`Sort candidates by ${option.label}`}
                       >
                         {option.label}
                       </button>
@@ -454,9 +470,10 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
             </p>
             <div className="mt-4 flex justify-start space-x-2">
               <button
-                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                 onClick={() => handleExportCandidates("csv")}
                 disabled={exportLoading}
+                area-label="Export candidates as CSV"
               >
                 {exportLoading ? (
                   <>
@@ -468,9 +485,10 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 )}
               </button>
               <button
-                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                 onClick={() => handleExportCandidates("xlsx")}
                 disabled={exportLoading}
+                area-label="Export candidates as Excel"
               >
                 {exportLoading ? (
                   <>
@@ -482,9 +500,10 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 )}
               </button>
               <button
-                className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                 onClick={() => setShowExportDialog(false)}
                 disabled={exportLoading}
+                area-label="Cancel export dialog"
               >
                 Cancel
               </button>
@@ -508,20 +527,25 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
         {candidates.map((candidate) => (
           <div
             key={candidate.id}
-            className={`pt-2 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg ${
+            className={`pt-2 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
               selectedCandidate?.id === candidate.id
                 ? "bg-blue-50 border-l-4 border-blue-500"
                 : "border border-gray-200"
             }`}
             onClick={() => handleCandidateClick(candidate)}
+            onKeyDown={(e) => handleKeyDown(e, candidate)}
+            tabIndex={0}
+            role="button"
+            aria-label={`Select candidate ${candidate.full_name}`}
           >
             <div className="flex px-4 items-center space-x-3">
               <input
                 type="checkbox"
                 checked={selectedCandidates.includes(candidate.id)}
                 onChange={() => handleCandidateSelect(candidate.id)}
-                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mt-1"
+                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mt-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                 onClick={(e) => e.stopPropagation()}
+                aria-label={`Select ${candidate.full_name}`}
               />
               <div className="border-b-2 border-gray-300 flex items-center space-x-3 pb-4 w-full">
               <div
@@ -664,46 +688,50 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 <div className="flex items-center space-x-1">
                     {candidate.social_links?.github && (
                       <button
-                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(candidate.social_links?.github, "_blank")
                         }
+                        aria-label={`View ${candidate.full_name}'s GitHub profile`}
                       >
                         <Github className="w-4 h-4" />
                       </button>
                     )}
                     {candidate.social_links?.linkedin && (
                       <button
-                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(
                             candidate.social_links?.linkedin,
                             "_blank"
                           )
                         }
+                        aria-label={`View ${candidate.full_name}'s LinkedIn profile`}
                       >
                         <Linkedin className="w-4 h-4" />
                       </button>
                     )}
                     {candidate.social_links?.resume && (
                       <button
-                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(candidate.social_links?.resume, "_blank")
                         }
+                        aria-label={`View ${candidate.full_name}'s resume`}
                       >
                         <File className="w-4 h-4" />
                       </button>
                     )}
                     {candidate.social_links?.portfolio && (
                       <button
-                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(
                             candidate.social_links?.portfolio,
                             "_blank"
                           )
                         }
+                        aria-label={`View ${candidate.full_name}'s portfolio`}
                       >
                         <Link className="w-4 h-4" />
                       </button>
@@ -711,19 +739,21 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                   </div>
                 <div className="rounded-md flex space-x-2 rounde-lg border border-blue-400 hover:border-blue-600 transition-colors">
                   <button
-                    className="pl-3 pr-2 py-1.5 bg-white text-blue-600 text-sm font-medium flex items-center rounded-md"
+                    className="pl-3 pr-2 py-1.5 bg-white text-blue-600 text-sm font-medium flex items-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleSaveToPipeline(candidate.id);
                     }}
+                    aria-label={`Save ${candidate.full_name} to pipeline`}
                   >
                     <Bookmark className="w-4 h-4 mr-1" />
                     Save to Pipeline
                   </button>
                   <div className="relative">
                     <button
-                      className="border-l border-l-blue-400 pl-1.5 pr-2 py-1.5"
+                      className="border-l border-l-blue-400 pl-1.5 pr-2 py-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                       onClick={(e) => handleDropdownToggle(candidate.id, e)}
+                      aria-label={`Add ${candidate.full_name} to pipeline stages`}
                     >
                       <ChevronDown className="w-4 h-4 ml-1 mt-[2px] text-blue-600" />
                     </button>
@@ -736,11 +766,12 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                           {pipelineStages.map((stage) => (
                             <button
                               key={stage.id}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleSaveToPipeline(candidate.id, stage.id);
                               }}
+                              aria-label={`Add ${candidate.full_name} to ${stage.name} stage`}
                             >
                               {stage.name}
                             </button>
@@ -768,7 +799,8 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                area-label={`Go to previous page`}
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -778,7 +810,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                   onClick={() =>
                     typeof page === "number" && handlePageChange(page)
                   }
-                  className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                  className={`px-3 py-1 text-sm rounded-lg transition-colors focus-visible:ring focus-visible:ring-2 focus-visible:ring-blue-500 ${
                     page === currentPage
                       ? "bg-blue-600 text-white"
                       : typeof page === "number"
@@ -786,6 +818,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                       : "text-gray-600 cursor-default"
                   }`}
                   disabled={typeof page !== "number"}
+                  area-label={`Go to page ${page}`}
                 >
                   {page}
                 </button>
@@ -793,7 +826,8 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring focus-visible:ring-2 focus-visible:ring-blue-500"
+                area-label={`Go to next page`}
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
