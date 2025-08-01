@@ -229,14 +229,17 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
         </div>
         {!showMore && (
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white to-transparent p-4 ml-3 flex space-x-2 items-center">
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white to-transparent p-4 ml-4 flex space-x-1 items-center">
             <button
               onClick={() => setShowMore(true)}
-              className="text-blue-500 text-sm font-medium"
+              className="text-blue-500 text-sm"
             >
               VIEW MORE
             </button>
-            <ChevronDown className="text-blue-500" />
+            <ChevronDown
+              className="text-blue-500 cursor-pointer mt-[2px]"
+              onClick={() => setShowMore(true)}
+            />
           </div>
         )}
       </div>
