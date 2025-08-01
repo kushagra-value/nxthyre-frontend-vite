@@ -379,22 +379,24 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         noteId: "dummy1",
         postedBy: { userName: "Sample User" },
         organisation: { orgName: "Sample Company" },
-        content: "This is a sample note to demonstrate the layout.",
+        content:
+          "This is a sample note to demonstrate the layout. lorem ipsum dolor sit amet, consectetur adipiscing elit. ipsum dolor sit amet, consectetur adipiscing elit.",
         posted_at: new Date().toISOString(),
       },
       {
         noteId: "dummy2",
         postedBy: { userName: "Another User" },
         organisation: { orgName: "Another Company" },
-        content: "Another sample note for illustration.",
+        content:
+          "Another sample note for illustration. lorem ipsum dolor sit amet, consectetur adipiscing elit. pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.",
         posted_at: new Date().toISOString(),
       },
     ];
 
     return (
-      <div className="bg-[#F0F0F0] p-3 rounded-lg">
+      <div className="bg-[#F0F0F0] p-2 rounded-lg">
         {/* Header with Heading and Toggle */}
-        <div className="flex justify-between items-center mb-4 border-b-2 border-gray-200 pb-3">
+        <div className="flex justify-between items-center mb-2 border-b-2 border-gray-200 pb-3">
           {/* Notes about the Person Heading */}
           <div className="flex items-center space-x-2">
             <FileText className="w-4 h-4 text-gray-500" />
@@ -421,20 +423,21 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
 
         {/* Notes List */}
-        <div className="space-y-4 border-b-2 border-gray-200 pb-4">
+        <div className="space-y-4 border-gray-200">
           {notesView === "my" ? (
             (detailedCandidate?.candidate?.notes?.length > 0
               ? detailedCandidate.candidate.notes
               : dummyNotes
             ).map((note) => (
-              <div key={note.noteId} className="p-4">
+              <div key={note.noteId} className="">
                 <div className="flex flex-col space-y-1">
                   <div className="flex justify-between">
+                    {/* User Avatar and Info */}
                     <div className="flex space-x-2">
-                      <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <User className="w-3 h-3 text-white" />
+                      <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <User className="w-5 h-5 text-white" />
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 space-y-1">
                         <h4 className="font-medium text-gray-900 text-sm">
                           {note?.postedBy?.userName ||
                             note?.organisation?.orgName}
@@ -444,9 +447,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                         </p>
                       </div>
                     </div>
+                    {/* Posted Date */}
                     <div>
                       <p className="text-xs text-gray-600 mt-1">
-                        Posted Date:{" "}
                         {new Date(note?.posted_at).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
@@ -456,10 +459,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     </div>
                   </div>
 
-                  <div className="bg-white p-3 rounded-lg mt-2">
-                    <p className="text-sm text-gray-800 mt-1">
-                      {note?.content}
-                    </p>
+                  <div className="bg-white p-2 rounded-lg">
+                    <p className="text-sm text-gray-800">{note?.content}</p>
                   </div>
                 </div>
               </div>
