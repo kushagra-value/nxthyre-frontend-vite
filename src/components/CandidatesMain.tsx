@@ -619,7 +619,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
               </div>
               </div>
             </div>
-              <div className="pt-4 pl-8 flex space-x-6 gap-2 text-sm ml-1">
+              <div className="pt-4 pl-12 flex space-x-6 gap-2 text-sm ml-1">
                 {candidate.experience_years && 
                 (
                   <div className="flex flex-col">
@@ -660,7 +660,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 )}
  
               </div>
-              <div className="p-3 pl-8 mt-3 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2">
+              <div className="p-3 pl-12 mt-3 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2">
                 <div className="flex items-center space-x-1">
                     {candidate.social_links?.github && (
                       <button
