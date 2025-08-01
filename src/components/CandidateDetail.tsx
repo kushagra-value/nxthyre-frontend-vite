@@ -14,6 +14,9 @@ import {
   FileText,
   Share,
   Send,
+  MessageCircle,
+  MessageSquareTextIcon,
+  MessageSquareText,
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
@@ -416,12 +419,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
     return (
       <>
-        <div className="bg-[#F0F0F0] p-3 rounded-lg">
+        <div className="flex flex-col h-full bg-[#F0F0F0] p-3 rounded-lg">
           {/* Header with Heading and Toggle */}
           <div className="flex justify-between items-center mb-3 border-b-2 border-gray-200 px-3 pt-1 pb-3">
             {/* Notes about the Person Heading */}
             <div className="flex items-center space-x-2">
-              <FileText className="w-4 h-4 text-[#4B5563]" />
+              <MessageSquareText className="w-4 h-4 text-[#4B5563]" />
               <h3 className="text-[18px] font-medium text-[#4B5563]">
                 Notes about the Person
               </h3>
@@ -445,7 +448,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
 
           {/* Notes List */}
-          <div className="space-y-2 border-gray-200">
+          <div className="flex-1 overflow-y-auto space-y-2 border-gray-200">
             {notesView === "my"
               ? (detailedCandidate?.candidate?.notes?.length > 0
                   ? detailedCandidate.candidate.notes
@@ -547,7 +550,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
         </div>
         {/* Comment Input Section */}
-        <div className="mt-4 min-h-16 p-3 shadow-top bg-white rounded-tr-lg rounded-tl-lg fixed bottom-0 left-0 right-0">
+        <div className="mt-4 p-3 bg-white rounded-tr-lg rounded-tl-lg">
           <div className="flex space-x-3 border border-gray-200 rounded-lg p-2">
             <input
               type="text"
