@@ -181,7 +181,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     return (
       <div className="relative">
         <div
-          className={`overflow-hidden ${showMore ? "" : "min-h-[40vh]"}`}
+          className={`overflow-hidden ${showMore ? "" : "min-h-[25vh]"}`}
           style={{ transition: "max-height 0.3s ease" }}
         >
           <div className="mb-4">
@@ -191,7 +191,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             </h3>
             <p className="text-sm text-gray-700 bg-gray-100 p-3 rounded-lg">
               {detailedCandidate?.candidate?.profile_summary ||
-                "No profile summary available"}
+                "I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs). I hold a B.E/B.Tech in Computer Science & Engineering from HKBK College of Engineering. My experience includes developing AI models for NLP, computer vision, and Retrieval-Augmented Generation (RAG) based applications across various industries"}
             </p>
           </div>
           <div>
