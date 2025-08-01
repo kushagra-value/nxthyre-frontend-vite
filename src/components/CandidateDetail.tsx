@@ -186,7 +186,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           style={{ transition: "max-height 0.3s ease" }}
         >
           <div className="mb-4 border-b border-gray-200">
-            <h3 className="text-sm lg:text-base font-semibold text-gray-900 flex items-center">
+            <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] flex items-center">
               <User className="w-4 h-4 mr-2 text-[#4B5563]" />
               Profile Summary
             </h3>
@@ -196,7 +196,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             </p>
           </div>
           <div>
-            <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
+            <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
               <Briefcase className="w-4 h-4 mr-2 text-[#4B5563]" />
               Experience
             </h3>
@@ -269,7 +269,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                   {edu?.start_date} - {edu?.end_date}
                 </p>
                 {edu?.institution && (
-                  <p className="text-sm text-[#111827]">{edu?.institution}</p>
+                  <p className="text-sm text-[#4B5563]">{edu?.institution}</p>
                 )}
               </div>
             ))
@@ -347,8 +347,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   const SkillsTab = () => (
     <div className="bg-[#F0F0F0] p-3 rounded-lg pb-6">
-      <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-3 flex items-center">
-        <Star className="w-4 h-4 mr-2 text-gray-600" />
+      <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-3 flex items-center">
+        <Star className="w-4 h-4 mr-2 text-[#4B5563]" />
         Skills
       </h3>
       <div className="flex flex-wrap gap-3">
