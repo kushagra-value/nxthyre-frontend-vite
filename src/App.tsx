@@ -1047,7 +1047,7 @@ function MainApp() {
                             activeTab={activeTab}
                           />
                         </div>
-                        <div className="lg:w-[45%] sticky order-1 lg:order-2 z-10">
+                        <div className="lg:w-[45%] order-1 lg:order-2 ">
                           <CandidatesMain
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
