@@ -12,6 +12,8 @@ import {
   Share2,
   ChevronDown,
   FileText,
+  Share,
+  Send,
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
@@ -377,36 +379,55 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const dummyNotes = [
       {
         noteId: "dummy1",
-        postedBy: { userName: "Sample User" },
-        organisation: { orgName: "Sample Company" },
+        postedBy: { userName: "Sid Verma" },
+        organisation: { orgName: "Problock" },
         content:
           "This is a sample note to demonstrate the layout. lorem ipsum dolor sit amet, consectetur adipiscing elit. ipsum dolor sit amet, consectetur adipiscing elit.",
         posted_at: new Date().toISOString(),
       },
       {
         noteId: "dummy2",
-        postedBy: { userName: "Another User" },
-        organisation: { orgName: "Another Company" },
+        postedBy: { userName: "Leena Ghatiya" },
+        organisation: { orgName: "NxtHyre" },
         content:
           "Another sample note for illustration. lorem ipsum dolor sit amet, consectetur adipiscing elit. pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.",
+        posted_at: "July 28, 2025",
+      },
+    ];
+
+    const communityNotes = [
+      {
+        noteId: "dummy1",
+        postedBy: { userName: "Kushagra Jain" },
+        organisation: { orgName: "Valuebound" },
+        content:
+          "This is a sample note to demonstrate the layout. lorem ipsum dolor sit amet, consectetur adipiscing elit. ipsum dolor sit amet, consectetur adipiscing elit. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
         posted_at: new Date().toISOString(),
+      },
+      {
+        noteId: "dummy2",
+        postedBy: { userName: "Harsh Shrivastava" },
+        organisation: { orgName: "Vyuhyre" },
+        content:
+          "lorem ipsum dolor sit amet, consectetur adipiscing elit. pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.",
+        posted_at: "July 28, 2025",
       },
     ];
 
     return (
       <div className="bg-[#F0F0F0] p-3 rounded-lg">
         {/* Header with Heading and Toggle */}
-        <div className="flex justify-between items-center mb-2 border-b-2 border-gray-200 px-3 pt-1 pb-3">
+        <div className="flex justify-between items-center mb-3 border-b-2 border-gray-200 px-3 pt-1 pb-3">
           {/* Notes about the Person Heading */}
           <div className="flex items-center space-x-2">
-            <FileText className="w-4 h-4 text-gray-500" />
-            <h3 className="text-sm font-medium text-gray-900">
+            <FileText className="w-4 h-4 text-[#4B5563]" />
+            <h3 className="text-[18px] font-medium text-[#4B5563]">
               Notes about the Person
             </h3>
           </div>
           {/* Community Toggle */}
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">Community</span>
+            <span className="text-sm text-[#4B5563]">Community</span>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
@@ -424,74 +445,125 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
         {/* Notes List */}
         <div className="space-y-2 border-gray-200">
-          {notesView === "my" ? (
-            (detailedCandidate?.candidate?.notes?.length > 0
-              ? detailedCandidate.candidate.notes
-              : dummyNotes
-            ).map((note) => (
-              <div key={note.noteId} className="border-b border-gray-200 pb-2">
-                <div className="flex flex-col space-y-2 px-3 py-2 mb-0">
-                  <div className="flex justify-between items-center ">
-                    {/* User Avatar and Info */}
-                    <div className="flex space-x-3 items-center">
-                      <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <User className="w-6 h-6 text-white" />
+          {notesView === "my"
+            ? (detailedCandidate?.candidate?.notes?.length > 0
+                ? detailedCandidate.candidate.notes
+                : dummyNotes
+              ).map((note) => (
+                <div
+                  key={note.noteId}
+                  className="border-b border-gray-200 pb-2"
+                >
+                  <div className="flex flex-col space-y-2 px-3 py-2 mb-0">
+                    <div className="flex justify-between items-center ">
+                      {/* User Avatar and Info */}
+                      <div className="flex space-x-3 items-center">
+                        <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <User className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1 space-y-0.5">
+                          <h4 className="font-medium text-[#111827] text-sm">
+                            {note?.postedBy?.userName ||
+                              note?.organisation?.orgName}
+                          </h4>
+                          <p className="text-sm font-medium text-[#4B5563]">
+                            {note?.organisation?.orgName || "Company"}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex-1 space-y-1">
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {note?.postedBy?.userName ||
-                            note?.organisation?.orgName}
-                        </h4>
-                        <p className="text-xs text-gray-700">
-                          {note?.organisation?.orgName || "Company"}
+                      {/* Posted Date */}
+                      <div>
+                        <p className="text-xs text-[#818283] mt-1">
+                          {new Date(note?.posted_at).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            }
+                          )}
                         </p>
                       </div>
                     </div>
-                    {/* Posted Date */}
-                    <div>
-                      <p className="text-xs text-gray-600 mt-1">
-                        {new Date(note?.posted_at).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
+
+                    <div className="bg-white p-3 rounded-lg">
+                      <p className="text-sm text-[#818283] leading-normal">
+                        {note?.content}
                       </p>
                     </div>
                   </div>
+                </div>
+              ))
+            : (detailedCandidate?.candidate?.notes?.length > 0
+                ? detailedCandidate.candidate.notes
+                : communityNotes
+              ).map((note) => (
+                // Community notes
+                <div
+                  key={note.noteId}
+                  className="border-b border-gray-200 pb-2"
+                >
+                  <div className="flex flex-col space-y-2 px-3 py-2 mb-0">
+                    <div className="flex justify-between items-center ">
+                      {/* User Avatar and Info */}
+                      <div className="flex space-x-3 items-center">
+                        <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <User className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1 space-y-0.5">
+                          <h4 className="font-medium text-[#111827] text-sm">
+                            {note?.postedBy?.userName ||
+                              note?.organisation?.orgName}
+                          </h4>
+                          <p className="text-sm font-medium text-[#4B5563]">
+                            {note?.organisation?.orgName || "Company"}
+                          </p>
+                        </div>
+                      </div>
+                      {/* Posted Date */}
+                      <div>
+                        <p className="text-xs text-[#818283] mt-1">
+                          {new Date(note?.posted_at).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            }
+                          )}
+                        </p>
+                      </div>
+                    </div>
 
-                  <div className="bg-white p-3 rounded-lg">
-                    <p className="text-sm text-gray-800">{note?.content}</p>
+                    <div className="bg-white p-3 rounded-lg">
+                      <p className="text-sm text-[#818283] leading-normal">
+                        {note?.content}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-gray-500">
-              Community notes will be displayed here
-            </p>
-          )}
+              ))}
         </div>
 
         {/* Comment Input Section */}
-        <div className="mt-4 flex space-x-3">
-          <div className="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-            L
+        <div className="mt-4 min-h-16 shadow-top bg-white rounded-tr-lg rounded-tl-lg sticky bottom-0 left-0 right-0 px-5 py-3">
+          <div className="flex space-x-3 border border-gray-200 rounded-lg p-3">
+            <input
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Type your team comment!"
+              className="flex-1 px-4 py-2 rounded-lg text-sm"
+              onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
+            />
+            <button
+              onClick={handleAddComment}
+              disabled={!newComment.trim()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+            >
+              <Send className="w-4 h-4" />
+            </button>
           </div>
-          <input
-            type="text"
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Type your team comment"
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm"
-            onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
-          />
-          <button
-            onClick={handleAddComment}
-            disabled={!newComment.trim()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
-          >
-            Send
-          </button>
         </div>
       </div>
     );
