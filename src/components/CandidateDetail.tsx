@@ -396,7 +396,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     return (
       <div className="bg-[#F0F0F0] p-3 rounded-lg">
         {/* Header with Heading and Toggle */}
-        <div className="flex justify-between items-center mb-2 border-b-2 border-gray-200 px-3 py-1">
+        <div className="flex justify-between items-center mb-2 border-b-2 border-gray-200 px-3 pt-1 pb-2">
           {/* Notes about the Person Heading */}
           <div className="flex items-center space-x-2">
             <FileText className="w-4 h-4 text-gray-500" />
@@ -430,7 +430,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               : dummyNotes
             ).map((note) => (
               <div key={note.noteId} className="border-b border-gray-200 pb-2">
-                <div className="flex flex-col space-y-2 py-2 mb-2">
+                <div className="flex flex-col space-y-2 px-3 py-2 mb-2">
                   <div className="flex justify-between items-center ">
                     {/* User Avatar and Info */}
                     <div className="flex space-x-3 items-center">
