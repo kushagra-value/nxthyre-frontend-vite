@@ -205,7 +205,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 detailedCandidate?.candidate?.experience.map((exp, index) => (
                   <div
                     key={index}
-                    className="border-b border-l-2 border-gray-600 pl-4 relative pb-2 space-y-1"
+                    className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
                   >
                     <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
                     <h4 className="font-medium text-gray-500 text-sm">
@@ -247,10 +247,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   };
 
   const EducationTab = () => (
-    <div className="bg-gray-100 p-2 rounded-lg">
+    <div className="bg-gray-100 p-3 rounded-lg">
       <div className="mb-4">
-        <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-          <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
+        <h3 className="text-sm lg:text-base font-semibold text-gray-600 mb-2 flex items-center">
+          <GraduationCap className="w-4 h-4 mr-2 text-gray-600" />
           Education
         </h3>
         <div className="ml-2">
@@ -258,13 +258,13 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             detailedCandidate?.candidate?.education.map((edu, index) => (
               <div
                 key={index}
-                className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
               >
-                <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                <h4 className="font-medium text-gray-900 text-sm">
+                <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
+                <h4 className="font-medium text-gray-500 text-sm">
                   {edu?.degree}
                 </h4>
-                <p className="text-sm text-gray-600">{edu?.specialization}</p>
+                <p className="text-sm text-gray-500">{edu?.specialization}</p>
                 <p className="text-sm text-gray-500">
                   {edu?.start_date} - {edu?.end_date}
                 </p>
@@ -281,8 +281,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
       </div>
       <div className="mb-4">
-        <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-          <Award className="w-4 h-4 mr-2 text-gray-800" />
+        <h3 className="text-sm lg:text-base font-semibold text-gray-600 mb-2 flex items-center">
+          <Award className="w-4 h-4 mr-2 text-gray-600" />
           Certifications
         </h3>
         <div className="ml-2">
@@ -290,14 +290,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             detailedCandidate?.candidate?.certifications.map((cert, index) => (
               <div
                 key={index}
-                className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
               >
-                <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                <h4 className="font-medium text-gray-900 text-sm">
+                <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
+                <h4 className="font-medium text-gray-500 text-sm">
                   {cert?.name}
                 </h4>
-                <p className="text-sm text-gray-600">{cert?.issuer}</p>
-                <p className="text-sm text-gray-500">{cert?.issued_date}</p>
+                <p className="text-sm text-gray-400">{cert?.issuer}</p>
+                <p className="text-sm text-gray-400">{cert?.issued_date}</p>
               </div>
             ))
           ) : (
@@ -306,29 +306,29 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
       </div>
       <div>
-        <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-          <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
+        <h3 className="text-sm lg:text-base font-semibold text-gray-600 mb-2 flex items-center">
+          <TrendingUp className="w-4 h-4 mr-2 text-gray-600" />
           Recommendations
         </h3>
         <div className="space-y-2">
           {detailedCandidate?.candidate?.recommendations?.length > 0 ? (
             detailedCandidate?.candidate?.recommendations.map((rec, index) => (
               <div key={index} className="bg-gray-50 rounded-lg p-3">
-                <div className="flex items-start space-x-2">
+                <div className="flex items-start space-x-2 space-y-1">
                   <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
                     <User className="w-3 h-3 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-medium text-gray-900 text-sm">
+                    <h4 className="font-medium text-gray-600 text-sm">
                       {rec?.recommender_name}
                     </h4>
-                    <p className="text-xs text-gray-700">
+                    <p className="text-xs text-gray-500">
                       {rec?.recommender_title}
                     </p>
-                    <p className="text-sm text-gray-800 mt-1">
+                    <p className="text-sm text-gray-500 mt-1">
                       "{rec?.feedback}"
                     </p>
-                    <p className="text-xs text-gray-600 mt-1">
+                    <p className="text-xs text-gray-400 mt-1">
                       {rec?.date_received}
                     </p>
                   </div>
@@ -346,7 +346,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   );
 
   const SkillsTab = () => (
-    <div className="bg-gray-100 p-2 rounded-lg">
+    <div className="p-3">
       <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
         <Star className="w-4 h-4 mr-2 text-gray-800" />
         Skills
