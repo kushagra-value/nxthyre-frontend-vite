@@ -466,6 +466,7 @@ function MainApp() {
     activeCategoryId,
     debouncedSearchQuery,
     isAuthenticated,
+    currentPage
   ]);
 
   useEffect(() => {
@@ -772,6 +773,7 @@ function MainApp() {
       );
       setCandidates([]);
       setTotalCount(0);
+      setCurrentPage(1);
       setSelectedCandidate(null);
       return;
     }
@@ -894,7 +896,7 @@ function MainApp() {
 
                     <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3">
                       {categories.length > 0 && (
-                      <div className="sticky top-[64px] z-20 bg-white py-2 will-change-transform mb-2">
+                      <div className="sticky top-[64px] z-20 py-2 will-change-transform mb-2">
                         <div className="max-w-full mx-auto px-3 lg:px-6">
                           <div className="hidden md:flex items-center space-x-2">
                             {categories.slice(0, 4).map((category) => (
@@ -1021,6 +1023,15 @@ function MainApp() {
                                 />
                               </div>
                             )}
+
+                            <div>
+                              <button
+                                onClick={handlePipelinesClick}
+                                className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                              >
+                                Pipelines
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>

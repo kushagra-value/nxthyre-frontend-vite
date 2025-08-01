@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
+  Share,
 } from "lucide-react";
 import {
   candidateService,
@@ -359,84 +360,63 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
   const endIndex = Math.min(startIndex + candidatesPerPage, candidates.length);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 h-fit">
+    <div className="bg-white rounded-xl  h-fit">
       <div className="border-b border-gray-200">
-        <div className="flex items-center justify-between p-3 lg:p-4 pb-0">
+        <div className="flex items-center justify-between px-4 pt-4 pb-0">
           <div className="flex space-x-1 overflow-x-auto">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-2 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap ${
+                className={`px-3 py-2 text-sm lg:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 ${
                   activeTab === tab.id
-                    ? "text-blue-600 border-b-2 border-blue-500 bg-blue-50"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    ? "text-blue-600 border-blue-500"
+                    : "text-gray-600 border-transparent hover:text-gray-700"
                 }`}
               >
                 {tab.label}
                 {tab.count > 0 && (
-                  <span className="ml-2 px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded-full">
+                  <span className="ml-2 px-2 py-1 text-xs bg-blue-50 text-gray-600 rounded-full">
                     {tab.count}
                   </span>
                 )}
               </button>
             ))}
           </div>
-          <div>
-            <button
-              onClick={onPipelinesClick}
-              className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-            >
-              Pipelines
-            </button>
-          </div>
         </div>
       </div>
 
       <div className="p-3 lg:p-4 border-b border-gray-200">
-        {/* <div className="hidden sm:flex items-center bg-gray-100 rounded-lg px-3 py-2">
-          <Search className="w-4 h-4 text-gray-500 mr-2" />
-          <input
-            type="text"
-            placeholder="LinkedIn Contact Finder..."
-            value={localSearchTerm}
-            onChange={(e) => {
-              setLocalSearchTerm(e.target.value);
-              onSearchChange(e.target.value);
-            }}
-            className="bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none w-40"
-          />
-        </div> */}
-        <div className="mt-0 flex items-center justify-between flex-wrap gap-2">
-          <div className="flex space-x-3">
+        <div className="flex items-center justify-between">
             <label className="flex items-center">
               <input
                 type="checkbox"
                 checked={selectAll}
                 onChange={(e) => handleSelectAll(e.target.checked)}
-                className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
+                className="w-4 h-4 text-blue-200 border-gray-200 rounded focus:ring-blue-200"
               />
-              <span className="ml-2 text-sm text-gray-600">Select all</span>
+              <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">Select all</span>
             </label>
+            <div className="flex space-x-3">
             <button
-              className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
+              className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center"
               onClick={handleBulkAddToPipeline}
             >
               Add To Pipeline
             </button>
             <button
-              className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
+              className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center"
               onClick={() => setShowExportDialog(true)}
             >
               Export Candidates
             </button>
-          </div>
+          
           <div className="relative flex space-x-2">
             <button
-                className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
+                className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center"
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
               >
-                Sort By - <span className="text-blue-600 font-semibold ml-1 mr-1">{sortOptions.find(opt => opt.value === sortBy)?.label || 'Relevance'}</span>
+                Sort By - <span className="text-gray-400 font-[400] ml-1 mr-1">{sortOptions.find(opt => opt.value === sortBy)?.label || 'Relevance'}</span>
                 <ChevronDown className="w-4 h-4 mt-1" />
               </button>
               {showSortDropdown && (
@@ -457,6 +437,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                   </div>
                 </div>
               )}
+          </div>
           </div>
         </div>
       </div>
@@ -515,11 +496,11 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
       {loadingCandidates ? (
         <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <p className="ml-4 text-gray-600">Loading candidates...</p>
+          <p className="ml-4 text-gray-400 text-xs lg:text-base font-[400]">Loading candidates...</p>
         </div>
       ) : candidates.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-gray-600">No candidates found.</p>
+          <p className="text-gray-400 text-xs lg:text-base font-[400]">No candidates found.</p>
         </div>
       ) : (
       <>
@@ -779,7 +760,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
       {totalPages > 1 ? (
         <div className="p-3 lg:p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">
+            <div className="text-xs text-gray-400 text-xs lg:text-base font-[400]">
               Showing {startIndex + 1} to{" "}
               {Math.min(endIndex, totalCount) + startIndex} of {totalCount}{" "}
               candidates
@@ -823,7 +804,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
       ) : (
         <div className="p-3 lg:p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">
+            <div className="text-xs text-gray-400 text-xs lg:text-base font-[400]">
               Showing {startIndex + 1} to{" "}
               {Math.min(endIndex, totalCount) + startIndex} of {totalCount}{" "}
               candidates
