@@ -205,7 +205,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 detailedCandidate?.candidate?.experience.map((exp, index) => (
                   <div
                     key={index}
-                    className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
+                    className="border-b border-l-2 border-gray-600 pl-4 relative pb-2 space-y-1"
                   >
                     <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
                     <h4 className="font-medium text-gray-500 text-sm">
@@ -229,7 +229,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
         </div>
         {!showMore && (
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white to-transparent p-4 ml-4 flex space-x-1 items-center">
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white to-transparent p-4 ml-6 flex space-x-1 items-center">
             <button
               onClick={() => setShowMore(true)}
               className="text-blue-500 text-sm"
