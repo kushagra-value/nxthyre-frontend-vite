@@ -346,19 +346,19 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   );
 
   const SkillsTab = () => (
-    <div className="bg-gray-100 p-3 rounded-lg">
+    <div className="bg-gray-100 p-3 rounded-lg pb-6">
       <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
         <Star className="w-4 h-4 mr-2 text-gray-600" />
         Skills
       </h3>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-4">
         {detailedCandidate?.candidate?.skills_data?.skills_mentioned?.length >
         0 ? (
           detailedCandidate?.candidate?.skills_data.skills_mentioned.map(
             (skill, index) => (
               <span
                 key={index}
-                className="px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded-full"
+                className="px-3 py-[5px] bg-gray-200 text-gray-600 text-xs rounded-full"
               >
                 {skill?.skill}
               </span>
