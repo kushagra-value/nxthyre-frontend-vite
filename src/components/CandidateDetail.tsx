@@ -423,14 +423,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
 
         {/* Notes List */}
-        <div className="space-y-4 border-gray-200">
+        <div className="space-y-2 border-gray-200">
           {notesView === "my" ? (
             (detailedCandidate?.candidate?.notes?.length > 0
               ? detailedCandidate.candidate.notes
               : dummyNotes
             ).map((note) => (
               <div key={note.noteId} className="border-b border-gray-200 pb-2">
-                <div className="flex flex-col space-y-2 px-3 py-2 mb-2">
+                <div className="flex flex-col space-y-2 px-3 py-2 mb-0">
                   <div className="flex justify-between items-center ">
                     {/* User Avatar and Info */}
                     <div className="flex space-x-3 items-center">
@@ -459,7 +459,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     </div>
                   </div>
 
-                  <div className="bg-white p-2 rounded-lg">
+                  <div className="bg-white p-3 rounded-lg">
                     <p className="text-sm text-gray-800">{note?.content}</p>
                   </div>
                 </div>
