@@ -181,7 +181,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     return (
       <div className="relative bg-gray-100 p-2 rounded-lg">
         <div
-          className={`overflow-hidden ${showMore ? "" : "min-h-[40vh]"}`}
+          className={`overflow-hidden ${showMore ? "" : "min-h-[80vh]"}`}
           style={{ transition: "max-height 0.3s ease" }}
         >
           <div className="mb-4 border-b border-gray-200">
@@ -242,7 +242,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   };
 
   const EducationTab = () => (
-    <div>
+    <div className="bg-gray-100 p-2 rounded-lg">
       <div className="mb-4">
         <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
           <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
@@ -341,7 +341,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   );
 
   const SkillsTab = () => (
-    <div>
+    <div className="bg-gray-100 p-2 rounded-lg">
       <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
         <Star className="w-4 h-4 mr-2 text-gray-800" />
         Skills
@@ -367,7 +367,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   );
 
   const NotesTab = () => (
-    <div>
+    <div className="bg-gray-100 p-2 rounded-lg">
       <div className="flex space-x-2 mb-4">
         <button
           onClick={() => setNotesView("my")}
