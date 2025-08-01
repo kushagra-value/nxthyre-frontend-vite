@@ -10,6 +10,7 @@ import {
   TrendingUp,
   User,
   Share2,
+  ChevronDown,
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
@@ -179,24 +180,24 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const [showMore, setShowMore] = useState(false);
 
     return (
-      <div className="relative bg-gray-100 p-2 rounded-lg">
+      <div className="relative bg-gray-100 p-3 rounded-lg">
         <div
-          className={`overflow-hidden ${showMore ? "" : "min-h-[80vh]"}`}
+          className={`overflow-hidden ${showMore ? "" : "min-h-[50vh]"}`}
           style={{ transition: "max-height 0.3s ease" }}
         >
           <div className="mb-4 border-b border-gray-200">
             <h3 className="text-sm lg:text-base font-semibold text-gray-900 flex items-center">
-              <User className="w-4 h-4 mr-2 text-gray-700" />
+              <User className="w-4 h-4 mr-2 text-gray-600" />
               Profile Summary
             </h3>
-            <p className="text-sm text-gray-500 pt-2 pb-4 pl-6 pr-2 rounded-lg">
+            <p className="text-sm text-gray-400 leading-loose pt-2 pb-4 pl-6 pr-2 rounded-lg">
               {detailedCandidate?.candidate?.profile_summary ||
                 "I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs). I hold a B.E/B.Tech in Computer Science & Engineering from HKBK College of Engineering. My experience includes developing AI models for NLP, computer vision, and Retrieval-Augmented Generation (RAG) based applications across various industries"}
             </p>
           </div>
           <div>
             <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-              <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
+              <Briefcase className="w-4 h-4 mr-2 text-gray-600" />
               Experience
             </h3>
             <div className="ml-2">
@@ -204,17 +205,17 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 detailedCandidate?.candidate?.experience.map((exp, index) => (
                   <div
                     key={index}
-                    className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-2"
                   >
-                    <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                    <h4 className="font-medium text-gray-900 text-sm">
+                    <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
+                    <h4 className="font-medium text-gray-500 text-sm">
                       {exp?.job_title}
                     </h4>
-                    <p className="text-sm text-gray-600">{`${exp?.company} | ${exp?.location}`}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-400">{`${exp?.company} | ${exp?.location}`}</p>
+                    <p className="text-sm text-gray-400">
                       {exp?.start_date} - {exp?.end_date || "Present"}
                     </p>
-                    <p className="text-sm text-gray-700 mt-1">
+                    <p className="text-sm text-gray-400 mt-1">
                       {exp?.description}
                     </p>
                   </div>
@@ -228,13 +229,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
         </div>
         {!showMore && (
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white to-transparent p-4 flex justify-center">
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white to-transparent p-4 flex space-x-2">
             <button
               onClick={() => setShowMore(true)}
-              className="text-blue-600 text-sm font-medium hover:underline"
+              className="text-blue-600 text-sm font-medium"
             >
               VIEW MORE
             </button>
+            <ChevronDown className="text-blue-600 w-2 h-2" />
           </div>
         )}
       </div>
