@@ -372,40 +372,61 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     </div>
   );
 
-  const NotesTab = () => (
-    <div className="bg-[#F0F0F0] p-3 rounded-lg">
-      {/* Header with Heading and Toggle */}
-      <div className="flex justify-between items-center mb-4">
-        {/* Notes about the Person Heading */}
-        <div className="flex items-center space-x-2">
-          <FileText className="w-4 h-4 text-gray-500" />
-          <h3 className="text-sm font-medium text-gray-900">
-            Notes about the Person
-          </h3>
-        </div>
-        {/* Community Toggle */}
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-600">Community</span>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={notesView === "community"}
-              onChange={(e) =>
-                setNotesView(e.target.checked ? "community" : "my")
-              }
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-600"></div>
-            <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
-          </label>
-        </div>
-      </div>
+  const NotesTab = () => {
+    // Define dummy notes to display when no actual notes are available
+    const dummyNotes = [
+      {
+        noteId: "dummy1",
+        postedBy: { userName: "Sample User" },
+        organisation: { orgName: "Sample Company" },
+        content: "This is a sample note to demonstrate the layout.",
+        posted_at: new Date().toISOString(),
+      },
+      {
+        noteId: "dummy2",
+        postedBy: { userName: "Another User" },
+        organisation: { orgName: "Another Company" },
+        content: "Another sample note for illustration.",
+        posted_at: new Date().toISOString(),
+      },
+    ];
 
-      {/* Notes List */}
-      <div className="space-y-4">
-        {notesView === "my" ? (
-          detailedCandidate?.candidate?.notes?.length > 0 ? (
-            detailedCandidate?.candidate?.notes.map((note) => (
+    return (
+      <div className="bg-[#F0F0F0] p-3 rounded-lg">
+        {/* Header with Heading and Toggle */}
+        <div className="flex justify-between items-center mb-4">
+          {/* Notes about the Person Heading */}
+          <div className="flex items-center space-x-2">
+            <FileText className="w-4 h-4 text-gray-500" />
+            <h3 className="text-sm font-medium text-gray-900">
+              Notes about the Person
+            </h3>
+          </div>
+          {/* Community Toggle */}
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-gray-600">Community</span>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={notesView === "community"}
+                onChange={(e) =>
+                  setNotesView(e.target.checked ? "community" : "my")
+                }
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-600"></div>
+              <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+            </label>
+          </div>
+        </div>
+
+        {/* Notes List */}
+        <div className="space-y-4">
+          {notesView === "my" ? (
+            (detailedCandidate?.candidate?.notes?.length > 0
+              ? detailedCandidate.candidate.notes
+              : dummyNotes
+            ).map((note) => (
               <div key={note.noteId} className="bg-gray-100 rounded-lg p-3">
                 <div className="flex items-start space-x-2">
                   <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
@@ -434,38 +455,36 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               </div>
             ))
           ) : (
-            <p className="text-sm text-gray-500">No notes available</p>
-          )
-        ) : (
-          <p className="text-sm text-gray-500">
-            Community notes will be displayed here
-          </p>
-        )}
-      </div>
-
-      {/* Comment Input Section */}
-      <div className="mt-4 flex space-x-3">
-        <div className="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-          J
+            <p className="text-sm text-gray-500">
+              Community notes will be displayed here
+            </p>
+          )}
         </div>
-        <input
-          type="text"
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Type your team comment"
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm"
-          onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
-        />
-        <button
-          onClick={handleAddComment}
-          disabled={!newComment.trim()}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
-        >
-          Send
-        </button>
+
+        {/* Comment Input Section */}
+        <div className="mt-4 flex space-x-3">
+          <div className="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
+            J
+          </div>
+          <input
+            type="text"
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Type your team comment"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm"
+            onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
+          />
+          <button
+            onClick={handleAddComment}
+            disabled={!newComment.trim()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+          >
+            Send
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-3 space-y-6 min-h-[81vh] relative overflow-hidden">
