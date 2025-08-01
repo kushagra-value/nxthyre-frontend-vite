@@ -523,9 +523,9 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mt-1"
                 onClick={(e) => e.stopPropagation()}
               />
-              <div className="border-b-2 border-gray-300 flex items-center space-x-3 pb-4">
+              <div className="border-b-2 border-gray-300 flex items-center space-x-3 pb-4 w-full">
               <div
-                className={`w-12 h-12 ${getAvatarColor(
+                className={`w-14 h-14 ${getAvatarColor(
                   candidate.full_name
                 )} rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600] `}
               >
