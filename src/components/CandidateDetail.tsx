@@ -346,7 +346,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   );
 
   const SkillsTab = () => (
-    <div className="p-3">
+    <div className="bg-gray-100 p-3 rounded-lg">
       <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
         <Star className="w-4 h-4 mr-2 text-gray-600" />
         Skills
@@ -358,7 +358,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             (skill, index) => (
               <span
                 key={index}
-                className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                className="px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded-full"
               >
                 {skill?.skill}
               </span>
@@ -372,7 +372,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   );
 
   const NotesTab = () => (
-    <div className="bg-gray-100 p-2 rounded-lg">
+    <div className="bg-gray-100 p-3 rounded-lg">
       <div className="flex space-x-2 mb-4">
         <button
           onClick={() => setNotesView("my")}
