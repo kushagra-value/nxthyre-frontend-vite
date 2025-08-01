@@ -515,7 +515,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
             }`}
             onClick={() => handleCandidateClick(candidate)}
           >
-            <div className="flex items-center space-x-3 pb-4">
+            <div className="flex items-center space-x-3">
               <input
                 type="checkbox"
                 checked={selectedCandidates.includes(candidate.id)}
@@ -523,7 +523,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mt-1"
                 onClick={(e) => e.stopPropagation()}
               />
-              <div className="border-b border-gray-200 flex items-center space-x-3 pb-2">
+              <div className="border-b-2 border-gray-300 flex items-center space-x-3 pb-4">
               <div
                 className={`w-12 h-12 ${getAvatarColor(
                   candidate.full_name
@@ -606,38 +606,31 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                   
                 </div>
                 <div className="flex space-x-2">
-                  <p className="text-sm font-[400] text-blue-600 mt-1 max-w-[58ch] truncate">
+                  <p className="text-sm font-[400] text-blue-600 mt-1 max-w-[24ch] truncate">
                     {candidate.experience_summary?.title}
                   </p>
-                  <p className="text-xs font-[400] text-blue-600 mt-1 max-w-[58ch] truncate">
+                  <p className="text-sm font-[400] text-blue-600 mt-1">
                     |
                   </p> 
-                  <p className="text-sm font-[400] text-blue-600 mt-1 max-w-[58ch] truncate">
+                  <p className="text-sm font-[400] text-blue-600 mt-1 max-w-[24ch] truncate">
                     {candidate.education_summary?.title}
                   </p>
                 </div>
               </div>
               </div>
             </div>
-            <div className="p-3 lg:pl-8 lg:py-4">
-              <div className="mt-2 grid grid-cols-1 gap-2 text-sm ml-1">
-                <div className="flex justify-between">
-                  <div className="flex space-x-12">
-                    <span className="text-gray-500">Experience</span>
-                    <p className="text-gray-900 max-w-[36ch] truncate">
-                      {candidate.experience_summary?.title}
-                    </p>
-                  </div>
+            <div className="p-3 lg:pl-8">
+              <div className="flex justify-between gap-2 text-sm ml-1">
+                <div className="flex flex-col">
+                  <p className="text-gray-500 mr-[5px]">Experience</p>
+                  <p className="text-gray-900">
+                    {Number(candidate.experience_years)>1 ? (candidate.experience_years + " years") : (candidate.experience_years + " year")}
+                  </p>
                 </div>
-                <div className="flex justify-between">
-                  <div className="flex space-x-12">
-                    <span className="text-gray-500 mr-[5px]">Education</span>
-                    <p className="text-gray-900 max-w-[36ch] truncate">
-                      {candidate.education_summary?.title}
-                    </p>
-                  </div>
-                  <p className="text-gray-900 truncate">
-                    {candidate.education_summary?.date_range}
+                <div className="flex flex-col">
+                  <p className="text-gray-500 mr-[5px]">Current Company</p>
+                  <p className="text-gray-900">
+                    {candidate.experience_summary?.title}
                   </p>
                 </div>
                 <div className="flex flex-col">
@@ -646,8 +639,14 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     {candidate.notice_period_summary}
                   </p>
                 </div>
+                <div className="flex flex-col">
+                  <p className="text-gray-500 mr-[5px]">Current Salary</p>
+                  <p className="text-gray-900">
+                    9LPA(static Data)
+                  </p>
+                </div>
               </div>
-              <div className="mt-3 flex items-center justify-between space-x-2 flex-wrap gap-2">
+              <div className="mt-3 bg-blue-30 flex items-center justify-between space-x-2 flex-wrap gap-2">
                 <div className="flex items-center space-x-1">
                     {candidate.social_links?.github && (
                       <button
