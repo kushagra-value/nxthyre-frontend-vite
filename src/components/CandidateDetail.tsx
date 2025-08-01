@@ -249,7 +249,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const EducationTab = () => (
     <div className="bg-gray-100 p-3 rounded-lg">
       <div className="mb-4">
-        <h3 className="text-sm lg:text-base font-semibold text-gray-600 mb-2 flex items-center">
+        <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
           <GraduationCap className="w-4 h-4 mr-2 text-gray-600" />
           Education
         </h3>
@@ -281,7 +281,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
       </div>
       <div className="mb-4">
-        <h3 className="text-sm lg:text-base font-semibold text-gray-600 mb-2 flex items-center">
+        <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
           <Award className="w-4 h-4 mr-2 text-gray-600" />
           Certifications
         </h3>
@@ -306,7 +306,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
       </div>
       <div>
-        <h3 className="text-sm lg:text-base font-semibold text-gray-600 mb-2 flex items-center">
+        <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
           <TrendingUp className="w-4 h-4 mr-2 text-gray-600" />
           Recommendations
         </h3>
@@ -348,7 +348,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const SkillsTab = () => (
     <div className="p-3">
       <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-        <Star className="w-4 h-4 mr-2 text-gray-800" />
+        <Star className="w-4 h-4 mr-2 text-gray-600" />
         Skills
       </h3>
       <div className="flex flex-wrap gap-2">
