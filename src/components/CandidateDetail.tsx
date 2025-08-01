@@ -181,7 +181,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     return (
       <div className="relative">
         <div
-          className={`overflow-hidden ${showMore ? "" : "max-h-[50vh]"}`}
+          className={`overflow-hidden ${showMore ? "" : "max-h-[100vh]"}`}
           style={{ transition: "max-height 0.3s ease" }}
         >
           <div className="mb-4">
