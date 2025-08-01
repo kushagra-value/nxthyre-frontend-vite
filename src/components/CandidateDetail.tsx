@@ -302,7 +302,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       </div>
 
       {/* Contact Info */}
-      <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+      <div className="rounded-lg border-t-1 border-gray-200 p-3 space-y-2">
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
