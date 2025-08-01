@@ -180,7 +180,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const [showMore, setShowMore] = useState(false);
 
     return (
-      <div className="relative bg-gray-100 p-3 rounded-lg">
+      <div className="relative bg-gray-200 p-3 rounded-lg">
         <div
           className={`overflow-hidden ${showMore ? "" : "min-h-[50vh]"}`}
           style={{ transition: "max-height 0.3s ease" }}
@@ -229,14 +229,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
         </div>
         {!showMore && (
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white to-transparent p-4 flex space-x-2">
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white to-transparent p-4 ml-3 flex space-x-2 items-center">
             <button
               onClick={() => setShowMore(true)}
-              className="text-blue-600 text-sm font-medium"
+              className="text-blue-500 text-sm font-medium"
             >
               VIEW MORE
             </button>
-            <ChevronDown className="text-blue-600 w-2 h-2" />
+            <ChevronDown className="text-blue-500" />
           </div>
         )}
       </div>
