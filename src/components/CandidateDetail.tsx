@@ -187,17 +187,17 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         >
           <div className="mb-4 border-b border-gray-200">
             <h3 className="text-sm lg:text-base font-semibold text-gray-900 flex items-center">
-              <User className="w-4 h-4 mr-2 text-gray-600" />
+              <User className="w-4 h-4 mr-2 text-[#4B5563]" />
               Profile Summary
             </h3>
-            <p className="text-sm text-gray-500 leading-normal pt-2 pb-4 pl-6 pr-2 rounded-lg">
+            <p className="text-sm text-[#818283] leading-normal pt-2 pb-4 pl-6 pr-2 rounded-lg">
               {detailedCandidate?.candidate?.profile_summary ||
                 "I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs). I hold a B.E/B.Tech in Computer Science & Engineering from HKBK College of Engineering. My experience includes developing AI models for NLP, computer vision, and Retrieval-Augmented Generation (RAG) based applications across various industries"}
             </p>
           </div>
           <div>
             <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-              <Briefcase className="w-4 h-4 mr-2 text-gray-600" />
+              <Briefcase className="w-4 h-4 mr-2 text-[#4B5563]" />
               Experience
             </h3>
             <div className="ml-2">
@@ -208,14 +208,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
                   >
                     <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
-                    <h4 className="font-medium text-gray-500 text-sm">
+                    <h4 className="font-medium text-[#111827] text-sm">
                       {exp?.job_title}
                     </h4>
-                    <p className="text-sm text-gray-500">{`${exp?.company} | ${exp?.location}`}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-[#4B5563]">{`${exp?.company} | ${exp?.location}`}</p>
+                    <p className="text-sm text-[#6B7280]">
                       {exp?.start_date} - {exp?.end_date || "Present"}
                     </p>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-[#4B5563] mt-1">
                       {exp?.description}
                     </p>
                   </div>
@@ -232,12 +232,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white to-transparent p-4 ml-6 flex space-x-1 items-center">
             <button
               onClick={() => setShowMore(true)}
-              className="text-blue-500 text-sm"
+              className="text-[#0F47F2] text-sm"
             >
               VIEW MORE
             </button>
             <ChevronDown
-              className="text-blue-500 cursor-pointer mt-[2px]"
+              className="text-[#0F47F2] cursor-pointer mt-[2px]"
               onClick={() => setShowMore(true)}
             />
           </div>
@@ -247,10 +247,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   };
 
   const EducationTab = () => (
-    <div className="bg-gray-100 p-3 rounded-lg">
+    <div className="bg-[#F0F0F0] p-3 rounded-lg">
       <div className="mb-4">
-        <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-          <GraduationCap className="w-4 h-4 mr-2 text-gray-600" />
+        <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
+          <GraduationCap className="w-4 h-4 mr-2 text-[#4B5563]" />
           Education
         </h3>
         <div className="ml-2">
@@ -261,15 +261,15 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
               >
                 <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
-                <h4 className="font-medium text-gray-500 text-sm">
+                <h4 className="font-medium text-[#111827] text-sm">
                   {edu?.degree}
                 </h4>
-                <p className="text-sm text-gray-500">{edu?.specialization}</p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-[#4B5563]">{edu?.specialization}</p>
+                <p className="text-sm text-[#6B7280]">
                   {edu?.start_date} - {edu?.end_date}
                 </p>
                 {edu?.institution && (
-                  <p className="text-sm text-gray-500">{edu?.institution}</p>
+                  <p className="text-sm text-[#111827]">{edu?.institution}</p>
                 )}
               </div>
             ))
@@ -281,8 +281,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
       </div>
       <div className="mb-4">
-        <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-          <Award className="w-4 h-4 mr-2 text-gray-600" />
+        <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
+          <Award className="w-4 h-4 mr-2 text-[#4B5563]" />
           Certifications
         </h3>
         <div className="ml-2">
@@ -293,11 +293,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
               >
                 <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
-                <h4 className="font-medium text-gray-500 text-sm">
+                <h4 className="font-medium text-[#111827] text-sm">
                   {cert?.name}
                 </h4>
-                <p className="text-sm text-gray-400">{cert?.issuer}</p>
-                <p className="text-sm text-gray-400">{cert?.issued_date}</p>
+                <p className="text-sm text-[#4B5563]">{cert?.issuer}</p>
+                <p className="text-sm text-[#6B7280]">{cert?.issued_date}</p>
               </div>
             ))
           ) : (
@@ -306,8 +306,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
       </div>
       <div>
-        <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-          <TrendingUp className="w-4 h-4 mr-2 text-gray-600" />
+        <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
+          <TrendingUp className="w-4 h-4 mr-2 text-[#4B5563]" />
           Recommendations
         </h3>
         <div className="space-y-2">
@@ -319,16 +319,16 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     <User className="w-3 h-3 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-medium text-gray-600 text-sm">
+                    <h4 className="font-medium text-[#111827] text-sm">
                       {rec?.recommender_name}
                     </h4>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-[#4B5563]">
                       {rec?.recommender_title}
                     </p>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-[#4B5563] mt-1">
                       "{rec?.feedback}"
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-[#6B7280] mt-1">
                       {rec?.date_received}
                     </p>
                   </div>
@@ -346,7 +346,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   );
 
   const SkillsTab = () => (
-    <div className="bg-gray-100 p-3 rounded-lg pb-6">
+    <div className="bg-[#F0F0F0] p-3 rounded-lg pb-6">
       <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-3 flex items-center">
         <Star className="w-4 h-4 mr-2 text-gray-600" />
         Skills
@@ -372,7 +372,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   );
 
   const NotesTab = () => (
-    <div className="bg-gray-100 p-3 rounded-lg">
+    <div className="bg-[#F0F0F0] p-3 rounded-lg">
       <div className="flex space-x-2 mb-4">
         <button
           onClick={() => setNotesView("my")}
