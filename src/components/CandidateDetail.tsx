@@ -190,7 +190,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               <User className="w-4 h-4 mr-2 text-gray-600" />
               Profile Summary
             </h3>
-            <p className="text-sm text-gray-400 leading-loose pt-2 pb-4 pl-6 pr-2 rounded-lg">
+            <p className="text-sm text-gray-400 leading-normal pt-2 pb-4 pl-6 pr-2 rounded-lg">
               {detailedCandidate?.candidate?.profile_summary ||
                 "I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs). I hold a B.E/B.Tech in Computer Science & Engineering from HKBK College of Engineering. My experience includes developing AI models for NLP, computer vision, and Retrieval-Augmented Generation (RAG) based applications across various industries"}
             </p>
@@ -205,7 +205,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 detailedCandidate?.candidate?.experience.map((exp, index) => (
                   <div
                     key={index}
-                    className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-2"
+                    className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
                   >
                     <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
                     <h4 className="font-medium text-gray-500 text-sm">
