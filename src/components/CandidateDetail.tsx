@@ -415,136 +415,137 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     ];
 
     return (
-      <div className="bg-[#F0F0F0] p-3 rounded-lg">
-        {/* Header with Heading and Toggle */}
-        <div className="flex justify-between items-center mb-3 border-b-2 border-gray-200 px-3 pt-1 pb-3">
-          {/* Notes about the Person Heading */}
-          <div className="flex items-center space-x-2">
-            <FileText className="w-4 h-4 text-[#4B5563]" />
-            <h3 className="text-[18px] font-medium text-[#4B5563]">
-              Notes about the Person
-            </h3>
+      <>
+        <div className="bg-[#F0F0F0] p-3 rounded-lg">
+          {/* Header with Heading and Toggle */}
+          <div className="flex justify-between items-center mb-3 border-b-2 border-gray-200 px-3 pt-1 pb-3">
+            {/* Notes about the Person Heading */}
+            <div className="flex items-center space-x-2">
+              <FileText className="w-4 h-4 text-[#4B5563]" />
+              <h3 className="text-[18px] font-medium text-[#4B5563]">
+                Notes about the Person
+              </h3>
+            </div>
+            {/* Community Toggle */}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-[#4B5563]">Community</span>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={notesView === "community"}
+                  onChange={(e) =>
+                    setNotesView(e.target.checked ? "community" : "my")
+                  }
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-600"></div>
+                <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+              </label>
+            </div>
           </div>
-          {/* Community Toggle */}
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-[#4B5563]">Community</span>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={notesView === "community"}
-                onChange={(e) =>
-                  setNotesView(e.target.checked ? "community" : "my")
-                }
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-600"></div>
-              <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
-            </label>
-          </div>
-        </div>
 
-        {/* Notes List */}
-        <div className="space-y-2 border-gray-200">
-          {notesView === "my"
-            ? (detailedCandidate?.candidate?.notes?.length > 0
-                ? detailedCandidate.candidate.notes
-                : dummyNotes
-              ).map((note) => (
-                <div
-                  key={note.noteId}
-                  className="border-b border-gray-200 pb-2"
-                >
-                  <div className="flex flex-col space-y-2 px-3 py-2 mb-0">
-                    <div className="flex justify-between items-center ">
-                      {/* User Avatar and Info */}
-                      <div className="flex space-x-3 items-center">
-                        <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                          <User className="w-5 h-5 text-white" />
+          {/* Notes List */}
+          <div className="space-y-2 border-gray-200">
+            {notesView === "my"
+              ? (detailedCandidate?.candidate?.notes?.length > 0
+                  ? detailedCandidate.candidate.notes
+                  : dummyNotes
+                ).map((note) => (
+                  <div
+                    key={note.noteId}
+                    className="border-b border-gray-200 pb-2"
+                  >
+                    <div className="flex flex-col space-y-2 px-3 py-2 mb-0">
+                      <div className="flex justify-between items-center ">
+                        {/* User Avatar and Info */}
+                        <div className="flex space-x-3 items-center">
+                          <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <User className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="flex-1 space-y-0.5">
+                            <h4 className="font-medium text-[#111827] text-sm">
+                              {note?.postedBy?.userName ||
+                                note?.organisation?.orgName}
+                            </h4>
+                            <p className="text-sm text-[#4B5563]">
+                              {note?.organisation?.orgName || "Company"}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex-1 space-y-0.5">
-                          <h4 className="font-medium text-[#111827] text-sm">
-                            {note?.postedBy?.userName ||
-                              note?.organisation?.orgName}
-                          </h4>
-                          <p className="text-sm text-[#4B5563]">
-                            {note?.organisation?.orgName || "Company"}
+                        {/* Posted Date */}
+                        <div>
+                          <p className="text-xs text-[#818283] mt-1">
+                            {new Date(note?.posted_at).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              }
+                            )}
                           </p>
                         </div>
                       </div>
-                      {/* Posted Date */}
-                      <div>
-                        <p className="text-xs text-[#818283] mt-1">
-                          {new Date(note?.posted_at).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            }
-                          )}
+
+                      <div className="bg-white p-3 rounded-lg">
+                        <p className="text-sm text-[#818283] leading-normal">
+                          {note?.content}
                         </p>
                       </div>
                     </div>
-
-                    <div className="bg-white p-3 rounded-lg">
-                      <p className="text-sm text-[#818283] leading-normal">
-                        {note?.content}
-                      </p>
-                    </div>
                   </div>
-                </div>
-              ))
-            : (detailedCandidate?.candidate?.notes?.length > 0
-                ? detailedCandidate.candidate.notes
-                : communityNotes
-              ).map((note) => (
-                // Community notes
-                <div
-                  key={note.noteId}
-                  className="border-b border-gray-200 pb-2"
-                >
-                  <div className="flex flex-col space-y-2 px-3 py-2 mb-0">
-                    <div className="flex justify-between items-center ">
-                      {/* User Avatar and Info */}
-                      <div className="flex space-x-3 items-center">
-                        <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                          <User className="w-5 h-5 text-white" />
+                ))
+              : (detailedCandidate?.candidate?.notes?.length > 0
+                  ? detailedCandidate.candidate.notes
+                  : communityNotes
+                ).map((note) => (
+                  // Community notes
+                  <div
+                    key={note.noteId}
+                    className="border-b border-gray-200 pb-2"
+                  >
+                    <div className="flex flex-col space-y-2 px-3 py-2 mb-0">
+                      <div className="flex justify-between items-center ">
+                        {/* User Avatar and Info */}
+                        <div className="flex space-x-3 items-center">
+                          <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <User className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="flex-1 space-y-0.5">
+                            <h4 className="font-medium text-[#111827] text-sm">
+                              {note?.postedBy?.userName ||
+                                note?.organisation?.orgName}
+                            </h4>
+                            <p className="text-sm text-[#4B5563]">
+                              {note?.organisation?.orgName || "Company"}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex-1 space-y-0.5">
-                          <h4 className="font-medium text-[#111827] text-sm">
-                            {note?.postedBy?.userName ||
-                              note?.organisation?.orgName}
-                          </h4>
-                          <p className="text-sm text-[#4B5563]">
-                            {note?.organisation?.orgName || "Company"}
+                        {/* Posted Date */}
+                        <div>
+                          <p className="text-xs text-[#818283] mt-1">
+                            {new Date(note?.posted_at).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              }
+                            )}
                           </p>
                         </div>
                       </div>
-                      {/* Posted Date */}
-                      <div>
-                        <p className="text-xs text-[#818283] mt-1">
-                          {new Date(note?.posted_at).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            }
-                          )}
+
+                      <div className="bg-white p-3 rounded-lg">
+                        <p className="text-sm text-[#818283] leading-normal">
+                          {note?.content}
                         </p>
                       </div>
                     </div>
-
-                    <div className="bg-white p-3 rounded-lg">
-                      <p className="text-sm text-[#818283] leading-normal">
-                        {note?.content}
-                      </p>
-                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+          </div>
         </div>
-
         {/* Comment Input Section */}
         <div className="mt-4 min-h-16 shadow-top bg-white rounded-tr-lg rounded-tl-lg sticky bottom-[-2] left-[-2] right-[-2] px-5 py-3">
           <div className="flex space-x-3 border border-gray-200 rounded-lg p-3">
@@ -565,7 +566,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             </button>
           </div>
         </div>
-      </div>
+      </>
     );
   };
 
