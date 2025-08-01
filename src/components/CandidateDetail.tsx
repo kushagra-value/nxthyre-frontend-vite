@@ -396,7 +396,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     return (
       <div className="bg-[#F0F0F0] p-3 rounded-lg">
         {/* Header with Heading and Toggle */}
-        <div className="flex justify-between items-center mb-2 border-b-2 border-gray-200 px-3 pt-1 pb-2">
+        <div className="flex justify-between items-center mb-2 border-b-2 border-gray-200 px-3 pt-1 pb-3">
           {/* Notes about the Person Heading */}
           <div className="flex items-center space-x-2">
             <FileText className="w-4 h-4 text-gray-500" />
@@ -475,7 +475,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         {/* Comment Input Section */}
         <div className="mt-4 flex space-x-3">
           <div className="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-            J
+            L
           </div>
           <input
             type="text"
