@@ -508,14 +508,14 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
         {candidates.map((candidate) => (
           <div
             key={candidate.id}
-            className={`px-4 pt-2 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg ${
+            className={`pt-2 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg ${
               selectedCandidate?.id === candidate.id
                 ? "bg-blue-50 border-l-4 border-blue-500"
                 : "border border-gray-200"
             }`}
             onClick={() => handleCandidateClick(candidate)}
           >
-            <div className="flex items-center space-x-3">
+            <div className="flex px-4 items-center space-x-3">
               <input
                 type="checkbox"
                 checked={selectedCandidates.includes(candidate.id)}
@@ -619,7 +619,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
               </div>
               </div>
             </div>
-              <div className="pt-4 pl-8 flex space-x-6 gap-2 text-sm ml-1">
+              <div className="py-4 pl-8 flex space-x-6 gap-2 text-sm ml-1">
                 {candidate.experience_years && 
                 (
                   <div className="flex flex-col">
@@ -660,7 +660,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 )}
  
               </div>
-              <div className="p-3 pl-8 mt-3 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2">
+              <div className="p-4 pl-8 mt-3 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2">
                 <div className="flex items-center space-x-1">
                     {candidate.social_links?.github && (
                       <button
