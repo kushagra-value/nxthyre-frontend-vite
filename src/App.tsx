@@ -455,6 +455,7 @@ function MainApp() {
       is_prevetted: activeTab === "prevetted",
       is_active: activeTab === "active",
       sort_by: sortBy,
+      page: currentPage,
     };
     setFilters(newFilters);
     if (activeCategoryId) {
