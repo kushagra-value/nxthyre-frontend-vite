@@ -2,18 +2,19 @@ import toast from 'react-hot-toast';
 
 export const showToast = {
   success: (message: string) => toast.success(message, {
-    duration: 4000,
+    duration: 3000,
     position: 'bottom-right',
     style: {
-      background: '#10B981',
+      background: '#0abc1eff',
       color: '#fff',
       fontWeight: '500',
     },
   }),
   
   error: (message: string) => toast.error(message, {
-    duration: 4000,
+    duration: 3000,
     position: 'bottom-right',
+    icon: '⚠️',
     style: {
       background: '#EF4444',
       color: '#fff',
@@ -24,18 +25,18 @@ export const showToast = {
   loading: (message: string) => toast.loading(message, {
     position: 'bottom-right',
     style: {
-      background: '#3B82F6',
+      background: '#005cf1ff',
       color: '#fff',
       fontWeight: '500',
     },
   }),
   
   info: (message: string) => toast(message, {
-    duration: 4000,
+    duration: 3000,
     position: 'bottom-right',
     icon: 'ℹ️',
     style: {
-      background: '#3B82F6',
+      background: '#005cf1ff',
       color: '#fff',
       fontWeight: '500',
     },
