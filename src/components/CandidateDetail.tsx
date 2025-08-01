@@ -547,7 +547,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
         </div>
         {/* Comment Input Section */}
-        <div className="min-h-16 shadow-top bg-white rounded-tr-lg rounded-tl-lg sticky bottom-0 left-0 right-0">
+        <div className="mt-4 min-h-16 p-3 shadow-top bg-white rounded-tr-lg rounded-tl-lg fixed bottom-0 left-0 right-0">
           <div className="flex space-x-3 border border-gray-200 rounded-lg p-2">
             <input
               type="text"
