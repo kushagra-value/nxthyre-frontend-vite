@@ -881,7 +881,7 @@ function MainApp() {
                 <>
                   <Toaster />
                   <div className="bg-gray-50 min-h-screen">
-                    <div className="sticky top-0 z-30 bg-white will-change-transform">
+                    <div className="sticky top-0 bg-white will-change-transform z-40">
                       <Header
                         onCreateRole={handleCreateJobRole}
                         onOpenLogoutModal={handleOpenLogoutModal}
@@ -1038,7 +1038,7 @@ function MainApp() {
                       )}
 
                       <div className="flex w-full gap-3 h-full">
-                        <div className="lg:w-[25%] sticky order-2 lg:order-1 top-16 self-start will-change-transform ">
+                        <div className="lg:w-[25%] sticky order-2 lg:order-1 top-16 self-start will-change-transform z-10">
                           <FiltersSidebar
                             filters={filters}
                             onApplyFilters={handleApplyFilters}
@@ -1047,7 +1047,7 @@ function MainApp() {
                             activeTab={activeTab}
                           />
                         </div>
-                        <div className="lg:w-[45%] sticky order-1 lg:order-2">
+                        <div className="lg:w-[45%] sticky order-1 lg:order-2 z-10">
                           <CandidatesMain
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
