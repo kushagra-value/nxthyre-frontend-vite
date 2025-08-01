@@ -427,28 +427,38 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               ? detailedCandidate.candidate.notes
               : dummyNotes
             ).map((note) => (
-              <div key={note.noteId} className="bg-gray-100 rounded-lg p-3">
-                <div className="flex items-start space-x-2">
-                  <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    <User className="w-3 h-3 text-white" />
+              <div key={note.noteId} className="">
+                <div className="flex flex-col space-y-1">
+                  <div className="flex justify-between">
+                    <div className="flex space-x-2">
+                      <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <User className="w-3 h-3 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900 text-sm">
+                          {note?.postedBy?.userName ||
+                            note?.organisation?.orgName}
+                        </h4>
+                        <p className="text-xs text-gray-700">
+                          {note?.organisation?.orgName || "Company"}
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 mt-1">
+                        Posted Date:{" "}
+                        {new Date(note?.posted_at).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900 text-sm">
-                      {note?.postedBy?.userName || note?.organisation?.orgName}
-                    </h4>
-                    <p className="text-xs text-gray-700">
-                      {note?.organisation?.orgName || "Company"}
-                    </p>
+
+                  <div className="bg-white p-3 rounded-lg mt-2">
                     <p className="text-sm text-gray-800 mt-1">
                       {note?.content}
-                    </p>
-                    <p className="text-xs text-gray-600 mt-1">
-                      Posted Date:{" "}
-                      {new Date(note?.posted_at).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
                     </p>
                   </div>
                 </div>
