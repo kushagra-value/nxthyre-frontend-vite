@@ -508,7 +508,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
         {candidates.map((candidate) => (
           <div
             key={candidate.id}
-            className={`p-3 lg:p-4 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg ${
+            className={`px-4 pt-2 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg ${
               selectedCandidate?.id === candidate.id
                 ? "bg-blue-50 border-l-4 border-blue-500"
                 : "border border-gray-200"
@@ -619,34 +619,48 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
               </div>
               </div>
             </div>
-            <div className="p-3 lg:pl-8">
               <div className="flex justify-between gap-2 text-sm ml-1">
-                <div className="flex flex-col">
-                  <p className="text-gray-500 mr-[5px]">Experience</p>
-                  <p className="text-gray-900">
-                    {Number(candidate.experience_years)>1 ? (candidate.experience_years + " years") : (candidate.experience_years + " year")}
-                  </p>
+                {candidate.experience_years && 
+                (
+                  <div className="flex flex-col">
+                    <p className="text-gray-500 mr-[5px]">Experience</p>
+                    <p className="text-gray-900">
+                      {candidate.experience_years}
+                    </p>
                 </div>
-                <div className="flex flex-col">
-                  <p className="text-gray-500 mr-[5px]">Current Company</p>
-                  <p className="text-gray-900">
-                    {candidate.experience_summary?.title}
-                  </p>
+                )}
+                {/* need to update the current Company Data */}
+                {candidate.experience_years && 
+                (
+                  <div className="flex flex-col">
+                    <p className="text-gray-500 mr-[5px]">Current Company</p>
+                    <p className="text-gray-900">
+                      {candidate.experience_years}
+                    </p>
                 </div>
-                <div className="flex flex-col">
-                  <p className="text-gray-500 mr-[5px]">Notice Period</p>
-                  <p className="text-gray-900">
-                    {candidate.notice_period_summary}
-                  </p>
+                )}
+                {candidate.notice_period_summary && 
+                (
+                  <div className="flex flex-col">
+                    <p className="text-gray-500 mr-[5px]">Notice Period</p>
+                    <p className="text-gray-900">
+                      {candidate.notice_period_summary}
+                    </p>
                 </div>
-                <div className="flex flex-col">
+                )}
+                {/* need to update the code for Current Salary */}
+                {true && 
+                (
+                  <div className="flex flex-col">
                   <p className="text-gray-500 mr-[5px]">Current Salary</p>
                   <p className="text-gray-900">
-                    9LPA(static Data)
+                    9LPA
                   </p>
                 </div>
+                )}
+ 
               </div>
-              <div className="mt-3 bg-blue-30 flex items-center justify-between space-x-2 flex-wrap gap-2">
+              <div className="mt-3 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2">
                 <div className="flex items-center space-x-1">
                     {candidate.social_links?.github && (
                       <button
@@ -737,7 +751,6 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                   </div>
                 </div>
               </div>
-            </div>
           </div>
         ))}
       </div>
