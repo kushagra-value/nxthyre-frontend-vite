@@ -351,7 +351,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         <Star className="w-4 h-4 mr-2 text-gray-600" />
         Skills
       </h3>
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-3">
         {detailedCandidate?.candidate?.skills_data?.skills_mentioned?.length >
         0 ? (
           detailedCandidate?.candidate?.skills_data.skills_mentioned.map(
