@@ -11,6 +11,7 @@ import {
   User,
   Share2,
   ChevronDown,
+  FileText,
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
@@ -373,28 +374,34 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   const NotesTab = () => (
     <div className="bg-[#F0F0F0] p-3 rounded-lg">
-      <div className="flex space-x-2 mb-4">
-        <button
-          onClick={() => setNotesView("my")}
-          className={`px-3 py-1 text-sm font-medium rounded-lg ${
-            notesView === "my"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-600"
-          }`}
-        >
-          Notes about the Person
-        </button>
-        <button
-          onClick={() => setNotesView("community")}
-          className={`px-3 py-1 text-sm font-medium rounded-lg ${
-            notesView === "community"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-600"
-          }`}
-        >
-          Community
-        </button>
+      {/* Header with Heading and Toggle */}
+      <div className="flex justify-between items-center mb-4">
+        {/* Notes about the Person Heading */}
+        <div className="flex items-center space-x-2">
+          <FileText className="w-4 h-4 text-gray-500" />
+          <h3 className="text-sm font-medium text-gray-900">
+            Notes about the Person
+          </h3>
+        </div>
+        {/* Community Toggle */}
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-600">Community</span>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={notesView === "community"}
+              onChange={(e) =>
+                setNotesView(e.target.checked ? "community" : "my")
+              }
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-600"></div>
+            <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+          </label>
+        </div>
       </div>
+
+      {/* Notes List */}
       <div className="space-y-4">
         {notesView === "my" ? (
           detailedCandidate?.candidate?.notes?.length > 0 ? (
@@ -415,6 +422,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                       {note?.content}
                     </p>
                     <p className="text-xs text-gray-600 mt-1">
+                      Posted Date:{" "}
                       {new Date(note?.posted_at).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
@@ -434,6 +442,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </p>
         )}
       </div>
+
+      {/* Comment Input Section */}
       <div className="mt-4 flex space-x-3">
         <div className="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
           J
