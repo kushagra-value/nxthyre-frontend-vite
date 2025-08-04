@@ -154,6 +154,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   };
 
   const handleSendInviteClick = async () => {
+    // ask first
+    const ok = window.confirm("This will cost you 3 credits. Proceed?");
+    if (!ok) return;
+
+    // if they said yes, continue exactly as before
     await deductCredits();
     onSendInvite();
   };
