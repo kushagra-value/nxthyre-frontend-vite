@@ -222,7 +222,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         // const candidateName = candidate?.full_name || "Candidate";
         showToast.info(`Candidate is already added to the pipeline`);
       } else {
-        showToast.error(error.message || "Failed to save candidate to pipeline");
+        const msg = error.code+ " " + error.message;
+        showToast.error(msg);
       }
     }
   };
