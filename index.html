@@ -31,42 +31,45 @@
 
       window.addEventListener("chatwoot:ready", function () {
         // Function to get user email from window.userStatus with polling
-        function getUserEmailFromStatus(callback) {
-          // Check immediately if the data is available
-          if (window.userStatus && window.userStatus.email) {
-            callback(window.userStatus.email);
-          } else {
-            // If not, start polling
-            const maxAttempts = 100; // 10 seconds with 100ms interval
-            let attempts = 0;
-            const checkInterval = setInterval(() => {
-              attempts++;
-              if (window.userStatus && window.userStatus.email) {
-                clearInterval(checkInterval);
-                callback(window.userStatus.email);
-              } else if (attempts >= maxAttempts) {
-                clearInterval(checkInterval);
-                callback(null); // Timeout reached, no email found
-              }
-            }, 100);
-          }
-        }
+        // function getUserEmailFromStatus(callback) {
+        //   // Check immediately if the data is available
+        //   if (window.userStatus && window.userStatus.email) {
+        //     callback(window.userStatus.email);
+        //   } else {
+        //     // If not, start polling
+        //     const maxAttempts = 100; // 10 seconds with 100ms interval
+        //     let attempts = 0;
+        //     const checkInterval = setInterval(() => {
+        //       attempts++;
+        //       if (window.userStatus && window.userStatus.email) {
+        //         clearInterval(checkInterval);
+        //         callback(window.userStatus.email);
+        //       } else if (attempts >= maxAttempts) {
+        //         clearInterval(checkInterval);
+        //         callback(null); // Timeout reached, no email found
+        //       }
+        //     }, 100);
+        //   }
+        // }
 
         // Set user in Chatwoot
         function setUserInChatwoot() {
-          getUserEmailFromStatus((email) => {
-            if (email) {
-              window.$chatwoot.setUser(email, {
-                name: email, // Using email as name; adjust if full_name is needed
-                email: email,
-              });
-              console.log("User set in Chatwoot with email: " + email);
-            } else {
-              console.log("No user email found from status API after timeout.");
-            }
-          });
+          if (window.userStatus && window.userStatus.email) {
+            const email = window.userStatus.email;
+            window.$chatwoot.setUser(email, {
+              name: window.userStatus.full_name || email, // Use full_name if available
+              email: email,
+            });
+            console.log("User set in Chatwoot with email: " + email);
+          } else {
+            console.log("No user email found from status API.");
+          }
         }
 
+        // Listen for userStatusLoaded event
+        window.addEventListener("userStatusLoaded", setUserInChatwoot);
+
+        // Initial check in case userStatus is already set
         setUserInChatwoot();
       });
     </script>

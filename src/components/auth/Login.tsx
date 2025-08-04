@@ -19,6 +19,13 @@ import {
   browserSessionPersistence,
 } from "firebase/auth";
 
+// Add global augmentation for window.userStatus
+declare global {
+  interface Window {
+    userStatus?: any;
+  }
+}
+
 interface LoginProps {
   onNavigate: (flow: string, data?: any) => void;
   onLogin: (user: any) => void;
@@ -57,6 +64,9 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
             createdAt: user.metadata.creationTime || new Date().toISOString(),
           };
           onLogin(appUser);
+          // Set window.userStatus and dispatch event
+          window.userStatus = userStatus;
+          window.dispatchEvent(new Event("userStatusLoaded"));
           if (userStatus.is_onboarded && myWorkspacesCount.length > 0) {
             navigate("/");
           } else {
@@ -140,6 +150,9 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
 
       // Debug: Log workspaces to verify the response
       console.log("myWorkspaces:", myWorkspacesCount);
+
+      window.userStatus = userStatus; // Set window.userStatus
+      window.dispatchEvent(new Event("userStatusLoaded")); // Notify Chatwoot
 
       // Navigate based on onboarding status and workspaces
       if (userStatus.is_onboarded && myWorkspacesCount.length > 0) {
