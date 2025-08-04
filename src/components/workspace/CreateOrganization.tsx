@@ -135,6 +135,8 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
         );
         showToast.success("Organization created successfully!");
 
+        setTimeout(() => authService.getUserStatus(), 1000); // Refresh user status after creation
+
         const updatedUser = {
           ...user,
           organizationId: response.id.toString(),
@@ -144,7 +146,6 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
           onComplete(updatedUser);
         }
         onNavigate("workspaces-org");
-        authService.getUserStatus();
       }
     } catch (error: any) {
       console.error("Create organization error:", error);
