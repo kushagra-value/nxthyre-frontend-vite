@@ -368,6 +368,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
 
   const startIndex = (currentPage - 1) * candidatesPerPage;
   const endIndex = Math.min(startIndex + candidatesPerPage, candidates.length);
+  const [hoveredCandidateId, setHoveredCandidateId] = useState<string | null>(null);
 
   return (
     <div className="bg-white rounded-xl  h-fit">
@@ -562,7 +563,9 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                       {candidate.full_name}
                     </h3>
                     {candidate.is_background_verified && (
-                      <div className="flex space-x-1">
+                      <div className="relative flex space-x-1"
+                        onMouseEnter={() => setHoveredCandidateId(candidate.id)}
+                        onMouseLeave={() => setHoveredCandidateId(null)}>
                         <span className="mt-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -618,6 +621,15 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                             </g>
                           </svg>
                         </span>
+                        {hoveredCandidateId === candidate.id && (
+                            <div
+                              className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg p-3 text-sm text-gray-700 z-10"
+                              role="tooltip"
+                              aria-hidden={hoveredCandidateId !== candidate.id}
+                            >
+                              This badge indicates that the candidate's background has been verified, confirming their credentials and qualifications.
+                            </div>
+                          )}
                       </div>
                     )}        
                   </div>
