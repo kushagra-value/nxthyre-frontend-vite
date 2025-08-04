@@ -627,7 +627,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                               role="tooltip"
                               aria-hidden={hoveredCandidateId !== candidate.id}
                             >
-                              This badge indicates that the candidate's background has been verified, confirming their credentials and qualifications.
+                              Verified via last employer's confirmation
                             </div>
                           )}
                       </div>
