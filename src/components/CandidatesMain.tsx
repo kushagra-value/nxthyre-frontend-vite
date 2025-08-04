@@ -149,11 +149,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const handleSelectAll = (checked: boolean) => {
     setSelectAll(checked);
     if (checked) {
-      // Select only candidates on the current page
-      const startIndex = (currentPage - 1) * candidatesPerPage;
-      const endIndex = Math.min(startIndex + candidatesPerPage, candidates.length);
       const currentPageCandidates = candidates
-        .slice(startIndex, endIndex)
         .map((candidate) => candidate.id);
       setSelectedCandidates(currentPageCandidates);
     } else {
