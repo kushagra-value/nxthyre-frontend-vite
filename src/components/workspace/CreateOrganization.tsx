@@ -144,6 +144,7 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
           onComplete(updatedUser);
         }
         onNavigate("workspaces-org");
+        authService.getUserStatus();
       }
     } catch (error: any) {
       console.error("Create organization error:", error);
