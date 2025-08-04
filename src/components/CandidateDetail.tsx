@@ -798,8 +798,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     );
   };
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-3 space-y-0 min-h-[81vh] relative overflow-hidden">
-      <div className="flex space-x-3 items-center mt-1 mb-6">
+    <div
+      className={`bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-3 ${
+        showConfirm ? "space-y-0" : "space-y-6"
+      } min-h-[81vh] relative overflow-hidden`}
+    >
+      <div className="flex space-x-3 items-center mt-1">
         <div
           className={`w-12 h-12 ${getAvatarColor(
             detailedCandidate?.candidate?.full_name
@@ -833,7 +837,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
       </div>
 
-      <div className="border-t border-gray-300 border-b p-3 mb-6 space-y-2">
+      <div className="border-t border-gray-300 border-b p-3 space-y-2">
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
@@ -883,7 +887,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
       </div>
 
-      <div className="space-y-2 mb-6">
+      <div className="space-y-2">
         <div className="flex space-x-2">
           <button
             onClick={handleSendInviteClick}
@@ -895,7 +899,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
       </div>
 
-      <div className="flex mb-6 space-x-4 border-b border-gray-200">
+      <div className="flex space-x-4 border-b border-gray-200">
         {tabs.map((tab) => (
           <button
             key={tab.name}
@@ -916,7 +920,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         ))}
       </div>
 
-      <div className="mt-4 mb-6">
+      <div className="mt-4">
         {activeTab === "Profile" && <ProfileTab />}
         {activeTab === "Education" && <EducationTab />}
         {activeTab === "Skills" && <SkillsTab />}
