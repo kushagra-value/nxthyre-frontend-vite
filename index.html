@@ -72,14 +72,17 @@
         // Set user in Chatwoot
         async function setUserInChatwoot() {
           try {
-            const user = await getUserFromIndexedDB();
+            const userData = await getUserFromIndexedDB();
 
-            if (user && user.email) {
+            if (userData && userData.email) {
               // Use email as the unique identifier and name
-              window.$chatwoot.setUser(user.email, {
-                name: user.email,
-                email: user.email,
+              window.$chatwoot.setUser(userData.email, {
+                name: userData.email,
+                email: userData.email,
               });
+              console.log("User set in Chatwoot with email: " + userData.email);
+            } else {
+              console.log("No user data found or email is missing.");
             }
             // If no user is found, Chatwoot will use its default method
           } catch (error) {
