@@ -798,7 +798,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     );
   };
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-3 space-y-6 min-h-[81vh] relative overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-3 space-y-0 min-h-[81vh] relative overflow-hidden">
       <div className="flex space-x-3 items-center mt-1">
         <div
           className={`w-12 h-12 ${getAvatarColor(
