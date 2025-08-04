@@ -54,6 +54,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("Profile");
   const [notesView, setNotesView] = useState("my");
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const tabs = [
     { name: "Profile" },
@@ -154,13 +155,21 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   };
 
   const handleSendInviteClick = async () => {
-    // ask first
-    const ok = window.confirm("This will cost you 3 credits. Proceed?");
-    if (!ok) return;
+    setShowConfirm(true);
+  };
 
-    // if they said yes, continue exactly as before
-    await deductCredits();
-    onSendInvite();
+  const confirmSpend = async () => {
+    setShowConfirm(false);
+    try {
+      await deductCredits();
+      onSendInvite();
+    } catch {
+      showToast.error("Failed to deduct credits");
+    }
+  };
+
+  const cancelSpend = () => {
+    setShowConfirm(false);
   };
 
   const handleCopy = (text: string) => {
@@ -913,6 +922,36 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         {activeTab === "Skills" && <SkillsTab />}
         {activeTab === "Notes" && <NotesTab candidateId={candidate.id} />}
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg w-80 p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Confirm Usage
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              This will cost you{" "}
+              <span className="font-semibold">3 credits</span>. Do you want to
+              proceed?
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={cancelSpend}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmSpend}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
