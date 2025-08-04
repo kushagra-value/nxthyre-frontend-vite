@@ -206,19 +206,21 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       showToast.success(
         `Candidate successfully added to pipeline${
           stageId ? ` (${stageName})` : ""
-        } (ID: ${response.id})`
+        }`
       );
       setShowDropdown(null);
     } catch (error: any) {
+
+      console.error("Error saving to pipeline:", error);
      if (
-        error.response?.status === 400 &&
-        error.response?.non_field_errors?.includes(
-          "The fields candidate, job must make a unique set."
-        )
+      error.response?.status === 400 &&
+      error.response?.data?.non_field_errors?.some((err: string) =>
+        err.includes("unique set")
+      )
       ) {
-        const candidate = candidates.find((c) => c.id === candidateId);
-        const candidateName = candidate?.full_name || "Candidate";
-        showToast.info(`${candidateName} is already added to the pipeline`);
+        // const candidate = candidates.find((c) => c.id === candidateId);
+        // const candidateName = candidate?.full_name || "Candidate";
+        showToast.info(`Candidate is already added to the pipeline`);
       } else {
         showToast.error(error.message || "Failed to save candidate to pipeline");
       }
