@@ -719,12 +719,12 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                     <p className="text-sm text-gray-600">
                       {file ? `Selected file: ${file.name}` : 'Drag and drop your job description file here'}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">or click to browse (.pdf, .doc, .docx, .txt)</p>
+                    <p className="text-xs text-gray-500 mt-1">or click to browse (.txt)</p>
                     <input
                       type="file"
                       ref={fileInputRef}
                       className="hidden"
-                      accept=".pdf,.doc,.docx,.txt"
+                      accept=".txt"
                       onChange={handleFileChange}
                       disabled={isLoading}
                     />
