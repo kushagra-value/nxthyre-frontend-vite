@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
+  Share,
 } from "lucide-react";
 import {
   candidateService,
@@ -355,88 +356,82 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
     return pageNumbers;
   };
 
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLDivElement>,
+    candidate: CandidateListItem
+  ) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleCandidateClick(candidate);
+    }
+  };
+
   const startIndex = (currentPage - 1) * candidatesPerPage;
   const endIndex = Math.min(startIndex + candidatesPerPage, candidates.length);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 h-fit">
+    <div className="bg-white rounded-xl  h-fit">
       <div className="border-b border-gray-200">
-        <div className="flex items-center justify-between p-3 lg:p-4 pb-0">
-          <div className="flex space-x-1 overflow-x-auto">
+        <div className="flex items-center justify-between px-4 pt-4 pb-0">
+          <div className="flex space-x-6 overflow-x-auto">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-2 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap ${
+                className={`py-2 text-sm lg:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 focus-visible:border-b-2 focus-visible:border-blue-600 ${
                   activeTab === tab.id
-                    ? "text-blue-600 border-b-2 border-blue-500 bg-blue-50"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    ? "text-blue-600 border-blue-500"
+                    : "text-gray-600 border-transparent hover:text-gray-700"
                 }`}
+                aria-label={`Switch to ${tab.label} tab`}
               >
                 {tab.label}
                 {tab.count > 0 && (
-                  <span className="ml-2 px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded-full">
+                  <span className="ml-2 px-2 py-1 text-xs bg-blue-50 text-gray-600 rounded-full">
                     {tab.count}
                   </span>
                 )}
               </button>
             ))}
           </div>
-          <div>
-            <button
-              onClick={onPipelinesClick}
-              className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-            >
-              Pipelines
-            </button>
-          </div>
         </div>
       </div>
 
       <div className="p-3 lg:p-4 border-b border-gray-200">
-        {/* <div className="hidden sm:flex items-center bg-gray-100 rounded-lg px-3 py-2">
-          <Search className="w-4 h-4 text-gray-500 mr-2" />
-          <input
-            type="text"
-            placeholder="LinkedIn Contact Finder..."
-            value={localSearchTerm}
-            onChange={(e) => {
-              setLocalSearchTerm(e.target.value);
-              onSearchChange(e.target.value);
-            }}
-            className="bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none w-40"
-          />
-        </div> */}
-        <div className="mt-0 flex items-center justify-between flex-wrap gap-2">
-          <div className="flex space-x-3">
+        <div className="flex items-center justify-between">
             <label className="flex items-center">
               <input
                 type="checkbox"
                 checked={selectAll}
                 onChange={(e) => handleSelectAll(e.target.checked)}
-                className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
+                className="w-4 h-4 text-blue-200 border-gray-200 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 "
+                aria-label="Select all candidates"
               />
-              <span className="ml-2 text-sm text-gray-600">Select all</span>
+              <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">Select all</span>
             </label>
+            <div className="flex space-x-3">
             <button
-              className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
+              className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
               onClick={handleBulkAddToPipeline}
+              aria-label="Add selected candidates to pipeline"
             >
               Add To Pipeline
             </button>
             <button
-              className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
+              className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
               onClick={() => setShowExportDialog(true)}
+              aria-label="Export selected candidates"
             >
               Export Candidates
             </button>
-          </div>
+          
           <div className="relative flex space-x-2">
             <button
-                className="px-1.5 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors flex items-center"
+                className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
+                aria-label="Sort candidates"
               >
-                Sort By - <span className="text-blue-600 font-semibold ml-1 mr-1">{sortOptions.find(opt => opt.value === sortBy)?.label || 'Relevance'}</span>
+                Sort By - <span className="text-gray-400 font-[400] ml-1 mr-1">{sortOptions.find(opt => opt.value === sortBy)?.label || 'Relevance'}</span>
                 <ChevronDown className="w-4 h-4 mt-1" />
               </button>
               {showSortDropdown && (
@@ -448,8 +443,9 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     {sortOptions.map((option) => (
                       <button
                         key={option.value}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() => handleSortSelect(option.value)}
+                        aria-label={`Sort candidates by ${option.label}`}
                       >
                         {option.label}
                       </button>
@@ -457,6 +453,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                   </div>
                 </div>
               )}
+          </div>
           </div>
         </div>
       </div>
@@ -473,9 +470,10 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
             </p>
             <div className="mt-4 flex justify-start space-x-2">
               <button
-                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                 onClick={() => handleExportCandidates("csv")}
                 disabled={exportLoading}
+                area-label="Export candidates as CSV"
               >
                 {exportLoading ? (
                   <>
@@ -487,9 +485,10 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 )}
               </button>
               <button
-                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                 onClick={() => handleExportCandidates("xlsx")}
                 disabled={exportLoading}
+                area-label="Export candidates as Excel"
               >
                 {exportLoading ? (
                   <>
@@ -501,9 +500,10 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 )}
               </button>
               <button
-                className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                 onClick={() => setShowExportDialog(false)}
                 disabled={exportLoading}
+                area-label="Cancel export dialog"
               >
                 Cancel
               </button>
@@ -515,44 +515,50 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
       {loadingCandidates ? (
         <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <p className="ml-4 text-gray-600">Loading candidates...</p>
+          <p className="ml-4 text-gray-400 text-xs lg:text-base font-[400]">Loading candidates...</p>
         </div>
       ) : candidates.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-gray-600">No candidates found.</p>
+          <p className="text-gray-400 text-xs lg:text-base font-[400]">No candidates found.</p>
         </div>
       ) : (
       <>
-      <div className="border-b-1 border-gray-200 overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar">
+      <div className="space-y-4 border-b-1 border-gray-200 overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
         {candidates.map((candidate) => (
           <div
             key={candidate.id}
-            className={`p-3 lg:p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
+            className={`pt-2 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
               selectedCandidate?.id === candidate.id
                 ? "bg-blue-50 border-l-4 border-blue-500"
-                : ""
+                : "border border-gray-200"
             }`}
             onClick={() => handleCandidateClick(candidate)}
+            onKeyDown={(e) => handleKeyDown(e, candidate)}
+            tabIndex={0}
+            role="button"
+            aria-label={`Select candidate ${candidate.full_name}`}
           >
-            <div className="flex items-center space-x-3 border-b pb-4">
+            <div className="flex px-4 items-center space-x-3">
               <input
                 type="checkbox"
                 checked={selectedCandidates.includes(candidate.id)}
                 onChange={() => handleCandidateSelect(candidate.id)}
-                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mt-1"
+                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mt-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                 onClick={(e) => e.stopPropagation()}
+                aria-label={`Select ${candidate.full_name}`}
               />
+              <div className="border-b-2 border-gray-300 flex items-center space-x-3 pb-4 w-full">
               <div
                 className={`w-14 h-14 ${getAvatarColor(
                   candidate.full_name
-                )} rounded-full flex items-center justify-center text-white font-semibold text-sm`}
+                )} rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600] `}
               >
                 {candidate.avatar}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
                   <div className="flex items-center space-x-2 flex-wrap">
-                    <h3 className="text-base font-semibold text-gray-900">
+                    <h3 className="text-xs lg:text-base font-[400] text-gray-900">
                       {candidate.full_name}
                     </h3>
                     {candidate.is_background_verified && (
@@ -613,136 +619,141 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                           </svg>
                         </span>
                       </div>
-                    )}
-                    <span
-                      className={`mt-1 px-2 py-1 text-xs rounded-full ${
-                        candidate.experience_years?.includes("Available")
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-blue-100 text-blue-800"
-                      }`}
-                    >
-                      {candidate.experience_years}
-                    </span>
+                    )}        
                   </div>
-                  <div className="flex items-center space-x-1">
+                  <div className="flex space-x-1">
+                    <p className="flex text-xs lg:text-base font-[400] text-gray-600 mt-1">
+                      <MapPin className="mt-1 w-4 h-3 ml-[-3px]" />
+                      {candidate.location?.split(",")[0]}
+                    </p>
+                  </div>
+                  
+                </div>
+                <div className="flex space-x-2">
+                  <p className="text-sm font-[400] text-blue-600 mt-1 max-w-[24ch] truncate">
+                    {candidate.experience_summary?.title}
+                  </p>
+                  <p className="text-sm font-[400] text-blue-600 mt-1">
+                    |
+                  </p> 
+                  <p className="text-sm font-[400] text-blue-600 mt-1 max-w-[24ch] truncate">
+                    {candidate.education_summary?.title}
+                  </p>
+                </div>
+              </div>
+              </div>
+            </div>
+              <div className="pt-4 pl-12 flex space-x-6 gap-2 text-sm ml-1">
+                {candidate.experience_years && 
+                (
+                  <div className="flex flex-col">
+                    <p className="text-gray-500 mr-[5px]">Experience</p>
+                    <p className="text-gray-900">
+                      {candidate.experience_years}
+                    </p>
+                </div>
+                )}
+                {/* need to update the current Company Data */}
+                {candidate.experience_years && 
+                (
+                  <div className="flex flex-col">
+                    <p className="text-gray-500 mr-[5px]">Current Company</p>
+                    <p className="text-gray-900">
+                      {candidate.experience_years}
+                    </p>
+                </div>
+                )}
+                {candidate.notice_period_summary && 
+                (
+                  <div className="flex flex-col">
+                    <p className="text-gray-500 mr-[5px]">Notice Period</p>
+                    <p className="text-gray-900">
+                      {candidate.notice_period_summary}
+                    </p>
+                </div>
+                )}
+                {/* need to update the code for Current Salary */}
+                {true && 
+                (
+                  <div className="flex flex-col">
+                  <p className="text-gray-500 mr-[5px]">Current Salary</p>
+                  <p className="text-gray-900">
+                    9LPA
+                  </p>
+                </div>
+                )}
+ 
+              </div>
+              <div className="p-3 pl-12 mt-3 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2">
+                <div className="flex items-center space-x-1">
                     {candidate.social_links?.github && (
                       <button
-                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(candidate.social_links?.github, "_blank")
                         }
+                        aria-label={`View ${candidate.full_name}'s GitHub profile`}
                       >
                         <Github className="w-4 h-4" />
                       </button>
                     )}
                     {candidate.social_links?.linkedin && (
                       <button
-                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(
                             candidate.social_links?.linkedin,
                             "_blank"
                           )
                         }
+                        aria-label={`View ${candidate.full_name}'s LinkedIn profile`}
                       >
                         <Linkedin className="w-4 h-4" />
                       </button>
                     )}
                     {candidate.social_links?.resume && (
                       <button
-                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(candidate.social_links?.resume, "_blank")
                         }
+                        aria-label={`View ${candidate.full_name}'s resume`}
                       >
                         <File className="w-4 h-4" />
                       </button>
                     )}
                     {candidate.social_links?.portfolio && (
                       <button
-                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(
                             candidate.social_links?.portfolio,
                             "_blank"
                           )
                         }
+                        aria-label={`View ${candidate.full_name}'s portfolio`}
                       >
                         <Link className="w-4 h-4" />
                       </button>
                     )}
                   </div>
-                </div>
-                <div className="flex space-x-1">
-                  <p className="text-sm text-gray-600 mt-1 max-w-[58ch] truncate">
-                    {candidate.headline} |
-                  </p>
-                </div>
-                <div className="flex space-x-1">
-                  <p className="flex text-sm text-gray-600 mt-1">
-                    <MapPin className="mt-1 w-4 h-3 ml-[-3px]" />
-                    {candidate.location?.split(",")[0]}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="p-3 lg:pl-8 lg:py-4 bg-white">
-              <div className="mt-2 grid grid-cols-1 gap-2 text-sm ml-1">
-                <div className="flex justify-between">
-                  <div className="flex space-x-12">
-                    <span className="text-gray-500">Experience</span>
-                    <p className="text-gray-900 max-w-[36ch] truncate">
-                      {candidate.experience_summary?.title}
-                    </p>
-                  </div>
-                  <p className="text-gray-900 truncate">
-                    {candidate.experience_summary?.date_range}
-                  </p>
-                </div>
-                <div className="flex justify-between">
-                  <div className="flex space-x-12">
-                    <span className="text-gray-500 mr-[5px]">Education</span>
-                    <p className="text-gray-900 max-w-[36ch] truncate">
-                      {candidate.education_summary?.title}
-                    </p>
-                  </div>
-                  <p className="text-gray-900 truncate">
-                    {candidate.education_summary?.date_range}
-                  </p>
-                </div>
-                <div className="flex space-x-6">
-                  <span className="text-gray-500 mr-[5px]">Notice Period</span>
-                  <p className="text-gray-900">
-                    {candidate.notice_period_summary}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-3 flex items-center justify-between space-x-2 flex-wrap gap-2">
-                <div className="mt-3 flex flex-wrap gap-1">
-                  {candidate.skills_list?.slice(0, 3).map((skill, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
                 <div className="rounded-md flex space-x-2 rounde-lg border border-blue-400 hover:border-blue-600 transition-colors">
                   <button
-                    className="pl-3 pr-2 py-1.5 bg-white text-blue-600 text-sm font-medium flex items-center rounded-md"
+                    className="pl-3 pr-2 py-1.5 bg-white text-blue-600 text-sm font-medium flex items-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleSaveToPipeline(candidate.id);
                     }}
+                    aria-label={`Save ${candidate.full_name} to pipeline`}
                   >
                     <Bookmark className="w-4 h-4 mr-1" />
                     Save to Pipeline
                   </button>
                   <div className="relative">
                     <button
-                      className="border-l border-l-blue-400 pl-1.5 pr-2 py-1.5"
+                      className="border-l border-l-blue-400 pl-1.5 pr-2 py-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                       onClick={(e) => handleDropdownToggle(candidate.id, e)}
+                      aria-label={`Add ${candidate.full_name} to pipeline stages`}
                     >
                       <ChevronDown className="w-4 h-4 ml-1 mt-[2px] text-blue-600" />
                     </button>
@@ -755,11 +766,12 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                           {pipelineStages.map((stage) => (
                             <button
                               key={stage.id}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleSaveToPipeline(candidate.id, stage.id);
                               }}
+                              aria-label={`Add ${candidate.full_name} to ${stage.name} stage`}
                             >
                               {stage.name}
                             </button>
@@ -770,7 +782,6 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                   </div>
                 </div>
               </div>
-            </div>
           </div>
         ))}
       </div>
@@ -779,7 +790,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
       {totalPages > 1 ? (
         <div className="p-3 lg:p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">
+            <div className="text-xs text-gray-400 text-xs lg:text-base font-[400]">
               Showing {startIndex + 1} to{" "}
               {Math.min(endIndex, totalCount) + startIndex} of {totalCount}{" "}
               candidates
@@ -788,7 +799,8 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                area-label={`Go to previous page`}
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -798,7 +810,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                   onClick={() =>
                     typeof page === "number" && handlePageChange(page)
                   }
-                  className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                  className={`px-3 py-1 text-sm rounded-lg transition-colors focus-visible:ring focus-visible:ring-2 focus-visible:ring-blue-500 ${
                     page === currentPage
                       ? "bg-blue-600 text-white"
                       : typeof page === "number"
@@ -806,6 +818,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                       : "text-gray-600 cursor-default"
                   }`}
                   disabled={typeof page !== "number"}
+                  area-label={`Go to page ${page}`}
                 >
                   {page}
                 </button>
@@ -813,7 +826,8 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring focus-visible:ring-2 focus-visible:ring-blue-500"
+                area-label={`Go to next page`}
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -823,7 +837,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
       ) : (
         <div className="p-3 lg:p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">
+            <div className="text-xs text-gray-400 text-xs lg:text-base font-[400]">
               Showing {startIndex + 1} to{" "}
               {Math.min(endIndex, totalCount) + startIndex} of {totalCount}{" "}
               candidates

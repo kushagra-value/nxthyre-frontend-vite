@@ -458,7 +458,7 @@ function MainApp() {
     };
     setFilters(newFilters);
     if (activeCategoryId) {
-      fetchCandidates(1, newFilters);
+      fetchCandidates(currentPage, newFilters);
     }
   }, [
     activeTab,
@@ -466,6 +466,7 @@ function MainApp() {
     activeCategoryId,
     debouncedSearchQuery,
     isAuthenticated,
+    currentPage
   ]);
 
   useEffect(() => {
@@ -772,6 +773,7 @@ function MainApp() {
       );
       setCandidates([]);
       setTotalCount(0);
+      setCurrentPage(1);
       setSelectedCandidate(null);
       return;
     }
@@ -879,7 +881,7 @@ function MainApp() {
                 <>
                   <Toaster />
                   <div className="bg-gray-50 min-h-screen">
-                    <div className="sticky top-0 z-30 bg-white will-change-transform">
+                    <div className="sticky top-0 bg-white will-change-transform z-40">
                       <Header
                         onCreateRole={handleCreateJobRole}
                         onOpenLogoutModal={handleOpenLogoutModal}
@@ -894,8 +896,9 @@ function MainApp() {
 
                     <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3">
                       {categories.length > 0 && (
-                        <div className="mb-4">
-                          <div className="sticky top-0 z-20 hidden md:flex items-center space-x-2 lg:order-1 top-16 self-start will-change-transform">
+                      <div className="sticky top-[64px] z-20 will-change-transform mb-4 bg-gray-50 border-b border-gray-200">
+                        <div className="max-w-full mx-auto px-3 lg:px-6">
+                          <div className="hidden md:flex items-center space-x-2">
                             {categories.slice(0, 4).map((category) => (
                               <div
                                 key={category.id}
@@ -910,15 +913,15 @@ function MainApp() {
                                     setActiveCategoryId(category.id);
                                     fetchJobDetailsAndSetFilters(category.id);
                                   }}
-                                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                                  className={`py-1.5 text-xs lg:text-base font-[400] transition-all duration-200 ${
                                     activeCategoryId === category.id
-                                      ? "bg-blue-100 text-blue-700 shadow-sm"
-                                      : "text-gray-600 hover:bg-gray-100"
+                                      ? "border-b-2 border-blue-700 text-blue-700 shadow-sm"
+                                      : "text-gray-600 hover:border-b-2 border-gray-200"
                                   }`}
                                 >
                                   {category.name}
                                   <span
-                                    className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                                    className={`ml-2 px-2 py-1 rounded-full text-xs lg:text-base font-[400] ${
                                       activeCategoryId === category.id
                                         ? "bg-blue-200 text-blue-800"
                                         : "bg-gray-200 text-gray-600"
@@ -1003,7 +1006,7 @@ function MainApp() {
                                       !showCategoryDropdown
                                     )
                                   }
-                                  className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
+                                  className="px-3 py-1.5 text-xs lg:text-base font-[400] text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
                                 >
                                   +{categories.length - 4} more
                                   <ChevronDown className="ml-1 w-4 h-4" />
@@ -1020,12 +1023,22 @@ function MainApp() {
                                 />
                               </div>
                             )}
+
+                            <div>
+                              <button
+                                onClick={handlePipelinesClick}
+                                className="px-3 py-1.5 bg-blue-600 text-white text-xs lg:text-base font-[400] rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                              >
+                                Pipelines
+                              </button>
+                            </div>
                           </div>
                         </div>
+                      </div>
                       )}
 
                       <div className="flex w-full gap-3 h-full">
-                        <div className="lg:w-[25%] sticky order-2 lg:order-1 top-16 self-start will-change-transform ">
+                        <div className="lg:w-[25%] sticky order-2 lg:order-1 top-16 self-start will-change-transform z-10">
                           <FiltersSidebar
                             filters={filters}
                             onApplyFilters={handleApplyFilters}
@@ -1034,7 +1047,7 @@ function MainApp() {
                             activeTab={activeTab}
                           />
                         </div>
-                        <div className="lg:w-[45%] sticky order-1 lg:order-2">
+                        <div className="lg:w-[45%] order-1 lg:order-2 ">
                           <CandidatesMain
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}

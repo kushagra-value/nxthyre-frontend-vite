@@ -536,7 +536,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-4 h-fit">
+    <div className="bg-white rounded-xl p-3 lg:p-4 h-fit">
 
       {/* Keywords */}
       <div className="border-b border-gray-200 mb-4 pb-4">
