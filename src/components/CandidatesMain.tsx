@@ -210,9 +210,10 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       );
       setShowDropdown(null);
     } catch (error: any) {
-
-      console.error("Error saving to pipeline:", error);
-     if (
+      console.error("Save to Pipeline Error:", error.message);
+      console.error("Error code", error.response?.status);
+      console.error("Error code", error.response?.data?.non_field_errors[0]);
+      if (
       error.response?.status === 400 &&
       error.response?.data?.non_field_errors?.some((err: string) =>
         err.includes("unique set")
@@ -222,8 +223,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         // const candidateName = candidate?.full_name || "Candidate";
         showToast.info(`Candidate is already added to the pipeline`);
       } else {
-        const msg = error.code+ " " + error.message;
-        showToast.error(msg);
+        showToast.error(error.message);
       }
     }
   };
