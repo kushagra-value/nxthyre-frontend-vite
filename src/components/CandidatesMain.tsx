@@ -119,6 +119,19 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   ];
 
   useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
     setTotalPages(Math.ceil(totalCount / candidatesPerPage) || 1);
     if (currentPage > Math.ceil(totalCount / candidatesPerPage)) {
       setCurrentPage(1);
@@ -136,11 +149,13 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const handleSelectAll = (checked: boolean) => {
     setSelectAll(checked);
     if (checked) {
-      const currentCandidates = candidates.slice(
-        (currentPage - 1) * candidatesPerPage,
-        currentPage * candidatesPerPage
-      );
-      setSelectedCandidates(currentCandidates.map((candidate) => candidate.id));
+      // Select only candidates on the current page
+      const startIndex = (currentPage - 1) * candidatesPerPage;
+      const endIndex = Math.min(startIndex + candidatesPerPage, candidates.length);
+      const currentPageCandidates = candidates
+        .slice(startIndex, endIndex)
+        .map((candidate) => candidate.id);
+      setSelectedCandidates(currentPageCandidates);
     } else {
       setSelectedCandidates([]);
     }
@@ -169,6 +184,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= totalPages) {
       setCurrentPage(page);
+      setSelectAll(false);
+      setSelectedCandidates([]);
     }
   };
 
@@ -197,7 +214,18 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       );
       setShowDropdown(null);
     } catch (error: any) {
-      showToast.error(error.message || "Failed to save candidate to pipeline");
+     if (
+        error.response?.status === 400 &&
+        error.response?.data?.non_field_errors?.includes(
+          "The fields candidate, job must make a unique set."
+        )
+      ) {
+        const candidate = candidates.find((c) => c.id === candidateId);
+        const candidateName = candidate?.full_name || "Candidate";
+        showToast.info(`${candidateName} is already added to the pipeline`);
+      } else {
+        showToast.error(error.message || "Failed to save candidate to pipeline");
+      }
     }
   };
 
@@ -408,7 +436,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 className="w-4 h-4 text-blue-200 border-gray-200 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 "
                 aria-label="Select all candidates"
               />
-              <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">Select all</span>
+              <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">Select all on this page</span>
             </label>
             <div className="flex space-x-3">
             <button
@@ -754,7 +782,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     className="pl-3 pr-2 py-1.5 bg-white text-blue-600 text-sm font-medium flex items-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleSaveToPipeline(candidate.id);
+                      handleSaveToPipeline(candidate.id,1926);
                     }}
                     aria-label={`Save ${candidate.full_name} to pipeline`}
                   >
