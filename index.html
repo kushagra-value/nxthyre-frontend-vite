@@ -1,14 +1,94 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NxtHyre - Professional Recruitment Platform</title>
-    <meta name="description" content="Streamline your recruitment process with NxtHyre's advanced candidate filtering and management system." />
+    <meta
+      name="description"
+      content="Streamline your recruitment process with NxtHyre's advanced candidate filtering and management system."
+    />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      (function (d, t) {
+        var BASE_URL = "https://help.nxthyre.com";
+        var g = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+        g.src = BASE_URL + "/packs/js/sdk.js";
+        g.async = true;
+        s.parentNode.insertBefore(g, s);
+        g.onload = function () {
+          window.chatwootSDK.run({
+            websiteToken: "was9T3JGVkjYgNcPuDhXsbHm",
+            baseUrl: BASE_URL,
+          });
+        };
+      })(document, "script");
+
+      window.addEventListener("chatwoot:ready", function () {
+        // Function to get user data from IndexedDB
+        function getUserFromIndexedDB() {
+          return new Promise((resolve, reject) => {
+            const request = indexedDB.open("firebaseLocalStorageDb");
+
+            request.onerror = function (event) {
+              console.error("Database error: " + event.target.errorCode);
+              reject("Database error");
+            };
+
+            request.onsuccess = function (event) {
+              const db = event.target.result;
+              const transaction = db.transaction(
+                ["firebaseLocalStorage"],
+                "readonly"
+              );
+              const objectStore = transaction.objectStore(
+                "firebaseLocalStorage"
+              );
+              const getRequest = objectStore.getAll();
+
+              getRequest.onsuccess = function (event) {
+                if (event.target.result && event.target.result.length > 0) {
+                  // Assuming the first entry is the logged-in user
+                  const userData = event.target.result[0].value;
+                  resolve(userData);
+                } else {
+                  resolve(null); // No user data found
+                }
+              };
+
+              getRequest.onerror = function (event) {
+                console.error("Error getting data from object store");
+                reject("Error getting data");
+              };
+            };
+          });
+        }
+
+        // Set user in Chatwoot
+        async function setUserInChatwoot() {
+          try {
+            const user = await getUserFromIndexedDB();
+
+            if (user && user.email) {
+              // Use email as the unique identifier and name
+              window.$chatwoot.setUser(user.email, {
+                name: user.email,
+                email: user.email,
+              });
+            }
+            // If no user is found, Chatwoot will use its default method
+          } catch (error) {
+            console.error("Could not set user in Chatwoot:", error);
+          }
+        }
+
+        setUserInChatwoot();
+      });
+    </script>
   </body>
 </html>
