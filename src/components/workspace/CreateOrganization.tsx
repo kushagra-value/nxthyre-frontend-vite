@@ -135,6 +135,9 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
         );
         showToast.success("Organization created successfully!");
 
+        // setTimeout(() => authService.getUserStatus(), 1000); // Refresh user status after creation
+        window.location.reload();
+
         const updatedUser = {
           ...user,
           organizationId: response.id.toString(),

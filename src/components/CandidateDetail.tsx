@@ -1,29 +1,72 @@
-import React, { useState, useEffect } from 'react';
-import { Mail, Phone, Copy, MapPin, Calendar, Award, Briefcase, GraduationCap, Send, Star, Plus, User, Users, FileText, TrendingUp, MessageCircle, X, Share2 } from 'lucide-react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
-import { showToast } from '../utils/toast';
-import { candidateService, CandidateDetailData, CandidateListItem } from "../services/candidateService";
+import React, { useState, useEffect } from "react";
+import {
+  Mail,
+  Phone,
+  Copy,
+  Briefcase,
+  GraduationCap,
+  Award,
+  Star,
+  TrendingUp,
+  User,
+  Share2,
+  ChevronDown,
+  FileText,
+  Share,
+  Send,
+  MessageCircle,
+  MessageSquareTextIcon,
+  MessageSquareText,
+} from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
+import { showToast } from "../utils/toast";
+import {
+  candidateService,
+  CandidateDetailData,
+  CandidateListItem,
+  Note,
+} from "../services/candidateService";
 
 interface CandidateDetailProps {
   candidate: CandidateListItem | null;
   candidates: CandidateListItem[];
   onSendInvite: () => void;
-  updateCandidateEmail: (candidateId: string, candidate_email: string, candidate_phone:string) => void;
+  updateCandidateEmail: (
+    candidateId: string,
+    candidate_email: string,
+    candidate_phone: string
+  ) => void;
   deductCredits: () => Promise<void>;
 }
 
-const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates = [], onSendInvite, updateCandidateEmail, deductCredits }) => {
-  const [showComments, setShowComments] = useState(false);
-  const [newComment, setNewComment] = useState('');
-  const [detailedCandidate, setDetailedCandidate] = useState<CandidateDetailData | null>(null);
+const CandidateDetail: React.FC<CandidateDetailProps> = ({
+  candidate,
+  candidates = [],
+  onSendInvite,
+  updateCandidateEmail,
+  deductCredits,
+}) => {
+  const [newComment, setNewComment] = useState("");
+  const [detailedCandidate, setDetailedCandidate] =
+    useState<CandidateDetailData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("Profile");
+  const [notesView, setNotesView] = useState("my");
+  const [showConfirm, setShowConfirm] = useState(false);
 
-  // // Use the first candidate if no candidate is selected but candidates are available
-  // const displayCandidate = candidate || (candidates.length > 0 ? candidates[0] : null);
+  const tabs = [
+    { name: "Profile" },
+    { name: "Education" },
+    { name: "Skills" },
+    { name: "Notes" },
+  ];
 
-// Fetch candidate details dynamically
+  interface NotesTabProps {
+    candidateId: string;
+  }
+
   useEffect(() => {
     if (candidate?.id) {
       const fetchCandidateDetails = async () => {
@@ -48,18 +91,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
     }
   }, [candidate?.id, candidate?.candidate_email, candidate?.candidate_phone]);
 
-
-  useEffect(() => {
-    if (showComments) {
-      document.body.classList.add('overflow-hidden');
-    } else {
-      document.body.classList.remove('overflow-hidden');
-    }
-    return () => {
-      document.body.classList.remove('overflow-hidden');
-    };
-  }, [showComments]);
-
   if (loading) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-4">
@@ -79,7 +110,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
             <Briefcase className="w-6 h-6 text-gray-400" />
           </div>
           <p className="text-base font-medium">No candidates Selected</p>
-          <p className="text-sm mt-1">Click and view the candidates information</p>
+          <p className="text-sm mt-1">
+            Click and view the candidates information
+          </p>
         </div>
       </div>
     );
@@ -92,164 +125,729 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
           <div className="w-12 h-12 bg-gray-100 rounded-full mx-auto mb-3 flex items-center justify-center">
             <Briefcase className="w-6 h-6 text-gray-400" />
           </div>
-          <p className="text-base font-medium">Unable to Load candidate details</p>
-          <p className="text-sm mt-1">{error || 'Please select a candidate to view details'}</p>
+          <p className="text-base font-medium">
+            Unable to Load candidate details
+          </p>
+          <p className="text-sm mt-1">
+            {error || "Please select a candidate to view details"}
+          </p>
         </div>
       </div>
     );
   }
 
-  // const experiences = [
-  //   {
-  //     title: displayCandidate.currentRole,
-  //     company: `${displayCandidate.company} | ${displayCandidate.location}`,
-  //     period: displayCandidate.experience,
-  //     duration: `${displayCandidate.currentCompanyExperience} yr`,
-  //     description: 'Conducted in-depth data analysis on performance metrics, and inventory data using various tools. Streamlined the team workflow for increased efficiency.'
-  //   },
-  //   {
-  //     title: 'Previous Role',
-  //     company: 'Previous Company | Location',
-  //     period: '2019 - 2022',
-  //     duration: '3 yr',
-  //     description: 'Mentored team members and implemented KPIs. Mediated various processes and contributed to organizational growth.'
-  //   }
-  // ];
-
-  // const education = [
-  //   {
-  //     degree: displayCandidate.education,
-  //     field: 'Specialized Field',
-  //     period: '2017 - 2019',
-  //     location: displayCandidate.city
-  //   }
-  // ];
-
-  // const certifications = [
-  //   {
-  //     name: 'Certified Python Developer',
-  //     issuer: 'Python Institute',
-  //     date: 'January 2023'
-  //   },
-  //   {
-  //     name: 'AWS Certified Solutions Architect',
-  //     issuer: 'Amazon Web Services',
-  //     date: 'June 2022'
-  //   }
-  // ];
-
-  // const recommendations = [
-  //   {
-  //     name: 'Sarah Lee',
-  //     role: 'Project Manager at Innovations Inc.',
-  //     company: 'Innovations Inc.',
-  //     text: 'Alex is a fantastic team player with exceptional technical skills.',
-  //     date: 'Received March 2024'
-  //   }
-  // ];
-
-  // const existingComments = [
-  //   {
-  //     id: 1,
-  //     text: 'Great candidate with strong technical background. Very responsive during initial screening.',
-  //     author: 'John Doe',
-  //     date: '2 days ago',
-  //     avatar: 'J'
-  //   },
-  //   {
-  //     id: 2,
-  //     text: 'Excellent communication skills. Would be a good fit for senior roles.',
-  //     author: 'Jane Smith',
-  //     date: '1 week ago',
-  //     avatar: 'J'
-  //   },
-  //   {
-  //     id: 3,
-  //     text: 'Had a great conversation about their experience with Python and data analysis. Very knowledgeable.',
-  //     author: 'Mike Johnson',
-  //     date: '3 days ago',
-  //     avatar: 'M'
-  //   }
-  // ];
-
   const handleAddComment = () => {
     if (newComment.trim()) {
-      console.log('Adding comment:', newComment);
-      setNewComment('');
+      console.log("Adding comment:", newComment);
+      setNewComment("");
     }
   };
 
   const handleShareProfile = () => {
-    // Navigate to shareable profile page
-    window.open(`/candidate-profiles/${detailedCandidate.candidate.id}`, '_blank');
+    window.open(
+      `/candidate-profiles/${detailedCandidate.candidate.id}`,
+      "_blank"
+    );
   };
 
   const getAvatarColor = (name: string) => {
-    return 'bg-blue-500';
+    return "bg-blue-500";
   };
 
   const handleSendInviteClick = async () => {
-    await deductCredits();
-    onSendInvite();
+    setShowConfirm(true);
+  };
+
+  const confirmSpend = async () => {
+    setShowConfirm(false);
+    try {
+      await deductCredits();
+      onSendInvite();
+    } catch {
+      showToast.error("Failed to deduct credits");
+    }
+  };
+
+  const cancelSpend = () => {
+    setShowConfirm(false);
   };
 
   const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      showToast.success('Copied to clipboard!');
-    }).catch(() => {
-      showToast.error('Failed to copy');
-    });
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        showToast.success("Copied to clipboard!");
+      })
+      .catch(() => {
+        showToast.error("Failed to copy");
+      });
   };
 
   const handleWhatsApp = (phone: string) => {
-    const formattedPhone = phone.replace(/[^0-9+]/g, '');
-    window.open(`https://wa.me/${formattedPhone}`, '_blank');
+    const formattedPhone = phone.replace(/[^0-9+]/g, "");
+    window.open(`https://wa.me/${formattedPhone}`, "_blank");
   };
 
-  const hasContactInfo = !!detailedCandidate.candidate.candidate_email && !!detailedCandidate.candidate.candidate_phone;
+  const hasContactInfo =
+    !!detailedCandidate.candidate.candidate_email &&
+    !!detailedCandidate.candidate.candidate_phone;
   const displayEmail = hasContactInfo
     ? detailedCandidate.candidate.candidate_email
-    : `${detailedCandidate.candidate.full_name?.slice(0, 2)}***************.****`;
+    : `${detailedCandidate.candidate.full_name
+        ?.toLocaleLowerCase()
+        ?.slice(0, 2)}*********@gmail.com`;
   const displayPhone = hasContactInfo
     ? detailedCandidate.candidate.candidate_phone
-    : '+91-**********';
+    : "93******45";
 
+  const ProfileTab = () => {
+    const [showMore, setShowMore] = useState(false);
+
+    return (
+      <div className="relative bg-[#F0F0F0] p-3 rounded-lg">
+        <div
+          className={`overflow-hidden ${showMore ? "" : "min-h-[50vh]"}`}
+          style={{ transition: "max-height 0.3s ease" }}
+        >
+          <div className="mb-4 border-b border-gray-200">
+            <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] flex items-center">
+              <User className="w-4 h-4 mr-2 text-[#4B5563]" />
+              Profile Summary
+            </h3>
+            <p className="text-sm text-[#818283] leading-normal pt-2 pb-4 pl-6 pr-2 rounded-lg">
+              {detailedCandidate?.candidate?.profile_summary ||
+                "I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs). I hold a B.E/B.Tech in Computer Science & Engineering from HKBK College of Engineering. My experience includes developing AI models for NLP, computer vision, and Retrieval-Augmented Generation (RAG) based applications across various industries"}
+            </p>
+          </div>
+          <div>
+            <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
+              <Briefcase className="w-4 h-4 mr-2 text-[#4B5563]" />
+              Experience
+            </h3>
+            <div className="ml-2">
+              {detailedCandidate?.candidate?.experience?.length > 0 ? (
+                detailedCandidate?.candidate?.experience.map((exp, index) => (
+                  <div
+                    key={index}
+                    className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
+                  >
+                    <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
+                    <h4 className="font-medium text-[#111827] text-sm">
+                      {exp?.job_title}
+                    </h4>
+                    <p className="text-sm text-[#4B5563]">{`${exp?.company} | ${exp?.location}`}</p>
+                    <p className="text-sm text-[#6B7280]">
+                      {exp?.start_date} - {exp?.end_date || "Present"}
+                    </p>
+                    <p className="text-sm text-[#4B5563] mt-1">
+                      {exp?.description}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">
+                  No experience details available
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+        {!showMore && (
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white to-transparent p-4 ml-6 flex space-x-1 items-center">
+            <button
+              onClick={() => setShowMore(true)}
+              className="text-[#0F47F2] text-sm"
+            >
+              VIEW MORE
+            </button>
+            <ChevronDown
+              className="text-[#0F47F2] cursor-pointer mt-[2px]"
+              onClick={() => setShowMore(true)}
+            />
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const EducationTab = () => (
+    <div className="bg-[#F0F0F0] p-3 rounded-lg">
+      <div className="mb-4">
+        <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
+          <GraduationCap className="w-4 h-4 mr-2 text-[#4B5563]" />
+          Education
+        </h3>
+        <div className="ml-2">
+          {detailedCandidate?.candidate?.education?.length > 0 ? (
+            detailedCandidate?.candidate?.education.map((edu, index) => (
+              <div
+                key={index}
+                className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
+              >
+                <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
+                <h4 className="font-medium text-[#111827] text-sm">
+                  {edu?.degree}
+                </h4>
+                <p className="text-sm text-[#4B5563]">{edu?.specialization}</p>
+                <p className="text-sm text-[#6B7280]">
+                  {edu?.start_date} - {edu?.end_date}
+                </p>
+                {edu?.institution && (
+                  <p className="text-sm text-[#4B5563]">{edu?.institution}</p>
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-gray-500">
+              No education details available
+            </p>
+          )}
+        </div>
+      </div>
+      <div className="mb-4">
+        <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
+          <Award className="w-4 h-4 mr-2 text-[#4B5563]" />
+          Certifications
+        </h3>
+        <div className="ml-2">
+          {detailedCandidate?.candidate?.certifications?.length > 0 ? (
+            detailedCandidate?.candidate?.certifications.map((cert, index) => (
+              <div
+                key={index}
+                className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
+              >
+                <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
+                <h4 className="font-medium text-[#111827] text-sm">
+                  {cert?.name}
+                </h4>
+                <p className="text-sm text-[#4B5563]">{cert?.issuer}</p>
+                <p className="text-sm text-[#6B7280]">{cert?.issued_date}</p>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-gray-500">No certifications available</p>
+          )}
+        </div>
+      </div>
+      <div>
+        <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
+          <TrendingUp className="w-4 h-4 mr-2 text-[#4B5563]" />
+          Recommendations
+        </h3>
+        <div className="space-y-2">
+          {detailedCandidate?.candidate?.recommendations?.length > 0 ? (
+            detailedCandidate?.candidate?.recommendations.map((rec, index) => (
+              <div key={index} className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-start space-x-2 space-y-1">
+                  <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <User className="w-3 h-3 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-[#111827] text-sm">
+                      {rec?.recommender_name}
+                    </h4>
+                    <p className="text-xs text-[#4B5563]">
+                      {rec?.recommender_title}
+                    </p>
+                    <p className="text-sm text-[#4B5563] mt-1">
+                      "{rec?.feedback}"
+                    </p>
+                    <p className="text-xs text-[#6B7280] mt-1">
+                      {rec?.date_received}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-gray-500">
+              No recommendations available
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const SkillsTab = () => (
+    <div className="bg-[#F0F0F0] p-3 rounded-lg pb-6">
+      <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-3 flex items-center">
+        <Star className="w-4 h-4 mr-2 text-[#4B5563]" />
+        Skills
+      </h3>
+      <div className="flex flex-wrap gap-3">
+        {detailedCandidate?.candidate?.skills_data?.skills_mentioned?.length >
+        0 ? (
+          detailedCandidate?.candidate?.skills_data.skills_mentioned.map(
+            (skill, index) => (
+              <span
+                key={index}
+                className="px-3 py-[5px] bg-blue-100 text-blue-800 text-xs rounded-full"
+              >
+                {skill?.skill}
+              </span>
+            )
+          )
+        ) : (
+          <p className="text-sm text-gray-500">No skills listed</p>
+        )}
+      </div>
+    </div>
+  );
+
+  // const NotesTab = () => {
+  //   // Define dummy notes to display when no actual notes are available
+  //   const dummyNotes = [
+  //     {
+  //       noteId: "dummy1",
+  //       postedBy: { userName: "Sid Verma" },
+  //       organisation: { orgName: "Problock" },
+  //       content:
+  //         "This is a sample note to demonstrate the layout. lorem ipsum dolor sit amet, consectetur adipiscing elit. ipsum dolor sit amet, consectetur adipiscing elit.",
+  //       posted_at: new Date().toISOString(),
+  //     },
+  //     {
+  //       noteId: "dummy2",
+  //       postedBy: { userName: "Leena Ghatiya" },
+  //       organisation: { orgName: "NxtHyre" },
+  //       content:
+  //         "Another sample note for illustration. lorem ipsum dolor sit amet, consectetur adipiscing elit. pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.",
+  //       posted_at: "July 28, 2025",
+  //     },
+  //   ];
+
+  //   const communityNotes = [
+  //     {
+  //       noteId: "dummy1",
+  //       postedBy: { userName: "Kushagra Jain" },
+  //       organisation: { orgName: "Valuebound" },
+  //       content:
+  //         "This is a sample note to demonstrate the layout. lorem ipsum dolor sit amet, consectetur adipiscing elit. ipsum dolor sit amet, consectetur adipiscing elit. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  //       posted_at: new Date().toISOString(),
+  //     },
+  //     {
+  //       noteId: "dummy2",
+  //       postedBy: { userName: "Harsh Shrivastava" },
+  //       organisation: { orgName: "Vyuhyre" },
+  //       content:
+  //         "lorem ipsum dolor sit amet, consectetur adipiscing elit. pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.",
+  //       posted_at: "July 28, 2025",
+  //     },
+  //   ];
+
+  //   return (
+  //     <>
+  //       <div className="flex flex-col h-full bg-[#F0F0F0] p-3 rounded-lg">
+  //         {/* Header with Heading and Toggle */}
+  //         <div className="flex justify-between items-center mb-3 border-b-2 border-gray-200 px-3 pt-1 pb-3">
+  //           {/* Notes about the Person Heading */}
+  //           <div className="flex items-center space-x-2">
+  //             <MessageSquareText className="w-4 h-4 text-[#4B5563]" />
+  //             <h3 className="text-[18px] font-medium text-[#4B5563]">
+  //               Notes about the Person
+  //             </h3>
+  //           </div>
+  //           {/* Community Toggle */}
+  //           <div className="flex items-center space-x-2">
+  //             <span className="text-sm text-[#4B5563]">Community</span>
+  //             <label className="relative inline-flex items-center cursor-pointer">
+  //               <input
+  //                 type="checkbox"
+  //                 checked={notesView === "community"}
+  //                 onChange={(e) =>
+  //                   setNotesView(e.target.checked ? "community" : "my")
+  //                 }
+  //                 className="sr-only peer"
+  //               />
+  //               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-600"></div>
+  //               <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+  //             </label>
+  //           </div>
+  //         </div>
+
+  //         {/* Notes List */}
+  //         <div className="flex-1 overflow-y-auto space-y-2 border-gray-200">
+  //           {notesView === "my"
+  //             ? (detailedCandidate?.candidate?.notes?.length > 0
+  //                 ? detailedCandidate.candidate.notes
+  //                 : dummyNotes
+  //               ).map((note) => (
+  //                 <div
+  //                   key={note.noteId}
+  //                   className="border-b border-gray-200 pb-2"
+  //                 >
+  //                   <div className="flex flex-col space-y-2 px-3 py-2 mb-0">
+  //                     <div className="flex justify-between items-center ">
+  //                       {/* User Avatar and Info */}
+  //                       <div className="flex space-x-3 items-center">
+  //                         <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+  //                           <User className="w-5 h-5 text-white" />
+  //                         </div>
+  //                         <div className="flex-1 space-y-0.5">
+  //                           <h4 className="font-medium text-[#111827] text-sm">
+  //                             {note?.postedBy?.userName ||
+  //                               note?.organisation?.orgName}
+  //                           </h4>
+  //                           <p className="text-sm text-[#4B5563]">
+  //                             {note?.organisation?.orgName || "Company"}
+  //                           </p>
+  //                         </div>
+  //                       </div>
+  //                       {/* Posted Date */}
+  //                       <div>
+  //                         <p className="text-xs text-[#818283] mt-1">
+  //                           {new Date(note?.posted_at).toLocaleDateString(
+  //                             "en-US",
+  //                             {
+  //                               month: "short",
+  //                               day: "numeric",
+  //                               year: "numeric",
+  //                             }
+  //                           )}
+  //                         </p>
+  //                       </div>
+  //                     </div>
+
+  //                     <div className="bg-white p-3 rounded-lg">
+  //                       <p className="text-sm text-[#818283] leading-normal">
+  //                         {note?.content}
+  //                       </p>
+  //                     </div>
+  //                   </div>
+  //                 </div>
+  //               ))
+  //             : (detailedCandidate?.candidate?.notes?.length > 0
+  //                 ? detailedCandidate.candidate.notes
+  //                 : communityNotes
+  //               ).map((note) => (
+  //                 // Community notes
+  //                 <div
+  //                   key={note.noteId}
+  //                   className="border-b border-gray-200 pb-2"
+  //                 >
+  //                   <div className="flex flex-col space-y-2 px-3 py-2 mb-0">
+  //                     <div className="flex justify-between items-center ">
+  //                       {/* User Avatar and Info */}
+  //                       <div className="flex space-x-3 items-center">
+  //                         <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+  //                           <User className="w-5 h-5 text-white" />
+  //                         </div>
+  //                         <div className="flex-1 space-y-0.5">
+  //                           <h4 className="font-medium text-[#111827] text-sm">
+  //                             {note?.postedBy?.userName ||
+  //                               note?.organisation?.orgName}
+  //                           </h4>
+  //                           <p className="text-sm text-[#4B5563]">
+  //                             {note?.organisation?.orgName || "Company"}
+  //                           </p>
+  //                         </div>
+  //                       </div>
+  //                       {/* Posted Date */}
+  //                       <div>
+  //                         <p className="text-xs text-[#818283] mt-1">
+  //                           {new Date(note?.posted_at).toLocaleDateString(
+  //                             "en-US",
+  //                             {
+  //                               month: "short",
+  //                               day: "numeric",
+  //                               year: "numeric",
+  //                             }
+  //                           )}
+  //                         </p>
+  //                       </div>
+  //                     </div>
+
+  //                     <div className="bg-white p-3 rounded-lg">
+  //                       <p className="text-sm text-[#818283] leading-normal">
+  //                         {note?.content}
+  //                       </p>
+  //                     </div>
+  //                   </div>
+  //                 </div>
+  //               ))}
+  //         </div>
+  //       </div>
+  //       {/* Comment Input Section */}
+  //       <div className="mt-4 p-3 bg-white rounded-tr-lg rounded-tl-lg">
+  //         <div className="flex space-x-3 border border-gray-200 rounded-lg p-2">
+  //           <input
+  //             type="text"
+  //             value={newComment}
+  //             onChange={(e) => setNewComment(e.target.value)}
+  //             placeholder="Type your team comment!"
+  //             className="flex-1 px-4 py-2 rounded-lg text-sm"
+  //             onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
+  //           />
+  //           <button
+  //             onClick={handleAddComment}
+  //             disabled={!newComment.trim()}
+  //             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+  //           >
+  //             <Send className="w-4 h-4" />
+  //           </button>
+  //         </div>
+  //       </div>
+  //     </>
+  //   );
+  // };
+
+  const NotesTab: React.FC<NotesTabProps> = ({ candidateId }) => {
+    const [notes, setNotes] = useState<Note[]>([]);
+    const [notesView, setNotesView] = useState<"my" | "community">("my");
+    const [newComment, setNewComment] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Regex to allow only alphanumeric and spaces
+    const validNoteRegex = /^[A-Za-z0-9 ]+$/;
+    const isValidNote =
+      newComment.trim() !== "" && validNoteRegex.test(newComment.trim());
+
+    // Dummy notes for fallback
+    const dummyTeamNotes: Note[] = [
+      {
+        noteId: "dummy1",
+        postedBy: {
+          userId: "123",
+          userName: "Sid Verma",
+          email: "sid@problock.com",
+        },
+        organisation: { orgId: "123", orgName: "Problock" },
+        content: "This is a sample team note.",
+        posted_at: new Date().toISOString(),
+        is_team_note: true,
+        is_community_note: false,
+      },
+    ];
+
+    const dummyCommunityNotes: Note[] = [
+      {
+        noteId: "dummy2",
+        postedBy: {
+          userId: "123",
+          userName: "Kushagra Jain",
+          email: "kush@valuebound.com",
+        },
+        organisation: { orgId: "123", orgName: "Valuebound" },
+        content: "This is a sample community note.",
+        posted_at: new Date().toISOString(),
+        is_team_note: false,
+        is_community_note: true,
+      },
+    ];
+
+    // Fetch notes when component mounts or candidateId changes
+    useEffect(() => {
+      const fetchNotes = async () => {
+        try {
+          setIsLoading(true);
+          const fetchedNotes = await candidateService.getCandidateNotes(
+            candidateId
+          );
+          setNotes(fetchedNotes);
+        } catch (error) {
+          console.error("Failed to fetch notes:", error);
+          // Optionally set dummy notes on error
+          // setNotes(notesView === "my" ? dummyTeamNotes : dummyCommunityNotes);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchNotes();
+    }, [candidateId]);
+
+    // Handle adding a new note
+    const handleAddComment = async () => {
+      if (!newComment.trim()) return;
+      if (!isValidNote) return;
+      try {
+        setIsLoading(true);
+        const payload =
+          notesView === "my"
+            ? { teamNotes: newComment }
+            : { communityNotes: newComment, is_community_note: true };
+
+        await candidateService.postCandidateNote(candidateId, payload);
+        setNewComment("");
+
+        // Refetch notes to update the UI
+        const updatedNotes = await candidateService.getCandidateNotes(
+          candidateId
+        );
+        setNotes(updatedNotes);
+      } catch (error) {
+        console.error("Failed to add note:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Filter notes based on current view
+    const displayedNotes =
+      notesView === "my"
+        ? notes.filter((note) => note.is_team_note && !note.is_community_note)
+        : notes.filter((note) => !note.is_team_note && note.is_community_note);
+
+    // Use dummy notes as fallback when no real notes exist
+    const notesToDisplay =
+      displayedNotes.length > 0
+        ? displayedNotes
+        : notesView === "my"
+        ? dummyTeamNotes
+        : dummyCommunityNotes;
+
+    return (
+      <>
+        <div className="flex flex-col h-full bg-[#F0F0F0] p-3 rounded-lg">
+          {/* Header with Heading and Toggle */}
+          <div className="flex justify-between items-center mb-3 border-b-2 border-gray-200 px-3 pt-1 pb-3">
+            <div className="flex items-center space-x-2">
+              <MessageSquareText className="w-4 h-4 text-[#4B5563]" />
+              <h3 className="text-[18px] font-medium text-[#4B5563]">
+                Notes about the Person
+              </h3>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-[#4B5563]">Community</span>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={notesView === "community"}
+                  onChange={(e) =>
+                    setNotesView(e.target.checked ? "community" : "my")
+                  }
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-600"></div>
+                <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+              </label>
+            </div>
+          </div>
+
+          {/* Notes List */}
+          <div className="flex-1 overflow-y-auto space-y-2 border-gray-200">
+            {isLoading ? (
+              <p className="text-gray-500 text-center">Loading notes...</p>
+            ) : (
+              notesToDisplay.map((note) => (
+                <div
+                  key={note.noteId}
+                  className="border-b border-gray-200 pb-2"
+                >
+                  <div className="flex flex-col space-y-2 px-3 py-2 mb-0">
+                    <div className="flex justify-between items-center">
+                      <div className="flex space-x-3 items-center">
+                        <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <User className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1 space-y-0.5">
+                          <h4 className="font-medium text-[#111827] text-sm">
+                            {note.postedBy?.userName ||
+                              note.organisation?.orgName ||
+                              "Unknown"}
+                          </h4>
+                          <p className="text-sm text-[#4B5563]">
+                            {note.organisation?.orgName || "Company"}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-[#818283] mt-1">
+                        {new Date(note.posted_at).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg">
+                      <p className="text-sm text-[#818283] leading-normal">
+                        {note.content}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Comment Input Section */}
+        <div className="mt-4 p-3 bg-white rounded-tr-lg rounded-tl-lg">
+          <div className="flex space-x-3 border border-gray-200 rounded-lg p-2">
+            <input
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder={`Type your ${
+                notesView === "my" ? "team" : "community"
+              } comment!`}
+              className={`flex-1 px-4 py-2 rounded-lg text-sm ${
+                newComment && !isValidNote ? "border border-red-500" : ""
+              }`}
+              onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
+            />
+            <button
+              onClick={handleAddComment}
+              disabled={!newComment.trim() || isLoading}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  };
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-3 space-y-6 min-h-[81vh] relative overflow-hidden">
-      {/* Header */}
+    <div
+      className={`bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-3 ${
+        showConfirm ? "space-y-0" : "space-y-6"
+      } min-h-[81vh] relative overflow-hidden`}
+    >
       <div className="flex space-x-3 items-center mt-1">
-        <div className={`w-12 h-12 ${getAvatarColor(detailedCandidate?.candidate?.full_name)} rounded-full flex items-center justify-center text-white`}>
+        <div
+          className={`w-12 h-12 ${getAvatarColor(
+            detailedCandidate?.candidate?.full_name
+          )} rounded-full flex items-center justify-center text-white`}
+        >
           <User className="w-6 h-6" />
         </div>
         <div>
-          <h2 className="text-base lg:text-lg font-bold text-gray-900">{detailedCandidate?.candidate?.full_name}</h2>
+          <h2 className="text-base lg:text-[16px] font-bold text-gray-900">
+            {detailedCandidate?.candidate?.full_name}
+          </h2>
           <div className="flex">
-            <p className="text-sm text-gray-500 ml-1 max-w-[28ch] truncate">{detailedCandidate?.candidate?.headline}</p>
+            <p className="text-sm text-gray-500 max-w-[32ch] truncate">
+              {detailedCandidate?.candidate?.headline}
+            </p>
           </div>
           <div className="flex">
-            <p className="text-sm text-gray-500 ml-1">{detailedCandidate?.candidate?.location}</p>
+            <p className="text-sm text-gray-500">
+              {detailedCandidate?.candidate?.location}
+            </p>
           </div>
         </div>
         <div className="text-xs text-gray-400 absolute right-6 top-4">
-        <button onClick={handleShareProfile}
+          <button
+            onClick={handleShareProfile}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            title="Share Profile">
-          <Share2 className="w-4 h-4 "/> 
-        </button>
+            title="Share Profile"
+          >
+            <Share2 className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
-      {/* Contact Info */}
-      <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+      <div className="border-t border-gray-300 border-b p-3 space-y-2">
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
-
-            <span className="text-sm text-gray-700 truncate">{displayEmail}</span>
+            <span className="text-sm text-gray-700">{displayEmail}</span>
           </div>
-         <button
+          <button
             className={`flex space-x-2 ml-auto p-1 ${
-              hasContactInfo ? 'text-gray-400 hover:text-gray-600' : 'text-gray-300 cursor-not-allowed'
+              hasContactInfo
+                ? "text-gray-400 hover:text-gray-600"
+                : "text-gray-300 cursor-not-allowed"
             }`}
             onClick={() => hasContactInfo && handleCopy(displayEmail)}
             disabled={!hasContactInfo}
@@ -263,9 +861,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
             <span className="text-sm text-gray-700">{displayPhone}</span>
           </div>
           <div>
-          <button
+            <button
               className={`p-1 ${
-                hasContactInfo ? 'text-gray-400 hover:text-gray-600' : 'text-gray-300 cursor-not-allowed'
+                hasContactInfo
+                  ? "text-gray-400 hover:text-gray-600"
+                  : "text-gray-300 cursor-not-allowed"
               }`}
               onClick={() => hasContactInfo && handleWhatsApp(displayPhone)}
               disabled={!hasContactInfo}
@@ -274,210 +874,88 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, candidates
             </button>
             <button
               className={`p-1 ${
-                hasContactInfo ? 'text-gray-400 hover:text-gray-600' : 'text-gray-300 cursor-not-allowed'
+                hasContactInfo
+                  ? "text-gray-400 hover:text-gray-600"
+                  : "text-gray-300 cursor-not-allowed"
               }`}
               onClick={() => hasContactInfo && handleCopy(displayPhone)}
               disabled={!hasContactInfo}
             >
               <Copy className="w-4 h-4" />
             </button>
-            </div>
+          </div>
         </div>
       </div>
 
-      {/* Action Buttons */}
       <div className="space-y-2">
         <div className="flex space-x-2">
-          <button 
+          <button
             onClick={handleSendInviteClick}
-            className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-            style={{ width: '75%' }}
+            className="flex-1 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            style={{ width: "100%" }}
           >
             Send Invite & Reveal Info
           </button>
-          <button 
-            onClick={() => setShowComments(true)}
-            className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
-            style={{ width: '25%' }}
+        </div>
+      </div>
+
+      <div className="flex space-x-4 border-b border-gray-200">
+        {tabs.map((tab) => (
+          <button
+            key={tab.name}
+            onClick={() => setActiveTab(tab.name)}
+            className={`py-2 px-4 text-sm font-medium ${
+              activeTab === tab.name
+                ? "text-blue-600 border-b-2 border-blue-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
           >
-            <MessageCircle className="w-4 h-4" />
+            {tab.name}
+            {tab.name === "Notes" && (
+              <span className="ml-1">
+                ({detailedCandidate?.candidate?.notes?.length || 0})
+              </span>
+            )}
           </button>
-        </div>
+        ))}
       </div>
 
-      {/* Experience */}
-      <div>
-        <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-          <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
-          Experience
-        </h3>
-        <div className="ml-2">
-          {detailedCandidate?.candidate?.experience?.length > 0 ? (
-          detailedCandidate?.candidate?.experience.map((exp, index) => (
-            <div key={index} className="border-l-2 border-gray-200 pl-4 relative pb-2">
-              <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-              <h4 className="font-medium text-gray-900 text-sm">{exp?.job_title}</h4>
-              <p className="text-sm text-gray-600">{`${exp?.company} | ${exp?.location}`}</p>
-              <p className="text-sm text-gray-500">{exp?.start_date} - {exp?.end_date || "Present"}</p>
-              <p className="text-sm text-gray-700 mt-1">{exp?.description}</p>
-            </div>
-          ))
-            ):(<p className="text-sm text-gray-500">No experience details available</p>)}
-        </div>
+      <div className="mt-4">
+        {activeTab === "Profile" && <ProfileTab />}
+        {activeTab === "Education" && <EducationTab />}
+        {activeTab === "Skills" && <SkillsTab />}
+        {activeTab === "Notes" && <NotesTab candidateId={candidate.id} />}
       </div>
 
-      {/* Education */}
-      <div>
-        <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-          <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
-          Education
-        </h3>
-        <div className="ml-2">
-          {detailedCandidate?.candidate?.education?.length > 0 ? (
-          detailedCandidate?.candidate?.education.map((edu, index) => (
-            <div key={index} className="border-l-2 border-gray-200 pl-4 relative pb-2">
-              <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-              <h4 className="font-medium text-gray-900 text-sm">{edu?.degree}</h4>
-              <p className="text-sm text-gray-600">{edu?.specialization}</p>
-              <p className="text-sm text-gray-500">{edu?.start_date} - {edu?.end_date}</p>
-              {edu?.institution && (
-                <p className="text-sm text-gray-500">{edu?.institution}</p>
-              )}
-            </div>
-          ))):(<p className="text-sm text-gray-500">No education details available</p>)}
-        </div>
-      </div>
-
-      {/* Certifications */}
-      <div>
-        <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-          <Award className="w-4 h-4 mr-2 text-gray-800" />
-          Certifications
-        </h3>
-        <div className="ml-2">
-          {detailedCandidate?.candidate?.certifications?.length > 0 ? (
-          detailedCandidate?.candidate?.certifications.map((cert, index) => (
-            <div key={index} className="border-l-2 border-gray-200 pl-4 relative pb-2">
-              <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-              <h4 className="font-medium text-gray-900 text-sm">{cert?.name}</h4>
-              <p className="text-sm text-gray-600">{cert?.issuer}</p>
-              <p className="text-sm text-gray-500">{cert?.issued_date}</p>
-            </div>
-          ))
-          ) : (
-          <p className="text-sm text-gray-500">No certifications available</p>
-          )}
-        </div>
-      </div>
-
-      {/* Skills Section */}
-      <div>
-        <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
-          <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
-          Skills
-        </h3>
-        <div className="flex flex-wrap gap-2">{detailedCandidate?.candidate?.skills_data?.skills_mentioned?.length > 0 ? (
-          detailedCandidate?.candidate?.skills_data.skills_mentioned.map((skill, index) => (
-            <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-              {skill?.skill}
-              {/* {skill?.skill} ({skill?.number_of_endorsements} endorsements) */}
-            </span>
-          ))
-          ) : (
-            <p className="text-sm text-gray-500">No skills listed</p>
-          )}
-        </div>
-      </div>
-
-      {/* Recommendations */}
-      <div>
-        <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-          <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
-          Recommendations
-        </h3>
-        <div className="space-y-2">{detailedCandidate?.candidate?.recommendations?.length > 0 ? (
-          detailedCandidate?.candidate?.recommendations.map((rec, index) => (
-            <div key={index} className="bg-gray-50 rounded-lg p-3">
-              <div className="flex items-start space-x-2">
-                <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <User className="w-3 h-3 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-medium text-gray-900 text-sm">{rec?.recommender_name}</h4>
-                  <p className="text-xs text-gray-700">{rec?.recommender_title}</p>
-                  <p className="text-sm text-gray-800 mt-1">"{rec?.feedback}"</p>
-                  <p className="text-xs text-gray-600 mt-1">{rec?.date_received}</p>
-                </div>
-              </div>
-            </div>
-          ))
-          ) : (
-            <p className="text-sm text-gray-500">No recommendations available</p>
-          )}
-        </div>
-      </div>
-
-      {/* Notes Section */}
-      <div
-        className={`absolute top-14 left-0 w-full h-[480px] bg-gray-50 transform transition-all duration-300 ease-in-out z-10 ${
-          showComments ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'
-        }`}
-      >
-        <div className="bg-white p-4 h-full flex flex-col shadow-xl rounded-lg">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Notes</h3>
-            <button
-              onClick={() => setShowComments(false)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <X className="w-5 h-5 text-gray-500" /> 
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto space-y-4">{detailedCandidate?.candidate?.notes?.length > 0 ? (
-            detailedCandidate?.candidate?.notes.map((note) => (
-              <div key={note.noteId} className="flex space-x-3">
-                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-                  {note?.postedBy?.userName[0] || note?.organisation?.orgName[0]}
-                </div>
-                <div className="flex-1">
-                  <div className="bg-gray-100 rounded-2xl px-4 py-2 mr-2">
-                    <p className="font-medium text-sm text-gray-900">{note?.postedBy?.userName || note?.organisation?.orgName}</p>
-                    <p className="text-sm text-gray-800 mt-1">{note?.content}</p>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1 ml-4">{new Date(note?.posted_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-                </div>
-              </div>
-            ))
-              ) : (
-                <p className="text-sm text-gray-500">No notes available</p>
-              )}
-          </div>
-          <div className="mt-4">
-            <div className="flex space-x-3">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-                S
-              </div>
-              <div className="flex-1 flex space-x-2">
-                <input
-                  type="text"
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Add a note..."
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
-                />
-                <button
-                  onClick={handleAddComment}
-                  disabled={!newComment.trim()}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
-                >
-                  Post
-                </button>
-              </div>
+      {/* Confirmation Modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 bg-gray-400 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg w-80 p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Confirm Usage
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              This will cost you{" "}
+              <span className="font-semibold">3 credits</span>. Do you want to
+              proceed?
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={cancelSpend}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmSpend}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Confirm
+              </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -1,14 +1,77 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NxtHyre - Professional Recruitment Platform</title>
-    <meta name="description" content="Streamline your recruitment process with NxtHyre's advanced candidate filtering and management system." />
+    <meta
+      name="description"
+      content="Streamline your recruitment process with NxtHyre's advanced candidate filtering and management system."
+    />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      (function (d, t) {
+        var BASE_URL = "https://help.nxthyre.com";
+        var g = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+        g.src = BASE_URL + "/packs/js/sdk.js";
+        g.async = true;
+        s.parentNode.insertBefore(g, s);
+        g.onload = function () {
+          window.chatwootSDK.run({
+            websiteToken: "was9T3JGVkjYgNcPuDhXsbHm",
+            baseUrl: BASE_URL,
+          });
+        };
+      })(document, "script");
+
+      window.addEventListener("chatwoot:ready", function () {
+        // Function to get user email from window.userStatus with polling
+        // function getUserEmailFromStatus(callback) {
+        //   // Check immediately if the data is available
+        //   if (window.userStatus && window.userStatus.email) {
+        //     callback(window.userStatus.email);
+        //   } else {
+        //     // If not, start polling
+        //     const maxAttempts = 100; // 10 seconds with 100ms interval
+        //     let attempts = 0;
+        //     const checkInterval = setInterval(() => {
+        //       attempts++;
+        //       if (window.userStatus && window.userStatus.email) {
+        //         clearInterval(checkInterval);
+        //         callback(window.userStatus.email);
+        //       } else if (attempts >= maxAttempts) {
+        //         clearInterval(checkInterval);
+        //         callback(null); // Timeout reached, no email found
+        //       }
+        //     }, 100);
+        //   }
+        // }
+
+        // Set user in Chatwoot
+        function setUserInChatwoot() {
+          if (window.userStatus && window.userStatus.email) {
+            const email = window.userStatus.email;
+            window.$chatwoot.setUser(email, {
+              name: window.userStatus.full_name || email, // Use full_name if available
+              email: email,
+            });
+            console.log("User set in Chatwoot with email: " + email);
+          } else {
+            console.log("No user email found from status API.");
+          }
+        }
+
+        // Listen for userStatusLoaded event
+        window.addEventListener("userStatusLoaded", setUserInChatwoot);
+
+        // Initial check in case userStatus is already set
+        setUserInChatwoot();
+      });
+    </script>
   </body>
 </html>
