@@ -925,7 +925,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
       {/* Confirmation Modal */}
       {showConfirm && (
-        <div className="fixed inset-0 bg-gray-400 bg-opacity-50 flex items-1/3 justify-center z-50">
+        <div className="fixed inset-0 bg-gray-400 bg-opacity-50 flex items-start justify-center z-50">
           <div className="bg-white rounded-xl shadow-lg w-80 p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               Confirm Usage
