@@ -210,6 +210,23 @@ export interface PipelineStage {
   candidate_count: number;
 }
 
+export type Note = {
+  noteId: string;
+  content: string;
+  is_team_note: boolean;
+  is_community_note: boolean;
+  postedBy: {
+    userId: string;
+    userName: string;
+    email: string;
+  } | null;
+  posted_at: string;
+  organisation: {
+    orgId: string;
+    orgName: string;
+  };
+};
+
 class CandidateService {
   async getCandidates(
     filters: any
@@ -464,6 +481,38 @@ class CandidateService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error || "Failed to fetch recent searches"
+      );
+    }
+  }
+
+  async getCandidateNotes(candidateId: string): Promise<Note[]> {
+    try {
+      const response = await apiClient.get(`/candidates/${candidateId}/notes/`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch candidate notes"
+      );
+    }
+  }
+
+  async postCandidateNote(
+    candidateId: string,
+    payload: {
+      teamNotes?: string;
+      communityNotes?: string;
+      is_community_note?: boolean;
+    }
+  ): Promise<Note> {
+    try {
+      const response = await apiClient.post(
+        `/candidates/${candidateId}/notes/`,
+        payload
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to post candidate note"
       );
     }
   }
