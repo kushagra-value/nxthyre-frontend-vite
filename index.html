@@ -30,37 +30,41 @@
       })(document, "script");
 
       window.addEventListener("chatwoot:ready", function () {
-        // Function to get user data from sessionStorage
-        function getUserFromSessionStorage() {
-          const key =
-            "firebase:authUser:AIzaSyBoCauxrpkHo3kzCHq1A_Zi9YF63OerM18:[DEFAULT]";
-          const userDataString = sessionStorage.getItem(key);
-          if (userDataString) {
-            try {
-              const userData = JSON.parse(userDataString);
-              return userData;
-            } catch (e) {
-              console.error("Error parsing user data from sessionStorage:", e);
-              return null;
-            }
+        // Function to get user email from window.userStatus with polling
+        function getUserEmailFromStatus(callback) {
+          // Check immediately if the data is available
+          if (window.userStatus && window.userStatus.email) {
+            callback(window.userStatus.email);
+          } else {
+            // If not, start polling
+            const maxAttempts = 100; // 10 seconds with 100ms interval
+            let attempts = 0;
+            const checkInterval = setInterval(() => {
+              attempts++;
+              if (window.userStatus && window.userStatus.email) {
+                clearInterval(checkInterval);
+                callback(window.userStatus.email);
+              } else if (attempts >= maxAttempts) {
+                clearInterval(checkInterval);
+                callback(null); // Timeout reached, no email found
+              }
+            }, 100);
           }
-          return null;
         }
 
         // Set user in Chatwoot
         function setUserInChatwoot() {
-          const userData = getUserFromSessionStorage();
-          if (userData && userData.email) {
-            window.$chatwoot.setUser(userData.email, {
-              name: userData.email, // You can replace with userData.displayName if available
-              email: userData.email,
-            });
-            console.log("User set in Chatwoot with email: " + userData.email);
-          } else {
-            console.log(
-              "No user data found or email is missing in sessionStorage."
-            );
-          }
+          getUserEmailFromStatus((email) => {
+            if (email) {
+              window.$chatwoot.setUser(email, {
+                name: email, // Using email as name; adjust if full_name is needed
+                email: email,
+              });
+              console.log("User set in Chatwoot with email: " + email);
+            } else {
+              console.log("No user email found from status API after timeout.");
+            }
+          });
         }
 
         setUserInChatwoot();
