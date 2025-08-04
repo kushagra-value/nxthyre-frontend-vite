@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef , useEffect } from 'react';
 import { X, Upload, FileText, RotateCcw, ArrowLeft, ArrowRight, Info } from 'lucide-react';
 import { showToast } from '../utils/toast';
 import { jobPostService, CreateJobData } from '../services/jobPostService';
@@ -38,7 +38,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null); // State for uploaded file
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const seniorityOptions = ['JUNIOR', 'SENIOR', 'LEAD', 'HEAD'];
   const departmentOptions = ['Human Resources', 'Marketing', 'Finance', 'Sales', 'Ops', 'Engineering', 'Admin', 'Others'];
@@ -340,6 +340,35 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        allowInbound: true,
+        keepPrivate: false,
+        shareExternally: false,
+        title: '',
+        skills: [],
+        location: '',
+        hybrid: false,
+        seniority: '',
+        department: '',
+        aiInterviews: false,
+        minExp: '',
+        maxExp: '',
+        minSalary: '',
+        maxSalary: '',
+        confidential: false,
+        jobDescription: '',
+        uploadType: 'paste',
+        shareThirdParty: false
+      });
+      setSkillInput('');
+      setRefinementInput('');
+      setFile(null);
+      setCurrentStep(1);
+    }
+  }, [isOpen]);
 
   const handleRegenerate = () => {
     showToast.info('Feature coming Soon!');
