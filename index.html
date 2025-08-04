@@ -30,63 +30,36 @@
       })(document, "script");
 
       window.addEventListener("chatwoot:ready", function () {
-        // Function to get user data from IndexedDB
-        function getUserFromIndexedDB() {
-          return new Promise((resolve, reject) => {
-            const request = indexedDB.open("firebaseLocalStorageDb");
-
-            request.onerror = function (event) {
-              console.error("Database error: " + event.target.errorCode);
-              reject("Database error");
-            };
-
-            request.onsuccess = function (event) {
-              const db = event.target.result;
-              const transaction = db.transaction(
-                ["firebaseLocalStorage"],
-                "readonly"
-              );
-              const objectStore = transaction.objectStore(
-                "firebaseLocalStorage"
-              );
-              const getRequest = objectStore.getAll();
-
-              getRequest.onsuccess = function (event) {
-                if (event.target.result && event.target.result.length > 0) {
-                  // Assuming the first entry is the logged-in user
-                  const userData = event.target.result[0].value;
-                  resolve(userData);
-                } else {
-                  resolve(null); // No user data found
-                }
-              };
-
-              getRequest.onerror = function (event) {
-                console.error("Error getting data from object store");
-                reject("Error getting data");
-              };
-            };
-          });
+        // Function to get user data from sessionStorage
+        function getUserFromSessionStorage() {
+          const key =
+            "firebase:authUser:AIzaSyBoCauxrpkHo3kzCHq1A_Zi9YF63OerM18:[DEFAULT]";
+          const userDataString = sessionStorage.getItem(key);
+          if (userDataString) {
+            try {
+              const userData = JSON.parse(userDataString);
+              return userData;
+            } catch (e) {
+              console.error("Error parsing user data from sessionStorage:", e);
+              return null;
+            }
+          }
+          return null;
         }
 
         // Set user in Chatwoot
-        async function setUserInChatwoot() {
-          try {
-            const userData = await getUserFromIndexedDB();
-
-            if (userData && userData.email) {
-              // Use email as the unique identifier and name
-              window.$chatwoot.setUser(userData.email, {
-                name: userData.email,
-                email: userData.email,
-              });
-              console.log("User set in Chatwoot with email: " + userData.email);
-            } else {
-              console.log("No user data found or email is missing.");
-            }
-            // If no user is found, Chatwoot will use its default method
-          } catch (error) {
-            console.error("Could not set user in Chatwoot:", error);
+        function setUserInChatwoot() {
+          const userData = getUserFromSessionStorage();
+          if (userData && userData.email) {
+            window.$chatwoot.setUser(userData.email, {
+              name: userData.email, // You can replace with userData.displayName if available
+              email: userData.email,
+            });
+            console.log("User set in Chatwoot with email: " + userData.email);
+          } else {
+            console.log(
+              "No user data found or email is missing in sessionStorage."
+            );
           }
         }
 
