@@ -664,8 +664,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     // Filter notes based on current view
     const displayedNotes =
       notesView === "my"
-        ? notes.filter((note) => note.is_team_note)
-        : notes.filter((note) => note.is_community_note);
+        ? notes.filter((note) => note.is_team_note && !note.is_community_note)
+        : notes.filter((note) => !note.is_team_note && note.is_community_note);
 
     // Use dummy notes as fallback when no real notes exist
     const notesToDisplay =
