@@ -345,7 +345,7 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
                       Creating...
                     </div>
                   ) : (
-                    "Create Workspace"
+                    "Create Workspace for new"
                   )}
                 </button>
               </div>
