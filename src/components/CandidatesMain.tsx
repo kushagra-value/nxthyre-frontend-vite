@@ -212,7 +212,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     } catch (error: any) {
      if (
         error.response?.status === 400 &&
-        error.response?.data?.non_field_errors?.includes(
+        error.response?.non_field_errors?.includes(
           "The fields candidate, job must make a unique set."
         )
       ) {
