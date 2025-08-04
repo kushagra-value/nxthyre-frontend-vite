@@ -583,6 +583,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const [newComment, setNewComment] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
+    // Regex to allow only alphanumeric and spaces
+    const validNoteRegex = /^[A-Za-z0-9 ]+$/;
+    const isValidNote =
+      newComment.trim() !== "" && validNoteRegex.test(newComment.trim());
+
     // Dummy notes for fallback
     const dummyTeamNotes: Note[] = [
       {
@@ -639,6 +644,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     // Handle adding a new note
     const handleAddComment = async () => {
       if (!newComment.trim()) return;
+      if (!isValidNote) return;
       try {
         setIsLoading(true);
         const payload =
@@ -760,7 +766,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               placeholder={`Type your ${
                 notesView === "my" ? "team" : "community"
               } comment!`}
-              className="flex-1 px-4 py-2 rounded-lg text-sm"
+              className={`flex-1 px-4 py-2 rounded-lg text-sm ${
+                newComment && !isValidNote ? "border border-red-500" : ""
+              }`}
               onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
             />
             <button
