@@ -146,10 +146,10 @@ const Header: React.FC<HeaderProps> = ({
                 <div className="relative">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="flex items-center space-x-4 p-2 rounded-lg"
                   >
                     <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm font-medium">
+                      <span className="flex items-center justify-center text-white text-sm font-medium uppercase">
                         {user.fullName ? user.fullName[0] : "U"}
                       </span>
                     </div>
