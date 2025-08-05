@@ -896,7 +896,7 @@ function MainApp() {
 
                     <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3">
                       {categories.length > 0 && (
-                        <div className="sticky top-[70px] z-20 will-change-transform mb-4 bg-gray-50 border-b border-gray-200">
+                        <div className="sticky top-[100px] z-20 will-change-transform mb-4 bg-gray-50 border-b border-gray-200">
                           <div className="max-w-full flex justify-between px-3 lg:px-6">
                             <div className="hidden md:flex items-center space-x-12">
                               {categories.slice(0, 4).map((category) => (
@@ -1009,7 +1009,7 @@ function MainApp() {
                                           !showCategoryDropdown
                                         )
                                       }
-                                      className="px-3 py-1.5 text-xs lg:text-base font-[400] text-gray-600 hover:bg-gray-100 rounded-lg border border-gray-300 flex items-center"
+                                      className="px-3 py-1.5 text-xs lg:text-base font-[400] text-gray-600 bg-white hover:bg-gray-100 rounded-lg border border-gray-300 flex items-center"
                                     >
                                       {categories.length} Pipelines
                                       <ChevronDown className="ml-18 w-4 h-4" />
