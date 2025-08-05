@@ -735,7 +735,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           {/* Header with Heading and Toggle */}
           <div className="flex justify-between items-center mb-3 border-b-2 border-gray-200 px-3 pt-1 pb-3">
             <div className="flex items-center space-x-2">
-              <MessageSquareText className="w-5 h-5 text-[#4B5563] mt-[0.5]" />
+              <MessageSquareText className="w-5 h-5 text-[#4B5563] mt-1" />
               <h3 className="text-base font-medium text-[#4B5563]">
                 Notes about the Person
               </h3>
