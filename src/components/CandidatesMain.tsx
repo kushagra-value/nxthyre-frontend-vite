@@ -723,7 +723,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 )}
  
               </div>
-              <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2">
+              <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
                 <div className="flex items-center space-x-1">
                     {candidate.social_links?.github && (
                       <button
@@ -776,7 +776,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                       </button>
                     )}
                   </div>
-                <div className="rounded-lg flex space-x-2 rounde-lg border border-blue-400 hover:border-blue-600 transition-colors">
+                <div className="rounded-md flex space-x-2 border border-blue-400 hover:border-blue-600 transition-colors">
                   <button
                     className="pl-3 pr-2 py-1.5 text-blue-600 text-sm font-medium flex items-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                     onClick={(e) => {
@@ -785,12 +785,25 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     }}
                     aria-label={`Save ${candidate.full_name} to pipeline`}
                   >
-                    <Bookmark className="w-4 h-4 mr-1" />
+                    <svg 
+                      width="16" 
+                      height="16" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                      className="text-blue-500"
+                    >
+                      <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+                    </svg>
                     Save to Pipeline
                   </button>
+                  <div className="w-px bg-blue-500 my-1"></div>
                   <div className="relative">
                     <button
-                      className="pl-1 pl-blue-400 pr-2 py-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                      className=" pl-1.5 pr-2 py-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                       onClick={(e) => handleDropdownToggle(candidate.id, e)}
                       aria-label={`Add ${candidate.full_name} to pipeline stages`}
                     >
