@@ -735,7 +735,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           {/* Header with Heading and Toggle */}
           <div className="flex justify-between items-center mb-3 border-b-2 border-gray-200 px-3 pt-1 pb-3">
             <div className="flex items-center space-x-2">
-              <MessageSquareText className="w-6 h-6 text-[#4B5563]" />
+              <MessageSquareText className="w-5 h-5 text-[#4B5563] mt-[0.5]" />
               <h3 className="text-base font-medium text-[#4B5563]">
                 Notes about the Person
               </h3>
@@ -751,8 +751,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                   }
                   className="sr-only peer"
                 />
-                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-600"></div>
-                <div className="absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-600"></div>
+                <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
               </label>
             </div>
           </div>
