@@ -572,12 +572,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       setShowPopup(null);
     };
 
-    const handleCopy = (text) => {
-      navigator.clipboard.writeText(text).then(() => {
-        alert("Copied to clipboard!");
-      });
-    };
-
     return (
       <div className="border-b border-gray-400 mb-4 pb-4">
         <div className="">
@@ -618,13 +612,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 <Mail className="w-3 h-3 text-white" />
                 {showPopup === "email" && (
                   <div className="absolute bottom-8 left-0 bg-blue-50 p-2 rounded-md shadow-md z-10">
-                    <p className="text-sm text-gray-800">{reference.email}</p>
-                    <button
-                      onClick={() => handleCopy(reference.email)}
-                      className="text-xs text-blue-500 mt-1"
-                    >
-                      Copy
-                    </button>
+                    <p className="text-sm text-blue-700">{reference.email}</p>
                   </div>
                 )}
               </div>
@@ -636,13 +624,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 <PhoneIcon className="w-3 h-3 text-white" />
                 {showPopup === "phone" && (
                   <div className="absolute bottom-8 left-0 bg-blue-50 p-2 rounded-md shadow-md z-10">
-                    <p className="text-sm text-gray-800">{reference.phone}</p>
-                    <button
-                      onClick={() => handleCopy(reference.phone)}
-                      className="text-xs text-blue-500 mt-1"
-                    >
-                      Copy
-                    </button>
+                    <p className="text-sm text-blue-700">{reference.phone}</p>
                   </div>
                 )}
               </div>
@@ -654,15 +636,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 <Linkedin className="w-3 h-3 text-white" />
                 {showPopup === "linkedin" && (
                   <div className="absolute bottom-8 left-0 bg-blue-50 p-2 rounded-md shadow-md z-10">
-                    <p className="text-sm text-gray-800">
+                    <p className="text-sm text-blue-700">
                       {reference.linkedin}
                     </p>
-                    <button
-                      onClick={() => handleCopy(reference.linkedin)}
-                      className="text-xs text-blue-500 mt-1"
-                    >
-                      Copy
-                    </button>
                   </div>
                 )}
               </div>
