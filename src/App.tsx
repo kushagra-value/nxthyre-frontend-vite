@@ -899,7 +899,7 @@ function MainApp() {
                         <div className="sticky top-[64px] z-20 will-change-transform mb-4 bg-gray-50 border-b border-gray-200">
                           <div className="max-w-full mx-auto px-3 lg:px-6">
                             <div className="hidden md:flex items-center space-x-6">
-                              {categories.slice(0, 4).map((category) => (
+                              {categories.slice(0, 6).map((category) => (
                                 <div
                                   key={category.id}
                                   className="relative"
