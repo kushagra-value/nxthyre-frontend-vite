@@ -1,5 +1,5 @@
 import React, { useState, useRef , useEffect } from 'react';
-import { X, Upload, FileText, RotateCcw, ArrowLeft, ArrowRight, Info } from 'lucide-react';
+import { X, Upload, FileText, RotateCcw, ArrowLeft, ArrowRight, Bold, Italic, Underline, List, CheckCircle, Info  } from 'lucide-react';
 import { showToast } from '../utils/toast';
 import { jobPostService, CreateJobData } from '../services/jobPostService';
 
@@ -12,6 +12,8 @@ interface CreateJobRoleModalProps {
 
 const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspaceId, onClose, onJobCreated }) => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const [formData, setFormData] = useState({
     allowInbound: true,
     keepPrivate: false,
@@ -34,15 +36,17 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
   });
 
   const [skillInput, setSkillInput] = useState('');
+  const [competencyInput, setCompetencyInput] = useState('');
   const [refinementInput, setRefinementInput] = useState('');
+  const [validationError, setValidationError] = useState('');
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null); // State for uploaded file
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const seniorityOptions = ['JUNIOR', 'SENIOR', 'LEAD', 'HEAD'];
+  const seniorityOptions = ['JUNIOR', 'SENIOR', 'LEAD', 'HEAD', 'INTERN'];
   const departmentOptions = ['Human Resources', 'Marketing', 'Finance', 'Sales', 'Ops', 'Engineering', 'Admin', 'Others'];
-
+  
   // Department mappings
   const departmentMap: { [key: number]: string } = {
     1: 'Human Resources',
@@ -101,6 +105,8 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
   // Safe integer range for JavaScript (Number.MAX_SAFE_INTEGER)
   const MAX_SAFE_INTEGER = 999999999999;
   const MIN_DESCRIPTION_LENGTH = 10;
+
+
   const handleSkillAdd = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && skillInput.trim()) {
       if (!isValidTextInput(skillInput)) {
@@ -209,6 +215,13 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
     return errors;
   };
 
+   const addCompetency = (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' && competencyInput.trim()) {
+        setCompetencies(prev => [...prev, competencyInput.trim()]);
+        setCompetencyInput('');
+      }
+    };
+
   const removeCompetency = (index: number) => {
     setCompetencies(prev => prev.filter((_, i) => i !== index));
   };
@@ -266,6 +279,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
       showToast.success(formData.shareExternally ? 'Job role created and published successfully!' : 'Job role created successfully!');
       onJobCreated?.(); // Trigger refresh of categories
       onClose();
+      setShowSuccessModal(true);
       setCurrentStep(1);
       setFile(null);
     } catch (error: any) {
@@ -341,35 +355,6 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
     }
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      setFormData({
-        allowInbound: true,
-        keepPrivate: false,
-        shareExternally: false,
-        title: '',
-        skills: [],
-        location: '',
-        hybrid: false,
-        seniority: '',
-        department: '',
-        aiInterviews: false,
-        minExp: '',
-        maxExp: '',
-        minSalary: '',
-        maxSalary: '',
-        confidential: false,
-        jobDescription: '',
-        uploadType: 'paste',
-        shareThirdParty: false
-      });
-      setSkillInput('');
-      setRefinementInput('');
-      setFile(null);
-      setCurrentStep(1);
-    }
-  }, [isOpen]);
-
   const handleRegenerate = () => {
     showToast.info('Feature coming Soon!');
   };
@@ -378,44 +363,351 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
     showToast.info('Feature Coming Soon!');
   };
 
-  if (!isOpen) return null;
+  const handleCancel = () => {
+    if (formData.title || formData.skills.length > 0) {
+      setShowCancelModal(true);
+    } else {
+      onClose();
+    }
+  };
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div className="px-6 py-5 border-b border-gray-200">
-          <div className="flex justify-between">
-            <h2></h2>
-            <div className="flex ml-8 mb-4 justify-center items-center space-x-3">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                currentStep >= 1 ? 'bg-blue-400 text-white' : 'bg-gray-200 text-gray-600'
-              }`}>
-                1
-              </div>
-              <span>Basic Details</span>
-              <div className={`w-20 h-[1px] mt-1 ${currentStep >= 2 ? 'bg-blue-400' : 'bg-gray-900'}`}></div>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                currentStep >= 2 ? 'bg-blue-400 text-white' : 'bg-gray-200 text-gray-600'
-              }`}>
-                2
-              </div>
-              <span>Update & Refine JD</span>
+  const confirmCancel = () => {
+    setShowCancelModal(false);
+    onClose();
+    resetForm();
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
+    onClose();
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setFormData({
+      allowInbound: true,
+      keepPrivate: false,
+      shareExternally: false,
+      title: '',
+      skills: [],
+      location: '',
+      hybrid: false,
+      seniority: '',
+      department: '',
+      aiInterviews: false,
+      minExp: '',
+      maxExp: '',
+      minSalary: '',
+      maxSalary: '',
+      confidential: false,
+      jobDescription: '',
+      uploadType: 'paste',
+      shareThirdParty: false
+    });
+    setSkillInput('');
+    setCompetencyInput('');
+    setFile(null);
+    setCurrentStep(1);
+    setValidationError('');
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      resetForm();
+    }
+  }, [isOpen]);
+
+  if (showSuccessModal) {
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-10 h-10 text-green-500" />
             </div>
-            <div>
-              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg" disabled={isLoading}>
-                <X className="w-5 h-5 text-gray-500" />
+            <h2 className="text-2xl font-bold text-green-500 mb-3">Successfully Created!</h2>
+            <p className="text-gray-600 mb-8">Your Job role is created</p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleSuccessClose}
+                className="flex-1 px-6 py-3 border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition-colors font-medium"
+              >
+                Back to Home
+              </button>
+              <button
+                onClick={handleSuccessClose}
+                className="flex-1 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+              >
+                Pipeline
               </button>
             </div>
           </div>
-          <div className="flex items-center">
-            <h2 className="text-xl font-bold text-gray-900">CREATE JOB ROLE</h2>
+        </div>
+      );
+    }
+
+
+
+  if (!isOpen) return null;
+
+  // Cancel Confirmation Modal
+  if (showCancelModal) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center">
+          <h2 className="text-xl font-bold text-gray-900 mb-3">Confirm Cancel</h2>
+          <p className="text-gray-600 mb-8">Are you sure you want to cancel? All progress will be lost.</p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowCancelModal(false)}
+              className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+            >
+              Continue Editing
+            </button>
+            <button
+              onClick={confirmCancel}
+              className="flex-1 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
+            >
+              Yes, Cancel
+            </button>
           </div>
         </div>
+      </div>
+    );
+  }
 
-        <div className="p-6">
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white relative rounded-2xl shadow-xl w-full max-w-6xl max-h-[98vh]  flex flex-col overflow-hidden">
+        <div className="p-10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <button onClick={handleCancel} className="p-1 hover:bg-gray-100 rounded-lg mr-4">
+                <ArrowLeft className="w-5 h-5 text-gray-600" />
+              </button>
+              <span className="text-md font-medium text-gray-900">Create Job Role</span>
+            </div>
+            
+            <button onClick={handleCancel} className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              Cancel
+            </button>
+          </div>
+
+
+          {/* Progress Indicator */}
+          <div className="w-1/2 bg-white absolute z-10 top-24 left-1/2 transform -translate-x-1/2 -translate-y-1/2  flex flex-col items-center justify-center space-x-4">
+            <div className="flex items-center space-x-64">
+              <div className='flex flex-col justify-center gap-2 items-center'>
+                <span className={`ml-2 text-sm ${currentStep >= 1 ? 'text-blue-500 font-medium' : 'text-gray-500'}`}>
+                  Basic Info
+                </span>
+                <div className={`w-3 h-3 rounded-full ${currentStep >= 1 ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+              </div>
+              <div className='flex flex-col justify-center gap-2 items-center'>
+                <span className={`ml-2 text-sm ${currentStep >= 2 ? 'text-blue-500 font-medium' : 'text-gray-500'}`}>
+                  Update and Refine JD
+                </span>
+                <div className={`w-3 h-3 rounded-full ${currentStep >= 2 ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+              </div>
+            </div>
+            <div className="relative top-[-6px] right-[25px]">              
+              <div className={`w-[351px] h-px ${currentStep >= 2 ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+            </div>
+            <div className="flex-1 overflow-y-auto mt-2 pr-10">
+                {currentStep === 1 ? (
+                  <div className="text-center mb-2">
+                    <h2 className="text-md font-[400] text-gray-900 mb-2">Add Basic Details</h2>
+                    <p className="text-gray-500 text-sm">Fill out the basic information of the job</p>
+                  </div>
+                  ):(
+                    <div className="text-center mb-8">
+                    <h2 className="text-md font-[400] text-gray-900 mb-2">Update JD</h2>
+                    <p className="text-gray-500 text-sm">Refine information of the job</p>
+                  </div>
+                  )}
+            </div>
+          </div>
+          
+        </div>
+        
+
+        <div className="flex-1 overflow-y-auto px-72">
           {currentStep === 1 ? (
-            <div className="space-y-6">
-              <div className="flex space-x-6">
+            <div className="space-y-6 mt-6">
+              
+
+              {/* Job Title */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Job Title <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="AI Research Engineer"
+                  value={formData.title}
+                  onChange={(e) => {
+                    if (isValidTextInput(e.target.value)) {
+                      setFormData(prev => ({ ...prev, title: e.target.value }));
+                    }
+                  }}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  disabled={isLoading}
+                />
+              </div>
+
+              {/* Skills Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Skills <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter skills and press Enter"
+                    value={skillInput}
+                    onChange={(e) => setSkillInput(e.target.value)}
+                    onKeyPress={handleSkillAdd}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={isLoading}
+                  />
+                  <div className="flex flex-wrap gap-2 mt-2 max-h-20 overflow-hidden">
+                    {formData.skills.map((skill, index) => (
+                      <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center">
+                        {skill}
+                        <button onClick={() => removeSkill(index)} className="ml-1 text-blue-600 hover:text-blue-800" disabled={isLoading}>
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+              </div>
+
+              {/* Location Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Location <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex">
+                    <input
+                      type="text"
+                      placeholder="Enter location"
+                      value={formData.location}
+                      onChange={(e) => {
+                        if (isValidTextInput(e.target.value)) {
+                          setFormData(prev => ({ ...prev, location: e.target.value }));
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled={isLoading}
+                    />
+                  </div>
+              </div>
+
+              {/* Seniority and Department Option */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Seniority <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.seniority}
+                    onChange={(e) => setFormData(prev => ({ ...prev, seniority: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mr-3"
+                    disabled={isLoading}
+                  >
+                    <option value="">Select seniority</option>
+                    {seniorityOptions.map(option => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Department <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.department}
+                    onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={isLoading}
+                  >
+                    <option value="">Select department</option>
+                    {departmentOptions.map(option => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex flex-col item-start">
+                  <span className="text-sm font-medium text-gray-700">Work Approach</span>
+              {/* Hybrid Option */}
+              <div className="grid grid-cols-6 gap-4">
+                <div className="col-span-1">
+                  <span className="text-xs text-gray-700 font-semibold ">Onsite</span>
+                  <div className="flex justify-start">
+                    <button
+                      onClick={() => setFormData(prev => ({ ...prev, hybrid: !prev.hybrid }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        formData.hybrid ? 'bg-blue-500' : 'bg-gray-300'
+                      }`}
+                      role="switch"
+                      aria-checked={formData.hybrid}
+                      disabled={isLoading}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          formData.hybrid ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+                <div className="col-span-1">
+                  <span className="text-xs text-gray-700 font-semibold ">Remote</span>
+                  <div className="flex justify-start">
+                    <button
+                      onClick={() => setFormData(prev => ({ ...prev, hybrid: !prev.hybrid }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        formData.hybrid ? 'bg-blue-500' : 'bg-gray-300'
+                      }`}
+                      role="switch"
+                      aria-checked={formData.hybrid}
+                      disabled={isLoading}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          formData.hybrid ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+                <div className="col-span-1">
+                  <span className="text-xs text-gray-700 font-semibold ">Hybrid</span>
+                  <div className="flex justify-start">
+                    <button
+                      onClick={() => setFormData(prev => ({ ...prev, hybrid: !prev.hybrid }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        formData.hybrid ? 'bg-blue-500' : 'bg-gray-300'
+                      }`}
+                      role="switch"
+                      aria-checked={formData.hybrid}
+                      disabled={isLoading}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          formData.hybrid ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-start space-y-3">
+              <span className="text-sm font-medium text-gray-700">Job Post Control</span>
                 <div className="relative">
                   <label 
                     className="flex items-center cursor-pointer"
@@ -463,149 +755,9 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                     </div>
                   )}
                 </div>
-                <div className="relative">
-                  <label 
-                    className="flex items-center cursor-pointer"
-                    onMouseEnter={() => setShowTooltip('shareExternally')}
-                    onMouseLeave={() => setShowTooltip(null)}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={formData.shareExternally}
-                      onChange={(e) => setFormData(prev => ({ ...prev, shareExternally: e.target.checked }))}
-                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                      disabled={isLoading}
-                    />
-                    <span className="ml-2 text-sm font-medium text-gray-700">SHARE EXTERNALLY</span>
-                  </label>
-                  {showTooltip === 'shareExternally' && (
-                    <div className="absolute top-full left-0 mt-2 w-80 p-3 bg-gray-900 text-white text-sm rounded-lg shadow-lg z-10">
-                      Allow Sharing this job externally, so that it can be posted on Linkedin and Naukri job portals
-                    </div>
-                  )}
-                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Title <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Job title"
-                  value={formData.title}
-                  onChange={(e) => {
-                    if (isValidTextInput(e.target.value)) {
-                      setFormData(prev => ({ ...prev, title: e.target.value }));
-                    }
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="grid grid-cols-12 gap-4">
-                <div className="col-span-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Skills <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Enter skills and press Enter"
-                    value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onKeyPress={handleSkillAdd}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    disabled={isLoading}
-                  />
-                  <div className="flex flex-wrap gap-2 mt-2 max-h-20 overflow-hidden">
-                    {formData.skills.map((skill, index) => (
-                      <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center">
-                        {skill}
-                        <button onClick={() => removeSkill(index)} className="ml-1 text-blue-600 hover:text-blue-800" disabled={isLoading}>
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="col-span-5">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Location <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex">
-                    <input
-                      type="text"
-                      placeholder="Enter location"
-                      value={formData.location}
-                      onChange={(e) => {
-                        if (isValidTextInput(e.target.value)) {
-                          setFormData(prev => ({ ...prev, location: e.target.value }));
-                        }
-                      }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div>
-                <div className="col-span-1 pt-5">
-                  <span className="text-xs text-gray-700 font-semibold ml-3">Hybrid</span>
-                  <div className="flex justify-end">
-                    <button
-                      onClick={() => setFormData(prev => ({ ...prev, hybrid: !prev.hybrid }))}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        formData.hybrid ? 'bg-blue-500' : 'bg-gray-300'
-                      }`}
-                      role="switch"
-                      aria-checked={formData.hybrid}
-                      disabled={isLoading}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          formData.hybrid ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Seniority <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={formData.seniority}
-                    onChange={(e) => setFormData(prev => ({ ...prev, seniority: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mr-3"
-                    disabled={isLoading}
-                  >
-                    <option value="">Select seniority</option>
-                    {seniorityOptions.map(option => (
-                      <option key={option} value={option}>{option}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Department <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={formData.department}
-                    onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    disabled={isLoading}
-                  >
-                    <option value="">Select department</option>
-                    {departmentOptions.map(option => (
-                      <option key={option} value={option}>{option}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
+              <div className='border-y-2 border-dotted border-gray-400 py-6 mt-6'>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">AI Interviews</span>
                   <button
@@ -622,7 +774,26 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                     />
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Turning on this feature will enable AI interview as an initial screening round</p>
+                <p className="text-xs text-gray-500 mt-1">Turning on this feature will enable AI interview, as a secondary screening round</p>
+              </div>
+              <div className='border-b-2 border-dotted border-gray-400 pb-6 mt-6'>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">Coding Round</span>
+                  <button
+                    onClick={() => setFormData(prev => ({ ...prev, aiInterviews: !prev.aiInterviews }))}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      formData.aiInterviews ? 'bg-blue-600' : 'bg-gray-300'
+                    }`}
+                    disabled={isLoading}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        formData.aiInterviews ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Turning on this feature will enable Coding round, as a initial screening round to make more efficient screening</p>
               </div>
 
               <div className="grid grid-cols-12 gap-4">
@@ -657,6 +828,10 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                     />
                   </div>
                 </div>
+                
+              </div>
+              <div className="grid grid-cols-12 gap-4">
+                
                 <div className="col-span-6">
                   <label className="block flex text-sm font-medium text-gray-700 mb-2">
                     Enter Salary Range {formData.confidential ? '' : <span className="text-red-500">*</span>}
@@ -761,106 +936,122 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                 )}
               </div>
 
-              <div className="flex justify-between">
-                <button
-                  onClick={onClose}
-                  className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                  disabled={isLoading}
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Cancel
-                </button>
-                <button
-                  onClick={handleNext}
-                  className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                  disabled={isLoading}
-                >
-                  Next
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </button>
-              </div>
+              
             </div>
           ) : (
             <div className="space-y-6">
-              <div className="bg-gray-100 p-6 rounded-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-gray-900">AI-Generated Job Description</h3>
+              {/* Title Section */}
+              <div className="text-center mb-8">
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">Summary of JD</h2>
+                <p className="text-gray-500 text-sm">Verification of the JD and submission of the job</p>
+              </div>
+
+              {/* AI-Generated Job Description */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium text-gray-900">AI-Generated Job Description</h3>
                   <button
-                    onClick={handleRegenerate}
-                    className="px-3 py-1.5 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors flex items-center text-sm"
+                    onClick={() => showToast.info('Feature coming soon!')}
+                    className="flex items-center px-4 py-2 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors text-sm"
                     disabled={isLoading}
                   >
-                    <RotateCcw className="w-4 h-4 mr-1" />
+                    <RotateCcw className="w-4 h-4 mr-2" />
                     Regenerate
                   </button>
                 </div>
-                <div className="bg-white rounded-lg p-4 max-h-60 overflow-y-auto">
-                  <pre
-                    className="text-sm text-gray-700 whitespace-pre-wrap font-sans outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    contentEditable="true"
-                    onInput={(e) => setEditableJD(e.currentTarget.innerText)}
-                    suppressContentEditableWarning={true}
-                  >
-                    {editableJD}
-                  </pre>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Key Competencies</h3>
-                <div className="flex flex-wrap gap-2">
-                  {competencies.map((competency, index) => (
-                    <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center">
-                      {competency}
-                      <button onClick={() => removeCompetency(index)} className="ml-2 text-blue-600 hover:text-blue-800" disabled={isLoading}>
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Refine JD (e.g. 'Add remote work details')</label>
-                <div className="flex justify-between">
+                <div className="border border-gray-300 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3 border-b border-gray-200 pb-3">
+                    <button className="p-1 hover:bg-gray-100 rounded">
+                      <Bold className="w-4 h-4 text-gray-600" />
+                    </button>
+                    <button className="p-1 hover:bg-gray-100 rounded">
+                      <Italic className="w-4 h-4 text-gray-600" />
+                    </button>
+                    <button className="p-1 hover:bg-gray-100 rounded">
+                      <Underline className="w-4 h-4 text-gray-600" />
+                    </button>
+                    <div className="w-px h-4 bg-gray-300 mx-1"></div>
+                    <button className="p-1 hover:bg-gray-100 rounded">
+                      <List className="w-4 h-4 text-gray-600" />
+                    </button>
+                    <button className="p-1 hover:bg-gray-100 rounded">
+                      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                      </svg>
+                    </button>
+                  </div>
                   <textarea
-                    placeholder="Enter refinement instructions..."
-                    value={refinementInput}
-                    onChange={(e) => setRefinementInput(e.target.value)}
-                    className="w-[87%] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-11 resize-none"
+                    value={editableJD}
+                    onChange={(e) => setEditableJD(e.target.value)}
+                    className="w-full h-48 resize-none border-none outline-none text-sm text-gray-700 leading-relaxed"
                     disabled={isLoading}
                   />
-                  <button
-                    onClick={handleUpdate}
-                    className="px-[20px] py-[9px] bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                    disabled={isLoading}
-                  >
-                    Update
-                  </button>
                 </div>
               </div>
 
-              <div className="flex justify-between pt-4 border-t border-gray-200">
-                <button
-                  onClick={handleBack}
-                  className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center"
-                  disabled={isLoading}
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </button>
-                <button
-                  onClick={formData.shareThirdParty ? handleCreateAndPublish : handleCreate}
-                  className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Loading...' : (formData.shareExternally ? 'Create & Publish' : 'Create')}
-                </button>
+              {/* Key Competencies */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Key Competencies</h3>
+                <div className="border border-gray-300 rounded-lg p-4">
+                  <input
+                    type="text"
+                    placeholder="Type competency..."
+                    value={competencyInput}
+                    onChange={(e) => setCompetencyInput(e.target.value)}
+                    onKeyPress={addCompetency}
+                    className="w-full border-none outline-none text-sm placeholder-gray-400 mb-3"
+                    disabled={isLoading}
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    {competencies.map((competency, index) => (
+                      <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center">
+                        <X className="w-3 h-3 mr-1 cursor-pointer" onClick={() => removeCompetency(index)} />
+                        {competency}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           )}
+          </div>
+
+          {/* Sticky Footer with Action Buttons */}
+        <div className="border-t border-gray-200 py-4 bg-white rounded-b-2xl">
+          {currentStep === 1 ? (
+            <div className="flex justify-center"> 
+              <button
+                onClick={handleNext}
+                className="w-1/2 px-6 py-2 bg-blue-600 text-white text-lg font-medium rounded-lg hover:bg-blue-700 transition-colors flex justify-center items-center"
+                disabled={isLoading}
+              >
+                Next
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4 items-center">
+                <button
+                  onClick={formData.shareThirdParty ? handleCreateAndPublish : handleCreate}
+                  className="w-1/2 px-8 py-3 bg-blue-600 text-white text-lg font-medium rounded-lg hover:bg-blue-700 transition-colors flex justify-center items-center"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Loading...' : (formData.allowInbound ? 'Create & Publish' : 'Create')}
+                </button>
+              
+              
+              <button
+                onClick={handleBack}
+                className="w-1/2 px-8 py-3 border border-blue-700 text-blue-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                disabled={isLoading}
+              >
+                Back
+              </button>
+            </div>
+          )}
+
         </div>
-      </div>
+        </div>
     </div>
   );
 };
