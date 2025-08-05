@@ -22,6 +22,10 @@ import {
   XIcon,
   PhoneIcon,
   UsersRound,
+  ThumbsDown,
+  ThumbsUp,
+  ChevronUp,
+  Linkedin,
 } from "lucide-react";
 
 // Custom SVG Icon for IdCard
@@ -514,6 +518,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         name: "Suchandni Verma",
         position: "HR Manager at Augnito",
         status: "positive",
+        email: "suchandni.verma@augnito",
+        phone: "+91 9876543210",
+        linkedin: "https://www.linkedin.com/in/suchandni-verma",
         description:
           "Exceptional digital marketer whose strategic campaigns and data-driven approach have significantly boosted our brand's online presence and conversions! Creative, proactive, and a pleasure to work with!",
       },
@@ -522,6 +529,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         name: "Ana De Armas",
         position: "HR Manager at Augnito",
         status: "negative",
+        email: "ana.dearmas@augnito",
+        phone: "+91 9876543210",
+        linkedin: "https://www.linkedin.com/in/ana-de-armas",
         description:
           "I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs). I hold a degree in Computer Science and have experience in developing and deploying machine learning models. My expertise includes natural language processing, computer vision, and reinforcement learning. I am proficient in Python, TensorFlow, and PyTorch.",
       },
@@ -530,8 +540,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     return (
       <div className="bg-white p-4 rounded-lg shadow-sm">
         <div className="flex items-center mb-4">
-          <UsersRound className="w-5 h-5 text-gray-500 mr-2" />
-          <h3 className="text-lg font-bold uppercase">Available References</h3>
+          <UsersRound className="w-5 h-5 text-gray-600 mr-2" />
+          <h3 className="text-lg text-gray-600 font-semibold">
+            Available References
+          </h3>
         </div>
         <div>
           {dummyReferences.map((reference, index) => (
@@ -553,34 +565,44 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     return (
       <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
         <div className="flex">
-          <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center text-white ${
-              reference.status === "positive" ? "bg-green-500" : "bg-red-500"
-            }`}
-          >
-            {reference.initials}
-          </div>
-          <div className="ml-4 flex-1">
-            <div className="flex items-center">
-              <h4 className="text-lg font-bold">{reference.name}</h4>
-              <div className="ml-2">
-                {reference.status === "positive" ? (
-                  <CheckIcon className="w-5 h-5 text-green-500" />
-                ) : (
-                  <XIcon className="w-5 h-5 text-red-500" />
-                )}
+          <div className="flex justify-between items-center w-full">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center text-[#4B5563] bg-[#DFFBE2]">
+                {reference.initials}
+              </div>
+              <div className="flex items-center">
+                <h4 className="text-lg text-[#4B5563] font-semibold">
+                  {reference.name}
+                </h4>
+                <p className="text-sm text-gray-500">{reference.position}</p>
               </div>
             </div>
-            <p className="text-sm text-gray-500">{reference.position}</p>
-            <p className="text-gray-600 mt-2">
+            <div>
+              {reference.status === "positive" ? (
+                <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
+                  <ThumbsUp className="w-5 h-5 text-white" />
+                </div>
+              ) : (
+                <div className="flex items-center justify-center w-6 h-6 bg-red-500 rounded-full">
+                  <ThumbsDown className="w-5 h-5 text-white" />
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="ml-4 flex-1">
+            <p className="text-[#818283] leading-snug mt-2">
               {isExpanded ? reference.description : truncatedDescription}
             </p>
-            <div className="flex mt-2 space-x-2">
-              <Mail className="w-5 h-5 text-gray-500" />
-              <PhoneIcon className="w-5 h-5 text-gray-500" />
-              <span className="w-5 h-5 text-gray-500 flex items-center justify-center text-sm">
-                in
-              </span>
+            <div className="flex mt-2 space-x-3">
+              <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer">
+                <Mail className="w-4 h-4 text-white" />
+              </div>
+              <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer">
+                <PhoneIcon className="w-4 h-4 text-white" />
+              </div>
+              <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer">
+                <Linkedin className="w-4 h-4 text-white" />
+              </div>
             </div>
             {reference.description.length > truncateLength && (
               <button
@@ -588,7 +610,13 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 className="text-blue-500 text-sm mt-2 flex items-center focus:outline-none"
               >
                 {isExpanded ? "View Less" : "View More"}
-                <span className="ml-1">{isExpanded ? "↑" : "↓"}</span>
+                <span className="ml-1">
+                  {isExpanded ? (
+                    <ChevronUp className="text-blue-500" />
+                  ) : (
+                    <ChevronDown className="text-blue-500" />
+                  )}
+                </span>
               </button>
             )}
           </div>
@@ -906,7 +934,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
       </div>
 
-      <div className="flex space-x-4 border-b border-gray-200">
+      <div className="flex space-x-2 border-b border-gray-200">
         {tabs.map((tab) => (
           <button
             key={tab.name}
