@@ -697,7 +697,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 (
                   <div className="flex flex-col">
                     <p className="text-gray-500 mr-[5px]">Current Company</p>
-                    <p className="text-gray-900">
+                    <p className="text-[#4B5563]">
                       {candidate.experience_years}
                     </p>
                 </div>
