@@ -555,7 +555,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
         {candidates.map((candidate) => (
           <div
             key={candidate.id}
-            className={`pt-2 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
+            className={`pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
               selectedCandidate?.id === candidate.id
                 ? "bg-blue-50 border-l-4 border-blue-500"
                 : "border border-gray-200"
@@ -571,11 +571,11 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 type="checkbox"
                 checked={selectedCandidates.includes(candidate.id)}
                 onChange={() => handleCandidateSelect(candidate.id)}
-                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mt-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mb-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                 onClick={(e) => e.stopPropagation()}
                 aria-label={`Select ${candidate.full_name}`}
               />
-              <div className="border-b border-[#818283] flex items-center space-x-3 pb-6 w-full">
+              <div className="border-b border-[#818283] flex items-center space-x-3 pb-5 w-full">
               <div
                 className={`w-14 h-14 ${getAvatarColor(
                   candidate.full_name
@@ -662,7 +662,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                   </div>
                   <div className="flex space-x-1">
                     <p className="flex text-xs lg:text-base font-[400] text-[#4B5563] mt-1">
-                      <MapPin className="mt-2 w-4 h-4 ml-[-3px]" />
+                      <MapPin className=" w-4 h-4 ml-[-3px]" />
                       {candidate.location?.split(",")[0]}
                     </p>
                   </div>
@@ -682,7 +682,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
               </div>
               </div>
             </div>
-              <div className="pt-6 pl-12 flex space-x-12 gap-2 text-sm ml-1">
+              <div className="pt-5 pl-12 flex space-x-12 gap-2 text-sm ml-1">
                 {candidate.experience_years && 
                 (
                   <div className="flex flex-col">
@@ -723,7 +723,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 )}
  
               </div>
-              <div className="p-3 pl-12 mt-3 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2">
+              <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2">
                 <div className="flex items-center space-x-1">
                     {candidate.social_links?.github && (
                       <button
