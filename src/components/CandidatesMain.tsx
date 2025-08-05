@@ -794,7 +794,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                       strokeWidth="2" 
                       strokeLinecap="round" 
                       strokeLinejoin="round"
-                      className="text-[#0F47F2] mt-2"
+                      className="text-[#0F47F2] mr-2"
                     >
                       <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
                     </svg>
