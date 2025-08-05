@@ -564,7 +564,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
     return (
       <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
-        <div className="flex">
+        <div className="">
           <div className="flex justify-between items-center w-full">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-full flex items-center justify-center text-[#4B5563] bg-[#DFFBE2]">
@@ -594,13 +594,13 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               {isExpanded ? reference.description : truncatedDescription}
             </p>
             <div className="flex mt-2 space-x-3">
-              <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer">
+              <div className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer">
                 <Mail className="w-4 h-4 text-white" />
               </div>
-              <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer">
+              <div className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer">
                 <PhoneIcon className="w-4 h-4 text-white" />
               </div>
-              <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer">
+              <div className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer">
                 <Linkedin className="w-4 h-4 text-white" />
               </div>
             </div>
