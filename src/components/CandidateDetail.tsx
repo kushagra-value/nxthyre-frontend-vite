@@ -17,7 +17,33 @@ import {
   MessageCircle,
   MessageSquareTextIcon,
   MessageSquareText,
+  Info,
 } from "lucide-react";
+
+// Custom SVG Icon for IdCard
+const IdCard: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={props.width || 24}
+    height={props.height || 24}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={`lucide lucide-id-card-icon lucide-id-card ${
+      props.className || ""
+    }`}
+    {...props}
+  >
+    <path d="M16 10h2" />
+    <path d="M16 14h2" />
+    <path d="M6.17 15a3 3 0 0 1 5.66 0" />
+    <circle cx="9" cy="11" r="2" />
+    <rect x="2" y="5" width="20" height="14" rx="2" />
+  </svg>
+);
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { showToast } from "../utils/toast";
@@ -253,7 +279,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
         </div>
         {!showMore && (
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white to-transparent p-4 ml-6 flex space-x-1 items-center">
+          <div className="absolute bottom-0 left-0 right-0 p-4 ml-6 flex space-x-1 items-center">
             <button
               onClick={() => setShowMore(true)}
               className="text-[#0F47F2] text-sm"
@@ -409,23 +435,25 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     };
 
     return (
-      <div className="bg-white p-4 rounded-lg shadow-sm">
+      <div className="bg-blue-100 p-4 rounded-lg shadow-sm">
         {/* Vetted Skills Subsection */}
         <div className="mb-6">
           <h4 className="text-lg font-semibold text-gray-700 flex items-center">
+            <Star className="w-4 h-4 mr-2" />
             Vetted Skills
-            <span className="ml-2 bg-gray-200 text-white text-xs rounded-full px-2 py-1">
-              {vettedSkills.length}
-            </span>
+            <Info className="w-4 h-4 ml-2" />
           </h4>
           {vettedSkills.length > 0 ? (
             <div className="flex flex-wrap gap-4 mt-2">
               {vettedSkills.map((skill) => (
-                <div key={skill.skill} className="flex items-center">
-                  <span className="text-sm text-gray-800">{skill.skill}</span>
-                  <StarRating rating={skill.rating} />
+                <div
+                  key={skill.skill}
+                  className="flex items-center bg-white p-2 rounded-lg"
+                >
+                  <span className="text-sm text-blue-500">{skill.skill}</span>
+                  <Star className="w-4 h-4 text-yellow-500" />
                   <span className="ml-2 text-sm text-gray-600">
-                    {skill.rating}/5
+                    {skill.rating}
                   </span>
                 </div>
               ))}
@@ -434,23 +462,24 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             <p className="text-sm text-gray-500">No vetted skills available</p>
           )}
           <a href="#" className="text-blue-500 text-sm mt-2 flex items-center">
-            VIEW MORE <span className="ml-1">→</span>
+            View More{" "}
+            <span className="ml-1">
+              <ChevronDown className="text-blue-500" />{" "}
+            </span>
           </a>
         </div>
         {/* Resume Skills Subsection */}
         <div>
           <h4 className="text-lg font-semibold text-gray-700 flex items-center">
+            <IdCard className="w-4 h-4 mr-2" />
             Resume
-            <span className="ml-2 bg-gray-200 text-white text-xs rounded-full px-2 py-1">
-              {resumeSkills.length}
-            </span>
           </h4>
           {resumeSkills.length > 0 ? (
             <div className="flex flex-wrap gap-2 mt-2">
               {resumeSkills.map((skill, index) => (
                 <span
                   key={index}
-                  className="px-3 py-1 bg-gray-100 text-gray-800 text-xs rounded-full"
+                  className="p-2 bg-white text-blue-500 text-xs rounded-full"
                 >
                   {skill}
                 </span>
@@ -460,7 +489,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             <p className="text-sm text-gray-500">No skills listed in resume</p>
           )}
           <a href="#" className="text-blue-500 text-sm mt-2 flex items-center">
-            VIEW MORE <span className="ml-1">→</span>
+            View More{" "}
+            <span className="ml-1">
+              <ChevronDown className="text-blue-500" />{" "}
+            </span>
           </a>
         </div>
       </div>
