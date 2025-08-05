@@ -538,10 +538,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     ];
 
     return (
-      <div className="bg-white p-4 rounded-lg shadow-sm">
+      <div className="bg-[#F0F0F0] p-4 rounded-lg shadow-sm">
         <div className="flex items-center mb-4">
           <UsersRound className="w-5 h-5 text-gray-600 mr-2" />
-          <h3 className="text-lg text-gray-600 font-semibold">
+          <h3 className="text-lg text-[#4B5563] font-medium">
             Available References
           </h3>
         </div>
