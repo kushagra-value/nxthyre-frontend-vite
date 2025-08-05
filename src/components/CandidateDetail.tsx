@@ -570,7 +570,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               <div className="w-10 h-10 rounded-full flex items-center justify-center text-[#4B5563] bg-[#DFFBE2]">
                 {reference.initials}
               </div>
-              <div className="flex items-center">
+              <div className="">
                 <h4 className="text-lg text-[#4B5563] font-semibold">
                   {reference.name}
                 </h4>
@@ -579,29 +579,29 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             </div>
             <div>
               {reference.status === "positive" ? (
-                <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
-                  <ThumbsUp className="w-5 h-5 text-white" />
+                <div className="flex items-center justify-center w-5 h-5 bg-green-500 rounded-full">
+                  <ThumbsUp className="w-3 h-3 text-white" />
                 </div>
               ) : (
-                <div className="flex items-center justify-center w-6 h-6 bg-red-500 rounded-full">
-                  <ThumbsDown className="w-5 h-5 text-white" />
+                <div className="flex items-center justify-center w-5 h-5 bg-red-500 rounded-full">
+                  <ThumbsDown className="w-3 h-3 text-white" />
                 </div>
               )}
             </div>
           </div>
           <div className="ml-4 flex-1">
-            <p className="text-[#818283] leading-snug mt-2">
+            <p className="text-[#818283] text-sm leading-snug mt-2 mb-2">
               {isExpanded ? reference.description : truncatedDescription}
             </p>
             <div className="flex mt-2 space-x-3">
               <div className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer">
-                <Mail className="w-4 h-4 text-white" />
+                <Mail className="w-3 h-3 text-white" />
               </div>
               <div className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer">
-                <PhoneIcon className="w-4 h-4 text-white" />
+                <PhoneIcon className="w-3 h-3 text-white" />
               </div>
               <div className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer">
-                <Linkedin className="w-4 h-4 text-white" />
+                <Linkedin className="w-3 h-3 text-white" />
               </div>
             </div>
             {reference.description.length > truncateLength && (
