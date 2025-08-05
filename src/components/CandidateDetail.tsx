@@ -556,11 +556,27 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   const ReferenceCard = ({ reference }) => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [showPopup, setShowPopup] = useState(null);
+
     const truncateLength = 100;
     const truncatedDescription =
       reference.description.length > truncateLength
         ? reference.description.substring(0, truncateLength) + "..."
         : reference.description;
+
+    const handleMouseEnter = (type) => {
+      setShowPopup(type);
+    };
+
+    const handleMouseLeave = () => {
+      setShowPopup(null);
+    };
+
+    const handleCopy = (text) => {
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Copied to clipboard!");
+      });
+    };
 
     return (
       <div className="border-b border-gray-400 mb-4 pb-4">
@@ -595,22 +611,60 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             </p>
             <div className="flex mt-3 space-x-3">
               <div
-                title={reference.email}
-                className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer"
+                className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer relative"
+                onMouseEnter={() => handleMouseEnter("email")}
+                onMouseLeave={handleMouseLeave}
               >
                 <Mail className="w-3 h-3 text-white" />
+                {showPopup === "email" && (
+                  <div className="absolute bottom-8 left-0 bg-blue-50 p-2 rounded-md shadow-md z-10">
+                    <p className="text-sm text-gray-800">{reference.email}</p>
+                    <button
+                      onClick={() => handleCopy(reference.email)}
+                      className="text-xs text-blue-500 mt-1"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                )}
               </div>
               <div
-                title={reference.phone}
-                className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer"
+                className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer relative"
+                onMouseEnter={() => handleMouseEnter("phone")}
+                onMouseLeave={handleMouseLeave}
               >
                 <PhoneIcon className="w-3 h-3 text-white" />
+                {showPopup === "phone" && (
+                  <div className="absolute bottom-8 left-0 bg-blue-50 p-2 rounded-md shadow-md z-10">
+                    <p className="text-sm text-gray-800">{reference.phone}</p>
+                    <button
+                      onClick={() => handleCopy(reference.phone)}
+                      className="text-xs text-blue-500 mt-1"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                )}
               </div>
               <div
-                title={reference.linkedin}
-                className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer"
+                className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer relative"
+                onMouseEnter={() => handleMouseEnter("linkedin")}
+                onMouseLeave={handleMouseLeave}
               >
                 <Linkedin className="w-3 h-3 text-white" />
+                {showPopup === "linkedin" && (
+                  <div className="absolute bottom-8 left-0 bg-blue-50 p-2 rounded-md shadow-md z-10">
+                    <p className="text-sm text-gray-800">
+                      {reference.linkedin}
+                    </p>
+                    <button
+                      onClick={() => handleCopy(reference.linkedin)}
+                      className="text-xs text-blue-500 mt-1"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
             {reference.description.length > truncateLength && (
