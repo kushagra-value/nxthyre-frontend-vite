@@ -191,7 +191,7 @@ const Header: React.FC<HeaderProps> = ({
                       ))}
                     </div>
                   )}
-                  <div className="w-8 h-8 flex items-center justify-center bg-blue-500 rounded-lg ml-2">
+                  <div className="w-10 h-10 flex items-center justify-center bg-blue-500 rounded-lg ml-2">
                     <Search className="w-5 h-5 text-white" />
                   </div>
                 </div>
