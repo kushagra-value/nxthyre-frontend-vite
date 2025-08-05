@@ -897,7 +897,7 @@ function MainApp() {
                     <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3">
                       {categories.length > 0 && (
                         <div className="sticky top-[64px] z-20 will-change-transform mb-4 bg-gray-50 border-b border-gray-200">
-                          <div className="max-w-full mx-auto px-3 lg:px-6">
+                          <div className="max-w-full flex justify-between px-3 lg:px-6">
                             <div className="hidden md:flex items-center space-x-6">
                               {categories.slice(0, 6).map((category) => (
                                 <div
@@ -913,7 +913,7 @@ function MainApp() {
                                       setActiveCategoryId(category.id);
                                       fetchJobDetailsAndSetFilters(category.id);
                                     }}
-                                    className={`py-1.5 text-xs transition-all duration-200 ${
+                                    className={`py-1.5 text-xs lg:text-base transition-all duration-200 ${
                                       activeCategoryId === category.id
                                         ? "border-b-2 border-blue-700 text-blue-700 shadow-sm"
                                         : "text-gray-600 hover:border-b-2 border-gray-200"
@@ -921,7 +921,7 @@ function MainApp() {
                                   >
                                     {category.name}
                                     <span
-                                      className={`ml-2 p-2 rounded-full text-xs ${
+                                      className={`ml-2 px-2 py-1 rounded-full text-xs lg:text-base ${
                                         activeCategoryId === category.id
                                           ? "bg-blue-200 text-blue-800"
                                           : "bg-gray-200 text-gray-600"
@@ -998,42 +998,44 @@ function MainApp() {
                                   )}
                                 </div>
                               ))}
-                              {categories.length > 4 && (
-                                <div className="relative">
-                                  <button
-                                    onClick={() =>
-                                      setShowCategoryDropdown(
-                                        !showCategoryDropdown
-                                      )
-                                    }
-                                    className="px-3 py-1.5 text-xs lg:text-base font-[400] text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
-                                  >
-                                    +{categories.length - 4} more
-                                    <ChevronDown className="ml-1 w-4 h-4" />
-                                  </button>
-                                  <CategoryDropdown
-                                    isOpen={showCategoryDropdown}
-                                    onClose={() =>
-                                      setShowCategoryDropdown(false)
-                                    }
-                                    onEditJobRole={handleEditJobRole}
-                                    onEditTemplate={handleEditTemplate}
-                                    onDeleteJob={(jobId) =>
-                                      setShowDeleteModal(jobId)
-                                    }
-                                    onSharePipelines={handleSharePipelines}
-                                  />
-                                </div>
-                              )}
-
+                            </div>
+                            <div className="flex items-center space-x-3">
                               <div>
-                                <button
-                                  onClick={handlePipelinesClick}
-                                  className="px-3 py-1.5 bg-blue-600 text-white text-xs lg:text-base font-[400] rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                                >
-                                  Pipelines
-                                </button>
+                                {categories.length > 1 && (
+                                  <div className="relative">
+                                    <button
+                                      onClick={() =>
+                                        setShowCategoryDropdown(
+                                          !showCategoryDropdown
+                                        )
+                                      }
+                                      className="px-3 py-1.5 text-xs lg:text-base font-[400] text-gray-600 hover:bg-gray-100 rounded-full border border-gray-300 flex items-center"
+                                    >
+                                      {categories.length} Pipelines
+                                      <ChevronDown className="ml-5 w-4 h-4" />
+                                    </button>
+                                    <CategoryDropdown
+                                      isOpen={showCategoryDropdown}
+                                      onClose={() =>
+                                        setShowCategoryDropdown(false)
+                                      }
+                                      onEditJobRole={handleEditJobRole}
+                                      onEditTemplate={handleEditTemplate}
+                                      onDeleteJob={(jobId) =>
+                                        setShowDeleteModal(jobId)
+                                      }
+                                      onSharePipelines={handleSharePipelines}
+                                    />
+                                  </div>
+                                )}
                               </div>
+                              <div className="border border-l-2"></div>
+                              <button
+                                onClick={handlePipelinesClick}
+                                className="px-3 py-1.5 border border-blue-700 bg-blue-50 text-blue-700 text-xs lg:text-base font-[400] rounded-lg hover:bg-blue-100 transition-colors flex items-center"
+                              >
+                                Show Pipelines
+                              </button>
                             </div>
                           </div>
                         </div>
