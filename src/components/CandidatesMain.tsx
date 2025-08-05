@@ -575,7 +575,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 onClick={(e) => e.stopPropagation()}
                 aria-label={`Select ${candidate.full_name}`}
               />
-              <div className="border-b border-[#A8A8A8] flex items-center space-x-3 pb-5 w-full">
+              <div className="border-b border-[#E2E2E2] flex items-center space-x-3 pb-5 w-full">
               <div
                 className={`w-14 h-14 ${getAvatarColor(
                   candidate.full_name
