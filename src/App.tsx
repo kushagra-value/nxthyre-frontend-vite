@@ -1029,7 +1029,7 @@ function MainApp() {
                                   </div>
                                 )}
                               </div>
-                              <div className="border border-l-2 min-h-16"></div>
+                              <div className="border border-l-2 min-h-10"></div>
                               <button
                                 onClick={handlePipelinesClick}
                                 className="px-3 py-1.5 border border-blue-700 bg-blue-50 text-blue-700 text-xs lg:text-base font-[400] rounded-lg hover:bg-blue-100 transition-colors flex items-center"
