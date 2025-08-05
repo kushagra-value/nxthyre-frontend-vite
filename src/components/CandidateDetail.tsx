@@ -930,7 +930,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         {activeTab === "Profile" && <ProfileTab />}
         {activeTab === "Education" && <EducationTab />}
         {activeTab === "Skills" && <SkillsTab />}
-        {activeTab === "References" && <ReferencesTab />}
+        {activeTab === "References" && <SkillsTab />}
         {activeTab === "Notes" && <NotesTab candidateId={candidate.id} />}
       </div>
 
