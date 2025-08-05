@@ -563,9 +563,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         : reference.description;
 
     return (
-      <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
+      <div className="border-b border-gray-200 mb-4">
         <div className="">
-          <div className="flex justify-between items-center w-full">
+          <div className="flex justify-between items-center w-full mb-2">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-full flex items-center justify-center text-[#4B5563] bg-[#DFFBE2]">
                 {reference.initials}
@@ -589,7 +589,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               )}
             </div>
           </div>
-          <div className="ml-4 flex-1">
+          <div className="ml-12 flex-1">
             <p className="text-[#818283] text-sm leading-snug mt-2 mb-2">
               {isExpanded ? reference.description : truncatedDescription}
             </p>
