@@ -669,13 +669,13 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                   
                 </div>
                 <div className="flex space-x-2">
-                  <p className="text-sm font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                  <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
                     {candidate.experience_summary?.title}
                   </p>
-                  <p className="text-sm font-[400] text-[#0F47F2] mt-1">
+                  <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
                     |
                   </p> 
-                  <p className="text-sm font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                  <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
                     {candidate.education_summary?.title}
                   </p>
                 </div>
@@ -727,7 +727,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 <div className="flex items-center space-x-1">
                     {candidate.social_links?.github && (
                       <button
-                        className="p-1.5 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(candidate.social_links?.github, "_blank")
                         }
@@ -738,7 +738,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     )}
                     {candidate.social_links?.linkedin && (
                       <button
-                        className="p-1.5 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(
                             candidate.social_links?.linkedin,
@@ -752,7 +752,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     )}
                     {candidate.social_links?.resume && (
                       <button
-                        className="p-1.5 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(candidate.social_links?.resume, "_blank")
                         }
@@ -763,7 +763,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     )}
                     {candidate.social_links?.portfolio && (
                       <button
-                        className="p-1.5 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(
                             candidate.social_links?.portfolio,
@@ -790,7 +790,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                   </button>
                   <div className="relative">
                     <button
-                      className="border-l border-l-blue-400 pl-1.5 pr-2 py-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                      className="pl-1 pl-blue-400 pr-2 py-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                       onClick={(e) => handleDropdownToggle(candidate.id, e)}
                       aria-label={`Add ${candidate.full_name} to pipeline stages`}
                     >
