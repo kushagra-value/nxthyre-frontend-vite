@@ -519,7 +519,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         position: "HR Manager at Augnito",
         status: "positive",
         email: "suchandni.verma@augnito",
-        phone: "+91-9876543210",
+        phone: "9876543210",
         linkedin: "https://www.linkedin.com/in/suchandni-verma",
         description:
           "Exceptional digital marketer whose strategic campaigns and data-driven approach have significantly boosted our brand's online presence and conversions! Creative, proactive, and a pleasure to work with!",
@@ -530,7 +530,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         position: "HR Manager at Augnito",
         status: "negative",
         email: "ana.dearmas@augnito",
-        phone: "+91-9876543210",
+        phone: "9876543210",
         linkedin: "https://www.linkedin.com/in/ana-de-armas",
         description:
           "I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs). I hold a degree in Computer Science and have experience in developing and deploying machine learning models. My expertise includes natural language processing, computer vision, and reinforcement learning. I am proficient in Python, TensorFlow, and PyTorch.",
