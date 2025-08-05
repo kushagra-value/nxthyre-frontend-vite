@@ -921,7 +921,7 @@ function MainApp() {
                                   >
                                     {category.name}
                                     <span
-                                      className={` flex items-center ml-2 px-2 pb-[2.8px] pt-[1.3px] rounded-full text-xs lg:text-base ${
+                                      className={`ml-2 px-[8px] pb-[2.8px] pt-[1.3px] rounded-full text-xs lg:text-base ${
                                         activeCategoryId === category.id
                                           ? "bg-blue-200 text-blue-800"
                                           : "bg-gray-200 text-gray-600"
