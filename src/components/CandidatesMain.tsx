@@ -551,7 +551,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
         </div>
       ) : (
       <>
-      <div className="space-y-4 border-b-1 border-gray-200 overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
+      <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
         {candidates.map((candidate) => (
           <div
             key={candidate.id}
@@ -571,7 +571,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 type="checkbox"
                 checked={selectedCandidates.includes(candidate.id)}
                 onChange={() => handleCandidateSelect(candidate.id)}
-                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mb-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mb-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                 onClick={(e) => e.stopPropagation()}
                 aria-label={`Select ${candidate.full_name}`}
               />
@@ -682,7 +682,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
               </div>
               </div>
             </div>
-              <div className="pt-5 pl-12 flex space-x-12 gap-2 text-sm ml-1">
+              <div className="pt-5 pl-12 flex space-x-12 gap-2 text-xs lg:text-base font-[400px] ml-1">
                 {candidate.experience_years && 
                 (
                   <div className="flex flex-col">
@@ -727,7 +727,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 <div className="flex items-center space-x-1">
                     {candidate.social_links?.github && (
                       <button
-                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className="p-1.5 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(candidate.social_links?.github, "_blank")
                         }
@@ -738,7 +738,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     )}
                     {candidate.social_links?.linkedin && (
                       <button
-                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className="p-1.5 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(
                             candidate.social_links?.linkedin,
@@ -752,7 +752,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     )}
                     {candidate.social_links?.resume && (
                       <button
-                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className="p-1.5 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(candidate.social_links?.resume, "_blank")
                         }
@@ -763,7 +763,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     )}
                     {candidate.social_links?.portfolio && (
                       <button
-                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className="p-1.5 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(
                             candidate.social_links?.portfolio,
@@ -776,9 +776,9 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                       </button>
                     )}
                   </div>
-                <div className="rounded-md flex space-x-2 rounde-lg border border-blue-400 hover:border-blue-600 transition-colors">
+                <div className="rounded-lg flex space-x-2 rounde-lg border border-blue-400 hover:border-blue-600 transition-colors">
                   <button
-                    className="pl-3 pr-2 py-1.5 bg-white text-blue-600 text-sm font-medium flex items-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                    className="pl-3 pr-2 py-1.5 text-blue-600 text-sm font-medium flex items-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleSaveToPipeline(candidate.id,1926);
