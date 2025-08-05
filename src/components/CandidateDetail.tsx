@@ -540,8 +540,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     return (
       <div className="bg-[#F0F0F0] p-4 rounded-lg shadow-sm">
         <div className="flex items-center mb-4">
-          <UsersRound className="w-5 h-5 text-gray-400 mr-2" />
-          <h3 className="text-lg text-gray-400 font-medium">
+          <UsersRound className="w-5 h-5 text-[#4B5563] mr-2" />
+          <h3 className="text-lg text-[#4B5563] font-medium">
             Available References
           </h3>
         </div>
@@ -934,12 +934,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
       </div>
 
-      <div className="flex space-x-2 border-b border-gray-200">
+      <div className="flex space-x-1 border-b border-gray-200">
         {tabs.map((tab) => (
           <button
             key={tab.name}
             onClick={() => setActiveTab(tab.name)}
-            className={`py-2 px-4 text-sm font-medium ${
+            className={`py-2 px-2 text-sm font-medium ${
               activeTab === tab.name
                 ? "text-blue-600 border-b-2 border-blue-600"
                 : "text-gray-500 hover:text-gray-700"
