@@ -439,22 +439,11 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
             </label>
             <div className="flex space-x-3">
             <button
-              className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+              className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
               onClick={handleBulkAddToPipeline}
               aria-label="Add selected candidates to pipeline"
             >
-              <svg 
-              width="16" 
-              height="16" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-              xmlns="http://www.w3.org/2000/svg"
-              >
-                <circle cx="16" cy="16" r="14"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-circle-plus-icon lucide-circle-plus"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
               Add To Pipeline
             </button>
             <button
@@ -462,17 +451,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
               onClick={() => setShowExportDialog(true)}
               aria-label="Export selected candidates"
             >
-              <svg 
-              width="16" 
-              height="16" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-              xmlns="http://www.w3.org/2000/svg"
-              >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M7.84594 1.5587C7.75713 1.46158 7.63163 1.40625 7.5 1.40625C7.36838 1.40625 7.24288 1.46158 7.15407 1.5587L4.65405 4.29307C4.47937 4.48414 4.49264 4.78064 4.6837 4.95533C4.87477 5.13001 5.17127 5.11674 5.34595 4.92568L7.03125 3.08237V10C7.03125 10.2589 7.24113 10.4688 7.5 10.4688C7.75888 10.4688 7.96875 10.2589 7.96875 10V3.08237L9.65407 4.92568C9.82875 5.11674 10.1253 5.13001 10.3163 4.95533C10.5074 4.78064 10.5206 4.48414 10.3459 4.29307L7.84594 1.5587Z" fill="#818283"/>
               <path d="M2.34375 9.375C2.34375 9.11612 2.13389 8.90625 1.875 8.90625C1.61612 8.90625 1.40625 9.11612 1.40625 9.375V9.40931C1.40624 10.2641 1.40623 10.953 1.47908 11.4949C1.55471 12.0574 1.71652 12.5311 2.09272 12.9072C2.46892 13.2835 2.94259 13.4453 3.50516 13.5209C4.04701 13.5937 4.73596 13.5937 5.59071 13.5937H9.40931C10.2641 13.5937 10.953 13.5937 11.4949 13.5209C12.0574 13.4453 12.5311 13.2835 12.9073 12.9072C13.2835 12.5311 13.4453 12.0574 13.5209 11.4949C13.5937 10.953 13.5938 10.2641 13.5938 9.40931V9.375C13.5938 9.11612 13.3839 8.90625 13.125 8.90625C12.8661 8.90625 12.6562 9.11612 12.6562 9.375C12.6562 10.2721 12.6553 10.8978 12.5918 11.3699C12.5301 11.8286 12.4174 12.0714 12.2444 12.2444C12.0714 12.4174 11.8286 12.5301 11.3699 12.5918C10.8978 12.6552 10.2721 12.6562 9.375 12.6562H5.625C4.72787 12.6562 4.10217 12.6552 3.63008 12.5918C3.17147 12.5301 2.92861 12.4174 2.75563 12.2444C2.58266 12.0714 2.46988 11.8286 2.40822 11.3699C2.34474 10.8978 2.34375 10.2721 2.34375 9.375Z" fill="#818283"/>
               </svg>
@@ -486,19 +465,9 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
                 aria-label="Sort candidates"
               >
-                <svg 
-                  width="16" 
-                  height="16" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                  xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M8.47675 0.0553365C8.66819 -0.00846977 8.87894 0.0573678 9 0.21878L10.875 2.71878C11.0303 2.92589 10.9884 3.2197 10.7812 3.37503C10.5741 3.53036 10.2803 3.48839 10.125 3.28128L9.09375 1.90628V10.5C9.09375 10.7589 8.88387 10.9687 8.625 10.9687C8.36613 10.9687 8.15625 10.7589 8.15625 10.5V0.50003C8.15625 0.298268 8.28538 0.119136 8.47675 0.0553365ZM0.03125 3.00003C0.03125 2.74114 0.241119 2.53128 0.5 2.53128H6.125C6.38387 2.53128 6.59375 2.74114 6.59375 3.00003C6.59375 3.25891 6.38387 3.46878 6.125 3.46878H0.5C0.241119 3.46878 0.03125 3.25891 0.03125 3.00003ZM1.28125 6.125C1.28125 5.86612 1.49112 5.65625 1.75 5.65625H6.125C6.38387 5.65625 6.59375 5.86612 6.59375 6.125C6.59375 6.38394 6.38387 6.59375 6.125 6.59375H1.75C1.49112 6.59375 1.28125 6.38394 1.28125 6.125ZM2.53125 9.25C2.53125 8.99112 2.74112 8.78125 3 8.78125H6.125C6.38387 8.78125 6.59375 8.99112 6.59375 9.25C6.59375 9.50894 6.38387 9.71875 6.125 9.71875H3C2.74112 9.71875 2.53125 9.50894 2.53125 9.25Z" fill="#818283"/>
-                  </svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M8.47675 0.0553365C8.66819 -0.00846977 8.87894 0.0573678 9 0.21878L10.875 2.71878C11.0303 2.92589 10.9884 3.2197 10.7812 3.37503C10.5741 3.53036 10.2803 3.48839 10.125 3.28128L9.09375 1.90628V10.5C9.09375 10.7589 8.88387 10.9687 8.625 10.9687C8.36613 10.9687 8.15625 10.7589 8.15625 10.5V0.50003C8.15625 0.298268 8.28538 0.119136 8.47675 0.0553365ZM0.03125 3.00003C0.03125 2.74114 0.241119 2.53128 0.5 2.53128H6.125C6.38387 2.53128 6.59375 2.74114 6.59375 3.00003C6.59375 3.25891 6.38387 3.46878 6.125 3.46878H0.5C0.241119 3.46878 0.03125 3.25891 0.03125 3.00003ZM1.28125 6.125C1.28125 5.86612 1.49112 5.65625 1.75 5.65625H6.125C6.38387 5.65625 6.59375 5.86612 6.59375 6.125C6.59375 6.38394 6.38387 6.59375 6.125 6.59375H1.75C1.49112 6.59375 1.28125 6.38394 1.28125 6.125ZM2.53125 9.25C2.53125 8.99112 2.74112 8.78125 3 8.78125H6.125C6.38387 8.78125 6.59375 8.99112 6.59375 9.25C6.59375 9.50894 6.38387 9.71875 6.125 9.71875H3C2.74112 9.71875 2.53125 9.50894 2.53125 9.25Z" fill="#818283"/>
+                </svg>
                  <span className="text-gray-400 font-[400] ml-1 mr-1">{sortOptions.find(opt => opt.value === sortBy)?.label || 'Relevance'}</span>
                 <ChevronDown className="w-4 h-4 mt-1" />
               </button>
