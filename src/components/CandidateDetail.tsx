@@ -934,7 +934,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
       </div>
 
-      <div className="flex space-x-1 border-b border-gray-200">
+      <div className="flex space-x-4 border-b border-gray-200">
         {tabs.map((tab) => (
           <button
             key={tab.name}
