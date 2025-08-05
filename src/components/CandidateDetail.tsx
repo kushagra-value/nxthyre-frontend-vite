@@ -18,6 +18,10 @@ import {
   MessageSquareTextIcon,
   MessageSquareText,
   Info,
+  CheckIcon,
+  XIcon,
+  PhoneIcon,
+  UsersRound,
 } from "lucide-react";
 
 // Custom SVG Icon for IdCard
@@ -502,6 +506,96 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     );
   };
 
+  const ReferencesTab = () => {
+    const dummyReferences = [
+      {
+        initials: "SV",
+        name: "Suchandni Verma",
+        position: "HR Manager at Augnito",
+        status: "positive",
+        description:
+          "Exceptional digital marketer whose strategic campaigns and data-driven approach have significantly boosted our brand's online presence and conversions! Creative, proactive, and a pleasure to work with!",
+      },
+      {
+        initials: "AA",
+        name: "Ana De Armas",
+        position: "HR Manager at Augnito",
+        status: "negative",
+        description:
+          "I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs). I hold a degree in Computer Science and have experience in developing and deploying machine learning models. My expertise includes natural language processing, computer vision, and reinforcement learning. I am proficient in Python, TensorFlow, and PyTorch.",
+      },
+    ];
+
+    return (
+      <div className="bg-white p-4 rounded-lg shadow-sm">
+        <div className="flex items-center mb-4">
+          <UsersRound className="w-5 h-5 text-gray-500 mr-2" />
+          <h3 className="text-lg font-bold uppercase">Available References</h3>
+        </div>
+        <div>
+          {dummyReferences.map((reference, index) => (
+            <ReferenceCard key={index} reference={reference} />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const ReferenceCard = ({ reference }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const truncateLength = 100;
+    const truncatedDescription =
+      reference.description.length > truncateLength
+        ? reference.description.substring(0, truncateLength) + "..."
+        : reference.description;
+
+    return (
+      <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
+        <div className="flex">
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center text-white ${
+              reference.status === "positive" ? "bg-green-500" : "bg-red-500"
+            }`}
+          >
+            {reference.initials}
+          </div>
+          <div className="ml-4 flex-1">
+            <div className="flex items-center">
+              <h4 className="text-lg font-bold">{reference.name}</h4>
+              <div className="ml-2">
+                {reference.status === "positive" ? (
+                  <CheckIcon className="w-5 h-5 text-green-500" />
+                ) : (
+                  <XIcon className="w-5 h-5 text-red-500" />
+                )}
+              </div>
+            </div>
+            <p className="text-sm text-gray-500">{reference.position}</p>
+            <p className="text-gray-600 mt-2">
+              {isExpanded ? reference.description : truncatedDescription}
+            </p>
+            <div className="flex mt-2 space-x-2">
+              <Mail className="w-5 h-5 text-gray-500" />
+              <PhoneIcon className="w-5 h-5 text-gray-500" />
+              <span className="w-5 h-5 text-gray-500 flex items-center justify-center text-sm">
+                in
+              </span>
+            </div>
+            {reference.description.length > truncateLength && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-blue-500 text-sm mt-2 flex items-center focus:outline-none"
+              >
+                {isExpanded ? "View Less" : "View More"}
+                <span className="ml-1">{isExpanded ? "↑" : "↓"}</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const NotesTab: React.FC<NotesTabProps> = ({ candidateId }) => {
     const [notes, setNotes] = useState<Note[]>([]);
     const [notesView, setNotesView] = useState<"my" | "community">("my");
@@ -836,6 +930,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         {activeTab === "Profile" && <ProfileTab />}
         {activeTab === "Education" && <EducationTab />}
         {activeTab === "Skills" && <SkillsTab />}
+        {activeTab === "References" && <ReferencesTab />}
         {activeTab === "Notes" && <NotesTab candidateId={candidate.id} />}
       </div>
 
