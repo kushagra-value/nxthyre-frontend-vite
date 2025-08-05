@@ -93,7 +93,7 @@ const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center space-x-6">
               {/* Search - Only show when authenticated */}
               {isAuthenticated && (
-                <div className="relative hidden sm:flex items-center rounded-lg px-3 py-2 border border-blue-400 cursor-pointer">
+                <div className="relative hidden sm:flex items-center rounded-lg px-3 py-2 border border-blue-200 cursor-pointer">
                   <input
                     type="text"
                     placeholder="Paste Url or Linkedin ID for contact finder ..."
@@ -101,7 +101,7 @@ const Header: React.FC<HeaderProps> = ({
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setTimeout(() => setIsFocused(false), 500)}
-                    className="text-sm text-gray-700 placeholder-gray-400"
+                    className="text-sm text-gray-700 placeholder-gray-400 w-auto"
                   />
                   {isFocused && candidates.length > 0 && (
                     <div className="absolute left-[-1px] top-full w-full bg-white shadow-lg rounded-lg mt-1 z-10 max-h-40 overflow-y-auto">
@@ -119,8 +119,8 @@ const Header: React.FC<HeaderProps> = ({
                       ))}
                     </div>
                   )}
-                  <div className="w-6 h-6 flex items-center justify-center bg-blue-500 rounded-lg">
-                    <Search className="w-4 h-4 text-white ml-2" />
+                  <div className="w-6 h-6 flex items-center justify-center bg-blue-500 rounded-lg ml-2">
+                    <Search className="w-4 h-4 text-white" />
                   </div>
                 </div>
               )}
