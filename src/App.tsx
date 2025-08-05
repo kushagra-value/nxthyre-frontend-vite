@@ -898,7 +898,7 @@ function MainApp() {
                       {categories.length > 0 && (
                         <div className="sticky top-[64px] z-20 will-change-transform mb-4 bg-gray-50 border-b border-gray-200">
                           <div className="max-w-full flex justify-between px-3 lg:px-6">
-                            <div className="hidden md:flex items-center space-x-6">
+                            <div className="hidden md:flex items-center space-x-12">
                               {categories.slice(0, 6).map((category) => (
                                 <div
                                   key={category.id}
@@ -921,7 +921,7 @@ function MainApp() {
                                   >
                                     {category.name}
                                     <span
-                                      className={`ml-2 px-[8px] pb-[2.8px] pt-[1.3px] rounded-full text-xs lg:text-base ${
+                                      className={`ml-3 px-[8px] pb-[2.8px] pt-[1.3px] rounded-full text-xs lg:text-base ${
                                         activeCategoryId === category.id
                                           ? "bg-blue-200 text-blue-800"
                                           : "bg-gray-200 text-gray-600"
@@ -1011,7 +1011,7 @@ function MainApp() {
                                       }
                                       className="px-3 py-1.5 text-xs lg:text-base font-[400] text-gray-600 hover:bg-gray-100 rounded-lg border border-gray-300 flex items-center"
                                     >
-                                      {categories.length} Pipelines
+                                      4567 Pipelines
                                       <ChevronDown className="ml-18 w-4 h-4" />
                                     </button>
                                     <CategoryDropdown
