@@ -571,7 +571,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 {reference.initials}
               </div>
               <div className="">
-                <h4 className="text-lg text-[#4B5563] font-semibold">
+                <h4 className="text-base text-[#4B5563] font-semibold">
                   {reference.name}
                 </h4>
                 <p className="text-sm text-gray-600">{reference.position}</p>
