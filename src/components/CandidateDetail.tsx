@@ -563,7 +563,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         : reference.description;
 
     return (
-      <div className="border-b border-gray-200 mb-4">
+      <div className="border-b border-gray-500 mb-4 pb-4">
         <div className="">
           <div className="flex justify-between items-center w-full mb-2">
             <div className="flex items-center space-x-3">
