@@ -409,33 +409,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         (skill) => skill.skill
       ) || [];
 
-    // StarRating component to display stars based on rating
-    const StarRating = ({ rating }) => {
-      const stars = [];
-      for (let i = 1; i <= 5; i++) {
-        if (i <= rating) {
-          stars.push(<Star key={i} className="w-4 h-4 text-yellow-500" />);
-        } else if (i - 0.5 <= rating) {
-          stars.push(
-            <div key={i} className="relative inline-block w-4 h-4">
-              <Star className="w-4 h-4 text-gray-300" />
-              <div
-                className="absolute top-0 left-0 overflow-hidden"
-                style={{ width: "50%" }}
-              >
-                <Star className="w-4 h-4 text-yellow-500" />
-              </div>
-            </div>
-          );
-        } else {
-          stars.push(<Star key={i} className="w-4 h-4 text-gray-300" />);
-        }
-      }
-      return <div className="flex ml-2">{stars}</div>;
-    };
+    // State to manage expansion
+    const [isVettedExpanded, setIsVettedExpanded] = useState(false);
+    const [isResumeExpanded, setIsResumeExpanded] = useState(false);
 
     return (
-      <div className="bg-blue-100 p-4 rounded-lg shadow-sm">
+      <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
         {/* Vetted Skills Subsection */}
         <div className="mb-6">
           <h4 className="text-lg font-semibold text-gray-700 flex items-center">
@@ -445,30 +424,41 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </h4>
           {vettedSkills.length > 0 ? (
             <div className="flex flex-wrap gap-4 mt-2">
-              {vettedSkills.map((skill) => (
-                <div
-                  key={skill.skill}
-                  className="flex items-center bg-white p-2 rounded-lg"
-                >
-                  <span className="text-sm text-blue-500 mr-2">
-                    {skill.skill}
-                  </span>
-                  <Star className="w-4 h-4 text-yellow-500" />
-                  <span className="ml-2 text-sm text-gray-600">
-                    {skill.rating}
-                  </span>
-                </div>
-              ))}
+              {vettedSkills
+                .slice(0, isVettedExpanded ? vettedSkills.length : 6)
+                .map((skill) => (
+                  <div
+                    key={skill.skill}
+                    className="flex items-center bg-white p-2 rounded-lg"
+                  >
+                    <span className="text-sm text-blue-500 mr-2">
+                      {skill.skill}
+                    </span>
+                    <Star className="w-4 h-4 text-yellow-500" />
+                    <span className="ml-2 text-sm text-gray-600">
+                      {skill.rating}
+                    </span>
+                  </div>
+                ))}
             </div>
           ) : (
             <p className="text-sm text-gray-500">No vetted skills available</p>
           )}
-          <a href="#" className="text-blue-500 text-sm mt-2 flex items-center">
-            View More{" "}
-            <span className="ml-1">
-              <ChevronDown className="text-blue-500" />{" "}
-            </span>
-          </a>
+          {!isVettedExpanded && vettedSkills.length > 6 && (
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setIsVettedExpanded(true);
+              }}
+              className="text-blue-500 text-sm mt-2 flex items-center"
+            >
+              View More
+              <span className="ml-1">
+                <ChevronDown className="text-blue-500" />
+              </span>
+            </a>
+          )}
         </div>
         {/* Resume Skills Subsection */}
         <div>
@@ -478,24 +468,35 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </h4>
           {resumeSkills.length > 0 ? (
             <div className="flex flex-wrap gap-2 mt-2">
-              {resumeSkills.map((skill, index) => (
-                <span
-                  key={index}
-                  className="p-2 bg-white text-blue-500 text-xs rounded-lg"
-                >
-                  {skill}
-                </span>
-              ))}
+              {resumeSkills
+                .slice(0, isResumeExpanded ? resumeSkills.length : 10)
+                .map((skill, index) => (
+                  <span
+                    key={index}
+                    className="p-2 bg-white text-blue-500 text-xs rounded-lg"
+                  >
+                    {skill}
+                  </span>
+                ))}
             </div>
           ) : (
             <p className="text-sm text-gray-500">No skills listed in resume</p>
           )}
-          <a href="#" className="text-blue-500 text-sm mt-2 flex items-center">
-            View More{" "}
-            <span className="ml-1">
-              <ChevronDown className="text-blue-500" />{" "}
-            </span>
-          </a>
+          {!isResumeExpanded && resumeSkills.length > 10 && (
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setIsResumeExpanded(true);
+              }}
+              className="text-blue-500 text-sm mt-2 flex items-center"
+            >
+              View More
+              <span className="ml-1">
+                <ChevronDown className="text-blue-500" />
+              </span>
+            </a>
+          )}
         </div>
       </div>
     );

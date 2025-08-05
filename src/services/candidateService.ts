@@ -35,6 +35,7 @@ export interface CandidateDetailData {
   candidate: {
     id: string;
     full_name: string;
+    profile_summary?: string;
     candidate_email: string;
     candidate_phone: string;
     headline: string;
