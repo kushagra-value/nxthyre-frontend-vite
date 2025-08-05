@@ -575,7 +575,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 onClick={(e) => e.stopPropagation()}
                 aria-label={`Select ${candidate.full_name}`}
               />
-              <div className="border-b-2 border-gray-300 flex items-center space-x-3 pb-4 w-full">
+              <div className="border-b border-[#818283] flex items-center space-x-3 pb-6 w-full">
               <div
                 className={`w-14 h-14 ${getAvatarColor(
                   candidate.full_name
@@ -661,33 +661,33 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     )}        
                   </div>
                   <div className="flex space-x-1">
-                    <p className="flex text-xs lg:text-base font-[400] text-gray-600 mt-1">
-                      <MapPin className="mt-1 w-4 h-3 ml-[-3px]" />
+                    <p className="flex text-xs lg:text-base font-[400] text-[#4B5563] mt-1">
+                      <MapPin className="mt-2 w-4 h-4 ml-[-3px]" />
                       {candidate.location?.split(",")[0]}
                     </p>
                   </div>
                   
                 </div>
                 <div className="flex space-x-2">
-                  <p className="text-sm font-[400] text-blue-600 mt-1 max-w-[24ch] truncate">
+                  <p className="text-sm font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
                     {candidate.experience_summary?.title}
                   </p>
-                  <p className="text-sm font-[400] text-blue-600 mt-1">
+                  <p className="text-sm font-[400] text-[#0F47F2] mt-1">
                     |
                   </p> 
-                  <p className="text-sm font-[400] text-blue-600 mt-1 max-w-[24ch] truncate">
+                  <p className="text-sm font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
                     {candidate.education_summary?.title}
                   </p>
                 </div>
               </div>
               </div>
             </div>
-              <div className="pt-4 pl-12 flex space-x-6 gap-2 text-sm ml-1">
+              <div className="pt-6 pl-12 flex space-x-12 gap-2 text-sm ml-1">
                 {candidate.experience_years && 
                 (
                   <div className="flex flex-col">
-                    <p className="text-gray-500 mr-[5px]">Experience</p>
-                    <p className="text-gray-900">
+                    <p className="text-[#A8A8A8] mr-[5px]">Experience</p>
+                    <p className="text-[#4B5563]">
                       {candidate.experience_years}
                     </p>
                 </div>
@@ -696,7 +696,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 {candidate.experience_years && 
                 (
                   <div className="flex flex-col">
-                    <p className="text-gray-500 mr-[5px]">Current Company</p>
+                    <p className="text-[#A8A8A8] mr-[5px]">Current Company</p>
                     <p className="text-[#4B5563]">
                       {candidate.experience_years}
                     </p>
@@ -705,8 +705,8 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 {candidate.notice_period_summary && 
                 (
                   <div className="flex flex-col">
-                    <p className="text-gray-500 mr-[5px]">Notice Period</p>
-                    <p className="text-gray-900">
+                    <p className="text-[#A8A8A8] mr-[5px]">Notice Period</p>
+                    <p className="text-[#4B5563]">
                       {candidate.notice_period_summary}
                     </p>
                 </div>
@@ -715,8 +715,8 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 {true && 
                 (
                   <div className="flex flex-col">
-                  <p className="text-gray-500 mr-[5px]">Current Salary</p>
-                  <p className="text-gray-900">
+                  <p className="text-[#A8A8A8] mr-[5px]">Current Salary</p>
+                  <p className="text-[#4B5563]">
                     9LPA
                   </p>
                 </div>
