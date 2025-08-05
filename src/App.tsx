@@ -921,7 +921,7 @@ function MainApp() {
                                   >
                                     {category.name}
                                     <span
-                                      className={`ml-2 px-2 py-1 rounded-full text-xs lg:text-base ${
+                                      className={` flex items-center ml-2 px-2 pb-[2.8px] pt-[1.3px] rounded-full text-xs lg:text-base ${
                                         activeCategoryId === category.id
                                           ? "bg-blue-200 text-blue-800"
                                           : "bg-gray-200 text-gray-600"
@@ -1012,7 +1012,7 @@ function MainApp() {
                                       className="px-3 py-1.5 text-xs lg:text-base font-[400] text-gray-600 hover:bg-gray-100 rounded-lg border border-gray-300 flex items-center"
                                     >
                                       {categories.length} Pipelines
-                                      <ChevronDown className="ml-10 w-4 h-4" />
+                                      <ChevronDown className="ml-18 w-4 h-4" />
                                     </button>
                                     <CategoryDropdown
                                       isOpen={showCategoryDropdown}
@@ -1029,7 +1029,7 @@ function MainApp() {
                                   </div>
                                 )}
                               </div>
-                              <div className="border border-l-2 min-h-10"></div>
+                              <div className="border border-l-1 border-gray-400 min-h-10"></div>
                               <button
                                 onClick={handlePipelinesClick}
                                 className="px-3 py-1.5 border border-blue-700 bg-blue-50 text-blue-700 text-xs lg:text-base font-[400] rounded-lg hover:bg-blue-100 transition-colors flex items-center"
