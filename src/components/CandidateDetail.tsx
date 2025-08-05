@@ -90,6 +90,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     { name: "Profile" },
     { name: "Education" },
     { name: "Skills" },
+    { name: "References" },
     { name: "Notes" },
   ];
 
@@ -930,7 +931,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         {activeTab === "Profile" && <ProfileTab />}
         {activeTab === "Education" && <EducationTab />}
         {activeTab === "Skills" && <SkillsTab />}
-        {activeTab === "References" && <SkillsTab />}
+        {activeTab === "References" && <ReferencesTab />}
         {activeTab === "Notes" && <NotesTab candidateId={candidate.id} />}
       </div>
 
