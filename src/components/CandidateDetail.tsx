@@ -540,8 +540,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     return (
       <div className="bg-[#F0F0F0] p-4 rounded-lg shadow-sm">
         <div className="flex items-center mb-4">
-          <UsersRound className="w-5 h-5 text-gray-600 mr-2" />
-          <h3 className="text-lg text-[#4B5563] font-medium">
+          <UsersRound className="w-5 h-5 text-gray-400 mr-2" />
+          <h3 className="text-lg text-gray-400 font-medium">
             Available References
           </h3>
         </div>
@@ -563,7 +563,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         : reference.description;
 
     return (
-      <div className="border-b border-gray-500 mb-4 pb-4">
+      <div className="border-b border-gray-400 mb-4 pb-4">
         <div className="">
           <div className="flex justify-between items-center w-full mb-2">
             <div className="flex items-center space-x-3">
@@ -574,7 +574,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 <h4 className="text-lg text-[#4B5563] font-semibold">
                   {reference.name}
                 </h4>
-                <p className="text-sm text-gray-500">{reference.position}</p>
+                <p className="text-sm text-gray-600">{reference.position}</p>
               </div>
             </div>
             <div>
@@ -589,11 +589,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               )}
             </div>
           </div>
-          <div className="ml-12 flex-1">
+          <div className="ml-14 flex-1">
             <p className="text-[#818283] text-sm leading-snug mt-2 mb-2">
               {isExpanded ? reference.description : truncatedDescription}
             </p>
-            <div className="flex mt-2 space-x-3">
+            <div className="flex mt-3 space-x-3">
               <div className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer">
                 <Mail className="w-3 h-3 text-white" />
               </div>
@@ -612,9 +612,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 {isExpanded ? "View Less" : "View More"}
                 <span className="ml-1">
                   {isExpanded ? (
-                    <ChevronUp className="text-blue-500" />
+                    <ChevronUp className="text-blue-500 text-sm mt-[2px]" />
                   ) : (
-                    <ChevronDown className="text-blue-500" />
+                    <ChevronDown className="text-blue-500 text-sm mt-[2px]" />
                   )}
                 </span>
               </button>
