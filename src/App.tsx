@@ -897,7 +897,7 @@ function MainApp() {
                     <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3">
                       {categories.length > 0 && (
                         <div className="sticky top-[64px] z-20 will-change-transform mb-4 bg-gray-50 border-b border-gray-200">
-                          <div className="max-w-full flex justify-between px-3 lg:px-6">
+                          <div className="max-w-full flex justify-between px-3 lg:px-6 mb-1">
                             <div className="hidden md:flex items-center space-x-6">
                               {categories.slice(0, 6).map((category) => (
                                 <div
@@ -1009,10 +1009,10 @@ function MainApp() {
                                           !showCategoryDropdown
                                         )
                                       }
-                                      className="px-3 py-1.5 text-xs lg:text-base font-[400] text-gray-600 hover:bg-gray-100 rounded-full border border-gray-300 flex items-center"
+                                      className="px-3 py-1.5 text-xs lg:text-base font-[400] text-gray-600 hover:bg-gray-100 rounded-lg border border-gray-300 flex items-center"
                                     >
                                       {categories.length} Pipelines
-                                      <ChevronDown className="ml-5 w-4 h-4" />
+                                      <ChevronDown className="ml-10 w-4 h-4" />
                                     </button>
                                     <CategoryDropdown
                                       isOpen={showCategoryDropdown}
@@ -1029,7 +1029,7 @@ function MainApp() {
                                   </div>
                                 )}
                               </div>
-                              <div className="border border-l-2"></div>
+                              <div className="border border-l-2 min-h-16"></div>
                               <button
                                 onClick={handlePipelinesClick}
                                 className="px-3 py-1.5 border border-blue-700 bg-blue-50 text-blue-700 text-xs lg:text-base font-[400] rounded-lg hover:bg-blue-100 transition-colors flex items-center"
