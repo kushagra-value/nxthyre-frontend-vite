@@ -519,7 +519,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         position: "HR Manager at Augnito",
         status: "positive",
         email: "suchandni.verma@augnito",
-        phone: "+91 9876543210",
+        phone: "+91-9876543210",
         linkedin: "https://www.linkedin.com/in/suchandni-verma",
         description:
           "Exceptional digital marketer whose strategic campaigns and data-driven approach have significantly boosted our brand's online presence and conversions! Creative, proactive, and a pleasure to work with!",
@@ -530,7 +530,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         position: "HR Manager at Augnito",
         status: "negative",
         email: "ana.dearmas@augnito",
-        phone: "+91 9876543210",
+        phone: "+91-9876543210",
         linkedin: "https://www.linkedin.com/in/ana-de-armas",
         description:
           "I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs). I hold a degree in Computer Science and have experience in developing and deploying machine learning models. My expertise includes natural language processing, computer vision, and reinforcement learning. I am proficient in Python, TensorFlow, and PyTorch.",
@@ -556,7 +556,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   const ReferenceCard = ({ reference }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const [showPopup, setShowPopup] = useState(null);
+    const [showPopup, setShowPopup] = useState<
+      "email" | "phone" | "linkedin" | null
+    >(null);
 
     const truncateLength = 100;
     const truncatedDescription =
@@ -611,8 +613,17 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               >
                 <Mail className="w-3 h-3 text-white" />
                 {showPopup === "email" && (
-                  <div className="absolute bottom-8 left-0 bg-blue-50 p-2 rounded-md shadow-md z-10">
-                    <p className="text-sm text-blue-700">{reference.email}</p>
+                  <div
+                    className="absolute bottom-8 left-0 bg-blue-50 p-2 rounded-md shadow-md z-10"
+                    onMouseEnter={() => setShowPopup("email")} // Keep popup visible
+                    onMouseLeave={handleMouseLeave} // Allow it to hide when leaving popup
+                  >
+                    <p
+                      className="text-sm text-blue-700 select-text"
+                      style={{ userSelect: "text" }}
+                    >
+                      {reference.email}
+                    </p>
                   </div>
                 )}
               </div>
@@ -623,8 +634,17 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               >
                 <PhoneIcon className="w-3 h-3 text-white" />
                 {showPopup === "phone" && (
-                  <div className="absolute bottom-8 left-0 bg-blue-50 p-2 rounded-md shadow-md z-10">
-                    <p className="text-sm text-blue-700">{reference.phone}</p>
+                  <div
+                    className="absolute bottom-8 left-0 bg-blue-50 p-2 rounded-md shadow-md z-10"
+                    onMouseEnter={() => setShowPopup("phone")} // Keep popup visible
+                    onMouseLeave={handleMouseLeave} // Allow it to hide when leaving popup
+                  >
+                    <p
+                      className="text-sm text-blue-700 select-text"
+                      style={{ userSelect: "text" }}
+                    >
+                      {reference.phone}
+                    </p>
                   </div>
                 )}
               </div>
@@ -635,8 +655,15 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               >
                 <Linkedin className="w-3 h-3 text-white" />
                 {showPopup === "linkedin" && (
-                  <div className="absolute bottom-8 left-0 bg-blue-50 p-2 rounded-md shadow-md z-10">
-                    <p className="text-sm text-blue-700">
+                  <div
+                    className="absolute bottom-8 left-0 bg-blue-50 p-2 rounded-md shadow-md z-10"
+                    onMouseEnter={() => setShowPopup("linkedin")} // Keep popup visible
+                    onMouseLeave={handleMouseLeave} // Allow it to hide when leaving popup
+                  >
+                    <p
+                      className="text-sm text-blue-700 select-text"
+                      style={{ userSelect: "text" }}
+                    >
                       {reference.linkedin}
                     </p>
                   </div>
