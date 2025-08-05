@@ -450,7 +450,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                   key={skill.skill}
                   className="flex items-center bg-white p-2 rounded-lg"
                 >
-                  <span className="text-sm text-blue-500">{skill.skill}</span>
+                  <span className="text-sm text-blue-500 mr-2">
+                    {skill.skill}
+                  </span>
                   <Star className="w-4 h-4 text-yellow-500" />
                   <span className="ml-2 text-sm text-gray-600">
                     {skill.rating}
@@ -479,7 +481,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               {resumeSkills.map((skill, index) => (
                 <span
                   key={index}
-                  className="p-2 bg-white text-blue-500 text-xs rounded-full"
+                  className="p-2 bg-white text-blue-500 text-xs rounded-lg"
                 >
                   {skill}
                 </span>
