@@ -776,7 +776,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                       </button>
                     )}
                   </div>
-                <div className="rounded-md flex space-x-2 border border-blue-400 hover:border-blue-600 transition-colors">
+                <div className="rounded-md flex space-x-1 border border-blue-400 hover:border-blue-600 transition-colors">
                   <button
                     className="pl-3 pr-2 py-1.5 text-blue-600 text-sm font-medium flex items-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                     onClick={(e) => {
@@ -794,7 +794,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                       strokeWidth="2" 
                       strokeLinecap="round" 
                       strokeLinejoin="round"
-                      className="text-blue-500"
+                      className="text-[#0F47F2] mt-2"
                     >
                       <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
                     </svg>
