@@ -165,7 +165,7 @@ const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center space-x-6">
               {/* Search - Only show when authenticated */}
               {isAuthenticated && (
-                <div className="relative hidden sm:flex items-center rounded-lg px-3 py-2 border border-blue-200 bg-blue-50 cursor-pointer w-88">
+                <div className="relative hidden sm:flex items-center rounded-lg px-3 py-1 border border-blue-200 bg-blue-50 cursor-pointer w-88">
                   <input
                     type="text"
                     placeholder="Paste Url or Linkedin ID for contact finder ..."
@@ -191,8 +191,8 @@ const Header: React.FC<HeaderProps> = ({
                       ))}
                     </div>
                   )}
-                  <div className="w-10 h-10 flex items-center justify-center bg-blue-500 rounded-lg ml-2">
-                    <Search className="w-5 h-5 text-white" />
+                  <div className="w-8 h-7 flex items-center justify-center bg-blue-500 rounded-lg ml-2">
+                    <Search className="w-4 h-4 text-white" />
                   </div>
                 </div>
               )}
@@ -201,13 +201,13 @@ const Header: React.FC<HeaderProps> = ({
               {isAuthenticated && showCreateRoleButton && (
                 <button
                   onClick={onCreateRole}
-                  className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                  className="px-3 py-[9px] bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"
                 >
                   Create Role
                 </button>
               )}
               {isAuthenticated && user && (
-                <div className="flex items-center gap-1 bg-gray-100 px-4 py-2 rounded-lg">
+                <div className="flex items-center gap-1 bg-gray-100 px-4 py-[9px] rounded-lg">
                   <span className="text-xs">🪙</span>
                   <p className="text-xs text-gray-500">
                     <span className="font-semibold">{credits}</span>
