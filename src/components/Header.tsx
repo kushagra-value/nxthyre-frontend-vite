@@ -165,7 +165,7 @@ const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center space-x-6">
               {/* Search - Only show when authenticated */}
               {isAuthenticated && (
-                <div className="relative hidden sm:flex items-center rounded-lg px-3 py-2 border border-blue-200 bg-blue-50 cursor-pointer">
+                <div className="relative hidden sm:flex items-center rounded-lg px-3 py-2 border border-blue-200 bg-blue-50 cursor-pointer w-80">
                   <input
                     type="text"
                     placeholder="Paste Url or Linkedin ID for contact finder ..."
