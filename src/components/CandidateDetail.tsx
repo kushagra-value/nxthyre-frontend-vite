@@ -541,7 +541,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       <div className="bg-[#F0F0F0] p-4 rounded-lg shadow-sm">
         <div className="flex items-center mb-4">
           <UsersRound className="w-5 h-5 text-[#4B5563] mr-2" />
-          <h3 className="text-base text-[#4B5563] font-medium">
+          <h3 className="text-[17px] text-[#4B5563] font-medium">
             Available References
           </h3>
         </div>
@@ -735,8 +735,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           {/* Header with Heading and Toggle */}
           <div className="flex justify-between items-center mb-3 border-b-2 border-gray-200 px-3 pt-1 pb-3">
             <div className="flex items-center space-x-2">
-              <MessageSquareText className="w-4 h-4 text-[#4B5563]" />
-              <h3 className="text-[18px] font-medium text-[#4B5563]">
+              <MessageSquareText className="w-6 h-6 text-[#4B5563]" />
+              <h3 className="text-base font-medium text-[#4B5563]">
                 Notes about the Person
               </h3>
             </div>
@@ -751,7 +751,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                   }
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-600"></div>
+                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-600"></div>
                 <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
               </label>
             </div>
