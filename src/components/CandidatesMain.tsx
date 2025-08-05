@@ -575,7 +575,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 onClick={(e) => e.stopPropagation()}
                 aria-label={`Select ${candidate.full_name}`}
               />
-              <div className="border-b border-[#818283] flex items-center space-x-3 pb-5 w-full">
+              <div className="border-b border-[#A8A8A8] flex items-center space-x-3 pb-5 w-full">
               <div
                 className={`w-14 h-14 ${getAvatarColor(
                   candidate.full_name
@@ -661,8 +661,8 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     )}        
                   </div>
                   <div className="flex space-x-1">
-                    <p className="flex text-xs lg:text-base font-[400] text-[#4B5563] mt-1">
-                      <MapPin className=" w-4 h-4 ml-[-3px]" />
+                    <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563] mt-1">
+                      <MapPin className=" w-4 h-4" />
                       {candidate.location?.split(",")[0]}
                     </p>
                   </div>
