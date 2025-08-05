@@ -198,7 +198,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         ?.slice(0, 2)}*********@gmail.com`;
   const displayPhone = hasContactInfo
     ? detailedCandidate.candidate.candidate_phone
-    : "93******45";
+    : "93********45";
 
   const ProfileTab = () => {
     const [showMore, setShowMore] = useState(false);
@@ -369,227 +369,103 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     </div>
   );
 
-  const SkillsTab = () => (
-    <div className="bg-[#F0F0F0] p-3 rounded-lg pb-6">
-      <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-3 flex items-center">
-        <Star className="w-4 h-4 mr-2 text-[#4B5563]" />
-        Skills
-      </h3>
-      <div className="flex flex-wrap gap-3">
-        {detailedCandidate?.candidate?.skills_data?.skills_mentioned?.length >
-        0 ? (
-          detailedCandidate?.candidate?.skills_data.skills_mentioned.map(
-            (skill, index) => (
-              <span
-                key={index}
-                className="px-3 py-[5px] bg-blue-100 text-blue-800 text-xs rounded-full"
+  const SkillsTab = () => {
+    // Dummy data for vetted skills
+    const vettedSkills = [
+      { skill: "Meta Ads", rating: 3.5 },
+      { skill: "Flutter", rating: 4 },
+      { skill: "SEO", rating: 4.5 },
+    ];
+
+    // Extract resume skills from detailedCandidate
+    const resumeSkills =
+      detailedCandidate?.candidate?.skills_data?.skills_mentioned?.map(
+        (skill) => skill.skill
+      ) || [];
+
+    // StarRating component to display stars based on rating
+    const StarRating = ({ rating }) => {
+      const stars = [];
+      for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+          stars.push(<Star key={i} className="w-4 h-4 text-yellow-500" />);
+        } else if (i - 0.5 <= rating) {
+          stars.push(
+            <div key={i} className="relative inline-block w-4 h-4">
+              <Star className="w-4 h-4 text-gray-300" />
+              <div
+                className="absolute top-0 left-0 overflow-hidden"
+                style={{ width: "50%" }}
               >
-                {skill?.skill}
-              </span>
-            )
-          )
-        ) : (
-          <p className="text-sm text-gray-500">No skills listed</p>
-        )}
+                <Star className="w-4 h-4 text-yellow-500" />
+              </div>
+            </div>
+          );
+        } else {
+          stars.push(<Star key={i} className="w-4 h-4 text-gray-300" />);
+        }
+      }
+      return <div className="flex ml-2">{stars}</div>;
+    };
+
+    return (
+      <div className="bg-white p-4 rounded-lg shadow-sm">
+        {/* Vetted Skills Subsection */}
+        <div className="mb-6">
+          <h4 className="text-lg font-semibold text-gray-700 flex items-center">
+            Vetted Skills
+            <span className="ml-2 bg-gray-200 text-white text-xs rounded-full px-2 py-1">
+              {vettedSkills.length}
+            </span>
+          </h4>
+          {vettedSkills.length > 0 ? (
+            <div className="flex flex-wrap gap-4 mt-2">
+              {vettedSkills.map((skill) => (
+                <div key={skill.skill} className="flex items-center">
+                  <span className="text-sm text-gray-800">{skill.skill}</span>
+                  <StarRating rating={skill.rating} />
+                  <span className="ml-2 text-sm text-gray-600">
+                    {skill.rating}/5
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">No vetted skills available</p>
+          )}
+          <a href="#" className="text-blue-500 text-sm mt-2 flex items-center">
+            VIEW MORE <span className="ml-1">→</span>
+          </a>
+        </div>
+        {/* Resume Skills Subsection */}
+        <div>
+          <h4 className="text-lg font-semibold text-gray-700 flex items-center">
+            Resume
+            <span className="ml-2 bg-gray-200 text-white text-xs rounded-full px-2 py-1">
+              {resumeSkills.length}
+            </span>
+          </h4>
+          {resumeSkills.length > 0 ? (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {resumeSkills.map((skill, index) => (
+                <span
+                  key={index}
+                  className="px-3 py-1 bg-gray-100 text-gray-800 text-xs rounded-full"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">No skills listed in resume</p>
+          )}
+          <a href="#" className="text-blue-500 text-sm mt-2 flex items-center">
+            VIEW MORE <span className="ml-1">→</span>
+          </a>
+        </div>
       </div>
-    </div>
-  );
-
-  // const NotesTab = () => {
-  //   // Define dummy notes to display when no actual notes are available
-  //   const dummyNotes = [
-  //     {
-  //       noteId: "dummy1",
-  //       postedBy: { userName: "Sid Verma" },
-  //       organisation: { orgName: "Problock" },
-  //       content:
-  //         "This is a sample note to demonstrate the layout. lorem ipsum dolor sit amet, consectetur adipiscing elit. ipsum dolor sit amet, consectetur adipiscing elit.",
-  //       posted_at: new Date().toISOString(),
-  //     },
-  //     {
-  //       noteId: "dummy2",
-  //       postedBy: { userName: "Leena Ghatiya" },
-  //       organisation: { orgName: "NxtHyre" },
-  //       content:
-  //         "Another sample note for illustration. lorem ipsum dolor sit amet, consectetur adipiscing elit. pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.",
-  //       posted_at: "July 28, 2025",
-  //     },
-  //   ];
-
-  //   const communityNotes = [
-  //     {
-  //       noteId: "dummy1",
-  //       postedBy: { userName: "Kushagra Jain" },
-  //       organisation: { orgName: "Valuebound" },
-  //       content:
-  //         "This is a sample note to demonstrate the layout. lorem ipsum dolor sit amet, consectetur adipiscing elit. ipsum dolor sit amet, consectetur adipiscing elit. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-  //       posted_at: new Date().toISOString(),
-  //     },
-  //     {
-  //       noteId: "dummy2",
-  //       postedBy: { userName: "Harsh Shrivastava" },
-  //       organisation: { orgName: "Vyuhyre" },
-  //       content:
-  //         "lorem ipsum dolor sit amet, consectetur adipiscing elit. pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.",
-  //       posted_at: "July 28, 2025",
-  //     },
-  //   ];
-
-  //   return (
-  //     <>
-  //       <div className="flex flex-col h-full bg-[#F0F0F0] p-3 rounded-lg">
-  //         {/* Header with Heading and Toggle */}
-  //         <div className="flex justify-between items-center mb-3 border-b-2 border-gray-200 px-3 pt-1 pb-3">
-  //           {/* Notes about the Person Heading */}
-  //           <div className="flex items-center space-x-2">
-  //             <MessageSquareText className="w-4 h-4 text-[#4B5563]" />
-  //             <h3 className="text-[18px] font-medium text-[#4B5563]">
-  //               Notes about the Person
-  //             </h3>
-  //           </div>
-  //           {/* Community Toggle */}
-  //           <div className="flex items-center space-x-2">
-  //             <span className="text-sm text-[#4B5563]">Community</span>
-  //             <label className="relative inline-flex items-center cursor-pointer">
-  //               <input
-  //                 type="checkbox"
-  //                 checked={notesView === "community"}
-  //                 onChange={(e) =>
-  //                   setNotesView(e.target.checked ? "community" : "my")
-  //                 }
-  //                 className="sr-only peer"
-  //               />
-  //               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-600"></div>
-  //               <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
-  //             </label>
-  //           </div>
-  //         </div>
-
-  //         {/* Notes List */}
-  //         <div className="flex-1 overflow-y-auto space-y-2 border-gray-200">
-  //           {notesView === "my"
-  //             ? (detailedCandidate?.candidate?.notes?.length > 0
-  //                 ? detailedCandidate.candidate.notes
-  //                 : dummyNotes
-  //               ).map((note) => (
-  //                 <div
-  //                   key={note.noteId}
-  //                   className="border-b border-gray-200 pb-2"
-  //                 >
-  //                   <div className="flex flex-col space-y-2 px-3 py-2 mb-0">
-  //                     <div className="flex justify-between items-center ">
-  //                       {/* User Avatar and Info */}
-  //                       <div className="flex space-x-3 items-center">
-  //                         <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-  //                           <User className="w-5 h-5 text-white" />
-  //                         </div>
-  //                         <div className="flex-1 space-y-0.5">
-  //                           <h4 className="font-medium text-[#111827] text-sm">
-  //                             {note?.postedBy?.userName ||
-  //                               note?.organisation?.orgName}
-  //                           </h4>
-  //                           <p className="text-sm text-[#4B5563]">
-  //                             {note?.organisation?.orgName || "Company"}
-  //                           </p>
-  //                         </div>
-  //                       </div>
-  //                       {/* Posted Date */}
-  //                       <div>
-  //                         <p className="text-xs text-[#818283] mt-1">
-  //                           {new Date(note?.posted_at).toLocaleDateString(
-  //                             "en-US",
-  //                             {
-  //                               month: "short",
-  //                               day: "numeric",
-  //                               year: "numeric",
-  //                             }
-  //                           )}
-  //                         </p>
-  //                       </div>
-  //                     </div>
-
-  //                     <div className="bg-white p-3 rounded-lg">
-  //                       <p className="text-sm text-[#818283] leading-normal">
-  //                         {note?.content}
-  //                       </p>
-  //                     </div>
-  //                   </div>
-  //                 </div>
-  //               ))
-  //             : (detailedCandidate?.candidate?.notes?.length > 0
-  //                 ? detailedCandidate.candidate.notes
-  //                 : communityNotes
-  //               ).map((note) => (
-  //                 // Community notes
-  //                 <div
-  //                   key={note.noteId}
-  //                   className="border-b border-gray-200 pb-2"
-  //                 >
-  //                   <div className="flex flex-col space-y-2 px-3 py-2 mb-0">
-  //                     <div className="flex justify-between items-center ">
-  //                       {/* User Avatar and Info */}
-  //                       <div className="flex space-x-3 items-center">
-  //                         <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-  //                           <User className="w-5 h-5 text-white" />
-  //                         </div>
-  //                         <div className="flex-1 space-y-0.5">
-  //                           <h4 className="font-medium text-[#111827] text-sm">
-  //                             {note?.postedBy?.userName ||
-  //                               note?.organisation?.orgName}
-  //                           </h4>
-  //                           <p className="text-sm text-[#4B5563]">
-  //                             {note?.organisation?.orgName || "Company"}
-  //                           </p>
-  //                         </div>
-  //                       </div>
-  //                       {/* Posted Date */}
-  //                       <div>
-  //                         <p className="text-xs text-[#818283] mt-1">
-  //                           {new Date(note?.posted_at).toLocaleDateString(
-  //                             "en-US",
-  //                             {
-  //                               month: "short",
-  //                               day: "numeric",
-  //                               year: "numeric",
-  //                             }
-  //                           )}
-  //                         </p>
-  //                       </div>
-  //                     </div>
-
-  //                     <div className="bg-white p-3 rounded-lg">
-  //                       <p className="text-sm text-[#818283] leading-normal">
-  //                         {note?.content}
-  //                       </p>
-  //                     </div>
-  //                   </div>
-  //                 </div>
-  //               ))}
-  //         </div>
-  //       </div>
-  //       {/* Comment Input Section */}
-  //       <div className="mt-4 p-3 bg-white rounded-tr-lg rounded-tl-lg">
-  //         <div className="flex space-x-3 border border-gray-200 rounded-lg p-2">
-  //           <input
-  //             type="text"
-  //             value={newComment}
-  //             onChange={(e) => setNewComment(e.target.value)}
-  //             placeholder="Type your team comment!"
-  //             className="flex-1 px-4 py-2 rounded-lg text-sm"
-  //             onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
-  //           />
-  //           <button
-  //             onClick={handleAddComment}
-  //             disabled={!newComment.trim()}
-  //             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
-  //           >
-  //             <Send className="w-4 h-4" />
-  //           </button>
-  //         </div>
-  //       </div>
-  //     </>
-  //   );
-  // };
+    );
+  };
 
   const NotesTab: React.FC<NotesTabProps> = ({ candidateId }) => {
     const [notes, setNotes] = useState<Note[]>([]);
@@ -797,6 +673,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       </>
     );
   };
+
   return (
     <div
       className={`bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-3 ${
