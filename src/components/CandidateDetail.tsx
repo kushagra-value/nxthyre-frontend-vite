@@ -541,7 +541,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       <div className="bg-[#F0F0F0] p-4 rounded-lg shadow-sm">
         <div className="flex items-center mb-4">
           <UsersRound className="w-5 h-5 text-[#4B5563] mr-2" />
-          <h3 className="text-lg text-[#4B5563] font-medium">
+          <h3 className="text-base text-[#4B5563] font-medium">
             Available References
           </h3>
         </div>
@@ -589,7 +589,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               )}
             </div>
           </div>
-          <div className="ml-14 flex-1">
+          <div className="ml-[52px] flex-1">
             <p className="text-[#818283] text-sm leading-snug mt-2 mb-2">
               {isExpanded ? reference.description : truncatedDescription}
             </p>
