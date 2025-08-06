@@ -1085,7 +1085,35 @@ function MainApp() {
                             loadingCandidates={loadingCandidates}
                           />
                         </div>
+                        {/* CandidateDetail remains in its original div with 30% width */}
                         <div className="lg:w-[30%] order-3 sticky top-16 self-start will-change-transform">
+                          <CandidateDetail
+                            candidate={selectedCandidate}
+                            candidates={candidates}
+                            onSendInvite={handleSendInvite}
+                            updateCandidateEmail={updateCandidateEmail}
+                            deductCredits={deductCredits}
+                          />
+                        </div>
+
+                        {/* TemplateSelector rendered as an overlay with 40% width when active */}
+                        {showTemplateSelector && selectedCandidate && (
+                          <div className="fixed inset-0 z-50 flex items-center justify-center">
+                            {/* Backdrop with blur effect */}
+                            <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-md"></div>
+
+                            {/* TemplateSelector with 40% width */}
+                            <div className="relative w-[40%] bg-white p-4 rounded-lg shadow-lg">
+                              <TemplateSelector
+                                candidate={selectedCandidate}
+                                onBack={handleBackFromTemplate}
+                                updateCandidateEmail={updateCandidateEmail}
+                                jobId={filters.jobId}
+                              />
+                            </div>
+                          </div>
+                        )}
+                        {/* <div className="lg:w-[30%] order-3 sticky top-16 self-start will-change-transform">
                           {showTemplateSelector && selectedCandidate ? (
                             <TemplateSelector
                               candidate={selectedCandidate}
@@ -1102,7 +1130,7 @@ function MainApp() {
                               deductCredits={deductCredits}
                             />
                           )}
-                        </div>
+                        </div> */}
                       </div>
                     </div>
 
