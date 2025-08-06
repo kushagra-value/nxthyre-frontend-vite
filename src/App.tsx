@@ -799,17 +799,6 @@ function MainApp() {
     );
   }
 
-  useEffect(() => {
-    if (showTemplateSelector) {
-      document.body.classList.add("overflow-hidden");
-    } else {
-      document.body.classList.remove("overflow-hidden");
-    }
-    return () => {
-      document.body.classList.remove("overflow-hidden");
-    };
-  }, [showTemplateSelector]);
-
   return (
     <>
       <Routes>
