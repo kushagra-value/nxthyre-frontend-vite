@@ -1190,7 +1190,11 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <button
               onClick={resetFilters}
               disabled={isSearchMode}
-              className="w-full p-2 text-sm border border-blue-600 text-blue-600 hover:bg-blue-700 hover:text-white rounded-lg transition-colors flex items-center justify-center"
+              className={`w-full p-2 text-sm rounded-lg transition-colors flex items-center justify-center ${
+                isSearchMode
+                  ? "border border-gray-400 text-gray-400 cursor-not-allowed"
+                  : "border border-blue-600 text-blue-600 hover:bg-blue-700 hover:text-white"
+              }`}
             >
               Clear All Filters
             </button>
