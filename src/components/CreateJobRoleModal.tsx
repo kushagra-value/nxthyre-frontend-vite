@@ -890,17 +890,17 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                     <button
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, confidential: !prev.confidential }))}
-                      className={`flex items-center justify-center gap-2 px-6 py-2 rounded-lg border text-sm font-medium transition-all duration-200 ${
+                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-md font-[400] transition-all duration-200 ${
                         formData.confidential
-                          ? 'bg-white border-blue-500 text-blue-600'
-                          : 'bg-white border-gray-300 text-gray-600'
+                          ? 'bg-[#ECF1FF] text-blue-600'
+                          : 'bg-[#F0F0F0] text-gray-400'
                       }`}
                       disabled={isLoading}
                     >
                       {formData.confidential ? (
                         <>
-                          <div className="flex items-center justify-center w-5 h-5 bg-blue-600 rounded-full">
-                            <Check className="w-3 h-3 text-white" />
+                          <div className="flex items-center justify-center w-5 h-5 border border-blue-600 rounded-full">
+                            <Check className="w-3 h-3 text-blue-600" />
                           </div>
                           Confidential
                         </>
