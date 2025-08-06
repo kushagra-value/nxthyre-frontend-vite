@@ -5,12 +5,13 @@ import { jobPostService, CreateJobData } from '../services/jobPostService';
 
 interface CreateJobRoleModalProps {
   isOpen: boolean;
-  workspaceId: number; 
+  workspaceId: number;
+  handlePipelinesClick?: () => void; // Optional callback for pipeline click 
   onClose: () => void;
   onJobCreated?: () => void; // Callback to refresh categories
 }
 
-const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspaceId, onClose, onJobCreated }) => {
+const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspaceId, handlePipelinesClick, onClose, onJobCreated }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -39,6 +40,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
 
   const [skillInput, setSkillInput] = useState('');
   const [locationInput, setLocationInput] = useState('');
+  const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
   const [competencyInput, setCompetencyInput] = useState('');
   const [refinementInput, setRefinementInput] = useState('');
   const [validationError, setValidationError] = useState('');
@@ -46,6 +48,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
   const [isLoading, setIsLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null); // State for uploaded file
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const locationInputRef = useRef<HTMLInputElement>(null);
 
   const seniorityOptions = ['JUNIOR', 'SENIOR', 'LEAD', 'HEAD', 'INTERN'];
   const departmentOptions = ['Human Resources', 'Marketing', 'Finance', 'Sales', 'Ops', 'Engineering', 'Admin', 'Others'];
@@ -179,6 +182,32 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
         location: locationInput.trim()
       }));
       setLocationInput('');
+      setLocationSuggestions([]);
+    }
+  };
+
+  const handleLocationSelect = (location: string) => {
+    setFormData(prev => ({
+      ...prev,
+      location
+    }));
+    setLocationInput('');
+    setLocationSuggestions([]);
+  };
+
+  const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setLocationInput(query);
+    if (query.length > 2) {
+      try {
+        const suggestions = await jobPostService.getLocationSuggestions(query);
+        const uniqueSuggestions = [...new Set(suggestions)].filter(s => s !== formData.location);
+        setLocationSuggestions(uniqueSuggestions);
+      } catch (error) {
+        showToast.error('Failed to fetch location suggestions');
+      }
+    } else {
+      setLocationSuggestions([]);
     }
   };
 
@@ -436,6 +465,12 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
     onClose();
     resetForm();
   };
+  const handlePipelineButtonClick = () => {
+    handlePipelinesClick?.();
+    setShowSuccessModal(false);
+    onClose();
+    resetForm();
+  };
 
   const resetForm = () => {
     setFormData({
@@ -462,6 +497,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
     });
     setSkillInput('');
     setLocationInput('');
+    setLocationSuggestions([]);
     setCompetencyInput('');
     setFile(null);
     setCurrentStep(1);
@@ -491,7 +527,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                 Back to Home
               </button>
               <button
-                onClick={handleSuccessClose}
+                onClick={handlePipelineButtonClick}
                 className="flex-1 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
               >
                 Pipeline
@@ -644,13 +680,27 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                   <div className="border border-gray-300 rounded-lg px-4 pt-2 pb-2">
                     <input
                       type="text"
+                      ref={locationInputRef}
                       placeholder="Type location and Press Enter"
                       value={locationInput}
-                      onChange={(e) => setLocationInput(e.target.value)}
+                      onChange={handleLocationChange}
                       onKeyPress={handleLocationAdd}
                       className="w-full border-none outline-none text-sm placeholder-gray-400 mb-3"
                       disabled={isLoading}
                     />
+                    {locationSuggestions.length > 0 && (
+                      <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-40 overflow-y-auto shadow-lg">
+                        {locationSuggestions.map((suggestion, index) => (
+                          <div
+                            key={index}
+                            className="px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 cursor-pointer"
+                            onClick={() => handleLocationSelect(suggestion)}
+                          >
+                            {suggestion}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex flex-wrap gap-2">
                       {formData.location && (
                         <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center">

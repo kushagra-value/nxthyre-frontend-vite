@@ -1113,6 +1113,7 @@ function MainApp() {
                           ? parseInt(currentUser.organizationId)
                           : 1
                       }
+                      handlePipelinesClick={handlePipelinesClick}
                       onClose={() => setShowCreateJobRole(false)}
                       onJobCreated={handleJobCreatedOrUpdated}
                     />
