@@ -1,5 +1,5 @@
 import React, { useState, useRef , useEffect } from 'react';
-import { X, Upload, FileText, RotateCcw, ArrowLeft, ArrowRight, Bold, Italic, Underline, List, CheckCircle, Info  } from 'lucide-react';
+import { X, Upload, FileText, RotateCcw, ArrowLeft, ArrowRight, Bold, Italic, Underline, List, CheckCircle, Info, Check, Plus  } from 'lucide-react';
 import { showToast } from '../utils/toast';
 import { jobPostService, CreateJobData } from '../services/jobPostService';
 
@@ -21,7 +21,8 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
     title: '',
     skills: [] as string[],
     location: '',
-    hybrid: false,
+    workApproach: 'Hybrid' as 'Onsite' | 'Remote' | 'Hybrid',
+    hybrid: true,
     seniority: '',
     department: '',
     aiInterviews: false,
@@ -108,6 +109,43 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
   const MAX_SAFE_INTEGER = 999999999999;
   const MIN_DESCRIPTION_LENGTH = 10;
 
+  const RadioToggle: React.FC<{
+    label: string;
+    isSelected: boolean;
+    onClick: () => void;
+    disabled?: boolean;
+  }> = ({ label, isSelected, onClick, disabled = false }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`
+        flex items-center justify-start px-4 py-2 rounded-lg  text-md font-[400] transition-all duration-200
+        ${isSelected 
+          ? 'bg-[#ECF1FF] text-blue-700' 
+          : 'bg-[#F0F0F0]  text-gray-700 hover:bg-gray-100'
+        }
+        ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+      `}
+    >
+      <div className="flex items-center">
+        <div
+          className={`
+            w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center transition-all duration-200
+            ${isSelected 
+              ? 'border-blue-500 bg-white' 
+              : 'border-gray-300 bg-white'
+            }
+          `}
+        >
+          {isSelected && (
+            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+          )}
+        </div>
+        {label}
+      </div>
+    </button>
+  );
 
   const handleSkillAdd = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && skillInput.trim()) {
@@ -275,7 +313,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
       const jobData: CreateJobData = {
         title: formData.title,
         location: formData.location,
-        is_hybrid: formData.hybrid,
+        is_hybrid: formData.workApproach === 'Hybrid',
         seniority: formData.seniority,
         department: departmentNameToId[formData.department] || 8,
         experience_min_years: parseInt(formData.minExp) || 0,
@@ -336,7 +374,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
       const jobData: CreateJobData = {
         title: formData.title,
         location: formData.location,
-        is_hybrid: formData.hybrid,
+        is_hybrid: formData.workApproach === 'Hybrid',
         seniority: formData.seniority,
         department: parseInt(formData.department) || 1, // Assuming department ID 1 as default
         experience_min_years: parseInt(formData.minExp) || 0,
@@ -407,6 +445,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
       title: '',
       skills: [],
       location: '',
+      workApproach: 'Hybrid',
       hybrid: false,
       seniority: '',
       department: '',
@@ -661,51 +700,46 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
 
               {/* Work Approach as Radio Buttons */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Work Approach</label>
-                <div className="grid grid-cols-3 gap-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="workApproach"
-                      onChange={() => setFormData(prev => ({ ...prev, hybrid: false }))}
-                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                      disabled={isLoading}
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Onsite</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="workApproach"
-                      onChange={() => setFormData(prev => ({ ...prev, hybrid: false }))}
-                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                      disabled={isLoading}
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Remote</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="workApproach"
-                      checked={formData.hybrid}
-                      onChange={() => setFormData(prev => ({ ...prev, hybrid: true }))}
-                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                      disabled={isLoading}
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Hybrid</span>
-                  </label>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Work Approach <span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  <RadioToggle
+                    label="Onsite"
+                    isSelected={formData.workApproach === 'Onsite'}
+                    onClick={() => setFormData(prev => ({ ...prev, workApproach: 'Onsite' }))}
+                    disabled={isLoading}
+                  />
+                  <RadioToggle
+                    label="Remote"
+                    isSelected={formData.workApproach === 'Remote'}
+                    onClick={() => setFormData(prev => ({ ...prev, workApproach: 'Remote' }))}
+                    disabled={isLoading}
+                  />
+                  <RadioToggle
+                    label="Hybrid"
+                    isSelected={formData.workApproach === 'Hybrid'}
+                    onClick={() => setFormData(prev => ({ ...prev, workApproach: 'Hybrid' }))}
+                    disabled={isLoading}
+                  />
                 </div>
               </div>
 
             <div className="flex flex-col items-start space-y-3">
               <span className="text-sm font-medium text-gray-700">Job Post Control</span>
-                <div className="relative">
+                <div className="flex relative">
+                  <RadioToggle
+                    label="Allow Inbound Applications"
+                    isSelected={formData.allowInbound}
+                    onClick={() => setFormData(prev => ({ ...prev, allowInbound: true, keepPrivate: false }))}
+                    disabled={isLoading}
+                  />
                   <label 
                     className="flex items-center cursor-pointer"
                     onMouseEnter={() => setShowTooltip('inbound')}
                     onMouseLeave={() => setShowTooltip(null)}
                   >
-                    <input
+                    {/* <input
                       type="radio"
                       name="privacy"
                       value="inbound"
@@ -713,35 +747,33 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                       onChange={() => setFormData(prev => ({ ...prev, allowInbound: true, keepPrivate: false }))}
                       className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                       disabled={isLoading}
-                    />
-                    <span className="ml-2 text-sm font-medium text-gray-700">ALLOW INBOUND APPLICATIONS</span>
+                    /> */}
+                    <span className="ml-2  px-2 text-sm bg-gray-200 rounded-full font-medium text-gray-700">!</span>
                   </label>
                   {showTooltip === 'inbound' && (
-                    <div className="absolute top-full left-0 mt-2 w-80 p-3 bg-gray-900 text-white text-sm rounded-lg shadow-lg z-10">
+                    <div className="absolute top-full left-0 mt-2 w-80 p-3 bg-gray-50 text-gray-500 text-sm rounded-lg shadow-lg z-10">
                       NxtHyre can post your jobs on social sites like LinkedIn to get a high number of job applicants (along with your LinkedIn as hiring POC)
                     </div>
                   )}
                 </div>
                 
-                <div className="relative">
+                <div className="flex relative">
+                  <RadioToggle
+                    label="Keep It Private"
+                    isSelected={formData.keepPrivate}
+                    onClick={() => setFormData(prev => ({ ...prev, allowInbound: false, keepPrivate: true}))}
+                    disabled={isLoading}
+                  />
                   <label 
                     className="flex items-center cursor-pointer"
                     onMouseEnter={() => setShowTooltip('private')}
                     onMouseLeave={() => setShowTooltip(null)}
                   >
-                    <input
-                      type="radio"
-                      name="privacy"
-                      value="private"
-                      checked={formData.keepPrivate}
-                      onChange={() => setFormData(prev => ({ ...prev, allowInbound: false, keepPrivate: true }))}
-                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                      disabled={isLoading}
-                    />
-                    <span className="ml-2 text-sm font-medium text-gray-700">KEEP IT PRIVATE</span>
+                    
+                    <span className="ml-2  px-2 text-sm bg-gray-200 rounded-full font-medium text-gray-700">!</span>
                   </label>
                   {showTooltip === 'private' && (
-                    <div className="absolute top-full left-0 mt-2 w-80 p-3 bg-gray-900 text-white text-sm rounded-lg shadow-lg z-10">
+                    <div className="absolute top-full left-0 mt-2 w-80 p-3 bg-gray-50 text-gray-500 text-sm rounded-lg shadow-lg z-10">
                        NxtHyre will not post LinkedIn on NxtHyre job portal
                     </div>
                   )}
@@ -838,7 +870,9 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                           setFormData(prev => ({ ...prev, minSalary: e.target.value }));
                         }
                       }}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500  ${
+                        formData.confidential ? 'bg-gray-100 text-gray-400' : ''
+                      }`}
                       disabled={isLoading || formData.confidential}
                     />
                     <input
@@ -850,23 +884,33 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                           setFormData(prev => ({ ...prev, maxSalary: e.target.value }));
                         }
                       }}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${formData.confidential ? 'bg-gray-100 text-gray-400' : ''}`}
                       disabled={isLoading || formData.confidential}
                     />
-                    <div className="flex items-center w-full border rounded-lg border-gray-300 px-4 py-2">
-                      <label className="flex items-center gap-2 ">
-                        <input
-                          type="checkbox"
-                          name="confidential"
-                          value="confidential"
-                          checked={formData.confidential}
-                          onChange={(e) => setFormData(prev => ({ ...prev, confidential: e.target.checked }))}
-                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                          disabled={isLoading}
-                        />
-                        <span className="ml-1 text-sm text-gray-700">confidential</span>
-                      </label>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, confidential: !prev.confidential }))}
+                      className={`flex items-center justify-center gap-2 px-6 py-2 rounded-lg border text-sm font-medium transition-all duration-200 ${
+                        formData.confidential
+                          ? 'bg-white border-blue-500 text-blue-600'
+                          : 'bg-white border-gray-300 text-gray-600'
+                      }`}
+                      disabled={isLoading}
+                    >
+                      {formData.confidential ? (
+                        <>
+                          <div className="flex items-center justify-center w-5 h-5 bg-blue-600 rounded-full">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                          Confidential
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-4 h-4 text-gray-400" />
+                          Confidential
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>
