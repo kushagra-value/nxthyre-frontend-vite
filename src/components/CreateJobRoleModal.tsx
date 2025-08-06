@@ -689,7 +689,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                       disabled={isLoading}
                     />
                     {locationSuggestions.length > 0 && (
-                      <div className="absolute left-0 z-10 w-1/2 bg-white border border-gray-300 rounded-lg mt-1 max-h-40 overflow-y-auto shadow-lg">
+                      <div className="absolute left-0 z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-40 overflow-y-auto shadow-lg">
                         {locationSuggestions.map((suggestion, index) => (
                           <div
                             key={index}
