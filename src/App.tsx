@@ -1103,7 +1103,7 @@ function MainApp() {
                             <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-md"></div>
 
                             {/* TemplateSelector with 40% width */}
-                            <div className="relative w-[40%] bg-white p-4 rounded-lg shadow-lg">
+                            <div className="relative w-[40%] h-full bg-white rounded-tl-xl rounded-bl-xl shadow-lg">
                               <TemplateSelector
                                 candidate={selectedCandidate}
                                 onBack={handleBackFromTemplate}
