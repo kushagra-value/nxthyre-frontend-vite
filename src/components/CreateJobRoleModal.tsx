@@ -677,7 +677,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Location <span className="text-red-500">*</span>
                   </label>
-                  <div className="border border-gray-300 rounded-lg px-4 pt-2 pb-2">
+                  <div className="relative border border-gray-300 rounded-lg px-4 pt-2 pb-2">
                     <input
                       type="text"
                       ref={locationInputRef}
@@ -685,11 +685,11 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                       value={locationInput}
                       onChange={handleLocationChange}
                       onKeyPress={handleLocationAdd}
-                      className="w-full border-none outline-none text-sm placeholder-gray-400 mb-3"
+                      className=" w-full border-none outline-none text-sm placeholder-gray-400 mb-3"
                       disabled={isLoading}
                     />
                     {locationSuggestions.length > 0 && (
-                      <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-40 overflow-y-auto shadow-lg">
+                      <div className="absolute left-0 z-10 w-1/2 bg-white border border-gray-300 rounded-lg mt-1 max-h-40 overflow-y-auto shadow-lg">
                         {locationSuggestions.map((suggestion, index) => (
                           <div
                             key={index}
