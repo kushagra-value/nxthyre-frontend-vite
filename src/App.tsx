@@ -1032,6 +1032,11 @@ function MainApp() {
                                         setShowDeleteModal(jobId)
                                       }
                                       onSharePipelines={handleSharePipelines}
+                                      onSelectCategory={(jobId) => {
+                                        setActiveCategoryId(jobId);
+                                        fetchJobDetailsAndSetFilters(jobId);
+                                      }}
+                                      activeCategoryId={activeCategoryId}
                                     />
                                   </div>
                                 )}
