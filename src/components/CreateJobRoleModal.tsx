@@ -32,10 +32,12 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
     confidential: false,
     jobDescription: '',
     uploadType: 'paste' as 'paste' | 'upload',
-    shareThirdParty: false
+    shareThirdParty: false,
+    codingRound: false,
   });
 
   const [skillInput, setSkillInput] = useState('');
+  const [locationInput, setLocationInput] = useState('');
   const [competencyInput, setCompetencyInput] = useState('');
   const [refinementInput, setRefinementInput] = useState('');
   const [validationError, setValidationError] = useState('');
@@ -126,6 +128,20 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
       ...prev,
       skills: prev.skills.filter((_, i) => i !== index)
     }));
+  };
+
+  const handleLocationAdd = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && locationInput.trim()) {
+      if (!isValidTextInput(locationInput)) {
+        showToast.error('Location can only contain letters, numbers, commas, and spaces.');
+        return;
+      }
+      setFormData(prev => ({
+        ...prev,
+        location: locationInput.trim()
+      }));
+      setLocationInput('');
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -402,9 +418,11 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
       confidential: false,
       jobDescription: '',
       uploadType: 'paste',
-      shareThirdParty: false
+      shareThirdParty: false,
+      codingRound: false,
     });
     setSkillInput('');
+    setLocationInput('');
     setCompetencyInput('');
     setFile(null);
     setCurrentStep(1);
@@ -554,52 +572,56 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                 />
               </div>
 
-              {/* Skills Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Skills <span className="text-red-500">*</span>
-                  </label>
+                  Skills <span className="text-red-500">*</span>
+                </label>
+                <div className="border border-gray-300 rounded-lg px-4 pt-2 pb-2">
                   <input
                     type="text"
-                    placeholder="Enter skills and press Enter"
+                    placeholder="Type skill and Press Enter"
                     value={skillInput}
                     onChange={(e) => setSkillInput(e.target.value)}
                     onKeyPress={handleSkillAdd}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border-none outline-none text-sm placeholder-gray-400 mb-3"
                     disabled={isLoading}
                   />
-                  <div className="flex flex-wrap gap-2 mt-2 max-h-20 overflow-hidden">
+                  <div className="flex flex-wrap gap-2">
                     {formData.skills.map((skill, index) => (
-                      <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center">
+                      <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center">
+                        <X className="w-3 h-3 mr-1 cursor-pointer" onClick={() => removeSkill(index)} />
                         {skill}
-                        <button onClick={() => removeSkill(index)} className="ml-1 text-blue-600 hover:text-blue-800" disabled={isLoading}>
-                          <X className="w-3 h-3" />
-                        </button>
                       </span>
                     ))}
                   </div>
+                </div>
               </div>
 
               {/* Location Input */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Location <span className="text-red-500">*</span>
                   </label>
-                  <div className="flex">
+                  <div className="border border-gray-300 rounded-lg px-4 pt-2 pb-2">
                     <input
                       type="text"
-                      placeholder="Enter location"
-                      value={formData.location}
-                      onChange={(e) => {
-                        if (isValidTextInput(e.target.value)) {
-                          setFormData(prev => ({ ...prev, location: e.target.value }));
-                        }
-                      }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Type location and Press Enter"
+                      value={locationInput}
+                      onChange={(e) => setLocationInput(e.target.value)}
+                      onKeyPress={handleLocationAdd}
+                      className="w-full border-none outline-none text-sm placeholder-gray-400 mb-3"
                       disabled={isLoading}
                     />
+                    <div className="flex flex-wrap gap-2">
+                      {formData.location && (
+                        <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center">
+                          <X className="w-3 h-3 mr-1 cursor-pointer" onClick={() => setFormData(prev => ({ ...prev, location: '' }))} />
+                          {formData.location}
+                        </span>
+                      )}
+                    </div>
                   </div>
-              </div>
+                </div>
 
               {/* Seniority and Department Option */}
               <div className="grid grid-cols-2 gap-4">
@@ -637,74 +659,43 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                 </div>
               </div>
 
+              {/* Work Approach as Radio Buttons */}
               <div>
-                <div className="flex flex-col item-start">
-                  <span className="text-sm font-medium text-gray-700">Work Approach</span>
-              {/* Hybrid Option */}
-              <div className="grid grid-cols-6 gap-4">
-                <div className="col-span-1">
-                  <span className="text-xs text-gray-700 font-semibold ">Onsite</span>
-                  <div className="flex justify-start">
-                    <button
-                      onClick={() => setFormData(prev => ({ ...prev, hybrid: !prev.hybrid }))}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        formData.hybrid ? 'bg-blue-500' : 'bg-gray-300'
-                      }`}
-                      role="switch"
-                      aria-checked={formData.hybrid}
+                <label className="block text-sm font-medium text-gray-700 mb-2">Work Approach</label>
+                <div className="grid grid-cols-3 gap-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="workApproach"
+                      onChange={() => setFormData(prev => ({ ...prev, hybrid: false }))}
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                       disabled={isLoading}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          formData.hybrid ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
-                <div className="col-span-1">
-                  <span className="text-xs text-gray-700 font-semibold ">Remote</span>
-                  <div className="flex justify-start">
-                    <button
-                      onClick={() => setFormData(prev => ({ ...prev, hybrid: !prev.hybrid }))}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        formData.hybrid ? 'bg-blue-500' : 'bg-gray-300'
-                      }`}
-                      role="switch"
-                      aria-checked={formData.hybrid}
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Onsite</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="workApproach"
+                      onChange={() => setFormData(prev => ({ ...prev, hybrid: false }))}
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                       disabled={isLoading}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          formData.hybrid ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
-                <div className="col-span-1">
-                  <span className="text-xs text-gray-700 font-semibold ">Hybrid</span>
-                  <div className="flex justify-start">
-                    <button
-                      onClick={() => setFormData(prev => ({ ...prev, hybrid: !prev.hybrid }))}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        formData.hybrid ? 'bg-blue-500' : 'bg-gray-300'
-                      }`}
-                      role="switch"
-                      aria-checked={formData.hybrid}
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Remote</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="workApproach"
+                      checked={formData.hybrid}
+                      onChange={() => setFormData(prev => ({ ...prev, hybrid: true }))}
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                       disabled={isLoading}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          formData.hybrid ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </div>
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Hybrid</span>
+                  </label>
                 </div>
               </div>
-              </div>
-            </div>
 
             <div className="flex flex-col items-start space-y-3">
               <span className="text-sm font-medium text-gray-700">Job Post Control</span>
@@ -780,15 +771,15 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">Coding Round</span>
                   <button
-                    onClick={() => setFormData(prev => ({ ...prev, aiInterviews: !prev.aiInterviews }))}
+                    onClick={() => setFormData(prev => ({ ...prev, codingRound: !prev.codingRound }))}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      formData.aiInterviews ? 'bg-blue-600' : 'bg-gray-300'
+                      formData.codingRound ? 'bg-blue-600' : 'bg-gray-300'
                     }`}
                     disabled={isLoading}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        formData.aiInterviews ? 'translate-x-6' : 'translate-x-1'
+                        formData.codingRound ? 'translate-x-6' : 'translate-x-1'
                       }`}
                     />
                   </button>
@@ -832,23 +823,12 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
               </div>
               <div className="grid grid-cols-12 gap-4">
                 
-                <div className="col-span-6">
+                <div className="col-span-12">
                   <label className="block flex text-sm font-medium text-gray-700 mb-2">
                     Enter Salary Range {formData.confidential ? '' : <span className="text-red-500">*</span>}
-                    <div className="flex items-end">
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={formData.confidential}
-                          onChange={(e) => setFormData(prev => ({ ...prev, confidential: e.target.checked }))}
-                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                          disabled={isLoading}
-                        />
-                        <span className="ml-1 text-sm text-gray-700">Keep it confidential</span>
-                      </label>
-                    </div>
+                    
                   </label>
-                  <div className="flex space-x-2">
+                  <div className="flex w-full space-x-2">
                     <input
                       type="text"
                       placeholder="Min salary"
@@ -873,6 +853,20 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       disabled={isLoading || formData.confidential}
                     />
+                    <div className="flex items-center w-full border rounded-lg border-gray-300 px-4 py-2">
+                      <label className="flex items-center gap-2 ">
+                        <input
+                          type="checkbox"
+                          name="confidential"
+                          value="confidential"
+                          checked={formData.confidential}
+                          onChange={(e) => setFormData(prev => ({ ...prev, confidential: e.target.checked }))}
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          disabled={isLoading}
+                        />
+                        <span className="ml-1 text-sm text-gray-700">confidential</span>
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
