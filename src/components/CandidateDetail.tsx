@@ -237,6 +237,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   const ProfileTab = () => {
     const [showMore, setShowMore] = useState(false);
+    const experiences = detailedCandidate?.candidate?.experience || [];
 
     return (
       <div className="relative bg-[#F0F0F0] p-3 rounded-lg">
@@ -260,8 +261,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               Experience
             </h3>
             <div className="ml-2">
-              {detailedCandidate?.candidate?.experience?.length > 0 ? (
-                detailedCandidate?.candidate?.experience.map((exp, index) => (
+              {experiences.length > 0 ? (
+                (showMore || experiences.length <= 1
+                  ? experiences
+                  : experiences.slice(0, 1)
+                ).map((exp, index) => (
                   <div
                     key={index}
                     className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
@@ -287,7 +291,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             </div>
           </div>
         </div>
-        {!showMore && (
+        {experiences.length > 1 && !showMore && (
           <div className="absolute bottom-0 left-0 right-0 p-4 ml-6 flex space-x-1 items-center">
             <button
               onClick={() => setShowMore(true)}
