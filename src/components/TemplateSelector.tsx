@@ -13,15 +13,21 @@ import {
   Settings,
   Send,
   X,
+  User,
+  Share2,
+  Copy,
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import {
   CandidateListItem,
+  CandidateDetailData,
   Template,
   candidateService,
 } from "../services/candidateService";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 
 interface TemplateSelectorProps {
   candidate: CandidateListItem;
@@ -250,19 +256,171 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     setFollowUpTemplates(followUpTemplates.filter((_, i) => i !== index));
   };
 
+  const [detailedCandidate, setDetailedCandidate] =
+    useState<CandidateDetailData | null>(null);
+
+  useEffect(() => {
+    if (candidate?.id) {
+      const fetchCandidateDetails = async () => {
+        setLoading(true);
+        try {
+          const data = await candidateService.getCandidateDetails(candidate.id);
+          setDetailedCandidate({
+            ...data,
+            candidate: {
+              ...data.candidate,
+              candidate_email: candidate.candidate_email,
+              candidate_phone: candidate.candidate_phone,
+            },
+          });
+        } catch (error) {
+          console.error("Error fetching candidate details:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchCandidateDetails();
+    }
+  }, [candidate?.id, candidate?.candidate_email, candidate?.candidate_phone]);
+
+  const handleShareProfile = () => {
+    if (detailedCandidate && detailedCandidate.candidate) {
+      window.open(
+        `/candidate-profiles/${detailedCandidate.candidate.id}`,
+        "_blank"
+      );
+    }
+  };
+
+  const getAvatarColor = (name: string) => {
+    return "bg-blue-500";
+  };
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        showToast.success("Copied to clipboard!");
+      })
+      .catch(() => {
+        showToast.error("Failed to copy");
+      });
+  };
+
+  const handleWhatsApp = (phone: string) => {
+    const formattedPhone = phone.replace(/[^0-9+]/g, "");
+    window.open(`https://wa.me/${formattedPhone}`, "_blank");
+  };
+
+  const hasContactInfo =
+    !!detailedCandidate?.candidate?.candidate_email &&
+    !!detailedCandidate?.candidate?.candidate_phone;
+  const displayEmail = hasContactInfo
+    ? detailedCandidate?.candidate?.candidate_email
+    : `${detailedCandidate?.candidate?.full_name
+        ?.toLocaleLowerCase()
+        ?.slice(0, 2)}*********@gmail.com`;
+  const displayPhone = hasContactInfo
+    ? detailedCandidate?.candidate?.candidate_phone
+    : "93********45";
+
   return (
     <>
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-4 h-fit">
+      <div className="bg-white rounded-xl p-8 space-y-4 h-fit">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <button
               onClick={onBack}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="pr-2 py-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-4 h-4 text-gray-600" />
+              <ArrowLeft className="w-6 h-4 text-gray-600" />
             </button>
             <h2 className="text-lg font-semibold text-gray-900">Send Invite</h2>
+          </div>
+        </div>
+
+        <div className="flex space-x-3 items-center mt-1">
+          <div
+            className={`w-12 h-12 ${getAvatarColor(
+              detailedCandidate?.candidate?.full_name || ""
+            )} rounded-full flex items-center justify-center text-white`}
+          >
+            <User className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-base lg:text-[16px] font-bold text-gray-900">
+              {detailedCandidate?.candidate?.full_name}
+            </h2>
+            <div className="flex">
+              <p className="text-sm text-gray-500 max-w-[32ch] truncate">
+                {detailedCandidate?.candidate?.headline}
+              </p>
+            </div>
+            <div className="flex">
+              <p className="text-sm text-gray-500">
+                {detailedCandidate?.candidate?.location}
+              </p>
+            </div>
+          </div>
+          <div className="text-xs text-gray-400 absolute right-6 top-4">
+            <button
+              onClick={handleShareProfile}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Share Profile"
+            >
+              <Share2 className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        <div className="border-t border-gray-300 border-b p-3 space-y-2">
+          <div className="flex justify-between items-center space-x-2">
+            <div className="flex items-center space-x-2">
+              <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
+              <span className="text-sm text-gray-700">{displayEmail}</span>
+            </div>
+            <button
+              className={`flex space-x-2 ml-auto p-1 ${
+                hasContactInfo
+                  ? "text-gray-400 hover:text-gray-600"
+                  : "text-gray-300 cursor-not-allowed"
+              }`}
+              onClick={() => hasContactInfo && handleCopy(displayEmail)}
+              disabled={!hasContactInfo}
+            >
+              <Copy className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex justify-between items-center space-x-2">
+            <div className="flex items-center space-x-2">
+              <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
+              <span className="text-sm text-gray-700">{displayPhone}</span>
+            </div>
+            <div>
+              <button
+                className={`p-1 ${
+                  hasContactInfo
+                    ? "text-gray-400 hover:text-gray-600"
+                    : "text-gray-300 cursor-not-allowed"
+                }`}
+                onClick={() => hasContactInfo && handleWhatsApp(displayPhone)}
+                disabled={!hasContactInfo}
+              >
+                <FontAwesomeIcon icon={faWhatsapp} />
+              </button>
+              <button
+                className={`p-1 ${
+                  hasContactInfo
+                    ? "text-gray-400 hover:text-gray-600"
+                    : "text-gray-300 cursor-not-allowed"
+                }`}
+                onClick={() => hasContactInfo && handleCopy(displayPhone)}
+                disabled={!hasContactInfo}
+              >
+                <Copy className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
 
