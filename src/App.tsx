@@ -271,11 +271,11 @@ function MainApp() {
             hasBehance: false,
             hasTwitter: false,
             hasPortfolio: false,
-            jobId: "",
+            jobId: appliedFilters.jobId || "",
             application_type: "",
             is_prevetted: false,
             is_active: false,
-            sort_by: "",
+            sort_by: sortBy || "",
           });
         } else {
           const filterParams: any = {
@@ -891,6 +891,7 @@ function MainApp() {
                         showCreateRoleButton={true}
                         candidates={candidates}
                         onSelectCandidate={setSelectedCandidate}
+                        jobId={activeCategoryId ?? undefined} // Changed: Pass jobId prop
                       />
                     </div>
 

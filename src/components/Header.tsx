@@ -24,6 +24,7 @@ interface HeaderProps {
   showCreateRoleButton?: boolean;
   candidates: CandidateListItem[];
   onSelectCandidate: (candidate: CandidateListItem) => void;
+  jobId?: number; // Changed: Added jobId prop
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -36,6 +37,7 @@ const Header: React.FC<HeaderProps> = ({
   showCreateRoleButton,
   candidates,
   onSelectCandidate,
+  jobId, // Changed: Destructured jobId
 }) => {
   const { isAuthenticated, user, signOut } = useAuthContext();
   const [showUserMenu, setShowUserMenu] = useState(false);
