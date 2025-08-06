@@ -799,6 +799,17 @@ function MainApp() {
     );
   }
 
+  useEffect(() => {
+    if (showTemplateSelector) {
+      document.body.classList.add("overflow-hidden");
+    } else {
+      document.body.classList.remove("overflow-hidden");
+    }
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+    };
+  }, [showTemplateSelector]);
+
   return (
     <>
       <Routes>
@@ -1103,7 +1114,7 @@ function MainApp() {
                             <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-md"></div>
 
                             {/* TemplateSelector with 40% width */}
-                            <div className="relative w-[40%] h-full bg-white rounded-tl-xl rounded-bl-xl shadow-lg">
+                            <div className="relative w-[40%] h-full bg-white rounded-tl-xl rounded-bl-xl shadow-lg overflow-y-auto">
                               <TemplateSelector
                                 candidate={selectedCandidate}
                                 onBack={handleBackFromTemplate}
