@@ -1098,12 +1098,12 @@ function MainApp() {
 
                         {/* TemplateSelector rendered as an overlay with 40% width when active */}
                         {showTemplateSelector && selectedCandidate && (
-                          <div className="fixed inset-0 z-50 flex items-center justify-end p-12">
-                            {/* Backdrop with blur effect covering the entire screen */}
-                            <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-md"></div>
+                          <div className="fixed right-0 z-50 flex items-center justify-end p-12">
+                            {/* Backdrop with blur effect */}
+                            {/* <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-md"></div> */}
 
-                            {/* TemplateSelector aligned to the right with 40% width */}
-                            <div className="w-[40%] bg-white p-4 rounded-lg shadow-lg">
+                            {/* TemplateSelector with 40% width */}
+                            <div className="relative w-[40%] bg-white p-4 rounded-lg shadow-lg">
                               <TemplateSelector
                                 candidate={selectedCandidate}
                                 onBack={handleBackFromTemplate}
