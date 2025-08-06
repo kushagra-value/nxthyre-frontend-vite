@@ -137,6 +137,8 @@ function MainApp() {
   const controller = new AbortController();
   const [sortBy, setSortBy] = useState<string>("");
 
+  const [isSearchMode, setIsSearchMode] = useState(false);
+
   const [filters, setFilters] = useState<Filters>({
     keywords: "",
     booleanSearch: false,
@@ -174,6 +176,10 @@ function MainApp() {
     is_active: false,
     sort_by: "",
   });
+
+  useEffect(() => {
+    setIsSearchMode(debouncedSearchQuery.trim() !== "");
+  }, [debouncedSearchQuery]);
 
   const fetchCategories = async () => {
     setLoadingCategories(true);
@@ -1050,6 +1056,7 @@ function MainApp() {
                             setCandidates={setCandidates}
                             candidates={candidates}
                             activeTab={activeTab}
+                            isSearchMode={isSearchMode}
                           />
                         </div>
                         <div className="lg:w-[45%] order-1 lg:order-2 ">
