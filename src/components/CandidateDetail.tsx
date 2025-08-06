@@ -17,7 +17,41 @@ import {
   MessageCircle,
   MessageSquareTextIcon,
   MessageSquareText,
+  Info,
+  CheckIcon,
+  XIcon,
+  PhoneIcon,
+  UsersRound,
+  ThumbsDown,
+  ThumbsUp,
+  ChevronUp,
+  Linkedin,
 } from "lucide-react";
+
+// Custom SVG Icon for IdCard
+const IdCard: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={props.width || 24}
+    height={props.height || 24}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={`lucide lucide-id-card-icon lucide-id-card ${
+      props.className || ""
+    }`}
+    {...props}
+  >
+    <path d="M16 10h2" />
+    <path d="M16 14h2" />
+    <path d="M6.17 15a3 3 0 0 1 5.66 0" />
+    <circle cx="9" cy="11" r="2" />
+    <rect x="2" y="5" width="20" height="14" rx="2" />
+  </svg>
+);
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { showToast } from "../utils/toast";
@@ -60,6 +94,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     { name: "Profile" },
     { name: "Education" },
     { name: "Skills" },
+    { name: "References" },
     { name: "Notes" },
   ];
 
@@ -198,10 +233,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         ?.slice(0, 2)}*********@gmail.com`;
   const displayPhone = hasContactInfo
     ? detailedCandidate.candidate.candidate_phone
-    : "93******45";
+    : "93********45";
 
   const ProfileTab = () => {
     const [showMore, setShowMore] = useState(false);
+    const experiences = detailedCandidate?.candidate?.experience || [];
 
     return (
       <div className="relative bg-[#F0F0F0] p-3 rounded-lg">
@@ -225,8 +261,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               Experience
             </h3>
             <div className="ml-2">
-              {detailedCandidate?.candidate?.experience?.length > 0 ? (
-                detailedCandidate?.candidate?.experience.map((exp, index) => (
+              {experiences.length > 0 ? (
+                (showMore || experiences.length <= 1
+                  ? experiences
+                  : experiences.slice(0, 1)
+                ).map((exp, index) => (
                   <div
                     key={index}
                     className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
@@ -252,8 +291,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             </div>
           </div>
         </div>
-        {!showMore && (
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white to-transparent p-4 ml-6 flex space-x-1 items-center">
+        {experiences.length > 1 && !showMore && (
+          <div className="absolute bottom-0 left-0 right-0 p-4 ml-6 flex space-x-1 items-center">
             <button
               onClick={() => setShowMore(true)}
               className="text-[#0F47F2] text-sm"
@@ -369,227 +408,292 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     </div>
   );
 
-  const SkillsTab = () => (
-    <div className="bg-[#F0F0F0] p-3 rounded-lg pb-6">
-      <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-3 flex items-center">
-        <Star className="w-4 h-4 mr-2 text-[#4B5563]" />
-        Skills
-      </h3>
-      <div className="flex flex-wrap gap-3">
-        {detailedCandidate?.candidate?.skills_data?.skills_mentioned?.length >
-        0 ? (
-          detailedCandidate?.candidate?.skills_data.skills_mentioned.map(
-            (skill, index) => (
-              <span
-                key={index}
-                className="px-3 py-[5px] bg-blue-100 text-blue-800 text-xs rounded-full"
-              >
-                {skill?.skill}
+  const SkillsTab = () => {
+    // Dummy data for vetted skills
+    const vettedSkills = [
+      { skill: "Meta Ads", rating: 3.5 },
+      { skill: "Flutter", rating: 4 },
+      { skill: "SEO", rating: 4.5 },
+    ];
+
+    // Extract resume skills from detailedCandidate
+    const resumeSkills =
+      detailedCandidate?.candidate?.skills_data?.skills_mentioned?.map(
+        (skill) => skill.skill
+      ) || [];
+
+    // State to manage expansion
+    const [isVettedExpanded, setIsVettedExpanded] = useState(false);
+    const [isResumeExpanded, setIsResumeExpanded] = useState(false);
+
+    return (
+      <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
+        {/* Vetted Skills Subsection */}
+        <div className="mb-6">
+          <h4 className="text-lg font-semibold text-gray-700 flex items-center">
+            <Star className="w-4 h-4 mr-2" />
+            Vetted Skills
+            <Info className="w-4 h-4 ml-2" />
+          </h4>
+          {vettedSkills.length > 0 ? (
+            <div className="flex flex-wrap gap-4 mt-2">
+              {vettedSkills
+                .slice(0, isVettedExpanded ? vettedSkills.length : 6)
+                .map((skill) => (
+                  <div
+                    key={skill.skill}
+                    className="flex items-center bg-white p-2 rounded-lg"
+                  >
+                    <span className="text-sm text-blue-500 mr-2">
+                      {skill.skill}
+                    </span>
+                    <Star className="w-4 h-4 text-yellow-500" />
+                    <span className="ml-2 text-sm text-gray-600">
+                      {skill.rating}
+                    </span>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">No vetted skills available</p>
+          )}
+          {!isVettedExpanded && vettedSkills.length > 6 && (
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setIsVettedExpanded(true);
+              }}
+              className="text-blue-500 text-sm mt-2 flex items-center"
+            >
+              View More
+              <span className="ml-1">
+                <ChevronDown className="text-blue-500" />
               </span>
-            )
-          )
-        ) : (
-          <p className="text-sm text-gray-500">No skills listed</p>
-        )}
+            </a>
+          )}
+        </div>
+        {/* Resume Skills Subsection */}
+        <div>
+          <h4 className="text-lg font-semibold text-gray-700 flex items-center">
+            <IdCard className="w-4 h-4 mr-2" />
+            Resume
+          </h4>
+          {resumeSkills.length > 0 ? (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {resumeSkills
+                .slice(0, isResumeExpanded ? resumeSkills.length : 10)
+                .map((skill, index) => (
+                  <span
+                    key={index}
+                    className="p-2 bg-white text-blue-500 text-xs rounded-lg"
+                  >
+                    {skill}
+                  </span>
+                ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">No skills listed in resume</p>
+          )}
+          {!isResumeExpanded && resumeSkills.length > 10 && (
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setIsResumeExpanded(true);
+              }}
+              className="text-blue-500 text-sm mt-2 flex items-center"
+            >
+              View More
+              <span className="ml-1">
+                <ChevronDown className="text-blue-500" />
+              </span>
+            </a>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
-  // const NotesTab = () => {
-  //   // Define dummy notes to display when no actual notes are available
-  //   const dummyNotes = [
-  //     {
-  //       noteId: "dummy1",
-  //       postedBy: { userName: "Sid Verma" },
-  //       organisation: { orgName: "Problock" },
-  //       content:
-  //         "This is a sample note to demonstrate the layout. lorem ipsum dolor sit amet, consectetur adipiscing elit. ipsum dolor sit amet, consectetur adipiscing elit.",
-  //       posted_at: new Date().toISOString(),
-  //     },
-  //     {
-  //       noteId: "dummy2",
-  //       postedBy: { userName: "Leena Ghatiya" },
-  //       organisation: { orgName: "NxtHyre" },
-  //       content:
-  //         "Another sample note for illustration. lorem ipsum dolor sit amet, consectetur adipiscing elit. pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.",
-  //       posted_at: "July 28, 2025",
-  //     },
-  //   ];
+  const ReferencesTab = () => {
+    const dummyReferences = [
+      {
+        initials: "SV",
+        name: "Suchandni Verma",
+        position: "HR Manager at Augnito",
+        status: "positive",
+        email: "suchandni.verma@augnito",
+        phone: "9876543210",
+        linkedin: "https://www.linkedin.com/in/suchandni-verma",
+        description:
+          "Exceptional digital marketer whose strategic campaigns and data-driven approach have significantly boosted our brand's online presence and conversions! Creative, proactive, and a pleasure to work with!",
+      },
+      {
+        initials: "AA",
+        name: "Ana De Armas",
+        position: "HR Manager at Augnito",
+        status: "negative",
+        email: "ana.dearmas@augnito",
+        phone: "9876543210",
+        linkedin: "https://www.linkedin.com/in/ana-de-armas",
+        description:
+          "I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs). I hold a degree in Computer Science and have experience in developing and deploying machine learning models. My expertise includes natural language processing, computer vision, and reinforcement learning. I am proficient in Python, TensorFlow, and PyTorch.",
+      },
+    ];
 
-  //   const communityNotes = [
-  //     {
-  //       noteId: "dummy1",
-  //       postedBy: { userName: "Kushagra Jain" },
-  //       organisation: { orgName: "Valuebound" },
-  //       content:
-  //         "This is a sample note to demonstrate the layout. lorem ipsum dolor sit amet, consectetur adipiscing elit. ipsum dolor sit amet, consectetur adipiscing elit. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-  //       posted_at: new Date().toISOString(),
-  //     },
-  //     {
-  //       noteId: "dummy2",
-  //       postedBy: { userName: "Harsh Shrivastava" },
-  //       organisation: { orgName: "Vyuhyre" },
-  //       content:
-  //         "lorem ipsum dolor sit amet, consectetur adipiscing elit. pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.",
-  //       posted_at: "July 28, 2025",
-  //     },
-  //   ];
+    return (
+      <div className="bg-[#F0F0F0] p-4 rounded-lg shadow-sm">
+        <div className="flex items-center mb-4">
+          <UsersRound className="w-5 h-5 text-[#4B5563] mr-2" />
+          <h3 className="text-[17px] text-[#4B5563] font-medium">
+            Available References
+          </h3>
+        </div>
+        <div>
+          {dummyReferences.map((reference, index) => (
+            <ReferenceCard key={index} reference={reference} />
+          ))}
+        </div>
+      </div>
+    );
+  };
 
-  //   return (
-  //     <>
-  //       <div className="flex flex-col h-full bg-[#F0F0F0] p-3 rounded-lg">
-  //         {/* Header with Heading and Toggle */}
-  //         <div className="flex justify-between items-center mb-3 border-b-2 border-gray-200 px-3 pt-1 pb-3">
-  //           {/* Notes about the Person Heading */}
-  //           <div className="flex items-center space-x-2">
-  //             <MessageSquareText className="w-4 h-4 text-[#4B5563]" />
-  //             <h3 className="text-[18px] font-medium text-[#4B5563]">
-  //               Notes about the Person
-  //             </h3>
-  //           </div>
-  //           {/* Community Toggle */}
-  //           <div className="flex items-center space-x-2">
-  //             <span className="text-sm text-[#4B5563]">Community</span>
-  //             <label className="relative inline-flex items-center cursor-pointer">
-  //               <input
-  //                 type="checkbox"
-  //                 checked={notesView === "community"}
-  //                 onChange={(e) =>
-  //                   setNotesView(e.target.checked ? "community" : "my")
-  //                 }
-  //                 className="sr-only peer"
-  //               />
-  //               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-600"></div>
-  //               <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
-  //             </label>
-  //           </div>
-  //         </div>
+  const ReferenceCard = ({ reference }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [showPopup, setShowPopup] = useState<
+      "email" | "phone" | "linkedin" | null
+    >(null);
 
-  //         {/* Notes List */}
-  //         <div className="flex-1 overflow-y-auto space-y-2 border-gray-200">
-  //           {notesView === "my"
-  //             ? (detailedCandidate?.candidate?.notes?.length > 0
-  //                 ? detailedCandidate.candidate.notes
-  //                 : dummyNotes
-  //               ).map((note) => (
-  //                 <div
-  //                   key={note.noteId}
-  //                   className="border-b border-gray-200 pb-2"
-  //                 >
-  //                   <div className="flex flex-col space-y-2 px-3 py-2 mb-0">
-  //                     <div className="flex justify-between items-center ">
-  //                       {/* User Avatar and Info */}
-  //                       <div className="flex space-x-3 items-center">
-  //                         <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-  //                           <User className="w-5 h-5 text-white" />
-  //                         </div>
-  //                         <div className="flex-1 space-y-0.5">
-  //                           <h4 className="font-medium text-[#111827] text-sm">
-  //                             {note?.postedBy?.userName ||
-  //                               note?.organisation?.orgName}
-  //                           </h4>
-  //                           <p className="text-sm text-[#4B5563]">
-  //                             {note?.organisation?.orgName || "Company"}
-  //                           </p>
-  //                         </div>
-  //                       </div>
-  //                       {/* Posted Date */}
-  //                       <div>
-  //                         <p className="text-xs text-[#818283] mt-1">
-  //                           {new Date(note?.posted_at).toLocaleDateString(
-  //                             "en-US",
-  //                             {
-  //                               month: "short",
-  //                               day: "numeric",
-  //                               year: "numeric",
-  //                             }
-  //                           )}
-  //                         </p>
-  //                       </div>
-  //                     </div>
+    const truncateLength = 100;
+    const truncatedDescription =
+      reference.description.length > truncateLength
+        ? reference.description.substring(0, truncateLength) + "..."
+        : reference.description;
 
-  //                     <div className="bg-white p-3 rounded-lg">
-  //                       <p className="text-sm text-[#818283] leading-normal">
-  //                         {note?.content}
-  //                       </p>
-  //                     </div>
-  //                   </div>
-  //                 </div>
-  //               ))
-  //             : (detailedCandidate?.candidate?.notes?.length > 0
-  //                 ? detailedCandidate.candidate.notes
-  //                 : communityNotes
-  //               ).map((note) => (
-  //                 // Community notes
-  //                 <div
-  //                   key={note.noteId}
-  //                   className="border-b border-gray-200 pb-2"
-  //                 >
-  //                   <div className="flex flex-col space-y-2 px-3 py-2 mb-0">
-  //                     <div className="flex justify-between items-center ">
-  //                       {/* User Avatar and Info */}
-  //                       <div className="flex space-x-3 items-center">
-  //                         <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-  //                           <User className="w-5 h-5 text-white" />
-  //                         </div>
-  //                         <div className="flex-1 space-y-0.5">
-  //                           <h4 className="font-medium text-[#111827] text-sm">
-  //                             {note?.postedBy?.userName ||
-  //                               note?.organisation?.orgName}
-  //                           </h4>
-  //                           <p className="text-sm text-[#4B5563]">
-  //                             {note?.organisation?.orgName || "Company"}
-  //                           </p>
-  //                         </div>
-  //                       </div>
-  //                       {/* Posted Date */}
-  //                       <div>
-  //                         <p className="text-xs text-[#818283] mt-1">
-  //                           {new Date(note?.posted_at).toLocaleDateString(
-  //                             "en-US",
-  //                             {
-  //                               month: "short",
-  //                               day: "numeric",
-  //                               year: "numeric",
-  //                             }
-  //                           )}
-  //                         </p>
-  //                       </div>
-  //                     </div>
+    const handleMouseEnter = (type) => {
+      setShowPopup(type);
+    };
 
-  //                     <div className="bg-white p-3 rounded-lg">
-  //                       <p className="text-sm text-[#818283] leading-normal">
-  //                         {note?.content}
-  //                       </p>
-  //                     </div>
-  //                   </div>
-  //                 </div>
-  //               ))}
-  //         </div>
-  //       </div>
-  //       {/* Comment Input Section */}
-  //       <div className="mt-4 p-3 bg-white rounded-tr-lg rounded-tl-lg">
-  //         <div className="flex space-x-3 border border-gray-200 rounded-lg p-2">
-  //           <input
-  //             type="text"
-  //             value={newComment}
-  //             onChange={(e) => setNewComment(e.target.value)}
-  //             placeholder="Type your team comment!"
-  //             className="flex-1 px-4 py-2 rounded-lg text-sm"
-  //             onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
-  //           />
-  //           <button
-  //             onClick={handleAddComment}
-  //             disabled={!newComment.trim()}
-  //             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
-  //           >
-  //             <Send className="w-4 h-4" />
-  //           </button>
-  //         </div>
-  //       </div>
-  //     </>
-  //   );
-  // };
+    const handleMouseLeave = () => {
+      setShowPopup(null);
+    };
+
+    return (
+      <div className="border-b border-gray-400 mb-4 pb-4">
+        <div className="">
+          <div className="flex justify-between items-center w-full mb-2">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center text-[#4B5563] bg-[#DFFBE2]">
+                {reference.initials}
+              </div>
+              <div className="">
+                <h4 className="text-lg text-[#4B5563] font-semibold">
+                  {reference.name}
+                </h4>
+                <p className="text-sm text-gray-600">{reference.position}</p>
+              </div>
+            </div>
+            <div>
+              {reference.status === "positive" ? (
+                <div className="flex items-center justify-center w-5 h-5 bg-green-500 rounded-full">
+                  <ThumbsUp className="w-3 h-3 text-white" />
+                </div>
+              ) : (
+                <div className="flex items-center justify-center w-5 h-5 bg-red-500 rounded-full">
+                  <ThumbsDown className="w-3 h-3 text-white" />
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="ml-[52px] flex-1">
+            <p className="text-[#818283] text-sm leading-snug mt-2 mb-2">
+              {isExpanded ? reference.description : truncatedDescription}
+            </p>
+            <div className="flex mt-3 space-x-3">
+              <div
+                className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer relative"
+                onMouseEnter={() => handleMouseEnter("email")}
+                onMouseLeave={handleMouseLeave}
+              >
+                <Mail className="w-3 h-3 text-white" />
+                {showPopup === "email" && (
+                  <div
+                    className="absolute bottom-8 left-0 bg-blue-50 p-2 rounded-md shadow-md z-10"
+                    onMouseEnter={() => setShowPopup("email")} // Keep popup visible
+                    onMouseLeave={handleMouseLeave} // Allow it to hide when leaving popup
+                  >
+                    <p
+                      className="text-sm text-blue-700 select-text"
+                      style={{ userSelect: "text" }}
+                    >
+                      {reference.email}
+                    </p>
+                  </div>
+                )}
+              </div>
+              <div
+                className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer relative"
+                onMouseEnter={() => handleMouseEnter("phone")}
+                onMouseLeave={handleMouseLeave}
+              >
+                <PhoneIcon className="w-3 h-3 text-white" />
+                {showPopup === "phone" && (
+                  <div
+                    className="absolute bottom-8 left-0 bg-blue-50 p-2 rounded-md shadow-md z-10"
+                    onMouseEnter={() => setShowPopup("phone")} // Keep popup visible
+                    onMouseLeave={handleMouseLeave} // Allow it to hide when leaving popup
+                  >
+                    <p
+                      className="text-sm text-blue-700 select-text"
+                      style={{ userSelect: "text" }}
+                    >
+                      {reference.phone}
+                    </p>
+                  </div>
+                )}
+              </div>
+              <div
+                className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer relative"
+                onMouseEnter={() => handleMouseEnter("linkedin")}
+                onMouseLeave={handleMouseLeave}
+              >
+                <Linkedin className="w-3 h-3 text-white" />
+                {showPopup === "linkedin" && (
+                  <div
+                    className="absolute bottom-8 left-0 bg-blue-50 p-2 rounded-md shadow-md z-10"
+                    onMouseEnter={() => setShowPopup("linkedin")} // Keep popup visible
+                    onMouseLeave={handleMouseLeave} // Allow it to hide when leaving popup
+                  >
+                    <p
+                      className="text-sm text-blue-700 select-text"
+                      style={{ userSelect: "text" }}
+                    >
+                      {reference.linkedin}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+            {reference.description.length > truncateLength && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-blue-500 text-sm mt-2 flex items-center focus:outline-none"
+              >
+                {isExpanded ? "View Less" : "View More"}
+                <span className="ml-1">
+                  {isExpanded ? (
+                    <ChevronUp className="text-blue-500 text-sm mt-[2px]" />
+                  ) : (
+                    <ChevronDown className="text-blue-500 text-sm mt-[2px]" />
+                  )}
+                </span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const NotesTab: React.FC<NotesTabProps> = ({ candidateId }) => {
     const [notes, setNotes] = useState<Note[]>([]);
@@ -701,8 +805,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           {/* Header with Heading and Toggle */}
           <div className="flex justify-between items-center mb-3 border-b-2 border-gray-200 px-3 pt-1 pb-3">
             <div className="flex items-center space-x-2">
-              <MessageSquareText className="w-4 h-4 text-[#4B5563]" />
-              <h3 className="text-[18px] font-medium text-[#4B5563]">
+              <MessageSquareText className="w-5 h-5 text-[#4B5563] mt-1" />
+              <h3 className="text-base font-medium text-[#4B5563]">
                 Notes about the Person
               </h3>
             </div>
@@ -797,6 +901,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       </>
     );
   };
+
   return (
     <div
       className={`bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-3 ${
@@ -904,7 +1009,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <button
             key={tab.name}
             onClick={() => setActiveTab(tab.name)}
-            className={`py-2 px-4 text-sm font-medium ${
+            className={`py-2 px-2 text-sm font-medium ${
               activeTab === tab.name
                 ? "text-blue-600 border-b-2 border-blue-600"
                 : "text-gray-500 hover:text-gray-700"
@@ -924,6 +1029,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         {activeTab === "Profile" && <ProfileTab />}
         {activeTab === "Education" && <EducationTab />}
         {activeTab === "Skills" && <SkillsTab />}
+        {activeTab === "References" && <ReferencesTab />}
         {activeTab === "Notes" && <NotesTab candidateId={candidate.id} />}
       </div>
 

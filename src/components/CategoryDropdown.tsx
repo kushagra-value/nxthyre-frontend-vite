@@ -1,7 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { MoreHorizontal, Edit, Mail, Archive, Trash2, Share2 } from 'lucide-react';
-import { showToast } from '../utils/toast';
-import { jobPostService } from '../services/jobPostService';
+import React, { useState, useRef, useEffect } from "react";
+import {
+  MoreHorizontal,
+  Edit,
+  Mail,
+  Archive,
+  Trash2,
+  Share2,
+} from "lucide-react";
+import { showToast } from "../utils/toast";
+import { jobPostService } from "../services/jobPostService";
 
 interface CategoryItem {
   id: number;
@@ -19,15 +26,19 @@ interface CategoryDropdownProps {
   onEditTemplate: (jobId: number) => void;
   onDeleteJob: (jobId: number) => void;
   onSharePipelines: (jobId: number) => void;
+  onSelectCategory: (jobId: number) => void;
+  activeCategoryId: number | null;
 }
 
-const CategoryDropdown: React.FC<CategoryDropdownProps> = ({ 
-  isOpen, 
-  onClose, 
-  onEditJobRole, 
+const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
+  isOpen,
+  onClose,
+  onEditJobRole,
   onEditTemplate,
   onDeleteJob,
   onSharePipelines,
+  onSelectCategory,
+  activeCategoryId,
 }) => {
   const [hoveredItem, setHoveredItem] = useState<number | null>(null);
   const [showActionMenu, setShowActionMenu] = useState<number | null>(null);
@@ -55,18 +66,18 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
       setLoading(true);
       try {
         const jobs = await jobPostService.getJobs();
-        const mappedCategories: CategoryItem[] = jobs.map(job => ({
+        const mappedCategories: CategoryItem[] = jobs.map((job) => ({
           id: job.id,
           name: job.title,
           count: job.total_candidates || 0,
-          invitesSent: job.invites_sent_count || 0, 
+          invitesSent: job.invites_sent_count || 0,
           totalReplied: job.total_replied || 0,
           totalApplied: job.total_applied || 0,
         }));
         setCategories(mappedCategories);
       } catch (error) {
-        showToast.error('Failed to fetch categories');
-        console.error('Error fetching categories:', error);
+        showToast.error("Failed to fetch categories");
+        console.error("Error fetching categories:", error);
       } finally {
         setLoading(false);
       }
@@ -79,38 +90,41 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         onClose();
         setShowActionMenu(null);
       }
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen, onClose]);
 
   const handleActionClick = (action: string, jobId: number) => {
     setShowActionMenu(null);
-    
+
     switch (action) {
-      case 'edit-job':
+      case "edit-job":
         onEditJobRole(jobId);
         break;
-      case 'edit-template':
+      case "edit-template":
         onEditTemplate(jobId);
         break;
-      case 'share-pipelines':
+      case "share-pipelines":
         onSharePipelines(jobId);
         break;
-      case 'archive':
+      case "archive":
         showToast.success(`Archived ${jobId}`);
         break;
-      case 'delete':
+      case "delete":
         onDeleteJob(jobId);
         break;
     }
@@ -119,7 +133,7 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       ref={dropdownRef}
       className="absolute top-full left-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-80 overflow-y-auto"
     >
@@ -127,7 +141,7 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
         <div className="text-xs font-medium text-gray-500 px-3 py-2 border-b border-gray-100">
           All Categories
         </div>
-        
+
         {categories.map((category) => (
           <div
             key={category.name}
@@ -135,77 +149,106 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
             onMouseEnter={() => setHoveredItem(category.id)}
             onMouseLeave={() => setHoveredItem(null)}
           >
-            <div className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors">
+            {/* <div className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors"> */}
+            <div
+              onClick={() => {
+                onSelectCategory(category.id);
+                onClose();
+              }}
+              className={`flex items-center justify-between px-3 py-2 rounded-lg transition-colors cursor-pointer ${
+                category.id === activeCategoryId
+                  ? "bg-blue-50"
+                  : "hover:bg-gray-50"
+              }`}
+            >
               <div className="flex-1">
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium text-gray-900">{category.name}</span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {category.name}
+                  </span>
                   <span className="px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded-full">
                     {category.count}
                   </span>
                 </div>
-                
+
                 {hoveredItem === category.id && (
                   <div className="flex mt-1 text-xs text-gray-500 space-x-3">
                     <div className="flex gap-2">
                       <span>Invites Sent:</span>
-                      <span className="font-medium">{category.invitesSent}</span>
+                      <span className="font-medium">
+                        {category.invitesSent}
+                      </span>
                     </div>
                     <div className="flex gap-2">
                       <span>Total Replied:</span>
-                      <span className="font-medium">{category.totalReplied}</span>
+                      <span className="font-medium">
+                        {category.totalReplied}
+                      </span>
                     </div>
                     <div className="flex gap-2">
                       <span>Total Applied:</span>
-                      <span className="font-medium">{category.totalApplied}</span>
+                      <span className="font-medium">
+                        {category.totalApplied}
+                      </span>
                     </div>
                   </div>
                 )}
               </div>
-              
+
               <div className="relative">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setShowActionMenu(showActionMenu === category.id ? null : category.id);
+                    setShowActionMenu(
+                      showActionMenu === category.id ? null : category.id
+                    );
                   }}
                   className="p-1 bg-gray-100 hover:bg-gray-200 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <MoreHorizontal className="w-4 h-4 text-gray-500" />
                 </button>
-                
+
                 {showActionMenu === category.id && (
                   <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                     <div className="py-1">
                       <button
-                        onClick={() => handleActionClick('edit-job', category.id)}
+                        onClick={() =>
+                          handleActionClick("edit-job", category.id)
+                        }
                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Edit Job Role
                       </button>
                       <button
-                        onClick={() => handleActionClick('edit-template', category.id)}
+                        onClick={() =>
+                          handleActionClick("edit-template", category.id)
+                        }
                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
                       >
                         <Mail className="w-4 h-4 mr-2" />
                         Edit Email Template
                       </button>
                       <button
-                        onClick={() => handleActionClick('share-pipelines', category.id)}
+                        onClick={() =>
+                          handleActionClick("share-pipelines", category.id)
+                        }
                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
                       >
                         <Share2 className="w-4 h-4 mr-2" />
                         Share Pipelines
                       </button>
                       <button
-                        onClick={() => handleActionClick('archive', category.id)}
+                        onClick={() =>
+                          handleActionClick("archive", category.id)
+                        }
                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
                       >
                         <Archive className="w-4 h-4 mr-2" />
                         Archive
                       </button>
                       <button
-                        onClick={() => handleActionClick('delete', category.id)}
+                        onClick={() => handleActionClick("delete", category.id)}
                         className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
                       >
                         <Trash2 className="w-4 h-4 mr-2" />

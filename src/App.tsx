@@ -137,6 +137,8 @@ function MainApp() {
   const controller = new AbortController();
   const [sortBy, setSortBy] = useState<string>("");
 
+  const [isSearchMode, setIsSearchMode] = useState(false);
+
   const [filters, setFilters] = useState<Filters>({
     keywords: "",
     booleanSearch: false,
@@ -174,6 +176,10 @@ function MainApp() {
     is_active: false,
     sort_by: "",
   });
+
+  useEffect(() => {
+    setIsSearchMode(debouncedSearchQuery.trim() !== "");
+  }, [debouncedSearchQuery]);
 
   const fetchCategories = async () => {
     setLoadingCategories(true);
@@ -271,11 +277,11 @@ function MainApp() {
             hasBehance: false,
             hasTwitter: false,
             hasPortfolio: false,
-            jobId: "",
+            jobId: appliedFilters.jobId || "",
             application_type: "",
             is_prevetted: false,
             is_active: false,
-            sort_by: "",
+            sort_by: sortBy || "",
           });
         } else {
           const filterParams: any = {
@@ -466,7 +472,7 @@ function MainApp() {
     activeCategoryId,
     debouncedSearchQuery,
     isAuthenticated,
-    currentPage
+    currentPage,
   ]);
 
   useEffect(() => {
@@ -891,150 +897,160 @@ function MainApp() {
                         showCreateRoleButton={true}
                         candidates={candidates}
                         onSelectCandidate={setSelectedCandidate}
+                        jobId={activeCategoryId ?? undefined} // Changed: Pass jobId prop
                       />
                     </div>
 
                     <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3">
                       {categories.length > 0 && (
-                      <div className="sticky top-[64px] z-20 will-change-transform mb-4 bg-gray-50 border-b border-gray-200">
-                        <div className="max-w-full mx-auto px-3 lg:px-6">
-                          <div className="hidden md:flex items-center space-x-2">
-                            {categories.slice(0, 4).map((category) => (
-                              <div
-                                key={category.id}
-                                className="relative"
-                                onMouseEnter={() =>
-                                  setHoveredCategory(category.id)
-                                }
-                                onMouseLeave={() => setHoveredCategory(null)}
-                              >
-                                <button
-                                  onClick={() => {
-                                    setActiveCategoryId(category.id);
-                                    fetchJobDetailsAndSetFilters(category.id);
-                                  }}
-                                  className={`py-1.5 text-xs lg:text-base font-[400] transition-all duration-200 ${
-                                    activeCategoryId === category.id
-                                      ? "border-b-2 border-blue-700 text-blue-700 shadow-sm"
-                                      : "text-gray-600 hover:border-b-2 border-gray-200"
-                                  }`}
+                        <div className="sticky top-[68px] z-20 will-change-transform mb-4 bg-gray-50 border-b border-gray-200">
+                          <div className="max-w-full flex justify-between px-3 lg:px-4">
+                            <div className="hidden md:flex items-center space-x-12">
+                              {categories.slice(0, 4).map((category) => (
+                                <div
+                                  key={category.id}
+                                  className="relative"
+                                  onMouseEnter={() =>
+                                    setHoveredCategory(category.id)
+                                  }
+                                  onMouseLeave={() => setHoveredCategory(null)}
                                 >
-                                  {category.name}
-                                  <span
-                                    className={`ml-2 px-2 py-1 rounded-full text-xs lg:text-base font-[400] ${
+                                  <button
+                                    onClick={() => {
+                                      setActiveCategoryId(category.id);
+                                      fetchJobDetailsAndSetFilters(category.id);
+                                    }}
+                                    className={`py-1.5 text-xs lg:text-base transition-all duration-200 ${
                                       activeCategoryId === category.id
-                                        ? "bg-blue-200 text-blue-800"
-                                        : "bg-gray-200 text-gray-600"
+                                        ? "border-b-2 border-blue-700 text-blue-700 shadow-sm"
+                                        : "text-gray-600 hover:border-b-2 border-gray-200"
                                     }`}
                                   >
-                                    {category.count}
-                                  </span>
-                                </button>
-                                {hoveredCategory === category.id && (
-                                  <div className="absolute top-full left-0 mt-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                                    <div className="py-1">
-                                      <button
-                                        onClick={() =>
-                                          handleCategoryAction(
-                                            "edit-job",
-                                            category.id
-                                          )
-                                        }
-                                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                      >
-                                        <Edit className="w-4 h-4 mr-2" />
-                                        Edit Job Role
-                                      </button>
-                                      <button
-                                        onClick={() =>
-                                          handleCategoryAction(
-                                            "edit-template",
-                                            category.id
-                                          )
-                                        }
-                                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                      >
-                                        <Mail className="w-4 h-4 mr-2" />
-                                        Edit Email Template
-                                      </button>
-                                      <button
-                                        onClick={() =>
-                                          handleCategoryAction(
-                                            "share-pipelines",
-                                            category.id
-                                          )
-                                        }
-                                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                      >
-                                        <Share2 className="w-4 h-4 mr-2" />
-                                        Share Pipelines
-                                      </button>
-                                      <button
-                                        onClick={() =>
-                                          handleCategoryAction(
-                                            "archive",
-                                            category.id
-                                          )
-                                        }
-                                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                      >
-                                        <Archive className="w-4 h-4 mr-2" />
-                                        Archive
-                                      </button>
-                                      <button
-                                        onClick={() =>
-                                          handleCategoryAction(
-                                            "delete",
-                                            category.id
-                                          )
-                                        }
-                                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
-                                      >
-                                        <Trash2 className="w-4 h-4 mr-2" />
-                                        Delete Job
-                                      </button>
+                                    {category.name}
+                                    <span
+                                      className={`ml-3 px-[8px] pb-[2.8px] pt-[1.3px] rounded-full text-xs ${
+                                        activeCategoryId === category.id
+                                          ? "bg-blue-200 text-blue-800"
+                                          : "bg-gray-200 text-gray-600"
+                                      }`}
+                                    >
+                                      {category.count}
+                                    </span>
+                                  </button>
+                                  {hoveredCategory === category.id && (
+                                    <div className="absolute top-full left-0 mt-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                                      <div className="py-1">
+                                        <button
+                                          onClick={() =>
+                                            handleCategoryAction(
+                                              "edit-job",
+                                              category.id
+                                            )
+                                          }
+                                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                        >
+                                          <Edit className="w-4 h-4 mr-2" />
+                                          Edit Job Role
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            handleCategoryAction(
+                                              "edit-template",
+                                              category.id
+                                            )
+                                          }
+                                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                        >
+                                          <Mail className="w-4 h-4 mr-2" />
+                                          Edit Email Template
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            handleCategoryAction(
+                                              "share-pipelines",
+                                              category.id
+                                            )
+                                          }
+                                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                        >
+                                          <Share2 className="w-4 h-4 mr-2" />
+                                          Share Pipelines
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            handleCategoryAction(
+                                              "archive",
+                                              category.id
+                                            )
+                                          }
+                                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                        >
+                                          <Archive className="w-4 h-4 mr-2" />
+                                          Archive
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            handleCategoryAction(
+                                              "delete",
+                                              category.id
+                                            )
+                                          }
+                                          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                                        >
+                                          <Trash2 className="w-4 h-4 mr-2" />
+                                          Delete Job
+                                        </button>
+                                      </div>
                                     </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                            <div className="flex items-center space-x-3 mb-1">
+                              <div>
+                                {categories.length > 0 && (
+                                  <div className="relative">
+                                    <button
+                                      onClick={() =>
+                                        setShowCategoryDropdown(
+                                          !showCategoryDropdown
+                                        )
+                                      }
+                                      className="px-3 py-1.5 text-xs lg:text-base font-[400] text-gray-600 bg-white hover:bg-gray-100 rounded-lg border border-gray-300 flex items-center"
+                                    >
+                                      {categories.length} Pipelines
+                                      <ChevronDown className="ml-18 w-4 h-4" />
+                                    </button>
+                                    <CategoryDropdown
+                                      isOpen={showCategoryDropdown}
+                                      onClose={() =>
+                                        setShowCategoryDropdown(false)
+                                      }
+                                      onEditJobRole={handleEditJobRole}
+                                      onEditTemplate={handleEditTemplate}
+                                      onDeleteJob={(jobId) =>
+                                        setShowDeleteModal(jobId)
+                                      }
+                                      onSharePipelines={handleSharePipelines}
+                                      onSelectCategory={(jobId) => {
+                                        setActiveCategoryId(jobId);
+                                        fetchJobDetailsAndSetFilters(jobId);
+                                      }}
+                                      activeCategoryId={activeCategoryId}
+                                    />
                                   </div>
                                 )}
                               </div>
-                            ))}
-                            {categories.length > 4 && (
-                              <div className="relative">
-                                <button
-                                  onClick={() =>
-                                    setShowCategoryDropdown(
-                                      !showCategoryDropdown
-                                    )
-                                  }
-                                  className="px-3 py-1.5 text-xs lg:text-base font-[400] text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
-                                >
-                                  +{categories.length - 4} more
-                                  <ChevronDown className="ml-1 w-4 h-4" />
-                                </button>
-                                <CategoryDropdown
-                                  isOpen={showCategoryDropdown}
-                                  onClose={() => setShowCategoryDropdown(false)}
-                                  onEditJobRole={handleEditJobRole}
-                                  onEditTemplate={handleEditTemplate}
-                                  onDeleteJob={(jobId) =>
-                                    setShowDeleteModal(jobId)
-                                  }
-                                  onSharePipelines={handleSharePipelines}
-                                />
-                              </div>
-                            )}
-
-                            <div>
+                              <div className="border border-l-1 border-gray-400 min-h-10"></div>
                               <button
                                 onClick={handlePipelinesClick}
-                                className="px-3 py-1.5 bg-blue-600 text-white text-xs lg:text-base font-[400] rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                                className="px-3 py-1.5 border border-blue-700 bg-blue-50 text-blue-700 text-xs lg:text-base font-[400] rounded-lg hover:bg-blue-100 transition-colors flex items-center"
                               >
-                                Pipelines
+                                Show Pipelines
                               </button>
                             </div>
                           </div>
                         </div>
-                      </div>
                       )}
 
                       <div className="flex w-full gap-3 h-full">
@@ -1045,6 +1061,7 @@ function MainApp() {
                             setCandidates={setCandidates}
                             candidates={candidates}
                             activeTab={activeTab}
+                            isSearchMode={isSearchMode}
                           />
                         </div>
                         <div className="lg:w-[45%] order-1 lg:order-2 ">
