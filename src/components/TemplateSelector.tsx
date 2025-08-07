@@ -7,6 +7,7 @@ import {
   List,
   MoreHorizontal,
   ArrowLeft,
+  Check,
   Mail,
   MessageSquare,
   Phone,
@@ -16,6 +17,7 @@ import {
   User,
   Share2,
   Copy,
+  Plus,
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import {
@@ -467,13 +469,15 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
         {/* Subject */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-600 mb-2">
             Subject
           </label>
           <CKEditor
             editor={ClassicEditor}
             data={subject}
             onChange={(event: any, editor: any) => setSubject(editor.getData())}
+            placeholder="Type your subject"
+            className="rounded-lg"
             config={{
               toolbar: [
                 "bold",
@@ -490,14 +494,19 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
         {/* Body */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-600 mb-2">
             Body
           </label>
+          <p className="text-sm text-gray-400 mb-2">
+            Candidate Name and Signature are already prefilled. Editable access
+            only for body
+          </p>
           <CKEditor
             editor={ClassicEditor}
             data={body}
             onChange={(event: any, editor: any) => setBody(editor.getData())}
-            className={`${isBodyExpanded ? "h-96" : "h-48"} w-full`}
+            className={`${isBodyExpanded ? "h-96" : "h-48"} w-full rounded-lg`}
+            placeholder="Type your message"
             onFocus={() => setIsBodyExpanded(true)}
             onBlur={() => setIsBodyExpanded(false)}
             config={{
@@ -518,10 +527,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
         {/* Channel Selection */}
         <div>
-          <p className="text-sm text-gray-600 mb-2">
-            The following will be sent to candidate via
+          <p className="block text-sm font-medium text-gray-600 mb-2">
+            Reachout Channels
           </p>
-          <div className="flex space-x-2">
+          <div className="flex space-x-3">
             <button
               onClick={() => setSendViaEmail(!sendViaEmail)}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -531,29 +540,44 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               }`}
               disabled={loading}
             >
-              <Mail className="w-4 h-4 inline mr-1" /> Email
+              Email{" "}
+              {sendViaEmail ? (
+                <Check className="w-4 h-4 inline ml-1" />
+              ) : (
+                <Plus className="w-4 h-4 inline ml-1" />
+              )}
             </button>
             <button
               onClick={() => setSendViaWhatsApp(!sendViaWhatsApp)}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 sendViaWhatsApp
-                  ? "bg-green-100 text-green-800"
+                  ? "bg-blue-100 text-blue-800"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
               disabled={loading}
             >
-              <MessageSquare className="w-4 h-4 inline mr-1" /> WhatsApp
+              WhatsApp{" "}
+              {sendViaWhatsApp ? (
+                <Check className="w-4 h-4 inline ml-1" />
+              ) : (
+                <Plus className="w-4 h-4 inline ml-1" />
+              )}
             </button>
             <button
               onClick={() => setSendViaPhone(!sendViaPhone)}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 sendViaPhone
-                  ? "bg-orange-100 text-orange-800"
+                  ? "bg-blue-100 text-blue-800"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
               disabled={loading}
             >
-              <Phone className="w-4 h-4 inline mr-1" /> Call
+              Phone{" "}
+              {sendViaPhone ? (
+                <Check className="w-4 h-4 inline ml-1" />
+              ) : (
+                <Plus className="w-4 h-4 inline ml-1" />
+              )}
             </button>
           </div>
         </div>
