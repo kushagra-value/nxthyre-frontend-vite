@@ -2846,7 +2846,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   Back to Dashboard
                 </h3>
               </div>
-              <div className="relative" ref={dropdownRef}>
+              <div className="flex relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between text-gray-700"
@@ -2856,7 +2856,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   </span>
                   <ChevronDown className="w-4 h-4" />
                 </button>
-                <div className="bg-gray-600 h-8 w-8 rounded-lg p-4 ml-2"><User className="w-4 h-4"/></div>
+                <div className="flex items-center justify-center bg-gray-600 h-8 w-8 rounded-lg p-4 ml-2"><User className="w-4 h-4"/></div>
+  
                 {isDropdownOpen && (
                   <div className="absolute z-10 w-full bg-white shadow-lg mt-1 rounded-lg max-h-60 overflow-y-auto">
                     {categories.map((category) => (
@@ -2891,14 +2892,15 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           }`}
                         >
                           {isSelected && (
-                            <div className="w-2 h-6 bg-blue-500 rounded-lg" />
+                            <div className="w-1 h-8 bg-blue-500 rounded-tr-xl rounded-br-xl  rounded" />
                           )}
                           <Icon
                             className={`w-4 h-4 ${
                               isSelected ? "text-blue-600" : "text-gray-600"
                             }`}
                           />
-                          <div className="flex flex-col space-y-1 items-start justify-center">
+                          <div className="flex items-center justify-between">
+                          <div className="flex flex-col items-start justify-center">
                           <span className="flex-1 font-medium">
                             {stage.name}
                           </span>
@@ -2917,6 +2919,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           >
                             {stage.candidate_count}
                           </span>
+                          </div>
                         </button>
                       );
                     })
