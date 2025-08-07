@@ -543,11 +543,11 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               Email{" "}
               {sendViaEmail ? (
                 <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-blue-800 rounded-full ml-1">
-                  <Check className="w-3 h-3 text-semibold" />
+                  <Check className="w-3 h-3 text-semibold pt-[1px]" />
                 </div>
               ) : (
                 <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-gray-600 rounded-full ml-1">
-                  <Plus className="w-3 h-3 text-semibold" />
+                  <Plus className="w-3 h-3 text-semibold pl-[1px]" />
                 </div>
               )}
             </button>
@@ -563,11 +563,11 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               WhatsApp{" "}
               {sendViaWhatsApp ? (
                 <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-blue-800 rounded-full ml-1">
-                  <Check className="w-3 h-3 text-semibold" />
+                  <Check className="w-3 h-3 text-semibold pt-[1px]" />
                 </div>
               ) : (
                 <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-gray-600 rounded-full ml-1">
-                  <Plus className="w-3 h-3 text-semibold" />
+                  <Plus className="w-3 h-3 text-semibold pr-[1px]" />
                 </div>
               )}
             </button>
@@ -583,11 +583,11 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               Phone{" "}
               {sendViaPhone ? (
                 <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-blue-800 rounded-full ml-1">
-                  <Check className="w-3 h-3 text-semibold" />
+                  <Check className="w-3 h-3 text-semibold pt-[1px]" />
                 </div>
               ) : (
                 <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-gray-600 rounded-full ml-1">
-                  <Plus className="w-3 h-3 text-semibold" />
+                  <Plus className="w-3 h-3 text-semibold pl-[1px]" />
                 </div>
               )}
             </button>
