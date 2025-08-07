@@ -436,7 +436,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
         {/* Template Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-600 mb-2">
             Select Template
           </label>
           <div className="relative">
@@ -444,10 +444,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               key={selectedTemplate}
               value={selectedTemplate}
               onChange={(e) => handleTemplateSelect(e.target.value)}
-              className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+              className="text-sm text-gray-400 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
               disabled={loading}
             >
-              <option value="">Choose a template</option>
+              <option value="">Select a template</option>
               <option value="create-new" className="font-bold text-blue-600">
                 + Create New Template
               </option>
