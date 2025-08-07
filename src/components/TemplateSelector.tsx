@@ -972,7 +972,92 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                     )}
                   </div>
                 )}
-
+                {followUpTemplates.map((followUp, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col items-start mb-2 space-x-2"
+                  >
+                    <div className="flex items-center mb-2 space-x-4">
+                      <button
+                        onClick={() => removeFollowUp(index)}
+                        className="ml-2 p-1 text-red-500 hover:text-red-700"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">
+                          Send After
+                        </span>
+                        <input
+                          type="number"
+                          value={followUp.send_after_hours}
+                          onChange={(e) => {
+                            const updated = [...followUpTemplates];
+                            updated[index] = {
+                              ...updated[index],
+                              send_after_hours: Number(e.target.value),
+                            };
+                            setFollowUpTemplates(updated);
+                          }}
+                          className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Hours"
+                          disabled={loading}
+                        />
+                        <span className="text-xs text-gray-500">hrs</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">
+                          Mode of Followup
+                        </span>
+                        <select
+                          value={followUp.followup_mode}
+                          onChange={(e) => {
+                            const updated = [...followUpTemplates];
+                            updated[index] = {
+                              ...updated[index],
+                              followup_mode: e.target.value as
+                                | "EMAIL"
+                                | "WHATSAPP"
+                                | "CALL",
+                            };
+                            setFollowUpTemplates(updated);
+                          }}
+                          className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          disabled={loading}
+                        >
+                          <option value="EMAIL">Email</option>
+                          <option value="WHATSAPP">WhatsApp</option>
+                          <option value="CALL">Call</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 w-full">
+                      <CKEditor
+                        editor={ClassicEditor}
+                        className="w-full"
+                        data={followUp.followup_body}
+                        onChange={(event: any, editor: any) =>
+                          updateFollowUp(
+                            index,
+                            "followup_body",
+                            editor.getData()
+                          )
+                        }
+                        config={{
+                          toolbar: [
+                            "bold",
+                            "italic",
+                            "link",
+                            "bulletedList",
+                            "numberedList",
+                            "undo",
+                            "redo",
+                          ],
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
                 <button
                   onClick={addFollowUp}
                   className="text-sm text-blue-600 hover:text-blue-700 mt-2"
