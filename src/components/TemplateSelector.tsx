@@ -595,7 +595,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="space-y-2 pt-4 border-dotted border-t border-b border-gray-200">
+        <div className="space-y-2 pt-4">
           {/* <div className="w-full flex justify-end">
             <button
               onClick={() => setShowAdvanceOptions(!showAdvanceOptions)}
@@ -606,6 +606,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               {showAdvanceOptions ? "Hide" : "View"} Advance Options
             </button>
           </div> */}
+
+          <div className="border-dotted border-t border-gray-200"></div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
