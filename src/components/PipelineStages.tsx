@@ -2834,7 +2834,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-2">
         <div className="flex w-full gap-3 h-full">
           <div className="lg:w-[25%] order-2 lg:order-1">
-            <div className="bg-white rounded-xl p-6">
+            <div className="bg-white rounded-xl shadow-xs px-3 py-6">
               <div
                 className="flex items-center space-x-2 cursor-pointer"
                 onClick={onBack}
@@ -2973,8 +2973,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
               <div className="p-3 lg:p-4 border-b border-gray-200">
                 <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex space-x-3">
-                    <label className="flex items-center space-x-3">
+                  <div className="flex items-center justify-between w-full">
+                    <label className="flex items-center gap-2">
                       <input
                         type="checkbox"
                         checked={selectAll}
@@ -2988,6 +2988,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         }}
                         className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
                       />
+                      <span className="flex-1 font-medium">Select all on this page</span>
+                      
+                    </label>
+                    <div className="flex items-center space-x-2">
                       <button
                         onClick={() =>
                           bulkMoveCandidates(
@@ -2998,10 +3002,13 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       >
                         Move to Next Stage
                       </button>
-                    </label>
-                    <button className="px-3 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors">
-                      Export Candidates
-                    </button>
+                      <button className="px-3 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors">
+                        Upload 
+                      </button>
+                      <button className="px-3 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors">
+                        Relevance
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
