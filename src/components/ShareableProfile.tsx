@@ -49,7 +49,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
     );
   }
 
-  if (error || !anonymizedCandidate) {
+  if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -70,7 +70,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
             <div className="flex items-center space-x-4">
               {onBack && (
                 <button
-                  onClick={onBack}
+                  onClick={handleGoToDashboard}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <ArrowLeft className="w-5 h-5 text-gray-600" />
@@ -97,7 +97,6 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
         </div>
       </div>
 
-      {/* Main Content */}
        {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -150,7 +149,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
             {/* Profile Summary */}
             <div className="mb-8 pb-6 mb-6 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Profile Summary</h3>
-              <p className="text-gray-700 leading-relaxed">{anonymizedCandidate.about}</p>
+              <p className="text-gray-700 leading-relaxed">{anonymizedCandidate?.about}</p>
             </div>
 
             {/* Two Column Layout */}
@@ -161,7 +160,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
                 <div>
                   <h3 className="text-lg font-semibold text-blue-600 mb-4">Skills</h3>
                   <div className="grid grid-cols-3 gap-2">
-                    {anonymizedCandidate.skills.slice(0, 9).map((skill, index) => (
+                    {anonymizedCandidate?.skills.slice(0, 9).map((skill, index) => (
                       <div key={index} className="text-center">
                         <div className="bg-gray-100 rounded-lg py-2 px-3 mb-1">
                           <div className="text-sm font-[400] text-gray-700">{skill.skill}</div>
@@ -175,10 +174,10 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
                 <div>
                   <h3 className="text-lg font-semibold text-blue-600 mb-4">Education</h3>
                   <div className="space-y-4">
-                    {anonymizedCandidate.education.map((edu, index) => (
+                    {anonymizedCandidate?.education.map((edu, index) => (
                       <div key={index}>
                         <div className="font-medium text-gray-900">{edu.degree} in {edu.specialization}</div>
-                        <div className="text-sm text-gray-600">••• •••••••••, •••••••••</div>
+                        <div className="text-sm text-gray-600">**************************</div>
                         <div className="text-sm text-gray-500">{edu.start_date} - {edu.end_date}</div>
                       </div>
                     ))}
@@ -189,7 +188,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
                 <div>
                   <h3 className="text-lg font-semibold text-blue-600 mb-4">Certificates</h3>
                   <div className="space-y-3">
-                    {anonymizedCandidate.certifications.map((cert, index) => (
+                    {anonymizedCandidate?.certifications.map((cert, index) => (
                       <div key={index}>
                         <div className="font-medium text-gray-900">{cert.name}</div>
                         <div className="text-sm text-gray-600">{cert.issuer}</div>
@@ -209,10 +208,10 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
                 <div>
                   <h3 className="text-lg font-semibold text-blue-600 mb-4">Work Experience</h3>
                   <div className="space-y-6">
-                    {anonymizedCandidate.experience.map((exp, index) => (
+                    {anonymizedCandidate?.experience.map((exp, index) => (
                       <div key={index}>
                         <div className="font-medium text-gray-900">{exp.job_title}</div>
-                        <div className="text-sm text-gray-600 mb-1">••••••••••••••••••• | {exp.location}</div>
+                        <div className="text-sm text-gray-600 mb-1">************* | {exp.location}</div>
                         <div className="text-sm text-gray-500 mb-2">{exp.start_date} - {exp.end_date || 'Present'}</div>
                         <p className="text-sm text-gray-700">{exp.description}</p>
                       </div>
@@ -233,21 +232,21 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="font-medium text-gray-900">Ana De Armas</div>
-                        <div className="text-sm text-gray-600">HR Manager at ••••••••••••••</div>
+                        <div className="text-sm text-gray-600">HR Manager at *************</div>
                       </div>
                       <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="font-medium text-gray-900">Ana De Armas</div>
-                        <div className="text-sm text-gray-600">HR Manager at ••••••••••••••</div>
+                        <div className="text-sm text-gray-600">HR Manager at *************</div>
                       </div>
                       <div className="w-3 h-3 bg-red-500 rounded-full"></div>
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="font-medium text-gray-900">Ana De Armas</div>
-                        <div className="text-sm text-gray-600">HR Manager at ••••••••••••••</div>
+                        <div className="text-sm text-gray-600">HR Manager at *************</div>
                       </div>
                       <div className="w-3 h-3 bg-red-500 rounded-full"></div>
                     </div>
