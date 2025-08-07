@@ -542,9 +542,13 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             >
               Email{" "}
               {sendViaEmail ? (
-                <Check className="w-4 h-4 inline ml-1" />
+                <div className="inline-flex items-center justify-center w-6 h-6 border border-blue-800 rounded-full">
+                  <Check className="w-4 h-4 inline ml-1" />
+                </div>
               ) : (
-                <Plus className="w-4 h-4 inline ml-1" />
+                <div className="inline-flex items-center justify-center w-6 h-6 border border-gray-600 rounded-full">
+                  <Plus className="w-4 h-4 inline ml-1" />
+                </div>
               )}
             </button>
             <button
