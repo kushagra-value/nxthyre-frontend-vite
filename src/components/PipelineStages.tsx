@@ -2822,7 +2822,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     <div className="bg-gray-50 min-h-screen">
       <div className="sticky top-0 z-20 bg-white will-change-transform">
         <Header
-          onCreateRole={handleCreateJobRole}
           onOpenLogoutModal={handleOpenLogoutModal}
           credits={credits}
           onBack={onBack}
