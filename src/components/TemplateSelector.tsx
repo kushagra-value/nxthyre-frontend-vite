@@ -377,7 +377,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         <div className="border-t border-gray-300 border-b p-3 space-y-2">
           <div className="flex justify-between items-center space-x-2">
             <div className="flex items-center space-x-2">
-              <div className="w-5 h-5 flex justify-center items-center bg-gray-200 rounded-full">
+              <div className="w-6 h-6 flex justify-center items-start bg-gray-200 rounded-full">
                 <Mail className="w-4 h-4 text-gray-400 flex-shrink-0 mt-1" />
               </div>
               <span className="text-sm text-gray-400">{displayEmail}</span>
@@ -391,12 +391,16 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               onClick={() => hasContactInfo && handleCopy(displayEmail)}
               disabled={!hasContactInfo}
             >
-              <Copy className="w-4 h-4" />
+              <div className="w-6 h-6 flex justify-center items-start bg-gray-200 rounded-full">
+                <Copy className="w-4 h-4" />
+              </div>
             </button>
           </div>
           <div className="flex justify-between items-center space-x-2">
             <div className="flex items-center space-x-2">
-              <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <div className="w-6 h-6 flex justify-center items-start bg-gray-200 rounded-full">
+                <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              </div>
               <span className="text-sm text-gray-400">{displayPhone}</span>
             </div>
             <div>
@@ -409,7 +413,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 onClick={() => hasContactInfo && handleWhatsApp(displayPhone)}
                 disabled={!hasContactInfo}
               >
-                <FontAwesomeIcon icon={faWhatsapp} />
+                <div className="w-6 h-6 flex justify-center items-start bg-gray-200 rounded-full">
+                  <FontAwesomeIcon icon={faWhatsapp} />
+                </div>
               </button>
               <button
                 className={`p-1 ${
@@ -420,7 +426,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 onClick={() => hasContactInfo && handleCopy(displayPhone)}
                 disabled={!hasContactInfo}
               >
-                <Copy className="w-4 h-4" />
+                <div className="w-6 h-6 flex justify-center items-start bg-gray-200 rounded-full">
+                  <Copy className="w-4 h-4" />
+                </div>
               </button>
             </div>
           </div>
