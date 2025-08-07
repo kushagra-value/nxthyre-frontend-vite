@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Mail, ArrowLeft, User, Building2, GraduationCap, Award, Star, Phone } from 'lucide-react';
+import { Copy, Mail, ArrowLeft, User, Building2, GraduationCap, Award, Star, Phone, MapPin } from 'lucide-react';
 import { showToast } from '../utils/toast';
+import { useNavigate } from "react-router-dom";
 import { candidateService, ShareableProfileSensitiveCandidate } from '../services/candidateService';
 
 interface ShareableProfileProps {
@@ -10,6 +11,7 @@ interface ShareableProfileProps {
 const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
   const [anonymizedCandidate, setAnonymizedCandidate] = useState<ShareableProfileSensitiveCandidate | null>(null);
 
   useEffect(() => {
@@ -18,87 +20,6 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
       try {
           const data = await candidateService.getShareableProfile(candidateId);
           setAnonymizedCandidate(data);
-        
-        //   const dummyData: ShareableProfileSensitiveCandidate = {
-        //     id: "ed51c22f-517c-4f71-884b-55b56c9bea1a",
-        //     about: "Machine Learning Engineer | NLP, Deep Learning, MLOps | Healthcare AI",
-        //     location: "Hyderabad, India",
-        //     total_experience_years: 6.6,
-        //     experience: [
-        //       {
-        //         job_title: "Machine Learning Engineer",
-        //         location: "Remote",
-        //         start_date: "2021-06-01",
-        //         end_date: null,
-        //         description: "Developed and deployed deep learning models for radiology report summarization and image-text cross-modal retrieval. Worked closely with radiologists to build annotation pipelines and establish data quality baselines. Designed custom CNN+Transformer hybrid architectures in PyTorch, achieving 92% F1 score in disease classification. Built internal autoML tooling for model benchmarking and hyperparameter tuning using Optuna. Also led the end-to-end MLOps setup using MLflow and AWS SageMaker for model versioning, reproducibility, and monitoring in production. Mentored 2 interns on explainable AI (GradCAM, SHAP) and supervised learning projects.",
-        //         is_current: true
-        //       },
-        //       {
-        //         job_title: "Data Scientist",
-        //         location: "Bangalore, India",
-        //         start_date: "2018-11-01",
-        //         end_date: "2021-05-01",
-        //         description: "Worked on natural language understanding (NLU) problems in digital health. Built intent recognition models for symptom checkers using BERT and fastText embeddings. Contributed to internal Python packages for text preprocessing and spell correction tailored to medical transcripts. Improved chatbot performance by 15% by integrating rule-based fallback layers. Also explored weak supervision and active learning strategies to improve low-resource language coverage. Supported product analytics using cohort tracking and built dashboards in Streamlit for internal stakeholders.",
-        //         is_current: false
-        //       }
-        //     ],
-        //     education: [
-        //       {
-        //         degree: "M.Tech",
-        //         specialization: "Artificial Intelligence",
-        //         start_date: "2016-07-01",
-        //         end_date: "2018-06-01"
-        //       },
-        //       {
-        //         degree: "B.E.",
-        //         specialization: "Computer Science",
-        //         start_date: "2012-07-01",
-        //         end_date: "2016-06-01"
-        //       }
-        //     ],
-        //     skills: [
-        //       {
-        //         skill: "PyTorch",
-        //         number_of_endorsements: 1
-        //       },
-        //       {
-        //         skill: "Transformers",
-        //         number_of_endorsements: 0
-        //       },
-        //       {
-        //         skill: "NLP",
-        //         number_of_endorsements: 1
-        //       },
-        //       {
-        //         skill: "MLOps",
-        //         number_of_endorsements: 0
-        //       },
-        //       {
-        //         skill: "AWS SageMaker",
-        //         number_of_endorsements: 0
-        //       }
-        //     ],
-        //     certifications: [
-        //       {
-        //         name: "AWS Certified Machine Learning - Specialty",
-        //         issuer: "Amazon Web Services",
-        //         license_number: "AWS-ML-SP-1012",
-        //         issued_date: "2023-01-01",
-        //         valid_until: "2026-01-01",
-        //         url: "https://aws.amazon.com/verification/aws-ml-sp-1012"
-        //       },
-        //       {
-        //         name: "Deep Learning Specialization",
-        //         issuer: "Coursera / DeepLearning.AI",
-        //         license_number: "DL-3021-998",
-        //         issued_date: "2019-08-01",
-        //         valid_until: null,
-        //         url: "https://coursera.org/certificate/dl-3021-998"
-        //       }
-        //     ]
-        //   };
-        // setAnonymizedCandidate(dummyData);
-        
       } catch (err) {
         setError('Failed to load candidate profile');
       } finally {
@@ -114,16 +35,8 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
   };
 
   const handleGoToDashboard = () => {
-    window.location.href = '/';
+    navigate("/");
   };
-
-  const profileTabs = [
-    { id: 'profile', label: 'Profile', icon: User },
-    { id: 'experience', label: 'Experience', icon: Building2 },
-    { id: 'education', label: 'Education', icon: GraduationCap },
-    { id: 'skills', label: 'Skills', icon: Star },
-    { id: 'certifications', label: 'Certifications', icon: Award }
-  ];
 
   if (loading) {
     return (
@@ -152,7 +65,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               {onBack && (
@@ -169,14 +82,14 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
                 >
                   NxtHyre
                 </h1>
-                <span className="text-gray-400">|</span>
-                <span className="text-gray-600 font-medium">{candidateId}</span>
+                </div>
+                <div className="flex items-center space-x-4">
                 <button
                   onClick={handleCopyId}
-                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
                   title="Copy ID"
                 >
-                  <Copy className="w-4 h-4 text-gray-500" />
+                  <Copy className="w-4 h-4 text-gray-500" /><span className="font-medium">Copy Profile ID</span>
                 </button>
               </div>
             </div>
@@ -185,113 +98,183 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
       </div>
 
       {/* Main Content */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-2 py-2">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          
-
-          {/* Content */}
-          <div className="p-6">
-            
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <div className="bg-gray-700 rounded-full w-16 h-16 flex items-center justify-center">
-                    <User className="w-4 h-4 text-white " />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <User className="w-4 h-4" />
-                      <span className="text-gray-700">******** ********</span>
+       {/* Main Content */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="p-8">
+            {/* Profile Header */}
+            <div className="grid grid-cols-4 gap-24 mb-6 ">
+              <div className="col-span-1 w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+                <img 
+                  src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=200"
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className=" col-span-2 flex-1">
+                <div className="mb-4">
+                  <h2 className="text-4xl font-[400] text-gray-700 mb-2">XXXXXXX XXXX</h2>
+                  <div className="flex flex-col items-start justify-start text-gray-600 mb-2">
+                    <div className="flex items-center justify-left">
+                      <Mail className="w-4 h-4 mr-1" />
+                      <span>***********************</span>
                     </div>
-                    <div className="flex gap-2">
-                      <Mail className="w-4 h-4"/>
-                      <span className="text-gray-700">*********************</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <Phone className="w-4 h-4"/>
-                      <span className="text-gray-700">**********</span>
+                    <div className="flex items-center justify-left">
+                      <Phone className="w-4 h-4 mr-1" />
+                      <span>************</span>
                     </div>
                   </div>
                 </div>
-                
-               
-                
+              </div>
+              
+            </div>
+             <div className="grid grid-cols-4 gap-24 pb-6 mb-6 border-b border-gray-200">
+                  <div>
+                    <div className="text-sm text-gray-500">Experience</div>
+                    <div className="font-semibold text-gray-900">5 Years</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Current Company</div>
+                    <div className="font-semibold text-gray-900">2 Years</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Notice Period</div>
+                    <div className="font-semibold text-gray-900">15 Days</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Current Salary</div>
+                    <div className="font-semibold text-gray-900">20 LPA</div>
+                  </div>
+                </div>
+
+            {/* Profile Summary */}
+            <div className="mb-8 pb-6 mb-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Profile Summary</h3>
+              <p className="text-gray-700 leading-relaxed">{anonymizedCandidate.about}</p>
+            </div>
+
+            {/* Two Column Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 ">
+              {/* Left Column */}
+              <div className="space-y-6">
+                {/* Skills */}
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">About</h3>
-                  <p className="text-gray-700">{anonymizedCandidate.about}</p>
-                </div>
-
-                <div className="space-y-2">
-                <h3 className="font-semibold text-gray-900">Experience</h3>
-                {anonymizedCandidate.experience.map((exp:any, index:number) => (
-                  <div key={index} className="border-l-2 border-gray-200 pl-4 relative">
-                    <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                    <h4 className="font-medium text-gray-900">{exp.job_title}</h4>
-                    <div className="space-y-1">
-                      <div className="flex gap-2">
-                        <Building2 className="w-4 h-4"/>
-                        <span className="text-gray-700">********* ********* *********</span>
-                      </div>
-                      <p className="text-gray-500">{exp.start_date} - {exp.end_date || 'Present'}</p>
-                    </div>
-                    <p className="text-gray-700 mt-1">{exp.description}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="font-semibold text-gray-900">Education</h3>
-                {anonymizedCandidate.education.map((edu:any, index:number) => (
-                  <div key={index} className="border-l-2 border-gray-200 pl-4 relative">
-                    <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                    <h4 className="font-medium text-gray-900">{edu.degree}</h4>
-                    <div className="space-y-1">
-                      <div className="flex gap-2">
-                        <GraduationCap className="w-4 h-4"/>
-                        <span className="text-gray-700">********* ********* *********</span>
-                      </div>
-                      <p className="text-gray-500">{edu.specialization}</p>
-                      <p className="text-gray-500">{edu.start_date} - {edu.end_date}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            
-
-           
-              <div className="space-y-2">
-                <h3 className="font-semibold text-gray-900">Skills</h3>
-                <div className="flex flex-wrap gap-2">
-                  {anonymizedCandidate.skills.map((skill:any, index:number) => (
-                    <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-                      {skill.skill} ({skill.number_of_endorsements} endorsements)
-                    </span>
-                  ))}
-                </div>
-              </div>
-            
-
-            
-              <div className="space-y-2">
-                <h3 className="font-semibold text-gray-900">Certifications</h3>
-                {anonymizedCandidate.certifications.length > 0 ? (
-                  anonymizedCandidate.certifications.map((cert:any, index:number) => (
-                    <div key={index} className="border-l-2 border-gray-200 pl-4 relative">
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      <h4 className="font-medium text-gray-900">{cert.name}</h4>
-                      <div className="space-y-1">
-                        <div className="flex gap-2">
-                          <Award className="w-4 h-4"/>
-                          <span className="text-gray-700">********* ********* *********</span>
+                  <h3 className="text-lg font-semibold text-blue-600 mb-4">Skills</h3>
+                  <div className="grid grid-cols-3 gap-2">
+                    {anonymizedCandidate.skills.slice(0, 9).map((skill, index) => (
+                      <div key={index} className="text-center">
+                        <div className="bg-gray-100 rounded-lg py-2 px-3 mb-1">
+                          <div className="text-sm font-[400] text-gray-700">{skill.skill}</div>
                         </div>
-                        <p className="text-gray-500">{cert.issued_date}</p>
                       </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Education */}
+                <div>
+                  <h3 className="text-lg font-semibold text-blue-600 mb-4">Education</h3>
+                  <div className="space-y-4">
+                    {anonymizedCandidate.education.map((edu, index) => (
+                      <div key={index}>
+                        <div className="font-medium text-gray-900">{edu.degree} in {edu.specialization}</div>
+                        <div className="text-sm text-gray-600">••• •••••••••, •••••••••</div>
+                        <div className="text-sm text-gray-500">{edu.start_date} - {edu.end_date}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Certificates */}
+                <div>
+                  <h3 className="text-lg font-semibold text-blue-600 mb-4">Certificates</h3>
+                  <div className="space-y-3">
+                    {anonymizedCandidate.certifications.map((cert, index) => (
+                      <div key={index}>
+                        <div className="font-medium text-gray-900">{cert.name}</div>
+                        <div className="text-sm text-gray-600">{cert.issuer}</div>
+                        <div className="text-sm text-gray-500">Issued {cert.issued_date}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* References */}
+                
+              </div>
+
+              {/* Right Column */}
+              <div className="ml-8 pl-8 border-l border-gray-200 col-span-2 space-y-6">
+                {/* Work Experience */}
+                <div>
+                  <h3 className="text-lg font-semibold text-blue-600 mb-4">Work Experience</h3>
+                  <div className="space-y-6">
+                    {anonymizedCandidate.experience.map((exp, index) => (
+                      <div key={index}>
+                        <div className="font-medium text-gray-900">{exp.job_title}</div>
+                        <div className="text-sm text-gray-600 mb-1">••••••••••••••••••• | {exp.location}</div>
+                        <div className="text-sm text-gray-500 mb-2">{exp.start_date} - {exp.end_date || 'Present'}</div>
+                        <p className="text-sm text-gray-700">{exp.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                
+              </div>
+
+              
+            </div>
+            <div className="pt-6 mt-6 border-t border-gray-200 w-full grid grid-cols-1 lg:grid-cols-3">
+
+              <div className="mr-8 col-span-1">
+                  <h3 className="text-lg font-semibold text-blue-600 mb-4">References</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium text-gray-900">Ana De Armas</div>
+                        <div className="text-sm text-gray-600">HR Manager at ••••••••••••••</div>
+                      </div>
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                     </div>
-                  ))
-                ) : (
-                  <p className="text-gray-500">No certifications available</p>
-                )}
-              </div>
-              </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium text-gray-900">Ana De Armas</div>
+                        <div className="text-sm text-gray-600">HR Manager at ••••••••••••••</div>
+                      </div>
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium text-gray-900">Ana De Armas</div>
+                        <div className="text-sm text-gray-600">HR Manager at ••••••••••••••</div>
+                      </div>
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    </div>
+                  </div>
+                </div>
+                {/* Community Notes */}
+
+             <div className="ml-8 pl-8 col-span-2">
+                  <h3 className="text-lg font-semibold text-blue-600 mb-4">Community Notes</h3>
+                  <div className="space-y-4">
+                    <div className="">
+                      <div className="flex flex-col items-left justify-between mb-2">
+                        <div className="font-medium text-gray-500">Company</div>
+                        <div className="text-sm text-gray-500">Posted Date</div>
+                      </div>
+                      <p className="text-sm text-gray-700">This innovative AI engineer skillfully solved complex problems, collaborated effectively, and delivered precise, reliable solutions with creative insight.</p>
+                    </div>
+                    <div className="">
+                      <div className="flex flex-col items-left justify-between mb-2">
+                        <div className="font-medium text-gray-500">Company</div>
+                        <div className="text-sm text-gray-500">Posted Date</div>
+                      </div>
+                      <p className="text-sm text-gray-700">This innovative AI engineer skillfully solved complex problems, collaborated effectively, and delivered precise, reliable solutions with creative insight.</p>
+                    </div>
+                  </div>
+                </div>
+                </div>
           </div>
         </div>
       </div>
