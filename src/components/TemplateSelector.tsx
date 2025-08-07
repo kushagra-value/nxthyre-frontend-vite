@@ -736,7 +736,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         <div className="space-y-2 pt-4">
           <div>
             <div className="mt-4">
-              <div className="flex justify-between text-sm font-medium text-gray-700 mb-2">
+              <div className="text-sm font-medium text-gray-700 mb-2">
                 <div
                   className="flex justify-between text-sm font-medium text-gray-700 mb-2 cursor-pointer hover:bg-gray-100 rounded-lg p-2 transition-colors"
                   onClick={() => setIsFollowUpsExpanded(!isFollowUpsExpanded)}
