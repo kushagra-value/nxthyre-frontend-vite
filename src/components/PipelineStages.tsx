@@ -2834,7 +2834,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-2">
         <div className="flex w-full gap-3 h-full">
           <div className="lg:w-[25%] order-2 lg:order-1">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3">
+            <div className="bg-white rounded-xl p-6">
               <div
                 className="flex items-center space-x-2 cursor-pointer"
                 onClick={onBack}
@@ -2842,21 +2842,21 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <button className="rounded-lg transition-colors">
                   <ArrowLeft className="mb-2 w-5 h-4 text-gray-600" />
                 </button>
-                <h3 className="text-md font-[400] text-gray-600 mb-4 mt-1">
+                <h3 className="text-md font-[600] text-gray-600 mb-4 mt-1">
                   Back to Dashboard
                 </h3>
               </div>
               <div className="flex relative mb-4" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between text-gray-700"
+                  className="w-full px-3 py-2 border border-blue-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between text-blue-600"
                 >
                   <span>
                     {selectedCategory ? selectedCategory.name : "Select Pipeline"}
                   </span>
-                  <ChevronDown className="w-4 h-4" />
+                  <ChevronDown className="text-blue-600 w-4 h-4" />
                 </button>
-                <div className="flex items-center text-white justify-center bg-gray-600 h-8 w-8 rounded-lg ml-2"><User className="w-4 h-4"/></div>
+                <div className="flex items-center text-white justify-center bg-gray-600 h-10 w-10 rounded-lg ml-2"><Users className="w-4 h-4"/></div>
   
                 {isDropdownOpen && (
                   <div className="absolute z-10 w-full bg-white shadow-lg mt-1 rounded-lg max-h-60 overflow-y-auto">
