@@ -546,7 +546,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                   <Check className="w-3 h-3 text-semibold" />
                 </div>
               ) : (
-                <div className="inline-flex items-center justify-center w-4 h-4 border border-gray-600 rounded-full ml-1">
+                <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-gray-600 rounded-full ml-1">
                   <Plus className="w-3 h-3 text-semibold" />
                 </div>
               )}
@@ -562,9 +562,13 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             >
               WhatsApp{" "}
               {sendViaWhatsApp ? (
-                <Check className="w-4 h-4 inline ml-1" />
+                <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-blue-800 rounded-full ml-1">
+                  <Check className="w-3 h-3 text-semibold" />
+                </div>
               ) : (
-                <Plus className="w-4 h-4 inline ml-1" />
+                <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-gray-600 rounded-full ml-1">
+                  <Plus className="w-3 h-3 text-semibold" />
+                </div>
               )}
             </button>
             <button
@@ -578,9 +582,13 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             >
               Phone{" "}
               {sendViaPhone ? (
-                <Check className="w-4 h-4 inline ml-1" />
+                <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-blue-800 rounded-full ml-1">
+                  <Check className="w-3 h-3 text-semibold" />
+                </div>
               ) : (
-                <Plus className="w-4 h-4 inline ml-1" />
+                <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-gray-600 rounded-full ml-1">
+                  <Plus className="w-3 h-3 text-semibold" />
+                </div>
               )}
             </button>
           </div>
