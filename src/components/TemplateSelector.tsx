@@ -334,7 +334,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               onClick={onBack}
               className="pr-2 py-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-[26px] h-[26px] text-gray-700" />
+              <ArrowLeft className="w-7 h-7 text-gray-700" />
             </button>
             <h2 className="text-lg font-semibold text-gray-700">Send Invite</h2>
           </div>
@@ -346,7 +346,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               detailedCandidate?.candidate?.full_name || ""
             )} rounded-full flex items-center justify-center text-white`}
           >
-            <User className="w-[26px] h-[26px]" />
+            <User className="w-6 h-6" />
           </div>
           <div>
             <h2 className="text-base lg:text-[16px] font-bold text-gray-600">
@@ -377,7 +377,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         <div className="border-t border-gray-300 border-b p-3 space-y-2">
           <div className="flex justify-between items-center space-x-2">
             <div className="flex items-center space-x-2">
-              <div className="w-[26px] h-[26px] flex justify-center items-center bg-gray-200 rounded-full">
+              <div className="w-7 h-7 flex justify-center items-center bg-gray-200 rounded-full">
                 <Mail className="w-4 h-4 text-gray-400" />
               </div>
               <span className="text-sm text-gray-400">{displayEmail}</span>
@@ -391,14 +391,14 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               onClick={() => hasContactInfo && handleCopy(displayEmail)}
               disabled={!hasContactInfo}
             >
-              <div className="w-[26px] h-[26px] flex justify-center items-center bg-gray-200 rounded-full">
+              <div className="w-7 h-7 flex justify-center items-center bg-gray-200 rounded-full">
                 <Copy className="w-4 h-4 text-gray-400" />
               </div>
             </button>
           </div>
           <div className="flex justify-between items-center space-x-2">
             <div className="flex items-center space-x-2">
-              <div className="w-[26px] h-[26px] flex justify-center items-center bg-gray-200 rounded-full">
+              <div className="w-7 h-7 flex justify-center items-center bg-gray-200 rounded-full">
                 <Phone className="w-4 h-4 text-gray-400" />
               </div>
               <span className="text-sm text-gray-400">{displayPhone}</span>
@@ -413,7 +413,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 onClick={() => hasContactInfo && handleWhatsApp(displayPhone)}
                 disabled={!hasContactInfo}
               >
-                <div className="w-[26px] h-[26px] flex justify-center items-center bg-gray-200 rounded-full">
+                <div className="w-7 h-7 flex justify-center items-center bg-gray-200 rounded-full">
                   <FontAwesomeIcon icon={faWhatsapp} />
                 </div>
               </button>
@@ -426,7 +426,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 onClick={() => hasContactInfo && handleCopy(displayPhone)}
                 disabled={!hasContactInfo}
               >
-                <div className="w-[26px] h-[26px] flex justify-center items-center bg-gray-200 rounded-full">
+                <div className="w-7 h-7 flex justify-center items-center bg-gray-200 rounded-full">
                   <Copy className="w-4 h-4 text-gray-400" />
                 </div>
               </button>
