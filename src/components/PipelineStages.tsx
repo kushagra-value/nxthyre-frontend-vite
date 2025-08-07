@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ArrowLeft,
   User,
@@ -25,6 +25,7 @@ import {
   Edit,
   Archive,
   Trash2,
+  Code,
 } from "lucide-react";
 import Header from "./Header";
 import { creditService } from "../services/creditService";
@@ -283,14 +284,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   // Dynamic category states
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
-  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState(true); 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
-    null
-  );
-  const [showCreateJobRole, setShowCreateJobRole] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
 
   // const tabs = [
   //   { id: "outbound", label: "Outbound", count: 2325 },
@@ -650,52 +648,42 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     return icons[stage as keyof typeof icons] || User;
   };
 
+  const getStageDescription = (stageName: string) => {
+    switch (stageName) {
+      case "Uncontacted":
+        return { text: "5 candidates sent you a message", color: "text-blue-600" };
+      case "Applied":
+        return { text: "5 new candidates", color: "text-blue-600" };
+      case "Coding Round":
+        return { text: "Average 15% are only passing the round", color: "text-orange-600" };
+      case "AI Interview":
+        return { text: "95% of candidates are above par score", color: "text-orange-600" };
+      case "Shortlisted":
+        return { text: "", color: "text-orange-600" };
+      case "First Interview":
+        return { text: "inactive for 2 days", color: "text-gray-500" };
+      case "Other Interview":
+        return { text: "8 new notes updated", color: "text-blue-600" };
+      case "HR Round":
+        return { text: "2 new candidates", color: "text-blue-600" };
+      case "Offer Sent":
+        return { text: "10 new offers", color: "text-blue-600" };
+      case "Offer Accepted":
+        return { text: "1 new offer accepted", color: "text-blue-600" };
+      default:
+        return { text: "", color: "" };
+    }
+  };
+
+
   const currentCandidates =
     candidates.length > 0
       ? candidates
       : pipelineCandidates[selectedStage] || [];
 
-  const handleCreateJobRole = () => {
-    setShowCreateJobRole(true);
-  };
 
-  const handleEditJobRole = (categoryId: number) => {
-    setShowCreateJobRole(true);
-    setShowCategoryActions(null);
-  };
 
-  const handleEditTemplate = (categoryId: number) => {
-    setShowCategoryActions(null);
-  };
-
-  const handleCategoryAction = (action: string, categoryId: number) => {
-    setShowCategoryActions(null);
-    switch (action) {
-      case "edit-job":
-        handleEditJobRole(categoryId);
-        break;
-      case "edit-template":
-        handleEditTemplate(categoryId);
-        break;
-      case "archive":
-        alert(`Archived category with id ${categoryId}`);
-        break;
-      case "delete":
-        if (
-          confirm(
-            `Are you sure you want to delete category with id ${categoryId}?`
-          )
-        ) {
-          alert(`Deleted category with id ${categoryId}`);
-        }
-        break;
-    }
-  };
-
-  const handleCategorySelect = (categoryId: number) => {
-    setActiveCategoryId(categoryId);
-    setActiveJobId(categoryId);
-  };
+  const selectedCategory = categories.find((cat) => cat.id === activeJobId);
 
   const renderStageDetails = () => {
     if (!selectedCandidate) {
@@ -2844,109 +2832,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         />
       </div>
 
-      <div className="my-3 mx-6">
-        {loadingCategories ? (
-          <div className="text-center text-gray-500">Loading categories...</div>
-        ) : categories.length === 0 ? (
-          <div className="text-center text-gray-500">
-            <p>No Job Roles Found</p>
-            <p className="text-sm mt-1">
-              Please create a job role to view the pipeline stages.
-            </p>
-          </div>
-        ) : (
-          <div className="hidden md:flex items-center space-x-2">
-            {categories.slice(0, 4).map((category) => (
-              <div
-                key={category.id}
-                className="relative"
-                onMouseEnter={() => setHoveredCategory(category.id)}
-                onMouseLeave={() => setHoveredCategory(null)}
-              >
-                <button
-                  onClick={() => handleCategorySelect(category.id)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                    activeCategoryId === category.id
-                      ? "bg-blue-100 text-blue-700 shadow-sm"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  {category.name}
-                  <span
-                    className={`ml-2 px-2 py-1 rounded-full text-xs ${
-                      activeCategoryId === category.id
-                        ? "bg-blue-200 text-blue-800"
-                        : "bg-gray-200 text-gray-600"
-                    }`}
-                  >
-                    {category.count}
-                  </span>
-                </button>
-                {hoveredCategory === category.id && (
-                  <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                    <div className="py-1">
-                      <button
-                        onClick={() =>
-                          handleCategoryAction("edit-job", category.id)
-                        }
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                      >
-                        <Edit className="w-4 h-4 mr-2" />
-                        Edit Job Role
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleCategoryAction("edit-template", category.id)
-                        }
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                      >
-                        <Mail className="w-4 h-4 mr-2" />
-                        Edit Email Template
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleCategoryAction("archive", category.id)
-                        }
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                      >
-                        <Archive className="w-4 h-4 mr-2" />
-                        Archive
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleCategoryAction("delete", category.id)
-                        }
-                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Delete Job
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-            {categories.length > 4 && (
-              <div className="relative">
-                <button
-                  onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                  className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
-                >
-                  +{categories.length - 4} more
-                  <ChevronDown className="ml-1 w-4 h-4" />
-                </button>
-                <CategoryDropdown
-                  isOpen={showCategoryDropdown}
-                  onClose={() => setShowCategoryDropdown(false)}
-                  onEditJobRole={handleEditJobRole}
-                  onEditTemplate={handleEditTemplate}
-                />
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
       <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-2">
         <div className="flex w-full gap-3 h-full">
           <div className="lg:w-[25%] order-2 lg:order-1">
@@ -2962,37 +2847,73 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   Back to Dashboard
                 </h3>
               </div>
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between text-gray-700"
+                >
+                  <span>
+                    {selectedCategory ? selectedCategory.name : "Select Pipeline"}
+                  </span>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                <div className="bg-gray-600 h-8 w-8 rounded-lg p-4 ml-2"><User className="w-4 h-4"/></div>
+                {isDropdownOpen && (
+                  <div className="absolute z-10 w-full bg-white shadow-lg mt-1 rounded-lg max-h-60 overflow-y-auto">
+                    {categories.map((category) => (
+                      <div
+                        key={category.id}
+                        className="p-2 hover:bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          setActiveJobId(category.id);
+                          setIsDropdownOpen(false);
+                        }}
+                      >
+                        {category.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="space-y-2">
                 {stages.length > 0
                   ? stages.map((stage) => {
                       const Icon = getStageIcon(stage.name);
                       const isSelected = selectedStage === stage.name;
+                      const description = getStageDescription(stage.name);
                       return (
                         <button
                           key={stage.id}
                           onClick={() => handleStageSelect(stage.name)}
-                          className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                          className={`w-full flex items-center space-x-3 pr-3 py-2 rounded-lg text-left transition-colors ${
                             isSelected
                               ? "bg-blue-50 text-blue-700 border border-blue-200"
                               : "text-gray-700 hover:bg-gray-50"
                           }`}
                         >
                           {isSelected && (
-                            <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                            <div className="w-2 h-6 bg-blue-500 rounded-lg" />
                           )}
                           <Icon
                             className={`w-4 h-4 ${
                               isSelected ? "text-blue-600" : "text-gray-600"
                             }`}
                           />
+                          <div className="flex flex-col space-y-1 items-start justify-center">
                           <span className="flex-1 font-medium">
                             {stage.name}
                           </span>
+                          {description.text && (
+                                <p className={`text-xs ${description.color}`}>
+                                  {description.text}
+                                </p>
+                              )}
+                          </div>
                           <span
-                            className={`px-2 py-1 text-xs rounded-full ${
+                            className={`px-2 py-1 text-sm ${
                               isSelected
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-gray-100 text-gray-600"
+                                ? "text-blue-800"
+                                : "text-gray-400"
                             }`}
                           >
                             {stage.candidate_count}
@@ -3005,6 +2926,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       const isSelected = selectedStage === stage;
                       const candidateCount =
                         pipelineCandidates[stage]?.length || 0;
+                        const description = getStageDescription(stage);
                       return (
                         <button
                           key={stage}
@@ -3024,6 +2946,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             }`}
                           />
                           <span className="flex-1 font-medium">{stage}</span>
+                          {description.text && (
+                                <p className={`text-xs ${description.color}`}>
+                                  {description.text}
+                                </p>
+                              )}
                           <span
                             className={`px-2 py-1 text-xs rounded-full ${
                               isSelected
