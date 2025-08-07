@@ -753,6 +753,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 </div>
                 {isFollowUpsExpanded && (
                   <div className="mt-2">
+                    {/* Saved wale he ye bhai */}
                     {followUpTemplates.map((followUp, index) => (
                       <div
                         key={index}
@@ -858,11 +859,69 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                       <Plus className="w-4 h-4 mr-1 text-blue-600" />
                       Add Follow Up
                     </button>
+
+                    {/* Yaha se add new wala he bhai */}
                     {isAddingFollowUp && (
-                      <div className="mt-4 p-4 border border-gray-300 rounded-lg">
-                        <h3 className="text-sm font-medium text-gray-700 mb-2">
-                          Add New Follow Up
-                        </h3>
+                      <div className="mt-4 p-4 border border-gray-300 bg-blue-100 rounded-lg">
+                        <div className="flex justify-between items-center mb-2 pb-2 border-b border-blue-400">
+                          <span className="text-sm font-medium text-gray-700">
+                            Follow Up {index + 1}
+                          </span>
+                          <div className="flex space-x-2 mt-2">
+                            <button
+                              onClick={() => setIsAddingFollowUp(false)}
+                              className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-400"
+                              disabled={loading}
+                            >
+                              <span className="w-4 h-4 flex items-center justify-center rounded-full border border-red-500 text-red-500">
+                                <span className="text-xs">X</span>
+                              </span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setFollowUpTemplates([
+                                  ...followUpTemplates,
+                                  {
+                                    ...newFollowUp,
+                                    followup_mode: newFollowUp.followup_mode as
+                                      | "EMAIL"
+                                      | "WHATSAPP"
+                                      | "CALL",
+                                    order_no: followUpTemplates.length,
+                                  },
+                                ]);
+                                setIsAddingFollowUp(false);
+                                setNewFollowUp({
+                                  send_after_hours: 24,
+                                  followup_mode: "EMAIL",
+                                  followup_body:
+                                    "Hi {candidateName}, Type your message",
+                                });
+                              }}
+                              className="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700"
+                              disabled={loading}
+                            >
+                              <span className="w-4 h-4 flex items-center justify-center rounded-full border border-blue-800 text-blue-800">
+                                <Check className="w-3 h-3" />
+                              </span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsAddingFollowUp(false);
+                                setNewFollowUp({
+                                  send_after_hours: 24,
+                                  followup_mode: "EMAIL",
+                                  followup_body:
+                                    "Hi {candidateName}, Type your message",
+                                });
+                              }}
+                              className="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-700"
+                              disabled={loading}
+                            >
+                              <Trash2 className="w-4 h-4 text-gray-200" />
+                            </button>
+                          </div>
+                        </div>
                         <div className="flex flex-col items-start space-y-2">
                           <div className="flex items-center space-x-4">
                             <div className="flex items-center gap-2">
@@ -910,77 +969,20 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                             <label className="text-xs text-gray-500 mb-1 block">
                               Message
                             </label>
-                            <CKEditor
-                              editor={ClassicEditor}
-                              data={newFollowUp.followup_body}
-                              onChange={(event, editor) =>
+                            <input
+                              type="text"
+                              value={newFollowUp.followup_body}
+                              onChange={(e) =>
                                 setNewFollowUp({
                                   ...newFollowUp,
-                                  followup_body: editor.getData(),
+                                  followup_body: e.target.value,
                                 })
                               }
-                              config={{
-                                toolbar: [
-                                  "bold",
-                                  "italic",
-                                  "link",
-                                  "bulletedList",
-                                  "numberedList",
-                                  "undo",
-                                  "redo",
-                                ],
-                              }}
+                              defaultValue="Hi {candidateName},"
+                              style={{ color: "#3b82f6" }}
+                              placeholder=" Type your message"
+                              className="text-sm w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
-                          </div>
-                          <div className="flex space-x-2 mt-2">
-                            <button
-                              onClick={() => setIsAddingFollowUp(false)}
-                              className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-400"
-                              disabled={loading}
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              onClick={() => {
-                                setFollowUpTemplates([
-                                  ...followUpTemplates,
-                                  {
-                                    ...newFollowUp,
-                                    followup_mode: newFollowUp.followup_mode as
-                                      | "EMAIL"
-                                      | "WHATSAPP"
-                                      | "CALL",
-                                    order_no: followUpTemplates.length,
-                                  },
-                                ]);
-                                setIsAddingFollowUp(false);
-                                setNewFollowUp({
-                                  send_after_hours: 24,
-                                  followup_mode: "EMAIL",
-                                  followup_body:
-                                    "Hi {candidateName}, Type your message",
-                                });
-                              }}
-                              className="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700"
-                              disabled={loading}
-                            >
-                              Save
-                            </button>
-                            <button
-                              onClick={() => {
-                                setIsAddingFollowUp(false);
-                                setNewFollowUp({
-                                  send_after_hours: 24,
-                                  followup_mode: "EMAIL",
-                                  followup_body:
-                                    "Hi {candidateName}, Type your message",
-                                });
-                              }}
-                              className="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-700"
-                              disabled={loading}
-                            >
-                              Trash
-                            </button>
                           </div>
                         </div>
                       </div>
