@@ -536,7 +536,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 sendViaEmail
                   ? "bg-blue-100 text-blue-800"
-                  : "bg-gray-100 text-gray-800 hover:bg-gray-400"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
               disabled={loading}
             >
@@ -595,8 +595,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="space-y-2 pt-4 border-t border-gray-200">
-          <div className="w-full flex justify-end">
+        <div className="space-y-2 pt-4 border-dotted border-t border-b border-gray-200">
+          {/* <div className="w-full flex justify-end">
             <button
               onClick={() => setShowAdvanceOptions(!showAdvanceOptions)}
               className="text-blue-600 text-xs hover:bg-blue-50 transition-colors flex items-center justify-end"
@@ -605,7 +605,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               <Settings className="w-4 h-4 mr-2" />{" "}
               {showAdvanceOptions ? "Hide" : "View"} Advance Options
             </button>
-          </div>
+          </div> */}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
