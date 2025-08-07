@@ -740,7 +740,6 @@ function MainApp() {
 
   const handleBackFromShareableProfile = () => {
     setShowShareableProfile(false);
-    setCurrentCandidateId("");
     window.history.pushState({}, "", "/");
   };
 
