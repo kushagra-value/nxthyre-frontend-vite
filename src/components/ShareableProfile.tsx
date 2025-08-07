@@ -29,9 +29,11 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
     fetchShareableProfile();
   }, [candidateId]);
 
+  const candidateProfileUrl = `https://nxthyre-frontend-vite.vercel.app/candidate-profiles/${candidateId}`;
+
   const handleCopyId = () => {
-    navigator.clipboard.writeText(candidateId);
     showToast.success('Candidate ID copied to clipboard');
+    navigator.clipboard.writeText(candidateProfileUrl);
   };
 
   const handleGoToDashboard = () => {
@@ -67,30 +69,22 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              {onBack && (
-                <button
-                  onClick={handleGoToDashboard}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <ArrowLeft className="w-5 h-5 text-gray-600" />
-                </button>
-              )}
-              <div className="flex items-center space-x-2">
-                <h1 className="text-xl lg:text-2xl font-bold text-blue-600 cursor-pointer" 
-                  onClick={handleGoToDashboard}
-                >
-                  NxtHyre
-                </h1>
+            <div className="flex justify-between items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <h1 className="text-xl lg:text-2xl font-bold text-blue-600 cursor-pointer" 
+                    onClick={handleGoToDashboard}
+                  >
+                    NxtHyre
+                  </h1>
                 </div>
                 <div className="flex items-center space-x-4">
-                <button
-                  onClick={handleCopyId}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-                  title="Copy ID"
-                >
-                  <Copy className="w-4 h-4 text-gray-500" /><span className="font-medium">Copy Profile ID</span>
-                </button>
+                  <button
+                    onClick={handleCopyId}
+                    className="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                    title="Copy ID"
+                  >
+                    <Copy className="w-4 h-4 text-gray-500" /><span className="font-medium">Copy Profile ID</span>
+                  </button>
               </div>
             </div>
           </div>
