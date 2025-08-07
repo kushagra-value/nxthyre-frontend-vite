@@ -2842,11 +2842,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <button className="rounded-lg transition-colors">
                   <ArrowLeft className="mb-2 w-5 h-4 text-gray-600" />
                 </button>
-                <h3 className="text-sm font-semibold text-gray-600 mb-4 mt-1">
+                <h3 className="text-md font-[400] text-gray-600 mb-4 mt-1">
                   Back to Dashboard
                 </h3>
               </div>
-              <div className="flex relative" ref={dropdownRef}>
+              <div className="flex relative mb-4" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between text-gray-700"
@@ -2856,7 +2856,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   </span>
                   <ChevronDown className="w-4 h-4" />
                 </button>
-                <div className="flex items-center justify-center bg-gray-600 h-8 w-8 rounded-lg p-4 ml-2"><User className="w-4 h-4"/></div>
+                <div className="flex items-center text-white justify-center bg-gray-600 h-8 w-8 rounded-lg ml-2"><User className="w-4 h-4"/></div>
   
                 {isDropdownOpen && (
                   <div className="absolute z-10 w-full bg-white shadow-lg mt-1 rounded-lg max-h-60 overflow-y-auto">
@@ -2899,7 +2899,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               isSelected ? "text-blue-600" : "text-gray-600"
                             }`}
                           />
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between w-full">
                           <div className="flex flex-col items-start justify-center">
                           <span className="flex-1 font-medium">
                             {stage.name}
