@@ -828,7 +828,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                           <CKEditor
                             editor={ClassicEditor}
                             data={followUp.followup_body}
-                            onChange={(event: any, editor: any) =>
+                            onChange={(event, editor) =>
                               updateFollowUp(
                                 index,
                                 "followup_body",
@@ -850,14 +850,14 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                         </div>
                       </div>
                     ))}
-                    {/* <button
+                    <button
                       onClick={() => setIsAddingFollowUp(true)}
                       className="flex items-center text-sm text-blue-600 hover:text-blue-700 mt-2"
                       disabled={loading || isAddingFollowUp}
                     >
                       <Plus className="w-4 h-4 mr-1 text-blue-600" />
                       Add Follow Up
-                    </button> */}
+                    </button>
                     {isAddingFollowUp && (
                       <div className="mt-4 p-4 border border-gray-300 rounded-lg">
                         <h3 className="text-sm font-medium text-gray-700 mb-2">
@@ -913,7 +913,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                             <CKEditor
                               editor={ClassicEditor}
                               data={newFollowUp.followup_body}
-                              onChange={(event: any, editor: any) =>
+                              onChange={(event, editor) =>
                                 setNewFollowUp({
                                   ...newFollowUp,
                                   followup_body: editor.getData(),
@@ -933,6 +933,13 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                             />
                           </div>
                           <div className="flex space-x-2 mt-2">
+                            <button
+                              onClick={() => setIsAddingFollowUp(false)}
+                              className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-400"
+                              disabled={loading}
+                            >
+                              Cancel
+                            </button>
                             <button
                               onClick={() => {
                                 setFollowUpTemplates([
@@ -960,11 +967,19 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                               Save
                             </button>
                             <button
-                              onClick={() => setIsAddingFollowUp(false)}
-                              className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-400"
+                              onClick={() => {
+                                setIsAddingFollowUp(false);
+                                setNewFollowUp({
+                                  send_after_hours: 24,
+                                  followup_mode: "EMAIL",
+                                  followup_body:
+                                    "Hi {candidateName}, Type your message",
+                                });
+                              }}
+                              className="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-700"
                               disabled={loading}
                             >
-                              Cancel
+                              Trash
                             </button>
                           </div>
                         </div>
@@ -972,14 +987,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                     )}
                   </div>
                 )}
-
-                <button
-                  onClick={addFollowUp}
-                  className="text-sm text-blue-600 hover:text-blue-700 mt-2"
-                  disabled={loading}
-                >
-                  + Add Follow-up
-                </button>
               </div>
             </div>
           </div>
