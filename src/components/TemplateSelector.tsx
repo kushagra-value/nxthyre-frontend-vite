@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   ChevronDown,
+  ChevronUp,
   Bold,
   Italic,
   Link,
@@ -18,6 +19,7 @@ import {
   Share2,
   Copy,
   Plus,
+  Trash2,
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import {
@@ -70,6 +72,18 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     }[]
   >([]);
   const [loading, setLoading] = useState(false);
+
+  const [isFollowUpsExpanded, setIsFollowUpsExpanded] = useState(false);
+
+  const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
+
+  const [newFollowUp, setNewFollowUp] = useState({
+    send_after_hours: 24,
+
+    followup_mode: "EMAIL",
+
+    followup_body: "Hi {candidateName}, Type your message",
+  });
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -595,24 +609,17 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="space-y-2 pt-4">
-          {/* <div className="w-full flex justify-end">
-            <button
-              onClick={() => setShowAdvanceOptions(!showAdvanceOptions)}
-              className="text-blue-600 text-xs hover:bg-blue-50 transition-colors flex items-center justify-end"
-              disabled={loading}
-            >
-              <Settings className="w-4 h-4 mr-2" />{" "}
-              {showAdvanceOptions ? "Hide" : "View"} Advance Options
-            </button>
-          </div> */}
-
-          <div className="border-dotted border-t border-gray-200"></div>
+        {/* <div className="space-y-2 pt-4">
+          <div className="border-dashed border-t border-gray-600"></div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Follow-ups
-            </label>
+            <div className="flex justify-between text-sm font-medium text-gray-700 mb-2">
+              <div className="flex justify-start items-center space-x-3">
+                <Settings className="inline w-4 h-4 mr-1" />
+                <span>Follow Ups</span>
+              </div>
+              <ChevronDown className="inline w-4 h-4 ml-1" />
+            </div>
             {followUpTemplates.map((followUp, index) => (
               <div
                 key={index}
@@ -701,6 +708,365 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             >
               + Add Follow-up
             </button>
+          </div>
+
+          <div className="flex justify-between space-x-8">
+            <button
+              onClick={() => setShowTestEmail(true)}
+              className="w-full px-4 py-2 text-xs text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"
+              disabled={loading}
+            >
+              Send test email
+            </button>
+            <button
+              onClick={handleSendInvite}
+              className="w-full px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center font-medium"
+              disabled={
+                loading ||
+                !jobId ||
+                !candidate.id ||
+                (!sendViaEmail && !sendViaWhatsApp && !sendViaPhone)
+              }
+            >
+              <Send className="w-4 h-4 mr-2" /> Send Invite
+            </button>
+          </div>
+        </div> */}
+
+        <div className="space-y-2 pt-4">
+          <div>
+            <div className="mt-4">
+              <div className="flex justify-between text-sm font-medium text-gray-700 mb-2">
+                <div
+                  className="flex justify-between text-sm font-medium text-gray-700 mb-2 cursor-pointer hover:bg-gray-100 rounded-lg p-2 transition-colors"
+                  onClick={() => setIsFollowUpsExpanded(!isFollowUpsExpanded)}
+                >
+                  <div className="flex justify-start items-center space-x-3">
+                    <Settings className="inline w-4 h-4 mr-1" />
+                    <span>Follow Ups</span>
+                  </div>
+                  {isFollowUpsExpanded ? (
+                    <ChevronUp className="inline w-4 h-4 ml-1" />
+                  ) : (
+                    <ChevronDown className="inline w-4 h-4 ml-1" />
+                  )}
+                </div>
+                {isFollowUpsExpanded && (
+                  <div className="mt-2">
+                    {followUpTemplates.map((followUp, index) => (
+                      <div
+                        key={index}
+                        className="bg-blue-50 border-t border-b border-gray-200 p-4 mb-2 rounded-lg"
+                      >
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm font-medium text-gray-700">
+                            Follow Up {index + 1}
+                          </span>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => removeFollowUp(index)}
+                              className="p-1 text-red-500 hover:text-red-700"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => removeFollowUp(index)}
+                              className="p-1 text-gray-500 hover:text-gray-700"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">
+                              Send After
+                            </span>
+                            <input
+                              type="number"
+                              value={followUp.send_after_hours}
+                              onChange={(e) =>
+                                updateFollowUp(
+                                  index,
+                                  "send_after_hours",
+                                  Number(e.target.value)
+                                )
+                              }
+                              className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Hours"
+                              disabled={loading}
+                            />
+                            <span className="text-xs text-gray-500">hrs</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">Via</span>
+                            <select
+                              value={followUp.followup_mode}
+                              onChange={(e) =>
+                                updateFollowUp(
+                                  index,
+                                  "followup_mode",
+                                  e.target.value as
+                                    | "EMAIL"
+                                    | "WHATSAPP"
+                                    | "CALL"
+                                )
+                              }
+                              className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              disabled={loading}
+                            >
+                              <option value="EMAIL">Email</option>
+                              <option value="WHATSAPP">WhatsApp</option>
+                              <option value="CALL">Call</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="w-full">
+                          <label className="text-xs text-gray-500 mb-1 block">
+                            Message
+                          </label>
+                          <CKEditor
+                            editor={ClassicEditor}
+                            data={followUp.followup_body}
+                            onChange={(event: any, editor: any) =>
+                              updateFollowUp(
+                                index,
+                                "followup_body",
+                                editor.getData()
+                              )
+                            }
+                            config={{
+                              toolbar: [
+                                "bold",
+                                "italic",
+                                "link",
+                                "bulletedList",
+                                "numberedList",
+                                "undo",
+                                "redo",
+                              ],
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => setIsAddingFollowUp(true)}
+                      className="flex items-center text-sm text-blue-600 hover:text-blue-700 mt-2"
+                      disabled={loading || isAddingFollowUp}
+                    >
+                      <Plus className="w-4 h-4 mr-1 text-blue-600" />
+                      Add Follow Up
+                    </button>
+                    {isAddingFollowUp && (
+                      <div className="mt-4 p-4 border border-gray-300 rounded-lg">
+                        <h3 className="text-sm font-medium text-gray-700 mb-2">
+                          Add New Follow Up
+                        </h3>
+                        <div className="flex flex-col items-start space-y-2">
+                          <div className="flex items-center space-x-4">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-500">
+                                Send After
+                              </span>
+                              <input
+                                type="number"
+                                value={newFollowUp.send_after_hours}
+                                onChange={(e) =>
+                                  setNewFollowUp({
+                                    ...newFollowUp,
+                                    send_after_hours: Number(e.target.value),
+                                  })
+                                }
+                                className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Hours"
+                                disabled={loading}
+                              />
+                              <span className="text-xs text-gray-500">hrs</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-500">Via</span>
+                              <select
+                                value={newFollowUp.followup_mode}
+                                onChange={(e) =>
+                                  setNewFollowUp({
+                                    ...newFollowUp,
+                                    followup_mode: e.target.value as
+                                      | "EMAIL"
+                                      | "WHATSAPP"
+                                      | "CALL",
+                                  })
+                                }
+                                className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                disabled={loading}
+                              >
+                                <option value="EMAIL">Email</option>
+                                <option value="WHATSAPP">WhatsApp</option>
+                                <option value="CALL">Call</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div className="w-full">
+                            <label className="text-xs text-gray-500 mb-1 block">
+                              Message
+                            </label>
+                            <CKEditor
+                              editor={ClassicEditor}
+                              data={newFollowUp.followup_body}
+                              onChange={(event: any, editor: any) =>
+                                setNewFollowUp({
+                                  ...newFollowUp,
+                                  followup_body: editor.getData(),
+                                })
+                              }
+                              config={{
+                                toolbar: [
+                                  "bold",
+                                  "italic",
+                                  "link",
+                                  "bulletedList",
+                                  "numberedList",
+                                  "undo",
+                                  "redo",
+                                ],
+                              }}
+                            />
+                          </div>
+                          <div className="flex space-x-2 mt-2">
+                            <button
+                              onClick={() => {
+                                setFollowUpTemplates([
+                                  ...followUpTemplates,
+                                  {
+                                    ...newFollowUp,
+                                    followup_mode: newFollowUp.followup_mode as
+                                      | "EMAIL"
+                                      | "WHATSAPP"
+                                      | "CALL",
+                                    order_no: followUpTemplates.length,
+                                  },
+                                ]);
+                                setIsAddingFollowUp(false);
+                                setNewFollowUp({
+                                  send_after_hours: 24,
+                                  followup_mode: "EMAIL",
+                                  followup_body:
+                                    "Hi {candidateName}, Type your message",
+                                });
+                              }}
+                              className="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700"
+                              disabled={loading}
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => setIsAddingFollowUp(false)}
+                              className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-400"
+                              disabled={loading}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {followUpTemplates.map((followUp, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col items-start mb-2 space-x-2"
+                  >
+                    <div className="flex items-center mb-2 space-x-4">
+                      <button
+                        onClick={() => removeFollowUp(index)}
+                        className="ml-2 p-1 text-red-500 hover:text-red-700"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">
+                          Send After
+                        </span>
+                        <input
+                          type="number"
+                          value={followUp.send_after_hours}
+                          onChange={(e) => {
+                            const updated = [...followUpTemplates];
+                            updated[index] = {
+                              ...updated[index],
+                              send_after_hours: Number(e.target.value),
+                            };
+                            setFollowUpTemplates(updated);
+                          }}
+                          className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Hours"
+                          disabled={loading}
+                        />
+                        <span className="text-xs text-gray-500">hrs</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">
+                          Mode of Followup
+                        </span>
+                        <select
+                          value={followUp.followup_mode}
+                          onChange={(e) => {
+                            const updated = [...followUpTemplates];
+                            updated[index] = {
+                              ...updated[index],
+                              followup_mode: e.target.value as
+                                | "EMAIL"
+                                | "WHATSAPP"
+                                | "CALL",
+                            };
+                            setFollowUpTemplates(updated);
+                          }}
+                          className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          disabled={loading}
+                        >
+                          <option value="EMAIL">Email</option>
+                          <option value="WHATSAPP">WhatsApp</option>
+                          <option value="CALL">Call</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 w-full">
+                      <CKEditor
+                        editor={ClassicEditor}
+                        className="w-full"
+                        data={followUp.followup_body}
+                        onChange={(event: any, editor: any) =>
+                          updateFollowUp(
+                            index,
+                            "followup_body",
+                            editor.getData()
+                          )
+                        }
+                        config={{
+                          toolbar: [
+                            "bold",
+                            "italic",
+                            "link",
+                            "bulletedList",
+                            "numberedList",
+                            "undo",
+                            "redo",
+                          ],
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+                <button
+                  onClick={addFollowUp}
+                  className="text-sm text-blue-600 hover:text-blue-700 mt-2"
+                  disabled={loading}
+                >
+                  + Add Follow-up
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="flex justify-between space-x-8">
