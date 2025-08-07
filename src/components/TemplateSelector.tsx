@@ -377,8 +377,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         <div className="border-t border-gray-300 border-b p-3 space-y-2">
           <div className="flex justify-between items-center space-x-2">
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 flex justify-center items-start bg-gray-200 rounded-full">
-                <Mail className="w-4 h-4 text-gray-400 flex-shrink-0 mt-1" />
+              <div className="w-6 h-6 flex justify-center items-center bg-gray-200 rounded-full">
+                <Mail className="w-4 h-4 text-gray-400" />
               </div>
               <span className="text-sm text-gray-400">{displayEmail}</span>
             </div>
@@ -391,15 +391,15 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               onClick={() => hasContactInfo && handleCopy(displayEmail)}
               disabled={!hasContactInfo}
             >
-              <div className="w-6 h-6 flex justify-center items-start bg-gray-200 rounded-full">
-                <Copy className="w-4 h-4" />
+              <div className="w-6 h-6 flex justify-center items-center bg-gray-200 rounded-full">
+                <Copy className="w-4 h-4 text-gray-400" />
               </div>
             </button>
           </div>
           <div className="flex justify-between items-center space-x-2">
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 flex justify-center items-start bg-gray-200 rounded-full">
-                <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <div className="w-6 h-6 flex justify-center items-center bg-gray-200 rounded-full">
+                <Phone className="w-4 h-4 text-gray-400" />
               </div>
               <span className="text-sm text-gray-400">{displayPhone}</span>
             </div>
@@ -413,7 +413,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 onClick={() => hasContactInfo && handleWhatsApp(displayPhone)}
                 disabled={!hasContactInfo}
               >
-                <div className="w-6 h-6 flex justify-center items-start bg-gray-200 rounded-full">
+                <div className="w-6 h-6 flex justify-center items-center bg-gray-200 rounded-full">
                   <FontAwesomeIcon icon={faWhatsapp} />
                 </div>
               </button>
@@ -426,8 +426,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 onClick={() => hasContactInfo && handleCopy(displayPhone)}
                 disabled={!hasContactInfo}
               >
-                <div className="w-6 h-6 flex justify-center items-start bg-gray-200 rounded-full">
-                  <Copy className="w-4 h-4" />
+                <div className="w-6 h-6 flex justify-center items-center bg-gray-200 rounded-full">
+                  <Copy className="w-4 h-4 text-gray-400" />
                 </div>
               </button>
             </div>
@@ -444,7 +444,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               key={selectedTemplate}
               value={selectedTemplate}
               onChange={(e) => handleTemplateSelect(e.target.value)}
-              className="text-sm text-gray-400 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+              className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
               disabled={loading}
             >
               <option value="">Select a template</option>
@@ -463,19 +463,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             </select>
             <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
-        </div>
-
-        {/* From Email */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            From
-          </label>
-          <input
-            type="email"
-            value="yuvraj@nxthyre.com"
-            readOnly
-            className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
-          />
         </div>
 
         {/* Subject */}
@@ -510,6 +497,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             editor={ClassicEditor}
             data={body}
             onChange={(event: any, editor: any) => setBody(editor.getData())}
+            className={`${isBodyExpanded ? "h-96" : "h-48"} w-full`}
+            onFocus={() => setIsBodyExpanded(true)}
+            onBlur={() => setIsBodyExpanded(false)}
             config={{
               toolbar: [
                 "bold",
