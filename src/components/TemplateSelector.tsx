@@ -536,7 +536,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 sendViaEmail
                   ? "bg-blue-100 text-blue-800"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  : "bg-gray-100 text-gray-800 hover:bg-gray-400"
               }`}
               disabled={loading}
             >
