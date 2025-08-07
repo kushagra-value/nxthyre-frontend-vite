@@ -326,7 +326,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
   return (
     <>
-      <div className="bg-white rounded-xl p-8 space-y-4 h-fit">
+      <div className="bg-white rounded-xl px-10 py-8 space-y-4 h-fit">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -334,9 +334,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               onClick={onBack}
               className="pr-2 py-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-6 h-4 text-gray-600" />
+              <ArrowLeft className="w-6 h-6 text-gray-700" />
             </button>
-            <h2 className="text-lg font-semibold text-gray-900">Send Invite</h2>
+            <h2 className="text-lg font-semibold text-gray-700">Send Invite</h2>
           </div>
         </div>
 
@@ -349,7 +349,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             <User className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-base lg:text-[16px] font-bold text-gray-900">
+            <h2 className="text-base lg:text-[16px] font-bold text-gray-600">
               {detailedCandidate?.candidate?.full_name}
             </h2>
             <div className="flex">
@@ -358,7 +358,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               </p>
             </div>
             <div className="flex">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-400">
                 {detailedCandidate?.candidate?.location}
               </p>
             </div>
@@ -377,8 +377,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         <div className="border-t border-gray-300 border-b p-3 space-y-2">
           <div className="flex justify-between items-center space-x-2">
             <div className="flex items-center space-x-2">
-              <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
-              <span className="text-sm text-gray-700">{displayEmail}</span>
+              <div className="w-5 h-5 flex justify-center items-center bg-gray-200 rounded-full">
+                <Mail className="w-4 h-4 text-gray-400 flex-shrink-0 mt-1" />
+              </div>
+              <span className="text-sm text-gray-400">{displayEmail}</span>
             </div>
             <button
               className={`flex space-x-2 ml-auto p-1 ${
@@ -394,8 +396,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           </div>
           <div className="flex justify-between items-center space-x-2">
             <div className="flex items-center space-x-2">
-              <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
-              <span className="text-sm text-gray-700">{displayPhone}</span>
+              <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <span className="text-sm text-gray-400">{displayPhone}</span>
             </div>
             <div>
               <button
