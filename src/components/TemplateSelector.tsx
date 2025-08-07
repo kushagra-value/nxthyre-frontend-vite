@@ -546,7 +546,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                   <Check className="w-4 h-4 text-semibold" />
                 </div>
               ) : (
-                <div className="inline-flex items-center justify-start w-5 h-5 border border-gray-600 rounded-full ml-1">
+                <div className="inline-flex items-center justify-center w-5 h-5 border border-gray-600 rounded-full ml-1">
                   <Plus className="w-4 h-4 text-semibold" />
                 </div>
               )}
