@@ -865,7 +865,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                       <div className="mt-4 p-4 border border-gray-300 bg-blue-100 rounded-lg">
                         <div className="flex justify-between items-center mb-2 pb-2 border-b border-blue-400">
                           <span className="text-sm font-medium text-gray-700">
-                            Follow Up {index + 1}
+                            Follow Up
                           </span>
                           <div className="flex space-x-2 mt-2">
                             <button
