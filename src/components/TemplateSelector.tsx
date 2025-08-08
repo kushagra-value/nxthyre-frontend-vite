@@ -20,6 +20,7 @@ import {
   Copy,
   Plus,
   Trash2,
+  Edit,
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import {
@@ -754,102 +755,45 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                   )}
                 </div>
                 {isFollowUpsExpanded && (
-                  <div className="mt-2">
+                  <div className="mx-2 mt-2">
                     {/* Saved wale he ye bhai */}
                     {followUpTemplates.map((followUp, index) => (
                       <div
                         key={index}
-                        className="bg-blue-50 border-t border-b border-gray-200 p-4 mb-2 rounded-lg"
+                        className="bg-gray-100 border-b border-gray-400 mb-2 pt-4 rounded-lg"
                       >
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-medium text-gray-700">
+                        <div className="flex justify-between items-center px-8">
+                          <span className="text-sm font-medium text-gray-500">
                             Follow Up {index + 1}
                           </span>
                           <div className="flex space-x-2">
                             <button
                               onClick={() => removeFollowUp(index)}
-                              className="p-1 text-red-500 hover:text-red-700"
+                              className="p-1 text-gray-400 hover:text-gray-500"
                             >
-                              <X className="w-4 h-4" />
+                              <Edit className="w-4 h-4 text-gray-400" />
                             </button>
                             <button
                               onClick={() => removeFollowUp(index)}
-                              className="p-1 text-gray-500 hover:text-gray-700"
+                              className="p-1 text-gray-400 hover:text-gray-500"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4 text-gray-400" />
                             </button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4 mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-500">
-                              Send After
+                        <div className="pt-2 border-b border-gray-400 rounded-lg"></div>
+                        <div className="mb-2 px-8">
+                          <div className="flex items-center text-gray-500">
+                            <p>Will be sent around </p>
+                            <span>{followUp.send_after_hours} from now</span>
+                            <p>via {followUp.followup_mode}.</p>
+                          </div>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-gray-300">
+                              Hi {candidate.full_name}, bumping this up one last
+                              time. Thanks!
                             </span>
-                            <input
-                              type="number"
-                              value={followUp.send_after_hours}
-                              onChange={(e) =>
-                                updateFollowUp(
-                                  index,
-                                  "send_after_hours",
-                                  Number(e.target.value)
-                                )
-                              }
-                              className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              placeholder="Hours"
-                              disabled={loading}
-                            />
-                            <span className="text-xs text-gray-500">hrs</span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-500">Via</span>
-                            <select
-                              value={followUp.followup_mode}
-                              onChange={(e) =>
-                                updateFollowUp(
-                                  index,
-                                  "followup_mode",
-                                  e.target.value as
-                                    | "EMAIL"
-                                    | "WHATSAPP"
-                                    | "CALL"
-                                )
-                              }
-                              className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              disabled={loading}
-                            >
-                              <option value="EMAIL">Email</option>
-                              <option value="WHATSAPP">WhatsApp</option>
-                              <option value="CALL">Call</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div className="w-full">
-                          <label className="text-xs text-gray-500 mb-1 block">
-                            Message
-                          </label>
-                          <CKEditor
-                            editor={ClassicEditor}
-                            data={followUp.followup_body}
-                            onChange={(event, editor) =>
-                              updateFollowUp(
-                                index,
-                                "followup_body",
-                                editor.getData()
-                              )
-                            }
-                            config={{
-                              toolbar: [
-                                "bold",
-                                "italic",
-                                "link",
-                                "bulletedList",
-                                "numberedList",
-                                "undo",
-                                "redo",
-                              ],
-                            }}
-                          />
                         </div>
                       </div>
                     ))}
