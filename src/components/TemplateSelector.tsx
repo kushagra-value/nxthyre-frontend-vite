@@ -612,7 +612,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         </div>
 
         {/* Follow up section  */}
-        <div className="space-y-2 pt-4">
+        <div className="space-y-16 pt-4">
           <div>
             <div className="text-sm font-medium text-gray-700 mb-2">
               <div
@@ -719,7 +719,11 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                               setNewFollowUp({
                                 send_after_hours: "24hrs",
                                 followup_mode: "EMAIL",
-                                followup_body: `Hi ${candidate.full_name}, `,
+                                followup_body: `Hi ${candidate.full_name}, ${(
+                                  <span className="text-gray-400">
+                                    Type your message ...
+                                  </span>
+                                )}`,
                               });
                             }}
                             className=" text-blue-500 text-xs rounded-full"
@@ -962,132 +966,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 </button>
               </div>
             </div>
-
-            {/* <div className="space-y-2 pt-4 border-t border-gray-200">
-              <div className="w-full flex justify-end">
-                <button
-                  onClick={() => setShowAdvanceOptions(!showAdvanceOptions)}
-                  className="text-blue-600 text-xs hover:bg-blue-50 transition-colors flex items-center justify-end"
-                  disabled={loading}
-                >
-                  <Settings className="w-4 h-4 mr-2" />{" "}
-                  {showAdvanceOptions ? "Hide" : "View"} Advance Options
-                </button>
-              </div>
-
-              {showAdvanceOptions && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Follow-ups
-                  </label>
-                  {followUpTemplates.map((followUp, index) => (
-                    <div
-                      key={index}
-                      className="flex flex-col items-start mb-2 space-x-2"
-                    >
-                      <div className="flex items-center mb-2 space-x-4">
-                        <button
-                          onClick={() => removeFollowUp(index)}
-                          className="ml-2 p-1 text-red-500 hover:text-red-700"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">
-                            Send After
-                          </span>
-                          <input
-                            type="number"
-                            value={followUp.send_after_hours}
-                            onChange={(e) =>
-                              updateFollowUp(
-                                index,
-                                "send_after_hours",
-                                Number(e.target.value)
-                              )
-                            }
-                            className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Hours"
-                            disabled={loading}
-                          />
-                          <span className="text-xs text-gray-500">hrs</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">
-                            Mode of Followup
-                          </span>
-                          <select
-                            value={followUp.followup_mode}
-                            onChange={(e) =>
-                              updateFollowUp(
-                                index,
-                                "followup_mode",
-                                e.target.value as "EMAIL" | "WHATSAPP" | "CALL"
-                              )
-                            }
-                            className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            disabled={loading}
-                          >
-                            <option value="EMAIL">Email</option>
-                            <option value="WHATSAPP">WhatsApp</option>
-                            <option value="CALL">Call</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 w-full">
-                        <CKEditor
-                          editor={ClassicEditor}
-                          className="w-full"
-                          data={followUp.followup_body}
-                          onChange={(event: any, editor: any) =>
-                            updateFollowUp(
-                              index,
-                              "followup_body",
-                              editor.getData()
-                            )
-                          }
-                          config={{
-                            toolbar: [
-                              "bold",
-                              "italic",
-                              "link",
-                              "bulletedList",
-                              "numberedList",
-                              "undo",
-                              "redo",
-                            ],
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                  <button
-                    onClick={addFollowUp}
-                    className="text-sm text-blue-600 hover:text-blue-700 mt-2"
-                    disabled={loading}
-                  >
-                    + Add Follow-up
-                  </button>
-                </div>
-              )}
-
-              <div className="flex justify-between space-x-8">
-                <button
-                  onClick={() => setShowCreateTemplate(false)}
-                  className="w-full px-4 py-2 text-xs text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"
-                  disabled={loading}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveTemplate}
-                  className="w-full px-4 py-2 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center font-medium"
-                  disabled={loading}
-                >
-                  Save Template
-                </button>
-              </div>
-            </div> */}
           </div>
         </div>
       )}
