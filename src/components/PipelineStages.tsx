@@ -281,6 +281,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const [newComment, setNewComment] = useState("");
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<"prospect" | "stage">("prospect"); // New state for view mode
 
   // States for API data
   const [stages, setStages] = useState<Stage[]>([]);
@@ -708,21 +709,21 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     {
       id: "uncontacted",
       label: "Uncontacted",
-      count: activeTab === "uncontacted" ? totalCount : 0,
+      count: stages.find((s) => s.name === "Uncontacted")?.candidate_count || 0 
     },
     {
       id: "invited",
       label: "Invited",
-      count: activeTab === "invited" ? totalCount : 0,
-    },
+       count: stages.find((s) => s.name === "Invites Sent")?.candidate_count || 0 },
     {
       id: "inbox",
       label: "Inbox",
-      count: activeTab === "inbox" ? totalCount : 0,
-    },
+      count: stages.find((s) => s.name === "Applied")?.candidate_count || 0 },
   ];
 
   const selectedCategory = categories.find((cat) => cat.id === activeJobId);
+
+  const filteredStages = stages.filter((stage) => !["Uncontacted", "Invites Sent"].includes(stage.name));
 
   const renderStageDetails = () => {
     if (!selectedCandidate) {
@@ -2915,8 +2916,22 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 )}
               </div>
               <div className="space-y-2">
-                {stages.length > 0
-                  ? stages.map((stage) => {
+                <button
+                  onClick={() => {
+                    setViewMode("prospect");
+                    setSelectedStage("Uncontacted");
+                    setActiveTab("uncontacted");
+                  }}
+                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                    viewMode === "prospect" ? "bg-blue-50 text-blue-700 border border-blue-200" : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  {viewMode === "prospect" && <div className="w-1 h-8 bg-blue-500 rounded-tr-xl rounded-br-xl rounded" />}
+                  <User className={`w-4 h-4 ${viewMode === "prospect" ? "text-blue-600" : "text-gray-600"}`} />
+                  <span className="flex-1 font-medium">Prospect</span>
+                </button>
+                {filteredStages.length > 0
+                  ? filteredStages.map((stage) => {
                       const Icon = getStageIcon(stage.name);
                       const isSelected = selectedStage === stage.name;
                       const description = getStageDescription(stage.name);
@@ -2962,7 +2977,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         </button>
                       );
                     })
-                  : pipelineStages.map((stage) => {
+                  : pipelineStages.filter(stage => !["Uncontacted", "Invites Sent"].includes(stage)).map((stage) => {
                       const Icon = getStageIcon(stage);
                       const isSelected = selectedStage === stage;
                       const candidateCount =
@@ -3010,14 +3025,19 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
           <div className="lg:w-[45%] order-1 lg:order-2">
             <div className="bg-white rounded-xl shadow-sm h-fit">
-
+              {viewMode === "prospect" && (
               <div className="border-b border-gray-200">
                 <div className="flex items-center justify-between px-4 pt-4 pb-0">
                   <div className="flex space-x-6 overflow-x-auto">
                     {tabs.map((tab) => (
                       <button
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
+                        onClick={() => {
+                            setActiveTab(tab.id);
+                            if (tab.id === "uncontacted") setSelectedStage("Uncontacted");
+                            else if (tab.id === "invited") setSelectedStage("Invites Sent");
+                            else if (tab.id === "inbox") setSelectedStage("Inbox");
+                          }}
                         className={`py-2 text-sm lg:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 focus-visible:border-b-2 focus-visible:border-blue-600 ${
                           activeTab === tab.id
                             ? "text-blue-600 border-blue-500"
@@ -3036,6 +3056,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   </div>
                 </div>
               </div>
+              )}
               <div className="p-3 lg:p-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                     <label className="flex items-center">
