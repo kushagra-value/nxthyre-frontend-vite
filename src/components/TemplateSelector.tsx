@@ -65,7 +65,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   const [sendViaPhone, setSendViaPhone] = useState(false);
   const [followUpTemplates, setFollowUpTemplates] = useState<
     {
-      send_after_hours: number;
+      send_after_hours: "24hrs" | "48hrs" | "72hrs";
       followup_mode: "EMAIL" | "WHATSAPP" | "CALL";
       followup_body: string;
       order_no: number;
@@ -77,11 +77,13 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
   const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
 
-  const [newFollowUp, setNewFollowUp] = useState({
-    send_after_hours: 24,
-
+  const [newFollowUp, setNewFollowUp] = useState<{
+    send_after_hours: "24hrs" | "48hrs" | "72hrs";
+    followup_mode: "EMAIL" | "WHATSAPP" | "CALL";
+    followup_body: string;
+  }>({
+    send_after_hours: "24hrs",
     followup_mode: "EMAIL",
-
     followup_body: "Hi {candidateName}, Type your message",
   });
 
@@ -254,7 +256,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     setFollowUpTemplates([
       ...followUpTemplates,
       {
-        send_after_hours: 0,
+        send_after_hours: "24hrs",
         followup_mode: "EMAIL",
         followup_body: "",
         order_no: followUpTemplates.length,
@@ -894,7 +896,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                 ]);
                                 setIsAddingFollowUp(false);
                                 setNewFollowUp({
-                                  send_after_hours: 24,
+                                  send_after_hours: "24hrs",
                                   followup_mode: "EMAIL",
                                   followup_body:
                                     "Hi {candidateName}, Type your message",
@@ -911,7 +913,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                               onClick={() => {
                                 setIsAddingFollowUp(false);
                                 setNewFollowUp({
-                                  send_after_hours: 24,
+                                  send_after_hours: "24hrs",
                                   followup_mode: "EMAIL",
                                   followup_body: "Hi {candidateName}",
                                 });
@@ -930,20 +932,24 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                               <span className="text-xs text-gray-500">
                                 Send After
                               </span>
-                              <input
-                                type="number"
+                              <select
                                 value={newFollowUp.send_after_hours}
                                 onChange={(e) =>
                                   setNewFollowUp({
                                     ...newFollowUp,
-                                    send_after_hours: Number(e.target.value),
+                                    send_after_hours: e.target.value as
+                                      | "24hrs"
+                                      | "48hrs"
+                                      | "72hrs",
                                   })
                                 }
-                                className="text-sm w-20 px-2 py-1 text-blue-400 bg-blue-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Hours"
+                                className="text-sm w-24 px-2 py-1 text-blue-500 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 disabled={loading}
-                              />
-                              <span className="text-xs text-gray-500">hrs</span>
+                              >
+                                <option value="24hrs">24 hrs</option>
+                                <option value="48hrs">48 hrs</option>
+                                <option value="72hrs">72 hrs</option>
+                              </select>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-xs text-gray-500">Via</span>
@@ -958,7 +964,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                       | "CALL",
                                   })
                                 }
-                                className="text-sm w-24 px-2 py-1 text-blue-400 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="text-sm w-24 px-2 py-1 text-blue-500 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 disabled={loading}
                               >
                                 <option value="EMAIL">Email</option>
