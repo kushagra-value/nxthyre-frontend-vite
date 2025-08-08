@@ -873,10 +873,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                               className="text-red-500 text-xs rounded-full"
                               disabled={loading}
                             >
-                              <span className="w-4 h-4 flex items-center justify-center rounded-full border-2 border-red-500 text-red-500">
-                                <span className="text-xs text-semibold mb-1">
-                                  x
-                                </span>
+                              <span className="w-4 h-4 flex items-center justify-center rounded-full border border-red-500 text-red-500">
+                                <span className="text-xs mb-1">x</span>
                               </span>
                             </button>
                             <button
@@ -900,11 +898,11 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                     "Hi {candidateName}, Type your message",
                                 });
                               }}
-                              className=" text-blue-800 text-xs rounded-full"
+                              className=" text-blue-500 text-xs rounded-full"
                               disabled={loading}
                             >
-                              <span className="w-4 h-4 flex items-center justify-center rounded-full border-2 border-blue-800 text-blue-800">
-                                <Check className="w-2 h-2 font-semibold" />
+                              <span className="w-4 h-4 flex items-center justify-center rounded-full border border-blue-500 text-blue-500">
+                                <Check className="w-2 h-2" />
                               </span>
                             </button>
                             <button
@@ -913,8 +911,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                 setNewFollowUp({
                                   send_after_hours: 24,
                                   followup_mode: "EMAIL",
-                                  followup_body:
-                                    "Hi {candidateName}, Type your message",
+                                  followup_body: "Hi {candidateName}",
                                 });
                               }}
                               className=" text-gray-200 text-xs rounded-full"
@@ -924,7 +921,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                             </button>
                           </div>
                         </div>
-                        <div className="border-b border-blue-300 rounded-full w-full mb-2 px-[-16px]"></div>
+                        <div className="border-b border-blue-400 rounded-full w-full mb-2 px-[-32px]"></div>
                         <div className="flex flex-col items-start space-y-2">
                           <div className="flex items-center space-x-4">
                             <div className="flex items-center gap-2">
@@ -940,7 +937,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                     send_after_hours: Number(e.target.value),
                                   })
                                 }
-                                className="text-sm w-20 px-2 py-1 bg-blue-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="text-sm w-20 px-2 py-1 text-blue-400 bg-blue-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="Hours"
                                 disabled={loading}
                               />
@@ -959,7 +956,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                       | "CALL",
                                   })
                                 }
-                                className="text-sm w-24 px-2 py-1 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="text-sm w-24 px-2 py-1 text-blue-400 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 disabled={loading}
                               >
                                 <option value="EMAIL">Email</option>
@@ -982,7 +979,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                 })
                               }
                               defaultValue="Hi {candidateName},"
-                              style={{ color: "#3b82f6" }}
+                              style={{ color: "#63b3ed" }}
                               placeholder=" Type your message"
                               className="text-sm w-full px-2 py-1 text-gray-300 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
