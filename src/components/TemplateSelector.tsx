@@ -863,7 +863,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                     {/* Yaha se add new wala he bhai */}
                     {isAddingFollowUp && (
                       <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                        <div className="flex justify-between items-center mb-2 pb-2">
+                        <div className="flex justify-between items-center pb-2">
                           <span className="text-sm font-medium text-gray-700">
                             Follow Up
                           </span>
@@ -874,7 +874,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                               disabled={loading}
                             >
                               <span className="w-4 h-4 flex items-center justify-center rounded-full border-2 border-red-500 text-red-500">
-                                <span className="text-xs text-semibold">x</span>
+                                <span className="text-xs text-semibold mb-1">
+                                  x
+                                </span>
                               </span>
                             </button>
                             <button
@@ -902,7 +904,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                               disabled={loading}
                             >
                               <span className="w-4 h-4 flex items-center justify-center rounded-full border-2 border-blue-800 text-blue-800">
-                                <Check className="w-3 h-3 text-semibold" />
+                                <Check className="w-2 h-2 font-semibold" />
                               </span>
                             </button>
                             <button
@@ -918,11 +920,11 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                               className=" text-gray-200 text-xs rounded-full"
                               disabled={loading}
                             >
-                              <Trash2 className="w-4 h-4 text-gray-200" />
+                              <Trash2 className="w-4 h-4 text-gray-300" />
                             </button>
                           </div>
                         </div>
-                        <div className="border-b border-blue-400 rounded-lg w-full"></div>
+                        <div className="border-b border-blue-300 rounded-full w-full mb-2 px-[-16px]"></div>
                         <div className="flex flex-col items-start space-y-2">
                           <div className="flex items-center space-x-4">
                             <div className="flex items-center gap-2">
