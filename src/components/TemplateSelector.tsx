@@ -85,7 +85,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   }>({
     send_after_hours: "24hrs",
     followup_mode: "EMAIL",
-    followup_body: "Hi {candidateName}, Type your message line 81 useState",
+    followup_body: `Hi ${candidate.full_name},`,
   });
 
   useEffect(() => {
@@ -659,8 +659,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                       <div className="pt-2 border-b border-gray-400 rounded-lg"></div>
                       <div className="my-4 px-8">
                         <div className="flex items-center text-gray-600">
-                          <p>Will be sent around</p>{" "}
-                          <span>{followUp.send_after_hours} from now</span>{" "}
+                          <p>Will be sent around</p> <span> </span>
+                          <span>{followUp.send_after_hours} from now</span>
+                          <span> </span>
                           <p>via {followUp.followup_mode}.</p>
                         </div>
                         <div className="flex items-center gap-2 mt-2">
@@ -718,8 +719,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                               setNewFollowUp({
                                 send_after_hours: "24hrs",
                                 followup_mode: "EMAIL",
-                                followup_body:
-                                  "Hi {candidateName}, Type your message line 722 setting new follow up",
+                                followup_body: `Hi ${candidate.full_name}, `,
                               });
                             }}
                             className=" text-blue-500 text-xs rounded-full"
@@ -732,12 +732,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                           <button
                             onClick={() => {
                               setIsAddingFollowUp(false);
-                              setNewFollowUp({
-                                send_after_hours: "24hrs",
-                                followup_mode: "EMAIL",
-                                followup_body:
-                                  "Hi {candidateName} line 738 setting new",
-                              });
                             }}
                             className=" text-gray-200 text-xs rounded-full"
                             disabled={loading}
@@ -807,9 +801,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                 followup_body: e.target.value,
                               })
                             }
-                            defaultValue="Hi {candidateName} line 809 default value,"
                             style={{ color: "#2563EB" }}
-                            placeholder=" Type your message placeholder"
+                            placeholder=" Type your message"
                             className="text-sm w-full px-2 py-1 text-gray-300 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           />
                         </div>
