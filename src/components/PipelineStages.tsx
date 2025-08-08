@@ -31,6 +31,7 @@ import {
   Github,
   Linkedin,
   Link,
+  ArrowDownNarrowWide,
 } from "lucide-react";
 import Header from "./Header";
 import { creditService } from "../services/creditService";
@@ -444,6 +445,24 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       console.error("Error bulk moving candidates:", error);
     }
   };
+
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
+
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [sortBy, setSortBy] = useState("Relevance"); 
+
+  const handleSortSelect = (sortValue: string) => {
+    setSortBy(sortValue);
+    setShowSortDropdown(false);
+  };
+
+  const sortOptions = [
+    { value: '', label: 'Relevance' },
+    { value: 'experience_asc', label: 'Experience(Asc)' },
+    { value: 'experience_desc', label: 'Experience(Desc)' },
+    { value: 'notice_period_asc', label: 'Notice Period(Asc)' },
+    { value: 'notice_period_desc', label: 'Notice Period(Desc)' },
+  ];
 
   const mapStageData = (
     slug: string,
@@ -3018,9 +3037,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 </div>
               </div>
               <div className="p-3 lg:p-4 border-b border-gray-200">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex items-center justify-between w-full">
-                    <label className="flex items-center gap-2">
+                <div className="flex items-center justify-between">
+                    <label className="flex items-center">
                       <input
                         type="checkbox"
                         checked={selectAll}
@@ -3032,29 +3050,69 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               : []
                           );
                         }}
-                        className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
+                        className="w-4 h-4 text-blue-200 border-gray-200 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 "
+                        aria-label="Select all candidates"
                       />
-                      <span className="flex-1 font-medium">Select all on this page</span>
-                      
+                      <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">Select all on this page</span>
                     </label>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex space-x-3">
+                    {selectedCandidates.length>0 && (
                       <button
                         onClick={() =>
                           bulkMoveCandidates(
                             selectedCandidates.map((id) => parseInt(id))
                           )
                         }
-                        className="px-3 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors"
+                        className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        aria-label="move candidates to pipeline"
                       >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="mr-1"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
                         Move to Next Stage
                       </button>
-                      <button className="px-3 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors">
-                        Upload 
+                    )}
+                    
+                    <button
+                      className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                      aria-label="upload selected candidates"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400 text-xs lg:text-base font-[400] mr-1">
+                        <path d="M7.84594 1.5587C7.75713 1.46158 7.63163 1.40625 7.5 1.40625C7.36838 1.40625 7.24288 1.46158 7.15407 1.5587L4.65405 4.29307C4.47937 4.48414 4.49264 4.78064 4.6837 4.95533C4.87477 5.13001 5.17127 5.11674 5.34595 4.92568L7.03125 3.08237V10C7.03125 10.2589 7.24113 10.4688 7.5 10.4688C7.75888 10.4688 7.96875 10.2589 7.96875 10V3.08237L9.65407 4.92568C9.82875 5.11674 10.1253 5.13001 10.3163 4.95533C10.5074 4.78064 10.5206 4.48414 10.3459 4.29307L7.84594 1.5587Z" fill="#818283"/>
+                        <path d="M2.34375 9.375C2.34375 9.11612 2.13389 8.90625 1.875 8.90625C1.61612 8.90625 1.40625 9.11612 1.40625 9.375V9.40931C1.40624 10.2641 1.40623 10.953 1.47908 11.4949C1.55471 12.0574 1.71652 12.5311 2.09272 12.9072C2.46892 13.2835 2.94259 13.4453 3.50516 13.5209C4.04701 13.5937 4.73596 13.5937 5.59071 13.5937H9.40931C10.2641 13.5937 10.953 13.5937 11.4949 13.5209C12.0574 13.4453 12.5311 13.2835 12.9073 12.9072C13.2835 12.5311 13.4453 12.0574 13.5209 11.4949C13.5937 10.953 13.5938 10.2641 13.5938 9.40931V9.375C13.5938 9.11612 13.3839 8.90625 13.125 8.90625C12.8661 8.90625 12.6562 9.11612 12.6562 9.375C12.6562 10.2721 12.6553 10.8978 12.5918 11.3699C12.5301 11.8286 12.4174 12.0714 12.2444 12.2444C12.0714 12.4174 11.8286 12.5301 11.3699 12.5918C10.8978 12.6552 10.2721 12.6562 9.375 12.6562H5.625C4.72787 12.6562 4.10217 12.6552 3.63008 12.5918C3.17147 12.5301 2.92861 12.4174 2.75563 12.2444C2.58266 12.0714 2.46988 11.8286 2.40822 11.3699C2.34474 10.8978 2.34375 10.2721 2.34375 9.375Z" fill="#818283"/>
+                        </svg>
+
+                      Upload 
+                    </button>
+                  
+                  <div className="relative flex space-x-2">
+                    <button
+                        className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        onClick={() => setShowSortDropdown(!showSortDropdown)}
+                        aria-label="Sort candidates"
+                      >
+                        <ArrowDownNarrowWide className="w-4 h-4 rotate-180"/>
+                        <span className="text-gray-400 font-[400] ml-1 mr-1">{sortOptions.find(opt => opt.value === sortBy)?.label || 'Relevance'}</span>
+                        <ChevronDown className="w-4 h-4 mt-1" />
                       </button>
-                      <button className="px-3 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors">
-                        Relevance
-                      </button>
-                    </div>
+                      {showSortDropdown && (
+                        <div
+                          ref={sortDropdownRef}
+                          className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+                        >
+                          <div className="py-1">
+                            {sortOptions.map((option) => (
+                              <button
+                                key={option.value}
+                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                onClick={() => handleSortSelect(option.value)}
+                                aria-label={`Sort candidates by ${option.label}`}
+                              >
+                                {option.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                  </div>
                   </div>
                 </div>
               </div>
