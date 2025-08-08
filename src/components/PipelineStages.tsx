@@ -22,10 +22,15 @@ import {
   Target,
   BarChart3,
   ChevronDown,
+  File,
   Edit,
   Archive,
   Trash2,
   Code,
+  MapPin,
+  Github,
+  Linkedin,
+  Link,
 } from "lucide-react";
 import Header from "./Header";
 import { creditService } from "../services/creditService";
@@ -289,13 +294,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-
-  // const tabs = [
-  //   { id: "outbound", label: "Outbound", count: 2325 },
-  //   { id: "active", label: "Active", count: 2034 },
-  //   { id: "inbound", label: "Inbound", count: 2034 },
-  //   { id: "prevetted", label: "Prevetted", count: 2034 },
-  // ];
+  const [hoveredCandidateId, setHoveredCandidateId] = useState<string | null>(null);
+  
+  
 
   // Fetch categories when component mounts
   useEffect(() => {
@@ -681,7 +682,26 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       ? candidates
       : pipelineCandidates[selectedStage] || [];
 
+  const totalCount = currentCandidates.length;
 
+  // tab count logic
+  const tabs = [
+    {
+      id: "uncontacted",
+      label: "Uncontacted",
+      count: activeTab === "uncontacted" ? totalCount : 0,
+    },
+    {
+      id: "invited",
+      label: "Invited",
+      count: activeTab === "invited" ? totalCount : 0,
+    },
+    {
+      id: "inbox",
+      label: "Inbox",
+      count: activeTab === "inbox" ? totalCount : 0,
+    },
+  ];
 
   const selectedCategory = categories.find((cat) => cat.id === activeJobId);
 
@@ -2970,7 +2990,33 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           </div>
 
           <div className="lg:w-[45%] order-1 lg:order-2">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div className="bg-white rounded-xl shadow-sm">
+
+              <div className="border-b border-gray-200">
+                <div className="flex items-center justify-between px-4 pt-4 pb-0">
+                  <div className="flex space-x-6 overflow-x-auto">
+                    {tabs.map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`py-2 text-sm lg:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 focus-visible:border-b-2 focus-visible:border-blue-600 ${
+                          activeTab === tab.id
+                            ? "text-blue-600 border-blue-500"
+                            : "text-gray-600 border-transparent hover:text-gray-700"
+                        }`}
+                        aria-label={`Switch to ${tab.label} tab`}
+                      >
+                        {tab.label}
+                        {tab.count > 0 && (
+                          <span className="ml-2 px-2 py-1 text-xs bg-blue-50 text-gray-600 rounded-full">
+                            {tab.count}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
               <div className="p-3 lg:p-4 border-b border-gray-200">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center justify-between w-full">
@@ -3024,55 +3070,251 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                     </p>
                   </div>
                 ) : (
-                  currentCandidates.map((candidate: any) => (
-                    <div
-                      key={candidate.id}
-                      className={`p-3 lg:p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
-                        selectedCandidate?.id === candidate.id.toString()
-                          ? "bg-blue-50 border-l-4 border-blue-500"
-                          : ""
-                      }`}
-                      onClick={() => handleCandidateSelect(candidate)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedCandidates.includes(
+                <>
+                  <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
+                    {currentCandidates.map((candidate: any) => (
+                      <div
+                        key={candidate.id}
+                        className={`pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
+                          selectedCandidate?.id === candidate.id.toString()
+                            ? "bg-blue-50 border-l-4 border-blue-500"
+                            : "border border-gray-200"
+                        }`}
+                        onClick={() => handleCandidateSelect(candidate)}
+                        tabIndex={0}
+                        role="button"
+                        aria-label={`Select candidate ${candidate.full_name}`}
+                      >
+                        <div className="flex px-4 items-center space-x-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedCandidates.includes(
                             candidate.id.toString()
                           )}
-                          onChange={() =>
+                            onChange={() =>
                             handleCandidateCheckbox(candidate.id.toString())
                           }
-                          className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                        <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                          {(
+                            className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mb-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                            onClick={(e) => e.stopPropagation()}
+                            aria-label={`Select ${candidate.full_name}`}
+                          />
+                          <div className="border-b border-[#E2E2E2] flex items-center space-x-3 pb-5 w-full">
+                          <div
+                            className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600] `}
+                          >
+                            {(
                             candidate.candidate?.full_name || candidate.fullName
                           )
                             .split(" ")
                             .map((n: string) => n[0])
-                            .join("")}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-base font-semibold text-gray-900">
-                              {candidate.candidate?.full_name ||
-                                candidate.fullName}
-                            </h3>
+                            .join("")
+                            .slice(0, 2)}
+                             {candidate.avatar}
                           </div>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {candidate.candidate?.headline ||
-                              candidate.headline}
-                          </p>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {candidate.candidate?.location ||
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
+                              <div className="flex items-center space-x-2 flex-wrap">
+                                <h3 className="text-xs lg:text-base font-[400] text-gray-900">
+                                  {candidate.candidate?.full_name ||
+                                candidate.fullName}
+                                </h3>
+                                {candidate.is_background_verified && (
+                                  <div className="relative flex space-x-1"
+                                    onMouseEnter={() => setHoveredCandidateId(candidate.id)}
+                                    onMouseLeave={() => setHoveredCandidateId(null)}>
+                                    <span className="mt-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="256"
+                                        height="256"
+                                        viewBox="0 0 256 256"
+                                        xmlSpace="preserve"
+                                      >
+                                        <g
+                                          transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)"
+                                          style={{
+                                            stroke: "none",
+                                            strokeWidth: 0,
+                                            strokeDasharray: "none",
+                                            strokeLinecap: "butt",
+                                            strokeLinejoin: "miter",
+                                            strokeMiterlimit: 10,
+                                            fill: "none",
+                                            fillRule: "nonzero",
+                                            opacity: 1,
+                                          }}
+                                        >
+                                          <polygon
+                                            points="45,6.18 57.06,0 64.41,11.38 77.94,12.06 78.62,25.59 90,32.94 83.82,45 90,57.06 78.62,64.41 77.94,77.94 64.41,78.62 57.06,90 45,83.82 32.94,90 25.59,78.62 12.06,77.94 11.38,64.41 0,57.06 6.18,45 0,32.94 11.38,25.59 12.06,12.06 25.59,11.38 32.94,0"
+                                            style={{
+                                              stroke: "none",
+                                              strokeWidth: 1,
+                                              strokeDasharray: "none",
+                                              strokeLinecap: "butt",
+                                              strokeLinejoin: "miter",
+                                              strokeMiterlimit: 10,
+                                              fill: "rgb(0,150,241)",
+                                              fillRule: "nonzero",
+                                              opacity: 1,
+                                            }}
+                                            transform="matrix(1 0 0 1 0 0)"
+                                          />
+                                          <polygon
+                                            points="40.16,58.47 26.24,45.08 29.7,41.48 40.15,51.52 61.22,31.08 64.7,34.67"
+                                            style={{
+                                              stroke: "none",
+                                              strokeWidth: 1,
+                                              strokeDasharray: "none",
+                                              strokeLinecap: "butt",
+                                              strokeLinejoin: "miter",
+                                              strokeMiterlimit: 10,
+                                              fill: "rgb(255,255,255)",
+                                              fillRule: "nonzero",
+                                              opacity: 1,
+                                            }}
+                                            transform="matrix(1 0 0 1 0 0)"
+                                          />
+                                        </g>
+                                      </svg>
+                                    </span>
+                                    {hoveredCandidateId === candidate.id && (
+                                        <div
+                                          className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg p-3 text-sm text-gray-700 z-10"
+                                          role="tooltip"
+                                          aria-hidden={hoveredCandidateId !== candidate.id}
+                                        >
+                                          Verified via last employer's confirmation
+                                        </div>
+                                      )}
+                                  </div>
+                                )}        
+                              </div>
+                              <div className="flex space-x-1">
+                                <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563] mt-1">
+                                  <MapPin className=" w-4 h-4" />
+                                  
+                                  {candidate.candidate?.location.split(",")[0] ||
                               `${candidate.location.city}, ${candidate.location.country}`}
-                          </p>
+                                </p>
+                              </div>
+                              
+                            </div>
+                            <div className="flex space-x-2">
+                              <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                                {candidate.candidate?.experience_summary?.title || candidate.experience_summary?.title }
+                              </p>
+                              <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
+                                |
+                              </p> 
+                              <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                                {candidate.candidate?.education_summary?.title || candidate.education_summary?.title}
+                              </p>
+                            </div>
+                          </div>
+                          </div>
                         </div>
+                          <div className="pt-5 pl-12 flex space-x-12 gap-2 text-xs lg:text-base font-[400px] ml-1">
+                            {candidate.candidate?.experience_years && 
+                            (
+                              <div className="flex flex-col">
+                                <p className="text-[#A8A8A8] mr-[5px]">Experience</p>
+                                <p className="text-[#4B5563]">
+                                  {candidate.candidate?.experience_years}
+                                </p>
+                            </div>
+                            )}
+                            {/* need to update the current Company Data */}
+                            {candidate.candidate?.experience_years && 
+                            (
+                              <div className="flex flex-col">
+                                <p className="text-[#A8A8A8] mr-[5px]">Current Company</p>
+                                <p className="text-[#4B5563]">
+                                  {candidate.candidate?.experience_years}
+                                </p>
+                            </div>
+                            )}
+                            {candidate.candidate?.notice_period_summary && 
+                            (
+                              <div className="flex flex-col">
+                                <p className="text-[#A8A8A8] mr-[5px]">Notice Period</p>
+                                <p className="text-[#4B5563]">
+                                  {candidate.candidate?.notice_period_summary}
+                                </p>
+                            </div>
+                            )}
+                            {/* need to update the code for Current Salary */}
+                            {true && 
+                            (
+                              <div className="flex flex-col">
+                              <p className="text-[#A8A8A8] mr-[5px]">Current Salary</p>
+                              <p className="text-[#4B5563]">
+                                9LPA
+                              </p>
+                            </div>
+                            )}
+            
+                          </div>
+                          <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
+                            <div className="flex items-center space-x-1">
+                                {candidate.candidate?.social_links?.github && (
+                                  <button
+                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                    onClick={() =>
+                                      window.open(candidate.candidate?.social_links?.github, "_blank")
+                                    }
+                                    aria-label={`View ${candidate.candidate?.full_name}'s GitHub profile`}
+                                  >
+                                    <Github className="w-4 h-4" />
+                                  </button>
+                                )}
+                                {candidate.candidate?.social_links?.linkedin && (
+                                  <button
+                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                    onClick={() =>
+                                      window.open(
+                                        candidate.candidate?.social_links?.linkedin,
+                                        "_blank"
+                                      )
+                                    }
+                                    aria-label={`View ${candidate.candidate?.full_name}'s LinkedIn profile`}
+                                  >
+                                    <Linkedin className="w-4 h-4" />
+                                  </button>
+                                )}
+                                {candidate.candidate?.social_links?.resume && (
+                                  <button
+                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                    onClick={() =>
+                                      window.open(candidate.candidate?.social_links?.resume, "_blank")
+                                    }
+                                    aria-label={`View ${candidate.candidate?.full_name}'s resume`}
+                                  >
+                                    <File className="w-4 h-4" />
+                                  </button>
+                                )}
+                                {candidate.candidate?.social_links?.portfolio && (
+                                  <button
+                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                    onClick={() =>
+                                      window.open(
+                                        candidate.candidate?.social_links?.portfolio,
+                                        "_blank"
+                                      )
+                                    }
+                                    aria-label={`View ${candidate.full_name}'s portfolio`}
+                                  >
+                                    <Link className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                            <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
+                              3 days ago
+                            </div>
+                          </div>
                       </div>
-                    </div>
-                  ))
+                    ))}
+                  </div>
+                  </>
                 )}
               </div>
             </div>
