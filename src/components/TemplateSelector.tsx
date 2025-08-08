@@ -85,9 +85,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   }>({
     send_after_hours: "24hrs",
     followup_mode: "EMAIL",
-    followup_body: `Hi ${candidate.full_name}, , ${(
-      <span className="text-gray-400">Type your message ...</span>
-    )}`,
+    followup_body: `Hi ${candidate.full_name}, Type your message ...`,
   });
 
   useEffect(() => {
@@ -713,11 +711,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                               setNewFollowUp({
                                 send_after_hours: "24hrs",
                                 followup_mode: "EMAIL",
-                                followup_body: `Hi ${candidate.full_name}, ${(
-                                  <span className="text-gray-400">
-                                    Type your message ...
-                                  </span>
-                                )}`,
+                                followup_body: `Hi ${candidate.full_name}, Type your message ...`,
                               });
                             }}
                             className=" text-blue-500 text-xs rounded-full"
