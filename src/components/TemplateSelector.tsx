@@ -85,7 +85,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   }>({
     send_after_hours: "24hrs",
     followup_mode: "EMAIL",
-    followup_body: "Hi {candidateName}, Type your message",
+    followup_body: "Hi {candidateName}, Type your message line 81 useState",
   });
 
   useEffect(() => {
@@ -611,131 +611,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           </div>
         </div>
 
-        {/* Action Buttons */}
-        {/* <div className="space-y-2 pt-4">
-          <div className="border-dashed border-t border-gray-600"></div>
-
-          <div>
-            <div className="flex justify-between text-sm font-medium text-gray-700 mb-2">
-              <div className="flex justify-start items-center space-x-3">
-                <Settings className="inline w-4 h-4 mr-1" />
-                <span>Follow Ups</span>
-              </div>
-              <ChevronDown className="inline w-4 h-4 ml-1" />
-            </div>
-            {followUpTemplates.map((followUp, index) => (
-              <div
-                key={index}
-                className="flex flex-col items-start mb-2 space-x-2"
-              >
-                <div className="flex items-center mb-2 space-x-4">
-                  <button
-                    onClick={() => removeFollowUp(index)}
-                    className="ml-2 p-1 text-red-500 hover:text-red-700"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500">Send After</span>
-                    <input
-                      type="number"
-                      value={followUp.send_after_hours}
-                      onChange={(e) => {
-                        const updated = [...followUpTemplates];
-                        updated[index] = {
-                          ...updated[index],
-                          send_after_hours: Number(e.target.value),
-                        };
-                        setFollowUpTemplates(updated);
-                      }}
-                      className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Hours"
-                      disabled={loading}
-                    />
-                    <span className="text-xs text-gray-500">hrs</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500">
-                      Mode of Followup
-                    </span>
-                    <select
-                      value={followUp.followup_mode}
-                      onChange={(e) => {
-                        const updated = [...followUpTemplates];
-                        updated[index] = {
-                          ...updated[index],
-                          followup_mode: e.target.value as
-                            | "EMAIL"
-                            | "WHATSAPP"
-                            | "CALL",
-                        };
-                        setFollowUpTemplates(updated);
-                      }}
-                      className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      disabled={loading}
-                    >
-                      <option value="EMAIL">Email</option>
-                      <option value="WHATSAPP">WhatsApp</option>
-                      <option value="CALL">Call</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 w-full">
-                  <CKEditor
-                    editor={ClassicEditor}
-                    className="w-full"
-                    data={followUp.followup_body}
-                    onChange={(event: any, editor: any) =>
-                      updateFollowUp(index, "followup_body", editor.getData())
-                    }
-                    config={{
-                      toolbar: [
-                        "bold",
-                        "italic",
-                        "link",
-                        "bulletedList",
-                        "numberedList",
-                        "undo",
-                        "redo",
-                      ],
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-            <button
-              onClick={addFollowUp}
-              className="text-sm text-blue-600 hover:text-blue-700 mt-2"
-              disabled={loading}
-            >
-              + Add Follow-up
-            </button>
-          </div>
-
-          <div className="flex justify-between space-x-8">
-            <button
-              onClick={() => setShowTestEmail(true)}
-              className="w-full px-4 py-2 text-xs text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"
-              disabled={loading}
-            >
-              Send test email
-            </button>
-            <button
-              onClick={handleSendInvite}
-              className="w-full px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center font-medium"
-              disabled={
-                loading ||
-                !jobId ||
-                !candidate.id ||
-                (!sendViaEmail && !sendViaWhatsApp && !sendViaPhone)
-              }
-            >
-              <Send className="w-4 h-4 mr-2" /> Send Invite
-            </button>
-          </div>
-        </div> */}
-
+        {/* Follow up section  */}
         <div className="space-y-2 pt-4">
           <div>
             <div className="text-sm font-medium text-gray-700 mb-2">
@@ -789,8 +665,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                         </div>
                         <div className="flex items-center gap-2 mt-2">
                           <span className="text-gray-400">
-                            Hi {candidate.full_name}, bumping this up one last
-                            time. Thanks!
+                            {followUp.followup_body}
+                            {/* Hi {candidate.full_name}, bumping this up one last
+                            time. Thanks! */}
                           </span>
                         </div>
                       </div>
@@ -842,7 +719,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                 send_after_hours: "24hrs",
                                 followup_mode: "EMAIL",
                                 followup_body:
-                                  "Hi {candidateName}, Type your message",
+                                  "Hi {candidateName}, Type your message line 722 setting new follow up",
                               });
                             }}
                             className=" text-blue-500 text-xs rounded-full"
@@ -858,7 +735,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                               setNewFollowUp({
                                 send_after_hours: "24hrs",
                                 followup_mode: "EMAIL",
-                                followup_body: "Hi {candidateName}",
+                                followup_body:
+                                  "Hi {candidateName} line 738 setting new",
                               });
                             }}
                             className=" text-gray-200 text-xs rounded-full"
@@ -929,9 +807,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                 followup_body: e.target.value,
                               })
                             }
-                            defaultValue="Hi {candidateName},"
+                            defaultValue="Hi {candidateName} line 809 default value,"
                             style={{ color: "#2563EB" }}
-                            placeholder=" Type your message"
+                            placeholder=" Type your message placeholder"
                             className="text-sm w-full px-2 py-1 text-gray-300 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           />
                         </div>
@@ -1092,7 +970,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               </div>
             </div>
 
-            <div className="space-y-2 pt-4 border-t border-gray-200">
+            {/* <div className="space-y-2 pt-4 border-t border-gray-200">
               <div className="w-full flex justify-end">
                 <button
                   onClick={() => setShowAdvanceOptions(!showAdvanceOptions)}
@@ -1216,7 +1094,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                   Save Template
                 </button>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       )}
