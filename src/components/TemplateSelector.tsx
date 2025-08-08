@@ -853,10 +853,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                     ))}
                     <button
                       onClick={() => setIsAddingFollowUp(true)}
-                      className="flex items-center justify-center border border-blue-500 rounded-lg p-2 text-sm text-blue-600 hover:text-blue-700 mt-2"
+                      className="flex items-center justify-center text-sm text-blue-600 hover:text-blue-700 mt-2"
                       disabled={loading || isAddingFollowUp}
                     >
-                      <Plus className="w-4 h-4 mr-1 text-blue-600" />
+                      <Plus className="w-4 h-4 mr-1 text-blue-600 border border-blue-500 rounded-lg p-2" />
                       Add Follow Up
                     </button>
 
