@@ -858,15 +858,15 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                       className="flex items-center justify-center text-sm text-blue-600 hover:text-blue-700 mt-2"
                       disabled={loading || isAddingFollowUp}
                     >
-                      <Plus className="w-4 h-4 mr-1 text-blue-600 border border-blue-500 rounded-lg p-2" />
+                      <Plus className="w-4 h-4 mr-1 mt-[2px] text-blue-600 border border-blue-500 rounded-md" />
                       Add Follow Up
                     </button>
 
                     {/* Yaha se add new wala he bhai */}
                     {isAddingFollowUp && (
-                      <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                        <div className="flex justify-between items-center pb-2">
-                          <span className="text-sm font-medium text-gray-700">
+                      <div className="mt-4 bg-blue-50 rounded-lg">
+                        <div className="px-8 pt-2 flex justify-between items-center">
+                          <span className="text-sm font-medium text-blue-600">
                             Follow Up
                           </span>
                           <div className="flex space-x-2 mt-2">
@@ -925,8 +925,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                             </button>
                           </div>
                         </div>
-                        <div className="border-b border-blue-400 rounded-full w-full mb-2 px-[-32px]"></div>
-                        <div className="flex flex-col items-start space-y-2">
+                        <div className="border-b border-blue-400 rounded-full w-full pt-2 mb-3"></div>
+                        <div className="px-8 pb-4 flex flex-col items-start space-y-3">
                           <div className="flex items-center space-x-4">
                             <div className="flex items-center gap-2">
                               <span className="text-xs text-gray-500">
@@ -943,7 +943,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                       | "72hrs",
                                   })
                                 }
-                                className="text-sm w-24 px-2 py-1 text-blue-500 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="text-sm w-24 px-2 py-1 text-blue-600 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 disabled={loading}
                               >
                                 <option value="24hrs">24 hrs</option>
@@ -964,7 +964,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                       | "CALL",
                                   })
                                 }
-                                className="text-sm w-24 px-2 py-1 text-blue-500 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="text-sm w-24 px-2 py-1 text-blue-600 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 disabled={loading}
                               >
                                 <option value="EMAIL">Email</option>
@@ -974,7 +974,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                             </div>
                           </div>
                           <div className="w-full">
-                            <label className="text-xs text-gray-500 mb-1 block">
+                            <label className="text-xs text-gray-500 mb-2 block">
                               Message
                             </label>
                             <input
