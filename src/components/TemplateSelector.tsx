@@ -612,7 +612,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         </div>
 
         {/* Follow up section  */}
-        <div className="space-y-16 pt-4">
+        <div className="space-y-8 pt-4">
           <div>
             <div className="text-sm font-medium text-gray-700 mb-2">
               <div
@@ -659,9 +659,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                       <div className="pt-2 border-b border-gray-400 rounded-lg"></div>
                       <div className="my-4 px-8">
                         <div className="flex items-center text-gray-600">
-                          <p>Will be sent around</p> <span> </span>
+                          <p>Will be sent around</p>{" "}
+                          <span className="pl-1"></span>
                           <span>{followUp.send_after_hours} from now</span>
-                          <span> </span>
+                          <span className="pl-1"> </span>
                           <p>via {followUp.followup_mode}.</p>
                         </div>
                         <div className="flex items-center gap-2 mt-2">
@@ -808,7 +809,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                     className="flex items-center justify-center text-sm text-blue-600 hover:text-blue-700 mt-4"
                     disabled={loading || isAddingFollowUp}
                   >
-                    <Plus className="w-4 h-4 mr-1 mt-[2px] text-blue-600 border border-blue-500 rounded-md" />
+                    <Plus className="w-4 h-4 mr-2 mt-[2px] text-blue-600 border border-blue-500 rounded-md" />
                     Add Follow Up
                   </button>
                 </div>
