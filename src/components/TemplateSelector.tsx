@@ -760,7 +760,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                     {followUpTemplates.map((followUp, index) => (
                       <div
                         key={index}
-                        className="bg-gray-100 border-b border-gray-400 mb-2 pt-4 rounded-lg"
+                        className="bg-gray-200 border-b border-gray-400 mb-2 pt-4 rounded-lg"
                       >
                         <div className="flex justify-between items-center px-8">
                           <span className="text-sm font-medium text-gray-500">
@@ -782,10 +782,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                           </div>
                         </div>
                         <div className="pt-2 border-b border-gray-400 rounded-lg"></div>
-                        <div className="mb-2 px-8">
+                        <div className="my-4 px-8">
                           <div className="flex items-center text-gray-500">
-                            <p>Will be sent around </p>
-                            <span>{followUp.send_after_hours} from now</span>
+                            <p>Will be sent around</p>{" "}
+                            <span>{followUp.send_after_hours} from now</span>{" "}
                             <p>via {followUp.followup_mode}.</p>
                           </div>
                           <div className="flex items-center gap-2 mt-2">
