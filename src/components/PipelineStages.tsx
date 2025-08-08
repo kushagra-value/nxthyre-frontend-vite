@@ -3009,7 +3009,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           </div>
 
           <div className="lg:w-[45%] order-1 lg:order-2">
-            <div className="bg-white rounded-xl shadow-sm">
+            <div className="bg-white rounded-xl shadow-sm h-fit">
 
               <div className="border-b border-gray-200">
                 <div className="flex items-center justify-between px-4 pt-4 pb-0">
