@@ -85,7 +85,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   }>({
     send_after_hours: "24hrs",
     followup_mode: "EMAIL",
-    followup_body: `Hi ${candidate.full_name},`,
+    followup_body: `Hi ${candidate.full_name}, , ${(
+      <span className="text-gray-400">Type your message ...</span>
+    )}`,
   });
 
   useEffect(() => {
