@@ -928,7 +928,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                         <div className="flex flex-col items-start space-y-2">
                           <div className="flex items-center space-x-4">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-gray-400">
                                 Send After
                               </span>
                               <input
@@ -940,14 +940,14 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                     send_after_hours: Number(e.target.value),
                                   })
                                 }
-                                className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="text-sm w-20 px-2 py-1 bg-blue-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="Hours"
                                 disabled={loading}
                               />
-                              <span className="text-xs text-gray-500">hrs</span>
+                              <span className="text-xs text-gray-400">hrs</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-500">Via</span>
+                              <span className="text-xs text-gray-400">Via</span>
                               <select
                                 value={newFollowUp.followup_mode}
                                 onChange={(e) =>
@@ -959,7 +959,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                       | "CALL",
                                   })
                                 }
-                                className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="text-sm w-24 px-2 py-1 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 disabled={loading}
                               >
                                 <option value="EMAIL">Email</option>
@@ -969,7 +969,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                             </div>
                           </div>
                           <div className="w-full">
-                            <label className="text-xs text-gray-500 mb-1 block">
+                            <label className="text-xs text-gray-400 mb-1 block">
                               Message
                             </label>
                             <input
@@ -984,7 +984,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                               defaultValue="Hi {candidateName},"
                               style={{ color: "#3b82f6" }}
                               placeholder=" Type your message"
-                              className="text-sm w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              className="text-sm w-full px-2 py-1 text-gray-300 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
                           </div>
                         </div>
