@@ -613,6 +613,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           </div>
         </div>
 
+        <div className="pt-2 border-b border-gray-300"></div>
+
         {/* Follow up section  */}
         <div className="space-y-8 pt-4">
           <div>
