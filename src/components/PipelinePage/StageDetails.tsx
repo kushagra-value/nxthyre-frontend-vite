@@ -313,9 +313,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                         {exp.companyName} | {exp.location}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {exp.startDate.month}/{exp.startDate.year} -{" "}
+                        {exp.startDate?.month}/{exp.startDate?.year} -{" "}
                         {exp.endDate
-                          ? `${exp.endDate.month}/${exp.endDate.year}`
+                          ? `${exp.endDate?.month}/${exp.endDate?.year}`
                           : "Present"}
                       </p>
                       <p className="text-sm text-gray-700 mt-1">
@@ -364,7 +364,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                         {edu.fieldOfStudy}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {edu.startDate.year} - {edu.endDate.year}
+                        {edu.startDate?.year} - {edu.endDate?.year}
                       </p>
                       <p className="text-sm text-gray-500">{edu.schoolName}</p>
                     </div>
@@ -394,9 +394,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       </h4>
                       <p className="text-sm text-gray-600">{cert.authority}</p>
                       <p className="text-sm text-gray-500">
-                        {cert.startDate.month}/{cert.startDate.year} -{" "}
+                        {cert.startDate?.month}/{cert.startDate?.year} -{" "}
                         {cert.endDate
-                          ? `${cert.endDate.month}/${cert.endDate.year}`
+                          ? `${cert.endDate?.month}/${cert.endDate?.year}`
                           : "Present"}
                       </p>
                     </div>
