@@ -836,8 +836,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   return (
     <>
       <div className="bg-white rounded-xl overflow-hidden relative h-full">
-        <div className="px-2">
-          <div className="flex space-x-4 border-b border-gray-200">
+        <div className="">
+          <div className="flex space-x-3 border-b border-gray-200">
             {tabs.map((tab) => (
               <button
                 key={tab}
@@ -866,13 +866,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             ))}
           </div>
         </div>
-        <div className="p-2 overflow-y-auto max-h-[60vh]">
+        <div className="py-2 overflow-y-auto max-h-[60vh]">
           {externalNotes}
           {renderTabContent()}
         </div>
       </div>
       {bottomContent() && (
-        <div className="sticky bottom-0 bg-white pb-2 pt-4 shadow-[0_-2px_3px_rgba(0,0,0,0.1)]">
+        <div className="sticky bottom-0 bg-white p-2 shadow-[0_-2px_3px_rgba(0,0,0,0.1)]">
           {bottomContent()}
         </div>
       )}

@@ -262,7 +262,7 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
     : "93********45";
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-4 min-h-[81vh]">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 space-y-4 min-h-[81vh]">
       {selectedCandidate ? (
         <>
           <div className="flex items-center space-x-3">
