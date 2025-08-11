@@ -1,9 +1,10 @@
 // PipelinesSideCard.tsx
 import React from "react";
-import { Mail, Copy, Phone, User, X } from "lucide-react";
+import { Mail, Copy, Phone, User, X, Share2 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { useAuthContext } from "../../context/AuthContext";
+import { showToast } from "../../utils/toast";
 
 interface Note {
   noteId: string;
@@ -212,6 +213,39 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
   handleAddComment,
 }) => {
   const { user } = useAuthContext();
+  const handleShareProfile = () => {
+    window.open(`/candidate-profiles/${selectedCandidate?.id}`, "_blank");
+  };
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        showToast.success("Copied to clipboard!");
+      })
+      .catch(() => {
+        showToast.error("Failed to copy");
+      });
+  };
+
+  const handleWhatsApp = (phone: string) => {
+    const formattedPhone = phone.replace(/[^0-9+]/g, "");
+    window.open(`https://wa.me/${formattedPhone}`, "_blank");
+  };
+
+  const hasContactInfo =
+    !!selectedCandidate?.email && !!selectedCandidate?.phone;
+  const displayEmail = hasContactInfo
+    ? selectedCandidate?.email
+    : `${selectedCandidate?.fullName
+        ?.toLocaleLowerCase()
+        ?.slice(0, 2)}*********@gmail.com`;
+  const displayPhone = hasContactInfo
+    ? typeof selectedCandidate?.phone === "string"
+      ? selectedCandidate?.phone
+      : selectedCandidate?.phone?.number || ""
+    : "93********45";
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-4 min-h-[81vh]">
       {selectedCandidate ? (
@@ -222,41 +256,77 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
               {selectedCandidate.lastName[0]}
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">
-                {selectedCandidate.fullName || "N/A"}
+              <h2 className="text-base lg:text-[16px] font-bold text-gray-900">
+                {selectedCandidate.fullName}
               </h2>
-              <p className="text-sm text-gray-600">
-                {selectedCandidate.headline || "N/A"}
-              </p>
-              <p className="text-sm text-gray-500">
-                {selectedCandidate.location.city},{" "}
-                {selectedCandidate.location.country}
-              </p>
+              <div className="flex">
+                <p className="text-sm text-gray-500 max-w-[32ch] truncate">
+                  {selectedCandidate.headline}
+                </p>
+              </div>
+              <div className="flex">
+                <p className="text-sm text-gray-500">
+                  {selectedCandidate.location.city},{" "}
+                  {selectedCandidate.location.country}
+                </p>
+              </div>
+            </div>
+            <div className="text-xs text-gray-400 absolute right-6 top-4">
+              <button
+                onClick={handleShareProfile}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Share Profile"
+              >
+                <Share2 className="w-4 h-4" />
+              </button>
             </div>
           </div>
-          <div className="bg-gray-50 rounded-lg p-3 space-y-2">
-            <div className="flex justify-between items-center">
+          <div className="border-t border-gray-300 border-b p-3 space-y-2">
+            <div className="flex justify-between items-center space-x-2">
               <div className="flex items-center space-x-2">
-                <Mail className="w-4 h-4 text-gray-500" />
-                <span className="text-sm text-gray-700 truncate">
-                  {selectedCandidate.email || "N/A"}
-                </span>
+                <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
+                <span className="text-sm text-gray-700">{displayEmail}</span>
               </div>
-              <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
+              <button
+                className={`flex space-x-2 ml-auto p-1 ${
+                  hasContactInfo
+                    ? "text-gray-400 hover:text-gray-600"
+                    : "text-gray-300 cursor-not-allowed"
+                }`}
+                onClick={() => hasContactInfo && handleCopy(displayEmail)}
+                disabled={!hasContactInfo}
+              >
+                <Copy className="w-4 h-4" />
+              </button>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center space-x-2">
               <div className="flex items-center space-x-2">
-                <Phone className="w-4 h-4 text-gray-500" />
-                <span className="text-sm text-gray-700">
-                  {selectedCandidate.phone?.number || "N/A"}
-                </span>
+                <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                <span className="text-sm text-gray-700">{displayPhone}</span>
               </div>
-              <div className="flex space-x-2">
-                <FontAwesomeIcon
-                  icon={faWhatsapp}
-                  className="w-4 h-4 text-gray-400 hover:text-green-600 cursor-pointer"
-                />
-                <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
+              <div>
+                <button
+                  className={`p-1 ${
+                    hasContactInfo
+                      ? "text-gray-400 hover:text-gray-600"
+                      : "text-gray-300 cursor-not-allowed"
+                  }`}
+                  onClick={() => hasContactInfo && handleWhatsApp(displayPhone)}
+                  disabled={!hasContactInfo}
+                >
+                  <FontAwesomeIcon icon={faWhatsapp} />
+                </button>
+                <button
+                  className={`p-1 ${
+                    hasContactInfo
+                      ? "text-gray-400 hover:text-gray-600"
+                      : "text-gray-300 cursor-not-allowed"
+                  }`}
+                  onClick={() => hasContactInfo && handleCopy(displayPhone)}
+                  disabled={!hasContactInfo}
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
               </div>
             </div>
           </div>
