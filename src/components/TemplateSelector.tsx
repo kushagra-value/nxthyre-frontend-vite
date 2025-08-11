@@ -612,7 +612,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             </button>
           </div>
 
-          <div className="p-2 bg-blue-50 text-sm font-medium text-blue-500 rounded-lg mt-2">
+          <div className="p-3 bg-blue-50 text-sm font-medium text-blue-500 rounded-lg mt-3">
             {sendViaEmail && sendViaWhatsApp && sendViaPhone ? (
               <div>
                 Note: Email will be sent to candidate’s inbox, with WhatsApp
@@ -652,7 +652,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         </div>
 
         {/* Follow up section  */}
-        <div className="space-y-8 pt-4">
+        <div className="space-y-8 pt-2">
           <div>
             <div className="pb-2 mb-4 border-b border-dashed border-gray-300"></div>
             <div className="text-sm font-medium text-gray-700 mb-2">
