@@ -611,12 +611,50 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               )}
             </button>
           </div>
+
+          <div className="p-2 bg-blue-50 text-sm font-medium text-blue-500 rounded-lg mt-2">
+            {sendViaEmail && sendViaWhatsApp && sendViaPhone ? (
+              <div>
+                Note: Email will be sent to candidate’s inbox, with WhatsApp
+                message and bot phone alert to check mail.
+              </div>
+            ) : sendViaEmail && sendViaWhatsApp ? (
+              <div>
+                Note: Email will be sent to candidate’s inbox, with WhatsApp
+                message to check mail.
+              </div>
+            ) : sendViaEmail && sendViaPhone ? (
+              <div>
+                Note: Email will be sent to candidate’s inbox, with AI phone
+                alert to check mail.
+              </div>
+            ) : sendViaWhatsApp && sendViaPhone ? (
+              <div>
+                Note: WhatsApp message and AI-generated call will be sent to the
+                candidate.
+              </div>
+            ) : sendViaEmail ? (
+              <div>Note: Email will be sent to candidate's inbox.</div>
+            ) : sendViaWhatsApp ? (
+              <div>
+                Note: WhatsApp message will be sent to the candidate's WhatsApp
+                number.
+              </div>
+            ) : sendViaPhone ? (
+              <div>
+                Note: An AI-generated call will be made to the candidate's phone
+                number.
+              </div>
+            ) : (
+              <div className="text-sm font-medium text-gray-400 mb-2"> </div>
+            )}
+          </div>
         </div>
 
         {/* Follow up section  */}
         <div className="space-y-8 pt-4">
           <div>
-            <div className="pb-2 mb-2 border-b border-dashed border-gray-300"></div>
+            <div className="pb-2 mb-4 border-b border-dashed border-gray-300"></div>
             <div className="text-sm font-medium text-gray-700 mb-2">
               <div
                 className="flex justify-between text-sm font-medium text-gray-700 mb-2 cursor-pointer hover:bg-gray-100 rounded-lg p-2 transition-colors"
@@ -664,7 +702,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                         <div className="flex items-center text-gray-600">
                           <p>Will be sent around</p>{" "}
                           <span className="pl-1"></span>
-                          <span>{followUp.send_after_hours} from now</span>
+                          <span>{followUp.send_after_hours} hrs from now</span>
                           <span className="pl-1"> </span>
                           <p>via {followUp.followup_mode}.</p>
                         </div>
@@ -818,7 +856,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 </div>
               )}
             </div>
-            <div className="pb-2 mb-2 border-b border-dashed border-gray-300"></div>
+            <div className="border-b border-dashed border-gray-300"></div>
           </div>
 
           <div className="flex justify-between space-x-8 mt-6">
