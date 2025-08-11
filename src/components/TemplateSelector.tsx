@@ -207,14 +207,16 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     setLoading(true);
     try {
       const response = await candidateService.sendInvite({
+        job_id: jobId,
         candidate_id: candidate.id,
         template_id: selectedTemplate || undefined,
-        job_id: jobId,
+        send_via_email: sendViaEmail,
+
+        send_via_phone: sendViaPhone,
+        send_via_whatsapp: sendViaWhatsApp,
         subject,
         message_body: body,
-        send_via_email: sendViaEmail,
-        send_via_whatsapp: sendViaWhatsApp,
-        send_via_phone: sendViaPhone,
+
         followups: followUpTemplates,
       });
       showToast.success(
