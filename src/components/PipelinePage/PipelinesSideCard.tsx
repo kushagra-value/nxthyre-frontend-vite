@@ -5,6 +5,15 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { useAuthContext } from "../../context/AuthContext";
 import { showToast } from "../../utils/toast";
+import StageDetails from "./StageDetails";
+
+interface Stage {
+  id: number;
+  name: string;
+  slug: string;
+  sort_order: number;
+  candidate_count: number;
+}
 
 interface Note {
   noteId: string;
@@ -191,7 +200,6 @@ interface Comment {
 
 interface PipelinesSideCardProps {
   selectedCandidate: PipelineCandidate | null;
-  renderStageDetails: () => React.ReactNode;
   showComments: boolean;
   setShowComments: (show: boolean) => void;
   feedbackComments: Comment[];
@@ -199,11 +207,14 @@ interface PipelinesSideCardProps {
   newComment: string;
   setNewComment: (comment: string) => void;
   handleAddComment: () => void;
+  selectedStage: string;
+  stages: Stage[];
+  moveCandidate: (applicationId: number, stageId: number) => Promise<void>;
+  archiveCandidate: (applicationId: number) => Promise<void>;
 }
 
 const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
   selectedCandidate,
-  renderStageDetails,
   showComments,
   setShowComments,
   feedbackComments,
@@ -211,6 +222,10 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
   newComment,
   setNewComment,
   handleAddComment,
+  selectedStage,
+  stages,
+  moveCandidate,
+  archiveCandidate,
 }) => {
   const { user } = useAuthContext();
   const handleShareProfile = () => {
@@ -285,7 +300,7 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
             <div className="flex justify-between items-center space-x-2">
               <div className="flex items-center space-x-2">
                 <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
-                <span className="text-sm text-gray-700">{displayEmail}</span>
+                <span className="text-sm text-gray-500">{displayEmail}</span>
               </div>
               <button
                 className={`flex space-x-2 ml-auto p-1 ${
@@ -302,7 +317,7 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
             <div className="flex justify-between items-center space-x-2">
               <div className="flex items-center space-x-2">
                 <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                <span className="text-sm text-gray-700">{displayPhone}</span>
+                <span className="text-sm text-gray-500">{displayPhone}</span>
               </div>
               <div>
                 <button
@@ -330,7 +345,14 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
               </div>
             </div>
           </div>
-          {renderStageDetails()}
+          <StageDetails
+            selectedCandidate={selectedCandidate}
+            selectedStage={selectedStage} // You need to pass selectedStage as a prop to PipelinesSideCard
+            setShowComments={setShowComments}
+            stages={stages} // You need to pass stages as a prop to PipelinesSideCard
+            moveCandidate={moveCandidate} // You need to pass moveCandidate as a prop to PipelinesSideCard
+            archiveCandidate={archiveCandidate} // You need to pass archiveCandidate as a prop to PipelinesSideCard
+          />
         </>
       ) : (
         <div className="text-center text-gray-500 mt-8">
