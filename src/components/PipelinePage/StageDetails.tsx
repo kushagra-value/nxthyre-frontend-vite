@@ -212,6 +212,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   archiveCandidate,
 }) => {
   const [activeTab, setActiveTab] = useState("Profile");
+  const [showMoreProfile, setShowMoreProfile] = useState(false); // Moved to top level
 
   const tabs = [
     { name: "Profile" },
@@ -277,7 +278,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   const renderTabContent = () => {
     switch (activeTab) {
       case "Profile":
-        const [showMoreProfile, setShowMoreProfile] = useState(false);
         const positions = selectedCandidate.positions || [];
         return (
           <div className="bg-[#F0F0F0] p-3 rounded-lg">
