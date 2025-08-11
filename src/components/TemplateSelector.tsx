@@ -613,11 +613,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           </div>
         </div>
 
-        <div className="pt-2 border-b border-gray-300"></div>
-
         {/* Follow up section  */}
         <div className="space-y-8 pt-4">
           <div>
+            <div className="pb-2 border-b border-dashed border-gray-300"></div>
             <div className="text-sm font-medium text-gray-700 mb-2">
               <div
                 className="flex justify-between text-sm font-medium text-gray-700 mb-2 cursor-pointer hover:bg-gray-100 rounded-lg p-2 transition-colors"
