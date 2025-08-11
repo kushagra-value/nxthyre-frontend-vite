@@ -286,13 +286,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         const recommendations =
           selectedCandidate.recommendations.received || [];
         return (
-          <div className="bg-[#F5F9FB] p-4 rounded-xl space-y-6">
+          <div className="bg-[#F5F9FB] p-2 rounded-xl space-y-6">
             <div>
               <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
                 <User className="w-4 h-4 mr-2 text-[#4B5563]" />
                 Profile Summary
               </h3>
-              <p className="text-sm text-[#818283]">
+              <p className="text-sm pl-6 text-[#818283]">
                 {selectedCandidate.summary || "No summary available"}
               </p>
             </div>
@@ -306,7 +306,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   (exp, index) => (
                     <div
                       key={index}
-                      className="ml-4 border-l-2 border-gray-200 pl-4 mb-4"
+                      className="ml-2 border-l-2 border-gray-200 pl-4 mb-4"
                     >
                       <h4 className="text-sm font-medium text-[#4B5563]">
                         {exp.title}
@@ -349,7 +349,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 educations.map((edu, index) => (
                   <div
                     key={index}
-                    className="ml-4 border-l-2 border-gray-200 pl-4 mb-4"
+                    className="ml-2 border-l-2 border-gray-200 pl-4 mb-4"
                   >
                     <h4 className="text-sm font-medium text-[#4B5563]">
                       {edu.degreeName} in {edu.fieldOfStudy}
@@ -375,7 +375,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 certifications.map((cert, index) => (
                   <div
                     key={index}
-                    className="ml-4 border-l-2 border-gray-200 pl-4 mb-4"
+                    className="ml-2 border-l-2 border-gray-200 pl-4 mb-4"
                   >
                     <h4 className="text-sm font-medium text-[#4B5563]">
                       {cert.name}
@@ -418,7 +418,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 )}
               </div>
             </div>
-            <div>
+            {/* Recommendations */}
+            {/* <div>
               <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
                 <TrendingUp className="w-4 h-4 mr-2 text-[#4B5563]" />
                 Recommendations
@@ -437,7 +438,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   No recommendations available
                 </p>
               )}
-            </div>
+            </div> */}
           </div>
         );
       case "Assessment":
@@ -449,13 +450,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white rounded-md p-3 text-center">
                 <p className="text-sm text-[#818283]">Resume Score</p>
-                <p className="text-2xl font-bold text-[#0F47F2]">
+                <p className="text-xl font-bold text-[#0F47F2]">
                   {appliedData.resumeScore || "N/A"}%
                 </p>
               </div>
               <div className="bg-white rounded-md p-3 text-center">
                 <p className="text-sm text-[#818283]">Skills Match</p>
-                <p className="text-2xl font-bold text-[#16A34A]">
+                <p className="text-xl font-bold text-[#16A34A]">
                   {appliedData.skillsMatch || "N/A"}
                 </p>
               </div>
@@ -464,7 +465,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
               <h4 className="text-sm font-medium text-[#4B5563] mb-2">
                 Highlights
               </h4>
-              <p className="text-sm text-[#818283]">
+              <p className="text-sm text-[#818283] pl-2">
                 {appliedData.highlights || "No highlights available"}
               </p>
             </div>
@@ -496,11 +497,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           },
         ];
         return (
-          <div className="bg-[#F5F9FB] p-4 rounded-xl space-y-6">
+          <div className="bg-[#F5F9FB] px-4 py-2 rounded-xl space-y-6">
             <div className="flex justify-between items-center">
-              <h3 className="text-xl font-medium text-[#4B5563]">
-                Questions (5)
-              </h3>
+              <h3 className="text-xl font-medium text-[#4B5563]">Questions</h3>
               <p className="text-base text-[#818283]">02/08/2024</p>
             </div>
             {codingQuestions.map((q, index) => (
@@ -508,16 +507,14 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 key={index}
                 className="border border-[#4B5563] bg-[#F5F9FB] rounded-xl overflow-hidden"
               >
-                <div className="p-4 flex items-start space-x-2">
-                  <span className="text-base text-[#4B5563] font-medium">
+                <div className="p-2 flex items-start space-x-2">
+                  <span className="text-sm text-[#4B5563] font-medium">
                     Q{index + 1}.
                   </span>
-                  <p className="text-base text-[#818283] flex-1">
-                    {q.question}
-                  </p>
+                  <p className="text-sm text-[#818283] flex-1">{q.question}</p>
                 </div>
                 <hr className="border-t border-[#818283]/50" />
-                <div className="p-4 flex justify-between items-center text-sm">
+                <div className="p-4 flex justify-between items-center text-xs">
                   <span className="text-[#818283]">{q.language}</span>
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center text-[#818283]">
@@ -602,27 +599,27 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           },
         ];
         return (
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl p-4">
+          <div className="space-y-3">
+            <div className="bg-white rounded-xl p-2">
               <h4 className="text-base font-medium text-[#4B5563] mb-4">
                 Overall Score
               </h4>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-[#ECF1FF] rounded-xl p-4 text-center">
+              <div className="w-[100%] flex justify-between items-center space-x-4">
+                <div className="w-[30%] bg-[#ECF1FF] rounded-xl p-4 text-center">
                   <p className="text-base text-[#4B5563]">Resume</p>
                   <p className="text-2xl font-normal text-[#EAB308]">72%</p>
                 </div>
-                <div className="bg-[#ECF1FF] rounded-xl p-4 text-center">
+                <div className="w-[30%] bg-[#ECF1FF] rounded-xl p-4 text-center">
                   <p className="text-base text-[#4B5563]">Knowledge</p>
                   <p className="text-2xl font-normal text-[#16A34A]">80%</p>
                 </div>
-                <div className="bg-[#ECF1FF] rounded-xl p-4 text-center">
+                <div className="w-[40%] bg-[#ECF1FF] rounded-xl p-6 text-center">
                   <p className="text-base text-[#4B5563]">Communication</p>
                   <p className="text-2xl font-normal text-[#0F47F2]">92%</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-xl p-4">
+            <div className="bg-white rounded-xl p-2">
               <h4 className="text-base font-medium text-[#4B5563] mb-2">
                 General Summary
               </h4>
@@ -634,7 +631,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 interference.
               </p>
             </div>
-            <div className="bg-white rounded-xl p-4">
+            <div className="bg-white rounded-xl p-2">
               <h4 className="text-base font-medium text-[#4B5563] mb-4">
                 Vetted Skills
               </h4>
@@ -644,18 +641,16 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     key={index}
                     className="bg-[#ECF1FF] rounded-md p-2 flex items-center justify-center space-x-2"
                   >
-                    <span className="text-base text-[#0F47F2]">
-                      {skill.name}
-                    </span>
-                    <Star className="w-5 h-5 text-[#FFC107] fill-[#FFC107]" />
-                    <span className="text-base text-[#4B5563]">
+                    <span className="text-sm text-[#0F47F2]">{skill.name}</span>
+                    <Star className="w-4 h-4 text-[#FFC107] fill-[#FFC107]" />
+                    <span className="text-sm text-[#4B5563]">
                       {skill.rating}
                     </span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="bg-[#FDE7E7] rounded-xl p-4">
+            <div className="bg-[#FDE7E7] rounded-xl p-2">
               <h4 className="text-base font-medium text-[#F20A0A] mb-2">
                 Potential Red Flags
               </h4>
@@ -673,9 +668,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 Interview Recording
               </h4>
               <div className="bg-[#F5F9FB] rounded-xl p-4 flex items-center space-x-4">
-                <button className="w-10 h-10 bg-[#4B5563] rounded-full flex items-center justify-center text-white transform rotate-90">
-                  <Play className="w-4 h-4 ml-1" />
-                </button>
+                <Play className="w-4 h-4 ml-1" />
                 <div className="flex-1">
                   <div className="h-0.5 bg-[#F0F0F0] rounded-full">
                     <div className="w-1/3 h-0.5 bg-[#0F47F2] rounded-full"></div>
@@ -841,45 +834,49 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl overflow-hidden relative h-full">
-      <div className="px-2">
-        <div className="flex space-x-6 border-b border-[#0F47F2]">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`relative pb-2 text-xs ${
-                activeTab === tab ? "text-[#0F47F2]" : "text-[#818283]"
-              }`}
-            >
-              {tab}
-              {tab === "Activity" && (
-                <span className="ml-2 bg-[#E2E2E2] text-[#818283] text-xs font-medium rounded-full px-2 py-0.5">
-                  3
-                </span>
-              )}
-              {tab === "Notes" && (
-                <span className="ml-2 bg-[#F0F0F0] text-[#818283] text-xs font-medium rounded-full px-2 py-0.5">
-                  2
-                </span>
-              )}
-              {activeTab === tab && (
+    <>
+      <div className="bg-white rounded-xl overflow-hidden relative h-full">
+        <div className="px-2">
+          <div className="flex space-x-4 border-b border-gray-200">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`py-2 px-2 text-sm font-medium ${
+                  activeTab === tab
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                {tab}
+                {tab === "Activity" && (
+                  <span className="ml-1">
+                    ({selectedCandidate?.candidateNotes?.length || 0})
+                  </span>
+                )}
+                {tab === "Notes" && (
+                  <span className="ml-1">
+                    ({selectedCandidate?.candidateNotes?.length || 0})
+                  </span>
+                )}
+                {/* {activeTab === tab && (
                 <div className="absolute -bottom-[1px] left-0 right-0 h-1 bg-[#0F47F2] rounded-t-xl" />
-              )}
-            </button>
-          ))}
+              )} */}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="p-2 overflow-y-auto max-h-[60vh]">
+          {externalNotes}
+          {renderTabContent()}
         </div>
       </div>
-      <div className="p-2 overflow-y-auto max-h-[60vh]">
-        {externalNotes}
-        {renderTabContent()}
-      </div>
       {bottomContent() && (
-        <div className="sticky bottom-0 bg-white p-2 shadow-[0_-2px_3px_rgba(0,0,0,0.1)]">
+        <div className="sticky bottom-0 bg-white pb-2 pt-4 shadow-[0_-2px_3px_rgba(0,0,0,0.1)]">
           {bottomContent()}
         </div>
       )}
-    </div>
+    </>
   );
 };
 
