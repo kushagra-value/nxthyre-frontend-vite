@@ -69,6 +69,15 @@ class JobPostService {
     }
   }
 
+  async getLocationSuggestions(query: string): Promise<string[]> {
+    try {
+      const response = await apiClient.get(`/jobs/location-suggestions/?q=${encodeURIComponent(query)}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to fetch location suggestions");
+    }
+  }
+
   async createJob(data: CreateJobData): Promise<Job> {
     try {
       const formData = new FormData();

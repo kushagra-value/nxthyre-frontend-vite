@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ArrowLeft,
   User,
@@ -22,9 +22,16 @@ import {
   Target,
   BarChart3,
   ChevronDown,
+  File,
   Edit,
   Archive,
   Trash2,
+  Code,
+  MapPin,
+  Github,
+  Linkedin,
+  Link,
+  ArrowDownNarrowWide,
 } from "lucide-react";
 import Header from "./Header";
 import { creditService } from "../services/creditService";
@@ -283,21 +290,14 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   // Dynamic category states
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
-  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState(true); 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
-    null
-  );
-  const [showCreateJobRole, setShowCreateJobRole] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // const tabs = [
-  //   { id: "outbound", label: "Outbound", count: 2325 },
-  //   { id: "active", label: "Active", count: 2034 },
-  //   { id: "inbound", label: "Inbound", count: 2034 },
-  //   { id: "prevetted", label: "Prevetted", count: 2034 },
-  // ];
+  const [hoveredCandidateId, setHoveredCandidateId] = useState<string | null>(null);
+  
+  
 
   // Fetch categories when component mounts
   useEffect(() => {
@@ -445,6 +445,24 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       console.error("Error bulk moving candidates:", error);
     }
   };
+
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
+
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [sortBy, setSortBy] = useState("Relevance"); 
+
+  const handleSortSelect = (sortValue: string) => {
+    setSortBy(sortValue);
+    setShowSortDropdown(false);
+  };
+
+  const sortOptions = [
+    { value: '', label: 'Relevance' },
+    { value: 'experience_asc', label: 'Experience(Asc)' },
+    { value: 'experience_desc', label: 'Experience(Desc)' },
+    { value: 'notice_period_asc', label: 'Notice Period(Asc)' },
+    { value: 'notice_period_desc', label: 'Notice Period(Desc)' },
+  ];
 
   const mapStageData = (
     slug: string,
@@ -650,52 +668,61 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     return icons[stage as keyof typeof icons] || User;
   };
 
+  const getStageDescription = (stageName: string) => {
+    switch (stageName) {
+      case "Uncontacted":
+        return { text: "5 candidates sent you a message", color: "text-blue-600" };
+      case "Applied":
+        return { text: "5 new candidates", color: "text-blue-600" };
+      case "Coding Round":
+        return { text: "Average 15% are only passing the round", color: "text-orange-600" };
+      case "AI Interview":
+        return { text: "95% of candidates are above par score", color: "text-orange-600" };
+      case "Shortlisted":
+        return { text: "", color: "text-orange-600" };
+      case "First Interview":
+        return { text: "inactive for 2 days", color: "text-gray-500" };
+      case "Other Interview":
+        return { text: "8 new notes updated", color: "text-blue-600" };
+      case "HR Round":
+        return { text: "2 new candidates", color: "text-blue-600" };
+      case "Offer Sent":
+        return { text: "10 new offers", color: "text-blue-600" };
+      case "Offer Accepted":
+        return { text: "1 new offer accepted", color: "text-blue-600" };
+      default:
+        return { text: "", color: "" };
+    }
+  };
+
+
   const currentCandidates =
     candidates.length > 0
       ? candidates
       : pipelineCandidates[selectedStage] || [];
 
-  const handleCreateJobRole = () => {
-    setShowCreateJobRole(true);
-  };
+  const totalCount = currentCandidates.length;
 
-  const handleEditJobRole = (categoryId: number) => {
-    setShowCreateJobRole(true);
-    setShowCategoryActions(null);
-  };
+  // tab count logic
+  const tabs = [
+    {
+      id: "uncontacted",
+      label: "Uncontacted",
+      count: activeTab === "uncontacted" ? totalCount : 0,
+    },
+    {
+      id: "invited",
+      label: "Invited",
+      count: activeTab === "invited" ? totalCount : 0,
+    },
+    {
+      id: "inbox",
+      label: "Inbox",
+      count: activeTab === "inbox" ? totalCount : 0,
+    },
+  ];
 
-  const handleEditTemplate = (categoryId: number) => {
-    setShowCategoryActions(null);
-  };
-
-  const handleCategoryAction = (action: string, categoryId: number) => {
-    setShowCategoryActions(null);
-    switch (action) {
-      case "edit-job":
-        handleEditJobRole(categoryId);
-        break;
-      case "edit-template":
-        handleEditTemplate(categoryId);
-        break;
-      case "archive":
-        alert(`Archived category with id ${categoryId}`);
-        break;
-      case "delete":
-        if (
-          confirm(
-            `Are you sure you want to delete category with id ${categoryId}?`
-          )
-        ) {
-          alert(`Deleted category with id ${categoryId}`);
-        }
-        break;
-    }
-  };
-
-  const handleCategorySelect = (categoryId: number) => {
-    setActiveCategoryId(categoryId);
-    setActiveJobId(categoryId);
-  };
+  const selectedCategory = categories.find((cat) => cat.id === activeJobId);
 
   const renderStageDetails = () => {
     if (!selectedCandidate) {
@@ -2834,7 +2861,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     <div className="bg-gray-50 min-h-screen">
       <div className="sticky top-0 z-20 bg-white will-change-transform">
         <Header
-          onCreateRole={handleCreateJobRole}
           onOpenLogoutModal={handleOpenLogoutModal}
           credits={credits}
           onBack={onBack}
@@ -2844,113 +2870,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         />
       </div>
 
-      <div className="my-3 mx-6">
-        {loadingCategories ? (
-          <div className="text-center text-gray-500">Loading categories...</div>
-        ) : categories.length === 0 ? (
-          <div className="text-center text-gray-500">
-            <p>No Job Roles Found</p>
-            <p className="text-sm mt-1">
-              Please create a job role to view the pipeline stages.
-            </p>
-          </div>
-        ) : (
-          <div className="hidden md:flex items-center space-x-2">
-            {categories.slice(0, 4).map((category) => (
-              <div
-                key={category.id}
-                className="relative"
-                onMouseEnter={() => setHoveredCategory(category.id)}
-                onMouseLeave={() => setHoveredCategory(null)}
-              >
-                <button
-                  onClick={() => handleCategorySelect(category.id)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                    activeCategoryId === category.id
-                      ? "bg-blue-100 text-blue-700 shadow-sm"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  {category.name}
-                  <span
-                    className={`ml-2 px-2 py-1 rounded-full text-xs ${
-                      activeCategoryId === category.id
-                        ? "bg-blue-200 text-blue-800"
-                        : "bg-gray-200 text-gray-600"
-                    }`}
-                  >
-                    {category.count}
-                  </span>
-                </button>
-                {hoveredCategory === category.id && (
-                  <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                    <div className="py-1">
-                      <button
-                        onClick={() =>
-                          handleCategoryAction("edit-job", category.id)
-                        }
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                      >
-                        <Edit className="w-4 h-4 mr-2" />
-                        Edit Job Role
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleCategoryAction("edit-template", category.id)
-                        }
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                      >
-                        <Mail className="w-4 h-4 mr-2" />
-                        Edit Email Template
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleCategoryAction("archive", category.id)
-                        }
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                      >
-                        <Archive className="w-4 h-4 mr-2" />
-                        Archive
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleCategoryAction("delete", category.id)
-                        }
-                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Delete Job
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-            {categories.length > 4 && (
-              <div className="relative">
-                <button
-                  onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                  className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full flex items-center"
-                >
-                  +{categories.length - 4} more
-                  <ChevronDown className="ml-1 w-4 h-4" />
-                </button>
-                <CategoryDropdown
-                  isOpen={showCategoryDropdown}
-                  onClose={() => setShowCategoryDropdown(false)}
-                  onEditJobRole={handleEditJobRole}
-                  onEditTemplate={handleEditTemplate}
-                />
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
       <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-2">
         <div className="flex w-full gap-3 h-full">
           <div className="lg:w-[25%] order-2 lg:order-1">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3">
+            <div className="bg-white rounded-xl shadow-xs px-3 py-6">
               <div
                 className="flex items-center space-x-2 cursor-pointer"
                 onClick={onBack}
@@ -2958,45 +2881,84 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <button className="rounded-lg transition-colors">
                   <ArrowLeft className="mb-2 w-5 h-4 text-gray-600" />
                 </button>
-                <h3 className="text-sm font-semibold text-gray-600 mb-4 mt-1">
+                <h3 className="text-md font-[600] text-gray-600 mb-4 mt-1">
                   Back to Dashboard
                 </h3>
+              </div>
+              <div className="flex relative mb-4" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="w-full px-3 py-2 border border-blue-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between text-blue-600"
+                >
+                  <span>
+                    {selectedCategory ? selectedCategory.name : "Select Pipeline"}
+                  </span>
+                  <ChevronDown className="text-blue-600 w-4 h-4" />
+                </button>
+                <div className="flex items-center text-white justify-center bg-gray-600 h-10 w-10 rounded-lg ml-2"><Users className="w-4 h-4"/></div>
+  
+                {isDropdownOpen && (
+                  <div className="absolute z-10 w-full bg-white shadow-lg mt-1 rounded-lg max-h-60 overflow-y-auto">
+                    {categories.map((category) => (
+                      <div
+                        key={category.id}
+                        className="p-2 hover:bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          setActiveJobId(category.id);
+                          setIsDropdownOpen(false);
+                        }}
+                      >
+                        {category.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 {stages.length > 0
                   ? stages.map((stage) => {
                       const Icon = getStageIcon(stage.name);
                       const isSelected = selectedStage === stage.name;
+                      const description = getStageDescription(stage.name);
                       return (
                         <button
                           key={stage.id}
                           onClick={() => handleStageSelect(stage.name)}
-                          className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                          className={`w-full flex items-center space-x-3 pr-3 py-2 rounded-lg text-left transition-colors ${
                             isSelected
                               ? "bg-blue-50 text-blue-700 border border-blue-200"
                               : "text-gray-700 hover:bg-gray-50"
                           }`}
                         >
                           {isSelected && (
-                            <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                            <div className="w-1 h-8 bg-blue-500 rounded-tr-xl rounded-br-xl  rounded" />
                           )}
                           <Icon
                             className={`w-4 h-4 ${
                               isSelected ? "text-blue-600" : "text-gray-600"
                             }`}
                           />
+                          <div className="flex items-center justify-between w-full">
+                          <div className="flex flex-col items-start justify-center">
                           <span className="flex-1 font-medium">
                             {stage.name}
                           </span>
+                          {description.text && (
+                                <p className={`text-xs ${description.color}`}>
+                                  {description.text}
+                                </p>
+                              )}
+                          </div>
                           <span
-                            className={`px-2 py-1 text-xs rounded-full ${
+                            className={`px-2 py-1 text-sm ${
                               isSelected
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-gray-100 text-gray-600"
+                                ? "text-blue-800"
+                                : "text-gray-400"
                             }`}
                           >
                             {stage.candidate_count}
                           </span>
+                          </div>
                         </button>
                       );
                     })
@@ -3005,6 +2967,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       const isSelected = selectedStage === stage;
                       const candidateCount =
                         pipelineCandidates[stage]?.length || 0;
+                        const description = getStageDescription(stage);
                       return (
                         <button
                           key={stage}
@@ -3024,6 +2987,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             }`}
                           />
                           <span className="flex-1 font-medium">{stage}</span>
+                          {description.text && (
+                                <p className={`text-xs ${description.color}`}>
+                                  {description.text}
+                                </p>
+                              )}
                           <span
                             className={`px-2 py-1 text-xs rounded-full ${
                               isSelected
@@ -3041,11 +3009,36 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           </div>
 
           <div className="lg:w-[45%] order-1 lg:order-2">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div className="bg-white rounded-xl shadow-sm h-fit">
+
+              <div className="border-b border-gray-200">
+                <div className="flex items-center justify-between px-4 pt-4 pb-0">
+                  <div className="flex space-x-6 overflow-x-auto">
+                    {tabs.map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`py-2 text-sm lg:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 focus-visible:border-b-2 focus-visible:border-blue-600 ${
+                          activeTab === tab.id
+                            ? "text-blue-600 border-blue-500"
+                            : "text-gray-600 border-transparent hover:text-gray-700"
+                        }`}
+                        aria-label={`Switch to ${tab.label} tab`}
+                      >
+                        {tab.label}
+                        {tab.count > 0 && (
+                          <span className="ml-2 px-2 py-1 text-xs bg-blue-50 text-gray-600 rounded-full">
+                            {tab.count}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
               <div className="p-3 lg:p-4 border-b border-gray-200">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex space-x-3">
-                    <label className="flex items-center space-x-3">
+                <div className="flex items-center justify-between">
+                    <label className="flex items-center">
                       <input
                         type="checkbox"
                         checked={selectAll}
@@ -3057,22 +3050,69 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               : []
                           );
                         }}
-                        className="w-4 h-4 text-blue-500 border-gray-400 rounded focus:ring-blue-600"
+                        className="w-4 h-4 text-blue-200 border-gray-200 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 "
+                        aria-label="Select all candidates"
                       />
+                      <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">Select all on this page</span>
+                    </label>
+                    <div className="flex space-x-3">
+                    {selectedCandidates.length>0 && (
                       <button
                         onClick={() =>
                           bulkMoveCandidates(
                             selectedCandidates.map((id) => parseInt(id))
                           )
                         }
-                        className="px-3 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors"
+                        className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        aria-label="move candidates to pipeline"
                       >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="mr-1"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
                         Move to Next Stage
                       </button>
-                    </label>
-                    <button className="px-3 py-1.5 bg-white text-blue-600 text-sm font-medium rounded-lg border border-blue-400 hover:border-blue-600 transition-colors">
-                      Export Candidates
+                    )}
+                    
+                    <button
+                      className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                      aria-label="upload selected candidates"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400 text-xs lg:text-base font-[400] mr-1">
+                        <path d="M7.84594 1.5587C7.75713 1.46158 7.63163 1.40625 7.5 1.40625C7.36838 1.40625 7.24288 1.46158 7.15407 1.5587L4.65405 4.29307C4.47937 4.48414 4.49264 4.78064 4.6837 4.95533C4.87477 5.13001 5.17127 5.11674 5.34595 4.92568L7.03125 3.08237V10C7.03125 10.2589 7.24113 10.4688 7.5 10.4688C7.75888 10.4688 7.96875 10.2589 7.96875 10V3.08237L9.65407 4.92568C9.82875 5.11674 10.1253 5.13001 10.3163 4.95533C10.5074 4.78064 10.5206 4.48414 10.3459 4.29307L7.84594 1.5587Z" fill="#818283"/>
+                        <path d="M2.34375 9.375C2.34375 9.11612 2.13389 8.90625 1.875 8.90625C1.61612 8.90625 1.40625 9.11612 1.40625 9.375V9.40931C1.40624 10.2641 1.40623 10.953 1.47908 11.4949C1.55471 12.0574 1.71652 12.5311 2.09272 12.9072C2.46892 13.2835 2.94259 13.4453 3.50516 13.5209C4.04701 13.5937 4.73596 13.5937 5.59071 13.5937H9.40931C10.2641 13.5937 10.953 13.5937 11.4949 13.5209C12.0574 13.4453 12.5311 13.2835 12.9073 12.9072C13.2835 12.5311 13.4453 12.0574 13.5209 11.4949C13.5937 10.953 13.5938 10.2641 13.5938 9.40931V9.375C13.5938 9.11612 13.3839 8.90625 13.125 8.90625C12.8661 8.90625 12.6562 9.11612 12.6562 9.375C12.6562 10.2721 12.6553 10.8978 12.5918 11.3699C12.5301 11.8286 12.4174 12.0714 12.2444 12.2444C12.0714 12.4174 11.8286 12.5301 11.3699 12.5918C10.8978 12.6552 10.2721 12.6562 9.375 12.6562H5.625C4.72787 12.6562 4.10217 12.6552 3.63008 12.5918C3.17147 12.5301 2.92861 12.4174 2.75563 12.2444C2.58266 12.0714 2.46988 11.8286 2.40822 11.3699C2.34474 10.8978 2.34375 10.2721 2.34375 9.375Z" fill="#818283"/>
+                        </svg>
+
+                      Upload 
                     </button>
+                  
+                  <div className="relative flex space-x-2">
+                    <button
+                        className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        onClick={() => setShowSortDropdown(!showSortDropdown)}
+                        aria-label="Sort candidates"
+                      >
+                        <ArrowDownNarrowWide className="w-4 h-4 rotate-180"/>
+                        <span className="text-gray-400 font-[400] ml-1 mr-1">{sortOptions.find(opt => opt.value === sortBy)?.label || 'Relevance'}</span>
+                        <ChevronDown className="w-4 h-4 mt-1" />
+                      </button>
+                      {showSortDropdown && (
+                        <div
+                          ref={sortDropdownRef}
+                          className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+                        >
+                          <div className="py-1">
+                            {sortOptions.map((option) => (
+                              <button
+                                key={option.value}
+                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                onClick={() => handleSortSelect(option.value)}
+                                aria-label={`Sort candidates by ${option.label}`}
+                              >
+                                {option.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                  </div>
                   </div>
                 </div>
               </div>
@@ -3088,55 +3128,251 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                     </p>
                   </div>
                 ) : (
-                  currentCandidates.map((candidate: any) => (
-                    <div
-                      key={candidate.id}
-                      className={`p-3 lg:p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
-                        selectedCandidate?.id === candidate.id.toString()
-                          ? "bg-blue-50 border-l-4 border-blue-500"
-                          : ""
-                      }`}
-                      onClick={() => handleCandidateSelect(candidate)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedCandidates.includes(
+                <>
+                  <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
+                    {currentCandidates.map((candidate: any) => (
+                      <div
+                        key={candidate.id}
+                        className={`pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
+                          selectedCandidate?.id === candidate.id.toString()
+                            ? "bg-blue-50 border-l-4 border-blue-500"
+                            : "border border-gray-200"
+                        }`}
+                        onClick={() => handleCandidateSelect(candidate)}
+                        tabIndex={0}
+                        role="button"
+                        aria-label={`Select candidate ${candidate.full_name}`}
+                      >
+                        <div className="flex px-4 items-center space-x-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedCandidates.includes(
                             candidate.id.toString()
                           )}
-                          onChange={() =>
+                            onChange={() =>
                             handleCandidateCheckbox(candidate.id.toString())
                           }
-                          className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                        <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                          {(
+                            className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mb-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                            onClick={(e) => e.stopPropagation()}
+                            aria-label={`Select ${candidate.full_name}`}
+                          />
+                          <div className="border-b border-[#E2E2E2] flex items-center space-x-3 pb-5 w-full">
+                          <div
+                            className={`w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600] `}
+                          >
+                            {(
                             candidate.candidate?.full_name || candidate.fullName
                           )
                             .split(" ")
                             .map((n: string) => n[0])
-                            .join("")}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-base font-semibold text-gray-900">
-                              {candidate.candidate?.full_name ||
-                                candidate.fullName}
-                            </h3>
+                            .join("")
+                            .slice(0, 2)}
+                             
                           </div>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {candidate.candidate?.headline ||
-                              candidate.headline}
-                          </p>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {candidate.candidate?.location ||
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
+                              <div className="flex items-center space-x-2 flex-wrap">
+                                <h3 className="text-xs lg:text-base font-[400] text-gray-900">
+                                  {candidate.candidate?.full_name ||
+                                candidate.fullName}
+                                </h3>
+                                {candidate.is_background_verified && (
+                                  <div className="relative flex space-x-1"
+                                    onMouseEnter={() => setHoveredCandidateId(candidate.id)}
+                                    onMouseLeave={() => setHoveredCandidateId(null)}>
+                                    <span className="mt-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="256"
+                                        height="256"
+                                        viewBox="0 0 256 256"
+                                        xmlSpace="preserve"
+                                      >
+                                        <g
+                                          transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)"
+                                          style={{
+                                            stroke: "none",
+                                            strokeWidth: 0,
+                                            strokeDasharray: "none",
+                                            strokeLinecap: "butt",
+                                            strokeLinejoin: "miter",
+                                            strokeMiterlimit: 10,
+                                            fill: "none",
+                                            fillRule: "nonzero",
+                                            opacity: 1,
+                                          }}
+                                        >
+                                          <polygon
+                                            points="45,6.18 57.06,0 64.41,11.38 77.94,12.06 78.62,25.59 90,32.94 83.82,45 90,57.06 78.62,64.41 77.94,77.94 64.41,78.62 57.06,90 45,83.82 32.94,90 25.59,78.62 12.06,77.94 11.38,64.41 0,57.06 6.18,45 0,32.94 11.38,25.59 12.06,12.06 25.59,11.38 32.94,0"
+                                            style={{
+                                              stroke: "none",
+                                              strokeWidth: 1,
+                                              strokeDasharray: "none",
+                                              strokeLinecap: "butt",
+                                              strokeLinejoin: "miter",
+                                              strokeMiterlimit: 10,
+                                              fill: "rgb(0,150,241)",
+                                              fillRule: "nonzero",
+                                              opacity: 1,
+                                            }}
+                                            transform="matrix(1 0 0 1 0 0)"
+                                          />
+                                          <polygon
+                                            points="40.16,58.47 26.24,45.08 29.7,41.48 40.15,51.52 61.22,31.08 64.7,34.67"
+                                            style={{
+                                              stroke: "none",
+                                              strokeWidth: 1,
+                                              strokeDasharray: "none",
+                                              strokeLinecap: "butt",
+                                              strokeLinejoin: "miter",
+                                              strokeMiterlimit: 10,
+                                              fill: "rgb(255,255,255)",
+                                              fillRule: "nonzero",
+                                              opacity: 1,
+                                            }}
+                                            transform="matrix(1 0 0 1 0 0)"
+                                          />
+                                        </g>
+                                      </svg>
+                                    </span>
+                                    {hoveredCandidateId === candidate.id && (
+                                        <div
+                                          className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg p-3 text-sm text-gray-700 z-10"
+                                          role="tooltip"
+                                          aria-hidden={hoveredCandidateId !== candidate.id}
+                                        >
+                                          Verified via last employer's confirmation
+                                        </div>
+                                      )}
+                                  </div>
+                                )}        
+                              </div>
+                              <div className="flex space-x-1">
+                                <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563] mt-1">
+                                  <MapPin className=" w-4 h-4" />
+                                  
+                                  {candidate.candidate?.location.split(",")[0] ||
                               `${candidate.location.city}, ${candidate.location.country}`}
-                          </p>
+                                </p>
+                              </div>
+                              
+                            </div>
+                            <div className="flex space-x-2">
+                              <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                                {candidate.candidate?.experience_summary?.title || candidate.experience_summary?.title }
+                              </p>
+                              <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
+                                |
+                              </p> 
+                              <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                                {candidate.candidate?.education_summary?.title || candidate.education_summary?.title}
+                              </p>
+                            </div>
+                          </div>
+                          </div>
                         </div>
+                          <div className="pt-5 pl-12 flex space-x-12 gap-2 text-xs lg:text-base font-[400px] ml-1">
+                            {candidate.candidate?.experience_years && 
+                            (
+                              <div className="flex flex-col">
+                                <p className="text-[#A8A8A8] mr-[5px]">Experience</p>
+                                <p className="text-[#4B5563]">
+                                  {candidate.candidate?.experience_years}
+                                </p>
+                            </div>
+                            )}
+                            {/* need to update the current Company Data */}
+                            {candidate.candidate?.experience_years && 
+                            (
+                              <div className="flex flex-col">
+                                <p className="text-[#A8A8A8] mr-[5px]">Current Company</p>
+                                <p className="text-[#4B5563]">
+                                  {candidate.candidate?.experience_years}
+                                </p>
+                            </div>
+                            )}
+                            {candidate.candidate?.notice_period_summary && 
+                            (
+                              <div className="flex flex-col">
+                                <p className="text-[#A8A8A8] mr-[5px]">Notice Period</p>
+                                <p className="text-[#4B5563]">
+                                  {candidate.candidate?.notice_period_summary}
+                                </p>
+                            </div>
+                            )}
+                            {/* need to update the code for Current Salary */}
+                            {true && 
+                            (
+                              <div className="flex flex-col">
+                              <p className="text-[#A8A8A8] mr-[5px]">Current Salary</p>
+                              <p className="text-[#4B5563]">
+                                9LPA
+                              </p>
+                            </div>
+                            )}
+            
+                          </div>
+                          <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
+                            <div className="flex items-center space-x-1">
+                                {candidate.candidate?.social_links?.github && (
+                                  <button
+                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                    onClick={() =>
+                                      window.open(candidate.candidate?.social_links?.github, "_blank")
+                                    }
+                                    aria-label={`View ${candidate.candidate?.full_name}'s GitHub profile`}
+                                  >
+                                    <Github className="w-4 h-4" />
+                                  </button>
+                                )}
+                                {candidate.candidate?.social_links?.linkedin && (
+                                  <button
+                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                    onClick={() =>
+                                      window.open(
+                                        candidate.candidate?.social_links?.linkedin,
+                                        "_blank"
+                                      )
+                                    }
+                                    aria-label={`View ${candidate.candidate?.full_name}'s LinkedIn profile`}
+                                  >
+                                    <Linkedin className="w-4 h-4" />
+                                  </button>
+                                )}
+                                {candidate.candidate?.social_links?.resume && (
+                                  <button
+                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                    onClick={() =>
+                                      window.open(candidate.candidate?.social_links?.resume, "_blank")
+                                    }
+                                    aria-label={`View ${candidate.candidate?.full_name}'s resume`}
+                                  >
+                                    <File className="w-4 h-4" />
+                                  </button>
+                                )}
+                                {candidate.candidate?.social_links?.portfolio && (
+                                  <button
+                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                    onClick={() =>
+                                      window.open(
+                                        candidate.candidate?.social_links?.portfolio,
+                                        "_blank"
+                                      )
+                                    }
+                                    aria-label={`View ${candidate.full_name}'s portfolio`}
+                                  >
+                                    <Link className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                            <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
+                              3 days ago
+                            </div>
+                          </div>
                       </div>
-                    </div>
-                  ))
+                    ))}
+                  </div>
+                  </>
                 )}
               </div>
             </div>

@@ -740,7 +740,6 @@ function MainApp() {
 
   const handleBackFromShareableProfile = () => {
     setShowShareableProfile(false);
-    setCurrentCandidateId("");
     window.history.pushState({}, "", "/");
   };
 
@@ -1141,6 +1140,7 @@ function MainApp() {
                           ? parseInt(currentUser.organizationId)
                           : 1
                       }
+                      handlePipelinesClick={handlePipelinesClick}
                       onClose={() => setShowCreateJobRole(false)}
                       onJobCreated={handleJobCreatedOrUpdated}
                     />
