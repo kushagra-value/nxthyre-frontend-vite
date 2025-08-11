@@ -1,5 +1,5 @@
 // StageDetails.tsx
-import React from "react";
+import React, { useState } from "react";
 import {
   User,
   Briefcase,
@@ -9,6 +9,7 @@ import {
   TrendingUp,
   MessageCircle,
   Clock,
+  ChevronDown,
 } from "lucide-react";
 
 interface Stage {
@@ -210,6 +211,15 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   moveCandidate,
   archiveCandidate,
 }) => {
+  const [activeTab, setActiveTab] = useState("Profile");
+
+  const tabs = [
+    { name: "Profile" },
+    { name: "Education" },
+    { name: "Skills" },
+    { name: "Recommendations" },
+  ];
+
   if (!selectedCandidate) {
     return (
       <div className="text-center text-gray-500 mt-8">
@@ -264,242 +274,226 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       </div>
     ) : null;
 
-  const specificDetails = () => {
-    switch (selectedStage) {
-      case "Uncontacted":
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "Profile":
+        const [showMoreProfile, setShowMoreProfile] = useState(false);
+        const positions = selectedCandidate.positions || [];
         return (
-          <div className="space-y-4">
-            <div className="flex space-x-2">
-              <button className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
-                Send Invite & Reveal Info
-              </button>
-              <button
-                onClick={() => setShowComments(true)}
-                className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                <MessageCircle className="w-4 h-4" />
-              </button>
+          <div className="bg-[#F0F0F0] p-3 rounded-lg">
+            <div className="mb-4 border-b border-gray-200">
+              <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] flex items-center">
+                <User className="w-4 h-4 mr-2 text-[#4B5563]" />
+                Profile Summary
+              </h3>
+              <p className="text-sm text-[#818283] leading-normal pt-2 pb-4 pl-6 pr-2 rounded-lg">
+                {selectedCandidate.summary || "No summary available"}
+              </p>
             </div>
-
-            {selectedCandidate?.positions?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
-                  Experience
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.positions.map((exp, index) => (
+            <div>
+              <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
+                <Briefcase className="w-4 h-4 mr-2 text-[#4B5563]" />
+                Experience
+              </h3>
+              <div className="ml-2">
+                {positions.length > 0 ? (
+                  (showMoreProfile || positions.length <= 1
+                    ? positions
+                    : positions.slice(0, 1)
+                  ).map((exp, index) => (
                     <div
                       key={index}
                       className="border-l-2 border-gray-200 pl-4 relative pb-2"
                     >
                       <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {exp?.title && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {exp.title}
-                        </h4>
-                      )}
-                      {(exp?.companyName || exp?.location) && (
-                        <p className="text-sm text-gray-600">
-                          {exp?.companyName && exp.companyName}
-                          {exp?.companyName && exp?.location && " | "}
-                          {exp?.location && exp.location}
-                        </p>
-                      )}
-                      {(exp?.startDate || exp?.endDate) && (
-                        <p className="text-sm text-gray-500">
-                          {exp?.startDate
-                            ? `${exp.startDate.month}/${exp.startDate.year}`
-                            : ""}
-                          {" - "}
-                          {exp?.endDate
-                            ? `${exp.endDate.month}/${exp.endDate.year}`
-                            : "Present"}
-                        </p>
-                      )}
-                      {exp?.description && (
-                        <p className="text-sm text-gray-700 mt-1">
-                          {exp.description}
-                        </p>
-                      )}
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {exp.title}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {exp.companyName} | {exp.location}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {exp.startDate.month}/{exp.startDate.year} -{" "}
+                        {exp.endDate
+                          ? `${exp.endDate.month}/${exp.endDate.year}`
+                          : "Present"}
+                      </p>
+                      <p className="text-sm text-gray-700 mt-1">
+                        {exp.description}
+                      </p>
                     </div>
-                  ))}
-                </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No experience details available
+                  </p>
+                )}
               </div>
-            )}
-
-            {selectedCandidate?.educations?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
-                  Education
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.educations.map((edu, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {edu?.degreeName && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {edu.degreeName}
-                        </h4>
-                      )}
-                      {edu?.fieldOfStudy && (
-                        <p className="text-sm text-gray-600">
-                          {edu.fieldOfStudy}
-                        </p>
-                      )}
-                      {(edu?.startDate?.year || edu?.endDate?.year) && (
-                        <p className="text-sm text-gray-500">
-                          {edu?.startDate?.year || ""} -{" "}
-                          {edu?.endDate?.year || ""}
-                        </p>
-                      )}
-                      {edu?.schoolName && (
-                        <p className="text-sm text-gray-500">
-                          {edu.schoolName}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.certifications?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <Award className="w-4 h-4 mr-2 text-gray-800" />
-                  Certifications
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.certifications.map((cert, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {cert?.name && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {cert.name}
-                        </h4>
-                      )}
-                      {cert?.authority && (
-                        <p className="text-sm text-gray-600">
-                          {cert.authority}
-                        </p>
-                      )}
-                      {(cert?.startDate || cert?.endDate) && (
-                        <p className="text-sm text-gray-500">
-                          {cert?.startDate
-                            ? `${cert.startDate.month}/${cert.startDate.year}`
-                            : ""}
-                          {" - "}
-                          {cert?.endDate
-                            ? `${cert.endDate.month}/${cert.endDate.year}`
-                            : "Present"}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.skills?.length > 0 && (
-              <div>
-                <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
-                  <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
-                  Skills
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedCandidate.skills.map(
-                    (skill, index) =>
-                      skill?.name && (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                        >
-                          {skill.name}
-                        </span>
-                      )
-                  )}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.recommendations?.received?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
-                  Recommendations
-                </h3>
-                <div className="space-y-2">
-                  {selectedCandidate.recommendations.received.map(
-                    (rec, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-start space-x-2">
-                          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                            <User className="w-3 h-3 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            {rec?.recommender_name && (
-                              <h4 className="font-medium text-gray-900 text-sm">
-                                {rec.recommender_name}
-                              </h4>
-                            )}
-                            {rec?.recommender_title && (
-                              <p className="text-xs text-gray-700">
-                                {rec.recommender_title}
-                              </p>
-                            )}
-                            {rec?.feedback && (
-                              <p className="text-sm text-gray-800 mt-1">
-                                "{rec.feedback}"
-                              </p>
-                            )}
-                            {rec?.date_received && (
-                              <p className="text-xs text-gray-600 mt-1">
-                                {rec.date_received}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className="flex justify-between w-full">
-              <button
-                onClick={() => {
-                  const currentIndex = stages.findIndex(
-                    (s) => s.name === selectedStage
-                  );
-                  const nextStage = stages[currentIndex + 1];
-                  if (nextStage)
-                    moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
-                }}
-                className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Move to Next Stage
-              </button>
-              <button
-                onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
-                className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Archive
-              </button>
+              {positions.length > 1 && !showMoreProfile && (
+                <button
+                  onClick={() => setShowMoreProfile(true)}
+                  className="text-[#0F47F2] text-sm mt-2 flex items-center"
+                >
+                  VIEW MORE
+                  <ChevronDown className="text-[#0F47F2] ml-1" />
+                </button>
+              )}
             </div>
           </div>
         );
-      case "Invites Sent":
+      case "Education":
         return (
-          <div className="space-y-4">
+          <div className="bg-[#F0F0F0] p-3 rounded-lg">
+            <div className="mb-4">
+              <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
+                <GraduationCap className="w-4 h-4 mr-2 text-[#4B5563]" />
+                Education
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate.educations.length > 0 ? (
+                  selectedCandidate.educations.map((edu, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {edu.degreeName}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {edu.fieldOfStudy}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {edu.startDate.year} - {edu.endDate.year}
+                      </p>
+                      <p className="text-sm text-gray-500">{edu.schoolName}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No education details available
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="mb-4">
+              <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
+                <Award className="w-4 h-4 mr-2 text-[#4B5563]" />
+                Certifications
+              </h3>
+              <div className="ml-2">
+                {selectedCandidate.certifications.length > 0 ? (
+                  selectedCandidate.certifications.map((cert, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
+                    >
+                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {cert.name}
+                      </h4>
+                      <p className="text-sm text-gray-600">{cert.authority}</p>
+                      <p className="text-sm text-gray-500">
+                        {cert.startDate.month}/{cert.startDate.year} -{" "}
+                        {cert.endDate
+                          ? `${cert.endDate.month}/${cert.endDate.year}`
+                          : "Present"}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No certifications available
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      case "Skills":
+        return (
+          <div className="bg-[#F0F0F0] p-3 rounded-lg">
+            <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
+              <Star className="w-4 h-4 mr-2 text-[#4B5563]" />
+              Skills
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {selectedCandidate.skills.length > 0 ? (
+                selectedCandidate.skills.map((skill, index) => (
+                  <span
+                    key={index}
+                    className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                  >
+                    {skill.name}
+                    {skill.endorsementCount > 0 &&
+                      ` (${skill.endorsementCount})`}
+                  </span>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">No skills available</p>
+              )}
+            </div>
+          </div>
+        );
+      case "Recommendations":
+        return (
+          <div className="bg-[#F0F0F0] p-3 rounded-lg">
+            <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
+              <TrendingUp className="w-4 h-4 mr-2 text-[#4B5563]" />
+              Recommendations
+            </h3>
+            <div className="space-y-2">
+              {selectedCandidate.recommendations.received.length > 0 ? (
+                selectedCandidate.recommendations.received.map((rec, index) => (
+                  <div key={index} className="bg-gray-50 rounded-lg p-3">
+                    <div className="flex items-start space-x-2">
+                      <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <User className="w-3 h-3 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900 text-sm">
+                          {rec.recommender_name || "Anonymous"}
+                        </h4>
+                        <p className="text-xs text-gray-700">
+                          {rec.recommender_title}
+                        </p>
+                        <p className="text-sm text-gray-800 mt-1">
+                          "{rec.feedback}"
+                        </p>
+                        <p className="text-xs text-gray-600 mt-1">
+                          {rec.date_received}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">
+                  No recommendations available
+                </p>
+              )}
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const topContent = () => {
+    switch (selectedStage) {
+      case "Uncontacted":
+        return (
+          <div className="flex space-x-2">
+            <button className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+              Send Invite & Reveal Info
+            </button>
+          </div>
+        );
+      case "Invites Sent":
+        const invitesSentData = stageData.invitesSent;
+        return (
+          <>
             <div className="flex space-x-2">
               <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
                 Send Invite & Reveal Info
@@ -511,243 +505,24 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 <MessageCircle className="w-4 h-4" />
               </button>
             </div>
-
-            {selectedCandidate?.stageData?.invitesSent?.candidate_notes
-              ?.length > 0 && (
+            {invitesSentData?.notes?.length > 0 && (
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">Notes</h4>
                 <div className="space-y-2">
-                  {selectedCandidate.candidate_notes.map(
-                    (note: any, index: number) => (
-                      <div key={index} className="bg-gray-50 p-2 rounded">
-                        {note.content}
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.positions?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
-                  Experience
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.positions.map((exp, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {exp?.title && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {exp.title}
-                        </h4>
-                      )}
-                      {(exp?.companyName || exp?.location) && (
-                        <p className="text-sm text-gray-600">
-                          {exp?.companyName && exp.companyName}
-                          {exp?.companyName && exp?.location && " | "}
-                          {exp?.location && exp.location}
-                        </p>
-                      )}
-                      {(exp?.startDate || exp?.endDate) && (
-                        <p className="text-sm text-gray-500">
-                          {exp?.startDate
-                            ? `${exp.startDate.month}/${exp.startDate.year}`
-                            : ""}
-                          {" - "}
-                          {exp?.endDate
-                            ? `${exp.endDate.month}/${exp.endDate.year}`
-                            : "Present"}
-                        </p>
-                      )}
-                      {exp?.description && (
-                        <p className="text-sm text-gray-700 mt-1">
-                          {exp.description}
-                        </p>
-                      )}
+                  {invitesSentData.notes.map((note, index) => (
+                    <div key={index} className="bg-gray-50 p-2 rounded">
+                      {note}
                     </div>
                   ))}
                 </div>
               </div>
             )}
-
-            {selectedCandidate?.educations?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
-                  Education
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.educations.map((edu, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {edu?.degreeName && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {edu.degreeName}
-                        </h4>
-                      )}
-                      {edu?.fieldOfStudy && (
-                        <p className="text-sm text-gray-600">
-                          {edu.fieldOfStudy}
-                        </p>
-                      )}
-                      {(edu?.startDate?.year || edu?.endDate?.year) && (
-                        <p className="text-sm text-gray-500">
-                          {edu?.startDate?.year || ""} -{" "}
-                          {edu?.endDate?.year || ""}
-                        </p>
-                      )}
-                      {edu?.schoolName && (
-                        <p className="text-sm text-gray-500">
-                          {edu.schoolName}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.certifications?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <Award className="w-4 h-4 mr-2 text-gray-800" />
-                  Certifications
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.certifications.map((cert, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {cert?.name && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {cert.name}
-                        </h4>
-                      )}
-                      {cert?.authority && (
-                        <p className="text-sm text-gray-600">
-                          {cert.authority}
-                        </p>
-                      )}
-                      {(cert?.startDate || cert?.endDate) && (
-                        <p className="text-sm text-gray-500">
-                          {cert?.startDate
-                            ? `${cert.startDate.month}/${cert.startDate.year}`
-                            : ""}
-                          {" - "}
-                          {cert?.endDate
-                            ? `${cert.endDate.month}/${cert.endDate.year}`
-                            : "Present"}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.skills?.length > 0 && (
-              <div>
-                <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
-                  <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
-                  Skills
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedCandidate.skills.map(
-                    (skill, index) =>
-                      skill?.name && (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                        >
-                          {skill.name}
-                        </span>
-                      )
-                  )}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.recommendations?.received?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
-                  Recommendations
-                </h3>
-                <div className="space-y-2">
-                  {selectedCandidate.recommendations.received.map(
-                    (rec, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-start space-x-2">
-                          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                            <User className="w-3 h-3 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            {rec?.recommender_name && (
-                              <h4 className="font-medium text-gray-900 text-sm">
-                                {rec.recommender_name}
-                              </h4>
-                            )}
-                            {rec?.recommender_title && (
-                              <p className="text-xs text-gray-700">
-                                {rec.recommender_title}
-                              </p>
-                            )}
-                            {rec?.feedback && (
-                              <p className="text-sm text-gray-800 mt-1">
-                                "{rec.feedback}"
-                              </p>
-                            )}
-                            {rec?.date_received && (
-                              <p className="text-xs text-gray-600 mt-1">
-                                {rec.date_received}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className="flex justify-between w-full">
-              <button
-                onClick={() => {
-                  const currentIndex = stages.findIndex(
-                    (s) => s.name === selectedStage
-                  );
-                  const nextStage = stages[currentIndex + 1];
-                  if (nextStage)
-                    moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
-                }}
-                className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Move to Next Stage
-              </button>
-              <button
-                onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
-                className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Archive
-              </button>
-            </div>
-          </div>
+          </>
         );
       case "Applied":
-        const appliedStageData = selectedCandidate.stageData.applied;
+        const appliedStageData = stageData.applied;
         return (
-          <div className="space-y-4">
+          <>
             <div className="flex space-x-2">
               <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
                 Send Invite & Reveal Info
@@ -794,227 +569,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   ))}
               </div>
             </div>
-
-            {selectedCandidate?.positions?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
-                  Experience
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.positions.map((exp, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {exp?.title && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {exp.title}
-                        </h4>
-                      )}
-                      {(exp?.companyName || exp?.location) && (
-                        <p className="text-sm text-gray-600">
-                          {exp?.companyName && exp.companyName}
-                          {exp?.companyName && exp?.location && " | "}
-                          {exp?.location && exp.location}
-                        </p>
-                      )}
-                      {(exp?.startDate || exp?.endDate) && (
-                        <p className="text-sm text-gray-500">
-                          {exp?.startDate
-                            ? `${exp.startDate.month}/${exp.startDate.year}`
-                            : ""}
-                          {" - "}
-                          {exp?.endDate
-                            ? `${exp.endDate.month}/${exp.endDate.year}`
-                            : "Present"}
-                        </p>
-                      )}
-                      {exp?.description && (
-                        <p className="text-sm text-gray-700 mt-1">
-                          {exp.description}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.educations?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
-                  Education
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.educations.map((edu, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {edu?.degreeName && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {edu.degreeName}
-                        </h4>
-                      )}
-                      {edu?.fieldOfStudy && (
-                        <p className="text-sm text-gray-600">
-                          {edu.fieldOfStudy}
-                        </p>
-                      )}
-                      {(edu?.startDate?.year || edu?.endDate?.year) && (
-                        <p className="text-sm text-gray-500">
-                          {edu?.startDate?.year || ""} -{" "}
-                          {edu?.endDate?.year || ""}
-                        </p>
-                      )}
-                      {edu?.schoolName && (
-                        <p className="text-sm text-gray-500">
-                          {edu.schoolName}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.certifications?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <Award className="w-4 h-4 mr-2 text-gray-800" />
-                  Certifications
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.certifications.map((cert, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {cert?.name && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {cert.name}
-                        </h4>
-                      )}
-                      {cert?.authority && (
-                        <p className="text-sm text-gray-600">
-                          {cert.authority}
-                        </p>
-                      )}
-                      {(cert?.startDate || cert?.endDate) && (
-                        <p className="text-sm text-gray-500">
-                          {cert?.startDate
-                            ? `${cert.startDate.month}/${cert.startDate.year}`
-                            : ""}
-                          {" - "}
-                          {cert?.endDate
-                            ? `${cert.endDate.month}/${cert.endDate.year}`
-                            : "Present"}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.skills?.length > 0 && (
-              <div>
-                <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
-                  <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
-                  Skills
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedCandidate.skills.map(
-                    (skill, index) =>
-                      skill?.name && (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                        >
-                          {skill.name}
-                        </span>
-                      )
-                  )}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.recommendations?.received?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
-                  Recommendations
-                </h3>
-                <div className="space-y-2">
-                  {selectedCandidate.recommendations.received.map(
-                    (rec, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-start space-x-2">
-                          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                            <User className="w-3 h-3 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            {rec?.recommender_name && (
-                              <h4 className="font-medium text-gray-900 text-sm">
-                                {rec.recommender_name}
-                              </h4>
-                            )}
-                            {rec?.recommender_title && (
-                              <p className="text-xs text-gray-700">
-                                {rec.recommender_title}
-                              </p>
-                            )}
-                            {rec?.feedback && (
-                              <p className="text-sm text-gray-800 mt-1">
-                                "{rec.feedback}"
-                              </p>
-                            )}
-                            {rec?.date_received && (
-                              <p className="text-xs text-gray-600 mt-1">
-                                {rec.date_received}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* <div>
-              <button className="mt-1 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                Resend Interview Link
-              </button>
-            </div> */}
-            <div className="flex justify-between w-full">
-              <button
-                onClick={() => {
-                  const currentIndex = stages.findIndex(
-                    (s) => s.name === selectedStage
-                  );
-                  const nextStage = stages[currentIndex + 1];
-                  if (nextStage)
-                    moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
-                }}
-                className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Move to Next Stage
-              </button>
-              <button
-                onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
-                className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Archive
-              </button>
-            </div>
-          </div>
+          </>
         );
       case "AI Interview":
       case "Shortlisted":
@@ -1023,7 +578,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             ? stageData.aiInterview
             : stageData.shortlisted;
         return (
-          <div className="space-y-4">
+          <>
             <div className="flex space-x-2">
               <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
                 Send Invite & Reveal Info
@@ -1079,222 +634,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 </div>
               </div>
             </div>
-
-            {selectedCandidate?.positions?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
-                  Experience
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.positions.map((exp, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {exp?.title && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {exp.title}
-                        </h4>
-                      )}
-                      {(exp?.companyName || exp?.location) && (
-                        <p className="text-sm text-gray-600">
-                          {exp?.companyName && exp.companyName}
-                          {exp?.companyName && exp?.location && " | "}
-                          {exp?.location && exp.location}
-                        </p>
-                      )}
-                      {(exp?.startDate || exp?.endDate) && (
-                        <p className="text-sm text-gray-500">
-                          {exp?.startDate
-                            ? `${exp.startDate.month}/${exp.startDate.year}`
-                            : ""}
-                          {" - "}
-                          {exp?.endDate
-                            ? `${exp.endDate.month}/${exp.endDate.year}`
-                            : "Present"}
-                        </p>
-                      )}
-                      {exp?.description && (
-                        <p className="text-sm text-gray-700 mt-1">
-                          {exp.description}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.educations?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
-                  Education
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.educations.map((edu, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {edu?.degreeName && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {edu.degreeName}
-                        </h4>
-                      )}
-                      {edu?.fieldOfStudy && (
-                        <p className="text-sm text-gray-600">
-                          {edu.fieldOfStudy}
-                        </p>
-                      )}
-                      {(edu?.startDate?.year || edu?.endDate?.year) && (
-                        <p className="text-sm text-gray-500">
-                          {edu?.startDate?.year || ""} -{" "}
-                          {edu?.endDate?.year || ""}
-                        </p>
-                      )}
-                      {edu?.schoolName && (
-                        <p className="text-sm text-gray-500">
-                          {edu.schoolName}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.certifications?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <Award className="w-4 h-4 mr-2 text-gray-800" />
-                  Certifications
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.certifications.map((cert, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {cert?.name && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {cert.name}
-                        </h4>
-                      )}
-                      {cert?.authority && (
-                        <p className="text-sm text-gray-600">
-                          {cert.authority}
-                        </p>
-                      )}
-                      {(cert?.startDate || cert?.endDate) && (
-                        <p className="text-sm text-gray-500">
-                          {cert?.startDate
-                            ? `${cert.startDate.month}/${cert.startDate.year}`
-                            : ""}
-                          {" - "}
-                          {cert?.endDate
-                            ? `${cert.endDate.month}/${cert.endDate.year}`
-                            : "Present"}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.skills?.length > 0 && (
-              <div>
-                <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
-                  <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
-                  Skills
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedCandidate.skills.map(
-                    (skill, index) =>
-                      skill?.name && (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                        >
-                          {skill.name}
-                        </span>
-                      )
-                  )}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.recommendations?.received?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
-                  Recommendations
-                </h3>
-                <div className="space-y-2">
-                  {selectedCandidate.recommendations.received.map(
-                    (rec, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-start space-x-2">
-                          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                            <User className="w-3 h-3 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            {rec?.recommender_name && (
-                              <h4 className="font-medium text-gray-900 text-sm">
-                                {rec.recommender_name}
-                              </h4>
-                            )}
-                            {rec?.recommender_title && (
-                              <p className="text-xs text-gray-700">
-                                {rec.recommender_title}
-                              </p>
-                            )}
-                            {rec?.feedback && (
-                              <p className="text-sm text-gray-800 mt-1">
-                                "{rec.feedback}"
-                              </p>
-                            )}
-                            {rec?.date_received && (
-                              <p className="text-xs text-gray-600 mt-1">
-                                {rec.date_received}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className="flex justify-between w-full">
-              <button
-                onClick={() => {
-                  const currentIndex = stages.findIndex(
-                    (s) => s.name === selectedStage
-                  );
-                  const nextStage = stages[currentIndex + 1];
-                  if (nextStage)
-                    moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
-                }}
-                className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Move to Next Stage
-              </button>
-              <button
-                onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
-                className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Archive
-              </button>
-            </div>
-          </div>
+          </>
         );
       case "First Interview":
       case "Other Interviews":
@@ -1306,7 +646,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             ? stageData.otherInterviews
             : stageData.hrRound;
         return (
-          <div className="space-y-4">
+          <>
             <div className="flex space-x-2">
               <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
                 Send Invite & Reveal Info
@@ -1334,227 +674,12 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 )}
               </div>
             </div>
-
-            {selectedCandidate?.positions?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
-                  Experience
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.positions.map((exp, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {exp?.title && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {exp.title}
-                        </h4>
-                      )}
-                      {(exp?.companyName || exp?.location) && (
-                        <p className="text-sm text-gray-600">
-                          {exp?.companyName && exp.companyName}
-                          {exp?.companyName && exp?.location && " | "}
-                          {exp?.location && exp.location}
-                        </p>
-                      )}
-                      {(exp?.startDate || exp?.endDate) && (
-                        <p className="text-sm text-gray-500">
-                          {exp?.startDate
-                            ? `${exp.startDate.month}/${exp.startDate.year}`
-                            : ""}
-                          {" - "}
-                          {exp?.endDate
-                            ? `${exp.endDate.month}/${exp.endDate.year}`
-                            : "Present"}
-                        </p>
-                      )}
-                      {exp?.description && (
-                        <p className="text-sm text-gray-700 mt-1">
-                          {exp.description}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.educations?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
-                  Education
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.educations.map((edu, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {edu?.degreeName && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {edu.degreeName}
-                        </h4>
-                      )}
-                      {edu?.fieldOfStudy && (
-                        <p className="text-sm text-gray-600">
-                          {edu.fieldOfStudy}
-                        </p>
-                      )}
-                      {(edu?.startDate?.year || edu?.endDate?.year) && (
-                        <p className="text-sm text-gray-500">
-                          {edu?.startDate?.year || ""} -{" "}
-                          {edu?.endDate?.year || ""}
-                        </p>
-                      )}
-                      {edu?.schoolName && (
-                        <p className="text-sm text-gray-500">
-                          {edu.schoolName}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.certifications?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <Award className="w-4 h-4 mr-2 text-gray-800" />
-                  Certifications
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.certifications.map((cert, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {cert?.name && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {cert.name}
-                        </h4>
-                      )}
-                      {cert?.authority && (
-                        <p className="text-sm text-gray-600">
-                          {cert.authority}
-                        </p>
-                      )}
-                      {(cert?.startDate || cert?.endDate) && (
-                        <p className="text-sm text-gray-500">
-                          {cert?.startDate
-                            ? `${cert.startDate.month}/${cert.startDate.year}`
-                            : ""}
-                          {" - "}
-                          {cert?.endDate
-                            ? `${cert.endDate.month}/${cert.endDate.year}`
-                            : "Present"}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.skills?.length > 0 && (
-              <div>
-                <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
-                  <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
-                  Skills
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedCandidate.skills.map(
-                    (skill, index) =>
-                      skill?.name && (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                        >
-                          {skill.name}
-                        </span>
-                      )
-                  )}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.recommendations?.received?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
-                  Recommendations
-                </h3>
-                <div className="space-y-2">
-                  {selectedCandidate.recommendations.received.map(
-                    (rec, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-start space-x-2">
-                          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                            <User className="w-3 h-3 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            {rec?.recommender_name && (
-                              <h4 className="font-medium text-gray-900 text-sm">
-                                {rec.recommender_name}
-                              </h4>
-                            )}
-                            {rec?.recommender_title && (
-                              <p className="text-xs text-gray-700">
-                                {rec.recommender_title}
-                              </p>
-                            )}
-                            {rec?.feedback && (
-                              <p className="text-sm text-gray-800 mt-1">
-                                "{rec.feedback}"
-                              </p>
-                            )}
-                            {rec?.date_received && (
-                              <p className="text-xs text-gray-600 mt-1">
-                                {rec.date_received}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className="flex justify-between w-full">
-              <button
-                onClick={() => {
-                  const currentIndex = stages.findIndex(
-                    (s) => s.name === selectedStage
-                  );
-                  const nextStage = stages[currentIndex + 1];
-                  if (nextStage)
-                    moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
-                }}
-                className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Move to Next Stage
-              </button>
-              <button
-                onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
-                className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Archive
-              </button>
-            </div>
-          </div>
+          </>
         );
       case "Salary Negotiation":
         const salaryData = stageData.salaryNegotiation;
         return (
-          <div className="space-y-4">
+          <>
             <div className="flex space-x-2">
               <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
                 Send Invite & Reveal Info
@@ -1582,227 +707,12 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 )}
               </div>
             </div>
-
-            {selectedCandidate?.positions?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
-                  Experience
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.positions.map((exp, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {exp?.title && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {exp.title}
-                        </h4>
-                      )}
-                      {(exp?.companyName || exp?.location) && (
-                        <p className="text-sm text-gray-600">
-                          {exp?.companyName && exp.companyName}
-                          {exp?.companyName && exp?.location && " | "}
-                          {exp?.location && exp.location}
-                        </p>
-                      )}
-                      {(exp?.startDate || exp?.endDate) && (
-                        <p className="text-sm text-gray-500">
-                          {exp?.startDate
-                            ? `${exp.startDate.month}/${exp.startDate.year}`
-                            : ""}
-                          {" - "}
-                          {exp?.endDate
-                            ? `${exp.endDate.month}/${exp.endDate.year}`
-                            : "Present"}
-                        </p>
-                      )}
-                      {exp?.description && (
-                        <p className="text-sm text-gray-700 mt-1">
-                          {exp.description}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.educations?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
-                  Education
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.educations.map((edu, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {edu?.degreeName && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {edu.degreeName}
-                        </h4>
-                      )}
-                      {edu?.fieldOfStudy && (
-                        <p className="text-sm text-gray-600">
-                          {edu.fieldOfStudy}
-                        </p>
-                      )}
-                      {(edu?.startDate?.year || edu?.endDate?.year) && (
-                        <p className="text-sm text-gray-500">
-                          {edu?.startDate?.year || ""} -{" "}
-                          {edu?.endDate?.year || ""}
-                        </p>
-                      )}
-                      {edu?.schoolName && (
-                        <p className="text-sm text-gray-500">
-                          {edu.schoolName}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.certifications?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <Award className="w-4 h-4 mr-2 text-gray-800" />
-                  Certifications
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.certifications.map((cert, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {cert?.name && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {cert.name}
-                        </h4>
-                      )}
-                      {cert?.authority && (
-                        <p className="text-sm text-gray-600">
-                          {cert.authority}
-                        </p>
-                      )}
-                      {(cert?.startDate || cert?.endDate) && (
-                        <p className="text-sm text-gray-500">
-                          {cert?.startDate
-                            ? `${cert.startDate.month}/${cert.startDate.year}`
-                            : ""}
-                          {" - "}
-                          {cert?.endDate
-                            ? `${cert.endDate.month}/${cert.endDate.year}`
-                            : "Present"}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.skills?.length > 0 && (
-              <div>
-                <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
-                  <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
-                  Skills
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedCandidate.skills.map(
-                    (skill, index) =>
-                      skill?.name && (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                        >
-                          {skill.name}
-                        </span>
-                      )
-                  )}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.recommendations?.received?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
-                  Recommendations
-                </h3>
-                <div className="space-y-2">
-                  {selectedCandidate.recommendations.received.map(
-                    (rec, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-start space-x-2">
-                          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                            <User className="w-3 h-3 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            {rec?.recommender_name && (
-                              <h4 className="font-medium text-gray-900 text-sm">
-                                {rec.recommender_name}
-                              </h4>
-                            )}
-                            {rec?.recommender_title && (
-                              <p className="text-xs text-gray-700">
-                                {rec.recommender_title}
-                              </p>
-                            )}
-                            {rec?.feedback && (
-                              <p className="text-sm text-gray-800 mt-1">
-                                "{rec.feedback}"
-                              </p>
-                            )}
-                            {rec?.date_received && (
-                              <p className="text-xs text-gray-600 mt-1">
-                                {rec.date_received}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className="flex justify-between w-full">
-              <button
-                onClick={() => {
-                  const currentIndex = stages.findIndex(
-                    (s) => s.name === selectedStage
-                  );
-                  const nextStage = stages[currentIndex + 1];
-                  if (nextStage)
-                    moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
-                }}
-                className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Send Offer
-              </button>
-              <button
-                onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
-                className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Archive
-              </button>
-            </div>
-          </div>
+          </>
         );
       case "Offer Sent":
         const offerData = stageData.offerSent;
         return (
-          <div className="space-y-4">
+          <>
             <div className="flex space-x-2">
               <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
                 Send Invite & Reveal Info
@@ -1830,416 +740,97 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 )}
               </div>
             </div>
+          </>
+        );
+      case "Archives":
+        return (
+          <div className="flex space-x-2">
+            <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
+              Send Invite & Reveal Info
+            </button>
+            <button
+              onClick={() => setShowComments(true)}
+              className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              <MessageCircle className="w-4 h-4" />
+            </button>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
-            {selectedCandidate?.positions?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
-                  Experience
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.positions.map((exp, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {exp?.title && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {exp.title}
-                        </h4>
-                      )}
-                      {(exp?.companyName || exp?.location) && (
-                        <p className="text-sm text-gray-600">
-                          {exp?.companyName && exp.companyName}
-                          {exp?.companyName && exp?.location && " | "}
-                          {exp?.location && exp.location}
-                        </p>
-                      )}
-                      {(exp?.startDate || exp?.endDate) && (
-                        <p className="text-sm text-gray-500">
-                          {exp?.startDate
-                            ? `${exp.startDate.month}/${exp.startDate.year}`
-                            : ""}
-                          {" - "}
-                          {exp?.endDate
-                            ? `${exp.endDate.month}/${exp.endDate.year}`
-                            : "Present"}
-                        </p>
-                      )}
-                      {exp?.description && (
-                        <p className="text-sm text-gray-700 mt-1">
-                          {exp.description}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.educations?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
-                  Education
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.educations.map((edu, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {edu?.degreeName && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {edu.degreeName}
-                        </h4>
-                      )}
-                      {edu?.fieldOfStudy && (
-                        <p className="text-sm text-gray-600">
-                          {edu.fieldOfStudy}
-                        </p>
-                      )}
-                      {(edu?.startDate?.year || edu?.endDate?.year) && (
-                        <p className="text-sm text-gray-500">
-                          {edu?.startDate?.year || ""} -{" "}
-                          {edu?.endDate?.year || ""}
-                        </p>
-                      )}
-                      {edu?.schoolName && (
-                        <p className="text-sm text-gray-500">
-                          {edu.schoolName}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.certifications?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <Award className="w-4 h-4 mr-2 text-gray-800" />
-                  Certifications
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.certifications.map((cert, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {cert?.name && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {cert.name}
-                        </h4>
-                      )}
-                      {cert?.authority && (
-                        <p className="text-sm text-gray-600">
-                          {cert.authority}
-                        </p>
-                      )}
-                      {(cert?.startDate || cert?.endDate) && (
-                        <p className="text-sm text-gray-500">
-                          {cert?.startDate
-                            ? `${cert.startDate.month}/${cert.startDate.year}`
-                            : ""}
-                          {" - "}
-                          {cert?.endDate
-                            ? `${cert.endDate.month}/${cert.endDate.year}`
-                            : "Present"}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.skills?.length > 0 && (
-              <div>
-                <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
-                  <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
-                  Skills
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedCandidate.skills.map(
-                    (skill, index) =>
-                      skill?.name && (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                        >
-                          {skill.name}
-                        </span>
-                      )
-                  )}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.recommendations?.received?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
-                  Recommendations
-                </h3>
-                <div className="space-y-2">
-                  {selectedCandidate.recommendations.received.map(
-                    (rec, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-start space-x-2">
-                          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                            <User className="w-3 h-3 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            {rec?.recommender_name && (
-                              <h4 className="font-medium text-gray-900 text-sm">
-                                {rec.recommender_name}
-                              </h4>
-                            )}
-                            {rec?.recommender_title && (
-                              <p className="text-xs text-gray-700">
-                                {rec.recommender_title}
-                              </p>
-                            )}
-                            {rec?.feedback && (
-                              <p className="text-sm text-gray-800 mt-1">
-                                "{rec.feedback}"
-                              </p>
-                            )}
-                            {rec?.date_received && (
-                              <p className="text-xs text-gray-600 mt-1">
-                                {rec.date_received}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
-
+  const bottomContent = () => {
+    switch (selectedStage) {
+      case "Uncontacted":
+      case "Invites Sent":
+      case "Applied":
+      case "AI Interview":
+      case "Shortlisted":
+      case "First Interview":
+      case "Other Interviews":
+      case "HR Round":
+        return (
+          <div className="flex justify-between w-full">
+            <button
+              onClick={() => {
+                const currentIndex = stages.findIndex(
+                  (s) => s.name === selectedStage
+                );
+                const nextStage = stages[currentIndex + 1];
+                if (nextStage)
+                  moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
+              }}
+              className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Move to Next Stage
+            </button>
+            <button
+              onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
+              className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Archive
+            </button>
+          </div>
+        );
+      case "Salary Negotiation":
+        return (
+          <div className="flex justify-between w-full">
+            <button
+              onClick={() => {
+                const currentIndex = stages.findIndex(
+                  (s) => s.name === selectedStage
+                );
+                const nextStage = stages[currentIndex + 1];
+                if (nextStage)
+                  moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
+              }}
+              className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Send Offer
+            </button>
+            <button
+              onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
+              className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Archive
+            </button>
+          </div>
+        );
+      case "Offer Sent":
+        const offerData = stageData.offerSent;
+        return (
+          <>
             {offerData?.offerAcceptanceStatus === "Pending" && (
               <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 Follow Up on Offer
               </button>
             )}
-          </div>
+          </>
         );
       case "Archives":
-        return (
-          <div className="space-y-4">
-            <div className="flex space-x-2">
-              <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
-                Send Invite & Reveal Info
-              </button>
-              <button
-                onClick={() => setShowComments(true)}
-                className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                <MessageCircle className="w-4 h-4" />
-              </button>
-            </div>
-
-            {selectedCandidate?.positions?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
-                  Experience
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.positions.map((exp, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {exp?.title && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {exp.title}
-                        </h4>
-                      )}
-                      {(exp?.companyName || exp?.location) && (
-                        <p className="text-sm text-gray-600">
-                          {exp?.companyName && exp.companyName}
-                          {exp?.companyName && exp?.location && " | "}
-                          {exp?.location && exp.location}
-                        </p>
-                      )}
-                      {(exp?.startDate || exp?.endDate) && (
-                        <p className="text-sm text-gray-500">
-                          {exp?.startDate
-                            ? `${exp.startDate.month}/${exp.startDate.year}`
-                            : ""}
-                          {" - "}
-                          {exp?.endDate
-                            ? `${exp.endDate.month}/${exp.endDate.year}`
-                            : "Present"}
-                        </p>
-                      )}
-                      {exp?.description && (
-                        <p className="text-sm text-gray-700 mt-1">
-                          {exp.description}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.educations?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
-                  Education
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.educations.map((edu, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {edu?.degreeName && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {edu.degreeName}
-                        </h4>
-                      )}
-                      {edu?.fieldOfStudy && (
-                        <p className="text-sm text-gray-600">
-                          {edu.fieldOfStudy}
-                        </p>
-                      )}
-                      {(edu?.startDate?.year || edu?.endDate?.year) && (
-                        <p className="text-sm text-gray-500">
-                          {edu?.startDate?.year || ""} -{" "}
-                          {edu?.endDate?.year || ""}
-                        </p>
-                      )}
-                      {edu?.schoolName && (
-                        <p className="text-sm text-gray-500">
-                          {edu.schoolName}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.certifications?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <Award className="w-4 h-4 mr-2 text-gray-800" />
-                  Certifications
-                </h3>
-                <div className="ml-2">
-                  {selectedCandidate.certifications.map((cert, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                    >
-                      <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                      {cert?.name && (
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {cert.name}
-                        </h4>
-                      )}
-                      {cert?.authority && (
-                        <p className="text-sm text-gray-600">
-                          {cert.authority}
-                        </p>
-                      )}
-                      {(cert?.startDate || cert?.endDate) && (
-                        <p className="text-sm text-gray-500">
-                          {cert?.startDate
-                            ? `${cert.startDate.month}/${cert.startDate.year}`
-                            : ""}
-                          {" - "}
-                          {cert?.endDate
-                            ? `${cert.endDate.month}/${cert.endDate.year}`
-                            : "Present"}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.skills?.length > 0 && (
-              <div>
-                <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
-                  <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
-                  Skills
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedCandidate.skills.map(
-                    (skill, index) =>
-                      skill?.name && (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                        >
-                          {skill.name}
-                        </span>
-                      )
-                  )}
-                </div>
-              </div>
-            )}
-
-            {selectedCandidate?.recommendations?.received?.length > 0 && (
-              <div>
-                <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                  <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
-                  Recommendations
-                </h3>
-                <div className="space-y-2">
-                  {selectedCandidate.recommendations.received.map(
-                    (rec, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-start space-x-2">
-                          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                            <User className="w-3 h-3 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            {rec?.recommender_name && (
-                              <h4 className="font-medium text-gray-900 text-sm">
-                                {rec.recommender_name}
-                              </h4>
-                            )}
-                            {rec?.recommender_title && (
-                              <p className="text-xs text-gray-700">
-                                {rec.recommender_title}
-                              </p>
-                            )}
-                            {rec?.feedback && (
-                              <p className="text-sm text-gray-800 mt-1">
-                                "{rec.feedback}"
-                              </p>
-                            )}
-                            {rec?.date_received && (
-                              <p className="text-xs text-gray-600 mt-1">
-                                {rec.date_received}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        );
+        return null;
       default:
         return null;
     }
@@ -2248,7 +839,26 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   return (
     <div className="space-y-4">
       {externalNotes}
-      {specificDetails()}
+      <div className="space-y-4">
+        {topContent()}
+        <div className="flex space-x-4 border-b border-gray-200">
+          {tabs.map((tab) => (
+            <button
+              key={tab.name}
+              onClick={() => setActiveTab(tab.name)}
+              className={`py-2 px-2 text-sm font-medium ${
+                activeTab === tab.name
+                  ? "text-blue-600 border-b-2 border-blue-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {tab.name}
+            </button>
+          ))}
+        </div>
+        <div className="mt-4">{renderTabContent()}</div>
+        {bottomContent()}
+      </div>
     </div>
   );
 };
