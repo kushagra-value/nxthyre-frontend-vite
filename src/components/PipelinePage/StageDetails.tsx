@@ -836,6 +836,17 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   return (
     <>
       <div className="bg-white rounded-xl overflow-hidden relative h-full">
+        {selectedStage === "Uncontacted" && (
+          <div className="">
+            <button
+              // onClick={handleSendInviteClick}
+              className="flex-1 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              style={{ width: "100%" }}
+            >
+              Send Invite & Reveal Info
+            </button>
+          </div>
+        )}
         <div className="">
           <div className="flex space-x-3 border-b border-gray-200">
             {tabs.map((tab) => (
@@ -866,17 +877,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             ))}
           </div>
         </div>
-        {selectedStage === "Uncontacted" && (
-          <div className="">
-            <button
-              // onClick={handleSendInviteClick}
-              className="flex-1 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-              style={{ width: "100%" }}
-            >
-              Send Invite & Reveal Info
-            </button>
-          </div>
-        )}
         <div className="py-2 overflow-y-auto max-h-[60vh]">
           {externalNotes}
           {renderTabContent()}
