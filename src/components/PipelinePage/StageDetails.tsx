@@ -286,7 +286,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         const recommendations =
           selectedCandidate.recommendations.received || [];
         return (
-          <div className="bg-[#F5F9FB] p-2 rounded-xl space-y-6">
+          <div className="bg-[#F5F9FB] py-4 px-2 rounded-xl space-y-6">
             <div>
               <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
                 <User className="w-4 h-4 mr-2 text-[#4B5563]" />
@@ -867,7 +867,11 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           </div>
         </div>
         <div className="py-2 overflow-y-auto max-h-[60vh]">
-          {externalNotes}
+          selectedStage === "Uncontacted" && (
+          <div className="bg-[#F5F9FB] p-4 rounded-xl mb-4">
+            Hello uncontacted stage
+          </div>
+          ){externalNotes}
           {renderTabContent()}
         </div>
       </div>
