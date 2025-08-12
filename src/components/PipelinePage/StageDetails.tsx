@@ -866,12 +866,19 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             ))}
           </div>
         </div>
-        <div className="py-2 overflow-y-auto max-h-[60vh]">
-          selectedStage === "Uncontacted" && (
-          <div className="bg-[#F5F9FB] p-4 rounded-xl mb-4">
-            Hello uncontacted stage
+        {selectedStage === "Uncontacted" && (
+          <div className="">
+            <button
+              // onClick={handleSendInviteClick}
+              className="flex-1 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              style={{ width: "100%" }}
+            >
+              Send Invite & Reveal Info
+            </button>
           </div>
-          ){externalNotes}
+        )}
+        <div className="py-2 overflow-y-auto max-h-[60vh]">
+          {externalNotes}
           {renderTabContent()}
         </div>
       </div>
