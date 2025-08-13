@@ -130,6 +130,7 @@ interface PipelineCandidate {
     comment: string;
     author: string;
     date: string;
+    content: string;
   }>;
   stageData: {
     uncontacted?: {
@@ -969,7 +970,15 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         );
       case "Notes":
         const allNotes = [
-          ...selectedCandidate.candidateNotes,
+          // Filter and transform candidateNotes to ensure correct structure
+          ...selectedCandidate.candidateNotes
+            .filter((note) => note.comment && note.author && note.date) // Only include valid notes
+            .map((note) => ({
+              comment: note.comment,
+              author: note.author,
+              date: note.date,
+            })),
+          // Map external_notes as before
           ...selectedCandidate.external_notes.map((n) => ({
             comment: n.content,
             author: n.postedBy || "Anonymous",
