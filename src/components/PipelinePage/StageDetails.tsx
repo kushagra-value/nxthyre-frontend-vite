@@ -260,6 +260,11 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   archiveCandidate,
   transferredStageData,
 }) => {
+  console.log(
+    "Selected Candidate::::::::::::::::::::::::::::::::::; ",
+    selectedCandidate
+  );
+  console.log(transferredStageData);
   const [activeTab, setActiveTab] = useState("Profile");
   const [showMoreProfile, setShowMoreProfile] = useState(false);
   const [selectedActivityIndex, setSelectedActivityIndex] = useState<
