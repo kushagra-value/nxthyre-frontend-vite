@@ -260,7 +260,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   archiveCandidate,
   transferredStageData,
 }) => {
-  console.log("Selected Candidate::::::::::::::::::::::::::::::::::; ");
   console.log(
     "Transferred stage data Stage Details :::::::::::::::::::: ",
     transferredStageData
