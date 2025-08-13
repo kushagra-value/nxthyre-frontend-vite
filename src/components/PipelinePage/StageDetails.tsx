@@ -22,6 +22,12 @@ import {
   Send,
   Trash2,
   RotateCcw,
+  MapPin,
+  Github,
+  Linkedin,
+  Twitter,
+  Link,
+  FileText,
 } from "lucide-react";
 
 interface Stage {
@@ -82,6 +88,7 @@ interface PipelineCandidate {
     endDate: { year: number };
     activities: string;
     description: string;
+    isTopTier?: boolean;
   }>;
   certifications: Array<{
     name: string;
@@ -92,7 +99,13 @@ interface PipelineCandidate {
     url: string;
   }>;
   skills: Array<{ name: string; endorsementCount: number }>;
-  endorsements: any[];
+  endorsements: Array<{
+    skill_endorsed: string;
+    endorser_name: string;
+    endorser_title: string;
+    endorser_company: string;
+    endorser_profile_pic_url: string;
+  }>;
   recommendations: { received: any[]; given: any[] };
   visibility: {
     profile: "PUBLIC" | "CONNECTIONS" | "PRIVATE";
@@ -117,6 +130,7 @@ interface PipelineCandidate {
     comment: string;
     author: string;
     date: string;
+    content: string;
   }>;
   stageData: {
     uncontacted?: {
@@ -142,6 +156,7 @@ interface PipelineCandidate {
       knowledgeScore: number;
       communicationScore: number;
       integrityScore: number;
+      technicalScore: number;
       proctoring: {
         deviceUsage: number;
         assistance: number;
@@ -157,6 +172,7 @@ interface PipelineCandidate {
       knowledgeScore: number;
       communicationScore: number;
       integrityScore: number;
+      technicalScore: number;
       proctoring: {
         deviceUsage: number;
         assistance: number;
@@ -211,6 +227,18 @@ interface PipelineCandidate {
     };
   };
   activities?: Activity[];
+  totalExperience?: number;
+  noticePeriodDays?: number;
+  currentSalary?: string;
+  githubUrl?: string;
+  twitterUrl?: string;
+  portfolioUrl?: string;
+  resumeUrl?: string;
+  linkedinUrl?: string;
+  isRecentlyPromoted?: boolean;
+  isBackgroundVerified?: boolean;
+  isPrevetted?: boolean;
+  applicationType?: string;
 }
 
 interface StageDetailsProps {
@@ -344,6 +372,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         const educations = selectedCandidate.educations || [];
         const certifications = selectedCandidate.certifications || [];
         const skills = selectedCandidate.skills || [];
+        const endorsements = selectedCandidate.endorsements || [];
         const recommendations =
           selectedCandidate.recommendations.received || [];
         return (
@@ -354,8 +383,26 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 Profile Summary
               </h3>
               <p className="text-sm pl-6 text-[#818283]">
-                {selectedCandidate.summary || "No summary available"}
+                {selectedCandidate.summary ||
+                  selectedCandidate.headline ||
+                  "No summary available"}
               </p>
+            </div>
+            <div>
+              <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                <Mail className="w-4 h-4 mr-2 text-[#4B5563]" />
+                Contact
+              </h3>
+              <div className="ml-6 space-y-1 text-sm text-[#818283]">
+                <p className="flex items-center">
+                  <Mail className="w-4 h-4 mr-2" />{" "}
+                  {selectedCandidate.email || "Not available"}
+                </p>
+                <p className="flex items-center">
+                  <Phone className="w-4 h-4 mr-2" />{" "}
+                  {selectedCandidate.phone?.number || "Not available"}
+                </p>
+              </div>
             </div>
             <div>
               <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
@@ -414,6 +461,11 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   >
                     <h4 className="text-sm font-medium text-[#4B5563]">
                       {edu.degreeName} in {edu.fieldOfStudy}
+                      {edu.isTopTier && (
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 rounded px-1">
+                          Top Tier
+                        </span>
+                      )}
                     </h4>
                     <p className="text-sm text-[#818283]">{edu.schoolName}</p>
                     <p className="text-sm text-[#818283]">
@@ -479,10 +531,129 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 )}
               </div>
             </div>
+            {endorsements.length > 0 && (
+              <div>
+                <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                  <Star className="w-4 h-4 mr-2 text-[#4B5563]" />
+                  Endorsements
+                </h3>
+                <div className="space-y-2 ml-4">
+                  {endorsements.map((end, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <img
+                        src={end.endorser_profile_pic_url}
+                        alt={end.endorser_name}
+                        className="w-6 h-6 rounded-full"
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-[#4B5563]">
+                          {end.endorser_name}
+                        </p>
+                        <p className="text-xs text-[#818283]">
+                          {end.endorser_title} at {end.endorser_company}
+                        </p>
+                      </div>
+                      <p className="text-sm text-[#818283]">
+                        endorsed {end.skill_endorsed}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div>
+              <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                <TrendingUp className="w-4 h-4 mr-2 text-[#4B5563]" />
+                Additional Info
+              </h3>
+              <div className="ml-6 space-y-1 text-sm text-[#818283]">
+                {selectedCandidate.totalExperience && (
+                  <p>
+                    Total Experience: {selectedCandidate.totalExperience} years
+                  </p>
+                )}
+                {selectedCandidate.noticePeriodDays && (
+                  <p>
+                    Notice Period: {selectedCandidate.noticePeriodDays} days
+                  </p>
+                )}
+                {selectedCandidate.currentSalary && (
+                  <p>Current Salary: {selectedCandidate.currentSalary} LPA</p>
+                )}
+                {selectedCandidate.applicationType && (
+                  <p>Application Type: {selectedCandidate.applicationType}</p>
+                )}
+                {selectedCandidate.isRecentlyPromoted && (
+                  <p>Recently Promoted</p>
+                )}
+                {selectedCandidate.isBackgroundVerified && (
+                  <p>Background Verified</p>
+                )}
+                {selectedCandidate.isPrevetted && <p>Pre-vetted</p>}
+              </div>
+            </div>
+            <div>
+              <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                <Link className="w-4 h-4 mr-2 text-[#4B5563]" />
+                Links
+              </h3>
+              <div className="ml-6 space-y-1 text-sm">
+                {selectedCandidate.linkedinUrl && (
+                  <a
+                    href={selectedCandidate.linkedinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#0F47F2] flex items-center"
+                  >
+                    <Linkedin className="w-4 h-4 mr-2" /> LinkedIn
+                  </a>
+                )}
+                {selectedCandidate.githubUrl && (
+                  <a
+                    href={selectedCandidate.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#0F47F2] flex items-center"
+                  >
+                    <Github className="w-4 h-4 mr-2" /> GitHub
+                  </a>
+                )}
+                {selectedCandidate.twitterUrl && (
+                  <a
+                    href={selectedCandidate.twitterUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#0F47F2] flex items-center"
+                  >
+                    <Twitter className="w-4 h-4 mr-2" /> Twitter
+                  </a>
+                )}
+                {selectedCandidate.portfolioUrl && (
+                  <a
+                    href={selectedCandidate.portfolioUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#0F47F2] flex items-center"
+                  >
+                    <Link className="w-4 h-4 mr-2" /> Portfolio
+                  </a>
+                )}
+                {selectedCandidate.resumeUrl && (
+                  <a
+                    href={selectedCandidate.resumeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#0F47F2] flex items-center"
+                  >
+                    <FileText className="w-4 h-4 mr-2" /> Resume
+                  </a>
+                )}
+              </div>
+            </div>
           </div>
         );
       case "Assessment":
-        const appliedData = stageData.applied || {};
+        const appliedData = stageData.applied;
         return (
           <div className="bg-[#F5F9FB] p-4 rounded-xl space-y-6">
             <h3 className="text-base font-medium text-[#4B5563]">Assessment</h3>
@@ -490,13 +661,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
               <div className="bg-white rounded-md p-3 text-center">
                 <p className="text-sm text-[#818283]">Resume Score</p>
                 <p className="text-xl font-bold text-[#0F47F2]">
-                  {appliedData.resumeScore || "N/A"}%
+                  {appliedData?.resumeScore || "N/A"}%
                 </p>
               </div>
               <div className="bg-white rounded-md p-3 text-center">
                 <p className="text-sm text-[#818283]">Skills Match</p>
                 <p className="text-xl font-bold text-[#16A34A]">
-                  {appliedData.skillsMatch || "N/A"}
+                  {appliedData?.skillsMatch || "N/A"}
                 </p>
               </div>
             </div>
@@ -505,7 +676,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 Highlights
               </h4>
               <p className="text-sm text-[#818283] pl-2">
-                {appliedData.highlights || "No highlights available"}
+                {appliedData?.highlights || "No highlights available"}
               </p>
             </div>
           </div>
@@ -598,8 +769,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           </div>
         );
       case "Interview":
-        const interviewData =
-          stageData.aiInterview || stageData.shortlisted || {};
+        const interviewData = stageData.aiInterview || stageData.shortlisted;
         const vettedSkills = [
           { name: "Meta Ads", rating: 3.5 },
           { name: "Flutter", rating: 4 },
@@ -608,50 +778,54 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           { name: "Flutter", rating: 4 },
           { name: "SEO", rating: 4.5 },
         ];
-        const questions = [
-          {
-            question:
-              "Q1: Can you describe a project where you implemented a machine learning model using AWS SageMaker? What was your role, and what were the key challenges you faced?",
-            answer:
-              "Abhishek discussed building a video summarization pipeline using AWS, focusing on extracting key video events. He cited challenges with data handling and optimization, describing the implementation of auto-scaling in SageMaker.",
-            expanded: true,
-          },
-          {
-            question:
-              "Q2: Explain how you would approach to implement a Natural Language Processing model for text classification. What techniques would you consider?",
-            answer: "",
-            expanded: false,
-          },
-          {
-            question: "Q3: How do you handle class imbalance in your dataset?",
-            answer: "",
-            expanded: false,
-          },
-          {
-            question:
-              "Q4: Can you design a simple API endpoint for this model?",
-            answer: "",
-            expanded: false,
-          },
-        ];
+        const questions =
+          interviewData?.questions?.map((q: any, index: number) => ({
+            question: `Q${index + 1}: ${q.question}`,
+            answer: q.answer,
+            expanded: index === 0,
+          })) || [];
         return (
           <div className="space3-y-3">
             <div className="bg-white rounded-xl p-2">
               <h4 className="text-base font-medium text-[#4B5563] mb-4">
                 Overall Score
               </h4>
-              <div className="w-[100%] flex justify-between items-center space-x-4">
-                <div className="w-[30%] bg-[#ECF1FF] rounded-xl p-4 text-center">
+              <div className="grid grid-cols-4 gap-4">
+                <div className="bg-[#ECF1FF] rounded-xl p-4 text-center">
                   <p className="text-base text-[#4B5563]">Resume</p>
-                  <p className="text-2xl font-normal text-[#EAB308]">72%</p>
+                  <p className="text-2xl font-normal text-[#EAB308]">
+                    {(interviewData?.resumeScore &&
+                      (interviewData?.resumeScore * 10).toFixed(0)) ||
+                      "N/A"}
+                    %
+                  </p>
                 </div>
-                <div className="w-[30%] bg-[#ECF1FF] rounded-xl p-4 text-center">
+                <div className="bg-[#ECF1FF] rounded-xl p-4 text-center">
                   <p className="text-base text-[#4B5563]">Knowledge</p>
-                  <p className="text-2xl font-normal text-[#16A34A]">80%</p>
+                  <p className="text-2xl font-normal text-[#16A34A]">
+                    {(interviewData?.knowledgeScore &&
+                      (interviewData?.knowledgeScore * 10).toFixed(0)) ||
+                      "N/A"}
+                    %
+                  </p>
                 </div>
-                <div className="w-[40%] bg-[#ECF1FF] rounded-xl p-6 text-center">
+                <div className="bg-[#ECF1FF] rounded-xl p-4 text-center">
+                  <p className="text-base text-[#4B5563]">Technical</p>
+                  <p className="text-2xl font-normal text-[#16A34A]">
+                    {(interviewData?.technicalScore &&
+                      (interviewData.technicalScore * 10).toFixed(0)) ||
+                      "N/A"}
+                    %
+                  </p>
+                </div>
+                <div className="bg-[#ECF1FF] rounded-xl p-4 text-center">
                   <p className="text-base text-[#4B5563]">Communication</p>
-                  <p className="text-2xl font-normal text-[#0F47F2]">92%</p>
+                  <p className="text-2xl font-normal text-[#0F47F2]">
+                    {(interviewData?.communicationScore &&
+                      (interviewData.communicationScore * 10).toFixed(0)) ||
+                      "N/A"}
+                    %
+                  </p>
                 </div>
               </div>
             </div>
@@ -688,15 +862,18 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             </div>
             <div className="bg-[#FDE7E7] rounded-xl p-2">
               <h4 className="text-base font-medium text-[#F20A0A] mb-2">
-                Potential Red Flags
+                Integrity Scores
               </h4>
               <p className="text-sm text-[#4B5563] leading-relaxed">
-                Tab switch count: 1<br />
-                Casual attire
+                Assistance: {interviewData?.proctoring?.assistance || "N/A"}
                 <br />
-                Slightly low eye contact
+                Device Usage: {interviewData?.proctoring?.deviceUsage || "N/A"}
                 <br />
-                Sub-optimal background
+                Reference Materials:{" "}
+                {interviewData?.proctoring?.referenceMaterial || "N/A"}
+                <br />
+                Environmental Assistance:{" "}
+                {interviewData?.proctoring?.environment || "N/A"}
               </p>
             </div>
             <div className="bg-white rounded-xl p-4">
@@ -720,7 +897,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 Question Analysis
               </h4>
               <div className="space-y-4">
-                {questions.map((q, index) => (
+                {questions.map((q: any, index: number) => (
                   <div
                     key={index}
                     className={`border ${
@@ -798,6 +975,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             comment: n.content,
             author: n.postedBy || "Anonymous",
             date: n.posted_at,
+            content: n.content,
           })),
         ];
         return (
@@ -964,7 +1142,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           </div>
         </div>
         <div className="py-2 overflow-y-auto max-h-[60vh]">
-          {/* {externalNotes} */}
+          {externalNotes}
           {renderTabContent()}
         </div>
       </div>
