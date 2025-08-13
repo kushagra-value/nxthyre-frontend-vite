@@ -842,17 +842,17 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 if (nextStage)
                   moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
               }}
-              className="w-[60%] px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              className="w-[50%] lg:w-[60%] px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               Move to Next Stage
             </button>
-            <button className="flex justify-between items-center px-3 py-2.5 bg-blue-50 text-blue-700 border border-blue-700 rounded-lg hover:bg-blue-100 transition-colors">
+            <button className="flex justify-between items-center px-3 py-2 bg-blue-50 text-blue-700 border border-blue-700 rounded-lg hover:bg-blue-100 transition-colors">
               <span className="mr-1">Resend</span>
               <Send className="w-5 h-5" />
             </button>
             <button
               onClick={handleDeleteCandidate}
-              className="px-3 py-2.5 bg-gray-50 text-gray-400 border border-gray-400 rounded-lg hover:bg-gray-100 transition-colors"
+              className="px-3 py-2 bg-gray-50 text-gray-400 border border-gray-400 rounded-lg hover:bg-gray-100 transition-colors"
             >
               <Trash2 className="w-5 h-5" />
             </button>
