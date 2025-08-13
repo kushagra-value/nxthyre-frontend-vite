@@ -842,7 +842,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 if (nextStage)
                   moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
               }}
-              className="w-2/3 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              className="w-[60%] px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               Move to Next Stage
             </button>
@@ -852,7 +852,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             </button>
             <button
               onClick={handleDeleteCandidate}
-              className="px-3 py-2.5 text-gray-400"
+              className="pr-6 py-2.5 text-gray-400"
             >
               <Trash2 className="w-5 h-5" />
             </button>
