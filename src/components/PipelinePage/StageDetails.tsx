@@ -130,7 +130,6 @@ interface PipelineCandidate {
     comment: string;
     author: string;
     date: string;
-    content: string;
   }>;
   stageData: {
     uncontacted?: {
@@ -975,7 +974,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             comment: n.content,
             author: n.postedBy || "Anonymous",
             date: n.posted_at,
-            content: n.content,
           })),
         ];
         return (
@@ -985,9 +983,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
               {allNotes.length > 0 ? (
                 allNotes.map((note, index) => (
                   <div key={index} className="bg-white rounded-md p-3">
-                    <p className="text-sm text-[#4B5563]">
-                      {note.comment || note.content}
-                    </p>
+                    <p className="text-sm text-[#4B5563]">{note.comment}</p>
                     <p className="text-xs text-[#818283] mt-1">
                       By {note.author} - {note.date}
                     </p>
