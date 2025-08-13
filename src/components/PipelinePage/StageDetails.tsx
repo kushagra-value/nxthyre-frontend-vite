@@ -55,6 +55,7 @@ interface Activity {
   date: string;
   description: string;
   via?: string;
+  note?: string;
 }
 
 interface PipelineCandidate {
@@ -259,6 +260,11 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState("Profile");
   const [showMoreProfile, setShowMoreProfile] = useState(false);
+  const [selectedActivityIndex, setSelectedActivityIndex] = useState<
+    number | null
+  >(null);
+  const [activityReplies, setActivityReplies] = useState<string[]>([]);
+  const [viaReplies, setViaReplies] = useState<string[]>([]);
   const [newActivity, setNewActivity] = useState("");
   const [selectedStageId, setSelectedStageId] = useState<number | null>(null);
 
@@ -386,22 +392,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   selectedCandidate.headline ||
                   "No summary available"}
               </p>
-            </div>
-            <div>
-              <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
-                <Mail className="w-4 h-4 mr-2 text-[#4B5563]" />
-                Contact
-              </h3>
-              <div className="ml-6 space-y-1 text-sm text-[#818283]">
-                <p className="flex items-center">
-                  <Mail className="w-4 h-4 mr-2" />{" "}
-                  {selectedCandidate.email || "Not available"}
-                </p>
-                <p className="flex items-center">
-                  <Phone className="w-4 h-4 mr-2" />{" "}
-                  {selectedCandidate.phone?.number || "Not available"}
-                </p>
-              </div>
             </div>
             <div>
               <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
@@ -929,24 +919,109 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           <div className="bg-[#F5F9FB] p-4 rounded-xl space-y-4">
             <h3 className="text-base font-medium text-[#4B5563]">Activity</h3>
             <div className="space-y-2">
-              <div className="bg-white rounded-md p-3">
+              <div className="bg-white rounded-md p-3 border-l border-[#818283]">
+                <p className="text-xs text-[#818283]">
+                  {new Date().toLocaleDateString()}
+                </p>
                 <p className="text-sm text-[#4B5563]">
                   Moved to {selectedStage}
-                </p>
-                <p className="text-xs text-[#818283]">
-                  Date: {new Date().toLocaleDateString()}
                 </p>
               </div>
               {selectedCandidate.activities &&
                 selectedCandidate.activities.map((activity, index) => (
-                  <div key={index} className="bg-white rounded-md p-3">
-                    <p className="text-sm text-[#4B5563]">
-                      {activity.description}
-                    </p>
-                    <p className="text-xs text-[#818283]">
-                      Date: {activity.date}{" "}
-                      {activity.via && `(${activity.via})`}
-                    </p>
+                  <div
+                    key={index}
+                    className={`bg-white rounded-md p-3 ${
+                      selectedActivityIndex === index
+                        ? "bg-blue-700 text-white"
+                        : ""
+                    }`}
+                  >
+                    <div
+                      className="cursor-pointer"
+                      onClick={() =>
+                        setSelectedActivityIndex(
+                          selectedActivityIndex === index ? null : index
+                        )
+                      }
+                    >
+                      <p className="text-sm">{activity.description}</p>
+                      <p className="text-xs">
+                        Date: {activity.date}{" "}
+                        {activity.via && `(${activity.via})`}
+                      </p>
+                      {activity.note && selectedActivityIndex === index && (
+                        <div className="mt-2">
+                          <p className="text-xs italic">
+                            Note: {activity.note}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    {selectedActivityIndex === index && (
+                      <div className="mt-2 space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="text"
+                            value={activityReplies[index] || ""}
+                            onChange={(e) => {
+                              const newReplies = [...activityReplies];
+                              newReplies[index] = e.target.value;
+                              setActivityReplies(newReplies);
+                            }}
+                            placeholder="Add a reply..."
+                            className="flex-1 p-2 border border-gray-300 rounded-md text-sm"
+                          />
+                          <button
+                            onClick={() => {
+                              const newActivities = [
+                                ...(selectedCandidate.activities || []),
+                              ];
+                              newActivities[index].note =
+                                activityReplies[index] || "Replied via input";
+                              // You cannot set selectedCandidate directly as it's a prop.
+                              // Instead, update the local activityReplies and close the reply box.
+                              setActivityReplies([...activityReplies]);
+                              setSelectedActivityIndex(null);
+                            }}
+                            className="bg-blue-500 text-white p-2 rounded-md"
+                          >
+                            <Send className="w-4 h-4" />
+                          </button>
+                        </div>
+                        {activity.via && (
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="text"
+                              value={viaReplies[index] || ""}
+                              onChange={(e) => {
+                                const newViaReplies = [...viaReplies];
+                                newViaReplies[index] = e.target.value;
+                                setViaReplies(newViaReplies);
+                              }}
+                              placeholder="Reply via mail..."
+                              className="flex-1 p-2 border border-gray-300 rounded-md text-sm"
+                            />
+                            <button
+                              onClick={() => {
+                                const newActivities = [
+                                  ...(selectedCandidate.activities || []),
+                                ];
+                                newActivities[index].note = `${
+                                  viaReplies[index] || ""
+                                } (via ${activity.via})`;
+                                // setSelectedCandidate({ ...selectedCandidate, activities: newActivities });
+                                setViaReplies([...viaReplies]);
+                                setSelectedActivityIndex(null);
+                              }}
+                              className="bg-blue-500 text-white p-2 rounded-md"
+                            >
+                              <Send className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
             </div>
