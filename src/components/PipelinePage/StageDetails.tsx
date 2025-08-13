@@ -248,6 +248,7 @@ interface StageDetailsProps {
   stages: Stage[];
   moveCandidate: (applicationId: number, stageId: number) => Promise<void>;
   archiveCandidate: (applicationId: number) => Promise<void>;
+  transferredStageData?: PipelineCandidate["stageData"];
 }
 
 const StageDetails: React.FC<StageDetailsProps> = ({
@@ -257,6 +258,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   stages,
   moveCandidate,
   archiveCandidate,
+  transferredStageData,
 }) => {
   const [activeTab, setActiveTab] = useState("Profile");
   const [showMoreProfile, setShowMoreProfile] = useState(false);
@@ -642,7 +644,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           </div>
         );
       case "Assessment":
-        const appliedData = stageData.applied;
+        const appliedData = transferredStageData?.applied;
         return (
           <div className="bg-[#F5F9FB] p-4 rounded-xl space-y-6">
             <h3 className="text-base font-medium text-[#4B5563]">Assessment</h3>
@@ -758,7 +760,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           </div>
         );
       case "Interview":
-        const interviewData = stageData.aiInterview || stageData.shortlisted;
+        const interviewData =
+          transferredStageData?.aiInterview ||
+          transferredStageData?.shortlisted;
         const vettedSkills = [
           { name: "Meta Ads", rating: 3.5 },
           { name: "Flutter", rating: 4 },

@@ -211,6 +211,7 @@ interface PipelinesSideCardProps {
   stages: Stage[];
   moveCandidate: (applicationId: number, stageId: number) => Promise<void>;
   archiveCandidate: (applicationId: number) => Promise<void>;
+  stageData?: PipelineCandidate["stageData"];
 }
 
 const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
@@ -226,6 +227,7 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
   stages,
   moveCandidate,
   archiveCandidate,
+  stageData,
 }) => {
   const { user } = useAuthContext();
   const handleShareProfile = () => {
@@ -352,6 +354,7 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
             stages={stages} // You need to pass stages as a prop to PipelinesSideCard
             moveCandidate={moveCandidate} // You need to pass moveCandidate as a prop to PipelinesSideCard
             archiveCandidate={archiveCandidate} // You need to pass archiveCandidate as a prop to PipelinesSideCard
+            stageData={stageData} // You need to pass stageData as a prop to PipelinesSideCard
           />
         </>
       ) : (
