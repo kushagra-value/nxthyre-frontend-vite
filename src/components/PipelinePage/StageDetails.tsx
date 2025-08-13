@@ -842,16 +842,17 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 if (nextStage)
                   moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
               }}
-              className="flex-1 py-3 bg-[#0F47F2] text-white text-base font-medium rounded-xl hover:bg-blue-700 transition-colors"
+              className="flex-1 py-3 bg-[#0F47F2] text-white text-base font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               Move to Next Stage
             </button>
-            <button className="px-3 py-3 bg-[#0F47F2] text-white rounded-xl hover:bg-blue-700 transition-colors">
+            <button className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
+              Resend
               <Send className="w-5 h-5" />
             </button>
             <button
               onClick={handleDeleteCandidate}
-              className="px-3 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors"
+              className="px-3 py-1.5 text-gray-400"
             >
               <Trash2 className="w-5 h-5" />
             </button>
@@ -862,7 +863,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           <div className="flex space-x-4 w-full">
             <button
               onClick={handleUnarchiveAndMove}
-              className="flex-1 py-3 bg-[#0F47F2] text-white text-base font-medium rounded-xl hover:bg-blue-700 transition-colors"
+              className="flex-1 py-3 bg-[#0F47F2] text-white text-base font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               <RotateCcw className="w-5 h-5 inline-block mr-2" />
               Retrieve
@@ -870,7 +871,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             <select
               value={selectedStageId || ""}
               onChange={(e) => setSelectedStageId(parseInt(e.target.value))}
-              className="flex-1 py-3 px-2 border border-gray-300 rounded-xl text-base text-gray-700"
+              className="flex-1 py-3 px-2 border border-gray-300 rounded-lg text-base text-gray-700"
             >
               <option value="" disabled>
                 Select Stage
@@ -883,7 +884,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   </option>
                 ))}
             </select>
-            <button className="flex-1 py-3 bg-[#0F47F2] text-white text-base font-medium rounded-xl hover:bg-blue-700 transition-colors">
+            <button className="flex-1 py-3 bg-[#0F47F2] text-white text-base font-medium rounded-lg hover:bg-blue-700 transition-colors">
               Salary Negotiation
             </button>
           </div>
@@ -907,13 +908,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 if (nextStage)
                   moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
               }}
-              className="flex-1 py-3 bg-[#0F47F2] text-white text-base font-medium rounded-xl hover:bg-blue-700 transition-colors"
+              className="flex-1 py-3 bg-[#0F47F2] text-white text-base font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               Move to Next Stage
             </button>
             <button
               onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
-              className="flex-1 py-3 bg-[#0F47F2] text-white text-base font-medium rounded-xl hover:bg-blue-700 transition-colors"
+              className="flex-1 py-3 bg-[#0F47F2] text-white text-base font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               Archive
             </button>
@@ -937,6 +938,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             </button>
           </div>
         )}
+        {buttonControls()}
         <div className="">
           <div className="flex space-x-3 border-b border-gray-200">
             {tabs.map((tab) => (
@@ -966,7 +968,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         </div>
         <div className="py-2 overflow-y-auto max-h-[60vh]">
           {/* {externalNotes} */}
-          {buttonControls()}
           {renderTabContent()}
         </div>
       </div>
