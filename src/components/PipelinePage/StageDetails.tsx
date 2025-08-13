@@ -842,7 +842,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 if (nextStage)
                   moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
               }}
-              className="flex-1 py-3 bg-[#0F47F2] text-white text-base font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex-1 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               Move to Next Stage
             </button>
@@ -863,10 +863,10 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           <div className="flex space-x-4 w-full">
             <button
               onClick={handleUnarchiveAndMove}
-              className="flex-1 py-3 bg-[#0F47F2] text-white text-base font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex-1 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               <RotateCcw className="w-5 h-5 inline-block mr-2" />
-              Retrieve
+              Retrieve - Salary Negotiation
             </button>
             <select
               value={selectedStageId || ""}
@@ -884,9 +884,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   </option>
                 ))}
             </select>
-            <button className="flex-1 py-3 bg-[#0F47F2] text-white text-base font-medium rounded-lg hover:bg-blue-700 transition-colors">
-              Salary Negotiation
-            </button>
           </div>
         );
       case "Invites Sent":
@@ -908,13 +905,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 if (nextStage)
                   moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
               }}
-              className="flex-1 py-3 bg-[#0F47F2] text-white text-base font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex-1 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               Move to Next Stage
             </button>
             <button
               onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
-              className="flex-1 py-3 bg-[#0F47F2] text-white text-base font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex-1 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               Archive
             </button>
@@ -939,7 +936,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           </div>
         )}
         {buttonControls()}
-        <div className="">
+        <div className="mt-2">
           <div className="flex space-x-3 border-b border-gray-200">
             {tabs.map((tab) => (
               <button
