@@ -832,7 +832,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         return null;
       case "AI Interview":
         return (
-          <div className="flex space-x-4 w-full">
+          <div className="flex justify-between w-full">
             <button
               onClick={() => {
                 const currentIndex = stages.findIndex(
@@ -842,17 +842,17 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 if (nextStage)
                   moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
               }}
-              className="flex-1 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              className="w-2/3 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               Move to Next Stage
             </button>
-            <button className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
-              Resend
+            <button className="flex justify-between items-center px-3 py-2.5 bg-blue-50 text-blue-700 border border-blue-700 rounded-lg hover:bg-blue-100 transition-colors">
+              <span className="mr-1">Resend</span>
               <Send className="w-5 h-5" />
             </button>
             <button
               onClick={handleDeleteCandidate}
-              className="px-3 py-1.5 text-gray-400"
+              className="px-3 py-2.5 text-gray-400"
             >
               <Trash2 className="w-5 h-5" />
             </button>
@@ -924,7 +924,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
   return (
     <>
-      <div className="bg-white rounded-xl overflow-hidden relative h-full">
+      <div className="bg-white rounded-lg overflow-hidden relative h-full">
         {selectedStage === "Uncontacted" && (
           <div className="mb-3">
             <button
