@@ -130,7 +130,6 @@ interface PipelineCandidate {
     comment: string;
     author: string;
     date: string;
-    content: string;
   }>;
   stageData: {
     uncontacted?: {
