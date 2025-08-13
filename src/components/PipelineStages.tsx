@@ -790,6 +790,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     setShowLogoutModal(true);
   };
 
+  console.log(
+    "Transferred stage data PipelineStages :::::::::::::::::::: ",
+    selectedCandidate?.stageData
+  );
+
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="sticky top-0 z-20 bg-white will-change-transform">

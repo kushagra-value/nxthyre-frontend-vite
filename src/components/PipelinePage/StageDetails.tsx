@@ -262,7 +262,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 }) => {
   console.log("Selected Candidate::::::::::::::::::::::::::::::::::; ");
   console.log(
-    "Transferred stage data :::::::::::::::::::: ",
+    "Transferred stage data Stage Details :::::::::::::::::::: ",
     transferredStageData
   );
   const [activeTab, setActiveTab] = useState("Profile");
