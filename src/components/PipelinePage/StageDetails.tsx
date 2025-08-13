@@ -43,6 +43,12 @@ interface Note {
   };
 }
 
+interface Activity {
+  date: string;
+  description: string;
+  via?: string;
+}
+
 interface PipelineCandidate {
   id: string;
   firstName: string;
@@ -202,6 +208,7 @@ interface PipelineCandidate {
       notes: string[];
     };
   };
+  activities?: Activity[];
 }
 
 interface StageDetailsProps {
@@ -223,6 +230,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState("Profile");
   const [showMoreProfile, setShowMoreProfile] = useState(false);
+  const [newActivity, setNewActivity] = useState("");
 
   useEffect(() => {
     setActiveTab("Profile");
@@ -269,12 +277,33 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             </div>
             <p className="text-sm text-gray-800">{note.content}</p>
             {note.postedBy && (
-              <p className="text-xs text-gray-500 mt-1">By {note.postedBy}</p>
+              <p className="text-xs text-gray-500 mt-1">By {note.postBy}</p>
             )}
           </div>
         ))}
       </div>
     ) : null;
+
+  const addActivity = () => {
+    if (newActivity.trim()) {
+      const updatedActivities = [
+        ...(selectedCandidate.activities || []),
+        {
+          date: new Date().toLocaleDateString(),
+          description: newActivity,
+          via: "via mail",
+        },
+      ];
+      // Simulate local storage (replace with actual API call later)
+      const updatedCandidate = {
+        ...selectedCandidate,
+        activities: updatedActivities,
+      };
+      // Here you would typically update the state or context with updatedCandidate
+      console.log("Activity added:", updatedCandidate);
+      setNewActivity("");
+    }
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -442,7 +471,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           </div>
         );
       case "Assessment":
-        // Placeholder for Assessment tab (using applied data as example)
         const appliedData = stageData.applied || {};
         return (
           <div className="bg-[#F5F9FB] p-4 rounded-xl space-y-6">
@@ -472,7 +500,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           </div>
         );
       case "Coding":
-        // Hardcoded example questions to match CSS reference
         const codingQuestions = [
           {
             question:
@@ -519,7 +546,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center text-[#818283]">
                       {q.difficulty}
-                      {/* Placeholder for difficulty icons */}
                       <div className="ml-2 flex space-x-1">
                         <div className="w-2 h-2 bg-[#818283] rounded-full"></div>
                         <div className="w-2 h-2 bg-[#818283] rounded-full opacity-50"></div>
@@ -563,7 +589,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       case "Interview":
         const interviewData =
           stageData.aiInterview || stageData.shortlisted || {};
-        // Hardcoded examples to match CSS
         const vettedSkills = [
           { name: "Meta Ads", rating: 3.5 },
           { name: "Flutter", rating: 4 },
@@ -713,7 +738,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           </div>
         );
       case "Activity":
-        // Placeholder for Activity tab
         return (
           <div className="bg-[#F5F9FB] p-4 rounded-xl space-y-4">
             <h3 className="text-base font-medium text-[#4B5563]">Activity</h3>
@@ -726,7 +750,46 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   Date: {new Date().toLocaleDateString()}
                 </p>
               </div>
-              {/* Add more activity items as needed */}
+              {selectedCandidate.activities &&
+                selectedCandidate.activities.map((activity, index) => (
+                  <div key={index} className="bg-white rounded-md p-3">
+                    <p className="text-sm text-[#4B5563]">
+                      {activity.description}
+                    </p>
+                    <p className="text-xs text-[#818283]">
+                      Date: {activity.date}{" "}
+                      {activity.via && `(${activity.via})`}
+                    </p>
+                  </div>
+                ))}
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="text"
+                value={newActivity}
+                onChange={(e) => setNewActivity(e.target.value)}
+                placeholder="Type your reply"
+                className="flex-1 p-2 border border-gray-300 rounded-md text-sm"
+              />
+              <button
+                onClick={addActivity}
+                className="bg-blue-500 text-white p-2 rounded-md"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  ></path>
+                </svg>
+              </button>
             </div>
           </div>
         );
@@ -837,7 +900,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
     <>
       <div className="bg-white rounded-xl overflow-hidden relative h-full">
         {selectedStage === "Uncontacted" && (
-          <div className="mb-3 mt-1">
+          <div className="mb-3">
             <button
               // onClick={handleSendInviteClick}
               className="flex-1 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
@@ -862,7 +925,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 {tab}
                 {tab === "Activity" && (
                   <span className="ml-1">
-                    ({selectedCandidate?.candidateNotes?.length || 0})
+                    ({(selectedCandidate?.activities?.length || 0) + 1})
                   </span>
                 )}
                 {tab === "Notes" && (
@@ -870,9 +933,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     ({selectedCandidate?.candidateNotes?.length || 0})
                   </span>
                 )}
-                {/* {activeTab === tab && (
-                <div className="absolute -bottom-[1px] left-0 right-0 h-1 bg-[#0F47F2] rounded-t-xl" />
-              )} */}
               </button>
             ))}
           </div>
