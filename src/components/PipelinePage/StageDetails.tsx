@@ -852,7 +852,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             </button>
             <button
               onClick={handleDeleteCandidate}
-              className="pr-6 py-2.5 text-gray-400"
+              className="px-3 py-2.5 bg-gray-50 text-gray-400 border border-gray-400 rounded-lg hover:bg-gray-100 transition-colors"
             >
               <Trash2 className="w-5 h-5" />
             </button>
