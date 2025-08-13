@@ -287,32 +287,32 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
   const stageData = selectedCandidate.stageData;
 
-  const externalNotes =
-    selectedCandidate.external_notes.length > 0 ? (
-      <div className="space-y-2 mb-4">
-        <h4 className="font-medium text-gray-900">External Notes</h4>
-        {selectedCandidate.external_notes.map((note, index) => (
-          <div key={index} className="bg-gray-50 p-2 rounded">
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-xs font-medium text-blue-600">
-                {note.is_team_note
-                  ? "Team Note"
-                  : note.is_community_note
-                  ? "Community Note"
-                  : "Note"}
-              </span>
-              <span className="text-xs text-gray-500">
-                {new Date(note.posted_at).toLocaleDateString()}
-              </span>
-            </div>
-            <p className="text-sm text-gray-800">{note.content}</p>
-            {note.postedBy && (
-              <p className="text-xs text-gray-500 mt-1">By {note.postedBy}</p>
-            )}
-          </div>
-        ))}
-      </div>
-    ) : null;
+  // const externalNotes =
+  //   selectedCandidate.external_notes.length > 0 ? (
+  //     <div className="space-y-2 mb-4">
+  //       <h4 className="font-medium text-gray-900">External Notes</h4>
+  //       {selectedCandidate.external_notes.map((note, index) => (
+  //         <div key={index} className="bg-gray-50 p-2 rounded">
+  //           <div className="flex justify-between items-center mb-1">
+  //             <span className="text-xs font-medium text-blue-600">
+  //               {note.is_team_note
+  //                 ? "Team Note"
+  //                 : note.is_community_note
+  //                 ? "Community Note"
+  //                 : "Note"}
+  //             </span>
+  //             <span className="text-xs text-gray-500">
+  //               {new Date(note.posted_at).toLocaleDateString()}
+  //             </span>
+  //           </div>
+  //           <p className="text-sm text-gray-800">{note.content}</p>
+  //           {note.postedBy && (
+  //             <p className="text-xs text-gray-500 mt-1">By {note.postedBy}</p>
+  //           )}
+  //         </div>
+  //       ))}
+  //     </div>
+  //   ) : null;
 
   const addActivity = () => {
     if (newActivity.trim()) {
@@ -968,41 +968,41 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           </div>
         );
       case "Notes":
-        const allNotes = [
-          // Filter and transform candidateNotes to ensure correct structure
-          ...selectedCandidate.candidateNotes
-            .filter((note) => note.comment && note.author && note.date) // Only include valid notes
-            .map((note) => ({
-              comment: note.comment,
-              author: note.author,
-              date: note.date,
-            })),
-          // Map external_notes as before
-          ...selectedCandidate.external_notes.map((n) => ({
-            comment: n.content,
-            author: n.postedBy || "Anonymous",
-            date: n.posted_at,
-          })),
-        ];
-        return (
-          <div className="bg-[#F5F9FB] p-4 rounded-xl space-y-4">
-            <h3 className="text-base font-medium text-[#4B5563]">Notes</h3>
-            <div className="space-y-2">
-              {allNotes.length > 0 ? (
-                allNotes.map((note, index) => (
-                  <div key={index} className="bg-white rounded-md p-3">
-                    <p className="text-sm text-[#4B5563]">{note.comment}</p>
-                    <p className="text-xs text-[#818283] mt-1">
-                      By {note.author} - {note.date}
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-[#818283]">No notes available</p>
-              )}
-            </div>
-          </div>
-        );
+      // const allNotes = [
+      //   // Filter and transform candidateNotes to ensure correct structure
+      //   ...selectedCandidate.candidateNotes
+      //     .filter((note) => note.comment && note.author && note.date) // Only include valid notes
+      //     .map((note) => ({
+      //       comment: note.comment,
+      //       author: note.author,
+      //       date: note.date,
+      //     })),
+      //   // Map external_notes as before
+      //   ...selectedCandidate.external_notes.map((n) => ({
+      //     comment: n.content,
+      //     author: n.postedBy || "Anonymous",
+      //     date: n.posted_at,
+      //   })),
+      // ];
+      // return (
+      //   <div className="bg-[#F5F9FB] p-4 rounded-xl space-y-4">
+      //     <h3 className="text-base font-medium text-[#4B5563]">Notes</h3>
+      //     <div className="space-y-2">
+      //       {allNotes.length > 0 ? (
+      //         allNotes.map((note, index) => (
+      //           <div key={index} className="bg-white rounded-md p-3">
+      //             <p className="text-sm text-[#4B5563]">{note.comment}</p>
+      //             <p className="text-xs text-[#818283] mt-1">
+      //               By {note.author} - {note.date}
+      //             </p>
+      //           </div>
+      //         ))
+      //       ) : (
+      //         <p className="text-sm text-[#818283]">No notes available</p>
+      //       )}
+      //     </div>
+      //   </div>
+      // );
       default:
         return null;
     }
@@ -1146,7 +1146,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           </div>
         </div>
         <div className="py-2 overflow-y-auto max-h-[60vh]">
-          {externalNotes}
+          {/* {externalNotes} */}
           {renderTabContent()}
         </div>
       </div>
