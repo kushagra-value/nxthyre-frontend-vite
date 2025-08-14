@@ -792,7 +792,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
         console.log("interviewData Resume score: ", interviewData?.resumeScore);
         return (
-          <div className="space-y-3 bg-blue-50">
+          <div className="space-y-3 bg-[#F5F9FB] p-2 rounded-xl">
             <div className="bg-white rounded-xl p-2">
               <h4 className="text-base font-medium text-[#4B5563] mb-4">
                 Overall Score
@@ -899,7 +899,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 <Maximize className="w-5 h-5 text-[#4B5563]" />
               </div>
             </div>
-            <div>
+            <div className="bg-white rounded-xl p-4">
               <h4 className="text-base font-medium text-[#4B5563] mb-4">
                 Question Analysis
               </h4>
