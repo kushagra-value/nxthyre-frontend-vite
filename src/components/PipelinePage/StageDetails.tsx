@@ -377,7 +377,11 @@ const StageDetails: React.FC<StageDetailsProps> = ({
     transferredStageData
   );
 
-  console.log("Resume score: ", transferredStageData?.aiInterview?.resumeScore);
+  console.log("Resume score: ", transferredStageData?.aiInterview);
+  console.log(
+    "Interview score: ",
+    transferredStageData?.["ai-interview"]?.resumeScore
+  );
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -768,7 +772,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         );
       case "Interview":
         const interviewData =
-          transferredStageData?.aiInterview ||
+          transferredStageData?.["ai-interview"] ||
           transferredStageData?.shortlisted;
         const vettedSkills = [
           { name: "Meta Ads", rating: 3.5 },
