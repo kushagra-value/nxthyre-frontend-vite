@@ -260,10 +260,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   archiveCandidate,
   transferredStageData,
 }) => {
-  console.log(
-    "Transferred stage data Stage Details :::::::::::::::::::: ",
-    transferredStageData
-  );
   const [activeTab, setActiveTab] = useState("Profile");
   const [showMoreProfile, setShowMoreProfile] = useState(false);
   const [selectedActivityIndex, setSelectedActivityIndex] = useState<
@@ -375,6 +371,11 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       alert("Please select a stage");
     }
   };
+
+  console.log(
+    "Transferred stage data Stage Details :::::::::::::::::::: ",
+    transferredStageData
+  );
 
   const renderTabContent = () => {
     switch (activeTab) {
