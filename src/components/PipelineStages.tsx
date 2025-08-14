@@ -492,7 +492,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           interviewedDate: "", // Placeholder; no interview date provided in API
           resumeScore: Number(report.score?.resume) || 0,
           knowledgeScore: Number(report.score?.knowledge) || 0,
-          technicalScore: Number(report.score?.technical) || 0,
+          technicalScore:
+            typeof report.score?.technical === "number"
+              ? Number(report.score?.technical)
+              : 0,
           communicationScore: Number(report.score?.communication) || 0,
           integrityScore: Number(report.integrity_score) || 0,
           proctoring: {

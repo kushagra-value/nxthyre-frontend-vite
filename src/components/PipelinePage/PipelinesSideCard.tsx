@@ -119,6 +119,7 @@ interface PipelineCandidate {
       knowledgeScore: number;
       communicationScore: number;
       integrityScore: number;
+      technicalScore: number;
       proctoring: {
         deviceUsage: number;
         assistance: number;
@@ -134,6 +135,7 @@ interface PipelineCandidate {
       knowledgeScore: number;
       communicationScore: number;
       integrityScore: number;
+      technicalScore: number;
       proctoring: {
         deviceUsage: number;
         assistance: number;
@@ -355,7 +357,7 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
             stages={stages} // You need to pass stages as a prop to PipelinesSideCard
             moveCandidate={moveCandidate} // You need to pass moveCandidate as a prop to PipelinesSideCard
             archiveCandidate={archiveCandidate} // You need to pass archiveCandidate as a prop to PipelinesSideCard
-            stageData={stageData} // You need to pass stageData as a prop to PipelinesSideCard
+            transferredStageData={stageData} // You need to pass stageData as a prop to PipelinesSideCard
           />
         </>
       ) : (
