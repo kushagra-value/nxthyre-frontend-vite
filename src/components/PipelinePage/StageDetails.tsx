@@ -293,7 +293,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
     );
   }
 
-  const stageData = selectedCandidate.stageData;
+  // const stageData = selectedCandidate.stageData;
 
   // const externalNotes =
   //   selectedCandidate.external_notes.length > 0 ? (
@@ -376,6 +376,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
     "Transferred stage data Stage Details :::::::::::::::::::: ",
     transferredStageData
   );
+
+  console.log("Resume score: ", transferredStageData?.aiInterview?.resumeScore);
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -782,6 +784,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             answer: q.answer,
             expanded: index === 0,
           })) || [];
+
+        console.log("interviewData Resume score: ", interviewData?.resumeScore);
         return (
           <div className="space3-y-3">
             <div className="bg-white rounded-xl p-2">
