@@ -28,6 +28,7 @@ import {
   Twitter,
   Link,
   FileText,
+  Minus,
 } from "lucide-react";
 
 interface Stage {
@@ -269,6 +270,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   const [viaReplies, setViaReplies] = useState<string[]>([]);
   const [newActivity, setNewActivity] = useState("");
   const [selectedStageId, setSelectedStageId] = useState<number | null>(null);
+  const [expandedIndices, setExpandedIndices] = useState(new Set([0]));
 
   useEffect(() => {
     setActiveTab("Profile");
@@ -786,7 +788,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           interviewData?.questions?.map((q: any, index: number) => ({
             question: `Q${index + 1}: ${q.question}`,
             answer: q.answer,
-            expanded: index === 0,
           })) || [];
 
         console.log("interviewData Resume score: ", interviewData?.resumeScore);
@@ -903,30 +904,49 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 Question Analysis
               </h4>
               <div className="space-y-4">
-                {questions.map((q: any, index: number) => (
-                  <div
-                    key={index}
-                    className={`border ${
-                      q.expanded ? "border-[#0F47F2]" : "border-[#818283]"
-                    } bg-white rounded-md p-4`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <p
-                        className={`text-sm font-medium ${
-                          q.expanded ? "text-[#4B5563]" : "text-[#818283]"
-                        }`}
-                      >
-                        {q.question}
-                      </p>
-                      {q.expanded ? null : (
-                        <Plus className="w-4 h-4 text-[#818283]" />
+                {questions.map((q: any, index: number) => {
+                  const isExpanded = expandedIndices.has(index);
+                  return (
+                    <div
+                      key={index}
+                      className={`border ${
+                        isExpanded ? "border-[#0F47F2]" : "border-[#818283]"
+                      } bg-white rounded-md p-4`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <p
+                          className={`text-sm font-medium ${
+                            isExpanded ? "text-[#4B5563]" : "text-[#818283]"
+                          }`}
+                        >
+                          {q.question}
+                        </p>
+                        <button
+                          onClick={() => {
+                            const newExpanded = new Set(expandedIndices);
+                            if (isExpanded) {
+                              newExpanded.delete(index);
+                            } else {
+                              newExpanded.add(index);
+                            }
+                            setExpandedIndices(newExpanded);
+                          }}
+                        >
+                          {isExpanded ? (
+                            <Minus className="w-4 h-4 text-[#818283]" />
+                          ) : (
+                            <Plus className="w-4 h-4 text-[#818283]" />
+                          )}
+                        </button>
+                      </div>
+                      {isExpanded && (
+                        <p className="text-sm text-[#4B5563] mt-2">
+                          {q.answer}
+                        </p>
                       )}
                     </div>
-                    {q.expanded && (
-                      <p className="text-sm text-[#4B5563] mt-2">{q.answer}</p>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
