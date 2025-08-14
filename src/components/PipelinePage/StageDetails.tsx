@@ -791,7 +791,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
         console.log("interviewData Resume score: ", interviewData?.resumeScore);
         return (
-          <div className="space3-y-3">
+          <div className="space3-y-3 bg-blue-50">
             <div className="bg-white rounded-xl p-2">
               <h4 className="text-base font-medium text-[#4B5563] mb-4">
                 Overall Score
@@ -815,7 +815,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     %
                   </p>
                 </div>
-                <div className="bg-[#ECF1FF] rounded-xl p-4 text-center">
+                {/* <div className="bg-[#ECF1FF] rounded-xl p-4 text-center">
                   <p className="text-base text-[#4B5563]">Technical</p>
                   <p className="text-2xl font-normal text-[#16A34A]">
                     {(interviewData?.technicalScore &&
@@ -823,7 +823,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       "N/A"}
                     %
                   </p>
-                </div>
+                </div> */}
                 <div className="bg-[#ECF1FF] rounded-xl p-4 text-center">
                   <p className="text-base text-[#4B5563]">Communication</p>
                   <p className="text-2xl font-normal text-[#0F47F2]">
