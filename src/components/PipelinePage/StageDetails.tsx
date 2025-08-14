@@ -796,8 +796,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
               <h4 className="text-base font-medium text-[#4B5563] mb-4">
                 Overall Score
               </h4>
-              <div className="grid grid-cols-4 gap-4">
-                <div className="bg-[#ECF1FF] rounded-xl p-4 text-center">
+              <div className="flex justify-between w-full">
+                <div className="w-[27%] bg-[#ECF1FF] rounded-xl p-4 text-center">
                   <p className="text-base text-[#4B5563]">Resume</p>
                   <p className="text-2xl font-normal text-[#EAB308]">
                     {(interviewData?.resumeScore &&
@@ -806,7 +806,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     %
                   </p>
                 </div>
-                <div className="bg-[#ECF1FF] rounded-xl p-4 text-center">
+                <div className="w-[27%] bg-[#ECF1FF] rounded-xl p-4 text-center">
                   <p className="text-base text-[#4B5563]">Knowledge</p>
                   <p className="text-2xl font-normal text-[#16A34A]">
                     {(interviewData?.knowledgeScore &&
@@ -824,7 +824,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     %
                   </p>
                 </div> */}
-                <div className="bg-[#ECF1FF] rounded-xl p-4 text-center">
+                <div className="w-[37%] bg-[#ECF1FF] rounded-xl p-4 text-center">
                   <p className="text-base text-[#4B5563]">Communication</p>
                   <p className="text-2xl font-normal text-[#0F47F2]">
                     {(interviewData?.communicationScore &&
