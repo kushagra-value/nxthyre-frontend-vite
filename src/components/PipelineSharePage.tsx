@@ -358,7 +358,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     >
     {/* profile row */}
       <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
-        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-400">{candidate.name.split(/\s+/).map((word:any) => word[0].toUpperCase()).join("").slice(0,2)}
+        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-400">{candidate.name.split(/\s+/).map((word:any) => word[0].toUpperCase()).join("").slice(0,2)}
         </div>
                 
         {/* Name + Title */}
@@ -380,31 +380,35 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
         </span>
       </div>
 
-      <div className="text-sm text-gray-600 grid grid-cols-[auto_auto_auto_auto] gap-2">
-        <span>5Y</span>
-        <span>• 15 NP</span>
-        <span>• 20 LPA</span>
-        <span>• Bangalore</span>
-      </div>
-
-          
-
+      <div className="text-sm text-gray-600 grid grid-cols-[auto_1fr_auto] gap-3">
+        <div>
+        </div>
+        <div>
+          <div>
+            <span>5Y</span>
+            <span>• 15 NP</span>
+            <span>• 20 LPA</span>
+            <span>• Bangalore</span>
+          </div>
           <div className="flex items-center justify-between">
             <div className="flex gap-3 text-blue-600">
-                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center border border-blue-200">
-                  <Linkedin className="w-3 h-3 text-blue-600" />
-                </div>
-                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center border border-blue-200">
-                  <Github className="w-3 h-3 text-blue-600" />
-                </div>
-                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center border border-blue-200">
-                  <Copy className="w-3 h-3 text-blue-600" />
-                </div>
-            </div>
-                <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center border border-blue-200">
-              <Delete className="w-3 h-3 text-gray-600"/>
+              <div className="w-6 h-6 bg-blue-50 rounded-full flex items-center justify-center border border-blue-200">
+                <Linkedin className="w-3 h-3 text-blue-600" />
               </div>
+              <div className="w-6 h-6 bg-blue-50 rounded-full flex items-center justify-center border border-blue-200">
+                <Github className="w-3 h-3 text-blue-600" />
+              </div>
+              <div className="w-6 h-6 bg-blue-50 rounded-full flex items-center justify-center border border-blue-200">
+                <Copy className="w-3 h-3 text-blue-600" />
+              </div>
+            </div>
+            <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center border border-blue-200">
+              <Delete className="w-3 h-3 text-gray-600"/>
+            </div>
           </div>
+        </div>
+      </div>
+    
       </div>
   );
 
