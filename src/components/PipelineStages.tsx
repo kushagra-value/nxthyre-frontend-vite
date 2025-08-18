@@ -457,6 +457,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const [showSettingsPopup, setShowSettingsPopup] = useState(false);
   const settingsPopupRef = useRef<HTMLDivElement>(null);
 
+  const [cutoffScore, setCutoffScore] = useState("75");
+  const [sendAfter, setSendAfter] = useState("24");
+  const [sendVia, setSendVia] = useState("email");
+
   const handleSortSelect = (sortValue: string) => {
     setSortBy(sortValue);
     setShowSortDropdown(false);
@@ -1156,48 +1160,71 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         Settings
                       </button>
                       {showSettingsPopup && (
-                        <div
-                          ref={settingsPopupRef}
-                          className="absolute top-full right-0 mt-2 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-4"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <div className="flex flex-col space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-gray-700">Notifications</span>
-                              <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  className="sr-only peer"
-                                  defaultChecked
-                                />
-                                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-                              </label>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-gray-700">Email Alerts</span>
-                              <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  className="sr-only peer"
-                                  defaultChecked
-                                />
-                                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-                              </label>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-gray-700">Auto-Save</span>
-                              <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  className="sr-only peer"
-                                  defaultChecked
-                                />
-                                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-                              </label>
+                      <div
+                        ref={settingsPopupRef}
+                        className="absolute top-full right-0 mt-2 w-64 bg-white border border-gray-200 rounded-md shadow-lg"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="border-b border-gray-200">
+                          <div className="px-4 py-3">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Cutoff Score
+                            </label>
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="text"
+                                value={cutoffScore}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/[^0-9]/g, '');
+                                  if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 100)) {
+                                    setCutoffScore(value);
+                                  }
+                                }}
+                                className="w-16 px-2 py-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                placeholder="75"
+                                aria-label="Cutoff score (0-100)"
+                              />
+                              <span className="text-sm text-gray-500">/ 100</span>
                             </div>
                           </div>
                         </div>
-                      )}
+                        <div className="px-4 py-3">
+                          <div className="flex flex-col space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium text-gray-700">Follow Up</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <label className="text-sm font-medium text-gray-700">Send After</label>
+                              <select
+                                value={sendAfter}
+                                onChange={(e) => setSendAfter(e.target.value)}
+                                className="w-20 px-2 py-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                aria-label="Send after hours"
+                              >
+                                <option value="1">1 hr</option>
+                                <option value="2">2 hrs</option>
+                                <option value="4">4 hrs</option>
+                                <option value="8">8 hrs</option>
+                                <option value="24">24 hrs</option>
+                              </select>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <label className="text-sm font-medium text-gray-700">Via</label>
+                              <select
+                                value={sendVia}
+                                onChange={(e) => setSendVia(e.target.value)}
+                                className="w-32 px-2 py-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                aria-label="Send via method"
+                              >
+                                <option value="email">E-mail</option>
+                                <option value="call">Call</option>
+                                <option value="whatsapp">WhatsApp</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     </div>
 
                     <div className="relative flex space-x-2">
