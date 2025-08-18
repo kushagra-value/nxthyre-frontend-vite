@@ -733,6 +733,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       count: stages.find((s) => s.name === "Applied")?.candidate_count || 0 },
   ];
 
+  // Filter stages based on active tab
+  const filteredStages = stages.filter((stage) => !["Uncontacted", "Invites Sent"].includes(stage.name));
+
   const selectedCategory = categories.find((cat) => cat.id === activeJobId);
 
   
