@@ -16,10 +16,20 @@ import {
   Award,
   Star,
   Clock,
+  Search,
+  Share2,
+  Phone,
+  Calendar,
+  Briefcase,
+  Globe,
+  Trash2,
+  Copy,
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import apiClient from "../services/api"; // Adjust path as necessary
 import { useAuthContext } from "../context/AuthContext"; // Adjust path as necessary
+import candidateService from "../services/candidateService";
+
 
 interface DraggedCandidate {
   candidate: any;
@@ -51,6 +61,10 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [isSharing, setIsSharing] = useState(false); // Added for loading state
   const [stageCandidates, setStageCandidates] = useState({});
   const [stageIdMap, setStageIdMap] = useState<{ [key: string]: number }>({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const [candidateDetails, setCandidateDetails] = useState<any>(null);
+  const [loadingCandidateDetails, setLoadingCandidateDetails] = useState(false);
+  
 
   const jobId = pipelineId;
 
@@ -191,6 +205,19 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     setDraggedCandidate({ candidate, fromStage });
   };
 
+  const fetchCandidateDetails = async (candidateId: string) => {
+      setLoadingCandidateDetails(true);
+      try {
+        const details = await candidateService.getCandidateDetails(candidateId);
+        setCandidateDetails(details);
+      } catch (error) {
+        console.error("Error fetching candidate details:", error);
+        showToast.error("Failed to load candidate details");
+      } finally {
+        setLoadingCandidateDetails(false);
+      }
+    };
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
   };
@@ -326,40 +353,54 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       key={candidate.id}
       draggable
       onDragStart={() => handleDragStart(candidate, stage)}
-      className="bg-white border border-gray-200 rounded-lg p-2 mb-2 cursor-move hover:shadow-lg transition-all duration-200 relative"
+      className="bg-white rounded-xl p-4 mb-3 cursor-move hover:shadow-lg transition-all duration-200 border border-gray-100 hover:border-gray-200 relative"
     >
-      <div className="space-y-1">
-        <div className="flex justify-between items-start gap-1">
-          <div>
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center space-x-3">
+          <div className="relative">
+           <div className="w-12 h-12 rounded-full bg-blue-400">{candidate.name.split(/\s+/).map((word:any) => word[0].toUpperCase()).join("").slice(0,2)}
+            </div>
+          </div>
+          <div className="flex-1">
             <button
               onClick={() => handleCandidateClick(candidate)}
               className="text-sm font-semibold text-gray-900 hover:text-blue-600 text-left block"
             >
               {candidate.name}
             </button>
-            <p className="text-xs text-gray-600 mt-1">
-              {candidate.company} • {candidate.role}
-            </p>
-            <p className="text-xs text-gray-500 flex items-center mt-1">
-              <MapPin className="w-3 h-3 mr-1" />
-              {candidate.location || "Location not available"}
+            <p className="text-xs text-blue-600 font-medium">
+              {candidate.role} | {candidate.company}
             </p>
           </div>
-          <div className="flex items-center space-x-1">
-            {candidate.socials.linkedin && (
-              <Linkedin className="w-3 h-3 text-gray-400" />
-            )}
-            {candidate.socials.resume && (
-              <FileText className="w-3 h-3 text-gray-400" />
-            )}
           </div>
-        </div>
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-gray-400 flex items-center">
-            <Clock className="w-3 h-3 mr-1" />
-            Last Updated {getDaysAgo(candidate.lastUpdated)} days ago
-          </p>
-        </div>
+
+          <div className="text-right">
+            <span className="text-lg font-bold text-blue-600">{candidate.score}%</span>
+          </div>
+
+          <div className="flex items-center text-xs text-gray-500 mb-3">
+            <span>{candidate.experience}</span>
+            <span className="mx-1">•</span>
+            <span>{candidate.noticePeriod}</span>
+            <span className="mx-1">•</span>
+            <span>{candidate.currentSalary}</span>
+            <span className="mx-1">•</span>
+            <span>{candidate.location}</span>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Linkedin className="w-3 h-3 text-blue-600" />
+                </div>
+                <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center">
+                  <Github className="w-3 h-3 text-gray-600" />
+                </div>
+                <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                  <Copy className="w-3 h-3 text-green-600" />
+                </div>
+            </div>
+          </div>
       </div>
     </div>
   );
@@ -371,42 +412,187 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const renderCandidateProfile = () => {
     if (!selectedCandidate) return null;
 
+    const details = candidateDetails?.candidate;
+    const displayCandidate = details || selectedCandidate;
+
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-end">
-        <div className="fixed bg-white shadow-xl max-w-4xl w-full max-h-[100vh] overflow-y-auto p-4">
-          <div className="absolute right-2 p-6">
+      <div className="fixed inset-0 bg-black bg-opacity-30 z-[60] flex">
+        <div className="ml-auto w-2/3 bg-white shadow-xl h-full overflow-y-auto">
+          <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center space-x-4">
             <button
               onClick={() => setShowCandidateProfile(false)}
               className="p-2 hover:bg-gray-100 rounded-lg"
             >
-              <X className="w-5 h-5 text-gray-500" />
+              <ChevronRight className="w-5 h-5 text-gray-500 rotate-180" />
             </button>
           </div>
-          <div className="p-6 space-y-6">
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                {selectedCandidate.avatar}
+          <button className="flex items-center space-x-2 px-4 py-2 border border-blue-200 bg-blue-100 text-gray-700 rounded-lg hover:bg-blue-200 transition-colors">
+            <Share2 className="w-4 h-4" />
+            <span>Share</span>
+          </button>
+        </div>
+
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-4">
+                <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                  {selectedCandidate.avatar}
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                    {displayCandidate.full_name}
+                  </h2>
+                  <p className="text-gray-600">
+                    {displayCandidate.headline || `${selectedCandidate.role} | ${selectedCandidate.company}`}
+                  </p>
+                  <p className="text-gray-600 flex items-center">
+                    <MapPin className="w-4 h-4 mr-1" />
+                    {displayCandidate.location}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">
-                  {selectedCandidate.name}
-                </h2>
-                <p className="text-gray-600">
-                  {selectedCandidate.role} at {selectedCandidate.company}
-                </p>
-                <p className="text-gray-500 flex items-center">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  {selectedCandidate.location || "Location not available"}
-                </p>
+              <div className="text-right">
+                <div className="text-3xl font-bold text-blue-600 mb-1">
+                  {selectedCandidate.score}%
+                </div>
+                <div className="flex flex-col space-y-2">
+                  <div className="text-sm text-gray-600 flex items-center">
+                    <Mail className="w-4 h-4 mr-2" />
+                    {displayCandidate.candidate_email || "contact@example.com"}
+                  </div>
+                  <div className="text-sm text-gray-600 flex items-center">
+                    <Phone className="w-4 h-4 mr-2" />
+                    {displayCandidate.candidate_phone || "9375 4575 45"}
+                  </div>
+                </div>
               </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-2">Notes</h3>
-              <p className="text-gray-700">
-                {selectedCandidate.notes || "No notes available"}
-              </p>
+
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              <div className="bg-gray-50 rounded-lg p-3 text-center">
+                <div className="flex items-center justify-center mb-1">
+                  <Briefcase className="w-4 h-4 mr-1 text-gray-500" />
+                  <span className="text-sm text-gray-500">Experience</span>
+                </div>
+                <p className="font-semibold">{displayCandidate.total_experience || "5"} Years</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3 text-center">
+                <div className="flex items-center justify-center mb-1">
+                  <Calendar className="w-4 h-4 mr-1 text-gray-500" />
+                  <span className="text-sm text-gray-500">Notice Period</span>
+                </div>
+                <p className="font-semibold">{displayCandidate.notice_period_days || "15"} Days</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3 text-center">
+                <div className="flex items-center justify-center mb-1">
+                  <Star className="w-4 h-4 mr-1 text-gray-500" />
+                  <span className="text-sm text-gray-500">Current Salary</span>
+                </div>
+                <p className="font-semibold">{displayCandidate.current_salary || "20"} LPA</p>
+              </div>
+            </div>
+
+            <div className="mb-8">
+              <div className="flex items-center space-x-3">
+                <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                  <ChevronRight className="w-4 h-4" />
+                  <span>Move to Next Round</span>
+                </button>
+                <button className="p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                  <Trash2 className="w-4 h-4 text-gray-500" />
+                </button>
+              </div>
+            </div>
+            </div>
+
+          {/* Profile Summary */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Profile Summary</h3>
+            <p className="text-gray-700 leading-relaxed">
+              {displayCandidate.profile_summary || selectedCandidate.profileSummary}
+            </p>
+          </div>
+          
+          {/* Experience */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Experience</h3>
+            <div className="space-y-4">
+              {(details?.experience || [
+                {
+                  job_title: "AI Engineer - Analyst",
+                  company: "Jupiter Fintech Pvt.Ltd",
+                  location: "Bangalore, Karnataka",
+                  start_date: "12/2024",
+                  end_date: null,
+                  description: "I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs).",
+                  is_current: true,
+                },
+                {
+                  job_title: "Digital Marketing -Gen AI Team",
+                  company: "Google",
+                  location: "Bangalore, Karnataka",
+                  start_date: "11/2023",
+                  end_date: "11/2024",
+                  description: "Worked on digital marketing strategies and AI implementation.",
+                  is_current: false,
+                },
+              ]).map((exp: any, index: number) => (
+                <div key={index} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
+                  <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Building2 className="w-5 h-5 text-red-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900">{exp.job_title}</h4>
+                    <p className="text-blue-600 font-medium">{exp.company} | {exp.location}</p>
+                    <p className="text-sm text-gray-500 mb-2">
+                      {exp.start_date} - {exp.is_current ? "Present" : exp.end_date}
+                    </p>
+                    <p className="text-gray-700">{exp.description}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
+          
+          {/* Skills */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Skills</h3>
+            <div className="flex flex-wrap gap-2">
+              {(details?.skills_data?.skills_mentioned?.map((s: any) => s.skill) || selectedCandidate.skills).slice(0, 10).map((skill: string, index: number) => (
+                <span
+                  key={index}
+                  className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+          
+          {/* Education */}
+          {details?.education && details.education.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Education</h3>
+              <div className="space-y-4">
+                {details.education.map((edu: any, index: number) => (
+                  <div key={index} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <GraduationCap className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">{edu.degree}</h4>
+                      <p className="text-blue-600 font-medium">{edu.institution}</p>
+                      {edu.start_date && edu.end_date && (
+                        <p className="text-sm text-gray-500">{edu.start_date} - {edu.end_date}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
     );
