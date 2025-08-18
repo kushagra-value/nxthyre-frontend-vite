@@ -292,6 +292,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             jobId,
             selectedCandidate.id
           );
+
+          console.log("Assessment results data:", data);
+
           const questions = data.problem_results.map((pr: any) => ({
             question: pr.problem.description,
             language: pr.language || "N/A",
@@ -748,7 +751,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         );
       case "Coding":
         if (codingQuestions.length === 0) {
-          return <div>Loading...</div>;
+          return <div>No coding questions available</div>;
         }
 
         return (
