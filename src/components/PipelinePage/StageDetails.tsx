@@ -1311,7 +1311,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     </div>
                   ))
                 ) : notesView === "my" ? (
-                  <div className="flex justify-center items-center bg-[#F5F9FB] rounded-xl">
+                  <div className="flex justify-center items-center rounded-xl">
                     <div className="flex flex-col items-center justify-center h-full py-12 px-4">
                       <div className="relative inline-block">
                         {/* First SVG (outer shape) */}
@@ -1350,7 +1350,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     </div>
                   </div>
                 ) : (
-                  <div className="flex justify-center items-center bg-[#F5F9FB] rounded-xl">
+                  <div className="flex justify-center items-center rounded-xl">
                     <div className="flex flex-col items-center justify-center h-full py-12 px-4">
                       <div className="relative inline-block">
                         {/* First SVG (outer shape) */}
