@@ -391,21 +391,15 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       
       {/* Percentage Badge */}
       <div className="col-span-3 text-right">
-        <span className="text-lg font-[400] text-blue-600 bg-white border border-gray-200 px-2 py-1 rounded-lg">
+        <span className="text-lg font-[400] text-blue-600 bg-white border border-gray-200 p-1 rounded-md">
           75%
         </span>
       </div>
       
       {/* Experience Info - starts from column 3 */}
       <div className="col-start-3 col-span-10">
-        <div className="flex items-center gap-2 text-gray-500 text-xs mt-2">
-          <span>5Y</span>
-          <span>•</span>
-          <span>15 NP</span>
-          <span>•</span>
-          <span>20 LPA</span>
-          <span>•</span>
-          <span>Bangalore</span>
+        <div className="flex items-center gap-1 text-gray-500 text-xs mt-2">
+          <span>5Y • 15 NP • 20 LPA • Bangalore</span>
         </div>
       </div>
       
@@ -645,7 +639,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
   return (
     <>
-      <div className="mx-auto max-w-[85vw] min-h-screen bg-white">
+      <div className="mx-auto max-w-[95vw] min-h-screen bg-white">
         <div className="bg-white border-b border-gray-200 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -684,7 +678,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                 return (
                   <div
                     key={stage.name}
-                    className="w-72 flex-shrink-0 h-[80vh]"
+                    className="w-96 flex-shrink-0 h-[80vh]"
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, stage.name)}
                   >
