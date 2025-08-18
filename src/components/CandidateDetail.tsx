@@ -791,16 +791,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         ? notes.filter((note) => note.is_team_note && !note.is_community_note)
         : notes.filter((note) => note.is_team_note && note.is_community_note);
 
-    // Use dummy notes as fallback when no real notes exist
-    const notesToDisplay =
-      displayedNotes.length > 0 ? (
-        displayedNotes
-      ) : notesView === "my" ? (
-        <div>No team notes available. You can add a new note below.</div>
-      ) : (
-        <div>No community notes available. You can add a new note below.</div>
-      );
-
     return (
       <>
         <div className="flex flex-col h-full bg-[#F0F0F0] p-3 rounded-lg">
@@ -833,8 +823,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <div className="flex-1 overflow-y-auto space-y-2 border-gray-200">
             {isLoading ? (
               <p className="text-gray-500 text-center">Loading notes...</p>
-            ) : (
-              notesToDisplay.map((note: any) => (
+            ) : displayedNotes.length > 0 ? (
+              displayedNotes.map((note: any) => (
                 <div
                   key={note.noteId}
                   className="border-b border-gray-200 pb-2"
@@ -872,6 +862,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                   </div>
                 </div>
               ))
+            ) : notesView === "my" ? (
+              <div>No team notes available. You can add a new note below.</div>
+            ) : (
+              <div>
+                No community notes available. You can add a new note below.
+              </div>
             )}
           </div>
         </div>
