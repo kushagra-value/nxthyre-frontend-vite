@@ -353,7 +353,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       key={candidate.id}
       draggable
       onDragStart={() => handleDragStart(candidate, stage)}
-      className="bg-white rounded-xl p-4 mb-3 cursor-move hover:shadow-lg transition-all duration-200 border border-gray-100 hover:border-gray-200 relative"
+      className="bg-white rounded-xl p-2 mb-2 cursor-move hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-gray-200 relative"
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center space-x-3">
@@ -559,7 +559,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Skills</h3>
             <div className="flex flex-wrap gap-2">
-              {(details?.skills_data?.skills_mentioned?.map((s: any) => s.skill) || selectedCandidate.skills).slice(0, 10).map((skill: string, index: number) => (
+              {(details?.skills_data?.skills_mentioned?.map((s: any) => s.skill) || selectedCandidate.skills)?.map((skill: string, index: number) => (
                 <span
                   key={index}
                   className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
