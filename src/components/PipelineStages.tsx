@@ -44,6 +44,7 @@ import { useAuthContext } from "../context/AuthContext";
 import apiClient from "../services/api";
 import { jobPostService } from "../services/jobPostService"; // Import jobPostService
 import { showToast } from "../utils/toast";
+import PipelinesSideCard from "./PipelinePage/PipelinesSideCard";
 
 // Define interfaces for API responses
 interface Stage {
@@ -291,14 +292,14 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   // Dynamic category states
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
-  const [loadingCategories, setLoadingCategories] = useState(true); 
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [hoveredCandidateId, setHoveredCandidateId] = useState<string | null>(null);
-  
-  
+  const [hoveredCandidateId, setHoveredCandidateId] = useState<string | null>(
+    null
+  );
 
   // Fetch categories when component mounts
   useEffect(() => {
@@ -450,7 +451,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const sortDropdownRef = useRef<HTMLDivElement>(null);
 
   const [showSortDropdown, setShowSortDropdown] = useState(false);
-  const [sortBy, setSortBy] = useState("Relevance"); 
+  const [sortBy, setSortBy] = useState("Relevance");
 
   const handleSortSelect = (sortValue: string) => {
     setSortBy(sortValue);
@@ -458,11 +459,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   };
 
   const sortOptions = [
-    { value: '', label: 'Relevance' },
-    { value: 'experience_asc', label: 'Experience(Asc)' },
-    { value: 'experience_desc', label: 'Experience(Desc)' },
-    { value: 'notice_period_asc', label: 'Notice Period(Asc)' },
-    { value: 'notice_period_desc', label: 'Notice Period(Desc)' },
+    { value: "", label: "Relevance" },
+    { value: "experience_asc", label: "Experience(Asc)" },
+    { value: "experience_desc", label: "Experience(Desc)" },
+    { value: "notice_period_asc", label: "Notice Period(Asc)" },
+    { value: "notice_period_desc", label: "Notice Period(Desc)" },
   ];
 
   const mapStageData = (
@@ -492,7 +493,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           interviewedDate: "", // Placeholder; no interview date provided in API
           resumeScore: Number(report.score?.resume) || 0,
           knowledgeScore: Number(report.score?.knowledge) || 0,
-          technicalScore: Number(report.score?.technical) || 0,
+          technicalScore:
+            typeof report.score?.technical === "number"
+              ? Number(report.score?.technical)
+              : 0,
           communicationScore: Number(report.score?.communication) || 0,
           integrityScore: Number(report.integrity_score) || 0,
           proctoring: {
@@ -672,13 +676,22 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const getStageDescription = (stageName: string) => {
     switch (stageName) {
       case "Uncontacted":
-        return { text: "5 candidates sent you a message", color: "text-blue-600" };
+        return {
+          text: "5 candidates sent you a message",
+          color: "text-blue-600",
+        };
       case "Applied":
         return { text: "5 new candidates", color: "text-blue-600" };
       case "Coding Round":
-        return { text: "Average 15% are only passing the round", color: "text-orange-600" };
+        return {
+          text: "Average 15% are only passing the round",
+          color: "text-orange-600",
+        };
       case "AI Interview":
-        return { text: "95% of candidates are above par score", color: "text-orange-600" };
+        return {
+          text: "95% of candidates are above par score",
+          color: "text-orange-600",
+        };
       case "Shortlisted":
         return { text: "", color: "text-orange-600" };
       case "First Interview":
@@ -695,7 +708,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         return { text: "", color: "" };
     }
   };
-
 
   const currentCandidates =
     candidates.length > 0
@@ -723,2083 +735,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
   const selectedCategory = categories.find((cat) => cat.id === activeJobId);
 
-  const filteredStages = stages.filter((stage) => !["Uncontacted", "Invites Sent"].includes(stage.name));
-
-  const renderStageDetails = () => {
-    if (!selectedCandidate) {
-      return (
-        <div className="text-center text-gray-500 mt-8">
-          <div className="w-12 h-12 bg-gray-100 rounded-full mx-auto mb-3 flex items-center justify-center">
-            <User className="w-6 h-6 text-gray-400" />
-          </div>
-          <p className="text-base font-medium">No Candidate Selected</p>
-          <p className="text-sm mt-1">
-            Select a candidate from the list to view their details
-          </p>
-        </div>
-      );
-    }
-
-    const stageData = selectedCandidate.stageData;
-    const stagesWithNotes = [
-      "AI Interview",
-      "Shortlisted",
-      "First Interview",
-      "Other Interviews",
-      "HR Round",
-      "Salary Negotiation",
-      "Offer Sent",
-      "Archives",
-    ];
-
-    const externalNotes =
-      stagesWithNotes.includes(selectedStage) &&
-      selectedCandidate.external_notes.length > 0 ? (
-        <div className="space-y-2 mb-4">
-          <h4 className="font-medium text-gray-900">External Notes</h4>
-          {selectedCandidate.external_notes.map((note, index) => (
-            <div key={index} className="bg-gray-50 p-2 rounded">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-xs font-medium text-blue-600">
-                  {note.is_team_note
-                    ? "Team Note"
-                    : note.is_community_note
-                    ? "Community Note"
-                    : "Note"}
-                </span>
-                <span className="text-xs text-gray-500">
-                  {new Date(note.posted_at).toLocaleDateString()}
-                </span>
-              </div>
-              <p className="text-sm text-gray-800">{note.content}</p>
-              {note.postedBy && (
-                <p className="text-xs text-gray-500 mt-1">By {note.postedBy}</p>
-              )}
-            </div>
-          ))}
-        </div>
-      ) : null;
-
-    const specificDetails = () => {
-      switch (selectedStage) {
-        case "Uncontacted":
-          return (
-            <div className="space-y-4">
-              <div className="flex space-x-2">
-                <button className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
-                  Send Invite & Reveal Info
-                </button>
-                <button
-                  onClick={() => setShowComments(true)}
-                  className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                </button>
-              </div>
-
-              {selectedCandidate?.positions?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
-                    Experience
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.positions.map((exp, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {exp?.title && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {exp.title}
-                          </h4>
-                        )}
-                        {(exp?.companyName || exp?.location) && (
-                          <p className="text-sm text-gray-600">
-                            {exp?.companyName && exp.companyName}
-                            {exp?.companyName && exp?.location && " | "}
-                            {exp?.location && exp.location}
-                          </p>
-                        )}
-                        {(exp?.startDate || exp?.endDate) && (
-                          <p className="text-sm text-gray-500">
-                            {exp?.startDate
-                              ? `${exp.startDate.month}/${exp.startDate.year}`
-                              : ""}
-                            {" - "}
-                            {exp?.endDate
-                              ? `${exp.endDate.month}/${exp.endDate.year}`
-                              : "Present"}
-                          </p>
-                        )}
-                        {exp?.description && (
-                          <p className="text-sm text-gray-700 mt-1">
-                            {exp.description}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.educations?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
-                    Education
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.educations.map((edu, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {edu?.degreeName && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {edu.degreeName}
-                          </h4>
-                        )}
-                        {edu?.fieldOfStudy && (
-                          <p className="text-sm text-gray-600">
-                            {edu.fieldOfStudy}
-                          </p>
-                        )}
-                        {(edu?.startDate?.year || edu?.endDate?.year) && (
-                          <p className="text-sm text-gray-500">
-                            {edu?.startDate?.year || ""} -{" "}
-                            {edu?.endDate?.year || ""}
-                          </p>
-                        )}
-                        {edu?.schoolName && (
-                          <p className="text-sm text-gray-500">
-                            {edu.schoolName}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.certifications?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <Award className="w-4 h-4 mr-2 text-gray-800" />
-                    Certifications
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.certifications.map((cert, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {cert?.name && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {cert.name}
-                          </h4>
-                        )}
-                        {cert?.authority && (
-                          <p className="text-sm text-gray-600">
-                            {cert.authority}
-                          </p>
-                        )}
-                        {(cert?.startDate || cert?.endDate) && (
-                          <p className="text-sm text-gray-500">
-                            {cert?.startDate
-                              ? `${cert.startDate.month}/${cert.startDate.year}`
-                              : ""}
-                            {" - "}
-                            {cert?.endDate
-                              ? `${cert.endDate.month}/${cert.endDate.year}`
-                              : "Present"}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.skills?.length > 0 && (
-                <div>
-                  <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
-                    <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
-                    Skills
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCandidate.skills.map(
-                      (skill, index) =>
-                        skill?.name && (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                          >
-                            {skill.name}
-                          </span>
-                        )
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.recommendations?.received?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
-                    Recommendations
-                  </h3>
-                  <div className="space-y-2">
-                    {selectedCandidate.recommendations.received.map(
-                      (rec, index) => (
-                        <div key={index} className="bg-gray-50 rounded-lg p-3">
-                          <div className="flex items-start space-x-2">
-                            <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                              <User className="w-3 h-3 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              {rec?.recommender_name && (
-                                <h4 className="font-medium text-gray-900 text-sm">
-                                  {rec.recommender_name}
-                                </h4>
-                              )}
-                              {rec?.recommender_title && (
-                                <p className="text-xs text-gray-700">
-                                  {rec.recommender_title}
-                                </p>
-                              )}
-                              {rec?.feedback && (
-                                <p className="text-sm text-gray-800 mt-1">
-                                  "{rec.feedback}"
-                                </p>
-                              )}
-                              {rec?.date_received && (
-                                <p className="text-xs text-gray-600 mt-1">
-                                  {rec.date_received}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex justify-between w-full">
-                <button
-                  onClick={() => {
-                    const currentIndex = stages.findIndex(
-                      (s) => s.name === selectedStage
-                    );
-                    const nextStage = stages[currentIndex + 1];
-                    if (nextStage)
-                      moveCandidate(
-                        parseInt(selectedCandidate.id),
-                        nextStage.id
-                      );
-                  }}
-                  className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Move to Next Stage
-                </button>
-                <button
-                  onClick={() =>
-                    archiveCandidate(parseInt(selectedCandidate.id))
-                  }
-                  className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Archive
-                </button>
-              </div>
-            </div>
-          );
-        case "Invites Sent":
-          return (
-            <div className="space-y-4">
-              <div className="flex space-x-2">
-                <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
-                  Send Invite & Reveal Info
-                </button>
-                <button
-                  onClick={() => setShowComments(true)}
-                  className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                </button>
-              </div>
-
-              {selectedCandidate?.stageData?.invitesSent?.candidate_notes
-                ?.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Notes</h4>
-                  <div className="space-y-2">
-                    {selectedCandidate.candidate_notes.map(
-                      (note: any, index: number) => (
-                        <div key={index} className="bg-gray-50 p-2 rounded">
-                          {note.content}
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.positions?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
-                    Experience
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.positions.map((exp, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {exp?.title && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {exp.title}
-                          </h4>
-                        )}
-                        {(exp?.companyName || exp?.location) && (
-                          <p className="text-sm text-gray-600">
-                            {exp?.companyName && exp.companyName}
-                            {exp?.companyName && exp?.location && " | "}
-                            {exp?.location && exp.location}
-                          </p>
-                        )}
-                        {(exp?.startDate || exp?.endDate) && (
-                          <p className="text-sm text-gray-500">
-                            {exp?.startDate
-                              ? `${exp.startDate.month}/${exp.startDate.year}`
-                              : ""}
-                            {" - "}
-                            {exp?.endDate
-                              ? `${exp.endDate.month}/${exp.endDate.year}`
-                              : "Present"}
-                          </p>
-                        )}
-                        {exp?.description && (
-                          <p className="text-sm text-gray-700 mt-1">
-                            {exp.description}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.educations?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
-                    Education
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.educations.map((edu, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {edu?.degreeName && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {edu.degreeName}
-                          </h4>
-                        )}
-                        {edu?.fieldOfStudy && (
-                          <p className="text-sm text-gray-600">
-                            {edu.fieldOfStudy}
-                          </p>
-                        )}
-                        {(edu?.startDate?.year || edu?.endDate?.year) && (
-                          <p className="text-sm text-gray-500">
-                            {edu?.startDate?.year || ""} -{" "}
-                            {edu?.endDate?.year || ""}
-                          </p>
-                        )}
-                        {edu?.schoolName && (
-                          <p className="text-sm text-gray-500">
-                            {edu.schoolName}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.certifications?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <Award className="w-4 h-4 mr-2 text-gray-800" />
-                    Certifications
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.certifications.map((cert, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {cert?.name && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {cert.name}
-                          </h4>
-                        )}
-                        {cert?.authority && (
-                          <p className="text-sm text-gray-600">
-                            {cert.authority}
-                          </p>
-                        )}
-                        {(cert?.startDate || cert?.endDate) && (
-                          <p className="text-sm text-gray-500">
-                            {cert?.startDate
-                              ? `${cert.startDate.month}/${cert.startDate.year}`
-                              : ""}
-                            {" - "}
-                            {cert?.endDate
-                              ? `${cert.endDate.month}/${cert.endDate.year}`
-                              : "Present"}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.skills?.length > 0 && (
-                <div>
-                  <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
-                    <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
-                    Skills
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCandidate.skills.map(
-                      (skill, index) =>
-                        skill?.name && (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                          >
-                            {skill.name}
-                          </span>
-                        )
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.recommendations?.received?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
-                    Recommendations
-                  </h3>
-                  <div className="space-y-2">
-                    {selectedCandidate.recommendations.received.map(
-                      (rec, index) => (
-                        <div key={index} className="bg-gray-50 rounded-lg p-3">
-                          <div className="flex items-start space-x-2">
-                            <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                              <User className="w-3 h-3 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              {rec?.recommender_name && (
-                                <h4 className="font-medium text-gray-900 text-sm">
-                                  {rec.recommender_name}
-                                </h4>
-                              )}
-                              {rec?.recommender_title && (
-                                <p className="text-xs text-gray-700">
-                                  {rec.recommender_title}
-                                </p>
-                              )}
-                              {rec?.feedback && (
-                                <p className="text-sm text-gray-800 mt-1">
-                                  "{rec.feedback}"
-                                </p>
-                              )}
-                              {rec?.date_received && (
-                                <p className="text-xs text-gray-600 mt-1">
-                                  {rec.date_received}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex justify-between w-full">
-                <button
-                  onClick={() => {
-                    const currentIndex = stages.findIndex(
-                      (s) => s.name === selectedStage
-                    );
-                    const nextStage = stages[currentIndex + 1];
-                    if (nextStage)
-                      moveCandidate(
-                        parseInt(selectedCandidate.id),
-                        nextStage.id
-                      );
-                  }}
-                  className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Move to Next Stage
-                </button>
-                <button
-                  onClick={() =>
-                    archiveCandidate(parseInt(selectedCandidate.id))
-                  }
-                  className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Archive
-                </button>
-              </div>
-            </div>
-          );
-        case "Applied":
-          const appliedStageData = selectedCandidate.stageData.applied;
-          return (
-            <div className="space-y-4">
-              <div className="flex space-x-2">
-                <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
-                  Send Invite & Reveal Info
-                </button>
-                <button
-                  onClick={() => setShowComments(true)}
-                  className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <h5 className="font-medium text-gray-900 text-sm mb-1">
-                    Skills Match
-                  </h5>
-                  <p className="text-lg font-bold text-blue-600">
-                    {appliedStageData?.skillsMatch}
-                  </p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <h5 className="font-medium text-gray-900 text-sm mb-1">
-                    Experience Match
-                  </h5>
-                  <p className="text-lg font-bold text-green-600">
-                    {appliedStageData?.experienceMatch}
-                  </p>
-                </div>
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-900 mb-3">
-                  Resume Highlights
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {appliedStageData?.highlights
-                    ?.split(", ")
-                    .map((highlight: string, index: number) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                      >
-                        {highlight}
-                      </span>
-                    ))}
-                </div>
-              </div>
-
-              {selectedCandidate?.positions?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
-                    Experience
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.positions.map((exp, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {exp?.title && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {exp.title}
-                          </h4>
-                        )}
-                        {(exp?.companyName || exp?.location) && (
-                          <p className="text-sm text-gray-600">
-                            {exp?.companyName && exp.companyName}
-                            {exp?.companyName && exp?.location && " | "}
-                            {exp?.location && exp.location}
-                          </p>
-                        )}
-                        {(exp?.startDate || exp?.endDate) && (
-                          <p className="text-sm text-gray-500">
-                            {exp?.startDate
-                              ? `${exp.startDate.month}/${exp.startDate.year}`
-                              : ""}
-                            {" - "}
-                            {exp?.endDate
-                              ? `${exp.endDate.month}/${exp.endDate.year}`
-                              : "Present"}
-                          </p>
-                        )}
-                        {exp?.description && (
-                          <p className="text-sm text-gray-700 mt-1">
-                            {exp.description}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.educations?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
-                    Education
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.educations.map((edu, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {edu?.degreeName && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {edu.degreeName}
-                          </h4>
-                        )}
-                        {edu?.fieldOfStudy && (
-                          <p className="text-sm text-gray-600">
-                            {edu.fieldOfStudy}
-                          </p>
-                        )}
-                        {(edu?.startDate?.year || edu?.endDate?.year) && (
-                          <p className="text-sm text-gray-500">
-                            {edu?.startDate?.year || ""} -{" "}
-                            {edu?.endDate?.year || ""}
-                          </p>
-                        )}
-                        {edu?.schoolName && (
-                          <p className="text-sm text-gray-500">
-                            {edu.schoolName}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.certifications?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <Award className="w-4 h-4 mr-2 text-gray-800" />
-                    Certifications
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.certifications.map((cert, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {cert?.name && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {cert.name}
-                          </h4>
-                        )}
-                        {cert?.authority && (
-                          <p className="text-sm text-gray-600">
-                            {cert.authority}
-                          </p>
-                        )}
-                        {(cert?.startDate || cert?.endDate) && (
-                          <p className="text-sm text-gray-500">
-                            {cert?.startDate
-                              ? `${cert.startDate.month}/${cert.startDate.year}`
-                              : ""}
-                            {" - "}
-                            {cert?.endDate
-                              ? `${cert.endDate.month}/${cert.endDate.year}`
-                              : "Present"}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.skills?.length > 0 && (
-                <div>
-                  <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
-                    <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
-                    Skills
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCandidate.skills.map(
-                      (skill, index) =>
-                        skill?.name && (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                          >
-                            {skill.name}
-                          </span>
-                        )
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.recommendations?.received?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
-                    Recommendations
-                  </h3>
-                  <div className="space-y-2">
-                    {selectedCandidate.recommendations.received.map(
-                      (rec, index) => (
-                        <div key={index} className="bg-gray-50 rounded-lg p-3">
-                          <div className="flex items-start space-x-2">
-                            <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                              <User className="w-3 h-3 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              {rec?.recommender_name && (
-                                <h4 className="font-medium text-gray-900 text-sm">
-                                  {rec.recommender_name}
-                                </h4>
-                              )}
-                              {rec?.recommender_title && (
-                                <p className="text-xs text-gray-700">
-                                  {rec.recommender_title}
-                                </p>
-                              )}
-                              {rec?.feedback && (
-                                <p className="text-sm text-gray-800 mt-1">
-                                  "{rec.feedback}"
-                                </p>
-                              )}
-                              {rec?.date_received && (
-                                <p className="text-xs text-gray-600 mt-1">
-                                  {rec.date_received}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* <div>
-                <button className="mt-1 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                  Resend Interview Link
-                </button>
-              </div> */}
-              <div className="flex justify-between w-full">
-                <button
-                  onClick={() => {
-                    const currentIndex = stages.findIndex(
-                      (s) => s.name === selectedStage
-                    );
-                    const nextStage = stages[currentIndex + 1];
-                    if (nextStage)
-                      moveCandidate(
-                        parseInt(selectedCandidate.id),
-                        nextStage.id
-                      );
-                  }}
-                  className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Move to Next Stage
-                </button>
-                <button
-                  onClick={() =>
-                    archiveCandidate(parseInt(selectedCandidate.id))
-                  }
-                  className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Archive
-                </button>
-              </div>
-            </div>
-          );
-        case "AI Interview":
-        case "Shortlisted":
-          const interviewData =
-            selectedStage === "AI Interview"
-              ? stageData.aiInterview
-              : stageData.shortlisted;
-          return (
-            <div className="space-y-4">
-              <div className="flex space-x-2">
-                <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
-                  Send Invite & Reveal Info
-                </button>
-                <button
-                  onClick={() => setShowComments(true)}
-                  className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-gray-50 rounded-lg p-2 text-center">
-                  <p className="text-xs text-gray-600">Resume Score</p>
-                  <p className="text-lg font-bold text-blue-600">
-                    {interviewData?.resumeScore}
-                  </p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-2 text-center">
-                  <p className="text-xs text-gray-600">Knowledge</p>
-                  <p className="text-lg font-bold text-green-600">
-                    {interviewData?.knowledgeScore}
-                  </p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-2 text-center">
-                  <p className="text-xs text-gray-600">Communication</p>
-                  <p className="text-lg font-bold text-yellow-600">
-                    {interviewData?.communicationScore}
-                  </p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-2 text-center">
-                  <p className="text-xs text-gray-600">Integrity</p>
-                  <p className="text-lg font-bold text-purple-600">
-                    {interviewData?.integrityScore}
-                  </p>
-                </div>
-              </div>
-              <div className="bg-red-50 rounded-lg p-3">
-                <h5 className="font-medium text-red-900 mb-2">
-                  Proctoring Check
-                </h5>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    Device Usage: {interviewData?.proctoring?.deviceUsage}%
-                  </div>
-                  <div>
-                    Assistance: {interviewData?.proctoring?.assistance}%
-                  </div>
-                  <div>
-                    Reference Material:{" "}
-                    {interviewData?.proctoring?.referenceMaterial}%
-                  </div>
-                  <div>
-                    Environment: {interviewData?.proctoring?.environment}%
-                  </div>
-                </div>
-              </div>
-
-              {selectedCandidate?.positions?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
-                    Experience
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.positions.map((exp, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {exp?.title && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {exp.title}
-                          </h4>
-                        )}
-                        {(exp?.companyName || exp?.location) && (
-                          <p className="text-sm text-gray-600">
-                            {exp?.companyName && exp.companyName}
-                            {exp?.companyName && exp?.location && " | "}
-                            {exp?.location && exp.location}
-                          </p>
-                        )}
-                        {(exp?.startDate || exp?.endDate) && (
-                          <p className="text-sm text-gray-500">
-                            {exp?.startDate
-                              ? `${exp.startDate.month}/${exp.startDate.year}`
-                              : ""}
-                            {" - "}
-                            {exp?.endDate
-                              ? `${exp.endDate.month}/${exp.endDate.year}`
-                              : "Present"}
-                          </p>
-                        )}
-                        {exp?.description && (
-                          <p className="text-sm text-gray-700 mt-1">
-                            {exp.description}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.educations?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
-                    Education
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.educations.map((edu, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {edu?.degreeName && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {edu.degreeName}
-                          </h4>
-                        )}
-                        {edu?.fieldOfStudy && (
-                          <p className="text-sm text-gray-600">
-                            {edu.fieldOfStudy}
-                          </p>
-                        )}
-                        {(edu?.startDate?.year || edu?.endDate?.year) && (
-                          <p className="text-sm text-gray-500">
-                            {edu?.startDate?.year || ""} -{" "}
-                            {edu?.endDate?.year || ""}
-                          </p>
-                        )}
-                        {edu?.schoolName && (
-                          <p className="text-sm text-gray-500">
-                            {edu.schoolName}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.certifications?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <Award className="w-4 h-4 mr-2 text-gray-800" />
-                    Certifications
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.certifications.map((cert, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {cert?.name && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {cert.name}
-                          </h4>
-                        )}
-                        {cert?.authority && (
-                          <p className="text-sm text-gray-600">
-                            {cert.authority}
-                          </p>
-                        )}
-                        {(cert?.startDate || cert?.endDate) && (
-                          <p className="text-sm text-gray-500">
-                            {cert?.startDate
-                              ? `${cert.startDate.month}/${cert.startDate.year}`
-                              : ""}
-                            {" - "}
-                            {cert?.endDate
-                              ? `${cert.endDate.month}/${cert.endDate.year}`
-                              : "Present"}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.skills?.length > 0 && (
-                <div>
-                  <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
-                    <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
-                    Skills
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCandidate.skills.map(
-                      (skill, index) =>
-                        skill?.name && (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                          >
-                            {skill.name}
-                          </span>
-                        )
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.recommendations?.received?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
-                    Recommendations
-                  </h3>
-                  <div className="space-y-2">
-                    {selectedCandidate.recommendations.received.map(
-                      (rec, index) => (
-                        <div key={index} className="bg-gray-50 rounded-lg p-3">
-                          <div className="flex items-start space-x-2">
-                            <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                              <User className="w-3 h-3 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              {rec?.recommender_name && (
-                                <h4 className="font-medium text-gray-900 text-sm">
-                                  {rec.recommender_name}
-                                </h4>
-                              )}
-                              {rec?.recommender_title && (
-                                <p className="text-xs text-gray-700">
-                                  {rec.recommender_title}
-                                </p>
-                              )}
-                              {rec?.feedback && (
-                                <p className="text-sm text-gray-800 mt-1">
-                                  "{rec.feedback}"
-                                </p>
-                              )}
-                              {rec?.date_received && (
-                                <p className="text-xs text-gray-600 mt-1">
-                                  {rec.date_received}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex justify-between w-full">
-                <button
-                  onClick={() => {
-                    const currentIndex = stages.findIndex(
-                      (s) => s.name === selectedStage
-                    );
-                    const nextStage = stages[currentIndex + 1];
-                    if (nextStage)
-                      moveCandidate(
-                        parseInt(selectedCandidate.id),
-                        nextStage.id
-                      );
-                  }}
-                  className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Move to Next Stage
-                </button>
-                <button
-                  onClick={() =>
-                    archiveCandidate(parseInt(selectedCandidate.id))
-                  }
-                  className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Archive
-                </button>
-              </div>
-            </div>
-          );
-        case "First Interview":
-        case "Other Interviews":
-        case "HR Round":
-          const roundData =
-            selectedStage === "First Interview"
-              ? stageData.firstInterview
-              : selectedStage === "Other Interviews"
-              ? stageData.otherInterviews
-              : stageData.hrRound;
-          return (
-            <div className="space-y-4">
-              <div className="flex space-x-2">
-                <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
-                  Send Invite & Reveal Info
-                </button>
-                <button
-                  onClick={() => setShowComments(true)}
-                  className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                </button>
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">Follow-ups</h4>
-                <div className="space-y-2">
-                  {roundData?.followups?.map(
-                    (followup: string, index: number) => (
-                      <div
-                        key={index}
-                        className="flex items-center space-x-2 text-sm"
-                      >
-                        <Clock className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-700">{followup}</span>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-
-              {selectedCandidate?.positions?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
-                    Experience
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.positions.map((exp, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {exp?.title && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {exp.title}
-                          </h4>
-                        )}
-                        {(exp?.companyName || exp?.location) && (
-                          <p className="text-sm text-gray-600">
-                            {exp?.companyName && exp.companyName}
-                            {exp?.companyName && exp?.location && " | "}
-                            {exp?.location && exp.location}
-                          </p>
-                        )}
-                        {(exp?.startDate || exp?.endDate) && (
-                          <p className="text-sm text-gray-500">
-                            {exp?.startDate
-                              ? `${exp.startDate.month}/${exp.startDate.year}`
-                              : ""}
-                            {" - "}
-                            {exp?.endDate
-                              ? `${exp.endDate.month}/${exp.endDate.year}`
-                              : "Present"}
-                          </p>
-                        )}
-                        {exp?.description && (
-                          <p className="text-sm text-gray-700 mt-1">
-                            {exp.description}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.educations?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
-                    Education
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.educations.map((edu, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {edu?.degreeName && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {edu.degreeName}
-                          </h4>
-                        )}
-                        {edu?.fieldOfStudy && (
-                          <p className="text-sm text-gray-600">
-                            {edu.fieldOfStudy}
-                          </p>
-                        )}
-                        {(edu?.startDate?.year || edu?.endDate?.year) && (
-                          <p className="text-sm text-gray-500">
-                            {edu?.startDate?.year || ""} -{" "}
-                            {edu?.endDate?.year || ""}
-                          </p>
-                        )}
-                        {edu?.schoolName && (
-                          <p className="text-sm text-gray-500">
-                            {edu.schoolName}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.certifications?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <Award className="w-4 h-4 mr-2 text-gray-800" />
-                    Certifications
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.certifications.map((cert, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {cert?.name && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {cert.name}
-                          </h4>
-                        )}
-                        {cert?.authority && (
-                          <p className="text-sm text-gray-600">
-                            {cert.authority}
-                          </p>
-                        )}
-                        {(cert?.startDate || cert?.endDate) && (
-                          <p className="text-sm text-gray-500">
-                            {cert?.startDate
-                              ? `${cert.startDate.month}/${cert.startDate.year}`
-                              : ""}
-                            {" - "}
-                            {cert?.endDate
-                              ? `${cert.endDate.month}/${cert.endDate.year}`
-                              : "Present"}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.skills?.length > 0 && (
-                <div>
-                  <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
-                    <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
-                    Skills
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCandidate.skills.map(
-                      (skill, index) =>
-                        skill?.name && (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                          >
-                            {skill.name}
-                          </span>
-                        )
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.recommendations?.received?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
-                    Recommendations
-                  </h3>
-                  <div className="space-y-2">
-                    {selectedCandidate.recommendations.received.map(
-                      (rec, index) => (
-                        <div key={index} className="bg-gray-50 rounded-lg p-3">
-                          <div className="flex items-start space-x-2">
-                            <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                              <User className="w-3 h-3 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              {rec?.recommender_name && (
-                                <h4 className="font-medium text-gray-900 text-sm">
-                                  {rec.recommender_name}
-                                </h4>
-                              )}
-                              {rec?.recommender_title && (
-                                <p className="text-xs text-gray-700">
-                                  {rec.recommender_title}
-                                </p>
-                              )}
-                              {rec?.feedback && (
-                                <p className="text-sm text-gray-800 mt-1">
-                                  "{rec.feedback}"
-                                </p>
-                              )}
-                              {rec?.date_received && (
-                                <p className="text-xs text-gray-600 mt-1">
-                                  {rec.date_received}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex justify-between w-full">
-                <button
-                  onClick={() => {
-                    const currentIndex = stages.findIndex(
-                      (s) => s.name === selectedStage
-                    );
-                    const nextStage = stages[currentIndex + 1];
-                    if (nextStage)
-                      moveCandidate(
-                        parseInt(selectedCandidate.id),
-                        nextStage.id
-                      );
-                  }}
-                  className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Move to Next Stage
-                </button>
-                <button
-                  onClick={() =>
-                    archiveCandidate(parseInt(selectedCandidate.id))
-                  }
-                  className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Archive
-                </button>
-              </div>
-            </div>
-          );
-        case "Salary Negotiation":
-          const salaryData = stageData.salaryNegotiation;
-          return (
-            <div className="space-y-4">
-              <div className="flex space-x-2">
-                <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
-                  Send Invite & Reveal Info
-                </button>
-                <button
-                  onClick={() => setShowComments(true)}
-                  className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                </button>
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">Follow-ups</h4>
-                <div className="space-y-2">
-                  {salaryData?.followups?.map(
-                    (followup: string, index: number) => (
-                      <div
-                        key={index}
-                        className="flex items-center space-x-2 text-sm"
-                      >
-                        <Clock className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-700">{followup}</span>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-
-              {selectedCandidate?.positions?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
-                    Experience
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.positions.map((exp, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {exp?.title && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {exp.title}
-                          </h4>
-                        )}
-                        {(exp?.companyName || exp?.location) && (
-                          <p className="text-sm text-gray-600">
-                            {exp?.companyName && exp.companyName}
-                            {exp?.companyName && exp?.location && " | "}
-                            {exp?.location && exp.location}
-                          </p>
-                        )}
-                        {(exp?.startDate || exp?.endDate) && (
-                          <p className="text-sm text-gray-500">
-                            {exp?.startDate
-                              ? `${exp.startDate.month}/${exp.startDate.year}`
-                              : ""}
-                            {" - "}
-                            {exp?.endDate
-                              ? `${exp.endDate.month}/${exp.endDate.year}`
-                              : "Present"}
-                          </p>
-                        )}
-                        {exp?.description && (
-                          <p className="text-sm text-gray-700 mt-1">
-                            {exp.description}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.educations?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
-                    Education
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.educations.map((edu, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {edu?.degreeName && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {edu.degreeName}
-                          </h4>
-                        )}
-                        {edu?.fieldOfStudy && (
-                          <p className="text-sm text-gray-600">
-                            {edu.fieldOfStudy}
-                          </p>
-                        )}
-                        {(edu?.startDate?.year || edu?.endDate?.year) && (
-                          <p className="text-sm text-gray-500">
-                            {edu?.startDate?.year || ""} -{" "}
-                            {edu?.endDate?.year || ""}
-                          </p>
-                        )}
-                        {edu?.schoolName && (
-                          <p className="text-sm text-gray-500">
-                            {edu.schoolName}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.certifications?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <Award className="w-4 h-4 mr-2 text-gray-800" />
-                    Certifications
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.certifications.map((cert, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {cert?.name && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {cert.name}
-                          </h4>
-                        )}
-                        {cert?.authority && (
-                          <p className="text-sm text-gray-600">
-                            {cert.authority}
-                          </p>
-                        )}
-                        {(cert?.startDate || cert?.endDate) && (
-                          <p className="text-sm text-gray-500">
-                            {cert?.startDate
-                              ? `${cert.startDate.month}/${cert.startDate.year}`
-                              : ""}
-                            {" - "}
-                            {cert?.endDate
-                              ? `${cert.endDate.month}/${cert.endDate.year}`
-                              : "Present"}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.skills?.length > 0 && (
-                <div>
-                  <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
-                    <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
-                    Skills
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCandidate.skills.map(
-                      (skill, index) =>
-                        skill?.name && (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                          >
-                            {skill.name}
-                          </span>
-                        )
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.recommendations?.received?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
-                    Recommendations
-                  </h3>
-                  <div className="space-y-2">
-                    {selectedCandidate.recommendations.received.map(
-                      (rec, index) => (
-                        <div key={index} className="bg-gray-50 rounded-lg p-3">
-                          <div className="flex items-start space-x-2">
-                            <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                              <User className="w-3 h-3 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              {rec?.recommender_name && (
-                                <h4 className="font-medium text-gray-900 text-sm">
-                                  {rec.recommender_name}
-                                </h4>
-                              )}
-                              {rec?.recommender_title && (
-                                <p className="text-xs text-gray-700">
-                                  {rec.recommender_title}
-                                </p>
-                              )}
-                              {rec?.feedback && (
-                                <p className="text-sm text-gray-800 mt-1">
-                                  "{rec.feedback}"
-                                </p>
-                              )}
-                              {rec?.date_received && (
-                                <p className="text-xs text-gray-600 mt-1">
-                                  {rec.date_received}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex justify-between w-full">
-                <button
-                  onClick={() => {
-                    const currentIndex = stages.findIndex(
-                      (s) => s.name === selectedStage
-                    );
-                    const nextStage = stages[currentIndex + 1];
-                    if (nextStage)
-                      moveCandidate(
-                        parseInt(selectedCandidate.id),
-                        nextStage.id
-                      );
-                  }}
-                  className="w-[63%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Send Offer
-                </button>
-                <button
-                  onClick={() =>
-                    archiveCandidate(parseInt(selectedCandidate.id))
-                  }
-                  className="w-[33%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Archive
-                </button>
-              </div>
-            </div>
-          );
-        case "Offer Sent":
-          const offerData = stageData.offerSent;
-          return (
-            <div className="space-y-4">
-              <div className="flex space-x-2">
-                <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
-                  Send Invite & Reveal Info
-                </button>
-                <button
-                  onClick={() => setShowComments(true)}
-                  className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                </button>
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">Follow-ups</h4>
-                <div className="space-y-2">
-                  {offerData?.followups?.map(
-                    (followup: string, index: number) => (
-                      <div
-                        key={index}
-                        className="flex items-center space-x-2 text-sm"
-                      >
-                        <Clock className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-700">{followup}</span>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-
-              {selectedCandidate?.positions?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
-                    Experience
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.positions.map((exp, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {exp?.title && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {exp.title}
-                          </h4>
-                        )}
-                        {(exp?.companyName || exp?.location) && (
-                          <p className="text-sm text-gray-600">
-                            {exp?.companyName && exp.companyName}
-                            {exp?.companyName && exp?.location && " | "}
-                            {exp?.location && exp.location}
-                          </p>
-                        )}
-                        {(exp?.startDate || exp?.endDate) && (
-                          <p className="text-sm text-gray-500">
-                            {exp?.startDate
-                              ? `${exp.startDate.month}/${exp.startDate.year}`
-                              : ""}
-                            {" - "}
-                            {exp?.endDate
-                              ? `${exp.endDate.month}/${exp.endDate.year}`
-                              : "Present"}
-                          </p>
-                        )}
-                        {exp?.description && (
-                          <p className="text-sm text-gray-700 mt-1">
-                            {exp.description}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.educations?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
-                    Education
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.educations.map((edu, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {edu?.degreeName && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {edu.degreeName}
-                          </h4>
-                        )}
-                        {edu?.fieldOfStudy && (
-                          <p className="text-sm text-gray-600">
-                            {edu.fieldOfStudy}
-                          </p>
-                        )}
-                        {(edu?.startDate?.year || edu?.endDate?.year) && (
-                          <p className="text-sm text-gray-500">
-                            {edu?.startDate?.year || ""} -{" "}
-                            {edu?.endDate?.year || ""}
-                          </p>
-                        )}
-                        {edu?.schoolName && (
-                          <p className="text-sm text-gray-500">
-                            {edu.schoolName}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.certifications?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <Award className="w-4 h-4 mr-2 text-gray-800" />
-                    Certifications
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.certifications.map((cert, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {cert?.name && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {cert.name}
-                          </h4>
-                        )}
-                        {cert?.authority && (
-                          <p className="text-sm text-gray-600">
-                            {cert.authority}
-                          </p>
-                        )}
-                        {(cert?.startDate || cert?.endDate) && (
-                          <p className="text-sm text-gray-500">
-                            {cert?.startDate
-                              ? `${cert.startDate.month}/${cert.startDate.year}`
-                              : ""}
-                            {" - "}
-                            {cert?.endDate
-                              ? `${cert.endDate.month}/${cert.endDate.year}`
-                              : "Present"}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.skills?.length > 0 && (
-                <div>
-                  <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
-                    <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
-                    Skills
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCandidate.skills.map(
-                      (skill, index) =>
-                        skill?.name && (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                          >
-                            {skill.name}
-                          </span>
-                        )
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.recommendations?.received?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
-                    Recommendations
-                  </h3>
-                  <div className="space-y-2">
-                    {selectedCandidate.recommendations.received.map(
-                      (rec, index) => (
-                        <div key={index} className="bg-gray-50 rounded-lg p-3">
-                          <div className="flex items-start space-x-2">
-                            <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                              <User className="w-3 h-3 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              {rec?.recommender_name && (
-                                <h4 className="font-medium text-gray-900 text-sm">
-                                  {rec.recommender_name}
-                                </h4>
-                              )}
-                              {rec?.recommender_title && (
-                                <p className="text-xs text-gray-700">
-                                  {rec.recommender_title}
-                                </p>
-                              )}
-                              {rec?.feedback && (
-                                <p className="text-sm text-gray-800 mt-1">
-                                  "{rec.feedback}"
-                                </p>
-                              )}
-                              {rec?.date_received && (
-                                <p className="text-xs text-gray-600 mt-1">
-                                  {rec.date_received}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {offerData?.offerAcceptanceStatus === "Pending" && (
-                <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                  Follow Up on Offer
-                </button>
-              )}
-            </div>
-          );
-        case "Archives":
-          return (
-            <div className="space-y-4">
-              <div className="flex space-x-2">
-                <button className="cursor-not-allowed opacity-50 flex-1 px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors">
-                  Send Invite & Reveal Info
-                </button>
-                <button
-                  onClick={() => setShowComments(true)}
-                  className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                </button>
-              </div>
-
-              {selectedCandidate?.positions?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <Briefcase className="w-4 h-4 mr-2 text-gray-800" />
-                    Experience
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.positions.map((exp, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {exp?.title && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {exp.title}
-                          </h4>
-                        )}
-                        {(exp?.companyName || exp?.location) && (
-                          <p className="text-sm text-gray-600">
-                            {exp?.companyName && exp.companyName}
-                            {exp?.companyName && exp?.location && " | "}
-                            {exp?.location && exp.location}
-                          </p>
-                        )}
-                        {(exp?.startDate || exp?.endDate) && (
-                          <p className="text-sm text-gray-500">
-                            {exp?.startDate
-                              ? `${exp.startDate.month}/${exp.startDate.year}`
-                              : ""}
-                            {" - "}
-                            {exp?.endDate
-                              ? `${exp.endDate.month}/${exp.endDate.year}`
-                              : "Present"}
-                          </p>
-                        )}
-                        {exp?.description && (
-                          <p className="text-sm text-gray-700 mt-1">
-                            {exp.description}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.educations?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <GraduationCap className="w-4 h-4 mr-2 text-gray-800" />
-                    Education
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.educations.map((edu, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {edu?.degreeName && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {edu.degreeName}
-                          </h4>
-                        )}
-                        {edu?.fieldOfStudy && (
-                          <p className="text-sm text-gray-600">
-                            {edu.fieldOfStudy}
-                          </p>
-                        )}
-                        {(edu?.startDate?.year || edu?.endDate?.year) && (
-                          <p className="text-sm text-gray-500">
-                            {edu?.startDate?.year || ""} -{" "}
-                            {edu?.endDate?.year || ""}
-                          </p>
-                        )}
-                        {edu?.schoolName && (
-                          <p className="text-sm text-gray-500">
-                            {edu.schoolName}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.certifications?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <Award className="w-4 h-4 mr-2 text-gray-800" />
-                    Certifications
-                  </h3>
-                  <div className="ml-2">
-                    {selectedCandidate.certifications.map((cert, index) => (
-                      <div
-                        key={index}
-                        className="border-l-2 border-gray-200 pl-4 relative pb-2"
-                      >
-                        <div className="absolute w-2 h-2 bg-gray-500 rounded-full -left-[5px] top-1.5"></div>
-                        {cert?.name && (
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {cert.name}
-                          </h4>
-                        )}
-                        {cert?.authority && (
-                          <p className="text-sm text-gray-600">
-                            {cert.authority}
-                          </p>
-                        )}
-                        {(cert?.startDate || cert?.endDate) && (
-                          <p className="text-sm text-gray-500">
-                            {cert?.startDate
-                              ? `${cert.startDate.month}/${cert.startDate.year}`
-                              : ""}
-                            {" - "}
-                            {cert?.endDate
-                              ? `${cert.endDate.month}/${cert.endDate.year}`
-                              : "Present"}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.skills?.length > 0 && (
-                <div>
-                  <h3 className="flex text-sm lg:text-base font-semibold text-gray-900 mb-2">
-                    <Star className="w-4 h-4 mr-2 mt-1 text-gray-800" />
-                    Skills
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCandidate.skills.map(
-                      (skill, index) =>
-                        skill?.name && (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                          >
-                            {skill.name}
-                          </span>
-                        )
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {selectedCandidate?.recommendations?.received?.length > 0 && (
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-2 flex items-center">
-                    <TrendingUp className="w-4 h-4 mr-2 text-gray-800" />
-                    Recommendations
-                  </h3>
-                  <div className="space-y-2">
-                    {selectedCandidate.recommendations.received.map(
-                      (rec, index) => (
-                        <div key={index} className="bg-gray-50 rounded-lg p-3">
-                          <div className="flex items-start space-x-2">
-                            <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                              <User className="w-3 h-3 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              {rec?.recommender_name && (
-                                <h4 className="font-medium text-gray-900 text-sm">
-                                  {rec.recommender_name}
-                                </h4>
-                              )}
-                              {rec?.recommender_title && (
-                                <p className="text-xs text-gray-700">
-                                  {rec.recommender_title}
-                                </p>
-                              )}
-                              {rec?.feedback && (
-                                <p className="text-sm text-gray-800 mt-1">
-                                  "{rec.feedback}"
-                                </p>
-                              )}
-                              {rec?.date_received && (
-                                <p className="text-xs text-gray-600 mt-1">
-                                  {rec.date_received}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        default:
-          return null;
-      }
-    };
-
-    return (
-      <div className="space-y-4">
-        {externalNotes}
-        {specificDetails()}
-      </div>
-    );
-  };
+  
 
   const existingComments = [
     {
@@ -2858,6 +794,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     setShowLogoutModal(true);
   };
 
+  console.log(
+    "Transferred stage data PipelineStages :::::::::::::::::::: ",
+    selectedCandidate?.stageData
+  );
+
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="sticky top-0 z-20 bg-white will-change-transform">
@@ -2892,12 +833,16 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   className="w-full px-3 py-2 border border-blue-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between text-blue-600"
                 >
                   <span>
-                    {selectedCategory ? selectedCategory.name : "Select Pipeline"}
+                    {selectedCategory
+                      ? selectedCategory.name
+                      : "Select Pipeline"}
                   </span>
                   <ChevronDown className="text-blue-600 w-4 h-4" />
                 </button>
-                <div className="flex items-center text-white justify-center bg-gray-600 h-10 w-10 rounded-lg ml-2"><Users className="w-4 h-4"/></div>
-  
+                <div className="flex items-center text-white justify-center bg-gray-600 h-10 w-10 rounded-lg ml-2">
+                  <Users className="w-4 h-4" />
+                </div>
+
                 {isDropdownOpen && (
                   <div className="absolute z-10 w-full bg-white shadow-lg mt-1 rounded-lg max-h-60 overflow-y-auto">
                     {categories.map((category) => (
@@ -2954,25 +899,23 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             }`}
                           />
                           <div className="flex items-center justify-between w-full">
-                          <div className="flex flex-col items-start justify-center">
-                          <span className="flex-1 font-medium">
-                            {stage.name}
-                          </span>
-                          {description.text && (
+                            <div className="flex flex-col items-start justify-center">
+                              <span className="flex-1 font-medium">
+                                {stage.name}
+                              </span>
+                              {description.text && (
                                 <p className={`text-xs ${description.color}`}>
                                   {description.text}
                                 </p>
                               )}
-                          </div>
-                          <span
-                            className={`px-2 py-1 text-sm ${
-                              isSelected
-                                ? "text-blue-800"
-                                : "text-gray-400"
-                            }`}
-                          >
-                            {stage.candidate_count}
-                          </span>
+                            </div>
+                            <span
+                              className={`px-2 py-1 text-sm ${
+                                isSelected ? "text-blue-800" : "text-gray-400"
+                              }`}
+                            >
+                              {stage.candidate_count}
+                            </span>
                           </div>
                         </button>
                       );
@@ -2982,7 +925,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       const isSelected = selectedStage === stage;
                       const candidateCount =
                         pipelineCandidates[stage]?.length || 0;
-                        const description = getStageDescription(stage);
+                      const description = getStageDescription(stage);
                       return (
                         <button
                           key={stage}
@@ -3003,10 +946,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           />
                           <span className="flex-1 font-medium">{stage}</span>
                           {description.text && (
-                                <p className={`text-xs ${description.color}`}>
-                                  {description.text}
-                                </p>
-                              )}
+                            <p className={`text-xs ${description.color}`}>
+                              {description.text}
+                            </p>
+                          )}
                           <span
                             className={`px-2 py-1 text-xs rounded-full ${
                               isSelected
@@ -3059,25 +1002,27 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               )}
               <div className="p-3 lg:p-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={selectAll}
-                        onChange={(e) => {
-                          setSelectAll(e.target.checked);
-                          setSelectedCandidates(
-                            e.target.checked
-                              ? currentCandidates.map((c) => c.id.toString())
-                              : []
-                          );
-                        }}
-                        className="w-4 h-4 text-blue-200 border-gray-200 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 "
-                        aria-label="Select all candidates"
-                      />
-                      <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">Select all on this page</span>
-                    </label>
-                    <div className="flex space-x-3">
-                    {selectedCandidates.length>0 && (
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={selectAll}
+                      onChange={(e) => {
+                        setSelectAll(e.target.checked);
+                        setSelectedCandidates(
+                          e.target.checked
+                            ? currentCandidates.map((c) => c.id.toString())
+                            : []
+                        );
+                      }}
+                      className="w-4 h-4 text-blue-200 border-gray-200 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 "
+                      aria-label="Select all candidates"
+                    />
+                    <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">
+                      Select all on this page
+                    </span>
+                  </label>
+                  <div className="flex space-x-3">
+                    {selectedCandidates.length > 0 && (
                       <button
                         onClick={() =>
                           bulkMoveCandidates(
@@ -3087,31 +1032,61 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         aria-label="move candidates to pipeline"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="mr-1"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          className="mr-1"
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M8 12h8" />
+                          <path d="M12 8v8" />
+                        </svg>
                         Move to Next Stage
                       </button>
                     )}
-                    
+
                     <button
                       className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                       aria-label="upload selected candidates"
                     >
-                      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400 text-xs lg:text-base font-[400] mr-1">
-                        <path d="M7.84594 1.5587C7.75713 1.46158 7.63163 1.40625 7.5 1.40625C7.36838 1.40625 7.24288 1.46158 7.15407 1.5587L4.65405 4.29307C4.47937 4.48414 4.49264 4.78064 4.6837 4.95533C4.87477 5.13001 5.17127 5.11674 5.34595 4.92568L7.03125 3.08237V10C7.03125 10.2589 7.24113 10.4688 7.5 10.4688C7.75888 10.4688 7.96875 10.2589 7.96875 10V3.08237L9.65407 4.92568C9.82875 5.11674 10.1253 5.13001 10.3163 4.95533C10.5074 4.78064 10.5206 4.48414 10.3459 4.29307L7.84594 1.5587Z" fill="#818283"/>
-                        <path d="M2.34375 9.375C2.34375 9.11612 2.13389 8.90625 1.875 8.90625C1.61612 8.90625 1.40625 9.11612 1.40625 9.375V9.40931C1.40624 10.2641 1.40623 10.953 1.47908 11.4949C1.55471 12.0574 1.71652 12.5311 2.09272 12.9072C2.46892 13.2835 2.94259 13.4453 3.50516 13.5209C4.04701 13.5937 4.73596 13.5937 5.59071 13.5937H9.40931C10.2641 13.5937 10.953 13.5937 11.4949 13.5209C12.0574 13.4453 12.5311 13.2835 12.9073 12.9072C13.2835 12.5311 13.4453 12.0574 13.5209 11.4949C13.5937 10.953 13.5938 10.2641 13.5938 9.40931V9.375C13.5938 9.11612 13.3839 8.90625 13.125 8.90625C12.8661 8.90625 12.6562 9.11612 12.6562 9.375C12.6562 10.2721 12.6553 10.8978 12.5918 11.3699C12.5301 11.8286 12.4174 12.0714 12.2444 12.2444C12.0714 12.4174 11.8286 12.5301 11.3699 12.5918C10.8978 12.6552 10.2721 12.6562 9.375 12.6562H5.625C4.72787 12.6562 4.10217 12.6552 3.63008 12.5918C3.17147 12.5301 2.92861 12.4174 2.75563 12.2444C2.58266 12.0714 2.46988 11.8286 2.40822 11.3699C2.34474 10.8978 2.34375 10.2721 2.34375 9.375Z" fill="#818283"/>
-                        </svg>
-
-                      Upload 
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 15 15"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="text-gray-400 text-xs lg:text-base font-[400] mr-1"
+                      >
+                        <path
+                          d="M7.84594 1.5587C7.75713 1.46158 7.63163 1.40625 7.5 1.40625C7.36838 1.40625 7.24288 1.46158 7.15407 1.5587L4.65405 4.29307C4.47937 4.48414 4.49264 4.78064 4.6837 4.95533C4.87477 5.13001 5.17127 5.11674 5.34595 4.92568L7.03125 3.08237V10C7.03125 10.2589 7.24113 10.4688 7.5 10.4688C7.75888 10.4688 7.96875 10.2589 7.96875 10V3.08237L9.65407 4.92568C9.82875 5.11674 10.1253 5.13001 10.3163 4.95533C10.5074 4.78064 10.5206 4.48414 10.3459 4.29307L7.84594 1.5587Z"
+                          fill="#818283"
+                        />
+                        <path
+                          d="M2.34375 9.375C2.34375 9.11612 2.13389 8.90625 1.875 8.90625C1.61612 8.90625 1.40625 9.11612 1.40625 9.375V9.40931C1.40624 10.2641 1.40623 10.953 1.47908 11.4949C1.55471 12.0574 1.71652 12.5311 2.09272 12.9072C2.46892 13.2835 2.94259 13.4453 3.50516 13.5209C4.04701 13.5937 4.73596 13.5937 5.59071 13.5937H9.40931C10.2641 13.5937 10.953 13.5937 11.4949 13.5209C12.0574 13.4453 12.5311 13.2835 12.9073 12.9072C13.2835 12.5311 13.4453 12.0574 13.5209 11.4949C13.5937 10.953 13.5938 10.2641 13.5938 9.40931V9.375C13.5938 9.11612 13.3839 8.90625 13.125 8.90625C12.8661 8.90625 12.6562 9.11612 12.6562 9.375C12.6562 10.2721 12.6553 10.8978 12.5918 11.3699C12.5301 11.8286 12.4174 12.0714 12.2444 12.2444C12.0714 12.4174 11.8286 12.5301 11.3699 12.5918C10.8978 12.6552 10.2721 12.6562 9.375 12.6562H5.625C4.72787 12.6562 4.10217 12.6552 3.63008 12.5918C3.17147 12.5301 2.92861 12.4174 2.75563 12.2444C2.58266 12.0714 2.46988 11.8286 2.40822 11.3699C2.34474 10.8978 2.34375 10.2721 2.34375 9.375Z"
+                          fill="#818283"
+                        />
+                      </svg>
+                      Upload
                     </button>
-                  
-                  <div className="relative flex space-x-2">
-                    <button
+
+                    <div className="relative flex space-x-2">
+                      <button
                         className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() => setShowSortDropdown(!showSortDropdown)}
                         aria-label="Sort candidates"
                       >
-                        <ArrowDownNarrowWide className="w-4 h-4 rotate-180"/>
-                        <span className="text-gray-400 font-[400] ml-1 mr-1">{sortOptions.find(opt => opt.value === sortBy)?.label || 'Relevance'}</span>
+                        <ArrowDownNarrowWide className="w-4 h-4 rotate-180" />
+                        <span className="text-gray-400 font-[400] ml-1 mr-1">
+                          {sortOptions.find((opt) => opt.value === sortBy)
+                            ?.label || "Relevance"}
+                        </span>
                         <ChevronDown className="w-4 h-4 mt-1" />
                       </button>
                       {showSortDropdown && (
@@ -3133,7 +1108,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           </div>
                         </div>
                       )}
-                  </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -3149,250 +1124,275 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                     </p>
                   </div>
                 ) : (
-                <>
-                  <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
-                    {currentCandidates.map((candidate: any) => (
-                      <div
-                        key={candidate.id}
-                        className={`pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
-                          selectedCandidate?.id === candidate.id.toString()
-                            ? "bg-blue-50 border-l-4 border-blue-500"
-                            : "border border-gray-200"
-                        }`}
-                        onClick={() => handleCandidateSelect(candidate)}
-                        tabIndex={0}
-                        role="button"
-                        aria-label={`Select candidate ${candidate.full_name}`}
-                      >
-                        <div className="flex px-4 items-center space-x-3">
-                          <input
-                            type="checkbox"
-                            checked={selectedCandidates.includes(
-                            candidate.id.toString()
-                          )}
-                            onChange={() =>
-                            handleCandidateCheckbox(candidate.id.toString())
-                          }
-                            className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mb-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                            onClick={(e) => e.stopPropagation()}
-                            aria-label={`Select ${candidate.full_name}`}
-                          />
-                          <div className="border-b border-[#E2E2E2] flex items-center space-x-3 pb-5 w-full">
-                          <div
-                            className={`w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600] `}
-                          >
-                            {(
-                            candidate.candidate?.full_name || candidate.fullName
-                          )
-                            .split(" ")
-                            .map((n: string) => n[0])
-                            .join("")
-                            .slice(0, 2)}
-                             
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
-                              <div className="flex items-center space-x-2 flex-wrap">
-                                <h3 className="text-xs lg:text-base font-[400] text-gray-900">
-                                  {candidate.candidate?.full_name ||
-                                candidate.fullName}
-                                </h3>
-                                {candidate.is_background_verified && (
-                                  <div className="relative flex space-x-1"
-                                    onMouseEnter={() => setHoveredCandidateId(candidate.id)}
-                                    onMouseLeave={() => setHoveredCandidateId(null)}>
-                                    <span className="mt-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="256"
-                                        height="256"
-                                        viewBox="0 0 256 256"
-                                        xmlSpace="preserve"
+                  <>
+                    <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
+                      {currentCandidates.map((candidate: any) => (
+                        <div
+                          key={candidate.id}
+                          className={`pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
+                            selectedCandidate?.id === candidate.id.toString()
+                              ? "bg-blue-50 border-l-4 border-blue-500"
+                              : "border border-gray-200"
+                          }`}
+                          onClick={() => handleCandidateSelect(candidate)}
+                          tabIndex={0}
+                          role="button"
+                          aria-label={`Select candidate ${candidate.full_name}`}
+                        >
+                          <div className="flex px-4 items-center space-x-3">
+                            <input
+                              type="checkbox"
+                              checked={selectedCandidates.includes(
+                                candidate.id.toString()
+                              )}
+                              onChange={() =>
+                                handleCandidateCheckbox(candidate.id.toString())
+                              }
+                              className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mb-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                              onClick={(e) => e.stopPropagation()}
+                              aria-label={`Select ${candidate.full_name}`}
+                            />
+                            <div className="border-b border-[#E2E2E2] flex items-center space-x-3 pb-5 w-full">
+                              <div
+                                className={`w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600] `}
+                              >
+                                {(
+                                  candidate.candidate?.full_name ||
+                                  candidate.fullName
+                                )
+                                  .split(" ")
+                                  .map((n: string) => n[0])
+                                  .join("")
+                                  .slice(0, 2)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
+                                  <div className="flex items-center space-x-2 flex-wrap">
+                                    <h3 className="text-xs lg:text-base font-[400] text-gray-900">
+                                      {candidate.candidate?.full_name ||
+                                        candidate.fullName}
+                                    </h3>
+                                    {candidate.is_background_verified && (
+                                      <div
+                                        className="relative flex space-x-1"
+                                        onMouseEnter={() =>
+                                          setHoveredCandidateId(candidate.id)
+                                        }
+                                        onMouseLeave={() =>
+                                          setHoveredCandidateId(null)
+                                        }
                                       >
-                                        <g
-                                          transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)"
-                                          style={{
-                                            stroke: "none",
-                                            strokeWidth: 0,
-                                            strokeDasharray: "none",
-                                            strokeLinecap: "butt",
-                                            strokeLinejoin: "miter",
-                                            strokeMiterlimit: 10,
-                                            fill: "none",
-                                            fillRule: "nonzero",
-                                            opacity: 1,
-                                          }}
-                                        >
-                                          <polygon
-                                            points="45,6.18 57.06,0 64.41,11.38 77.94,12.06 78.62,25.59 90,32.94 83.82,45 90,57.06 78.62,64.41 77.94,77.94 64.41,78.62 57.06,90 45,83.82 32.94,90 25.59,78.62 12.06,77.94 11.38,64.41 0,57.06 6.18,45 0,32.94 11.38,25.59 12.06,12.06 25.59,11.38 32.94,0"
-                                            style={{
-                                              stroke: "none",
-                                              strokeWidth: 1,
-                                              strokeDasharray: "none",
-                                              strokeLinecap: "butt",
-                                              strokeLinejoin: "miter",
-                                              strokeMiterlimit: 10,
-                                              fill: "rgb(0,150,241)",
-                                              fillRule: "nonzero",
-                                              opacity: 1,
-                                            }}
-                                            transform="matrix(1 0 0 1 0 0)"
-                                          />
-                                          <polygon
-                                            points="40.16,58.47 26.24,45.08 29.7,41.48 40.15,51.52 61.22,31.08 64.7,34.67"
-                                            style={{
-                                              stroke: "none",
-                                              strokeWidth: 1,
-                                              strokeDasharray: "none",
-                                              strokeLinecap: "butt",
-                                              strokeLinejoin: "miter",
-                                              strokeMiterlimit: 10,
-                                              fill: "rgb(255,255,255)",
-                                              fillRule: "nonzero",
-                                              opacity: 1,
-                                            }}
-                                            transform="matrix(1 0 0 1 0 0)"
-                                          />
-                                        </g>
-                                      </svg>
-                                    </span>
-                                    {hoveredCandidateId === candidate.id && (
-                                        <div
-                                          className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg p-3 text-sm text-gray-700 z-10"
-                                          role="tooltip"
-                                          aria-hidden={hoveredCandidateId !== candidate.id}
-                                        >
-                                          Verified via last employer's confirmation
-                                        </div>
-                                      )}
+                                        <span className="mt-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                                          <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="256"
+                                            height="256"
+                                            viewBox="0 0 256 256"
+                                            xmlSpace="preserve"
+                                          >
+                                            <g
+                                              transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)"
+                                              style={{
+                                                stroke: "none",
+                                                strokeWidth: 0,
+                                                strokeDasharray: "none",
+                                                strokeLinecap: "butt",
+                                                strokeLinejoin: "miter",
+                                                strokeMiterlimit: 10,
+                                                fill: "none",
+                                                fillRule: "nonzero",
+                                                opacity: 1,
+                                              }}
+                                            >
+                                              <polygon
+                                                points="45,6.18 57.06,0 64.41,11.38 77.94,12.06 78.62,25.59 90,32.94 83.82,45 90,57.06 78.62,64.41 77.94,77.94 64.41,78.62 57.06,90 45,83.82 32.94,90 25.59,78.62 12.06,77.94 11.38,64.41 0,57.06 6.18,45 0,32.94 11.38,25.59 12.06,12.06 25.59,11.38 32.94,0"
+                                                style={{
+                                                  stroke: "none",
+                                                  strokeWidth: 1,
+                                                  strokeDasharray: "none",
+                                                  strokeLinecap: "butt",
+                                                  strokeLinejoin: "miter",
+                                                  strokeMiterlimit: 10,
+                                                  fill: "rgb(0,150,241)",
+                                                  fillRule: "nonzero",
+                                                  opacity: 1,
+                                                }}
+                                                transform="matrix(1 0 0 1 0 0)"
+                                              />
+                                              <polygon
+                                                points="40.16,58.47 26.24,45.08 29.7,41.48 40.15,51.52 61.22,31.08 64.7,34.67"
+                                                style={{
+                                                  stroke: "none",
+                                                  strokeWidth: 1,
+                                                  strokeDasharray: "none",
+                                                  strokeLinecap: "butt",
+                                                  strokeLinejoin: "miter",
+                                                  strokeMiterlimit: 10,
+                                                  fill: "rgb(255,255,255)",
+                                                  fillRule: "nonzero",
+                                                  opacity: 1,
+                                                }}
+                                                transform="matrix(1 0 0 1 0 0)"
+                                              />
+                                            </g>
+                                          </svg>
+                                        </span>
+                                        {hoveredCandidateId ===
+                                          candidate.id && (
+                                          <div
+                                            className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg p-3 text-sm text-gray-700 z-10"
+                                            role="tooltip"
+                                            aria-hidden={
+                                              hoveredCandidateId !==
+                                              candidate.id
+                                            }
+                                          >
+                                            Verified via last employer's
+                                            confirmation
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
                                   </div>
-                                )}        
+                                  <div className="flex space-x-1">
+                                    <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563] mt-1">
+                                      <MapPin className=" w-4 h-4" />
+
+                                      {candidate.candidate?.location.split(
+                                        ","
+                                      )[0] ||
+                                        `${candidate.location.city}, ${candidate.location.country}`}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex space-x-2">
+                                  <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                                    {candidate.candidate?.experience_summary
+                                      ?.title ||
+                                      candidate.experience_summary?.title}
+                                  </p>
+                                  <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
+                                    |
+                                  </p>
+                                  <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                                    {candidate.candidate?.education_summary
+                                      ?.title ||
+                                      candidate.education_summary?.title}
+                                  </p>
+                                </div>
                               </div>
-                              <div className="flex space-x-1">
-                                <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563] mt-1">
-                                  <MapPin className=" w-4 h-4" />
-                                  
-                                  {candidate.candidate?.location.split(",")[0] ||
-                              `${candidate.location.city}, ${candidate.location.country}`}
-                                </p>
-                              </div>
-                              
-                            </div>
-                            <div className="flex space-x-2">
-                              <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
-                                {candidate.candidate?.experience_summary?.title || candidate.experience_summary?.title }
-                              </p>
-                              <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
-                                |
-                              </p> 
-                              <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
-                                {candidate.candidate?.education_summary?.title || candidate.education_summary?.title}
-                              </p>
                             </div>
                           </div>
-                          </div>
-                        </div>
                           <div className="pt-5 pl-12 flex space-x-12 gap-2 text-xs lg:text-base font-[400px] ml-1">
-                            {candidate.candidate?.experience_years && 
-                            (
+                            {candidate.candidate?.experience_years && (
                               <div className="flex flex-col">
-                                <p className="text-[#A8A8A8] mr-[5px]">Experience</p>
+                                <p className="text-[#A8A8A8] mr-[5px]">
+                                  Experience
+                                </p>
                                 <p className="text-[#4B5563]">
                                   {candidate.candidate?.experience_years}
                                 </p>
-                            </div>
+                              </div>
                             )}
                             {/* need to update the current Company Data */}
-                            {candidate.candidate?.experience_years && 
-                            (
+                            {candidate.candidate?.experience_years && (
                               <div className="flex flex-col">
-                                <p className="text-[#A8A8A8] mr-[5px]">Current Company</p>
+                                <p className="text-[#A8A8A8] mr-[5px]">
+                                  Current Company
+                                </p>
                                 <p className="text-[#4B5563]">
                                   {candidate.candidate?.experience_years}
                                 </p>
-                            </div>
+                              </div>
                             )}
-                            {candidate.candidate?.notice_period_summary && 
-                            (
+                            {candidate.candidate?.notice_period_summary && (
                               <div className="flex flex-col">
-                                <p className="text-[#A8A8A8] mr-[5px]">Notice Period</p>
+                                <p className="text-[#A8A8A8] mr-[5px]">
+                                  Notice Period
+                                </p>
                                 <p className="text-[#4B5563]">
                                   {candidate.candidate?.notice_period_summary}
                                 </p>
-                            </div>
+                              </div>
                             )}
                             {/* need to update the code for Current Salary */}
-                            {true && 
-                            (
+                            {true && (
                               <div className="flex flex-col">
-                              <p className="text-[#A8A8A8] mr-[5px]">Current Salary</p>
-                              <p className="text-[#4B5563]">
-                                9LPA
-                              </p>
-                            </div>
+                                <p className="text-[#A8A8A8] mr-[5px]">
+                                  Current Salary
+                                </p>
+                                <p className="text-[#4B5563]">9LPA</p>
+                              </div>
                             )}
-            
                           </div>
                           <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
                             <div className="flex items-center space-x-1">
-                                {candidate.candidate?.social_links?.github && (
-                                  <button
-                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                                    onClick={() =>
-                                      window.open(candidate.candidate?.social_links?.github, "_blank")
-                                    }
-                                    aria-label={`View ${candidate.candidate?.full_name}'s GitHub profile`}
-                                  >
-                                    <Github className="w-4 h-4" />
-                                  </button>
-                                )}
-                                {candidate.candidate?.social_links?.linkedin && (
-                                  <button
-                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                                    onClick={() =>
-                                      window.open(
-                                        candidate.candidate?.social_links?.linkedin,
-                                        "_blank"
-                                      )
-                                    }
-                                    aria-label={`View ${candidate.candidate?.full_name}'s LinkedIn profile`}
-                                  >
-                                    <Linkedin className="w-4 h-4" />
-                                  </button>
-                                )}
-                                {candidate.candidate?.social_links?.resume && (
-                                  <button
-                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                                    onClick={() =>
-                                      window.open(candidate.candidate?.social_links?.resume, "_blank")
-                                    }
-                                    aria-label={`View ${candidate.candidate?.full_name}'s resume`}
-                                  >
-                                    <File className="w-4 h-4" />
-                                  </button>
-                                )}
-                                {candidate.candidate?.social_links?.portfolio && (
-                                  <button
-                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                                    onClick={() =>
-                                      window.open(
-                                        candidate.candidate?.social_links?.portfolio,
-                                        "_blank"
-                                      )
-                                    }
-                                    aria-label={`View ${candidate.full_name}'s portfolio`}
-                                  >
-                                    <Link className="w-4 h-4" />
-                                  </button>
-                                )}
-                              </div>
+                              {candidate.candidate?.social_links?.github && (
+                                <button
+                                  className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                  onClick={() =>
+                                    window.open(
+                                      candidate.candidate?.social_links?.github,
+                                      "_blank"
+                                    )
+                                  }
+                                  aria-label={`View ${candidate.candidate?.full_name}'s GitHub profile`}
+                                >
+                                  <Github className="w-4 h-4" />
+                                </button>
+                              )}
+                              {candidate.candidate?.social_links?.linkedin && (
+                                <button
+                                  className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                  onClick={() =>
+                                    window.open(
+                                      candidate.candidate?.social_links
+                                        ?.linkedin,
+                                      "_blank"
+                                    )
+                                  }
+                                  aria-label={`View ${candidate.candidate?.full_name}'s LinkedIn profile`}
+                                >
+                                  <Linkedin className="w-4 h-4" />
+                                </button>
+                              )}
+                              {candidate.candidate?.social_links?.resume && (
+                                <button
+                                  className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                  onClick={() =>
+                                    window.open(
+                                      candidate.candidate?.social_links?.resume,
+                                      "_blank"
+                                    )
+                                  }
+                                  aria-label={`View ${candidate.candidate?.full_name}'s resume`}
+                                >
+                                  <File className="w-4 h-4" />
+                                </button>
+                              )}
+                              {candidate.candidate?.social_links?.portfolio && (
+                                <button
+                                  className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                  onClick={() =>
+                                    window.open(
+                                      candidate.candidate?.social_links
+                                        ?.portfolio,
+                                      "_blank"
+                                    )
+                                  }
+                                  aria-label={`View ${candidate.full_name}'s portfolio`}
+                                >
+                                  <Link className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
                             <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
                               3 days ago
                             </div>
                           </div>
-                      </div>
-                    ))}
-                  </div>
+                        </div>
+                      ))}
+                    </div>
                   </>
                 )}
               </div>
@@ -3400,185 +1400,21 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           </div>
 
           <div className="lg:w-[30%] order-3 relative">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-4 min-h-[81vh]">
-              {selectedCandidate ? (
-                <>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
-                      {selectedCandidate.firstName[0]}
-                      {selectedCandidate.lastName[0]}
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-bold text-gray-900">
-                        {selectedCandidate.fullName || "N/A"}
-                      </h2>
-                      <p className="text-sm text-gray-600">
-                        {selectedCandidate.headline || "N/A"}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {selectedCandidate.location.city},{" "}
-                        {selectedCandidate.location.country}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-3 space-y-2">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center space-x-2">
-                        <Mail className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm text-gray-700 truncate">
-                          {selectedCandidate.email || "N/A"}
-                        </span>
-                      </div>
-                      <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center space-x-2">
-                        <Phone className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm text-gray-700">
-                          {selectedCandidate.phone?.number || "N/A"}
-                        </span>
-                      </div>
-                      <div className="flex space-x-2">
-                        <FontAwesomeIcon
-                          icon={faWhatsapp}
-                          className="w-4 h-4 text-gray-400 hover:text-green-600 cursor-pointer"
-                        />
-                        <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
-                      </div>
-                    </div>
-                  </div>
-                  {renderStageDetails()}
-                </>
-              ) : (
-                <div className="text-center text-gray-500 mt-8">
-                  <div className="w-12 h-12 bg-gray-100 rounded-full mx-auto mb-3 flex items-center justify-center">
-                    <User className="w-6 h-6 text-gray-400" />
-                  </div>
-                  <p className="text-base font-medium">No Candidate Selected</p>
-                  <p className="text-sm mt-1">
-                    Select a candidate from the list to view their details
-                  </p>
-                </div>
-              )}
-              <div
-                className={`absolute top-0 left-0 w-full h-full bg-gray-50 transform transition-all duration-300 ease-in-out z-10 ${
-                  showComments
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-full opacity-0 pointer-events-none"
-                }`}
-              >
-                <div className="bg-white p-4 h-full flex flex-col shadow-xl rounded-lg">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      Notes
-                    </h3>
-                    <button
-                      onClick={() => setShowComments(false)}
-                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                    >
-                      <X className="w-5 h-5 text-gray-500" />
-                    </button>
-                  </div>
-                  <div className="flex-1 overflow-y-auto space-y-4">
-                    {/* Kanban board notes */}
-                    <h4 className="text-lg font-semibold text-gray-900">
-                      Kanban board notes
-                    </h4>
-                    {feedbackComments.length > 0 ? (
-                      feedbackComments.map((comment) => (
-                        <div key={comment.id} className="flex space-x-3">
-                          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-                            {comment.avatar}
-                          </div>
-                          <div className="flex-1">
-                            <div className="bg-gray-100 rounded-2xl px-4 py-2 mr-2">
-                              <p className="font-medium text-sm text-gray-900">
-                                {comment.author}
-                              </p>
-                              {comment.subject && (
-                                <p className="text-sm text-gray-700 mt-1 font-medium">
-                                  {comment.subject}
-                                </p>
-                              )}
-                              <p className="text-sm text-gray-800 mt-1">
-                                {comment.text}
-                              </p>
-                            </div>
-                            <p className="text-xs text-gray-500 mt-1 ml-4">
-                              {comment.date}
-                            </p>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-gray-500">
-                        No Kanban board notes
-                      </p>
-                    )}
-
-                    {/* Notes */}
-                    <h4 className="text-lg font-semibold text-gray-900">
-                      Notes
-                    </h4>
-                    {candidateComments.length > 0 ? (
-                      candidateComments.map((comment) => (
-                        <div key={comment.id} className="flex space-x-3">
-                          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-                            {comment.avatar}
-                          </div>
-                          <div className="flex-1">
-                            <div className="bg-gray-100 rounded-2xl px-4 py-2 mr-2">
-                              <p className="font-medium text-sm text-gray-900">
-                                {comment.author}
-                              </p>
-                              {comment.subject && (
-                                <p className="text-sm text-gray-700 mt-1 font-medium">
-                                  {comment.subject}
-                                </p>
-                              )}
-                              <p className="text-sm text-gray-800 mt-1">
-                                {comment.text}
-                              </p>
-                            </div>
-                            <p className="text-xs text-gray-500 mt-1 ml-4">
-                              {comment.date}
-                            </p>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-gray-500">No notes</p>
-                    )}
-                  </div>
-                  <div className="mt-4">
-                    <div className="flex space-x-3">
-                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-                        {user?.fullName?.[0] || "U"}
-                      </div>
-                      <div className="flex-1 flex space-x-2">
-                        <input
-                          type="text"
-                          value={newComment}
-                          onChange={(e) => setNewComment(e.target.value)}
-                          placeholder="Add a note..."
-                          className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                          onKeyPress={(e) =>
-                            e.key === "Enter" && handleAddComment()
-                          }
-                        />
-                        <button
-                          onClick={handleAddComment}
-                          disabled={!newComment.trim()}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
-                        >
-                          Post
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <PipelinesSideCard
+              selectedCandidate={selectedCandidate}
+              showComments={showComments}
+              setShowComments={setShowComments}
+              feedbackComments={feedbackComments}
+              candidateComments={candidateComments}
+              newComment={newComment}
+              setNewComment={setNewComment}
+              handleAddComment={handleAddComment}
+              selectedStage={selectedStage}
+              stages={stages}
+              moveCandidate={moveCandidate}
+              archiveCandidate={archiveCandidate}
+              stageData={selectedCandidate?.stageData}
+            />
           </div>
         </div>
       </div>
