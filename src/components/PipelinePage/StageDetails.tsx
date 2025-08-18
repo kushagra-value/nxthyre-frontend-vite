@@ -501,7 +501,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 </p>
               </div>
             )}
-            {positions.length && (
+            {positions.length > 0 && (
               <div>
                 <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
                   <Briefcase className="w-4 h-4 mr-2 text-[#4B5563]" />
@@ -547,7 +547,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 )}
               </div>
             )}
-            {educations.length && (
+            {educations.length > 0 && (
               <div>
                 <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
                   <GraduationCap className="w-4 h-4 mr-2 text-[#4B5563]" />
@@ -580,7 +580,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 )}
               </div>
             )}
-            {certifications.length && (
+            {certifications.length > 0 && (
               <div>
                 <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
                   <Award className="w-4 h-4 mr-2 text-[#4B5563]" />
@@ -611,7 +611,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 )}
               </div>
             )}
-            {skills.length && (
+            {skills.length > 0 && (
               <div>
                 <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
                   <Star className="w-4 h-4 mr-2 text-[#4B5563]" />
@@ -638,7 +638,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 </div>
               </div>
             )}
-            {endorsements.length && (
+            {endorsements.length > 0 && (
               <div>
                 <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
                   <Star className="w-4 h-4 mr-2 text-[#4B5563]" />
