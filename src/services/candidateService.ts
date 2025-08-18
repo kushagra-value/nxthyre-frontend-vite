@@ -158,7 +158,7 @@ export type ExportCandidateResponse = string;
 
 export interface FollowUpStep {
   id: number;
-  send_after_hours: number;
+  send_after_hours: "24hrs" | "48hrs" | "72hrs";
   mode: "EMAIL" | "WHATSAPP" | "CALL";
   subject: string;
   body: string;
@@ -357,16 +357,19 @@ class CandidateService {
   }
 
   async sendInvite(data: {
+    job_id: string;
     candidate_id: string;
     template_id?: string;
-    job_id: string;
+    send_via_email: boolean;
+
+    send_via_phone: boolean;
+    send_via_whatsapp: boolean;
+
     subject: string;
     message_body: string;
-    send_via_email: boolean;
-    send_via_whatsapp: boolean;
-    send_via_phone: boolean;
+
     followups: {
-      send_after_hours: number;
+      send_after_hours: "24hrs" | "48hrs" | "72hrs";
       followup_mode: "EMAIL" | "WHATSAPP" | "CALL";
       followup_body: string;
       order_no: number;
