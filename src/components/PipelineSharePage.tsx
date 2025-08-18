@@ -349,68 +349,91 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     }
   };
 
-  const renderCandidateCard = (candidate: any, stage: string) => (
-    <div
-      key={candidate.id}
-      draggable
-      onDragStart={() => handleDragStart(candidate, stage)}
-      className="bg-white rounded-2xl p-2 mb-2 cursor-move hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-gray-200 relative grid gap-3"
-    >
-    {/* profile row */}
-      <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
-        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-400">{candidate.name.split(/\s+/).map((word:any) => word[0].toUpperCase()).join("").slice(0,2)}
-        </div>
-                
-        {/* Name + Title */}
-        <div>
-          <button
-            onClick={() => handleCandidateClick(candidate)}
-            className="text-sm font-semibold text-gray-900 hover:text-blue-600 text-left block"
-          >
-            {candidate.name}
-          </button>
-          <p className="text-xs text-blue-600 font-medium">
-            {candidate.role} | {candidate.company}
-          </p>
-        </div>
+  const CustomFileIcon = () => (
+  <svg width="16" height="15" viewBox="0 0 16 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M5.89941 7.3C5.89941 6.97387 5.89941 6.81077 5.9527 6.68211C6.02374 6.51061 6.16002 6.37432 6.33154 6.30327C6.46018 6.25 6.62328 6.25 6.94941 6.25H9.04941C9.37554 6.25 9.53864 6.25 9.6673 6.30327C9.8388 6.37432 9.97509 6.51061 10.0461 6.68211C10.0994 6.81077 10.0994 6.97387 10.0994 7.3C10.0994 7.62613 10.0994 7.78923 10.0461 7.91789C9.97509 8.08939 9.8388 8.22568 9.6673 8.29673C9.53864 8.35 9.37554 8.35 9.04941 8.35H6.94941C6.62328 8.35 6.46018 8.35 6.33154 8.29673C6.16002 8.22568 6.02374 8.08939 5.9527 7.91789C5.89941 7.78923 5.89941 7.62613 5.89941 7.3Z" stroke="#818283" strokeWidth="1.25"/>
+    <path d="M13.9498 3.80469V8.00469C13.9498 10.6445 13.9498 11.9645 13.1297 12.7846C12.3096 13.6047 10.9896 13.6047 8.3498 13.6047H7.6498C5.00994 13.6047 3.69001 13.6047 2.8699 12.7846C2.0498 11.9645 2.0498 10.6445 2.0498 8.00469V3.80469" stroke="#818283" strokeWidth="1.25" strokeLinecap="round"/>
+    <path d="M1 2.4C1 1.74003 1 1.41005 1.20502 1.20502C1.41005 1 1.74003 1 2.4 1H13.6C14.26 1 14.5899 1 14.795 1.20502C15 1.41005 15 1.74003 15 2.4C15 3.05997 15 3.38995 14.795 3.59498C14.5899 3.8 14.26 3.8 13.6 3.8H2.4C1.74003 3.8 1.41005 3.8 1.20502 3.59498C1 3.38995 1 3.05997 1 2.4Z" stroke="#818283" strokeWidth="1.25"/>
+  </svg>
+);
 
-        {/* Percentage Badge */}
-        <span className="text-blue-600 font-medium text-sm bg-blue-50 px-2 py-1 rounded-md">
+  const renderCandidateCard = (candidate: any, stage: string) => (
+  <div
+    key={candidate.id}
+    draggable
+    onDragStart={() => handleDragStart(candidate, stage)}
+    className="bg-white rounded-2xl p-4 mb-2 cursor-move hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-gray-300"
+  >
+    {/* Main Grid Container - 12 columns */}
+    <div className="grid grid-cols-12 gap-3 items-start">
+      
+      {/* Profile Initials */}
+      <div className="col-span-2">
+        <div className="w-10 h-10 rounded-full bg-blue-700 flex items-center justify-center">
+          <span className="text-white font-bold text-sm">
+            {candidate.name.split(/\s+/).map((word: any) => word[0].toUpperCase()).join("").slice(0, 2)}
+          </span>
+        </div>
+      </div>
+      
+      {/* Name and Title */}
+      <div className="col-span-7">
+        <button
+          onClick={() => handleCandidateClick(candidate)}
+          className="text-sm font-semibold text-gray-900 hover:text-blue-600 text-left block mb-1"
+        >
+          {candidate.name}
+        </button>
+        <p className="text-xs text-blue-600">
+          {candidate.role} | {candidate.company}
+        </p>
+      </div>
+      
+      {/* Percentage Badge */}
+      <div className="col-span-3 text-right">
+        <span className="text-lg font-[400] text-blue-600 bg-white border border-gray-200 px-2 py-1 rounded-lg">
           75%
         </span>
       </div>
-
-      <div className="text-sm text-gray-600 grid grid-cols-[auto_1fr_auto] gap-3">
-        <div>
-        </div>
-        <div>
-          <div>
-            <span>5Y</span>
-            <span>• 15 NP</span>
-            <span>• 20 LPA</span>
-            <span>• Bangalore</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex gap-3 text-blue-600">
-              <div className="w-6 h-6 bg-blue-50 rounded-full flex items-center justify-center border border-blue-200">
-                <Linkedin className="w-3 h-3 text-blue-600" />
-              </div>
-              <div className="w-6 h-6 bg-blue-50 rounded-full flex items-center justify-center border border-blue-200">
-                <Github className="w-3 h-3 text-blue-600" />
-              </div>
-              <div className="w-6 h-6 bg-blue-50 rounded-full flex items-center justify-center border border-blue-200">
-                <Copy className="w-3 h-3 text-blue-600" />
-              </div>
-            </div>
-            <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center border border-blue-200">
-              <Delete className="w-3 h-3 text-gray-600"/>
-            </div>
-          </div>
+      
+      {/* Experience Info - starts from column 3 */}
+      <div className="col-start-3 col-span-10">
+        <div className="flex items-center gap-2 text-gray-500 text-xs mt-2">
+          <span>5Y</span>
+          <span>•</span>
+          <span>15 NP</span>
+          <span>•</span>
+          <span>20 LPA</span>
+          <span>•</span>
+          <span>Bangalore</span>
         </div>
       </div>
-    
+      
+      {/* Social Icons - starts from column 3 */}
+      <div className="col-start-3 col-span-7">
+        <div className="flex gap-2 mt-2">
+          <button className="w-6 h-6 rounded-full border border-blue-500 flex items-center justify-center hover:bg-blue-50 transition-colors">
+            <Linkedin className="w-3 h-3 text-blue-600" />
+          </button>
+          <button className="w-6 h-6 rounded-full border border-blue-500 flex items-center justify-center hover:bg-blue-50 transition-colors">
+            <Github className="w-3 h-3 text-blue-600" />
+          </button>
+          <button className="w-6 h-6 rounded-full border border-blue-500 flex items-center justify-center hover:bg-blue-50 transition-colors">
+            <Copy className="w-3 h-3 text-blue-600" />
+          </button>
+        </div>
       </div>
-  );
+      
+      {/* Custom File Icon - below percentage, right aligned */}
+      <div className="mt-2 col-start-10 col-span-3 text-right">
+        <button className="w-6 h-6 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors ml-auto">
+          <CustomFileIcon />
+        </button>
+      </div>
+      
+    </div>
+  </div>
+);
 
   const handleGoToDashboard = () => {
     window.location.href = "/";
