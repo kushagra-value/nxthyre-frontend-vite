@@ -1039,7 +1039,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         <button
                           key={stage.id}
                           onClick={() => handleStageSelect(stage.name)}
-                          className={`w-full flex items-center space-x-3 pr-3 py-2 rounded-lg text-left transition-colors ${
+                          className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
                             isSelected
                               ? "bg-blue-50 text-blue-700 border border-blue-200"
                               : "text-gray-700 hover:bg-gray-50"
