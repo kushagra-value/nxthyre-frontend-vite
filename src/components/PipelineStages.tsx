@@ -877,6 +877,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 >
                   {viewMode === "prospect" && <div className="w-1 h-8 bg-blue-500 rounded-tr-xl rounded-br-xl rounded" />}
                   <User className={`w-4 h-4 ${viewMode === "prospect" ? "text-blue-600" : "text-gray-600"}`} />
+                  <div className="flex items-center justify-between w-full">
+
                   <div className="flex flex-col items-start justify-center">
                     <span className="flex-1 font-medium">
                       Prospect
@@ -895,6 +897,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                     {stages.find((s) => ["Uncontacted", "Invites Sent", "Applied"].includes(s.name))
                       ?.candidate_count || 0}
                   </span>
+                  </div>
                 </button>
                 {filteredStages.length > 0
                   ? filteredStages.map((stage) => {
