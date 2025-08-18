@@ -706,38 +706,38 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const isValidNote =
       newComment.trim() !== "" && validNoteRegex.test(newComment.trim());
 
-    // Dummy notes for fallback
-    const dummyTeamNotes: Note[] = [
-      {
-        noteId: "dummy1",
-        postedBy: {
-          userId: "123",
-          userName: "Sid Verma",
-          email: "sid@problock.com",
-        },
-        organisation: { orgId: "123", orgName: "Problock" },
-        content: "This is a sample team note.",
-        posted_at: new Date().toISOString(),
-        is_team_note: true,
-        is_community_note: false,
-      },
-    ];
+    // // Dummy notes for fallback
+    // const dummyTeamNotes: Note[] = [
+    //   {
+    //     noteId: "dummy1",
+    //     postedBy: {
+    //       userId: "123",
+    //       userName: "Sid Verma",
+    //       email: "sid@problock.com",
+    //     },
+    //     organisation: { orgId: "123", orgName: "Problock" },
+    //     content: "This is a sample team note.",
+    //     posted_at: new Date().toISOString(),
+    //     is_team_note: true,
+    //     is_community_note: false,
+    //   },
+    // ];
 
-    const dummyCommunityNotes: Note[] = [
-      {
-        noteId: "dummy2",
-        postedBy: {
-          userId: "123",
-          userName: "Kushagra Jain",
-          email: "kush@valuebound.com",
-        },
-        organisation: { orgId: "123", orgName: "Valuebound" },
-        content: "This is a sample community note.",
-        posted_at: new Date().toISOString(),
-        is_team_note: false,
-        is_community_note: true,
-      },
-    ];
+    // const dummyCommunityNotes: Note[] = [
+    //   {
+    //     noteId: "dummy2",
+    //     postedBy: {
+    //       userId: "123",
+    //       userName: "Kushagra Jain",
+    //       email: "kush@valuebound.com",
+    //     },
+    //     organisation: { orgId: "123", orgName: "Valuebound" },
+    //     content: "This is a sample community note.",
+    //     posted_at: new Date().toISOString(),
+    //     is_team_note: false,
+    //     is_community_note: true,
+    //   },
+    // ];
 
     // Fetch notes when component mounts or candidateId changes
     useEffect(() => {
@@ -789,15 +789,17 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const displayedNotes =
       notesView === "my"
         ? notes.filter((note) => note.is_team_note && !note.is_community_note)
-        : notes.filter((note) => !note.is_team_note && note.is_community_note);
+        : notes.filter((note) => note.is_team_note && note.is_community_note);
 
     // Use dummy notes as fallback when no real notes exist
     const notesToDisplay =
-      displayedNotes.length > 0
-        ? displayedNotes
-        : notesView === "my"
-        ? dummyTeamNotes
-        : dummyCommunityNotes;
+      displayedNotes.length > 0 ? (
+        displayedNotes
+      ) : notesView === "my" ? (
+        <div>No team notes available. You can add a new note below.</div>
+      ) : (
+        <div>No community notes available. You can add a new note below.</div>
+      );
 
     return (
       <>
@@ -832,7 +834,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             {isLoading ? (
               <p className="text-gray-500 text-center">Loading notes...</p>
             ) : (
-              notesToDisplay.map((note) => (
+              notesToDisplay.map((note: any) => (
                 <div
                   key={note.noteId}
                   className="border-b border-gray-200 pb-2"
