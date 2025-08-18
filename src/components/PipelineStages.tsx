@@ -1167,25 +1167,25 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     setCutoffScore(value);
                                   }
                                 }}
-                                className="w-8 px-2 py-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                className="w-8 px-2 py-1 bg-blue-50 border border-blue-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
                                 placeholder="75"
                                 aria-label="Cutoff score (0-100)"
                               />
-                              <span className="text-sm text-gray-500">/ 100</span>
+                              <span className="text-sm text-blue-500">/ 100</span>
                             </div>
                           </div>
                         </div>
-                        <div>
+                        <div className="pt-4">
                           <div className="flex flex-col space-y-3">
                             <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-gray-700">Follow Up</span>
+                              <span className=" text-sm font-medium text-gray-700">Follow Up</span>
                             </div>
                             <div className="flex items-center space-x-2">
                               <label className="text-sm font-medium text-gray-700">Send After</label>
                               <select
                                 value={sendAfter}
                                 onChange={(e) => setSendAfter(e.target.value)}
-                                className="w-20 px-2 py-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                className="w-20 px-2 py-1 border bg-blue-50 border-blue-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
                                 aria-label="Send after hours"
                               >
                                 <option value="1">1 hr</option>
