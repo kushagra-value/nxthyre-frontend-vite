@@ -1152,8 +1152,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         className="absolute top-full right-0 mt-2 p-4 w-96 bg-white border border-gray-200 rounded-md shadow-lg"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div className="border-b border-gray-200">
-                          <div>
+                        <div className="border-b border-gray-400">
+                          <div className="pb-4" >
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Cutoff Score
                             </label>
@@ -1194,8 +1194,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 <option value="8">8 hrs</option>
                                 <option value="24">24 hrs</option>
                               </select>
-                            </div>
-                            <div className="flex items-center space-x-2">
+                              
                               <label className="text-sm font-medium text-gray-700">Via</label>
                               <select
                                 value={sendVia}
@@ -1208,6 +1207,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 <option value="whatsapp">WhatsApp</option>
                               </select>
                             </div>
+
                           </div>
                         </div>
                       </div>
