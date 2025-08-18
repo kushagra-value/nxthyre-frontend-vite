@@ -853,7 +853,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       <Users />
                     </button>
                     {isDropdownOpen && (
-                      <div className="absolute top-8 z-10 w-full bg-white shadow-lg mt-1 rounded-lg max-h-60 overflow-y-auto border border-gray-200">
+                      <div className="absolute top-10 z-10 w-[90%] bg-white shadow-lg mt-1 rounded-lg max-h-60 overflow-y-auto border border-gray-200">
                         {categories.map((category) => (
                           <div
                             key={category.id}
