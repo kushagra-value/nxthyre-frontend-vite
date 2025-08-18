@@ -992,28 +992,32 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           }`}
                         >
                           {isSelected && (
-                            <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                            <div className="w-1 h-8 bg-blue-500 rounded-tr-xl rounded-br-xl  rounded" />
                           )}
                           <Icon
                             className={`w-4 h-4 ${
                               isSelected ? "text-blue-600" : "text-gray-600"
                             }`}
                           />
-                          <span className="flex-1 font-medium">{stage}</span>
-                          {description.text && (
-                            <p className={`text-xs ${description.color}`}>
-                              {description.text}
-                            </p>
-                          )}
-                          <span
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              isSelected
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-gray-100 text-gray-600"
-                            }`}
-                          >
-                            {candidateCount}
-                          </span>
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex flex-col items-start justify-center">
+                              <span className="flex-1 font-medium">
+                                {stage}
+                              </span>
+                              {description.text && (
+                                <p className={`text-xs ${description.color}`}>
+                                  {description.text}
+                                </p>
+                              )}
+                            </div>
+                            <span
+                              className={`px-2 py-1 text-sm ${
+                                isSelected ? "text-blue-800" : "text-gray-400"
+                              }`}
+                            >
+                              {candidateCount}
+                            </span>
+                          </div>
                         </button>
                       );
                     })}
