@@ -430,7 +430,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       try {
         setIsLoading(true);
         const fetchedNotes = await candidateService.getCandidateNotes(
-          selectedCandidate.id
+          selectedCandidate.publicIdentifier
         );
         setNotes(fetchedNotes);
       } catch (error) {
@@ -442,7 +442,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       }
     };
     fetchNotes();
-  }, [selectedCandidate.id]);
+  }, [selectedCandidate.publicIdentifier]);
 
   // Handle adding a new note
   const handleAddComment = async () => {
