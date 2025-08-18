@@ -24,6 +24,7 @@ import {
   Globe,
   Trash2,
   Copy,
+  Delete,
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import apiClient from "../services/api"; // Adjust path as necessary
@@ -353,56 +354,58 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       key={candidate.id}
       draggable
       onDragStart={() => handleDragStart(candidate, stage)}
-      className="bg-white rounded-xl p-2 mb-2 cursor-move hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-gray-200 relative"
+      className="bg-white rounded-2xl p-2 mb-2 cursor-move hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-gray-200 relative grid gap-3"
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center space-x-3">
-          <div className="relative">
-           <div className="w-12 h-12 rounded-full bg-blue-400">{candidate.name.split(/\s+/).map((word:any) => word[0].toUpperCase()).join("").slice(0,2)}
-            </div>
-          </div>
-          <div className="flex-1">
-            <button
-              onClick={() => handleCandidateClick(candidate)}
-              className="text-sm font-semibold text-gray-900 hover:text-blue-600 text-left block"
-            >
-              {candidate.name}
-            </button>
-            <p className="text-xs text-blue-600 font-medium">
-              {candidate.role} | {candidate.company}
-            </p>
-          </div>
-          </div>
+    {/* profile row */}
+      <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
+        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-400">{candidate.name.split(/\s+/).map((word:any) => word[0].toUpperCase()).join("").slice(0,2)}
+        </div>
+                
+        {/* Name + Title */}
+        <div>
+          <button
+            onClick={() => handleCandidateClick(candidate)}
+            className="text-sm font-semibold text-gray-900 hover:text-blue-600 text-left block"
+          >
+            {candidate.name}
+          </button>
+          <p className="text-xs text-blue-600 font-medium">
+            {candidate.role} | {candidate.company}
+          </p>
+        </div>
 
-          <div className="text-right">
-            <span className="text-lg font-bold text-blue-600">{candidate.score}%</span>
-          </div>
+        {/* Percentage Badge */}
+        <span className="text-blue-600 font-medium text-sm bg-blue-50 px-2 py-1 rounded-md">
+          75%
+        </span>
+      </div>
 
-          <div className="flex items-center text-xs text-gray-500 mb-3">
-            <span>{candidate.experience}</span>
-            <span className="mx-1">•</span>
-            <span>{candidate.noticePeriod}</span>
-            <span className="mx-1">•</span>
-            <span>{candidate.currentSalary}</span>
-            <span className="mx-1">•</span>
-            <span>{candidate.location}</span>
-          </div>
+      <div className="text-sm text-gray-600 grid grid-cols-[auto_auto_auto_auto] gap-2">
+        <span>5Y</span>
+        <span>• 15 NP</span>
+        <span>• 20 LPA</span>
+        <span>• Bangalore</span>
+      </div>
+
+          
 
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+            <div className="flex gap-3 text-blue-600">
+                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center border border-blue-200">
                   <Linkedin className="w-3 h-3 text-blue-600" />
                 </div>
-                <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center">
-                  <Github className="w-3 h-3 text-gray-600" />
+                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center border border-blue-200">
+                  <Github className="w-3 h-3 text-blue-600" />
                 </div>
-                <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                  <Copy className="w-3 h-3 text-green-600" />
+                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center border border-blue-200">
+                  <Copy className="w-3 h-3 text-blue-600" />
                 </div>
             </div>
+                <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center border border-blue-200">
+              <Delete className="w-3 h-3 text-gray-600"/>
+              </div>
           </div>
       </div>
-    </div>
   );
 
   const handleGoToDashboard = () => {
