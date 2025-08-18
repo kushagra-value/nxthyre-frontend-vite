@@ -455,12 +455,15 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           ? { teamNotes: newComment }
           : { communityNotes: newComment, is_community_note: true };
 
-      await candidateService.postCandidateNote(selectedCandidate.id, payload);
+      await candidateService.postCandidateNote(
+        selectedCandidate.publicIdentifier,
+        payload
+      );
       setNewComment("");
 
       // Refetch notes to update the UI
       const updatedNotes = await candidateService.getCandidateNotes(
-        selectedCandidate.id
+        selectedCandidate.publicIdentifier
       );
       setNotes(updatedNotes);
     } catch (error) {
