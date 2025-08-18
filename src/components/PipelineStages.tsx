@@ -1167,11 +1167,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     setCutoffScore(value);
                                   }
                                 }}
-                                className="w-8 px-2 py-1 bg-blue-50 border border-blue-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                className="w-8 px-2 py-1 text-blue-500 bg-blue-50 border border-blue-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
                                 placeholder="75"
                                 aria-label="Cutoff score (0-100)"
                               />
-                              <span className="text-sm text-blue-500">/ 100</span>
+                              <span className="text-sm text-gray-500">/ 100</span>
                             </div>
                           </div>
                         </div>
@@ -1185,7 +1185,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               <select
                                 value={sendAfter}
                                 onChange={(e) => setSendAfter(e.target.value)}
-                                className="w-20 px-2 py-1 border bg-blue-50 border-blue-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                className="w-20 px-2 py-1 text-blue-500 border bg-blue-50 border-blue-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
                                 aria-label="Send after hours"
                               >
                                 <option value="1">1 hr</option>
