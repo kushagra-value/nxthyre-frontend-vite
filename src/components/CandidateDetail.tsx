@@ -706,39 +706,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const isValidNote =
       newComment.trim() !== "" && validNoteRegex.test(newComment.trim());
 
-    // // Dummy notes for fallback
-    // const dummyTeamNotes: Note[] = [
-    //   {
-    //     noteId: "dummy1",
-    //     postedBy: {
-    //       userId: "123",
-    //       userName: "Sid Verma",
-    //       email: "sid@problock.com",
-    //     },
-    //     organisation: { orgId: "123", orgName: "Problock" },
-    //     content: "This is a sample team note.",
-    //     posted_at: new Date().toISOString(),
-    //     is_team_note: true,
-    //     is_community_note: false,
-    //   },
-    // ];
-
-    // const dummyCommunityNotes: Note[] = [
-    //   {
-    //     noteId: "dummy2",
-    //     postedBy: {
-    //       userId: "123",
-    //       userName: "Kushagra Jain",
-    //       email: "kush@valuebound.com",
-    //     },
-    //     organisation: { orgId: "123", orgName: "Valuebound" },
-    //     content: "This is a sample community note.",
-    //     posted_at: new Date().toISOString(),
-    //     is_team_note: false,
-    //     is_community_note: true,
-    //   },
-    // ];
-
     // Fetch notes when component mounts or candidateId changes
     useEffect(() => {
       const fetchNotes = async () => {

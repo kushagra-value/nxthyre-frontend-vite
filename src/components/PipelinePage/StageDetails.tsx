@@ -29,6 +29,7 @@ import {
   Link,
   FileText,
   Minus,
+  MessageSquareText,
 } from "lucide-react";
 import candidateService from "../../services/candidateService";
 
@@ -45,7 +46,7 @@ interface Note {
   content: string;
   is_team_note: boolean;
   is_community_note: boolean;
-  postedBy: string | null;
+  postedBy: { userId: string; userName: string; email: string } | null;
   posted_at: string;
   organisation: {
     orgId: string;
@@ -363,35 +364,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
     );
   }
 
-  // const stageData = selectedCandidate.stageData;
-
-  // const externalNotes =
-  //   selectedCandidate.external_notes.length > 0 ? (
-  //     <div className="space-y-2 mb-4">
-  //       <h4 className="font-medium text-gray-900">External Notes</h4>
-  //       {selectedCandidate.external_notes.map((note, index) => (
-  //         <div key={index} className="bg-gray-50 p-2 rounded">
-  //           <div className="flex justify-between items-center mb-1">
-  //             <span className="text-xs font-medium text-blue-600">
-  //               {note.is_team_note
-  //                 ? "Team Note"
-  //                 : note.is_community_note
-  //                 ? "Community Note"
-  //                 : "Note"}
-  //             </span>
-  //             <span className="text-xs text-gray-500">
-  //               {new Date(note.posted_at).toLocaleDateString()}
-  //             </span>
-  //           </div>
-  //           <p className="text-sm text-gray-800">{note.content}</p>
-  //           {note.postedBy && (
-  //             <p className="text-xs text-gray-500 mt-1">By {note.postedBy}</p>
-  //           )}
-  //         </div>
-  //       ))}
-  //     </div>
-  //   ) : null;
-
   const addActivity = () => {
     if (newActivity.trim()) {
       const updatedActivities = [
@@ -442,16 +414,67 @@ const StageDetails: React.FC<StageDetailsProps> = ({
     }
   };
 
-  console.log(
-    "Transferred stage data Stage Details :::::::::::::::::::: ",
-    transferredStageData
-  );
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [notesView, setNotesView] = useState<"my" | "community">("my");
+  const [newComment, setNewComment] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  console.log("Resume score: ", transferredStageData?.aiInterview);
-  console.log(
-    "Interview score: ",
-    transferredStageData?.["ai-interview"]?.resumeScore
-  );
+  // Regex to allow only alphanumeric and spaces
+  const validNoteRegex = /^[A-Za-z0-9 ]+$/;
+  const isValidNote =
+    newComment.trim() !== "" && validNoteRegex.test(newComment.trim());
+
+  // Fetch notes when component mounts or candidateId changes
+  useEffect(() => {
+    const fetchNotes = async () => {
+      try {
+        setIsLoading(true);
+        const fetchedNotes = await candidateService.getCandidateNotes(
+          selectedCandidate.id
+        );
+        setNotes(fetchedNotes);
+      } catch (error) {
+        console.error("Failed to fetch notes:", error);
+        // Optionally set dummy notes on error
+        // setNotes(notesView === "my" ? dummyTeamNotes : dummyCommunityNotes);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchNotes();
+  }, [selectedCandidate.id]);
+
+  // Handle adding a new note
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+    if (!isValidNote) return;
+    try {
+      setIsLoading(true);
+      const payload =
+        notesView === "my"
+          ? { teamNotes: newComment }
+          : { communityNotes: newComment, is_community_note: true };
+
+      await candidateService.postCandidateNote(selectedCandidate.id, payload);
+      setNewComment("");
+
+      // Refetch notes to update the UI
+      const updatedNotes = await candidateService.getCandidateNotes(
+        selectedCandidate.id
+      );
+      setNotes(updatedNotes);
+    } catch (error) {
+      console.error("Failed to add note:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Filter notes based on current view
+  const displayedNotes =
+    notesView === "my"
+      ? notes.filter((note) => note.is_team_note && !note.is_community_note)
+      : notes.filter((note) => note.is_team_note && note.is_community_note);
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -1127,41 +1150,118 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           </div>
         );
       case "Notes":
-      // const allNotes = [
-      //   // Filter and transform candidateNotes to ensure correct structure
-      //   ...selectedCandidate.candidateNotes
-      //     .filter((note) => note.comment && note.author && note.date) // Only include valid notes
-      //     .map((note) => ({
-      //       comment: note.comment,
-      //       author: note.author,
-      //       date: note.date,
-      //     })),
-      //   // Map external_notes as before
-      //   ...selectedCandidate.external_notes.map((n) => ({
-      //     comment: n.content,
-      //     author: n.postedBy || "Anonymous",
-      //     date: n.posted_at,
-      //   })),
-      // ];
-      // return (
-      //   <div className="bg-[#F5F9FB] p-4 rounded-xl space-y-4">
-      //     <h3 className="text-base font-medium text-[#4B5563]">Notes</h3>
-      //     <div className="space-y-2">
-      //       {allNotes.length > 0 ? (
-      //         allNotes.map((note, index) => (
-      //           <div key={index} className="bg-white rounded-md p-3">
-      //             <p className="text-sm text-[#4B5563]">{note.comment}</p>
-      //             <p className="text-xs text-[#818283] mt-1">
-      //               By {note.author} - {note.date}
-      //             </p>
-      //           </div>
-      //         ))
-      //       ) : (
-      //         <p className="text-sm text-[#818283]">No notes available</p>
-      //       )}
-      //     </div>
-      //   </div>
-      // );
+        return (
+          <>
+            <div className="flex flex-col h-full bg-[#F0F0F0] p-3 rounded-lg">
+              {/* Header with Heading and Toggle */}
+              <div className="flex justify-between items-center mb-3 border-b-2 border-gray-200 px-3 pt-1 pb-3">
+                <div className="flex items-center space-x-2">
+                  <MessageSquareText className="w-5 h-5 text-[#4B5563] mt-1" />
+                  <h3 className="text-base font-medium text-[#4B5563]">
+                    Notes about the Person
+                  </h3>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-[#4B5563]">Community</span>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={notesView === "community"}
+                      onChange={(e) =>
+                        setNotesView(e.target.checked ? "community" : "my")
+                      }
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-600"></div>
+                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Notes List */}
+              <div className="flex-1 overflow-y-auto space-y-2 border-gray-200">
+                {isLoading ? (
+                  <p className="text-gray-500 text-center">Loading notes...</p>
+                ) : displayedNotes.length > 0 ? (
+                  displayedNotes.map((note: any) => (
+                    <div
+                      key={note.noteId}
+                      className="border-b border-gray-200 pb-2"
+                    >
+                      <div className="flex flex-col space-y-2 px-3 py-2 mb-0">
+                        <div className="flex justify-between items-center">
+                          <div className="flex space-x-3 items-center">
+                            <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                              <User className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="flex-1 space-y-0.5">
+                              <h4 className="font-medium text-[#111827] text-sm">
+                                {note.postedBy?.userName ||
+                                  note.organisation?.orgName ||
+                                  "Unknown"}
+                              </h4>
+                              <p className="text-sm text-[#4B5563]">
+                                {note.organisation?.orgName || "Company"}
+                              </p>
+                            </div>
+                          </div>
+                          <p className="text-xs text-[#818283] mt-1">
+                            {new Date(note.posted_at).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              }
+                            )}
+                          </p>
+                        </div>
+                        <div className="bg-white p-3 rounded-lg">
+                          <p className="text-sm text-[#818283] leading-normal">
+                            {note.content}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : notesView === "my" ? (
+                  <div>
+                    No team notes available. You can add a new note below.
+                  </div>
+                ) : (
+                  <div>
+                    No community notes available. You can add a new note below.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Comment Input Section */}
+            <div className="mt-4 p-3 bg-white rounded-tr-lg rounded-tl-lg">
+              <div className="flex space-x-3 border border-gray-200 rounded-lg p-2">
+                <input
+                  type="text"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder={`Type your ${
+                    notesView === "my" ? "team" : "community"
+                  } comment!`}
+                  className={`flex-1 px-4 py-2 rounded-lg text-sm ${
+                    newComment && !isValidNote ? "border border-red-500" : ""
+                  }`}
+                  onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
+                />
+                <button
+                  onClick={handleAddComment}
+                  disabled={!newComment.trim() || isLoading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </>
+        );
       default:
         return null;
     }
