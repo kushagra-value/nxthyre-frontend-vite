@@ -715,7 +715,7 @@ const ArchiveIcon = () => (
                     <p className="text-gray-600 mb-2">
                       {displayCandidate.headline || `${selectedCandidate.role} | ${selectedCandidate.company}`}
                     </p>
-                    <p className="text-gray-500 text-sm">{displayCandidate.location}</p>
+                    <p className="text-gray-500 text-sm">{selectedCandidate.location}</p>
                   </div>
                 </div>
 
