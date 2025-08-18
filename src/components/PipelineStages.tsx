@@ -32,6 +32,7 @@ import {
   Linkedin,
   Link,
   ArrowDownNarrowWide,
+  LogOut,
 } from "lucide-react";
 import Header from "./Header";
 import { creditService } from "../services/creditService";
@@ -849,28 +850,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       className="flex items-center justify-center bg-gray-600 h-10 w-10 rounded-lg ml-2 text-white focus:outline-none"
                       aria-label="Toggle to search candidates"
                     >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M6.66667 12C9.78933 12 12.3333 9.456 12.3333 6.33333C12.3333 3.21067 9.78933 0.666667 6.66667 0.666667C3.544 0.666667 1 3.21067 1 6.33333C1 9.456 3.544 12 6.66667 12Z"
-                          fill="#D1D5DB"
-                        />
-                        <path
-                          d="M14.3333 14.6667L11.0307 11.364"
-                          stroke="#D1D5DB"
-                          strokeWidth="1.33333"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
+                      <Users />
                     </button>
                     {isDropdownOpen && (
-                      <div className="absolute z-10 w-full bg-white shadow-lg mt-1 rounded-lg max-h-60 overflow-y-auto border border-gray-200">
+                      <div className="absolute top-4 z-10 w-full bg-white shadow-lg mt-1 rounded-lg max-h-60 overflow-y-auto border border-gray-200">
                         {categories.map((category) => (
                           <div
                             key={category.id}
@@ -896,7 +879,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       className="flex items-center justify-center bg-white h-10 w-10 rounded-lg mr-2 text-gray-600 border border-gray-300 focus:outline-none"
                       aria-label="Back to select pipelines"
                     >
-                      <ArrowLeft className="w-4 h-4" />
+                      <LogOut className="w-4 h-4" />
                     </button>
                     <div className="flex-1">
                       <input
@@ -907,33 +890,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         className="w-full px-3 py-2 border border-blue-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-blue-600 bg-white"
                       />
                     </div>
-                    <button
-                      className="flex items-center justify-center bg-blue-600 h-10 w-10 rounded-lg ml-2 text-white focus:outline-none"
-                      aria-label="Search candidates"
-                    >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M7.33333 13.3333C10.2789 13.3333 12.6667 10.9455 12.6667 8C12.6667 5.0545 10.2789 2.66667 7.33333 2.66667C4.38781 2.66667 2 5.0545 2 8C2 10.9455 4.38781 13.3333 7.33333 13.3333Z"
-                          stroke="white"
-                          strokeWidth="1.33333"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M14.6667 14.6667L11.6667 11.6667"
-                          stroke="white"
-                          strokeWidth="1.33333"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </button>
                   </div>
                 )}
               </div>
