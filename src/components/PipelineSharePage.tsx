@@ -709,13 +709,13 @@ const ArchiveIcon = () => (
                   
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                      <h1 className="text-2xl font-bold text-gray-900">{selectedCandidate.full_name}</h1>
+                      <h1 className="text-2xl font-bold text-gray-900">{selectedCandidate.name}</h1>
                       <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">75%</span>
                     </div>
                     <p className="text-gray-600 mb-2">
                       {displayCandidate.headline || `${selectedCandidate.role} | ${selectedCandidate.company}`}
                     </p>
-                    <p className="text-gray-500 text-sm">{selectedCandidate.location}</p>
+                    <p className="text-gray-500 text-sm">Banglore</p>
                   </div>
                 </div>
 
