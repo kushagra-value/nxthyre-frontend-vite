@@ -275,9 +275,67 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   const [selectedStageId, setSelectedStageId] = useState<number | null>(null);
   const [expandedIndices, setExpandedIndices] = useState(new Set([0]));
 
+  const [codingQuestions, setCodingQuestions] = useState<
+    { question: string; language: string; difficulty: string; status: string }[]
+  >([]);
+  const [date, setDate] = useState("");
+
   useEffect(() => {
     setActiveTab("Profile");
   }, [selectedStage]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (selectedCandidate?.id && jobId) {
+        try {
+          const data = await candidateService.getAssessmentResults(
+            jobId,
+            selectedCandidate.id
+          );
+          const questions = data.problem_results.map((pr: any) => ({
+            question: pr.problem.description,
+            language: pr.language || "N/A",
+            difficulty: getDifficultyLevel(pr.problem.difficulty),
+            status: mapStatus(pr.status),
+          }));
+          setCodingQuestions(questions);
+          const completedDate = new Date(data.completed_at);
+          setDate(completedDate.toLocaleDateString("en-GB"));
+        } catch (error) {
+          console.error("Error fetching assessment results:", error);
+        }
+      }
+    };
+    fetchData();
+  }, [selectedCandidate?.id, jobId]);
+
+  const getDifficultyLevel = (diff: any) => {
+    const num = parseInt(diff);
+    if (num < 8) return "Easy";
+    if (num < 10) return "Medium";
+    return "Hard";
+  };
+
+  const mapStatus = (status: any) => {
+    if (status === "Accepted") return "Pass";
+    if (status === "Wrong Answer") return "Fail";
+    return "Skip";
+  };
+
+  const getDifficultyDots = (difficulty: any) => {
+    let fullCount = 0;
+    if (difficulty === "Easy") fullCount = 1;
+    else if (difficulty === "Medium") fullCount = 2;
+    else if (difficulty === "Hard") fullCount = 3;
+    return [...Array(3)].map((_, i) => (
+      <div
+        key={i}
+        className={`w-2 h-2 bg-[#818283] rounded-full ${
+          i < fullCount ? "" : "opacity-50"
+        }`}
+      />
+    ));
+  };
 
   const tabs =
     selectedStage === "Uncontacted"
@@ -689,68 +747,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           </div>
         );
       case "Coding":
-        type CodingQuestion = {
-          question: string;
-          language: string;
-          difficulty: string;
-          status: string;
-        };
-        const [codingQuestions, setCodingQuestions] = useState<
-          CodingQuestion[]
-        >([]);
-        const [date, setDate] = useState("");
-
-        useEffect(() => {
-          const fetchData = async () => {
-            try {
-              const data = await candidateService.getAssessmentResults(
-                jobId,
-                selectedCandidate.id
-              );
-              const questions = data.problem_results.map((pr: any) => ({
-                question: pr.problem.description,
-                language: pr.language || "N/A",
-                difficulty: getDifficultyLevel(pr.problem.difficulty),
-                status: mapStatus(pr.status),
-              }));
-              setCodingQuestions(questions);
-              const completedDate = new Date(data.completed_at);
-              setDate(completedDate.toLocaleDateString("en-GB"));
-            } catch (error) {
-              console.error(error);
-            }
-          };
-          fetchData();
-        }, []);
-
-        const getDifficultyLevel = (diff: any) => {
-          const num = parseInt(diff);
-          if (num < 8) return "Easy";
-          if (num < 10) return "Medium";
-          return "Hard";
-        };
-
-        const mapStatus = (status: any) => {
-          if (status === "Accepted") return "Pass";
-          if (status === "Wrong Answer") return "Fail";
-          return "Skip";
-        };
-
-        const getDifficultyDots = (difficulty: any) => {
-          let fullCount = 0;
-          if (difficulty === "Easy") fullCount = 1;
-          else if (difficulty === "Medium") fullCount = 2;
-          else if (difficulty === "Hard") fullCount = 3;
-          return [...Array(3)].map((_, i) => (
-            <div
-              key={i}
-              className={`w-2 h-2 bg-[#818283] rounded-full ${
-                i < fullCount ? "" : "opacity-50"
-              }`}
-            />
-          ));
-        };
-
         if (codingQuestions.length === 0) {
           return <div>Loading...</div>;
         }
