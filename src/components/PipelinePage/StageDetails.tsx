@@ -286,6 +286,10 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log(
+        "Fetching assessment results for candidate:",
+        selectedCandidate?.id + " and jobId: " + jobId
+      );
       if (selectedCandidate?.id && jobId) {
         try {
           const data = await candidateService.getAssessmentResults(
@@ -293,7 +297,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             selectedCandidate.id
           );
 
-          console.log("Assessment results data:", data);
+          // console.log("Assessment results data:", data);
 
           const questions = data.problem_results.map((pr: any) => ({
             question: pr.problem.description,
