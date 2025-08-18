@@ -967,8 +967,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       viewMode === "prospect" ? "text-blue-800" : "text-gray-400"
                     }`}
                   >
-                    {stages.find((s) => ["Uncontacted", "Invites Sent", "Applied"].includes(s.name))
-                      ?.candidate_count || 0}
+                    {[
+                      stages.find((s) => ["Uncontacted"].includes(s.name))?.candidate_count || 0,
+                      stages.find((s) => ["Invites Sent"].includes(s.name))?.candidate_count || 0,
+                    ].reduce((sum, count) => sum + count, 0)}
                   </span>
                   </div>
                 </button>
