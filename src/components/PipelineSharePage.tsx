@@ -16,10 +16,18 @@ import {
   Award,
   Star,
   Clock,
+  Search,
+  Share2,
+  Phone,
+  Calendar,
+  Briefcase,
+  Globe,
+  Trash2,
 } from "lucide-react";
 import { showToast } from "../utils/toast";
-import apiClient from "../services/api"; // Adjust path as necessary
-import { useAuthContext } from "../context/AuthContext"; // Adjust path as necessary
+import apiClient from "../services/api";
+import { useAuthContext } from "../context/AuthContext";
+import candidateService from "../services/candidateService";
 
 interface DraggedCandidate {
   candidate: any;
@@ -48,9 +56,12 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [accessEmail, setAccessEmail] = useState("");
   const [accessLevel, setAccessLevel] = useState<"view" | "edit">("view");
-  const [isSharing, setIsSharing] = useState(false); // Added for loading state
+  const [isSharing, setIsSharing] = useState(false);
   const [stageCandidates, setStageCandidates] = useState({});
   const [stageIdMap, setStageIdMap] = useState<{ [key: string]: number }>({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const [candidateDetails, setCandidateDetails] = useState<any>(null);
+  const [loadingCandidateDetails, setLoadingCandidateDetails] = useState(false);
 
   const jobId = pipelineId;
 
@@ -58,51 +69,58 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     {
       name: "Shortlisted",
       color: "bg-blue-50",
-      borderColor: "border-blue-200",
-      bgColor: "bg-blue-200",
-      textColor: "text-blue-400",
+      borderColor: "border-l-4 border-l-green-400",
+      bgColor: "bg-green-100",
+      textColor: "text-green-600",
+      count: "54",
     },
     {
       name: "First Interview",
-      color: "bg-yellow-50",
-      borderColor: "border-yellow-200",
-      bgColor: "bg-yellow-200",
-      textColor: "text-yellow-400",
+      color: "bg-orange-50",
+      borderColor: "border-l-4 border-l-orange-400",
+      bgColor: "bg-orange-100",
+      textColor: "text-orange-600",
+      count: "54",
     },
     {
       name: "Other Interviews",
-      color: "bg-orange-50",
-      borderColor: "border-orange-200",
-      bgColor: "bg-orange-200",
-      textColor: "text-orange-400",
+      color: "bg-cyan-50",
+      borderColor: "border-l-4 border-l-cyan-400",
+      bgColor: "bg-cyan-100",
+      textColor: "text-cyan-600",
+      count: "54",
     },
     {
       name: "HR Round",
-      color: "bg-red-50",
-      borderColor: "border-red-200",
-      bgColor: "bg-red-200",
-      textColor: "text-red-400",
+      color: "bg-blue-50",
+      borderColor: "border-l-4 border-l-blue-400",
+      bgColor: "bg-blue-100",
+      textColor: "text-blue-600",
+      count: "54",
     },
     {
       name: "Salary Negotiation",
       color: "bg-purple-50",
-      borderColor: "border-purple-200",
-      bgColor: "bg-purple-200",
-      textColor: "text-purple-400",
+      borderColor: "border-l-4 border-l-purple-400",
+      bgColor: "bg-purple-100",
+      textColor: "text-purple-600",
+      count: "54",
     },
     {
       name: "Offer Sent",
       color: "bg-green-50",
-      borderColor: "border-green-200",
-      bgColor: "bg-green-200",
-      textColor: "text-green-400",
+      borderColor: "border-l-4 border-l-green-500",
+      bgColor: "bg-green-100",
+      textColor: "text-green-600",
+      count: "54",
     },
     {
       name: "Archives",
       color: "bg-gray-50",
-      borderColor: "border-gray-200",
-      bgColor: "bg-gray-200",
-      textColor: "text-gray-400",
+      borderColor: "border-l-4 border-l-gray-400",
+      bgColor: "bg-gray-100",
+      textColor: "text-gray-600",
+      count: "0",
     },
   ];
 
@@ -115,6 +133,24 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     "Offer Sent": 5,
     Archives: 6,
   };
+
+  // Dummy data for missing fields
+  const getDummyData = (candidate: any) => ({
+    ...candidate,
+    profilePicture: `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face&auto=format`,
+    score: Math.floor(Math.random() * 25) + 75, // Random score between 75-100
+    experience: "5Y",
+    noticePeriod: "15 NP",
+    currentSalary: "20 LPA",
+    socials: {
+      linkedin: true,
+      github: Math.random() > 0.5,
+      portfolio: Math.random() > 0.7,
+      resume: true,
+    },
+    skills: ["React.js", "Node.js", "Python", "Machine Learning", "AWS"],
+    profileSummary: `${candidate.name} is a skilled digital marketing specialist with 5+ years of experience in SEO, SEM, social media strategy, and content creation. Proficient in tools like Google Analytics and AdWords, she showcased exceptional knowledge, communication skills, and a proactive approach during recent interviews.`,
+  });
 
   const getDaysAgo = (date: Date) => {
     const today = new Date();
@@ -132,7 +168,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
         const response = await apiClient.get(
           `/jobs/applications/kanban-view/?job_id=${jobId}`
         );
-        const data = response.data;
+        const data = response.data.data;
 
         const stageIdMapTemp: { [key: string]: number } = {};
         data.forEach((stage: any) => {
@@ -146,26 +182,21 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           if (apiStage) {
             processedData[stage.name] = apiStage.applications.map(
               (app: any) => {
-                const [role, company] = app.candidate_headline.split(" at ");
-                return {
+                const [role, company] = app.candidate_headline?.split(" at ") || ["Engineer", "Tech Corp"];
+                const baseCandidate = {
                   id: app.id,
                   name: app.candidate_name,
-                  company: company || "",
-                  role: role || "",
-                  location: "",
+                  company: company || "Tech Corp",
+                  role: role || "Software Engineer",
+                  location: "Bangalore, India",
                   avatar: app.candidate_name
                     .split(" ")
                     .map((n: string) => n[0])
                     .join(""),
                   notes: "",
                   lastUpdated: new Date(app.last_updated),
-                  socials: {
-                    github: false,
-                    linkedin: false,
-                    resume: false,
-                    twitter: false,
-                  },
                 };
+                return getDummyData(baseCandidate);
               }
             );
           } else {
@@ -186,6 +217,19 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     };
     fetchData();
   }, [jobId, isAuthenticated]);
+
+  const fetchCandidateDetails = async (candidateId: string) => {
+    setLoadingCandidateDetails(true);
+    try {
+      const details = await candidateService.getCandidateDetails(candidateId);
+      setCandidateDetails(details);
+    } catch (error) {
+      console.error("Error fetching candidate details:", error);
+      showToast.error("Failed to load candidate details");
+    } finally {
+      setLoadingCandidateDetails(false);
+    }
+  };
 
   const handleDragStart = (candidate: any, fromStage: string) => {
     setDraggedCandidate({ candidate, fromStage });
@@ -278,10 +322,11 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     }
   };
 
-  const handleCandidateClick = (candidate: number) => {
+  const handleCandidateClick = async (candidate: any) => {
     setSelectedCandidate(candidate);
     setShowCandidateProfile(true);
     setActiveProfileTab("profile");
+    await fetchCandidateDetails(candidate.id);
   };
 
   const handleAccessSubmit = async () => {
@@ -326,39 +371,66 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       key={candidate.id}
       draggable
       onDragStart={() => handleDragStart(candidate, stage)}
-      className="bg-white border border-gray-200 rounded-lg p-2 mb-2 cursor-move hover:shadow-lg transition-all duration-200 relative"
+      className="bg-white rounded-xl p-4 mb-3 cursor-move hover:shadow-lg transition-all duration-200 border border-gray-100 hover:border-gray-200"
     >
-      <div className="space-y-1">
-        <div className="flex justify-between items-start gap-1">
-          <div>
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center space-x-3">
+          <div className="relative">
+            <img
+              src={candidate.profilePicture}
+              alt={candidate.name}
+              className="w-12 h-12 rounded-full object-cover"
+            />
+          </div>
+          <div className="flex-1">
             <button
               onClick={() => handleCandidateClick(candidate)}
               className="text-sm font-semibold text-gray-900 hover:text-blue-600 text-left block"
             >
               {candidate.name}
             </button>
-            <p className="text-xs text-gray-600 mt-1">
-              {candidate.company} • {candidate.role}
+            <p className="text-xs text-blue-600 font-medium">
+              {candidate.role} | {candidate.company}
             </p>
-            <p className="text-xs text-gray-500 flex items-center mt-1">
-              <MapPin className="w-3 h-3 mr-1" />
-              {candidate.location || "Location not available"}
-            </p>
-          </div>
-          <div className="flex items-center space-x-1">
-            {candidate.socials.linkedin && (
-              <Linkedin className="w-3 h-3 text-gray-400" />
-            )}
-            {candidate.socials.resume && (
-              <FileText className="w-3 h-3 text-gray-400" />
-            )}
           </div>
         </div>
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-gray-400 flex items-center">
-            <Clock className="w-3 h-3 mr-1" />
-            Last Updated {getDaysAgo(candidate.lastUpdated)} days ago
-          </p>
+        <div className="text-right">
+          <span className="text-lg font-bold text-blue-600">{candidate.score}%</span>
+        </div>
+      </div>
+
+      <div className="flex items-center text-xs text-gray-500 mb-3">
+        <span>{candidate.experience}</span>
+        <span className="mx-1">•</span>
+        <span>{candidate.noticePeriod}</span>
+        <span className="mx-1">•</span>
+        <span>{candidate.currentSalary}</span>
+        <span className="mx-1">•</span>
+        <span>{candidate.location}</span>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          {candidate.socials.linkedin && (
+            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+              <Linkedin className="w-3 h-3 text-blue-600" />
+            </div>
+          )}
+          {candidate.socials.github && (
+            <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center">
+              <Github className="w-3 h-3 text-gray-600" />
+            </div>
+          )}
+          {candidate.socials.portfolio && (
+            <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
+              <Globe className="w-3 h-3 text-purple-600" />
+            </div>
+          )}
+          {candidate.socials.resume && (
+            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+              <FileText className="w-3 h-3 text-green-600" />
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -371,41 +443,193 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const renderCandidateProfile = () => {
     if (!selectedCandidate) return null;
 
+    const details = candidateDetails?.candidate;
+    const displayCandidate = details || selectedCandidate;
+
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-end">
-        <div className="fixed bg-white shadow-xl max-w-4xl w-full max-h-[100vh] overflow-y-auto p-4">
-          <div className="absolute right-2 p-6">
-            <button
-              onClick={() => setShowCandidateProfile(false)}
-              className="p-2 hover:bg-gray-100 rounded-lg"
-            >
-              <X className="w-5 h-5 text-gray-500" />
+      <div className="fixed inset-0 bg-black bg-opacity-30 z-[60] flex">
+        <div className="ml-auto w-2/3 bg-white shadow-xl h-full overflow-y-auto">
+          <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setShowCandidateProfile(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <ChevronRight className="w-5 h-5 text-gray-500 rotate-180" />
+              </button>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Head of Google Ads Marketing
+              </h2>
+            </div>
+            <button className="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+              <Share2 className="w-4 h-4" />
+              <span>Share</span>
             </button>
           </div>
-          <div className="p-6 space-y-6">
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                {selectedCandidate.avatar}
+
+          <div className="p-6">
+            {/* Candidate Header */}
+            <div className="flex items-start justify-between mb-6">
+              <div className="flex items-center space-x-4">
+                <img
+                  src={displayCandidate.profilePicture || selectedCandidate.profilePicture}
+                  alt={displayCandidate.full_name || selectedCandidate.name}
+                  className="w-20 h-20 rounded-full object-cover"
+                />
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                    {displayCandidate.full_name || selectedCandidate.name}
+                  </h1>
+                  <p className="text-blue-600 font-medium mb-2">
+                    {displayCandidate.headline || `${selectedCandidate.role} | ${selectedCandidate.company}`}
+                  </p>
+                  <p className="text-gray-600 flex items-center">
+                    <MapPin className="w-4 h-4 mr-1" />
+                    {displayCandidate.location || selectedCandidate.location}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">
-                  {selectedCandidate.name}
-                </h2>
-                <p className="text-gray-600">
-                  {selectedCandidate.role} at {selectedCandidate.company}
-                </p>
-                <p className="text-gray-500 flex items-center">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  {selectedCandidate.location || "Location not available"}
-                </p>
+              <div className="text-right">
+                <div className="text-3xl font-bold text-blue-600 mb-1">
+                  {selectedCandidate.score}%
+                </div>
+                <div className="flex flex-col space-y-2">
+                  <div className="text-sm text-gray-600 flex items-center">
+                    <Mail className="w-4 h-4 mr-2" />
+                    {displayCandidate.candidate_email || "contact@example.com"}
+                  </div>
+                  <div className="text-sm text-gray-600 flex items-center">
+                    <Phone className="w-4 h-4 mr-2" />
+                    {displayCandidate.candidate_phone || "9375 4575 45"}
+                  </div>
+                </div>
               </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-2">Notes</h3>
-              <p className="text-gray-700">
-                {selectedCandidate.notes || "No notes available"}
+
+            {/* Stats Row */}
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              <div className="bg-gray-50 rounded-lg p-3 text-center">
+                <div className="flex items-center justify-center mb-1">
+                  <Briefcase className="w-4 h-4 mr-1 text-gray-500" />
+                  <span className="text-sm text-gray-500">Experience</span>
+                </div>
+                <p className="font-semibold">{displayCandidate.total_experience || "5"} Years</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3 text-center">
+                <div className="flex items-center justify-center mb-1">
+                  <Calendar className="w-4 h-4 mr-1 text-gray-500" />
+                  <span className="text-sm text-gray-500">Notice Period</span>
+                </div>
+                <p className="font-semibold">{displayCandidate.notice_period_days || "15"} Days</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3 text-center">
+                <div className="flex items-center justify-center mb-1">
+                  <Star className="w-4 h-4 mr-1 text-gray-500" />
+                  <span className="text-sm text-gray-500">Current Salary</span>
+                </div>
+                <p className="font-semibold">{displayCandidate.current_salary || "20"} LPA</p>
+              </div>
+            </div>
+
+            {/* Move to Next Round Button */}
+            <div className="mb-8">
+              <div className="flex items-center space-x-3">
+                <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                  <ChevronRight className="w-4 h-4" />
+                  <span>Move to Next Round</span>
+                </button>
+                <button className="p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                  <Trash2 className="w-4 h-4 text-gray-500" />
+                </button>
+              </div>
+            </div>
+
+            {/* Profile Summary */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Profile Summary</h3>
+              <p className="text-gray-700 leading-relaxed">
+                {displayCandidate.profile_summary || selectedCandidate.profileSummary}
               </p>
             </div>
+
+            {/* Experience */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Experience</h3>
+              <div className="space-y-4">
+                {(details?.experience || [
+                  {
+                    job_title: "AI Engineer - Analyst",
+                    company: "Jupiter Fintech Pvt.Ltd",
+                    location: "Bangalore, Karnataka",
+                    start_date: "12/2024",
+                    end_date: null,
+                    description: "I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs).",
+                    is_current: true,
+                  },
+                  {
+                    job_title: "Digital Marketing -Gen AI Team",
+                    company: "Google",
+                    location: "Bangalore, Karnataka",
+                    start_date: "11/2023",
+                    end_date: "11/2024",
+                    description: "Worked on digital marketing strategies and AI implementation.",
+                    is_current: false,
+                  },
+                ]).map((exp: any, index: number) => (
+                  <div key={index} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Building2 className="w-5 h-5 text-red-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900">{exp.job_title}</h4>
+                      <p className="text-blue-600 font-medium">{exp.company} | {exp.location}</p>
+                      <p className="text-sm text-gray-500 mb-2">
+                        {exp.start_date} - {exp.is_current ? "Present" : exp.end_date}
+                      </p>
+                      <p className="text-gray-700">{exp.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Skills */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Skills</h3>
+              <div className="flex flex-wrap gap-2">
+                {(details?.skills_data?.skills_mentioned?.map((s: any) => s.skill) || selectedCandidate.skills).slice(0, 10).map((skill: string, index: number) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Education */}
+            {details?.education && details.education.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Education</h3>
+                <div className="space-y-4">
+                  {details.education.map((edu: any, index: number) => (
+                    <div key={index} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <GraduationCap className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">{edu.degree}</h4>
+                        <p className="text-blue-600 font-medium">{edu.institution}</p>
+                        {edu.start_date && edu.end_date && (
+                          <p className="text-sm text-gray-500">{edu.start_date} - {edu.end_date}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -416,85 +640,113 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     stageCandidates[stageName]?.length || 0;
 
   if (authLoading) {
-    return <div>Loading authentication...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="text-lg text-gray-600">Loading authentication...</div>
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
-    return <div>You need to be logged in to view this page.</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="text-lg text-gray-600">You need to be logged in to view this page.</div>
+      </div>
+    );
   }
 
   if (isFetching) {
-    return <div>Loading pipeline data...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="text-lg text-gray-600">Loading pipeline data...</div>
+      </div>
+    );
   }
 
   return (
     <>
-      <div className="mx-auto max-w-[85vw] min-h-screen bg-white">
-        <div className="bg-white border-b border-gray-200 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <button onClick={handleGoToDashboard}>
-                <ArrowLeft className="w-10 h-5" />
-              </button>
-              <h1 className="text-xl font-semibold text-gray-900">
-                Pipeline for Job ID: {jobId}
-              </h1>
-            </div>
-            <div className="flex gap-2 items-center">
-              <p className="text-xs text-gray-500">Share Using:</p>
-              <button
-                onClick={() => setShowAccessModal(true)}
-                className="p-1 px-4 border border-blue-500 text-blue-500 text-sm font-medium rounded-lg hover:bg-blue-500 hover:text-white transition-colors flex items-center space-x-2"
-              >
-                <Mail className="w-4 h-4" />
-                <span>Email</span>
-              </button>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3">
+                  <div className="text-xl font-bold text-blue-600">NxtHyre</div>
+                  <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                    Explore NxtHyre
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search Candidate"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-4 py-2 w-64 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <button className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 bg-blue-600 text-white rounded">
+                    <Search className="w-3 h-3" />
+                  </button>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-500">Share:</span>
+                  <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg">
+                    <Mail className="w-4 h-4" />
+                  </button>
+                  <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg">
+                    <Globe className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div className="bg-white py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <span className="text-sm font-medium text-gray-700"></span>
-            </div>
-          </div>
+
+        {/* Job Title */}
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <h1 className="text-2xl font-bold text-gray-900">
+            Head of Google Ads Marketing
+          </h1>
         </div>
-        <div className="px-2">
+
+        {/* Pipeline Stages */}
+        <div className="max-w-7xl mx-auto px-6 pb-8">
           <div className="overflow-x-auto">
-            <div className="flex space-x-4 min-w-max pb-4">
+            <div className="flex space-x-6 min-w-max">
               {shareableStages.map((stage) => {
                 const candidates = stageCandidates[stage.name] || [];
                 const stageCount = getStageCount(stage.name);
                 return (
                   <div
                     key={stage.name}
-                    className="w-72 flex-shrink-0 h-[80vh]"
+                    className="w-80 flex-shrink-0"
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, stage.name)}
                   >
-                    <div className={`${stage.color} rounded-lg p-3`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center justify-between gap-2 mb-4">
-                          <div className={`${stage.bgColor} p-1 rounded-md`}>
-                            <h3 className="font-semibold text-gray-900 text-sm">
-                              {stage.name}
-                            </h3>
-                          </div>
-                          <p
-                            className={`text-sm font-semibold ${stage.textColor} p-1`}
-                          >
-                            {stageCount}
-                          </p>
-                        </div>
+                    <div className={`${stage.color} rounded-xl p-4 h-[calc(100vh-240px)]`}>
+                      {/* Stage Header */}
+                      <div className={`flex items-center justify-between mb-4 p-3 rounded-lg ${stage.borderColor} bg-white`}>
+                        <h3 className="font-semibold text-gray-900 text-sm">
+                          {stage.name}
+                        </h3>
+                        <span className={`text-lg font-bold ${stage.textColor}`}>
+                          {stageCount}
+                        </span>
                       </div>
-                      <div className="overflow-y-auto max-h-[70vh]">
+
+                      {/* Candidates List */}
+                      <div className="overflow-y-auto h-full pb-4">
                         <div className="space-y-3">
                           {candidates.map((candidate: any) =>
                             renderCandidateCard(candidate, stage.name)
                           )}
                           {candidates.length === 0 && (
-                            <div className="text-center py-8 text-gray-400">
-                              <User className="w-8 h-8 mx-auto mb-2" />
+                            <div className="text-center py-12 text-gray-400">
+                              <User className="w-12 h-12 mx-auto mb-3 opacity-50" />
                               <p className="text-sm">No candidates</p>
                             </div>
                           )}
@@ -508,6 +760,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Access Modal */}
       {showAccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
@@ -590,9 +844,11 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           </div>
         </div>
       )}
+
+      {/* Feedback Modal */}
       {showFeedbackModal && feedbackData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex justify-center items-center">
-          <div className="bg-white h-[70vh] w-[50vw] shadow-xl rounded-md">
+          <div className="bg-white h-[70vh] w-[50vw] shadow-xl rounded-xl">
             <div className="p-6 h-full flex flex-col">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold">
@@ -659,6 +915,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           </div>
         </div>
       )}
+
+      {/* Candidate Profile Modal */}
       {showCandidateProfile && renderCandidateProfile()}
     </>
   );
