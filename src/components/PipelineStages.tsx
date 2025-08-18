@@ -454,6 +454,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [sortBy, setSortBy] = useState("Relevance");
 
+  const [showSettingsPopup, setShowSettingsPopup] = useState(false);
+  const settingsPopupRef = useRef<HTMLDivElement>(null);
+
   const handleSortSelect = (sortValue: string) => {
     setSortBy(sortValue);
     setShowSortDropdown(false);
@@ -799,6 +802,19 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     setShowLogoutModal(true);
   };
 
+  useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      settingsPopupRef.current &&
+      !settingsPopupRef.current.contains(event.target as Node) 
+    ) {
+      setShowSettingsPopup(false);
+    }
+  };
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => document.removeEventListener("mousedown", handleClickOutside);
+}, [showSettingsPopup]);
+
   console.log(
     "Transferred stage data PipelineStages :::::::::::::::::::: ",
     selectedCandidate?.stageData
@@ -1111,29 +1127,78 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       </button>
                     )}
 
-                    <button
-                      className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                      aria-label="upload selected candidates"
-                    >
-                      <svg
-                        width="15"
-                        height="15"
-                        viewBox="0 0 15 15"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="text-gray-400 text-xs lg:text-base font-[400] mr-1"
+                    <div className="relative">
+                      <button
+                        className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowSettingsPopup(!showSettingsPopup);
+                        }}
+                        aria-label="Open settings"
                       >
-                        <path
-                          d="M7.84594 1.5587C7.75713 1.46158 7.63163 1.40625 7.5 1.40625C7.36838 1.40625 7.24288 1.46158 7.15407 1.5587L4.65405 4.29307C4.47937 4.48414 4.49264 4.78064 4.6837 4.95533C4.87477 5.13001 5.17127 5.11674 5.34595 4.92568L7.03125 3.08237V10C7.03125 10.2589 7.24113 10.4688 7.5 10.4688C7.75888 10.4688 7.96875 10.2589 7.96875 10V3.08237L9.65407 4.92568C9.82875 5.11674 10.1253 5.13001 10.3163 4.95533C10.5074 4.78064 10.5206 4.48414 10.3459 4.29307L7.84594 1.5587Z"
-                          fill="#818283"
-                        />
-                        <path
-                          d="M2.34375 9.375C2.34375 9.11612 2.13389 8.90625 1.875 8.90625C1.61612 8.90625 1.40625 9.11612 1.40625 9.375V9.40931C1.40624 10.2641 1.40623 10.953 1.47908 11.4949C1.55471 12.0574 1.71652 12.5311 2.09272 12.9072C2.46892 13.2835 2.94259 13.4453 3.50516 13.5209C4.04701 13.5937 4.73596 13.5937 5.59071 13.5937H9.40931C10.2641 13.5937 10.953 13.5937 11.4949 13.5209C12.0574 13.4453 12.5311 13.2835 12.9073 12.9072C13.2835 12.5311 13.4453 12.0574 13.5209 11.4949C13.5937 10.953 13.5938 10.2641 13.5938 9.40931V9.375C13.5938 9.11612 13.3839 8.90625 13.125 8.90625C12.8661 8.90625 12.6562 9.11612 12.6562 9.375C12.6562 10.2721 12.6553 10.8978 12.5918 11.3699C12.5301 11.8286 12.4174 12.0714 12.2444 12.2444C12.0714 12.4174 11.8286 12.5301 11.3699 12.5918C10.8978 12.6552 10.2721 12.6562 9.375 12.6562H5.625C4.72787 12.6562 4.10217 12.6552 3.63008 12.5918C3.17147 12.5301 2.92861 12.4174 2.75563 12.2444C2.58266 12.0714 2.46988 11.8286 2.40822 11.3699C2.34474 10.8978 2.34375 10.2721 2.34375 9.375Z"
-                          fill="#818283"
-                        />
-                      </svg>
-                      Upload
-                    </button>
+                        <svg
+                          width="15"
+                          height="15"
+                          viewBox="0 0 15 15"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="text-gray-400 text-xs lg:text-base font-[400] mr-1"
+                        >
+                          <path
+                            d="M3.64645 2.64645C3.84171 2.45118 4.15829 2.45118 4.35355 2.64645L5.53553 3.82843C5.73891 4.03181 5.73891 4.36502 5.53553 4.5684C5.33215 4.77178 4.99894 4.77178 4.79556 4.5684L3.64645 3.41929C3.45118 3.22391 3.45118 2.90053 3.64645 2.70526V2.64645Z"
+                            fill="currentColor"
+                          />
+                          <path
+                            d="M6.5 1C6.5 0.723857 6.72386 0.5 7 0.5C7.27614 0.5 7.5 0.723857 7.5 1V1.5H8.5V1C8.5 0.723857 8.72386 0.5 9 0.5C9.27614 0.5 9.5 0.723857 9.5 1V1.5H10.5V1C10.5 0.723857 10.7239 0.5 11 0.5C11.2761 0.5 11.5 0.723857 11.5 1V1.5H12C12.8284 1.5 13.5 2.17157 13.5 3V12C13.5 12.8284 12.8284 13.5 12 13.5H3C2.17157 13.5 1.5 12.8284 1.5 12V3C1.5 2.17157 2.17157 1.5 3 1.5H3.5V1C3.5 0.723857 3.72386 0.5 4 0.5C4.27614 0.5 4.5 0.723857 4.5 1V1.5H5.5V1C5.5 0.723857 5.72386 0.5 6 0.5V1Z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                        Settings
+                      </button>
+                      {showSettingsPopup && (
+                        <div
+                          ref={settingsPopupRef}
+                          className="absolute top-full right-0 mt-2 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-4"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="flex flex-col space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium text-gray-700">Notifications</span>
+                              <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  className="sr-only peer"
+                                  defaultChecked
+                                />
+                                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                              </label>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium text-gray-700">Email Alerts</span>
+                              <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  className="sr-only peer"
+                                  defaultChecked
+                                />
+                                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                              </label>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium text-gray-700">Auto-Save</span>
+                              <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  className="sr-only peer"
+                                  defaultChecked
+                                />
+                                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
                     <div className="relative flex space-x-2">
                       <button
