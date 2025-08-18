@@ -1407,7 +1407,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             ))}
           </div>
         </div>
-        <div className="py-2 overflow-y-auto max-h-[60vh]">
+        <div className="py-2 overflow-y-auto max-h-[90vh]">
           {/* {externalNotes} */}
           {renderTabContent()}
         </div>

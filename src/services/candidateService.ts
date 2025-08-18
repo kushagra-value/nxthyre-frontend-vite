@@ -502,7 +502,7 @@ class CandidateService {
 
   async getAssessmentResults(jobId: number, candidateId: string): Promise<any> {
     try {
-      const response = await apiClient.get(`/api/assessment/results`, {
+      const response = await apiClient.get(`/assessment/results`, {
         params: {
           job_id: jobId,
           candidate_id: candidateId,

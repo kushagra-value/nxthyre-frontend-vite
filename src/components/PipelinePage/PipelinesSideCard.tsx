@@ -267,7 +267,6 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
       : selectedCandidate?.phone?.number || ""
     : "93********45";
 
-  console.log("Stage data PipelinesSideCard :::::::::::::::::::: ", stageData);
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 space-y-4 min-h-[81vh]">
       {selectedCandidate ? (
