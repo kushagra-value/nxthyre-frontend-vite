@@ -853,7 +853,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       <Users />
                     </button>
                     {isDropdownOpen && (
-                      <div className="absolute top-4 z-10 w-full bg-white shadow-lg mt-1 rounded-lg max-h-60 overflow-y-auto border border-gray-200">
+                      <div className="absolute top-8 z-10 w-full bg-white shadow-lg mt-1 rounded-lg max-h-60 overflow-y-auto border border-gray-200">
                         {categories.map((category) => (
                           <div
                             key={category.id}
@@ -879,7 +879,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       className="flex items-center justify-center bg-white h-10 w-10 rounded-lg mr-2 text-gray-600 border border-gray-300 focus:outline-none"
                       aria-label="Back to select pipelines"
                     >
-                      <LogOut className="w-4 h-4" />
+                      <LogOut className="w-4 h-4 rotate-180" />
                     </button>
                     <div className="flex-1">
                       <input
