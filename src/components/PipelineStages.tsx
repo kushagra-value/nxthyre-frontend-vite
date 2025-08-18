@@ -1140,33 +1140,20 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         }}
                         aria-label="Open settings"
                       >
-                        <svg
-                          width="15"
-                          height="15"
-                          viewBox="0 0 15 15"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="text-gray-400 text-xs lg:text-base font-[400] mr-1"
-                        >
-                          <path
-                            d="M3.64645 2.64645C3.84171 2.45118 4.15829 2.45118 4.35355 2.64645L5.53553 3.82843C5.73891 4.03181 5.73891 4.36502 5.53553 4.5684C5.33215 4.77178 4.99894 4.77178 4.79556 4.5684L3.64645 3.41929C3.45118 3.22391 3.45118 2.90053 3.64645 2.70526V2.64645Z"
-                            fill="currentColor"
-                          />
-                          <path
-                            d="M6.5 1C6.5 0.723857 6.72386 0.5 7 0.5C7.27614 0.5 7.5 0.723857 7.5 1V1.5H8.5V1C8.5 0.723857 8.72386 0.5 9 0.5C9.27614 0.5 9.5 0.723857 9.5 1V1.5H10.5V1C10.5 0.723857 10.7239 0.5 11 0.5C11.2761 0.5 11.5 0.723857 11.5 1V1.5H12C12.8284 1.5 13.5 2.17157 13.5 3V12C13.5 12.8284 12.8284 13.5 12 13.5H3C2.17157 13.5 1.5 12.8284 1.5 12V3C1.5 2.17157 2.17157 1.5 3 1.5H3.5V1C3.5 0.723857 3.72386 0.5 4 0.5C4.27614 0.5 4.5 0.723857 4.5 1V1.5H5.5V1C5.5 0.723857 5.72386 0.5 6 0.5V1Z"
-                            fill="currentColor"
-                          />
+                        <svg width="13" height="15" viewBox="0 0 13 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400 text-xs lg:text-base font-[400] mr-1">
+                          <path d="M3.95966 2.38894C5.19943 1.64006 5.81934 1.26562 6.5 1.26562C7.18066 1.26562 7.80057 1.64006 9.04033 2.38894L9.45967 2.64223C10.6994 3.39111 11.3193 3.76555 11.6597 4.38229C12 4.99904 12 5.74792 12 7.2457V7.75222C12 9.25003 12 9.9989 11.6597 10.6156C11.3193 11.2324 10.6994 11.6068 9.45967 12.3557L9.04033 12.609C7.80057 13.3579 7.18066 13.7323 6.5 13.7323C5.81934 13.7323 5.19943 13.3579 3.95966 12.609L3.54034 12.3557C2.30057 11.6068 1.68068 11.2324 1.34034 10.6156C1 9.9989 1 9.25003 1 7.75222V7.2457C1 5.74792 1 4.99904 1.34034 4.38229C1.68068 3.76555 2.30057 3.39111 3.54034 2.64223L3.95966 2.38894Z" stroke="#818283"/>
+                          <path d="M6.5013 9.37281C7.51382 9.37281 8.33464 8.53559 8.33464 7.50281C8.33464 6.47004 7.51382 5.63281 6.5013 5.63281C5.48878 5.63281 4.66797 6.47004 4.66797 7.50281C4.66797 8.53559 5.48878 9.37281 6.5013 9.37281Z" stroke="#818283"/>
                         </svg>
                         Settings
                       </button>
                       {showSettingsPopup && (
                       <div
                         ref={settingsPopupRef}
-                        className="absolute top-full right-0 mt-2 w-64 bg-white border border-gray-200 rounded-md shadow-lg"
+                        className="absolute top-full right-0 mt-2 p-4 w-96 bg-white border border-gray-200 rounded-md shadow-lg"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="border-b border-gray-200">
-                          <div className="px-4 py-3">
+                          <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Cutoff Score
                             </label>
@@ -1180,7 +1167,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     setCutoffScore(value);
                                   }
                                 }}
-                                className="w-16 px-2 py-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                className="w-8 px-2 py-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
                                 placeholder="75"
                                 aria-label="Cutoff score (0-100)"
                               />
@@ -1188,7 +1175,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             </div>
                           </div>
                         </div>
-                        <div className="px-4 py-3">
+                        <div>
                           <div className="flex flex-col space-y-3">
                             <div className="flex items-center justify-between">
                               <span className="text-sm font-medium text-gray-700">Follow Up</span>
