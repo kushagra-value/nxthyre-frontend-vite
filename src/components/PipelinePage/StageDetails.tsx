@@ -777,8 +777,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       case "Coding":
         if (codingQuestions.length === 0) {
           return (
-            <div className="flex justify-center items-center">
-              <div className="flex flex-col items-start justify-center h-full py-12 px-4">
+            <div className="flex justify-center items-center bg-[#F5F9FB]">
+              <div className="flex flex-col items-center justify-center h-full py-12 px-4">
                 <div className="relative inline-block">
                   {/* First SVG (outer shape) */}
                   <svg
@@ -810,7 +810,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   </svg>
                 </div>
 
-                <h3 className="text-xl font-medium text-[#4B5563] mt-4">
+                <h3 className="text-xl text-center text-gray-400 mt-4">
                   Candidate coding round will shown here once they complete it
                 </h3>
               </div>
