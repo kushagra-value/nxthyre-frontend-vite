@@ -900,9 +900,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         console.log("interviewData Resume score: ", interviewData?.resumeScore);
         return (
           <div className="space-y-3 bg-[#F5F9FB] p-2 rounded-xl">
-            {interviewData.resumeScore ||
-            interviewData.knowledgeScore ||
-            interviewData.communicationScore ? (
+            {interviewData?.resumeScore ||
+            interviewData?.knowledgeScore ||
+            interviewData?.communicationScore ? (
               <>
                 <div className="bg-white rounded-xl p-2">
                   <h4 className="text-base font-medium text-[#4B5563] mb-4">
