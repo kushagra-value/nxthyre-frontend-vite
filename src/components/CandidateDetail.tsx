@@ -805,7 +805,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                         <div className="flex-1 space-y-0.5">
                           <h4 className="font-medium text-[#111827] text-sm">
                             {note.postedBy?.userName ||
-                              note.organisation?.orgName ||
+                              note.postedBy?.email ||
                               "Unknown"}
                           </h4>
                           <p className="text-sm text-[#4B5563]">

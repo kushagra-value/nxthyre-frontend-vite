@@ -531,6 +531,7 @@ class CandidateService {
       );
       return response.data;
     } catch (error: any) {
+      console.error("Server error response:", error.response?.data);
       throw new Error(
         error.response?.data?.error || "Failed to post candidate note"
       );
