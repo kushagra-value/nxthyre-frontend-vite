@@ -634,6 +634,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
   const handleStageSelect = (stage: string) => {
     setSelectedStage(stage);
+    setViewMode("stage");
     setSelectedCandidate(null);
   };
 
@@ -870,13 +871,30 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                     setSelectedStage("Uncontacted");
                     setActiveTab("uncontacted");
                   }}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                  className={`w-full flex items-center space-x-3 pr-3 py-2 rounded-lg text-left transition-colors ${
                     viewMode === "prospect" ? "bg-blue-50 text-blue-700 border border-blue-200" : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
                   {viewMode === "prospect" && <div className="w-1 h-8 bg-blue-500 rounded-tr-xl rounded-br-xl rounded" />}
                   <User className={`w-4 h-4 ${viewMode === "prospect" ? "text-blue-600" : "text-gray-600"}`} />
-                  <span className="flex-1 font-medium">Prospect</span>
+                  <div className="flex flex-col items-start justify-center">
+                    <span className="flex-1 font-medium">
+                      Prospect
+                    </span>
+                    
+                      <p className={`text-xs text-blue-600`}>
+                        5 candidates sent you a message
+                      </p>
+                 
+                  </div>
+                  <span
+                    className={`px-2 py-1 text-sm ${
+                      viewMode === "prospect" ? "text-blue-800" : "text-gray-400"
+                    }`}
+                  >
+                    {stages.find((s) => ["Uncontacted", "Invites Sent", "Applied"].includes(s.name))
+                      ?.candidate_count || 0}
+                  </span>
                 </button>
                 {filteredStages.length > 0
                   ? filteredStages.map((stage) => {
