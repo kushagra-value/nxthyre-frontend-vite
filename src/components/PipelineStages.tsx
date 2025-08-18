@@ -1392,6 +1392,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               moveCandidate={moveCandidate}
               archiveCandidate={archiveCandidate}
               stageData={selectedCandidate?.stageData}
+              jobId={activeJobId ?? 0}
             />
           </div>
         </div>

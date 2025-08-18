@@ -30,6 +30,7 @@ import {
   FileText,
   Minus,
 } from "lucide-react";
+import candidateService from "../../services/candidateService";
 
 interface Stage {
   id: number;
@@ -250,6 +251,7 @@ interface StageDetailsProps {
   moveCandidate: (applicationId: number, stageId: number) => Promise<void>;
   archiveCandidate: (applicationId: number) => Promise<void>;
   transferredStageData?: PipelineCandidate["stageData"];
+  jobId: number;
 }
 
 const StageDetails: React.FC<StageDetailsProps> = ({
@@ -260,6 +262,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   moveCandidate,
   archiveCandidate,
   transferredStageData,
+  jobId,
 }) => {
   const [activeTab, setActiveTab] = useState("Profile");
   const [showMoreProfile, setShowMoreProfile] = useState(false);
@@ -686,34 +689,77 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           </div>
         );
       case "Coding":
-        const codingQuestions = [
-          {
-            question:
-              'Write a function to reverse a given string. For example, if the input is "hello", the output should be "olleh".',
-            language: "Python",
-            difficulty: "Easy",
-            status: "Pass",
-          },
-          {
-            question:
-              'Write a function to reverse a given string. For example, if the input is "hello", the output should be "olleh".',
-            language: "Python",
-            difficulty: "Medium",
-            status: "Fail",
-          },
-          {
-            question:
-              'Write a function to reverse a given string. For example, if the input is "hello", the output should be "olleh".',
-            language: "Python",
-            difficulty: "Medium",
-            status: "Skip",
-          },
-        ];
+        type CodingQuestion = {
+          question: string;
+          language: string;
+          difficulty: string;
+          status: string;
+        };
+        const [codingQuestions, setCodingQuestions] = useState<
+          CodingQuestion[]
+        >([]);
+        const [date, setDate] = useState("");
+
+        useEffect(() => {
+          const fetchData = async () => {
+            try {
+              const data = await candidateService.getAssessmentResults(
+                jobId,
+                selectedCandidate.id
+              );
+              const questions = data.problem_results.map((pr: any) => ({
+                question: pr.problem.description,
+                language: pr.language || "N/A",
+                difficulty: getDifficultyLevel(pr.problem.difficulty),
+                status: mapStatus(pr.status),
+              }));
+              setCodingQuestions(questions);
+              const completedDate = new Date(data.completed_at);
+              setDate(completedDate.toLocaleDateString("en-GB"));
+            } catch (error) {
+              console.error(error);
+            }
+          };
+          fetchData();
+        }, []);
+
+        const getDifficultyLevel = (diff: any) => {
+          const num = parseInt(diff);
+          if (num < 8) return "Easy";
+          if (num < 10) return "Medium";
+          return "Hard";
+        };
+
+        const mapStatus = (status: any) => {
+          if (status === "Accepted") return "Pass";
+          if (status === "Wrong Answer") return "Fail";
+          return "Skip";
+        };
+
+        const getDifficultyDots = (difficulty: any) => {
+          let fullCount = 0;
+          if (difficulty === "Easy") fullCount = 1;
+          else if (difficulty === "Medium") fullCount = 2;
+          else if (difficulty === "Hard") fullCount = 3;
+          return [...Array(3)].map((_, i) => (
+            <div
+              key={i}
+              className={`w-2 h-2 bg-[#818283] rounded-full ${
+                i < fullCount ? "" : "opacity-50"
+              }`}
+            />
+          ));
+        };
+
+        if (codingQuestions.length === 0) {
+          return <div>Loading...</div>;
+        }
+
         return (
           <div className="bg-[#F5F9FB] px-4 py-2 rounded-xl space-y-6">
             <div className="flex justify-between items-center">
               <h3 className="text-xl font-medium text-[#4B5563]">Questions</h3>
-              <p className="text-base text-[#818283]">02/08/2024</p>
+              <p className="text-base text-[#818283]">{date}</p>
             </div>
             {codingQuestions.map((q, index) => (
               <div
@@ -733,9 +779,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     <div className="flex items-center text-[#818283]">
                       {q.difficulty}
                       <div className="ml-2 flex space-x-1">
-                        <div className="w-2 h-2 bg-[#818283] rounded-full"></div>
-                        <div className="w-2 h-2 bg-[#818283] rounded-full opacity-50"></div>
-                        <div className="w-2 h-2 bg-[#818283] rounded-full opacity-50"></div>
+                        {getDifficultyDots(q.difficulty)}
                       </div>
                     </div>
                     <button className="flex items-center text-[#818283]">

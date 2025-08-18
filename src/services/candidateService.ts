@@ -500,6 +500,22 @@ class CandidateService {
     }
   }
 
+  async getAssessmentResults(jobId: number, candidateId: string): Promise<any> {
+    try {
+      const response = await apiClient.get(`/api/assessment/results`, {
+        params: {
+          job_id: jobId,
+          candidate_id: candidateId,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch assessment results"
+      );
+    }
+  }
+
   async postCandidateNote(
     candidateId: string,
     payload: {
