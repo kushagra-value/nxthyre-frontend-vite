@@ -25,7 +25,9 @@ import {
   Trash2,
   Copy,
   Delete,
-   DollarSign, Users, Share, Eye 
+   DollarSign, Users, Share, Eye, 
+   MailIcon,
+   PhoneIcon
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import apiClient from "../services/api"; // Adjust path as necessary
@@ -707,8 +709,8 @@ const ArchiveIcon = () => (
                   
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                      <h1 className="text-2xl font-bold text-gray-900">{displayCandidate.full_name}</h1>
-                      <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">{selectedCandidate.score}%</span>
+                      <h1 className="text-2xl font-bold text-gray-900">{selectedCandidate.full_name}</h1>
+                      <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">75%</span>
                     </div>
                     <p className="text-gray-600 mb-2">
                       {displayCandidate.headline || `${selectedCandidate.role} | ${selectedCandidate.company}`}
@@ -719,8 +721,8 @@ const ArchiveIcon = () => (
 
                 {/* Contact Info */}
                 <div className="text-right text-gray-600">
-                  <p className="mb-1">{displayCandidate.candidate_email || "contact@example.com"}</p>
-                  <p>{displayCandidate.candidate_phone || "9375 4575 45"}</p>
+                  <p className="mb-1">{displayCandidate.candidate_email || "contact@example.com"} <MailIcon className="w-4 h-4 p-1"/></p>
+                  <p>{displayCandidate.candidate_phone || "9375 4575 45"} <PhoneIcon className="w-4 h-4 p-1"/></p>
                 </div>
               </div>
 
