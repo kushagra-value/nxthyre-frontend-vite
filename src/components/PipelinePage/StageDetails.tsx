@@ -345,10 +345,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
     ));
   };
 
-  const tabs =
-    selectedStage === "Uncontacted"
-      ? ["Profile", "Assessment", "Activity", "Notes"]
-      : ["Profile", "Coding", "Interview", "Activity", "Notes"];
+  const tabs = ["Profile", "Coding", "Interview", "Activity", "Notes"];
 
   if (!selectedCandidate) {
     return (
@@ -491,144 +488,156 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           selectedCandidate.recommendations.received || [];
         return (
           <div className="bg-[#F5F9FB] py-4 px-2 rounded-xl space-y-6">
-            <div>
-              <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
-                <User className="w-4 h-4 mr-2 text-[#4B5563]" />
-                Profile Summary
-              </h3>
-              <p className="text-sm pl-6 text-[#818283]">
-                {selectedCandidate.summary ||
-                  selectedCandidate.headline ||
-                  "No summary available"}
-              </p>
-            </div>
-            <div>
-              <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
-                <Briefcase className="w-4 h-4 mr-2 text-[#4B5563]" />
-                Experience
-              </h3>
-              {positions.length > 0 ? (
-                (showMoreProfile ? positions : positions.slice(0, 1)).map(
-                  (exp, index) => (
+            {selectedCandidate.summary && (
+              <div>
+                <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                  <User className="w-4 h-4 mr-2 text-[#4B5563]" />
+                  Profile Summary
+                </h3>
+                <p className="text-sm pl-6 text-[#818283]">
+                  {selectedCandidate.summary ||
+                    selectedCandidate.headline ||
+                    "No summary available"}
+                </p>
+              </div>
+            )}
+            {positions.length && (
+              <div>
+                <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                  <Briefcase className="w-4 h-4 mr-2 text-[#4B5563]" />
+                  Experience
+                </h3>
+                {positions.length > 0 ? (
+                  (showMoreProfile ? positions : positions.slice(0, 1)).map(
+                    (exp, index) => (
+                      <div
+                        key={index}
+                        className="ml-2 border-l-2 border-gray-200 pl-4 mb-4"
+                      >
+                        <h4 className="text-sm font-medium text-[#4B5563]">
+                          {exp.title}
+                        </h4>
+                        <p className="text-sm text-[#818283]">
+                          {exp.companyName} | {exp.location}
+                        </p>
+                        <p className="text-sm text-[#818283]">
+                          {exp.startDate?.month}/{exp.startDate?.year} -{" "}
+                          {exp.isCurrent
+                            ? "Present"
+                            : `${exp.endDate?.month}/${exp.endDate?.year}`}
+                        </p>
+                        <p className="text-sm text-[#818283] mt-1">
+                          {exp.description}
+                        </p>
+                      </div>
+                    )
+                  )
+                ) : (
+                  <p className="text-sm text-[#818283] ml-4">
+                    No experience details available
+                  </p>
+                )}
+                {positions.length > 1 && !showMoreProfile && (
+                  <button
+                    onClick={() => setShowMoreProfile(true)}
+                    className="text-[#0F47F2] text-sm flex items-center ml-4"
+                  >
+                    View More <ChevronDown className="w-4 h-4 ml-1" />
+                  </button>
+                )}
+              </div>
+            )}
+            {educations.length && (
+              <div>
+                <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                  <GraduationCap className="w-4 h-4 mr-2 text-[#4B5563]" />
+                  Education
+                </h3>
+                {educations.length > 0 ? (
+                  educations.map((edu, index) => (
                     <div
                       key={index}
                       className="ml-2 border-l-2 border-gray-200 pl-4 mb-4"
                     >
                       <h4 className="text-sm font-medium text-[#4B5563]">
-                        {exp.title}
+                        {edu.degreeName} in {edu.fieldOfStudy}
+                        {edu.isTopTier && (
+                          <span className="ml-2 text-xs bg-blue-100 text-blue-800 rounded px-1">
+                            Top Tier
+                          </span>
+                        )}
                       </h4>
+                      <p className="text-sm text-[#818283]">{edu.schoolName}</p>
                       <p className="text-sm text-[#818283]">
-                        {exp.companyName} | {exp.location}
-                      </p>
-                      <p className="text-sm text-[#818283]">
-                        {exp.startDate?.month}/{exp.startDate?.year} -{" "}
-                        {exp.isCurrent
-                          ? "Present"
-                          : `${exp.endDate?.month}/${exp.endDate?.year}`}
-                      </p>
-                      <p className="text-sm text-[#818283] mt-1">
-                        {exp.description}
+                        {edu.startDate?.year} - {edu.endDate?.year}
                       </p>
                     </div>
-                  )
-                )
-              ) : (
-                <p className="text-sm text-[#818283] ml-4">
-                  No experience details available
-                </p>
-              )}
-              {positions.length > 1 && !showMoreProfile && (
-                <button
-                  onClick={() => setShowMoreProfile(true)}
-                  className="text-[#0F47F2] text-sm flex items-center ml-4"
-                >
-                  View More <ChevronDown className="w-4 h-4 ml-1" />
-                </button>
-              )}
-            </div>
-            <div>
-              <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
-                <GraduationCap className="w-4 h-4 mr-2 text-[#4B5563]" />
-                Education
-              </h3>
-              {educations.length > 0 ? (
-                educations.map((edu, index) => (
-                  <div
-                    key={index}
-                    className="ml-2 border-l-2 border-gray-200 pl-4 mb-4"
-                  >
-                    <h4 className="text-sm font-medium text-[#4B5563]">
-                      {edu.degreeName} in {edu.fieldOfStudy}
-                      {edu.isTopTier && (
-                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 rounded px-1">
-                          Top Tier
-                        </span>
-                      )}
-                    </h4>
-                    <p className="text-sm text-[#818283]">{edu.schoolName}</p>
-                    <p className="text-sm text-[#818283]">
-                      {edu.startDate?.year} - {edu.endDate?.year}
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-[#818283] ml-4">
-                  No education details available
-                </p>
-              )}
-            </div>
-            <div>
-              <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
-                <Award className="w-4 h-4 mr-2 text-[#4B5563]" />
-                Certifications
-              </h3>
-              {certifications.length > 0 ? (
-                certifications.map((cert, index) => (
-                  <div
-                    key={index}
-                    className="ml-2 border-l-2 border-gray-200 pl-4 mb-4"
-                  >
-                    <h4 className="text-sm font-medium text-[#4B5563]">
-                      {cert.name}
-                    </h4>
-                    <p className="text-sm text-[#818283]">{cert.authority}</p>
-                    <p className="text-sm text-[#818283]">
-                      {cert.startDate?.month}/{cert.startDate?.year} -{" "}
-                      {cert.endDate
-                        ? `${cert.endDate?.month}/${cert.endDate?.year}`
-                        : "Present"}
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-[#818283] ml-4">
-                  No certifications available
-                </p>
-              )}
-            </div>
-            <div>
-              <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
-                <Star className="w-4 h-4 mr-2 text-[#4B5563]" />
-                Skills
-              </h3>
-              <div className="flex flex-wrap gap-2 ml-4">
-                {skills.length > 0 ? (
-                  skills.map((skill, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 bg-[#ECF1FF] text-[#0F47F2] text-sm rounded-md"
-                    >
-                      {skill.name}{" "}
-                      {skill.endorsementCount > 0
-                        ? `(${skill.endorsementCount})`
-                        : ""}
-                    </span>
                   ))
                 ) : (
-                  <p className="text-sm text-[#818283]">No skills available</p>
+                  <p className="text-sm text-[#818283] ml-4">
+                    No education details available
+                  </p>
                 )}
               </div>
-            </div>
+            )}
+            {certifications.length && (
+              <div>
+                <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                  <Award className="w-4 h-4 mr-2 text-[#4B5563]" />
+                  Certifications
+                </h3>
+                {certifications.length > 0 ? (
+                  certifications.map((cert, index) => (
+                    <div
+                      key={index}
+                      className="ml-2 border-l-2 border-gray-200 pl-4 mb-4"
+                    >
+                      <h4 className="text-sm font-medium text-[#4B5563]">
+                        {cert.name}
+                      </h4>
+                      <p className="text-sm text-[#818283]">{cert.authority}</p>
+                      <p className="text-sm text-[#818283]">
+                        {cert.startDate?.month}/{cert.startDate?.year} -{" "}
+                        {cert.endDate
+                          ? `${cert.endDate?.month}/${cert.endDate?.year}`
+                          : "Present"}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-[#818283] ml-4">
+                    No certifications available
+                  </p>
+                )}
+              </div>
+            )}
+            {skills.length && (
+              <div>
+                <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                  <Star className="w-4 h-4 mr-2 text-[#4B5563]" />
+                  Skills
+                </h3>
+                <div className="flex flex-wrap gap-2 ml-4">
+                  {skills.length > 0 ? (
+                    skills.map((skill, index) => (
+                      <span
+                        key={index}
+                        className="px-2 py-1 bg-[#ECF1FF] text-[#0F47F2] text-sm rounded-md"
+                      >
+                        {skill.name}{" "}
+                        {skill.endorsementCount > 0
+                          ? `(${skill.endorsementCount})`
+                          : ""}
+                      </span>
+                    ))
+                  ) : (
+                    <p className="text-sm text-[#818283]">
+                      No skills available
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
             {endorsements.length > 0 && (
               <div>
                 <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
@@ -659,124 +668,110 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 </div>
               </div>
             )}
-            <div>
-              <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
-                <TrendingUp className="w-4 h-4 mr-2 text-[#4B5563]" />
-                Additional Info
-              </h3>
-              <div className="ml-6 space-y-1 text-sm text-[#818283]">
-                {selectedCandidate.totalExperience && (
-                  <p>
-                    Total Experience: {selectedCandidate.totalExperience} years
-                  </p>
-                )}
-                {selectedCandidate.noticePeriodDays && (
-                  <p>
-                    Notice Period: {selectedCandidate.noticePeriodDays} days
-                  </p>
-                )}
-                {selectedCandidate.currentSalary && (
-                  <p>Current Salary: {selectedCandidate.currentSalary} LPA</p>
-                )}
-                {selectedCandidate.applicationType && (
-                  <p>Application Type: {selectedCandidate.applicationType}</p>
-                )}
-                {selectedCandidate.isRecentlyPromoted && (
-                  <p>Recently Promoted</p>
-                )}
-                {selectedCandidate.isBackgroundVerified && (
-                  <p>Background Verified</p>
-                )}
-                {selectedCandidate.isPrevetted && <p>Pre-vetted</p>}
+            {(selectedCandidate.totalExperience ||
+              selectedCandidate.noticePeriodDays ||
+              selectedCandidate.currentSalary ||
+              selectedCandidate.applicationType ||
+              selectedCandidate.isRecentlyPromoted ||
+              selectedCandidate.isBackgroundVerified ||
+              selectedCandidate.isPrevetted) && (
+              <div>
+                <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                  <TrendingUp className="w-4 h-4 mr-2 text-[#4B5563]" />
+                  Additional Info
+                </h3>
+                <div className="ml-6 space-y-1 text-sm text-[#818283]">
+                  {selectedCandidate.totalExperience && (
+                    <p>
+                      Total Experience: {selectedCandidate.totalExperience}{" "}
+                      years
+                    </p>
+                  )}
+                  {selectedCandidate.noticePeriodDays && (
+                    <p>
+                      Notice Period: {selectedCandidate.noticePeriodDays} days
+                    </p>
+                  )}
+                  {selectedCandidate.currentSalary && (
+                    <p>Current Salary: {selectedCandidate.currentSalary} LPA</p>
+                  )}
+                  {selectedCandidate.applicationType && (
+                    <p>Application Type: {selectedCandidate.applicationType}</p>
+                  )}
+                  {selectedCandidate.isRecentlyPromoted && (
+                    <p>Recently Promoted</p>
+                  )}
+                  {selectedCandidate.isBackgroundVerified && (
+                    <p>Background Verified</p>
+                  )}
+                  {selectedCandidate.isPrevetted && <p>Pre-vetted</p>}
+                </div>
               </div>
-            </div>
-            <div>
-              <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
-                <Link className="w-4 h-4 mr-2 text-[#4B5563]" />
-                Links
-              </h3>
-              <div className="ml-6 space-y-1 text-sm">
-                {selectedCandidate.linkedinUrl && (
-                  <a
-                    href={selectedCandidate.linkedinUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#0F47F2] flex items-center"
-                  >
-                    <Linkedin className="w-4 h-4 mr-2" /> LinkedIn
-                  </a>
-                )}
-                {selectedCandidate.githubUrl && (
-                  <a
-                    href={selectedCandidate.githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#0F47F2] flex items-center"
-                  >
-                    <Github className="w-4 h-4 mr-2" /> GitHub
-                  </a>
-                )}
-                {selectedCandidate.twitterUrl && (
-                  <a
-                    href={selectedCandidate.twitterUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#0F47F2] flex items-center"
-                  >
-                    <Twitter className="w-4 h-4 mr-2" /> Twitter
-                  </a>
-                )}
-                {selectedCandidate.portfolioUrl && (
-                  <a
-                    href={selectedCandidate.portfolioUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#0F47F2] flex items-center"
-                  >
-                    <Link className="w-4 h-4 mr-2" /> Portfolio
-                  </a>
-                )}
-                {selectedCandidate.resumeUrl && (
-                  <a
-                    href={selectedCandidate.resumeUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#0F47F2] flex items-center"
-                  >
-                    <FileText className="w-4 h-4 mr-2" /> Resume
-                  </a>
-                )}
+            )}
+            {(selectedCandidate.githubUrl ||
+              selectedCandidate.linkedinUrl ||
+              selectedCandidate.twitterUrl ||
+              selectedCandidate.portfolioUrl ||
+              selectedCandidate.resumeUrl) && (
+              <div>
+                <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                  <Link className="w-4 h-4 mr-2 text-[#4B5563]" />
+                  Links
+                </h3>
+                <div className="ml-6 space-y-1 text-sm">
+                  {selectedCandidate.linkedinUrl && (
+                    <a
+                      href={selectedCandidate.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#0F47F2] flex items-center"
+                    >
+                      <Linkedin className="w-4 h-4 mr-2" /> LinkedIn
+                    </a>
+                  )}
+                  {selectedCandidate.githubUrl && (
+                    <a
+                      href={selectedCandidate.githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#0F47F2] flex items-center"
+                    >
+                      <Github className="w-4 h-4 mr-2" /> GitHub
+                    </a>
+                  )}
+                  {selectedCandidate.twitterUrl && (
+                    <a
+                      href={selectedCandidate.twitterUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#0F47F2] flex items-center"
+                    >
+                      <Twitter className="w-4 h-4 mr-2" /> Twitter
+                    </a>
+                  )}
+                  {selectedCandidate.portfolioUrl && (
+                    <a
+                      href={selectedCandidate.portfolioUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#0F47F2] flex items-center"
+                    >
+                      <Link className="w-4 h-4 mr-2" /> Portfolio
+                    </a>
+                  )}
+                  {selectedCandidate.resumeUrl && (
+                    <a
+                      href={selectedCandidate.resumeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#0F47F2] flex items-center"
+                    >
+                      <FileText className="w-4 h-4 mr-2" /> Resume
+                    </a>
+                  )}
+                </div>
               </div>
-            </div>
-          </div>
-        );
-      case "Assessment":
-        const appliedData = transferredStageData?.applied;
-        return (
-          <div className="bg-[#F5F9FB] p-4 rounded-xl space-y-6">
-            <h3 className="text-base font-medium text-[#4B5563]">Assessment</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white rounded-md p-3 text-center">
-                <p className="text-sm text-[#818283]">Resume Score</p>
-                <p className="text-xl font-bold text-[#0F47F2]">
-                  {appliedData?.resumeScore || "N/A"}%
-                </p>
-              </div>
-              <div className="bg-white rounded-md p-3 text-center">
-                <p className="text-sm text-[#818283]">Skills Match</p>
-                <p className="text-xl font-bold text-[#16A34A]">
-                  {appliedData?.skillsMatch || "N/A"}
-                </p>
-              </div>
-            </div>
-            <div>
-              <h4 className="text-sm font-medium text-[#4B5563] mb-2">
-                Highlights
-              </h4>
-              <p className="text-sm text-[#818283] pl-2">
-                {appliedData?.highlights || "No highlights available"}
-              </p>
-            </div>
+            )}
           </div>
         );
       case "Coding":
