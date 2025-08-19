@@ -429,7 +429,7 @@ const ArchiveIcon = () => (
       
       {/* Percentage Badge */}
       <div className="col-span-3 text-right">
-        <span className="text-lg font-[400] text-blue-600 bg-white border border-gray-200 p-1 rounded-md">
+        <span className="text-lg font-[400] text-blue-600 bg-blue-50 border border-gray-200 px-1 rounded-md">
           75%
         </span>
       </div>
@@ -470,196 +470,6 @@ const ArchiveIcon = () => (
   const handleGoToDashboard = () => {
     window.location.href = "/";
   };
-
-  // const renderCandidateProfile = () => {
-  //   if (!selectedCandidate) return null;
-
-  //   const details = candidateDetails?.candidate;
-  //   const displayCandidate = details || selectedCandidate;
-
-  //   return (
-  //     <div className="fixed inset-0 bg-black bg-opacity-30 z-[60] flex">
-  //       <div className="ml-auto w-2/3 bg-white shadow-xl h-full overflow-y-auto">
-  //         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-  //           <div className="flex items-center space-x-4">
-  //           <button
-  //             onClick={() => setShowCandidateProfile(false)}
-  //             className="p-2 hover:bg-gray-100 rounded-lg"
-  //           >
-  //             <ChevronRight className="w-5 h-5 text-gray-500 rotate-180" />
-  //           </button>
-  //         </div>
-  //         <button className="flex items-center space-x-2 px-4 py-2 border border-blue-200 bg-blue-100 text-gray-700 rounded-lg hover:bg-blue-200 transition-colors">
-  //           <Share2 className="w-4 h-4" />
-  //           <span>Share</span>
-  //         </button>
-  //       </div>
-
-  //         <div className="p-6">
-  //           <div className="flex items-center justify-between mb-6">
-  //             <div className="flex items-center space-x-4">
-  //               <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-  //                 {selectedCandidate.avatar}
-  //               </div>
-  //               <div>
-  //                 <h2 className="text-2xl font-bold text-gray-900 mb-1">
-  //                   {displayCandidate.full_name}
-  //                 </h2>
-  //                 <p className="text-gray-600">
-  //                   {displayCandidate.headline || `${selectedCandidate.role} | ${selectedCandidate.company}`}
-  //                 </p>
-  //                 <p className="text-gray-600 flex items-center">
-  //                   <MapPin className="w-4 h-4 mr-1" />
-  //                   {displayCandidate.location}
-  //                 </p>
-  //               </div>
-  //             </div>
-  //             <div className="text-right">
-  //               <div className="text-3xl font-bold text-blue-600 mb-1">
-  //                 {selectedCandidate.score}%
-  //               </div>
-  //               <div className="flex flex-col space-y-2">
-  //                 <div className="text-sm text-gray-600 flex items-center">
-  //                   <Mail className="w-4 h-4 mr-2" />
-  //                   {displayCandidate.candidate_email || "contact@example.com"}
-  //                 </div>
-  //                 <div className="text-sm text-gray-600 flex items-center">
-  //                   <Phone className="w-4 h-4 mr-2" />
-  //                   {displayCandidate.candidate_phone || "9375 4575 45"}
-  //                 </div>
-  //               </div>
-  //             </div>
-  //           </div>
-
-  //           <div className="grid grid-cols-3 gap-4 mb-8">
-  //             <div className="bg-gray-50 rounded-lg p-3 text-center">
-  //               <div className="flex items-center justify-center mb-1">
-  //                 <Briefcase className="w-4 h-4 mr-1 text-gray-500" />
-  //                 <span className="text-sm text-gray-500">Experience</span>
-  //               </div>
-  //               <p className="font-semibold">{displayCandidate.total_experience || "5"} Years</p>
-  //             </div>
-  //             <div className="bg-gray-50 rounded-lg p-3 text-center">
-  //               <div className="flex items-center justify-center mb-1">
-  //                 <Calendar className="w-4 h-4 mr-1 text-gray-500" />
-  //                 <span className="text-sm text-gray-500">Notice Period</span>
-  //               </div>
-  //               <p className="font-semibold">{displayCandidate.notice_period_days || "15"} Days</p>
-  //             </div>
-  //             <div className="bg-gray-50 rounded-lg p-3 text-center">
-  //               <div className="flex items-center justify-center mb-1">
-  //                 <Star className="w-4 h-4 mr-1 text-gray-500" />
-  //                 <span className="text-sm text-gray-500">Current Salary</span>
-  //               </div>
-  //               <p className="font-semibold">{displayCandidate.current_salary || "20"} LPA</p>
-  //             </div>
-  //           </div>
-
-  //           <div className="mb-8">
-  //             <div className="flex items-center space-x-3">
-  //               <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
-  //                 <ChevronRight className="w-4 h-4" />
-  //                 <span>Move to Next Round</span>
-  //               </button>
-  //               <button className="p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-  //                 <Trash2 className="w-4 h-4 text-gray-500" />
-  //               </button>
-  //             </div>
-  //           </div>
-  //           </div>
-
-  //         {/* Profile Summary */}
-  //         <div className="mb-8">
-  //           <h3 className="text-lg font-semibold text-gray-900 mb-4">Profile Summary</h3>
-  //           <p className="text-gray-700 leading-relaxed">
-  //             {displayCandidate.profile_summary || selectedCandidate.profileSummary}
-  //           </p>
-  //         </div>
-          
-  //         {/* Experience */}
-  //         <div className="mb-8">
-  //           <h3 className="text-lg font-semibold text-gray-900 mb-4">Experience</h3>
-  //           <div className="space-y-4">
-  //             {(details?.experience || [
-  //               {
-  //                 job_title: "AI Engineer - Analyst",
-  //                 company: "Jupiter Fintech Pvt.Ltd",
-  //                 location: "Bangalore, Karnataka",
-  //                 start_date: "12/2024",
-  //                 end_date: null,
-  //                 description: "I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs).",
-  //                 is_current: true,
-  //               },
-  //               {
-  //                 job_title: "Digital Marketing -Gen AI Team",
-  //                 company: "Google",
-  //                 location: "Bangalore, Karnataka",
-  //                 start_date: "11/2023",
-  //                 end_date: "11/2024",
-  //                 description: "Worked on digital marketing strategies and AI implementation.",
-  //                 is_current: false,
-  //               },
-  //             ]).map((exp: any, index: number) => (
-  //               <div key={index} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
-  //                 <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-  //                   <Building2 className="w-5 h-5 text-red-600" />
-  //                 </div>
-  //                 <div className="flex-1">
-  //                   <h4 className="font-semibold text-gray-900">{exp.job_title}</h4>
-  //                   <p className="text-blue-600 font-medium">{exp.company} | {exp.location}</p>
-  //                   <p className="text-sm text-gray-500 mb-2">
-  //                     {exp.start_date} - {exp.is_current ? "Present" : exp.end_date}
-  //                   </p>
-  //                   <p className="text-gray-700">{exp.description}</p>
-  //                 </div>
-  //               </div>
-  //             ))}
-  //           </div>
-  //         </div>
-          
-  //         {/* Skills */}
-  //         <div className="mb-8">
-  //           <h3 className="text-lg font-semibold text-gray-900 mb-4">Skills</h3>
-  //           <div className="flex flex-wrap gap-2">
-  //             {(details?.skills_data?.skills_mentioned?.map((s: any) => s.skill) || selectedCandidate.skills)?.map((skill: string, index: number) => (
-  //               <span
-  //                 key={index}
-  //                 className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
-  //               >
-  //                 {skill}
-  //               </span>
-  //             ))}
-  //           </div>
-  //         </div>
-          
-  //         {/* Education */}
-  //         {details?.education && details.education.length > 0 && (
-  //           <div className="mb-8">
-  //             <h3 className="text-lg font-semibold text-gray-900 mb-4">Education</h3>
-  //             <div className="space-y-4">
-  //               {details.education.map((edu: any, index: number) => (
-  //                 <div key={index} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
-  //                   <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-  //                     <GraduationCap className="w-5 h-5 text-blue-600" />
-  //                   </div>
-  //                   <div>
-  //                     <h4 className="font-semibold text-gray-900">{edu.degree}</h4>
-  //                     <p className="text-blue-600 font-medium">{edu.institution}</p>
-  //                     {edu.start_date && edu.end_date && (
-  //                       <p className="text-sm text-gray-500">{edu.start_date} - {edu.end_date}</p>
-  //                     )}
-  //                   </div>
-  //                 </div>
-  //               ))}
-  //             </div>
-  //           </div>
-  //         )}
-
-  //       </div>
-  //     </div>
-  //   );
-  // };
-
 
   const renderCandidateProfile = () => {
   if (!selectedCandidate) return null;
@@ -1277,21 +1087,21 @@ const ArchiveIcon = () => (
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, stage.name)}
                   >
-                    <div className={`${stage.color} rounded-lg p-3`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center justify-between gap-2 mb-4">
-                          <div className={`${stage.bgColor} p-1 rounded-md`}>
-                            <h3 className="font-semibold text-gray-900 text-sm">
-                              {stage.name}
-                            </h3>
+                    <div className={`bg-white rounded-lg p-3 space-y-3`}>
+                      
+                        <div className="w-full flex items-center justify-between gap-4 mb-4 bg-white border border-gray-200 py-2 pr-2 rounded-md">
+                          <div className={`${stage.bgColor} w-1 h-5 rounded-tl-lg rounded-tr-lg` }> 
                           </div>
+                          <h3 className="font-semibold text-gray-900 text-sm">
+                              {stage.name}
+                          </h3>
                           <p
                             className={`text-sm font-semibold ${stage.textColor} p-1`}
                           >
                             {stageCount}
                           </p>
                         </div>
-                      </div>
+                      
                       <div className="overflow-y-auto max-h-[70vh]">
                         <div className="space-y-3">
                           {candidates.map((candidate: any) =>
