@@ -500,8 +500,8 @@ const ArchiveIcon = () => (
           {/* Main Content Card */}
           <div className="overflow-hidden">
             {/* Profile Header */}
-            <div className="bg-white rounded-3xl shadow-sm p-8 pb-6 mb-8">
-              <div className="flex items-start justify-between mb-6">
+            <div className="bg-white rounded-3xl shadow-sm p-8 pb-6 mb-4">
+              <div className="flex items-start justify-between mb-4">
                 {/* Profile Info */}
                 <div className="flex items-start gap-6">
                   <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200">
