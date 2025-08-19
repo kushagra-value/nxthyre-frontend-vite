@@ -1248,14 +1248,14 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                         activity.note && (
                           <div>
                             <div
-                              className="w-full bg-white text-sm text-gray-800 p-2 rounded-md"
+                              className="w-80 bg-white text-sm text-gray-800 p-2 rounded-md mt-1"
                               dangerouslySetInnerHTML={{
                                 __html: activity.note,
                               }}
                             />
                             <button
                               onClick={() => {}}
-                              className="text-blue-500"
+                              className="text-blue-500 mt-1"
                             >
                               Reply ?
                             </button>
