@@ -31,6 +31,7 @@ import {
   Minus,
   MessageSquareText,
   SignalMedium,
+  CheckCheck,
 } from "lucide-react";
 import candidateService from "../../services/candidateService";
 
@@ -945,15 +946,15 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                         <SignalMedium className="w-4 h-4 mr-1 pl-1 pb-1 border border-[#818283] rounded-md" />
                         {q.difficulty}
                       </div>
-                      <div className="flex items-center bg-blue-500">
+                      <div className="flex items-center">
                         {q.status === "Pass" && (
-                          <CheckCircle className="w-4 h-4 bg-[#007A5A] text-white mr-1 rounded-xl" />
+                          <CheckCheck className="w-4 h-4 bg-[#007A5A] text-white mr-1 rounded-xl" />
                         )}
                         {q.status === "Fail" && (
-                          <XCircle className="w-4 h-4 bg-[#ED051C] text-white mr-1 rounded-xl" />
+                          <X className="w-4 h-4 bg-[#ED051C] text-white mr-1 rounded-xl" />
                         )}
                         {q.status === "Skip" && (
-                          <MinusCircle className="w-4 h-4 bg-[#818283] text-white mr-1 rounded-xl" />
+                          <Minus className="w-4 h-4 bg-[#818283] text-white mr-1 rounded-xl" />
                         )}
                         <span
                           className={`${
