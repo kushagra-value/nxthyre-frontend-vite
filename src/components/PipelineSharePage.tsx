@@ -883,12 +883,12 @@ const ArchiveIcon = () => (
                             score: "4/5",
                           },
                         ].map((item) => (
-                          <div key={item.id} className="bg-[#F5F9FB] border border-gray-200 rounded-lg p-6">
-                            <div className="flex items-start justify-left gap-4 mb-4">
+                          <div key={item.id} className="bg-[#F5F9FB] border border-gray-200 rounded-lg">
+                            <div className="flex items-start justify-left gap-4 pb-2 m-4 mb-0">
                               <span className="text-base font-medium text-gray-700">Q{item.id}.</span>
-                              <p className="text-sm text-gray-600 mb-4 leading-relaxed">{item.question}</p>
+                              <p className="text-sm text-gray-600 leading-relaxed">{item.question}</p>
                             </div>
-                            <div className="p-4 border border-gray-200">
+                            <div className="p-4 border border-gray-200 bg-white rounded-tl-lg rounded-tr-lg">
                             <div className="flex items-center justify-between text-sm text-gray-500 px-6 border-b border-gray-200 py-2">
                               <div className="text-sm text-gray-600">{item.language}</div>
                               <div className="flex items-center gap-3">
