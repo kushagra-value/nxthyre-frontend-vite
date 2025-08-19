@@ -374,26 +374,21 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
               if (item.type === "stage_move") {
                 const d = item.data;
-                description = `${d.moved_by_name} moved candidate from ${d.from_stage_name} → ${d.to_stage_name}`;
+                description = `${
+                  selectedCandidate.fullName
+                } has been moved from ${d.from_stage_name} to ${
+                  d.to_stage_name
+                } on ${new Date(d.moved_at).toLocaleDateString()}`;
                 via = "system";
               }
 
               if (item.type === "communication_sent") {
                 const d = item.data;
-                description = `${
-                  d.sent_by_name
-                } sent a ${d.mode.toLowerCase()} ${
-                  d.subject ? `: "${d.subject}"` : ""
-                }`;
+                description = `${selectedCandidate.fullName} sent you a message `;
                 via = d.mode.toLowerCase();
                 if (d.replies?.length > 0) {
                   note = d.replies
-                    .map(
-                      (r: any) =>
-                        `${r.source_display} replied via ${r.via}: ${
-                          r.body
-                        } at ${new Date(r.received_at).toLocaleString()}`
-                    )
+                    .map((r: any) => `"${r.body}" via ${r.via}`)
                     .join("\n");
                 }
               }
@@ -432,21 +427,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
     if (status === "Accepted") return "Pass";
     if (status === "Wrong Answer") return "Fail";
     return "Skip";
-  };
-
-  const getDifficultyDots = (difficulty: any) => {
-    let fullCount = 0;
-    if (difficulty === "Easy") fullCount = 1;
-    else if (difficulty === "Medium") fullCount = 2;
-    else if (difficulty === "Hard") fullCount = 3;
-    return [...Array(3)].map((_, i) => (
-      <div
-        key={i}
-        className={`w-2 h-2 bg-[#818283] rounded-full ${
-          i < fullCount ? "" : "opacity-50"
-        }`}
-      />
-    ));
   };
 
   const tabs = ["Profile", "Coding", "Interview", "Activity", "Notes"];
@@ -1253,48 +1233,23 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           <div className="bg-[#F5F9FB] p-4 rounded-xl space-y-4">
             <h3 className="text-base font-medium text-[#4B5563]">Activity</h3>
             <div className="space-y-2">
-              {/* <div className="bg-white rounded-md p-3 border-l border-[#818283]">
-                <p className="text-xs text-[#818283]">
-                  {new Date().toLocaleDateString()}
-                </p>
-                <p className="text-sm text-[#4B5563]">
-                  Moved to {selectedStage}
-                </p>
-              </div> */}
               {activities.map((activity, index) => (
-                <div
-                  key={index}
-                  className={`bg-white rounded-md p-3 ${
-                    selectedActivityIndex === index
-                      ? "bg-blue-700 text-white"
-                      : ""
-                  }`}
-                >
+                <div key={index}>
                   <div
-                    className="cursor-pointer"
+                    className="cursor-pointer border-l border-gray-300 pl-2"
                     onClick={() =>
                       setSelectedActivityIndex(
                         selectedActivityIndex === index ? null : index
                       )
                     }
                   >
-                    <p className="text-xs">Date: {activity.date} </p>
-                    <p className="text-sm">{activity.description}</p>
-                    {activity.type === "stage_move" && (
-                      <p className="text-xs italic">
-                        From {activity.data.from_stage_name} →{" "}
-                        {activity.data.to_stage_name}
-                      </p>
-                    )}
-                    {activity.type === "communication_sent" && (
-                      <p className="text-xs italic">
-                        Mode: {activity.data.mode}, Subject:{" "}
-                        {activity.data.subject || "N/A"}
-                      </p>
-                    )}
+                    <p className="text-xs text-gray-400">{activity.date} </p>
+                    <p className="text-sm text-gray-600">
+                      {activity.description}
+                    </p>
                     {activity.note && selectedActivityIndex === index && (
                       <div className="mt-2">
-                        <p className="text-xs italic whitespace-pre-line">
+                        <p className="text-xs text-gray-500 whitespace-pre-line">
                           Replies: {activity.note}
                         </p>
                       </div>
