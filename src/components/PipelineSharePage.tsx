@@ -936,11 +936,14 @@ const ArchiveIcon = () => (
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
                         <div>
-                          <span className="font-medium text-gray-900 text-sm">Name of the person</span>
+                          <div>
+                            <span className="text-gray-500 text-xs ml-2">Company</span>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900 text-sm">Name of the person</span>
+                          </div>
                         </div>
-                        <div>
-                          <span className="text-gray-500 text-xs ml-2">Company</span>
-                        </div>
+                        
                         <span className="text-gray-400 text-xs">Posted Date</span>
                       </div>
                       <p className="text-gray-700 text-sm">
