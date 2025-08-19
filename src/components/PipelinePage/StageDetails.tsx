@@ -923,7 +923,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                         onClick={() => setIsExpanded(!isExpanded)}
                         className="flex items-center text-[#818283]"
                       >
-                        <div className="p-1 border border-[#818283] rounded-lg mr-1">
+                        <div className="p-1 border border-[#818283] rounded-md mr-1">
                           <svg
                             width="8"
                             height="8"
@@ -942,10 +942,10 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                         {isExpanded ? "Collapse" : "Expand"}{" "}
                       </button>
                       <div className="flex items-center text-[#818283]">
-                        <SignalMedium className="w-8 h-8 mr-1 p-1 border border-[#818283] rounded-lg" />
+                        <SignalMedium className="w-4 h-4 mr-1 pl-1 pb-1 border border-[#818283] rounded-md" />
                         {q.difficulty}
                       </div>
-                      <div className="flex items-center">
+                      <div className="flex items-center bg-blue-500">
                         {q.status === "Pass" && (
                           <CheckCircle className="w-4 h-4 bg-[#007A5A] text-white mr-1 rounded-xl" />
                         )}
