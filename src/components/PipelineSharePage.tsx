@@ -1044,86 +1044,82 @@ const ArchiveIcon = () => (
 
   return (
     <>
-      <div className="mx-auto max-w-[95vw] min-h-screen bg-white bg-gradient-to-b from-[#F2F5FF] to-[#DAF0FF]">
-        <div className="bg-white border-b border-gray-200 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <button onClick={handleGoToDashboard}>
-                <ArrowLeft className="w-10 h-5" />
-              </button>
-              <h1 className="text-xl font-semibold text-gray-900">
-                Pipeline for Job ID: {jobId}
-              </h1>
-            </div>
-            <div className="flex gap-2 items-center">
-              <p className="text-xs text-gray-500">Share Using:</p>
-              <button
-                onClick={() => setShowAccessModal(true)}
-                className="p-1 px-4 border border-blue-500 text-blue-500 text-sm font-medium rounded-lg hover:bg-blue-500 hover:text-white transition-colors flex items-center space-x-2"
-              >
-                <Mail className="w-4 h-4" />
-                <span>Email</span>
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <span className="text-sm font-medium text-gray-700"></span>
+      <div className="bg-gradient-to-b from-[#F2F5FF] to-[#DAF0FF]">
+        <div className="mx-auto max-w-[95vw] min-h-screen">
+          <div className="bg-white border-b border-gray-200 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <button onClick={handleGoToDashboard}>
+                  <ArrowLeft className="w-10 h-5" />
+                </button>
+                <h1 className="text-xl font-semibold text-gray-900">
+                  Pipeline for Job ID: {jobId}
+                </h1>
+              </div>
+              <div className="flex gap-2 items-center">
+                <p className="text-xs text-gray-500">Share Using:</p>
+                <button
+                  onClick={() => setShowAccessModal(true)}
+                  className="p-1 px-4 border border-blue-500 text-blue-500 text-sm font-medium rounded-lg hover:bg-blue-500 hover:text-white transition-colors flex items-center space-x-2"
+                >
+                  <Mail className="w-4 h-4" />
+                  <span>Email</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="px-2">
-          <div className="overflow-x-auto hide-scrollbar">
-            <div className="flex space-x-4 min-w-max pb-4">
-              {shareableStages.map((stage) => {
-                const candidates = stageCandidates[stage.name] || [];
-                const stageCount = getStageCount(stage.name);
-                return (
-                  <div
-                    key={stage.name}
-                    className="w-96 flex-shrink-0 h-[80vh]"
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, stage.name)}
-                  >
-                    <div className={`bg-white rounded-lg p-3 space-y-3`}>
-                      
-                        <div className="w-full flex items-center justify-between gap-4 mb-4 bg-white border border-gray-200 py-2 pr-4 rounded-md">
-                          <div className="flex items-center gap-4">
-                          <div className={`${stage.bgColor} w-1 h-8 rounded-tl-xl rounded-br-xl` }> 
-                          </div>
-                          <h3 className="font-semibold text-gray-900 text-sm">
-                              {stage.name}
-                          </h3>
-                          </div>
-                          <p
-                            className={`text-sm font-semibold ${stage.textColor} p-1 border border-gray-200`}
-                          >
-                            {stageCount}
-                          </p>
-                        </div>
-                      
-                      <div className="overflow-y-auto max-h-[70vh] hide-scrollbar">
-                        <div className="space-y-3">
-                          {candidates.map((candidate: any) =>
-                            renderCandidateCard(candidate, stage.name)
-                          )}
-                          {candidates.length === 0 && (
-                            <div className="text-center py-8 text-gray-400">
-                              <User className="w-8 h-8 mx-auto mb-2" />
-                              <p className="text-sm">No candidates</p>
+          <div className="">
+            <div className="overflow-x-auto hide-scrollbar">
+              <div className="flex space-x-4 min-w-max pb-2">
+                {shareableStages.map((stage) => {
+                  const candidates = stageCandidates[stage.name] || [];
+                  const stageCount = getStageCount(stage.name);
+                  return (
+                    <div
+                      key={stage.name}
+                      className="w-96 h-[80vh] min-h-max"
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, stage.name)}
+                    >
+                      <div className={`bg-white rounded-lg p-3 space-y-3`}>
+                        
+                          <div className="w-full flex items-center justify-between gap-4 mb-4 bg-white border border-gray-200 py-2 pr-4 rounded-md">
+                            <div className="flex items-center gap-4">
+                            <div className={`${stage.bgColor} w-1 h-8 rounded-tr-xl rounded-br-xl` }> 
                             </div>
-                          )}
+                            <h3 className="font-semibold text-gray-900 text-sm">
+                                {stage.name}
+                            </h3>
+                            </div>
+                            <p
+                              className={`text-sm font-semibold ${stage.textColor} p-1 border border-gray-200`}
+                            >
+                              {stageCount}
+                            </p>
+                          </div>
+                        
+                        <div className="overflow-y-auto max-h-[70vh] hide-scrollbar">
+                          <div className="space-y-3">
+                            {candidates.map((candidate: any) =>
+                              renderCandidateCard(candidate, stage.name)
+                            )}
+                            {candidates.length === 0 && (
+                              <div className="text-center py-8 text-gray-400">
+                                <User className="w-8 h-8 mx-auto mb-2" />
+                                <p className="text-sm">No candidates</p>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
+        
       </div>
       {showAccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
