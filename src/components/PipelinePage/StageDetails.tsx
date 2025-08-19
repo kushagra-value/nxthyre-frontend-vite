@@ -916,7 +916,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       </p>
                     </div>
                   </div>
-                  <hr className="border-t border-[#818283]/50 rounded-xl" />
+                  <hr className="border-t border-[#818283]/50 rounded-full" />
+                  <hr className="mx-auto w-[99%] border-t border-[#818283]/50 rounded full mt-4" />
                   <div className="p-4 flex justify-between items-center text-xs bg-white">
                     <span className="text-[#818283]">{q.language}</span>
                     <div className="flex items-center space-x-4">
@@ -970,7 +971,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       </div>
                     </div>
                   </div>
-                  <hr className="mx-auto w-[90%] border-t border-[#818283]/50" />
+                  <hr className="mx-auto w-[95%] border-t border-[#818283]/50" />
                   {!isExpanded && hiddenLineCount > 0 && (
                     <p className="px-4 py-3 text-sm text-[#BCBCBC] bg-white">
                       {hiddenLineCount} hidden lines
