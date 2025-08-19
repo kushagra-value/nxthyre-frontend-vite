@@ -725,130 +725,163 @@ const ArchiveIcon = () => (
                 {/* Assessment Tabs */}
                 <div className="flex mb-6 border-b border-gray-200">
                   <button 
-                    className={`px-4 py-2 text-sm font-medium ${showAssessmentModal?"text-gray-500":"text-blue-600 border-b-2 border-blue-600"}`}
+                    className={`px-4 py-2 text-sm font-medium ${!showAssessmentModal ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"}`}
                     onClick={() => setShowAssessmentModal(false)}
                   >
                     Coding Round
                   </button>
                   <button 
-                    className={`px-4 py-2 text-sm font-medium ${showAssessmentModal?"text-blue-600 border-b-2 border-blue-600":"text-gray-500"}`}
+                    className={`px-4 py-2 text-sm font-medium ${showAssessmentModal ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"}`}
                     onClick={() => setShowAssessmentModal(true)}
                   >
                     AI Interview
                   </button>
                 </div>
 
-                {showAssessmentModal ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                  {/* Left Side - Scores */}
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-700 mb-4">Overall Score</h3>
-                    <div className="space-y-4">
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-gray-600">Resume</span>
-                          <span className="text-sm font-medium text-gray-900">72%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-purple-500 h-2 rounded-full" style={{width: '72%'}}></div>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-gray-600">Knowledge</span>
-                          <span className="text-sm font-medium text-gray-900">80%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-green-500 h-2 rounded-full" style={{width: '80%'}}></div>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-gray-600">Communication</span>
-                          <span className="text-sm font-medium text-gray-900">92%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-blue-500 h-2 rounded-full" style={{width: '92%'}}></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Verdict Skills */}
-                    <div className="mt-6">
-                      <h4 className="text-sm font-medium text-gray-700 mb-3">Verdict Skills</h4>
-                      <div className="flex flex-wrap gap-2">
-                        <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs">Money Ads • 3.5</span>
-                        <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">Flutter • 4</span>
-                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">SEO • 4.5</span>
-                      </div>
-                      <button className="text-blue-600 text-sm mt-2 hover:underline">Show more skills</button>
-                    </div>
-                  </div>
-
-                  {/* Right Side - General Summary */}
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-700 mb-4">General Summary</h3>
-                    <p className="text-gray-700 text-sm mb-4">
-                      {displayCandidate.full_name} demonstrates solid technical knowledge and experience in ML Engineering with significant expertise in modern frameworks.
-                    </p>
-                    
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-gray-900">Potential Red Flags</h4>
-                      <ul className="text-sm text-gray-600 space-y-1">
-                        <li>1. Too warm room</li>
-                        <li>2. Cannot noise</li>
-                        <li>3. Slightly low eye contact</li>
-                        <li>4. Sub-optimal background</li>
-                      </ul>
-                    </div>
-                    
-                    <button className="text-blue-600 text-sm mt-4 hover:underline">Show Interview Details</button>
-                  </div>
-                  </div>
-                ):(
-                  <div className="w-full mb-4">
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-sm font-medium text-gray-700">Questions (3)</span>
-                    <span className="text-gray-500 text-sm">Score: 4/5</span>
-                  </div>
-
-                  {/* Question Items */}
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((num) => (
-                      <div key={num} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex items-start justify-between mb-2">
-                          <span className="text-sm font-medium text-gray-700">Q{num}.</span>
-                          <div className="flex items-center gap-2">
-                            <button className="text-gray-400 hover:text-gray-600">
-                              <span className="text-xs">Expand</span>
-                            </button>
-                            <button className="text-gray-400 hover:text-gray-600">
-                              <span className="text-xs">Easy</span>
-                            </button>
-                            <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                              <span className="text-white text-xs">✓</span>
+                  {showAssessmentModal ? (
+                      <div className="grid grid-cols-2 gap-8">
+                        <div>
+                          <h3 className="text-base font-medium text-gray-900 mb-6">Overall Score</h3>
+                          
+                          {/* Resume Score */}
+                          <div className="mb-6">
+                            <div className="flex items-center justify-between mb-3">
+                              <span className="text-sm text-gray-600">Resume</span>
+                              <span className="text-lg font-medium text-gray-900">72%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-3">
+                              <div className="bg-purple-500 h-3 rounded-full" style={{width: '72%'}}></div>
                             </div>
                           </div>
+
+                          {/* Knowledge Score */}
+                          <div className="mb-6">
+                            <div className="flex items-center justify-between mb-3">
+                              <span className="text-sm text-gray-600">Knowledge</span>
+                              <span className="text-lg font-medium text-gray-900">80%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-3">
+                              <div className="bg-green-500 h-3 rounded-full" style={{width: '80%'}}></div>
+                            </div>
+                          </div>
+
+                          {/* Communication Score */}
+                          <div className="mb-8">
+                            <div className="flex items-center justify-between mb-3">
+                              <span className="text-sm text-gray-600">Communication</span>
+                              <span className="text-lg font-medium text-gray-900">92%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-3">
+                              <div className="bg-blue-500 h-3 rounded-full" style={{width: '92%'}}></div>
+                            </div>
+                          </div>
+
+                          {/* Vetted Skills */}
+                          <div>
+                            <div className="flex items-center gap-2 mb-4">
+                              <h4 className="text-base font-medium text-gray-900">Vetted Skills</h4>
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
+                                <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5"/>
+                                <path d="M8 7v4m0-6h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                              </svg>
+                            </div>
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              <div className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                                <span className="text-blue-800 text-sm font-medium mr-2">Meta Ads</span>
+                                <div className="flex items-center">
+                                  <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                                  <span className="text-blue-800 text-sm ml-1">3.5</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                                <span className="text-blue-800 text-sm font-medium mr-2">Flutter</span>
+                                <div className="flex items-center">
+                                  <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                                  <span className="text-blue-800 text-sm ml-1">4</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                                <span className="text-blue-800 text-sm font-medium mr-2">SEO</span>
+                                <div className="flex items-center">
+                                  <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                                  <span className="text-blue-800 text-sm ml-1">4.5</span>
+                                </div>
+                              </div>
+                            </div>
+                            <button className="text-blue-600 text-sm hover:underline flex items-center gap-1">
+                              Show more skills
+                              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            </button>
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-600 mb-2">
-                          Write a function to reverse a given string. For example, if the input is "hello" the output should be "olleh"
-                        </p>
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                          <span>Python</span>
-                          <span>• 7 hidden tests</span>
+
+                        {/* Right Side - General Summary */}
+                        <div>
+                          <h3 className="text-base font-medium text-gray-900 mb-6">General Summary</h3>
+                          <p className="text-gray-700 text-sm leading-relaxed mb-8">
+                            Shikha demonstrates solid domain knowledge and experience in ML engineering, particularly with AWS. However, clarity in communication needs improvement. He covers many questions, but responses sometimes lack depth or are unclear due to noise interference.
+                          </p>
+                          
+                          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <h4 className="text-base font-medium text-red-800 mb-3">Potential Red Flags</h4>
+                            <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
+                              <li>Tab switch count: 1</li>
+                              <li>Casual attire</li>
+                              <li>Slightly low eye contact</li>
+                              <li>Sub-optimal background</li>
+                            </ol>
+                          </div>
+                          
+                          <button className="text-blue-600 text-sm mt-6 hover:underline flex items-center gap-1">
+                            Show Interview Details
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-                  </div>
-                )}
+                  ) : (
+                    <div>
+                      <div className="flex items-center justify-between mb-6">
+                        <span className="text-base font-medium text-gray-900">Questions <span className="text-gray-500">(5)</span></span>
+                        <span className="text-blue-600 text-xl font-medium">Score: <span className="font-bold">4</span>/5</span>
+                      </div>
 
-                
-              </section>
+                      {/* Question Items */}
+                      <div className="space-y-4">
+                        {[1, 2, 3].map((num) => (
+                          <div key={num} className="border border-gray-200 rounded-lg p-6">
+                            <div className="flex items-start justify-between mb-4">
+                              <span className="text-base font-medium text-gray-700">Q{num}.</span>
+                              <div className="flex items-center gap-3">
+                                <button className="text-gray-400 hover:text-gray-600 flex items-center gap-1">
+                                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 4.5L6 7.5L3 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
+                                  <span className="text-sm">Expand</span>
+                                </button>
+                                <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">Easy</span>
+                                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                  <span className="text-white text-sm font-bold">✓</span>
+                                </div>
+                              </div>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                              Write a function to reverse a given string. For example, if the input is "hello", the output should be "olleh".
+                            </p>
+                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                              <span>Python</span>
+                              <span>•</span>
+                              <span>7 hidden lines</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </section>
 
               {/* Notes */}
               <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
