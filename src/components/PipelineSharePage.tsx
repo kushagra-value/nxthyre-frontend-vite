@@ -660,7 +660,7 @@ const ArchiveIcon = () => (
                       <div className={`w-8 h-8 ${colorClass} rounded-full flex items-center justify-center flex-shrink-0`}>
                         <span className="text-white font-bold text-lg">{companyInitial}</span>
                       </div>
-                      <div className={`flex-1 ${index===1 ? "":" border-t border-gray-200"}`}>
+                      <div className={`flex-1 ${index===0 ? "":"pt-3 border-t border-gray-200"}`}>
                         <div className="flex items-start justify-between mb-2">
                           <div>
                             <h3 className="font-semibold text-gray-900">{exp.job_title}</h3>
