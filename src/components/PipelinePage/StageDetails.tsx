@@ -277,7 +277,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   const [expandedIndices, setExpandedIndices] = useState(new Set([0]));
 
   const [codingQuestions, setCodingQuestions] = useState<
-    { question: string; language: string; difficulty: string; status: string }[]
+    {
+      name: string;
+      question: string;
+      language: string;
+      difficulty: string;
+      status: string;
+    }[]
   >([]);
   const [date, setDate] = useState("");
 
@@ -303,6 +309,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           // console.log("Assessment results data:", data);
 
           const questions = data.problem_results.map((pr: any) => ({
+            name: pr.problem.name,
             question: pr.problem.description,
             language: pr.language || "N/A",
             difficulty: getDifficultyLevel(pr.problem.difficulty),
@@ -366,6 +373,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
     };
     fetchActivity();
   }, [selectedCandidate?.publicIdentifier]);
+
+  const [isExpanded, setIsExpanded] = React.useState(false);
 
   const getDifficultyLevel = (diff: any) => {
     const num = parseInt(diff);
@@ -874,59 +883,84 @@ const StageDetails: React.FC<StageDetailsProps> = ({
               <h3 className="text-xl font-medium text-[#4B5563]">Questions</h3>
               <p className="text-base text-[#818283]">{date}</p>
             </div>
-            {codingQuestions.map((q, index) => (
-              <div
-                key={index}
-                className="border border-[#4B5563] bg-[#F5F9FB] rounded-xl overflow-hidden"
-              >
-                <div className="p-2 flex items-start space-x-2">
-                  <span className="text-sm text-[#4B5563] font-medium">
-                    Q{index + 1}.
-                  </span>
-                  <p className="text-sm text-[#818283] flex-1">{q.question}</p>
-                </div>
-                <hr className="border-t border-[#818283]/50" />
-                <div className="p-4 flex justify-between items-center text-xs">
-                  <span className="text-[#818283]">{q.language}</span>
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center text-[#818283]">
-                      {q.difficulty}
-                      <div className="ml-2 flex space-x-1">
-                        {getDifficultyDots(q.difficulty)}
-                      </div>
-                    </div>
-                    <button className="flex items-center text-[#818283]">
-                      Expand <ChevronDown className="w-4 h-4 ml-1" />
-                    </button>
-                    <div className="flex items-center">
-                      {q.status === "Pass" && (
-                        <CheckCircle className="w-4 h-4 text-[#007A5A] mr-1" />
-                      )}
-                      {q.status === "Fail" && (
-                        <XCircle className="w-4 h-4 text-[#ED051C] mr-1" />
-                      )}
-                      {q.status === "Skip" && (
-                        <MinusCircle className="w-4 h-4 text-[#818283] mr-1" />
-                      )}
-                      <span
-                        className={`${
-                          q.status === "Pass"
-                            ? "text-[#007A5A]"
-                            : q.status === "Fail"
-                            ? "text-[#ED051C]"
-                            : "text-[#818283]"
-                        } font-medium`}
-                      >
-                        {q.status}
-                      </span>
+            {codingQuestions.map((q, index) => {
+              // Split question into lines
+              const lines = q.question.split("\n");
+              const visibleLines = isExpanded ? lines : lines.slice(0, 4);
+              const hiddenLineCount = Math.max(0, lines.length - 4);
+
+              return (
+                <div
+                  key={index}
+                  className="border border-[#4B5563] bg-[#F5F9FB] rounded-xl overflow-hidden"
+                >
+                  <div className="p-2 flex items-start space-x-2">
+                    <span className="text-sm text-[#4B5563] font-medium">
+                      Q{index + 1}.
+                    </span>
+                    <div>
+                      <h3 className="text-sm font-medium text-[#4B5563] flex-1 mb-1">
+                        {q.name}
+                      </h3>
+                      <p className="text-sm text-[#818283] flex-1 whitespace-pre-line">
+                        {visibleLines.join("\n")}
+                        {!isExpanded && hiddenLineCount > 0 && " ..."}
+                      </p>
                     </div>
                   </div>
+                  <hr className="border-t border-[#818283]/50" />
+                  <div className="p-4 flex justify-between items-center text-xs">
+                    <span className="text-[#818283]">{q.language}</span>
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center text-[#818283]">
+                        {q.difficulty}
+                        <div className="ml-2 flex space-x-1">
+                          {getDifficultyDots(q.difficulty)}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="flex items-center text-[#818283]"
+                      >
+                        {isExpanded ? "Collapse" : "Expand"}{" "}
+                        <ChevronDown
+                          className={`w-4 h-4 ml-1 transform transition-transform ${
+                            isExpanded ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+                      <div className="flex items-center">
+                        {q.status === "Pass" && (
+                          <CheckCircle className="w-4 h-4 text-[#007A5A] mr-1" />
+                        )}
+                        {q.status === "Fail" && (
+                          <XCircle className="w-4 h-4 text-[#ED051C] mr-1" />
+                        )}
+                        {q.status === "Skip" && (
+                          <MinusCircle className="w-4 h-4 text-[#818283] mr-1" />
+                        )}
+                        <span
+                          className={`${
+                            q.status === "Pass"
+                              ? "text-[#007A5A]"
+                              : q.status === "Fail"
+                              ? "text-[#ED051C]"
+                              : "text-[#818283]"
+                          } font-medium`}
+                        >
+                          {q.status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  {!isExpanded && hiddenLineCount > 0 && (
+                    <p className="px-4 pb-4 text-sm text-[#BCBCBC]">
+                      {hiddenLineCount} hidden lines
+                    </p>
+                  )}
                 </div>
-                <p className="px-4 pb-4 text-sm text-[#BCBCBC]">
-                  7 hidden lines
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         );
       case "Interview":
