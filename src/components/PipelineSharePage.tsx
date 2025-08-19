@@ -657,7 +657,7 @@ const ArchiveIcon = () => (
                   
                   return (
                     <div key={index} className="flex gap-4 mb-4">
-                      <div className={`w-8 h-8 ${colorClass} rounded-full flex items-center justify-center flex-shrink-0`}>
+                      <div className={`w-8 h-8 ${index===0 ? "":"pt-3"} ${colorClass} rounded-full flex items-center justify-center flex-shrink-0`}>
                         <span className="text-white font-bold text-lg">{companyInitial}</span>
                       </div>
                       <div className={`flex-1 ${index===0 ? "":"pt-3 border-t border-gray-200"}`}>
