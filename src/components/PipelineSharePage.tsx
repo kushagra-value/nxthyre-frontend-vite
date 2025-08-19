@@ -491,16 +491,16 @@ const ArchiveIcon = () => (
               <BackArrowIcon />
             </button>
             
-            <button className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors border border-gray-300 rounded-lg px-3 py-2">
+            <button className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors border border-gray-300 rounded-lg px-3 py-2 bg-[#ECF1FF]">
               <Share2 size={16} />
               <span className="text-sm">Share</span>
             </button>
           </div>
 
           {/* Main Content Card */}
-          <div className="bg-white rounded-3xl shadow-sm overflow-hidden">
+          <div className="overflow-hidden">
             {/* Profile Header */}
-            <div className="p-8 pb-6">
+            <div className="bg-white rounded-3xl shadow-sm p-8 pb-6">
               <div className="flex items-start justify-between mb-6">
                 {/* Profile Info */}
                 <div className="flex items-start gap-6">
@@ -567,9 +567,9 @@ const ArchiveIcon = () => (
             </div>
 
             {/* Content Sections */}
-            <div className="px-8 pb-8">
+            <div className="">
               {/* Profile Summary */}
-              <section className="mb-8">
+              <section className="p-4 bg-white rounded-3xl shadow-sm mb-8">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Profile Summary</h2>
                 <p className="text-gray-700 text-sm leading-relaxed">
                   {displayCandidate.profile_summary || selectedCandidate.profileSummary || 
@@ -578,7 +578,7 @@ const ArchiveIcon = () => (
               </section>
 
               {/* Experience */}
-              <section className="mb-8">
+              <section className="p-4 bg-white rounded-3xl shadow-sm mb-8">
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">Experience</h2>
                 
                 {(details?.experience || [
@@ -638,7 +638,7 @@ const ArchiveIcon = () => (
               </section>
 
               {/* Skills */}
-              <section className="mb-8">
+              <section className="p-4 bg-white rounded-3xl shadow-sm mb-8">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Skills</h2>
                 
                 {/* Resume Skills */}
@@ -675,7 +675,7 @@ const ArchiveIcon = () => (
               </section>
 
               {/* Assessment */}
-              <section className="mb-8">
+              <section className="p-4 bg-white rounded-3xl shadow-sm mb-8">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-lg font-semibold text-gray-900">Assessment</h2>
                   <span className="text-gray-500 text-sm">02/08/2024</span>
@@ -697,8 +697,8 @@ const ArchiveIcon = () => (
                   </button>
                 </div>
 
-                {/* Score Overview */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {showAssessmentModal ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   {/* Left Side - Scores */}
                   <div>
                     <h3 className="text-sm font-medium text-gray-700 mb-4">Overall Score</h3>
@@ -765,9 +765,9 @@ const ArchiveIcon = () => (
                     
                     <button className="text-blue-600 text-sm mt-4 hover:underline">Show Interview Details</button>
                   </div>
-                </div>
-
-                {/* Questions */}
+                  </div>
+                ):(
+                  <div className="w-full mb-6">
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-sm font-medium text-gray-700">Questions (3)</span>
@@ -803,10 +803,14 @@ const ArchiveIcon = () => (
                     ))}
                   </div>
                 </div>
+                  </div>
+                )}
+
+                
               </section>
 
               {/* Notes */}
-              <section className="mb-8">
+              <section className="p-4 bg-white rounded-3xl shadow-sm mb-8">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Notes</h2>
                 
                 <div className="space-y-4">
@@ -851,7 +855,7 @@ const ArchiveIcon = () => (
               </section>
 
               {/* References */}
-              <section>
+              <section className="p-4 bg-white rounded-3xl shadow-sm">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">References</h2>
                 
                 <div className="space-y-4">
@@ -918,110 +922,6 @@ const ArchiveIcon = () => (
             </div>
           </div>
         </div>
-
-        {/* Assessment Modal Overlay */}
-        {showAssessmentModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 relative">
-              <button 
-                onClick={() => setShowAssessmentModal(false)}
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-              >
-                ✕
-              </button>
-              
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">Assessment</h2>
-                  <span className="text-gray-500 text-sm">02/08/2024</span>
-                </div>
-
-                {/* Modal Assessment Tabs */}
-                <div className="flex mb-6 border-b border-gray-200">
-                  <button 
-                    className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700"
-                    onClick={() => setShowAssessmentModal(false)}
-                  >
-                    Coding Round
-                  </button>
-                  <button className="px-4 py-2 text-sm font-medium text-blue-600 border-b-2 border-blue-600">
-                    AI Interview
-                  </button>
-                </div>
-
-                {/* Modal Score Overview */}
-                <div className="grid grid-cols-2 gap-6">
-                  {/* Left Side - Scores */}
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-700 mb-4">Overall Score</h3>
-                    <div className="space-y-4">
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-gray-600">Resume</span>
-                          <span className="text-sm font-medium text-gray-900">72%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-purple-500 h-2 rounded-full" style={{width: '72%'}}></div>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-gray-600">Knowledge</span>
-                          <span className="text-sm font-medium text-gray-900">80%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-green-500 h-2 rounded-full" style={{width: '80%'}}></div>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-gray-600">Communication</span>
-                          <span className="text-sm font-medium text-gray-900">92%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-blue-500 h-2 rounded-full" style={{width: '92%'}}></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Verdict Skills */}
-                    <div className="mt-6">
-                      <h4 className="text-sm font-medium text-gray-700 mb-3">Verdict Skills</h4>
-                      <div className="flex flex-wrap gap-2">
-                        <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs">Money Ads • 3.5</span>
-                        <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">Flutter • 4</span>
-                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">SEO • 4.5</span>
-                      </div>
-                      <button className="text-blue-600 text-sm mt-2 hover:underline">Show more skills</button>
-                    </div>
-                  </div>
-
-                  {/* Right Side - General Summary */}
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-700 mb-4">General Summary</h3>
-                    <p className="text-gray-700 text-sm mb-4">
-                      {displayCandidate.full_name} demonstrates solid technical knowledge and experience in ML Engineering with significant expertise in modern frameworks.
-                    </p>
-                    
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-gray-900">Potential Red Flags</h4>
-                      <ul className="text-sm text-gray-600 space-y-1">
-                        <li>1. Too warm room</li>
-                        <li>2. Cannot noise</li>
-                        <li>3. Slightly low eye contact</li>
-                        <li>4. Sub-optimal background</li>
-                      </ul>
-                    </div>
-                    
-                    <button className="text-blue-600 text-sm mt-4 hover:underline">Show Interview Details</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
