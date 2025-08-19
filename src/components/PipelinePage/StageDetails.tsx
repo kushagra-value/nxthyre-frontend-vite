@@ -1247,7 +1247,12 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       {activity.type === "communication_sent" &&
                         activity.note && (
                           <div>
-                            <div className="bg-white text-sm text-gray-800 p-2 rounded-md">
+                            <div
+                              className="bg-white text-sm text-gray-800 p-2 rounded-md"
+                              dangerouslySetInnerHTML={{
+                                __html: activity.note,
+                              }}
+                            >
                               {activity.note}
                             </div>
                             <button
