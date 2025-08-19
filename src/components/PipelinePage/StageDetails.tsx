@@ -1232,22 +1232,22 @@ const StageDetails: React.FC<StageDetailsProps> = ({
               {activities.map((activity, index) => (
                 <div key={index}>
                   <div
-                    className="flex justify-start space-x-2cursor-pointer border-l-2 border-gray-400 pl-2"
+                    className="flex justify-start space-x-2 cursor-pointer border-l-2 border-gray-400"
                     onClick={() =>
                       setSelectedActivityIndex(
                         selectedActivityIndex === index ? null : index
                       )
                     }
                   >
-                    <hr className="w-[5%] border-t-2 mt-1 border-gray-400" />
+                    <hr className="w-[10%] border-t-2 mt-2 border-gray-400" />
                     <div>
-                      <p className="text-sm text-gray-400">{activity.date} </p>
-                      <p className="text-sm text-gray-500 font-medium">
+                      <p className="text-sm text-gray-300">{activity.date} </p>
+                      <p className="text-sm text-gray-400 font-medium">
                         {activity.description}
                       </p>
                       {activity.note && selectedActivityIndex === index && (
                         <div className="mt-2">
-                          <p className="text-xs text-gray-500 whitespace-pre-line">
+                          <p className="text-xs text-gray-400 whitespace-pre-line">
                             Replies: {activity.note}
                           </p>
                         </div>
