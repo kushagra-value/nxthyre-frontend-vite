@@ -1176,7 +1176,7 @@ const ArchiveIcon = () => (
               <div className="flex items-center">
       
                 <h1 className="text-xl font-semibold text-gray-900">
-                  Pipeline for Job ID: {jobId}
+                  Head of Google Ads Marketing
                 </h1>
               </div>
               <div className="flex gap-2 items-center">
