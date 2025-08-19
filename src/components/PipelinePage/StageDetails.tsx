@@ -386,12 +386,22 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   note = d.replies
                     .map((r: any) => {
                       if (r.via === "call") {
-                        return `"The call was instantiated" via ${r.via}`;
+                        return `
+                          <div class="flex justify-between">
+                            <span>The call was instantiated</span>
+                            <span class="text-gray-500">${r.via}</span>
+                          </div>
+                        `;
                       } else {
-                        return `"${r.body}" via ${r.via}`;
+                        return `
+                          <div class="flex justify-between">
+                            <span>${r.body}</span>
+                            <span class="text-gray-500">${r.via}</span>
+                          </div>
+                        `;
                       }
                     })
-                    .join("\n");
+                    .join("");
                 }
               }
 
