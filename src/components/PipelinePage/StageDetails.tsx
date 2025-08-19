@@ -30,6 +30,7 @@ import {
   FileText,
   Minus,
   MessageSquareText,
+  SignalMedium,
 } from "lucide-react";
 import candidateService from "../../services/candidateService";
 
@@ -286,6 +287,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
     }[]
   >([]);
   const [date, setDate] = useState("");
+  const [totalQuestions, setTotalQuestions] = useState(0);
 
   const [activities, setActivities] = useState<Activity[]>([]);
 
@@ -318,6 +320,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           setCodingQuestions(questions);
           const completedDate = new Date(data.completed_at);
           setDate(completedDate.toLocaleDateString("en-GB"));
+
+          const total_questions = data.problem_results.length;
+          setTotalQuestions(total_questions);
         } catch (error) {
           console.error("Error fetching assessment results:", error);
         }
@@ -880,14 +885,16 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         return (
           <div className="bg-[#F5F9FB] px-4 py-2 rounded-xl space-y-6">
             <div className="flex justify-between items-center">
-              <h3 className="text-xl font-medium text-[#4B5563]">Questions</h3>
+              <h3 className="text-xl font-medium text-[#4B5563]">
+                Questions ({totalQuestions})
+              </h3>
               <p className="text-base text-[#818283]">{date}</p>
             </div>
             {codingQuestions.map((q, index) => {
               // Split question into lines
               const lines = q.question.split("\n");
-              const visibleLines = isExpanded ? lines : lines.slice(0, 4);
-              const hiddenLineCount = Math.max(0, lines.length - 4);
+              const visibleLines = isExpanded ? lines : lines.slice(0, 2);
+              const hiddenLineCount = Math.max(0, lines.length - 2);
 
               return (
                 <div
@@ -909,35 +916,44 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     </div>
                   </div>
                   <hr className="border-t border-[#818283]/50" />
-                  <div className="p-4 flex justify-between items-center text-xs">
+                  <div className="p-4 flex justify-between items-center text-xs bg-white">
                     <span className="text-[#818283]">{q.language}</span>
                     <div className="flex items-center space-x-4">
-                      <div className="flex items-center text-[#818283]">
-                        {q.difficulty}
-                        <div className="ml-2 flex space-x-1">
-                          {getDifficultyDots(q.difficulty)}
-                        </div>
-                      </div>
                       <button
                         onClick={() => setIsExpanded(!isExpanded)}
                         className="flex items-center text-[#818283]"
                       >
+                        <div className="p-1 border border-[#818283] rounded-xl mr-1">
+                          <svg
+                            width="8"
+                            height="8"
+                            viewBox="0 0 8 8"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M7 1.00781H5.2M7 1.00781V2.80781M7 1.00781L4.9 3.10781M1 7.00781H2.8M1 7.00781V5.20781M1 7.00781L3.1 4.90781"
+                              stroke="#818283"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                        </div>
                         {isExpanded ? "Collapse" : "Expand"}{" "}
-                        <ChevronDown
-                          className={`w-4 h-4 ml-1 transform transition-transform ${
-                            isExpanded ? "rotate-180" : ""
-                          }`}
-                        />
                       </button>
+                      <div className="flex items-center text-[#818283]">
+                        <SignalMedium className="w-4 h-4 mr-1 p-1 border border-[#818283] rounded-xl" />
+                        {q.difficulty}
+                      </div>
                       <div className="flex items-center">
                         {q.status === "Pass" && (
-                          <CheckCircle className="w-4 h-4 text-[#007A5A] mr-1" />
+                          <CheckCircle className="w-4 h-4 bg-[#007A5A] text-white mr-1" />
                         )}
                         {q.status === "Fail" && (
-                          <XCircle className="w-4 h-4 text-[#ED051C] mr-1" />
+                          <XCircle className="w-4 h-4 bg-[#ED051C] text-white mr-1" />
                         )}
                         {q.status === "Skip" && (
-                          <MinusCircle className="w-4 h-4 text-[#818283] mr-1" />
+                          <MinusCircle className="w-4 h-4 bg-[#818283] text-white mr-1" />
                         )}
                         <span
                           className={`${
@@ -953,6 +969,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       </div>
                     </div>
                   </div>
+                  <hr className="border-t border-[#818283]/50" />
                   {!isExpanded && hiddenLineCount > 0 && (
                     <p className="px-4 pb-4 text-sm text-[#BCBCBC]">
                       {hiddenLineCount} hidden lines
