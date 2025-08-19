@@ -598,7 +598,7 @@ const ArchiveIcon = () => (
             {/* Content Sections */}
             <div className="">
               {/* Profile Summary */}
-              <section className="p-4 bg-white rounded-3xl shadow-sm mb-8">
+              <section className="p-4 bg-white rounded-3xl shadow-sm mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Profile Summary</h2>
                 <p className="text-gray-700 text-sm leading-relaxed">
                   {displayCandidate.profile_summary || selectedCandidate.profileSummary || 
@@ -607,7 +607,7 @@ const ArchiveIcon = () => (
               </section>
 
               {/* Experience */}
-              <section className="p-4 bg-white rounded-3xl shadow-sm mb-8">
+              <section className="p-4 bg-white rounded-3xl shadow-sm mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">Experience</h2>
                 
                 {(details?.experience || [
@@ -667,7 +667,7 @@ const ArchiveIcon = () => (
               </section>
 
               {/* Skills */}
-              <section className="p-4 bg-white rounded-3xl shadow-sm mb-8">
+              <section className="p-4 bg-white rounded-3xl shadow-sm mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Skills</h2>
                 
                 {/* Resume Skills */}
@@ -704,8 +704,8 @@ const ArchiveIcon = () => (
               </section>
 
               {/* Assessment */}
-              <section className="p-4 bg-white rounded-3xl shadow-sm mb-8">
-                <div className="flex items-center justify-between mb-6">
+              <section className="p-4 bg-white rounded-3xl shadow-sm mb-4">
+                <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-gray-900">Assessment</h2>
                   <span className="text-gray-500 text-sm">02/08/2024</span>
                 </div>
@@ -727,7 +727,7 @@ const ArchiveIcon = () => (
                 </div>
 
                 {showAssessmentModal ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                   {/* Left Side - Scores */}
                   <div>
                     <h3 className="text-sm font-medium text-gray-700 mb-4">Overall Score</h3>
@@ -796,7 +796,7 @@ const ArchiveIcon = () => (
                   </div>
                   </div>
                 ):(
-                  <div className="w-full mb-6">
+                  <div className="w-full mb-4">
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-sm font-medium text-gray-700">Questions (3)</span>
@@ -839,7 +839,7 @@ const ArchiveIcon = () => (
               </section>
 
               {/* Notes */}
-              <section className="p-4 bg-white rounded-3xl shadow-sm mb-8">
+              <section className="p-4 bg-white rounded-3xl shadow-sm mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Notes</h2>
                 
                 <div className="space-y-4">
