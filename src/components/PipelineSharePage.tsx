@@ -883,9 +883,14 @@ const ArchiveIcon = () => (
                             score: "4/5",
                           },
                         ].map((item) => (
-                          <div key={item.id} className="border border-gray-200 rounded-lg p-6">
-                            <div className="flex items-start justify-between mb-4">
+                          <div key={item.id} className="bg-[#F5F9FB] border border-gray-200 rounded-lg p-6">
+                            <div className="flex items-start justify-left gap-4 mb-4">
                               <span className="text-base font-medium text-gray-700">Q{item.id}.</span>
+                              <p className="text-sm text-gray-600 mb-4 leading-relaxed">{item.question}</p>
+                            </div>
+                            <div className="p-4 border border-gray-200">
+                            <div className="flex items-center justify-between text-sm text-gray-500 px-6 border-b border-gray-200 py-2">
+                              <div className="text-sm text-gray-600">{item.language}</div>
                               <div className="flex items-center gap-3">
                                 <button className="text-gray-400 hover:text-gray-600 flex items-center gap-1">
                                   <svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -894,15 +899,16 @@ const ArchiveIcon = () => (
                                   </svg>
                                   <span className="text-sm">Expand</span>
                                 </button>
-                                <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">
+                                <button className="text-gray-400 hover:text-gray-600 flex items-center gap-1">
                                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M1 9C1 5.22876 1 3.34314 2.17158 2.17158C3.34314 1 5.22876 1 9 1C12.7712 1 14.6569 1 15.8284 2.17158C17 3.34314 17 5.22876 17 9C17 12.7712 17 14.6569 15.8284 15.8284C14.6569 17 12.7712 17 9 17C5.22876 17 3.34314 17 2.17158 15.8284C1 14.6569 1 12.7712 1 9Z" stroke="#818283"/>
                                     <path d="M5 13.8016V6.60156" stroke="#818283" stroke-linecap="round"/>
                                     <path d="M9 13.7797V4.17969" stroke="#818283" stroke-linecap="round"/>
                                     <path d="M13 13.8203V9.82031" stroke="#818283" stroke-linecap="round"/>
                                   </svg>
-                                </span>
-                                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                  <span className="text-sm">Easy</span>
+                                </button>
+                                <button className="text-green-400 hover:text-green-600 flex items-center gap-1">
                                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <g clip-path="url(#clip0_2726_638)">
                                       <path d="M8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16Z" fill="#2FD08D"/>
@@ -914,15 +920,16 @@ const ArchiveIcon = () => (
                                       </clipPath>
                                     </defs>
                                   </svg>
-                                </div>
+                                  <span className="text-sm">pass</span>
+                                </button>
+
                               </div>
                             </div>
-                            <p className="text-sm text-gray-600 mb-4 leading-relaxed">{item.question}</p>
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                              <span>{item.language}</span>
-                              <span>•</span>
-                              <span>{item.lines}</span>
+                            <div className="flex items-center justify-between text-sm text-gray-500 px-6 py-2">
+                              <span className="">{item.lines}</span>
                             </div>
+                            </div>
+                            
                           </div>
                         ))}
                       </div>
