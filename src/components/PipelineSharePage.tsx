@@ -1018,7 +1018,7 @@ const ArchiveIcon = () => (
                             </div>
                           </div>
                           
-                          <button className="text-blue-600 text-sm mt-2 hover:underline">View Less <ChevronDown className="w-8 h-8 rotate-180" /></button>
+                          <button className="flex items-center text-blue-600 text-sm mt-2 hover:underline">View Less <ChevronDown className="w-4 h-4 rotate-180" /></button>
                         </div>
                         <div className="w-10 h-8 bg-green-500 rounded-full flex items-center justify-center">
                           <span className="text-white text-sm"><svg width="12" height="15" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1044,7 +1044,7 @@ const ArchiveIcon = () => (
                             I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs). I hold...
                           </p>
                           
-                          <button className="text-blue-600 text-sm mt-2 hover:underline">View More <ChevronDown className="w-8 h-8" /></button>
+                          <button className="flex items-center text-blue-600 text-sm mt-2 hover:underline">View More <ChevronDown className="w-4 h-4" /></button>
                         </div>
                         <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
                           <span className="text-white text-sm"><svg width="12" height="15" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg">
