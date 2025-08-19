@@ -1341,69 +1341,130 @@ const ArchiveIcon = () => (
         </div>
       )}
       {showFeedbackModal && feedbackData && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex justify-center items-center">
-          <div className="bg-white h-[70vh] w-[50vw] shadow-xl rounded-md">
-            <div className="p-6 h-full flex flex-col">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold">
-                  {feedbackData.isMovingForward
-                    ? "Move Ahead Feedback"
-                    : "Move Behind Feedback"}
-                </h3>
-                <button
-                  onClick={() => setShowFeedbackModal(false)}
-                  className="p-1 hover:bg-gray-100 rounded"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-2">
-                  Moving{" "}
-                  <span className="font-semibold">
-                    {feedbackData.candidate.name}
-                  </span>{" "}
-                  from{" "}
-                  <span className="font-semibold">
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-md z-[60] flex justify-center items-center p-4">
+          <div className="bg-white w-full max-w-md h-[70vh] shadow-2xl rounded-md rounded-2xl overflow-hidden">
+            <div className="p-6">
+               {(feedbackData.toStage==="Archives") ? (
+                <div className="text-center mb-6">
+                  <h3 className="text-lg font-[400] text-gray-800 mb-1">
+                    Are you sure want to 
+                    <span className="text-xl font-[400] text-[#0F47F2]">
+                      Archive Candidate?
+                    </span>
+                  </h3>
+                  
+                </div>
+               ):
+               (
+                <div className="text-center mb-6">
+                  <h3 className="text-lg font-[400] text-gray-800 mb-1">
+                    Are you sure want to move this
+                  </h3>
+                  <p className="text-lg font-[400] text-gray-800">
+                    candidate to next stage?
+                  </p>
+                </div>
+                )}
+              
+                <div className="mb-6">
+                  <div className="bg-blue-50 rounded-2xl p-4 border border-blue-100">
+                    <div className="grid grid-cols-12 gap-3 items-start">
+                      {/* Profile Initials */}
+                      <div className="col-span-2">
+                        <div className="w-10 h-10 rounded-full bg-[#0F47F2] flex items-center justify-center">
+                          <span className="text-white font-bold text-sm">
+                            {feedbackData.candidate.name.split(/\s+/).map((word: any) => word[0].toUpperCase()).join("").slice(0, 2)}
+                          </span>
+                        </div>
+                      </div>
+                    
+                      {/* Name and Title */}
+                      <div className="col-span-7">
+                        <h4 className="text-sm font-semibold text-gray-900 mb-1">
+                          {feedbackData.candidate.name}
+                        </h4>
+                        <p className="text-xs text-blue-600">
+                          {feedbackData.candidate.role} | {feedbackData.candidate.company}
+                        </p>
+                      </div>
+                    
+                      {/* Percentage Badge */}
+                      <div className="col-span-3 text-right">
+                        <span className="text-lg font-[400] text-blue-600 bg-blue-100 border border-blue-200 px-1 rounded-md">
+                          75%
+                        </span>
+                      </div>
+                    
+                      {/* Experience Info */}
+                      <div className="col-start-3 col-span-10">
+                        <div className="flex items-center gap-1 text-gray-500 text-xs mt-2">
+                          <span>5Y • 15 NP • 20 LPA • Bangalore</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stage Transition */}
+
+                {(feedbackData.toStage==="Archives") && (
+                  <div className="flex items-center justify-center gap-3 mb-6">
+                  <span className="text-sm text-gray-600 font-medium">
                     {feedbackData.fromStage}
-                  </span>{" "}
-                  to{" "}
-                  <span className="font-semibold">{feedbackData.toStage}</span>
-                </p>
-              </div>
-              <div className="flex-1">
+                  </span>
+                  <div className="flex items-center">
+                    <ChevronRight className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <span className="text-sm text-blue-600 font-medium">
+                    {feedbackData.toStage}
+                  </span>
+                </div>
+                )}
+              
+              
+              
+              {/* Comment Section */}
+              <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  value={`Moving ${feedbackData.candidate.name} to ${feedbackData.toStage} - New Stage`}
-                  readOnly
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 mb-4"
-                />
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Comment
+                  Comment*
                 </label>
                 <textarea
                   value={feedbackComment}
                   onChange={(e) => setFeedbackComment(e.target.value)}
-                  placeholder="Enter your feedback..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-32 resize-none"
+                  placeholder="Type your feedback here!"
+                  className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-24 resize-none text-sm placeholder-gray-400"
                 />
               </div>
-              <div className="flex space-x-3 pt-4 border-t border-gray-200">
+
+              {/* Action buttons */}
+              <div className="flex gap-3">
+                {feedbackData.toStage==="Archives" && (
+                  <button
+                  onClick={handleFeedbackSubmit}
+                  disabled={!feedbackComment.trim()}
+                  className="flex-1 px-4 py-2.5 bg-[#CF272D] text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
+                >
+                  Archive
+                </button>
+                )}
                 <button
                   onClick={() => setShowFeedbackModal(false)}
-                  className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="flex-1 px-4 py-2.5 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 >
                   Cancel
                 </button>
+
+                {feedbackData.toStage!=="Archives" && (
+
+
                 <button
                   onClick={handleFeedbackSubmit}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  disabled={!feedbackComment.trim()}
+                  className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
                 >
-                  Submit and move forward
+                  Move to Next Stage
                 </button>
+                )}
               </div>
             </div>
           </div>
