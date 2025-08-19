@@ -1228,9 +1228,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         return (
           <div className="bg-[#F5F9FB] p-4 rounded-xl space-y-4">
             <h3 className="text-base font-medium text-[#4B5563]">Activity</h3>
-            <div className="space-y-6">
+            <div className="space-y-6 border-l-2 border-gray-400">
               {activities.map((activity, index) => (
-                <div key={index} className="border-l-2 border-gray-400">
+                <div key={index} className="">
                   <div
                     className="flex justify-start space-x-2 cursor-pointer"
                     onClick={() =>
@@ -1241,8 +1241,10 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   >
                     <hr className="w-[10%] border-t-2 mt-2 border-gray-400" />
                     <div>
-                      <p className="text-sm text-gray-400">{activity.date} </p>
-                      <p className="text-sm text-gray-400 font-medium">
+                      <p className="text-sm text-gray-400 leading-normal">
+                        {activity.date}{" "}
+                      </p>
+                      <p className="text-sm text-gray-400 leading-normal font-medium">
                         {activity.description}
                       </p>
                       {activity.note && selectedActivityIndex === index && (
