@@ -480,7 +480,7 @@ const ArchiveIcon = () => (
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 z-[60] flex">
-      <div className="ml-auto w-2/3 bg-gray-100 shadow-xl h-full overflow-y-auto p-6">
+      <div className="ml-auto w-2/3 bg-gray-100 shadow-xl h-full overflow-y-auto py-6">
         <div className="max-w-4xl mx-auto">
           {/* Header Section */}
           <div className="flex items-center justify-between mb-6">
@@ -492,7 +492,7 @@ const ArchiveIcon = () => (
             </button>
             
             <button className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors border border-gray-300 rounded-lg px-3 py-2">
-              <Share size={16} />
+              <Share2 size={16} />
               <span className="text-sm">Share</span>
             </button>
           </div>
