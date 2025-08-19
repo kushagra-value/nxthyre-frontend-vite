@@ -883,7 +883,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         }
 
         return (
-          <div className="bg-[#F5F9FB] px-4 py-2 rounded-xl space-y-6">
+          <div className="bg-[#F5F9FB] px-4 py-3 rounded-xl space-y-6">
             <div className="flex justify-between items-center">
               <h3 className="text-xl font-medium text-[#4B5563]">
                 Questions ({totalQuestions})
@@ -915,7 +915,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       </p>
                     </div>
                   </div>
-                  <hr className="border-t border-[#818283]/50" />
+                  <hr className="border-t border-[#818283]/50 rounded-xl" />
                   <div className="p-4 flex justify-between items-center text-xs bg-white">
                     <span className="text-[#818283]">{q.language}</span>
                     <div className="flex items-center space-x-4">
@@ -923,7 +923,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                         onClick={() => setIsExpanded(!isExpanded)}
                         className="flex items-center text-[#818283]"
                       >
-                        <div className="p-1 border border-[#818283] rounded-xl mr-1">
+                        <div className="p-1 border border-[#818283] rounded-lg mr-1">
                           <svg
                             width="8"
                             height="8"
@@ -942,18 +942,18 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                         {isExpanded ? "Collapse" : "Expand"}{" "}
                       </button>
                       <div className="flex items-center text-[#818283]">
-                        <SignalMedium className="w-4 h-4 mr-1 p-1 border border-[#818283] rounded-xl" />
+                        <SignalMedium className="w-8 h-8 mr-1 p-1 border border-[#818283] rounded-lg" />
                         {q.difficulty}
                       </div>
                       <div className="flex items-center">
                         {q.status === "Pass" && (
-                          <CheckCircle className="w-4 h-4 bg-[#007A5A] text-white mr-1" />
+                          <CheckCircle className="w-4 h-4 bg-[#007A5A] text-white mr-1 rounded-xl" />
                         )}
                         {q.status === "Fail" && (
-                          <XCircle className="w-4 h-4 bg-[#ED051C] text-white mr-1" />
+                          <XCircle className="w-4 h-4 bg-[#ED051C] text-white mr-1 rounded-xl" />
                         )}
                         {q.status === "Skip" && (
-                          <MinusCircle className="w-4 h-4 bg-[#818283] text-white mr-1" />
+                          <MinusCircle className="w-4 h-4 bg-[#818283] text-white mr-1 rounded-xl" />
                         )}
                         <span
                           className={`${
@@ -969,9 +969,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       </div>
                     </div>
                   </div>
-                  <hr className="border-t border-[#818283]/50" />
+                  <hr className="border-t border-[#818283]/50 px-2" />
                   {!isExpanded && hiddenLineCount > 0 && (
-                    <p className="px-4 pb-4 text-sm text-[#BCBCBC]">
+                    <p className="px-4 py-3 text-sm text-[#BCBCBC] bg-white">
                       {hiddenLineCount} hidden lines
                     </p>
                   )}
