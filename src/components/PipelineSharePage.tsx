@@ -884,8 +884,8 @@ const ArchiveIcon = () => (
                           },
                         ].map((item) => (
                           <div key={item.id} className="bg-[#F5F9FB] border border-gray-400 rounded-lg">
-                            <div className="flex items-start justify-left gap-4 pb-2 m-4 mb-0">
-                              <span className="text-base font-medium text-gray-600">Q{item.id}.</span>
+                            <div className="flex items-center justify-left gap-4 m-4">
+                              <span className="text-base font-[400] text-gray-600">Q{item.id}.</span>
                               <p className="text-sm text-gray-400 leading-relaxed">{item.question}</p>
                             </div>
                             <div className="px-4 border border-gray-200 bg-white rounded-lg">
@@ -925,7 +925,7 @@ const ArchiveIcon = () => (
 
                               </div>
                             </div>
-                            <div className="flex items-center justify-between text-sm text-gray-500 px-6 py-2">
+                            <div className="flex items-center justify-between text-sm text-gray-400 ml-2 pl-8 py-2">
                               <span className="">{item.lines}</span>
                             </div>
                             </div>
