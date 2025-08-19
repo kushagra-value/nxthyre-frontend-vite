@@ -545,7 +545,7 @@ const ArchiveIcon = () => (
 
               {/* Stats and Actions */}
               <div className=" flex items-center justify-between">
-                <div className="w-20 h-20">
+                <div className="w-20">
 
                 </div>
                 
