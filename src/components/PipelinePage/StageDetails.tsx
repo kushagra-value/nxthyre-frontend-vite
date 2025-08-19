@@ -948,13 +948,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       </div>
                       <div className="flex items-center">
                         {q.status === "Pass" && (
-                          <CheckCheck className="w-4 h-4 bg-[#007A5A] text-white mr-1 rounded-xl" />
+                          <CheckCheck className="w-4 h-4 p-1 bg-[#007A5A] text-white mr-1 rounded-xl" />
                         )}
                         {q.status === "Fail" && (
-                          <X className="w-4 h-4 bg-[#ED051C] text-white mr-1 rounded-xl" />
+                          <X className="w-4 h-4 p-1 bg-[#ED051C] text-white mr-1 rounded-xl" />
                         )}
                         {q.status === "Skip" && (
-                          <Minus className="w-4 h-4 bg-[#818283] text-white mr-1 rounded-xl" />
+                          <Minus className="w-4 h-4 p-1 bg-[#818283] text-white mr-1 rounded-xl" />
                         )}
                         <span
                           className={`${
