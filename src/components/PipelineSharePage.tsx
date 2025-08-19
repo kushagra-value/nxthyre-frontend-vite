@@ -1191,7 +1191,7 @@ const ArchiveIcon = () => (
                             </h3>
                             </div>
                             <p
-                              className={`text-sm font-semibold ${stage.textColor} p-1 border border-gray-200`}
+                              className={`text-lg font-[400] text-gray-600 bg-gray-100 border border-gray-200 px-1 rounded-md `}
                             >
                               {stageCount}
                             </p>
