@@ -57,10 +57,35 @@ interface Note {
 }
 
 interface Activity {
+  type: "stage_move" | "communication_sent";
   date: string;
+  job_title: string;
   description: string;
   via?: string;
   note?: string;
+  data: {
+    id: number;
+    // Stage move fields
+    from_stage_name?: string;
+    to_stage_name?: string;
+    moved_at?: string;
+    moved_by_name?: string;
+    external_mover_email?: string;
+    // Communication fields
+    mode?: string;
+    subject?: string;
+    body?: string;
+    sent_at?: string;
+    sent_by_name?: string;
+    replies?: Array<{
+      id: number;
+      body: string;
+      source: string;
+      source_display: string;
+      received_at: string;
+      via: string;
+    }>;
+  };
 }
 
 interface PipelineCandidate {
@@ -339,21 +364,29 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           const apiActivities = await candidateService.getCandidateActivity(
             selectedCandidate.publicIdentifier
           );
+
           const mappedActivities: Activity[] = apiActivities.map(
             (item: any) => {
               const date = new Date(item.timestamp).toLocaleDateString();
               let description = "";
               let via = "";
               let note = "";
+
+              if (item.type === "stage_move") {
+                const d = item.data;
+                description = `${d.moved_by_name} moved candidate from ${d.from_stage_name} → ${d.to_stage_name}`;
+                via = "system";
+              }
+
               if (item.type === "communication_sent") {
                 const d = item.data;
                 description = `${
                   d.sent_by_name
-                } sent a message via ${d.mode.toLowerCase()}${
+                } sent a ${d.mode.toLowerCase()} ${
                   d.subject ? `: "${d.subject}"` : ""
-                } - ${d.body}`;
+                }`;
                 via = d.mode.toLowerCase();
-                if (d.replies.length > 0) {
+                if (d.replies?.length > 0) {
                   note = d.replies
                     .map(
                       (r: any) =>
@@ -363,14 +396,20 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     )
                     .join("\n");
                 }
-              } else if (item.type === "communication_reply") {
-                const d = item.data;
-                description = `${d.source_display} replied via ${d.via}: ${d.body}`;
-                via = d.via;
               }
-              return { date, description, via, note };
+
+              return {
+                type: item.type,
+                date,
+                job_title: item.job_title,
+                description,
+                via,
+                note,
+                data: item.data,
+              };
             }
           );
+
           setActivities(mappedActivities);
         } catch (error) {
           console.error("Error fetching candidate activity:", error);
@@ -917,7 +956,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     </div>
                   </div>
                   <hr className="border-t border-[#818283]/50 rounded-full" />
-                  <hr className="mx-auto w-[99%] border-t border-[#818283]/50 rounded full mt-4" />
                   <div className="p-4 flex justify-between items-center text-xs bg-white">
                     <span className="text-[#818283]">{q.language}</span>
                     <div className="flex items-center space-x-4">
@@ -1215,14 +1253,14 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           <div className="bg-[#F5F9FB] p-4 rounded-xl space-y-4">
             <h3 className="text-base font-medium text-[#4B5563]">Activity</h3>
             <div className="space-y-2">
-              <div className="bg-white rounded-md p-3 border-l border-[#818283]">
+              {/* <div className="bg-white rounded-md p-3 border-l border-[#818283]">
                 <p className="text-xs text-[#818283]">
                   {new Date().toLocaleDateString()}
                 </p>
                 <p className="text-sm text-[#4B5563]">
                   Moved to {selectedStage}
                 </p>
-              </div>
+              </div> */}
               {activities.map((activity, index) => (
                 <div
                   key={index}
@@ -1240,14 +1278,25 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       )
                     }
                   >
+                    <p className="text-xs">Date: {activity.date} </p>
                     <p className="text-sm">{activity.description}</p>
-                    <p className="text-xs">
-                      Date: {activity.date}{" "}
-                      {activity.via && `(${activity.via})`}
-                    </p>
+                    {activity.type === "stage_move" && (
+                      <p className="text-xs italic">
+                        From {activity.data.from_stage_name} →{" "}
+                        {activity.data.to_stage_name}
+                      </p>
+                    )}
+                    {activity.type === "communication_sent" && (
+                      <p className="text-xs italic">
+                        Mode: {activity.data.mode}, Subject:{" "}
+                        {activity.data.subject || "N/A"}
+                      </p>
+                    )}
                     {activity.note && selectedActivityIndex === index && (
                       <div className="mt-2">
-                        <p className="text-xs italic">Note: {activity.note}</p>
+                        <p className="text-xs italic whitespace-pre-line">
+                          Replies: {activity.note}
+                        </p>
                       </div>
                     )}
                   </div>
