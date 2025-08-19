@@ -374,17 +374,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
               if (item.type === "stage_move") {
                 const d = item.data;
-                description = `${
-                  selectedCandidate.fullName
-                } has been moved from ${d.from_stage_name} to ${
-                  d.to_stage_name
-                } on ${new Date(d.moved_at).toLocaleDateString()}`;
+                description = `${selectedCandidate.firstName} has been moved from ${d.from_stage_name} to ${d.to_stage_name}`;
                 via = "system";
               }
 
               if (item.type === "communication_sent") {
                 const d = item.data;
-                description = `${selectedCandidate.fullName} sent you a message `;
+                description = `${selectedCandidate.firstName} sent you a message `;
                 via = d.mode.toLowerCase();
                 if (d.replies?.length > 0) {
                   note = d.replies
@@ -1236,24 +1232,27 @@ const StageDetails: React.FC<StageDetailsProps> = ({
               {activities.map((activity, index) => (
                 <div key={index}>
                   <div
-                    className="cursor-pointer border-l border-gray-300 pl-2"
+                    className="flex justify-start space-x-2cursor-pointer border-l-2 border-gray-400 pl-2"
                     onClick={() =>
                       setSelectedActivityIndex(
                         selectedActivityIndex === index ? null : index
                       )
                     }
                   >
-                    <p className="text-xs text-gray-400">{activity.date} </p>
-                    <p className="text-sm text-gray-600">
-                      {activity.description}
-                    </p>
-                    {activity.note && selectedActivityIndex === index && (
-                      <div className="mt-2">
-                        <p className="text-xs text-gray-500 whitespace-pre-line">
-                          Replies: {activity.note}
-                        </p>
-                      </div>
-                    )}
+                    <hr className="w-[5%] border-t-2 mt-1 border-gray-400" />
+                    <div>
+                      <p className="text-sm text-gray-400">{activity.date} </p>
+                      <p className="text-sm text-gray-500 font-medium">
+                        {activity.description}
+                      </p>
+                      {activity.note && selectedActivityIndex === index && (
+                        <div className="mt-2">
+                          <p className="text-xs text-gray-500 whitespace-pre-line">
+                            Replies: {activity.note}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   {selectedActivityIndex === index && (
                     <div className="mt-2 space-y-2">
