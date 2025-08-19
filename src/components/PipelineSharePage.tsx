@@ -1342,10 +1342,10 @@ const ArchiveIcon = () => (
       )}
       {showFeedbackModal && feedbackData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-md z-[60] flex justify-center items-center p-4">
-          <div className="bg-white w-full max-w-md h-[70vh] shadow-2xl rounded-md rounded-2xl overflow-hidden">
+          <div className="bg-white w-full max-w-xl h-[70vh] shadow-2xl rounded-3xl overflow-hidden">
             <div className="p-6">
                {(feedbackData.toStage==="Archives") ? (
-                <div className="text-center mb-6">
+                <div className="flex items-center text-center mb-6 gap-4">
                   <h3 className="text-lg font-[400] text-gray-800 mb-1">
                     Are you sure want to 
                     <span className="text-xl font-[400] text-[#0F47F2]">
@@ -1407,7 +1407,7 @@ const ArchiveIcon = () => (
 
                 {/* Stage Transition */}
 
-                {(feedbackData.toStage==="Archives") && (
+                {(feedbackData.toStage!=="Archives") && (
                   <div className="flex items-center justify-center gap-3 mb-6">
                   <span className="text-sm text-gray-600 font-medium">
                     {feedbackData.fromStage}
