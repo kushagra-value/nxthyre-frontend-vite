@@ -500,13 +500,13 @@ const ArchiveIcon = () => (
           {/* Main Content Card */}
           <div className="overflow-hidden">
             {/* Profile Header */}
-            <div className="bg-white rounded-3xl shadow-sm p-8 pb-6">
+            <div className="bg-white rounded-3xl shadow-sm p-8 pb-6 mb-8">
               <div className="flex items-start justify-between mb-6">
                 {/* Profile Info */}
                 <div className="flex items-start gap-6">
                   <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200">
                     {displayCandidate.avatar_url ? (
-                      <img 
+                      <img
                         src={displayCandidate.avatar_url}
                         alt={displayCandidate.full_name}
                         className="w-full h-full object-cover"
@@ -517,23 +517,29 @@ const ArchiveIcon = () => (
                       </div>
                     )}
                   </div>
-                  
+                
                   <div>
                     <div className="flex items-center gap-3 mb-2">
                       <h1 className="text-2xl font-bold text-gray-900">{selectedCandidate.name}</h1>
-                      <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">75%</span>
+                      <span className="bg-blue-100 text-blue-600 text-sm px-2 py-1 rounded-md font-medium">75%</span>
                     </div>
                     <p className="text-gray-600 mb-2">
                       {displayCandidate.headline || `${selectedCandidate.role} | ${selectedCandidate.company}`}
                     </p>
-                    <p className="text-gray-500 text-sm">Banglore</p>
+                    <p className="text-gray-500 text-sm">Bangalore, India</p>
                   </div>
                 </div>
 
                 {/* Contact Info */}
                 <div className="text-right text-gray-600">
-                  <p className="mb-1">{displayCandidate.candidate_email || "contact@example.com"} <MailIcon className="w-4 h-4 p-1"/></p>
-                  <p>{displayCandidate.candidate_phone || "9375 4575 45"} <PhoneIcon className="w-4 h-4 p-1"/></p>
+                  <div className="flex items-center justify-end gap-2 mb-1">
+                    <span className="text-sm">{displayCandidate.candidate_email || "Shikhasingh1220@gmail.com"}</span>
+                    <MailIcon className="w-4 h-4 text-gray-400"/>
+                  </div>
+                  <div className="flex items-center justify-end gap-2">
+                    <span className="text-sm">{displayCandidate.candidate_phone || "9375 4575 45"}</span>
+                    <PhoneIcon className="w-4 h-4 text-gray-400"/>
+                  </div>
                 </div>
               </div>
 
@@ -541,15 +547,15 @@ const ArchiveIcon = () => (
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
-                    <Calendar size={16} />
+                    <Calendar size={16} className="text-gray-400" />
                     <span>{displayCandidate.total_experience || "5"} Years</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Eye size={16} />
+                    <Eye size={16} className="text-gray-400" />
                     <span>{displayCandidate.notice_period_days || "15"} Days</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <DollarSign size={16} />
+                    <DollarSign size={16} className="text-gray-400" />
                     <span>{displayCandidate.current_salary || "20"} LPA</span>
                   </div>
                 </div>
