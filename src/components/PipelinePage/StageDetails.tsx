@@ -970,7 +970,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       </div>
                     </div>
                   </div>
-                  <hr className="border-t border-[#818283]/50 px-2" />
+                  <hr className="mx-auto w-[90%] border-t border-[#818283]/50" />
                   {!isExpanded && hiddenLineCount > 0 && (
                     <p className="px-4 py-3 text-sm text-[#BCBCBC] bg-white">
                       {hiddenLineCount} hidden lines
