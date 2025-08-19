@@ -744,8 +744,8 @@ const ArchiveIcon = () => (
                           <h3 className="text-base font-medium text-gray-900 mb-6">Overall Score</h3>
                           
                           {/* Resume Score */}
-                          <div className="mb-6 flex justify-between items-center">
-                            <div className="flex items-center justify-center w-48 p-4 bg-[#ECF1FF]">
+                          <div className="mb-6 flex justify-between items-center gap-4">
+                            <div className="flex flex-col items-center justify-center rounded-lg  w-48 p-4 bg-[#ECF1FF]">
                               <span className="text-sm text-gray-600">Resume</span>
                               <span className="text-xl font-[400] text-[#EAB308]">72%</span>
                             </div>
@@ -804,7 +804,7 @@ const ArchiveIcon = () => (
                         </div>
 
                         {/* Right Side - General Summary */}
-                        <div className="border-l border-gray-200">
+                        <div className="border-l border-gray-200 pl-4">
                           <h3 className="text-base font-medium text-gray-900 mb-6">General Summary</h3>
                           <p className="text-gray-700 text-sm leading-relaxed mb-8">
                             Shikha demonstrates solid domain knowledge and experience in ML engineering, particularly with AWS. However, clarity in communication needs improvement. He covers many questions, but responses sometimes lack depth or are unclear due to noise interference.
