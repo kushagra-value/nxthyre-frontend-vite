@@ -409,7 +409,7 @@ const ArchiveIcon = () => (
       
       {/* Profile Initials */}
       <div className="col-span-2">
-        <div className="w-10 h-10 rounded-full bg-blue-700 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-full bg-[#0F47F2] flex items-center justify-center">
           <span className="text-white font-bold text-sm">
             {candidate.name.split(/\s+/).map((word: any) => word[0].toUpperCase()).join("").slice(0, 2)}
           </span>
