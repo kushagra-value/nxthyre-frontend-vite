@@ -607,12 +607,13 @@ const ArchiveIcon = () => (
 
             {/* Content Sections */}
             <div className="">
+
               {/* Profile Summary */}
               <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Profile Summary</h2>
-                <p className="text-gray-700 text-sm leading-relaxed">
+                <p className="text-gray-600 text-sm leading-relaxed">
                   {displayCandidate.profile_summary || selectedCandidate.profileSummary || 
-                  "Skilled professional with extensive experience in their field, demonstrating strong technical capabilities and excellent communication skills throughout the interview process."}
+                  "Shikha Singh is a skilled digital marketing specialist with 5+years of experience in SEO, SEM, social media strategy, and content creation. Proficient in tools like Google Analytics and AdWords, she showcased exceptional knowledge, communication skills, and a proactive approach during recent interviews. She is highly recommended for client projects requiring innovative digital marketing solutions."}
                 </p>
               </section>
 
@@ -655,19 +656,20 @@ const ArchiveIcon = () => (
                   const colorClass = colors[index % colors.length];
                   
                   return (
-                    <div key={index} className="flex gap-4 mb-6">
-                      <div className={`w-12 h-12 ${colorClass} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                    <div key={index} className="flex gap-4 mb-4">
+                      <div className={`w-8 h-8 ${colorClass} rounded-full flex items-center justify-center flex-shrink-0`}>
                         <span className="text-white font-bold text-lg">{companyInitial}</span>
                       </div>
-                      <div className="flex-1">
+                      <div className={`flex-1 ${index===1 ? "":" border-t border-gray-200"}`}>
                         <div className="flex items-start justify-between mb-2">
                           <div>
                             <h3 className="font-semibold text-gray-900">{exp.job_title}</h3>
                             <p className="text-gray-600 text-sm">{exp.company} | {exp.location}</p>
+                            <span className="text-gray-500 text-sm">
+                              {exp.start_date} - {exp.is_current ? "Present" : exp.end_date}
+                            </span>
                           </div>
-                          <span className="text-gray-500 text-sm">
-                            {exp.start_date} - {exp.is_current ? "Present" : exp.end_date}
-                          </span>
+                          
                         </div>
                         <p className="text-gray-700 text-sm">{exp.description}</p>
                       </div>
