@@ -80,49 +80,49 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       name: "Shortlisted",
       color: "bg-blue-50",
       borderColor: "border-blue-200",
-      bgColor: "bg-blue-200",
+      bgColor: "bg-[#34C759]",
       textColor: "text-blue-400",
     },
     {
       name: "First Interview",
       color: "bg-yellow-50",
       borderColor: "border-yellow-200",
-      bgColor: "bg-yellow-200",
+      bgColor: "bg-[#FF8D28]",
       textColor: "text-yellow-400",
     },
     {
       name: "Other Interviews",
       color: "bg-orange-50",
       borderColor: "border-orange-200",
-      bgColor: "bg-orange-200",
+      bgColor: "bg-[#00C8B3]",
       textColor: "text-orange-400",
     },
     {
       name: "HR Round",
       color: "bg-red-50",
       borderColor: "border-red-200",
-      bgColor: "bg-red-200",
+      bgColor: "bg-[#0088FF]",
       textColor: "text-red-400",
     },
     {
       name: "Salary Negotiation",
       color: "bg-purple-50",
       borderColor: "border-purple-200",
-      bgColor: "bg-purple-200",
+      bgColor: "bg-[#CB30E0]",
       textColor: "text-purple-400",
     },
     {
       name: "Offer Sent",
       color: "bg-green-50",
       borderColor: "border-green-200",
-      bgColor: "bg-green-200",
+      bgColor: "bg-indigo-600",
       textColor: "text-green-400",
     },
     {
       name: "Archives",
       color: "bg-gray-50",
       borderColor: "border-gray-200",
-      bgColor: "bg-gray-200",
+      bgColor: "bg-gray-500",
       textColor: "text-gray-400",
     },
   ];
@@ -1186,12 +1186,12 @@ const ArchiveIcon = () => (
                             <div className="flex items-center gap-4">
                             <div className={`${stage.bgColor} w-1 h-8 rounded-tr-xl rounded-br-xl` }> 
                             </div>
-                            <h3 className="font-semibold text-gray-900 text-sm">
+                            <h3 className="font-[400] text-gray-900 text-lg">
                                 {stage.name}
                             </h3>
                             </div>
                             <p
-                              className={`text-lg font-[400] text-gray-600 bg-gray-100 border border-gray-200 px-1 rounded-md `}
+                              className={`text-lg font-[400] text-gray-500 bg-gray-100 px-1 rounded-md `}
                             >
                               {stageCount}
                             </p>
