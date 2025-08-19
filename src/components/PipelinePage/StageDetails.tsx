@@ -1252,9 +1252,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                               dangerouslySetInnerHTML={{
                                 __html: activity.note,
                               }}
-                            >
-                              {activity.note}
-                            </div>
+                            />
                             <button
                               onClick={() => {}}
                               className="text-blue-500"
