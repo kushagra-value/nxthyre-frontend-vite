@@ -387,7 +387,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     .map((r: any) => {
                       if (r.via === "call") {
                         return `
-                          <div class="flex justify-between">
+                          <div class="w-full flex justify-between">
                             <span>The call was instantiated</span>
                             <span class="text-gray-500">${r.via}</span>
                           </div>
@@ -1248,7 +1248,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                         activity.note && (
                           <div>
                             <div
-                              className="bg-white text-sm text-gray-800 p-2 rounded-md"
+                              className="w-full bg-white text-sm text-gray-800 p-2 rounded-md"
                               dangerouslySetInnerHTML={{
                                 __html: activity.note,
                               }}
