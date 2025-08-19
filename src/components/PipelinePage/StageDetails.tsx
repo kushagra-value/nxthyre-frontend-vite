@@ -324,7 +324,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       if (selectedCandidate?.id) {
         try {
           const apiActivities = await candidateService.getCandidateActivity(
-            selectedCandidate.id
+            selectedCandidate.publicIdentifier
           );
           const mappedActivities: Activity[] = apiActivities.map(
             (item: any) => {
@@ -365,7 +365,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       }
     };
     fetchActivity();
-  }, [selectedCandidate?.id]);
+  }, [selectedCandidate?.publicIdentifier]);
 
   const getDifficultyLevel = (diff: any) => {
     const num = parseInt(diff);
