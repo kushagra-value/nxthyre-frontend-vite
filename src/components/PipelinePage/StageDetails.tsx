@@ -384,7 +384,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 via = d.mode.toLowerCase();
                 if (d.replies?.length > 0) {
                   note = d.replies
-                    .map((r: any) => `"${r.body}" via ${r.via}`)
+                    .map((r: any) => {
+                      if (r.via === "call") {
+                        return `"The call was instantiated" via ${r.via}`;
+                      } else {
+                        return `"${r.body}" via ${r.via}`;
+                      }
+                    })
                     .join("\n");
                 }
               }
@@ -440,25 +446,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       </div>
     );
   }
-
-  const addActivity = () => {
-    if (newActivity.trim()) {
-      const updatedActivities = [
-        ...(selectedCandidate.activities || []),
-        {
-          date: new Date().toLocaleDateString(),
-          description: newActivity,
-          via: "via mail",
-        },
-      ];
-      const updatedCandidate = {
-        ...selectedCandidate,
-        activities: updatedActivities,
-      };
-      console.log("Activity added:", updatedCandidate);
-      setNewActivity("");
-    }
-  };
 
   const handleDeleteCandidate = async () => {
     try {
@@ -1247,13 +1234,27 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       <p className="text-sm text-gray-400 leading-normal font-medium">
                         {activity.description}
                       </p>
-                      {activity.note && selectedActivityIndex === index && (
+                      {activity.type === "communication_sent" &&
+                        activity.note && (
+                          <div>
+                            <div className="bg-white text-sm text-gray-800 p-2 rounded-md">
+                              {activity.note}
+                            </div>
+                            <button
+                              onClick={() => {}}
+                              className="text-blue-500"
+                            >
+                              Reply ?
+                            </button>
+                          </div>
+                        )}
+                      {/* {activity.note && selectedActivityIndex === index && (
                         <div className="mt-2">
                           <p className="text-xs text-gray-400 whitespace-pre-line">
                             Replies: {activity.note}
                           </p>
                         </div>
-                      )}
+                      )} */}
                     </div>
                   </div>
                   {selectedActivityIndex === index && (
@@ -1317,21 +1318,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   )}
                 </div>
               ))}
-            </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="text"
-                value={newActivity}
-                onChange={(e) => setNewActivity(e.target.value)}
-                placeholder="Type your reply"
-                className="flex-1 p-2 border border-gray-300 rounded-md text-sm"
-              />
-              <button
-                onClick={addActivity}
-                className="bg-blue-500 text-white p-2 rounded-md"
-              >
-                <Send className="w-4 h-4" />
-              </button>
             </div>
           </div>
         );
