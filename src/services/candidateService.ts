@@ -552,6 +552,19 @@ class CandidateService {
       );
     }
   }
+
+  async getCandidateActivity(candidateId: string): Promise<any[]> {
+    try {
+      const response = await apiClient.get(
+        `/candidates/${candidateId}/activity/`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch candidate activity"
+      );
+    }
+  }
 }
 
 export const candidateService = new CandidateService();

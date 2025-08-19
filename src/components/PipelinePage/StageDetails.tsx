@@ -281,6 +281,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   >([]);
   const [date, setDate] = useState("");
 
+  const [activities, setActivities] = useState<Activity[]>([]);
+
   useEffect(() => {
     setActiveTab("Profile");
   }, [selectedStage]);
@@ -316,6 +318,54 @@ const StageDetails: React.FC<StageDetailsProps> = ({
     };
     fetchData();
   }, [selectedCandidate?.id, jobId]);
+
+  useEffect(() => {
+    const fetchActivity = async () => {
+      if (selectedCandidate?.id) {
+        try {
+          const apiActivities = await candidateService.getCandidateActivity(
+            selectedCandidate.id
+          );
+          const mappedActivities: Activity[] = apiActivities.map(
+            (item: any) => {
+              const date = new Date(item.timestamp).toLocaleDateString();
+              let description = "";
+              let via = "";
+              let note = "";
+              if (item.type === "communication_sent") {
+                const d = item.data;
+                description = `${
+                  d.sent_by_name
+                } sent a message via ${d.mode.toLowerCase()}${
+                  d.subject ? `: "${d.subject}"` : ""
+                } - ${d.body}`;
+                via = d.mode.toLowerCase();
+                if (d.replies.length > 0) {
+                  note = d.replies
+                    .map(
+                      (r: any) =>
+                        `${r.source_display} replied via ${r.via}: ${
+                          r.body
+                        } at ${new Date(r.received_at).toLocaleString()}`
+                    )
+                    .join("\n");
+                }
+              } else if (item.type === "communication_reply") {
+                const d = item.data;
+                description = `${d.source_display} replied via ${d.via}: ${d.body}`;
+                via = d.via;
+              }
+              return { date, description, via, note };
+            }
+          );
+          setActivities(mappedActivities);
+        } catch (error) {
+          console.error("Error fetching candidate activity:", error);
+        }
+      }
+    };
+    fetchActivity();
+  }, [selectedCandidate?.id]);
 
   const getDifficultyLevel = (diff: any) => {
     const num = parseInt(diff);
@@ -1120,61 +1170,83 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   Moved to {selectedStage}
                 </p>
               </div>
-              {selectedCandidate.activities &&
-                selectedCandidate.activities.map((activity, index) => (
+              {activities.map((activity, index) => (
+                <div
+                  key={index}
+                  className={`bg-white rounded-md p-3 ${
+                    selectedActivityIndex === index
+                      ? "bg-blue-700 text-white"
+                      : ""
+                  }`}
+                >
                   <div
-                    key={index}
-                    className={`bg-white rounded-md p-3 ${
-                      selectedActivityIndex === index
-                        ? "bg-blue-700 text-white"
-                        : ""
-                    }`}
+                    className="cursor-pointer"
+                    onClick={() =>
+                      setSelectedActivityIndex(
+                        selectedActivityIndex === index ? null : index
+                      )
+                    }
                   >
-                    <div
-                      className="cursor-pointer"
-                      onClick={() =>
-                        setSelectedActivityIndex(
-                          selectedActivityIndex === index ? null : index
-                        )
-                      }
-                    >
-                      <p className="text-sm">{activity.description}</p>
-                      <p className="text-xs">
-                        Date: {activity.date}{" "}
-                        {activity.via && `(${activity.via})`}
-                      </p>
-                      {activity.note && selectedActivityIndex === index && (
-                        <div className="mt-2">
-                          <p className="text-xs italic">
-                            Note: {activity.note}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                    {selectedActivityIndex === index && (
-                      <div className="mt-2 space-y-2">
+                    <p className="text-sm">{activity.description}</p>
+                    <p className="text-xs">
+                      Date: {activity.date}{" "}
+                      {activity.via && `(${activity.via})`}
+                    </p>
+                    {activity.note && selectedActivityIndex === index && (
+                      <div className="mt-2">
+                        <p className="text-xs italic">Note: {activity.note}</p>
+                      </div>
+                    )}
+                  </div>
+                  {selectedActivityIndex === index && (
+                    <div className="mt-2 space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="text"
+                          value={activityReplies[index] || ""}
+                          onChange={(e) => {
+                            const newReplies = [...activityReplies];
+                            newReplies[index] = e.target.value;
+                            setActivityReplies(newReplies);
+                          }}
+                          placeholder="Add a reply..."
+                          className="flex-1 p-2 border border-gray-300 rounded-md text-sm"
+                        />
+                        <button
+                          onClick={() => {
+                            const newActivities = [...activities];
+                            newActivities[index].note =
+                              activityReplies[index] || "Replied via input";
+                            setActivities(newActivities);
+                            setActivityReplies([...activityReplies]);
+                            setSelectedActivityIndex(null);
+                          }}
+                          className="bg-blue-500 text-white p-2 rounded-md"
+                        >
+                          <Send className="w-4 h-4" />
+                        </button>
+                      </div>
+                      {activity.via && (
                         <div className="flex items-center space-x-2">
                           <input
                             type="text"
-                            value={activityReplies[index] || ""}
+                            value={viaReplies[index] || ""}
                             onChange={(e) => {
-                              const newReplies = [...activityReplies];
-                              newReplies[index] = e.target.value;
-                              setActivityReplies(newReplies);
+                              const newViaReplies = [...viaReplies];
+                              newViaReplies[index] = e.target.value;
+                              setViaReplies(newViaReplies);
                             }}
-                            placeholder="Add a reply..."
+                            placeholder="Reply via mail..."
                             className="flex-1 p-2 border border-gray-300 rounded-md text-sm"
                           />
                           <button
                             onClick={() => {
-                              const newActivities = [
-                                ...(selectedCandidate.activities || []),
-                              ];
-                              newActivities[index].note =
-                                activityReplies[index] || "Replied via input";
-                              // You cannot set selectedCandidate directly as it's a prop.
-                              // Instead, update the local activityReplies and close the reply box.
-                              setActivityReplies([...activityReplies]);
+                              const newActivities = [...activities];
+                              newActivities[index].note = `${
+                                viaReplies[index] || ""
+                              } (via ${activity.via})`;
+                              setActivities(newActivities);
+                              setViaReplies([...viaReplies]);
                               setSelectedActivityIndex(null);
                             }}
                             className="bg-blue-500 text-white p-2 rounded-md"
@@ -1182,41 +1254,11 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                             <Send className="w-4 h-4" />
                           </button>
                         </div>
-                        {activity.via && (
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="text"
-                              value={viaReplies[index] || ""}
-                              onChange={(e) => {
-                                const newViaReplies = [...viaReplies];
-                                newViaReplies[index] = e.target.value;
-                                setViaReplies(newViaReplies);
-                              }}
-                              placeholder="Reply via mail..."
-                              className="flex-1 p-2 border border-gray-300 rounded-md text-sm"
-                            />
-                            <button
-                              onClick={() => {
-                                const newActivities = [
-                                  ...(selectedCandidate.activities || []),
-                                ];
-                                newActivities[index].note = `${
-                                  viaReplies[index] || ""
-                                } (via ${activity.via})`;
-                                // setSelectedCandidate({ ...selectedCandidate, activities: newActivities });
-                                setViaReplies([...viaReplies]);
-                                setSelectedActivityIndex(null);
-                              }}
-                              className="bg-blue-500 text-white p-2 rounded-md"
-                            >
-                              <Send className="w-4 h-4" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
             <div className="flex items-center space-x-2">
               <input
