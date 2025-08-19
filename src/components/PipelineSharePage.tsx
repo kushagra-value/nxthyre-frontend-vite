@@ -851,30 +851,77 @@ const ArchiveIcon = () => (
 
                       {/* Question Items */}
                       <div className="space-y-4">
-                        {[1, 2, 3].map((num) => (
-                          <div key={num} className="border border-gray-200 rounded-lg p-6">
+                        {[
+                          {
+                            id: 1,
+                            question: "Write a function to reverse a given string. For example, if the input is 'hello', the output should be 'olleh'.",
+                            language: "Python",
+                            lines: "7 hidden lines",
+                            difficulty: "Easy",
+                            status: "Pass",
+                            date: "02/08/2024",
+                            score: "4/5",
+                          },
+                          {
+                            id: 2,
+                            question: "Write a function to reverse a given string. For example, if the input is 'hello', the output should be 'olleh'.",
+                            language: "Python",
+                            lines: "7 hidden lines",
+                            difficulty: "Easy",
+                            status: "Pass",
+                            date: "02/08/2024",
+                            score: "4/5",
+                          },
+                          {
+                            id: 3,
+                            question: "Write a function to reverse a given string. For example, if the input is 'hello', the output should be 'olleh'.",
+                            language: "Python",
+                            lines: "7 hidden lines",
+                            difficulty: "Easy",
+                            status: "Pass",
+                            date: "02/08/2024",
+                            score: "4/5",
+                          },
+                        ].map((item) => (
+                          <div key={item.id} className="border border-gray-200 rounded-lg p-6">
                             <div className="flex items-start justify-between mb-4">
-                              <span className="text-base font-medium text-gray-700">Q{num}.</span>
+                              <span className="text-base font-medium text-gray-700">Q{item.id}.</span>
                               <div className="flex items-center gap-3">
                                 <button className="text-gray-400 hover:text-gray-600 flex items-center gap-1">
-                                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M9 4.5L6 7.5L3 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                  <svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M1 9.5C1 5.49306 1 3.48959 2.2448 2.2448C3.48959 1 5.49306 1 9.5 1C13.5069 1 15.5104 1 16.7552 2.2448C18 3.48959 18 5.49306 18 9.5C18 13.5069 18 15.5104 16.7552 16.7552C15.5104 18 13.5069 18 9.5 18C5.49306 18 3.48959 18 2.2448 16.7552C1 15.5104 1 13.5069 1 9.5Z" stroke="#818283"/>
+                                    <path d="M13.75 5.25781H11.2M13.75 5.25781V7.80781M13.75 5.25781L10.775 8.23281M5.25 13.7578H7.8M5.25 13.7578V11.2078M5.25 13.7578L8.225 10.7828" stroke="#818283" stroke-linecap="round" stroke-linejoin="round"/>
                                   </svg>
                                   <span className="text-sm">Expand</span>
                                 </button>
-                                <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">Easy</span>
+                                <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">
+                                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M1 9C1 5.22876 1 3.34314 2.17158 2.17158C3.34314 1 5.22876 1 9 1C12.7712 1 14.6569 1 15.8284 2.17158C17 3.34314 17 5.22876 17 9C17 12.7712 17 14.6569 15.8284 15.8284C14.6569 17 12.7712 17 9 17C5.22876 17 3.34314 17 2.17158 15.8284C1 14.6569 1 12.7712 1 9Z" stroke="#818283"/>
+                                    <path d="M5 13.8016V6.60156" stroke="#818283" stroke-linecap="round"/>
+                                    <path d="M9 13.7797V4.17969" stroke="#818283" stroke-linecap="round"/>
+                                    <path d="M13 13.8203V9.82031" stroke="#818283" stroke-linecap="round"/>
+                                  </svg>
+                                </span>
                                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                                  <span className="text-white text-sm font-bold">✓</span>
+                                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <g clip-path="url(#clip0_2726_638)">
+                                      <path d="M8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16Z" fill="#2FD08D"/>
+                                      <path d="M6.068 7.983L7.809 9.7295L12.374 5.134L13 5.769L7.809 11L5.4415 8.6185L6.068 7.983ZM7.123 7.828L9.932 5L10.5585 5.635L7.75 8.465L7.123 7.828ZM5.985 10.243L5.367 10.866L3 8.485L3.6255 7.85L5.985 10.243Z" fill="white"/>
+                                    </g>
+                                    <defs>
+                                      <clipPath id="clip0_2726_638">
+                                        <rect width="16" height="16" fill="white"/>
+                                      </clipPath>
+                                    </defs>
+                                  </svg>
                                 </div>
                               </div>
                             </div>
-                            <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                              Write a function to reverse a given string. For example, if the input is "hello", the output should be "olleh".
-                            </p>
+                            <p className="text-sm text-gray-600 mb-4 leading-relaxed">{item.question}</p>
                             <div className="flex items-center gap-2 text-sm text-gray-500">
-                              <span>Python</span>
+                              <span>{item.language}</span>
                               <span>•</span>
-                              <span>7 hidden lines</span>
+                              <span>{item.lines}</span>
                             </div>
                           </div>
                         ))}
