@@ -544,7 +544,11 @@ const ArchiveIcon = () => (
               </div>
 
               {/* Stats and Actions */}
-              <div className="pl-12 flex items-center justify-between">
+              <div className=" flex items-center justify-between">
+                <div className="w-20 h-20">
+
+                </div>
+                
                 <div className="flex items-center gap-6 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
                     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
@@ -598,7 +602,7 @@ const ArchiveIcon = () => (
             {/* Content Sections */}
             <div className="">
               {/* Profile Summary */}
-              <section className="p-4 bg-white rounded-3xl shadow-sm mb-4">
+              <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Profile Summary</h2>
                 <p className="text-gray-700 text-sm leading-relaxed">
                   {displayCandidate.profile_summary || selectedCandidate.profileSummary || 
@@ -607,7 +611,7 @@ const ArchiveIcon = () => (
               </section>
 
               {/* Experience */}
-              <section className="p-4 bg-white rounded-3xl shadow-sm mb-4">
+              <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">Experience</h2>
                 
                 {(details?.experience || [
@@ -667,7 +671,7 @@ const ArchiveIcon = () => (
               </section>
 
               {/* Skills */}
-              <section className="p-4 bg-white rounded-3xl shadow-sm mb-4">
+              <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Skills</h2>
                 
                 {/* Resume Skills */}
@@ -704,7 +708,7 @@ const ArchiveIcon = () => (
               </section>
 
               {/* Assessment */}
-              <section className="p-4 bg-white rounded-3xl shadow-sm mb-4">
+              <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-gray-900">Assessment</h2>
                   <span className="text-gray-500 text-sm">02/08/2024</span>
@@ -839,7 +843,7 @@ const ArchiveIcon = () => (
               </section>
 
               {/* Notes */}
-              <section className="p-4 bg-white rounded-3xl shadow-sm mb-4">
+              <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Notes</h2>
                 
                 <div className="space-y-4">
@@ -884,7 +888,7 @@ const ArchiveIcon = () => (
               </section>
 
               {/* References */}
-              <section className="p-4 bg-white rounded-3xl shadow-sm">
+              <section className="p-8 bg-white rounded-3xl shadow-sm">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">References</h2>
                 
                 <div className="space-y-4">
