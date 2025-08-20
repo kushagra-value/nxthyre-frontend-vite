@@ -514,7 +514,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             resumeScoreReason: "",
             developmentAreas: [],
           },
-          technicalSkills: report.technical_skills || {
+          technicalSkills: report.technicalSkills || {
             weakSkills: [{ skill: "", rating: 0, reason: "" }],
             strongSkills: [{ skill: "", rating: 0, reason: "" }],
             skillsCoverage: "",
