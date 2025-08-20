@@ -1013,7 +1013,14 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           ...(interviewData?.technicalSkills?.strongSkills || []),
           ...(interviewData?.technicalSkills?.weakSkills || []),
         ];
-
+        console.log(
+          "Strongggg Skills::::::::::::::::::::::",
+          interviewData?.technicalSkills?.strongSkills
+        );
+        console.log(
+          "Weakkkk Skills::::::::::::::::::::::",
+          interviewData?.technicalSkills?.weakSkills
+        );
         console.log("Vetted Skills::::::::::::::::::::::", vettedSkills);
         console.log("Interview Data::::::::::::::::::::::", interviewData);
         const questions =
