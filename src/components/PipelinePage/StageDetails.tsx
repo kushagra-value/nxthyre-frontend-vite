@@ -1085,7 +1085,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     {vettedSkills.map((skill, index) => (
                       <div
                         key={index}
-                        className="bg-[#ECF1FF] rounded-md p-2 flex items-center justify-center space-x-2"
+                        className="relative group bg-[#ECF1FF] rounded-md p-2 flex items-center justify-center space-x-2"
                       >
                         <span className="text-sm text-[#0F47F2]">
                           {skill.skill}
