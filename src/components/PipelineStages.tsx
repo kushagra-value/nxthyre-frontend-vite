@@ -544,7 +544,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       fullName: candidateData.full_name,
       publicIdentifier: candidateData.id,
       headline: candidateData.headline,
-      summary: "",
+      summary: candidateData.profile_summary,
       profilePicture: {
         displayImageUrl: candidateData.profile_picture_url || "",
         artifacts: [],
