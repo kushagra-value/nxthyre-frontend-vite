@@ -1733,17 +1733,13 @@ const handleSuggestionSelect = async (sug: {id: string, name: string}) => {
                               )}
                             </div>
                             <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
-                              {isSearched ? (
+                              
                               <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400]">
                                 {candidate.status_tags.map((tag: {text: string, color: string}, idx: number) => (
                                   <span key={idx} className={`text-${tag.color}-500`}>{tag.text}</span>
                                 ))}
                               </div>
-                            ) : (
-                              <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
-                                3 days ago
-                              </div>
-                            )}
+                            
                             </div>
                           </div>
                         </div>
