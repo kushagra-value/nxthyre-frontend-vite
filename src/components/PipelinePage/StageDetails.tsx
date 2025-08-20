@@ -1094,6 +1094,12 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                         <span className="text-sm text-[#4B5563]">
                           {skill.rating}
                         </span>
+                        {skill.reason && (
+                          <div className="absolute z-10 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-gray-800 text-white text-xs rounded-md py-2 px-3 w-64">
+                            {skill.reason}
+                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent border-t-gray-800"></div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
