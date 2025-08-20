@@ -79,6 +79,52 @@ interface CandidateListItem {
     };
   };
   stage_slug: string;
+  job: {
+    id: number;
+    title: string;
+  };
+  current_stage: {
+    id: number;
+    name: string;
+    slug: string;
+  };
+  status_tags: {
+    text: string;
+    color: string;
+  }[];
+}
+
+interface SearchedCandidateItem {
+  id: number;
+  candidate: {
+    id: string;
+    name: string;
+    profile_picture_url: string | null;
+    location: string;
+    headline: string;
+    education: string;
+    experience_years: number;
+    current_company_duration: string;
+    notice_period_days: number;
+    current_salary_lpa: number;
+    linkedin_url: string;
+    resume_url: string;
+    github_url: string;
+  };
+  job: {
+    id: number;
+    title: string;
+  };
+  current_stage: {
+    id: number;
+    name: string;
+    slug: string;
+  };
+  status_tags: {
+    text: string;
+    color: string;
+  }[];
+  stage_slug: string;
 }
 
 // Define Category interface
@@ -287,7 +333,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
   // States for API data
   const [stages, setStages] = useState<Stage[]>([]);
-  const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
+  const [candidates, setCandidates] = useState<CandidateListItem[] | SearchedCandidateItem[]>([]);
   const [activeJobId, setActiveJobId] = useState<number | null>(null); // Initially null
 
   // Dynamic category states
@@ -302,6 +348,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     null
   );
 
+  const [suggestions, setSuggestions] = useState<{id: string, name: string}[]>([]);
+  
   // Fetch categories when component mounts
   useEffect(() => {
     const fetchCategories = async () => {
@@ -354,6 +402,25 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     }
     return () => document.body.classList.remove("overflow-hidden");
   }, [showComments]);
+
+  useEffect(() => {
+      if (currentView === "search" && searchQuery.length > 0 && activeJobId !== null) {
+        const fetchSuggestions = async () => {
+          try {
+            const res = await jobPostService.searchAutosuggest(searchQuery, activeJobId);
+            setSuggestions(res);
+          } catch (error) {
+            console.error("Error fetching suggestions:", error);
+          }
+        };
+  
+        const debounceTimer = setTimeout(fetchSuggestions, 300);
+  
+        return () => clearTimeout(debounceTimer);
+      } else {
+        setSuggestions([]);
+      }
+    }, [searchQuery, currentView, activeJobId]);
 
   // API functions
   const fetchStages = async (jobId: number) => {
@@ -904,6 +971,35 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   return () => document.removeEventListener("mousedown", handleClickOutside);
 }, [showSettingsPopup]);
 
+const handleSuggestionSelect = async (sug: {id: string, name: string}) => {
+    setSearchQuery(sug.name);
+    setSuggestions([]);
+    if (activeJobId) {
+      try {
+        setCandidates([]);
+        const res = await jobPostService.getSearchedCandidate(sug.id, activeJobId);
+        const stageName = res.current_stage.name;
+        setSelectedStage(stageName);
+        if (stageName === "Uncontacted") {
+          setActiveTab("uncontacted");
+          setViewMode("prospect");
+        } else if (stageName === "Invites Sent") {
+          setActiveTab("invited");
+          setViewMode("prospect");
+        } else if (stageName === "Inbox") {
+          setActiveTab("inbox");
+          setViewMode("prospect");
+        } else {
+          setViewMode("stage");
+        }
+        setCandidates([res]);
+        await fetchCandidateDetails(res.id);
+      } catch (error) {
+        console.error("Error fetching searched candidate:", error);
+      }
+    }
+  };
+
   console.log(
     "Transferred stage data PipelineStages :::::::::::::::::::: ",
     selectedCandidate?.stageData
@@ -985,7 +1081,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                     >
                       <LogOut className="w-4 h-4 rotate-180" />
                     </button>
-                    <div className="flex-1">
+                    <div className="flex-1 relative">
                       <input
                         type="text"
                         value={searchQuery}
@@ -993,6 +1089,19 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         placeholder="Search Candidates"
                         className="w-full px-3 py-2 border border-blue-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-blue-600 bg-white"
                       />
+                      {suggestions.length > 0 && (
+                        <div className="absolute top-10 z-10 w-full bg-white shadow-lg rounded-lg max-h-60 overflow-y-auto border border-gray-200">
+                          {suggestions.map((sug) => (
+                            <div
+                              key={sug.id}
+                              className="p-2 hover:bg-gray-100 cursor-pointer"
+                              onClick={() => handleSuggestionSelect(sug)}
+                            >
+                              {sug.name}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -1352,7 +1461,28 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 ) : (
                   <>
                     <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
-                      {currentCandidates.map((candidate: any) => (
+                      {currentCandidates.map((candidate: any) => {
+                        const isSearched = "current_stage" in candidate;
+                        const fullName = isSearched ? candidate.candidate.name : candidate.candidate.full_name;
+                        const avatar = isSearched ? candidate.candidate.profile_picture_url || "" : candidate.candidate.avatar;
+                        const headline = candidate.candidate.headline;
+                        const location = candidate.candidate.location;
+                        const linkedinUrl = candidate.candidate.linkedin_url;
+                        const isBackgroundVerified = isSearched ? false : candidate.candidate.is_background_verified;
+                        const experienceYears = isSearched ? candidate.candidate.experience_years.toString() : candidate.candidate.experience_years;
+                        const experienceSummaryTitle = isSearched ? headline : candidate.candidate.experience_summary.title;
+                        const experienceSummaryDateRange = isSearched ? candidate.candidate.current_company_duration : candidate.candidate.experience_summary.date_range;
+                        const educationSummaryTitle = isSearched ? candidate.candidate.education : candidate.candidate.education_summary.title;
+                        const noticePeriodSummary = isSearched ? `${candidate.candidate.notice_period_days} days` : candidate.candidate.notice_period_summary;
+                        const skillsList = isSearched ? [] : candidate.candidate.skills_list;
+                        const socialLinks = {
+                          linkedin: linkedinUrl,
+                          github: isSearched ? candidate.candidate.github_url : candidate.candidate.social_links.github,
+                          portfolio: isSearched ? "" : candidate.candidate.social_links.portfolio,
+                          resume: isSearched ? candidate.candidate.resume_url : candidate.candidate.social_links.resume,
+                        };
+                        const currentSalary = isSearched ? `${candidate.candidate.current_salary_lpa} LPA` : "9LPA";
+                        return (
                         <div
                           key={candidate.id}
                           className={`pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
@@ -1376,16 +1506,13 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               }
                               className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mb-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                               onClick={(e) => e.stopPropagation()}
-                              aria-label={`Select ${candidate.full_name}`}
+                              aria-label={`Select  ${fullName}`}
                             />
                             <div className="border-b border-[#E2E2E2] flex items-center space-x-3 pb-5 w-full">
                               <div
                                 className={`w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600] `}
                               >
-                                {(
-                                  candidate.candidate?.full_name ||
-                                  candidate.fullName
-                                )
+                                {fullName
                                   .split(" ")
                                   .map((n: string) => n[0])
                                   .join("")
@@ -1395,10 +1522,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
                                   <div className="flex items-center space-x-2 flex-wrap">
                                     <h3 className="text-xs lg:text-base font-[400] text-gray-900">
-                                      {candidate.candidate?.full_name ||
-                                        candidate.fullName}
+                                      {fullName}
                                     </h3>
-                                    {candidate.is_background_verified && (
+                                    {isBackgroundVerified && (
                                       <div
                                         className="relative flex space-x-1"
                                         onMouseEnter={() =>
@@ -1484,60 +1610,55 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563] mt-1">
                                       <MapPin className=" w-4 h-4" />
 
-                                      {candidate.candidate?.location.split(
+                                      {location.split(
                                         ","
-                                      )[0] ||
-                                        `${candidate.location.city}, ${candidate.location.country}`}
+                                      )[0] }
                                     </p>
                                   </div>
                                 </div>
                                 <div className="flex space-x-2">
                                   <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
-                                    {candidate.candidate?.experience_summary
-                                      ?.title ||
-                                      candidate.experience_summary?.title}
+                                    {experienceSummaryTitle}
                                   </p>
                                   <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
                                     |
                                   </p>
                                   <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
-                                    {candidate.candidate?.education_summary
-                                      ?.title ||
-                                      candidate.education_summary?.title}
+                                    {educationSummaryTitle}
                                   </p>
                                 </div>
                               </div>
                             </div>
                           </div>
                           <div className="pt-5 pl-12 flex space-x-12 gap-2 text-xs lg:text-base font-[400px] ml-1">
-                            {candidate.candidate?.experience_years && (
+                             {experienceYears && (
                               <div className="flex flex-col">
                                 <p className="text-[#A8A8A8] mr-[5px]">
                                   Experience
                                 </p>
                                 <p className="text-[#4B5563]">
-                                  {candidate.candidate?.experience_years}
+                                  {experienceYears}
                                 </p>
                               </div>
                             )}
                             {/* need to update the current Company Data */}
-                            {candidate.candidate?.experience_years && (
+                            {(isSearched ? experienceSummaryDateRange : candidate.candidate.experience_summary.date_range) && (
                               <div className="flex flex-col">
                                 <p className="text-[#A8A8A8] mr-[5px]">
                                   Current Company
                                 </p>
                                 <p className="text-[#4B5563]">
-                                  {candidate.candidate?.experience_years}
+                                  {isSearched ? experienceSummaryDateRange : candidate.candidate.experience_summary.date_range}
                                 </p>
                               </div>
                             )}
-                            {candidate.candidate?.notice_period_summary && (
+                            {noticePeriodSummary && (
                               <div className="flex flex-col">
                                 <p className="text-[#A8A8A8] mr-[5px]">
                                   Notice Period
                                 </p>
                                 <p className="text-[#4B5563]">
-                                  {candidate.candidate?.notice_period_summary}
+                                  {noticePeriodSummary}
                                 </p>
                               </div>
                             )}
@@ -1553,71 +1674,80 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           </div>
                           <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
                             <div className="flex items-center space-x-1">
-                              {candidate.candidate?.social_links?.github && (
+                              {socialLinks.github && (
                                 <button
                                   className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                                   onClick={() =>
                                     window.open(
-                                      candidate.candidate?.social_links?.github,
+                                      socialLinks.github,
                                       "_blank"
                                     )
                                   }
-                                  aria-label={`View ${candidate.candidate?.full_name}'s GitHub profile`}
+                                  aria-label={`View ${fullName}'s GitHub profile`}
                                 >
                                   <Github className="w-4 h-4" />
                                 </button>
                               )}
-                              {candidate.candidate?.social_links?.linkedin && (
+                              {socialLinks.linkedin && (
                                 <button
                                   className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                                   onClick={() =>
                                     window.open(
-                                      candidate.candidate?.social_links
+                                      socialLinks.linkedin
                                         ?.linkedin,
                                       "_blank"
                                     )
                                   }
-                                  aria-label={`View ${candidate.candidate?.full_name}'s LinkedIn profile`}
+                                  aria-label={`View ${fullName}'s LinkedIn profile`}
                                 >
                                   <Linkedin className="w-4 h-4" />
                                 </button>
                               )}
-                              {candidate.candidate?.social_links?.resume && (
+                              {socialLinks.resume && (
                                 <button
                                   className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                                   onClick={() =>
                                     window.open(
-                                      candidate.candidate?.social_links?.resume,
+                                      socialLinks.resume,
                                       "_blank"
                                     )
                                   }
-                                  aria-label={`View ${candidate.candidate?.full_name}'s resume`}
+                                  aria-label={`View ${fullName}'s resume`}
                                 >
                                   <File className="w-4 h-4" />
                                 </button>
                               )}
-                              {candidate.candidate?.social_links?.portfolio && (
+                              {socialLinks.portfolio && (
                                 <button
                                   className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                                   onClick={() =>
                                     window.open(
-                                      candidate.candidate?.social_links
-                                        ?.portfolio,
+                                      socialLinks.portfolio,
                                       "_blank"
                                     )
                                   }
-                                  aria-label={`View ${candidate.full_name}'s portfolio`}
+                                  aria-label={`View ${fullName}'s portfolio`}
                                 >
                                   <Link className="w-4 h-4" />
                                 </button>
                               )}
                             </div>
                             <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
-                              3 days ago
+                              {isSearched ? (
+                              <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400]">
+                                {candidate.status_tags.map((tag: {text: string, color: string}, idx: number) => (
+                                  <span key={idx} className={`text-${tag.color}-500`}>{tag.text}</span>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
+                                3 days ago
+                              </div>
+                            )}
                             </div>
                           </div>
                         </div>
-                      ))}
+                      )})}
                     </div>
                   </>
                 )}

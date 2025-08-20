@@ -30,6 +30,39 @@ export interface Job {
   total_replied: number
 }
 
+export interface SearchedCandidateItem {
+  id: number;
+  candidate: {
+    id: string;
+    name: string;
+    profile_picture_url: string | null;
+    location: string;
+    headline: string;
+    education: string;
+    experience_years: number;
+    current_company_duration: string;
+    notice_period_days: number;
+    current_salary_lpa: number;
+    linkedin_url: string;
+    resume_url: string;
+    github_url: string;
+  };
+  job: {
+    id: number;
+    title: string;
+  };
+  current_stage: {
+    id: number;
+    name: string;
+    slug: string;
+  };
+  status_tags: {
+    text: string;
+    color: string;
+  }[];
+  stage_slug: string;
+}
+
 export interface CreateJobData {
   title: string;
   location: string;
@@ -167,6 +200,24 @@ class JobPostService {
       await apiClient.delete(`/jobs/roles/${id}/`);
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to delete job");
+    }
+  }
+
+  async searchAutosuggest(query: string, jobId: number): Promise<{id: string, name: string}[]> {
+    try {
+      const response = await apiClient.get(`/jobs/search/autosuggest/?q=${query}&job_id=${jobId}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to fetch autosuggest");
+    }
+  }
+
+  async getSearchedCandidate(candidateId: string, jobId: number): Promise<SearchedCandidateItem> {
+    try {
+      const response = await apiClient.get(`/jobs/search/candidates/?candidate_id=${candidateId}&job_id=${jobId}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to fetch searched candidate");
     }
   }
 }
