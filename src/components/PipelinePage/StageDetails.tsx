@@ -1013,16 +1013,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           ...(interviewData?.technicalSkills?.strongSkills || []),
           ...(interviewData?.technicalSkills?.weakSkills || []),
         ];
-        console.log(
-          "Strongggg Skills::::::::::::::::::::::",
-          interviewData?.technicalSkills?.strongSkills
-        );
-        console.log(
-          "Weakkkk Skills::::::::::::::::::::::",
-          interviewData?.technicalSkills?.weakSkills
-        );
-        console.log("Vetted Skills::::::::::::::::::::::", vettedSkills);
-        console.log("Interview Data::::::::::::::::::::::", interviewData);
         const questions =
           interviewData?.questions?.map((q: any, index: number) => ({
             question: `Q${index + 1}: ${q.question}`,
@@ -1090,7 +1080,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 <div className="bg-white rounded-xl p-2">
                   <h4 className="text-base font-medium text-[#4B5563] mb-4">
                     Vetted Skills
-                    {interviewData?.technicalSkills?.skillsCoverage}
                   </h4>
                   <div className="grid grid-cols-3 gap-4">
                     {vettedSkills.map((skill, index) => (
@@ -1109,8 +1098,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     ))}
                   </div>
                 </div>
-                <div className="bg-green-100 rounded-xl py-2 px-3">
-                  <h4 className="text-base font-medium text-green-700 mb-2">
+                <div className="bg-yellow-100 rounded-xl py-2 px-3">
+                  <h4 className="text-base font-medium text-yellow-600 mb-2">
                     Key Observations
                   </h4>
                   {interviewData?.potentialRedFlags?.length > 0 ? (
