@@ -1470,16 +1470,16 @@ const handleSuggestionSelect = async (sug: {id: string, name: string}) => {
                         const linkedinUrl = candidate.candidate.linkedin_url;
                         const isBackgroundVerified = isSearched ? false : candidate.candidate.is_background_verified;
                         const experienceYears = isSearched ? candidate.candidate.experience_years.toString() : candidate.candidate.experience_years;
-                        const experienceSummaryTitle = isSearched ? headline : candidate.candidate.experience_summary.title;
-                        const experienceSummaryDateRange = isSearched ? candidate.candidate.current_company_duration : candidate.candidate.experience_summary.date_range;
-                        const educationSummaryTitle = isSearched ? candidate.candidate.education : candidate.candidate.education_summary.title;
+                        const experienceSummaryTitle = isSearched ? headline : candidate.candidate.experience_summary?.title;
+                        const experienceSummaryDateRange = isSearched ? candidate.candidate.current_company_duration : candidate.candidate.experience_summary?.date_range;
+                        const educationSummaryTitle = isSearched ? candidate.candidate.education : candidate.candidate.education_summary?.title;
                         const noticePeriodSummary = isSearched ? `${candidate.candidate.notice_period_days} days` : candidate.candidate.notice_period_summary;
                         const skillsList = isSearched ? [] : candidate.candidate.skills_list;
                         const socialLinks = {
                           linkedin: linkedinUrl,
-                          github: isSearched ? candidate.candidate.github_url : candidate.candidate.social_links.github,
-                          portfolio: isSearched ? "" : candidate.candidate.social_links.portfolio,
-                          resume: isSearched ? candidate.candidate.resume_url : candidate.candidate.social_links.resume,
+                          github: isSearched ? candidate.candidate.github_url : candidate.candidate.social_links?.github,
+                          portfolio: isSearched ? "" : candidate.candidate.social_links?.portfolio,
+                          resume: isSearched ? candidate.candidate.resume_url : candidate.candidate.social_links?.resume,
                         };
                         const currentSalary = isSearched ? `${candidate.candidate.current_salary_lpa} LPA` : "9LPA";
                         return (
@@ -1733,13 +1733,17 @@ const handleSuggestionSelect = async (sug: {id: string, name: string}) => {
                               )}
                             </div>
                             <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
-                              
+                              {isSearched ? (
                               <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400]">
                                 {candidate.status_tags.map((tag: {text: string, color: string}, idx: number) => (
                                   <span key={idx} className={`text-${tag.color}-500`}>{tag.text}</span>
                                 ))}
                               </div>
-                            
+                            ) : (
+                              <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
+                                3 days ago
+                              </div>
+                            )}
                             </div>
                           </div>
                         </div>
