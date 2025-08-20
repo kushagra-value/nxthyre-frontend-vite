@@ -1642,13 +1642,13 @@ const handleSuggestionSelect = async (sug: {id: string, name: string}) => {
                               </div>
                             )}
                             {/* need to update the current Company Data */}
-                            {(isSearched ? experienceSummaryDateRange : candidate.candidate.experience_summary.date_range) && (
+                            {(isSearched ? experienceSummaryDateRange : candidate.candidate.experience_summary?.date_range) && (
                               <div className="flex flex-col">
                                 <p className="text-[#A8A8A8] mr-[5px]">
                                   Current Company
                                 </p>
                                 <p className="text-[#4B5563]">
-                                  {isSearched ? experienceSummaryDateRange : candidate.candidate.experience_summary.date_range}
+                                  {isSearched ? experienceSummaryDateRange : candidate.candidate.experience_summary?.date_range}
                                 </p>
                               </div>
                             )}
