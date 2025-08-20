@@ -1081,7 +1081,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   <h4 className="text-base font-medium text-[#4B5563] mb-4">
                     Vetted Skills
                   </h4>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="flex flex-wrap gap-3">
                     {vettedSkills.map((skill, index) => (
                       <div
                         key={index}
