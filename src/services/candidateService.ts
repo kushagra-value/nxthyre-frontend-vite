@@ -510,6 +510,22 @@ class CandidateService {
     }
   }
 
+  async getAssessmentResults(jobId: number, candidateId: string): Promise<any> {
+    try {
+      const response = await apiClient.get(`/assessment/results`, {
+        params: {
+          job_id: jobId,
+          candidate_id: candidateId,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch assessment results"
+      );
+    }
+  }
+
   async postCandidateNote(
     candidateId: string,
     payload: {
@@ -525,6 +541,7 @@ class CandidateService {
       );
       return response.data;
     } catch (error: any) {
+      console.error("Server error response:", error.response?.data);
       throw new Error(
         error.response?.data?.error || "Failed to post candidate note"
       );
@@ -542,6 +559,19 @@ class CandidateService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error || "Failed to export candidates"
+      );
+    }
+  }
+
+  async getCandidateActivity(candidateId: string): Promise<any[]> {
+    try {
+      const response = await apiClient.get(
+        `/candidates/${candidateId}/activity/`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch candidate activity"
       );
     }
   }

@@ -584,6 +584,18 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           },
           questions: report.QA_analysis || [],
           notes: contextualDetails.candidate_notes || [],
+          feedbacks: report.feedbacks || {
+            overallFeedback: "",
+            communicationFeedback: "",
+            resumeScoreReason: "",
+            developmentAreas: [],
+          },
+          technicalSkills: report.technicalSkills || {
+            weakSkills: [{ skill: "", rating: 0, reason: "" }],
+            strongSkills: [{ skill: "", rating: 0, reason: "" }],
+            skillsCoverage: "",
+          },
+          potentialRedFlags: report.potential_red_flags || [],
         };
       default:
         return contextualDetails; // Fallback for other stages
@@ -608,7 +620,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       fullName: candidateData.full_name,
       publicIdentifier: candidateData.id,
       headline: candidateData.headline,
-      summary: "",
+      summary: candidateData.profile_summary,
       profilePicture: {
         displayImageUrl: candidateData.profile_picture_url || "",
         artifacts: [],
@@ -1766,6 +1778,7 @@ const handleSuggestionSelect = async (sug: {id: string, name: string}) => {
               moveCandidate={moveCandidate}
               archiveCandidate={archiveCandidate}
               stageData={selectedCandidate?.stageData}
+              jobId={activeJobId ?? 0}
             />
           </div>
         </div>

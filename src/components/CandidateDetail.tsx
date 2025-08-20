@@ -706,39 +706,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const isValidNote =
       newComment.trim() !== "" && validNoteRegex.test(newComment.trim());
 
-    // Dummy notes for fallback
-    const dummyTeamNotes: Note[] = [
-      {
-        noteId: "dummy1",
-        postedBy: {
-          userId: "123",
-          userName: "Sid Verma",
-          email: "sid@problock.com",
-        },
-        organisation: { orgId: "123", orgName: "Problock" },
-        content: "This is a sample team note.",
-        posted_at: new Date().toISOString(),
-        is_team_note: true,
-        is_community_note: false,
-      },
-    ];
-
-    const dummyCommunityNotes: Note[] = [
-      {
-        noteId: "dummy2",
-        postedBy: {
-          userId: "123",
-          userName: "Kushagra Jain",
-          email: "kush@valuebound.com",
-        },
-        organisation: { orgId: "123", orgName: "Valuebound" },
-        content: "This is a sample community note.",
-        posted_at: new Date().toISOString(),
-        is_team_note: false,
-        is_community_note: true,
-      },
-    ];
-
     // Fetch notes when component mounts or candidateId changes
     useEffect(() => {
       const fetchNotes = async () => {
@@ -789,15 +756,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const displayedNotes =
       notesView === "my"
         ? notes.filter((note) => note.is_team_note && !note.is_community_note)
-        : notes.filter((note) => !note.is_team_note && note.is_community_note);
-
-    // Use dummy notes as fallback when no real notes exist
-    const notesToDisplay =
-      displayedNotes.length > 0
-        ? displayedNotes
-        : notesView === "my"
-        ? dummyTeamNotes
-        : dummyCommunityNotes;
+        : notes.filter((note) => note.is_team_note && note.is_community_note);
 
     return (
       <>
@@ -831,8 +790,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <div className="flex-1 overflow-y-auto space-y-2 border-gray-200">
             {isLoading ? (
               <p className="text-gray-500 text-center">Loading notes...</p>
-            ) : (
-              notesToDisplay.map((note) => (
+            ) : displayedNotes.length > 0 ? (
+              displayedNotes.map((note: any) => (
                 <div
                   key={note.noteId}
                   className="border-b border-gray-200 pb-2"
@@ -846,7 +805,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                         <div className="flex-1 space-y-0.5">
                           <h4 className="font-medium text-[#111827] text-sm">
                             {note.postedBy?.userName ||
-                              note.organisation?.orgName ||
+                              note.postedBy?.email ||
                               "Unknown"}
                           </h4>
                           <p className="text-sm text-[#4B5563]">
@@ -870,6 +829,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                   </div>
                 </div>
               ))
+            ) : notesView === "my" ? (
+              <div>No team notes available. You can add a new note below.</div>
+            ) : (
+              <div>
+                No community notes available. You can add a new note below.
+              </div>
             )}
           </div>
         </div>
