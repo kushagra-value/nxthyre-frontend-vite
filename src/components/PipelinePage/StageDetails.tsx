@@ -195,12 +195,18 @@ interface PipelineCandidate {
       };
       questions: string[];
       notes: string[];
+      feedbacks: {
+        overallFeedback: string;
+        communicationFeedback: string;
+        resumeScoreReason: string;
+        developmentAreas: Array<string>;
+      };
       technicalSkills: {
         weakSkills: Array<{ skill: string; rating: number; reason: string }>;
         strongSkills: Array<{ skill: string; rating: number; reason: string }>;
         skillsCoverage: string;
       };
-      potentialRedFlags: string[];
+      potentialRedFlags: Array<string>;
     };
     shortlisted?: {
       interviewedDate: string;
@@ -1031,7 +1037,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       <p className="text-base text-[#4B5563]">Resume</p>
                       <p className="text-2xl font-normal text-[#EAB308]">
                         {(interviewData?.resumeScore &&
-                          (interviewData?.resumeScore * 10).toFixed(0)) ||
+                          interviewData?.resumeScore) ||
                           "N/A"}
                         %
                       </p>
@@ -1040,7 +1046,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       <p className="text-base text-[#4B5563]">Knowledge</p>
                       <p className="text-2xl font-normal text-[#16A34A]">
                         {(interviewData?.knowledgeScore &&
-                          (interviewData?.knowledgeScore * 10).toFixed(0)) ||
+                          interviewData?.knowledgeScore) ||
                           "N/A"}
                         %
                       </p>
@@ -1058,7 +1064,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       <p className="text-base text-[#4B5563]">Communication</p>
                       <p className="text-2xl font-normal text-[#0F47F2]">
                         {(interviewData?.communicationScore &&
-                          (interviewData.communicationScore * 10).toFixed(0)) ||
+                          interviewData.communicationScore) ||
                           "N/A"}
                         %
                       </p>

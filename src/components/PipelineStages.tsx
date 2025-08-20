@@ -508,6 +508,18 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           },
           questions: report.QA_analysis || [],
           notes: contextualDetails.candidate_notes || [],
+          feedbacks: report.feedbacks || {
+            overallFeedback: "",
+            communicationFeedback: "",
+            resumeScoreReason: "",
+            developmentAreas: [],
+          },
+          technicalSkills: report.technical_skills || {
+            weakSkills: [],
+            strongSkills: [],
+            skillsCoverage: "",
+          },
+          potentialRedFlags: report.potential_red_flags || [],
         };
       default:
         return contextualDetails; // Fallback for other stages
