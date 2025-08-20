@@ -195,6 +195,12 @@ interface PipelineCandidate {
       };
       questions: string[];
       notes: string[];
+      technicalSkills: {
+        weakSkills: Array<{ skill: string; rating: number; reason: string }>;
+        strongSkills: Array<{ skill: string; rating: number; reason: string }>;
+        skillsCoverage: string;
+      };
+      potentialRedFlags: string[];
     };
     shortlisted?: {
       interviewedDate: string;
