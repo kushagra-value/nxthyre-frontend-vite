@@ -1081,7 +1081,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   <h4 className="text-base font-medium text-[#4B5563] mb-4">
                     Vetted Skills
                   </h4>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-3">
                     {vettedSkills.map((skill, index) => (
                       <div
                         key={index}
@@ -1281,7 +1281,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     </div>
                   </div>
                   {selectedActivityIndex === index && (
-                    <div className="mt-2 space-y-2">
+                    <div className="ml-8 mt-2 space-y-2">
                       <div className="flex items-center space-x-2">
                         <input
                           type="text"
@@ -1308,35 +1308,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                           <Send className="w-4 h-4" />
                         </button>
                       </div>
-                      {activity.via && (
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="text"
-                            value={viaReplies[index] || ""}
-                            onChange={(e) => {
-                              const newViaReplies = [...viaReplies];
-                              newViaReplies[index] = e.target.value;
-                              setViaReplies(newViaReplies);
-                            }}
-                            placeholder="Reply via mail..."
-                            className="flex-1 p-2 border border-gray-300 rounded-md text-sm"
-                          />
-                          <button
-                            onClick={() => {
-                              const newActivities = [...activities];
-                              newActivities[index].note = `${
-                                viaReplies[index] || ""
-                              } (via ${activity.via})`;
-                              setActivities(newActivities);
-                              setViaReplies([...viaReplies]);
-                              setSelectedActivityIndex(null);
-                            }}
-                            className="bg-blue-500 text-white p-2 rounded-md"
-                          >
-                            <Send className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>
