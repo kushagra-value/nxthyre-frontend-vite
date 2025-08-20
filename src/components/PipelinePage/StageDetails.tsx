@@ -1007,6 +1007,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           ...(interviewData?.technicalSkills?.strongSkills || []),
           ...(interviewData?.technicalSkills?.weakSkills || []),
         ];
+
+        console.log("Vetted Skills::::::::::::::::::::::", vettedSkills);
+        console.log("Interview Data::::::::::::::::::::::", interviewData);
         const questions =
           interviewData?.questions?.map((q: any, index: number) => ({
             question: `Q${index + 1}: ${q.question}`,
