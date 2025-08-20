@@ -515,8 +515,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             developmentAreas: [],
           },
           technicalSkills: report.technical_skills || {
-            weakSkills: [],
-            strongSkills: [],
+            weakSkills: [{ skill: "", rating: 0, reason: "" }],
+            strongSkills: [{ skill: "", rating: 0, reason: "" }],
             skillsCoverage: "",
           },
           potentialRedFlags: report.potential_red_flags || [],

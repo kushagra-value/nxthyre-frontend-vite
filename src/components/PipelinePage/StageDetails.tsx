@@ -1090,6 +1090,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 <div className="bg-white rounded-xl p-2">
                   <h4 className="text-base font-medium text-[#4B5563] mb-4">
                     Vetted Skills
+                    {interviewData?.technicalSkills?.skillsCoverage}
                   </h4>
                   <div className="grid grid-cols-3 gap-4">
                     {vettedSkills.map((skill, index) => (
@@ -1112,9 +1113,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   <h4 className="text-base font-medium text-green-700 mb-2">
                     Key Observations
                   </h4>
-                  {interviewData?.potential_red_flags?.length > 0 ? (
+                  {interviewData?.potentialRedFlags?.length > 0 ? (
                     <ul className="list-disc list-inside space-y-1">
-                      {interviewData.potential_red_flags.map(
+                      {interviewData.potentialRedFlags.map(
                         (observation: any, index: number) => (
                           <li
                             key={index}
