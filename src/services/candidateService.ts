@@ -123,9 +123,12 @@ export interface CandidateDetailData {
 
 export interface ShareableProfileSensitiveCandidate {
   id: string;
-  about: string;
-  location: string;
-  total_experience_years: number;
+  profile_picture_url: string;
+  total_experience: string;
+  time_in_current_company: string;
+  notice_period: string;
+  current_salary_formatted: string;
+  profile_summary: string;
   experience: {
     job_title: string;
     location: string;
@@ -135,8 +138,10 @@ export interface ShareableProfileSensitiveCandidate {
     is_current: boolean;
   }[];
   education: {
+    institution: string;
     degree: string;
     specialization: string;
+    is_top_tier: boolean;
     start_date: string;
     end_date: string;
   }[];
@@ -151,6 +156,10 @@ export interface ShareableProfileSensitiveCandidate {
     issued_date: string;
     valid_until: string | null;
     url: string;
+  }[];
+  community_notes: {
+    content: string;
+    posted_at: string;
   }[];
 }
 
