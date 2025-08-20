@@ -1281,7 +1281,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     </div>
                   </div>
                   {selectedActivityIndex === index && (
-                    <div className="ml-8 mt-2 space-y-2">
+                    <div className="ml-10 mt-2 space-y-2">
                       <div className="flex items-center space-x-2">
                         <input
                           type="text"
