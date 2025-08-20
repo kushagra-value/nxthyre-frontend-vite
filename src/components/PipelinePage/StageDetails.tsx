@@ -998,12 +998,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           transferredStageData?.["ai-interview"] ||
           transferredStageData?.shortlisted;
         const vettedSkills = [
-          { name: "Meta Ads", rating: 3.5 },
-          { name: "Flutter", rating: 4 },
-          { name: "SEO", rating: 4.5 },
-          { name: "Meta Ads", rating: 3.5 },
-          { name: "Flutter", rating: 4 },
-          { name: "SEO", rating: 4.5 },
+          ...(interviewData?.technicalSkills?.strongSkills || []),
+          ...(interviewData?.technicalSkills?.weakSkills || []),
         ];
         const questions =
           interviewData?.questions?.map((q: any, index: number) => ({
@@ -1011,7 +1007,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             answer: q.answer,
           })) || [];
 
-        console.log("interviewData Resume score: ", interviewData?.resumeScore);
         return (
           <div className="space-y-3 bg-[#F5F9FB] p-2 rounded-xl">
             {interviewData?.resumeScore ||
@@ -1066,11 +1061,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     General Summary
                   </h4>
                   <p className="text-sm text-[#818283]">
-                    Abhishek demonstrates solid domain knowledge and experience
-                    in ML engineering, particularly with AWS. However, clarity
-                    in communication needs improvement. He covers many
-                    questions, but responses sometimes lack depth or are unclear
-                    due to noise interference.
+                    {interviewData?.feedbacks?.overallFeedback ||
+                      "No feedback provided"}
                   </p>
                 </div>
                 <div className="bg-white rounded-xl p-2">
@@ -1084,7 +1076,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                         className="bg-[#ECF1FF] rounded-md p-2 flex items-center justify-center space-x-2"
                       >
                         <span className="text-sm text-[#0F47F2]">
-                          {skill.name}
+                          {skill.skill}
                         </span>
                         <Star className="w-4 h-4 text-[#FFC107] fill-[#FFC107]" />
                         <span className="text-sm text-[#4B5563]">
@@ -1094,22 +1086,28 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     ))}
                   </div>
                 </div>
-                <div className="bg-[#FDE7E7] rounded-xl py-2 px-3">
-                  <h4 className="text-base font-medium text-[#F20A0A] mb-2">
-                    Integrity Scores
+                <div className="bg-green-100 rounded-xl py-2 px-3">
+                  <h4 className="text-base font-medium text-green-700 mb-2">
+                    Key Observations
                   </h4>
-                  <p className="text-sm text-[#4B5563] leading-relaxed">
-                    Assistance: {interviewData?.proctoring?.assistance || "N/A"}
-                    <br />
-                    Device Usage:{" "}
-                    {interviewData?.proctoring?.deviceUsage || "N/A"}
-                    <br />
-                    Reference Materials:{" "}
-                    {interviewData?.proctoring?.referenceMaterial || "N/A"}
-                    <br />
-                    Environmental Assistance:{" "}
-                    {interviewData?.proctoring?.environment || "N/A"}
-                  </p>
+                  {interviewData?.potential_red_flags?.length > 0 ? (
+                    <ul className="list-disc list-inside space-y-1">
+                      {interviewData.potential_red_flags.map(
+                        (observation: any, index: number) => (
+                          <li
+                            key={index}
+                            className="text-sm text-[#4B5563] leading-relaxed"
+                          >
+                            {observation}
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-[#4B5563] leading-relaxed">
+                      No key observations provided
+                    </p>
+                  )}
                 </div>
                 <div className="bg-white rounded-xl p-4">
                   <h4 className="text-base font-medium text-[#4B5563] mb-4">
