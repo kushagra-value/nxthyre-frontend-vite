@@ -325,7 +325,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
                     {anonymizedCandidate?.community_notes?.map((note:any, index:any) => (
                       <div key={index}>
                         <div className="flex flex-col items-left justify-between mb-2">
-                          <div className="font-medium text-gray-500">Anonymous</div>
+                          <div className="font-medium text-gray-500">{note.organization_name}</div>
                           <div className="text-sm text-gray-500">{new Date(note.posted_at).toLocaleDateString()}</div>
                         </div>
                         <p className="text-sm text-gray-700">{note.content}</p>

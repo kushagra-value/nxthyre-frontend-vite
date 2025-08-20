@@ -160,6 +160,7 @@ export interface ShareableProfileSensitiveCandidate {
   community_notes: {
     content: string;
     posted_at: string;
+    organization_name: string;
   }[];
 }
 
