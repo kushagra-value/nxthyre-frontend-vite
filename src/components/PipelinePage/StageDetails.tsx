@@ -1095,7 +1095,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                           {skill.rating}
                         </span>
                         {skill.reason && (
-                          <div className="absolute z-10 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-gray-800 text-white text-xs rounded-md py-2 px-3 w-64">
+                          <div className="absolute z-50 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-blue-100 text-blue-600 text-xs rounded-md py-2 px-3 w-64">
                             {skill.reason}
                             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent border-t-gray-800"></div>
                           </div>
