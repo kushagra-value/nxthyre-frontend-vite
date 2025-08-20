@@ -170,7 +170,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
             <div className="grid grid-cols-4 gap-24 mb-6 ">
               <div className="col-span-1 w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
                 <img 
-                  src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=200"
+                  src={anonymizedCandidate?.profile_picture_url || "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=200"}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
@@ -195,26 +195,26 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
              <div className="grid grid-cols-4 gap-24 pb-6 mb-6 border-b border-gray-200">
                   <div>
                     <div className="text-sm text-gray-500">Experience</div>
-                    <div className="font-semibold text-gray-900">5 Years</div>
+                    <div className="font-semibold text-gray-900">{anonymizedCandidate?.total_experience || 'N/A'}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-500">Current Company</div>
-                    <div className="font-semibold text-gray-900">2 Years</div>
+                    <div className="font-semibold text-gray-900">{anonymizedCandidate?.time_in_current_company || 'N/A'}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-500">Notice Period</div>
-                    <div className="font-semibold text-gray-900">15 Days</div>
+                    <div className="font-semibold text-gray-900">{anonymizedCandidate?.notice_period || 'N/A'}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-500">Current Salary</div>
-                    <div className="font-semibold text-gray-900">20 LPA</div>
+                    <div className="font-semibold text-gray-900">{anonymizedCandidate?.current_salary_formatted || 'N/A'}</div>
                   </div>
                 </div>
 
             {/* Profile Summary */}
             <div className="mb-8 pb-6 mb-6 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Profile Summary</h3>
-              <p className="text-gray-700 leading-relaxed">{anonymizedCandidate?.about}</p>
+              <p className="text-gray-700 leading-relaxed">{anonymizedCandidate?.profile_summary}</p>
             </div>
 
             {/* Two Column Layout */}
@@ -242,7 +242,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
                     {anonymizedCandidate?.education.map((edu, index) => (
                       <div key={index}>
                         <div className="font-medium text-gray-900">{edu.degree} in {edu.specialization}</div>
-                        <div className="text-sm text-gray-600">**************************</div>
+                        <div className="text-sm text-gray-600">{edu.institution}</div>
                         <div className="text-sm text-gray-500">{edu.start_date} - {edu.end_date}</div>
                       </div>
                     ))}
@@ -322,20 +322,15 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
              <div className="ml-8 pl-8 col-span-2">
                   <h3 className="text-lg font-semibold text-blue-600 mb-4">Community Notes</h3>
                   <div className="space-y-4">
-                    <div className="">
-                      <div className="flex flex-col items-left justify-between mb-2">
-                        <div className="font-medium text-gray-500">Company</div>
-                        <div className="text-sm text-gray-500">Posted Date</div>
+                    {anonymizedCandidate?.community_notes?.map((note:any, index:any) => (
+                      <div key={index}>
+                        <div className="flex flex-col items-left justify-between mb-2">
+                          <div className="font-medium text-gray-500">Anonymous</div>
+                          <div className="text-sm text-gray-500">{new Date(note.posted_at).toLocaleDateString()}</div>
+                        </div>
+                        <p className="text-sm text-gray-700">{note.content}</p>
                       </div>
-                      <p className="text-sm text-gray-700">This innovative AI engineer skillfully solved complex problems, collaborated effectively, and delivered precise, reliable solutions with creative insight.</p>
-                    </div>
-                    <div className="">
-                      <div className="flex flex-col items-left justify-between mb-2">
-                        <div className="font-medium text-gray-500">Company</div>
-                        <div className="text-sm text-gray-500">Posted Date</div>
-                      </div>
-                      <p className="text-sm text-gray-700">This innovative AI engineer skillfully solved complex problems, collaborated effectively, and delivered precise, reliable solutions with creative insight.</p>
-                    </div>
+                    ))}
                   </div>
                 </div>
                 </div>
