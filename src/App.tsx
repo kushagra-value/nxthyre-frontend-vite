@@ -893,6 +893,7 @@ function MainApp() {
                         credits={credits}
                         searchQuery={searchQuery}
                         setSearchQuery={setSearchQuery}
+                        showLinkedinSearchButton={true}
                         showCreateRoleButton={true}
                         candidates={candidates}
                         onSelectCandidate={setSelectedCandidate}

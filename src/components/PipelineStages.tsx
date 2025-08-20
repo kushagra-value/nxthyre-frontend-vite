@@ -917,6 +917,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           credits={credits}
           onBack={onBack}
           showCreateRoleButton={false}
+          showLinkedinSearchButton={false}
         />
       </div>
 

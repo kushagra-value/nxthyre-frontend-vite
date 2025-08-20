@@ -22,6 +22,7 @@ interface HeaderProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   showCreateRoleButton?: boolean;
+  showLinkedinSearchButton?: boolean;
   candidates: CandidateListItem[];
   onSelectCandidate: (candidate: CandidateListItem) => void;
   jobId?: number; // Changed: Added jobId prop
@@ -35,6 +36,7 @@ const Header: React.FC<HeaderProps> = ({
   searchQuery,
   setSearchQuery,
   showCreateRoleButton,
+  showLinkedinSearchButton,
   candidates,
   onSelectCandidate,
   jobId, // Changed: Destructured jobId
@@ -166,7 +168,7 @@ const Header: React.FC<HeaderProps> = ({
             {/* Right Section */}
             <div className="flex items-center space-x-6">
               {/* Search - Only show when authenticated */}
-              {isAuthenticated && (
+               {isAuthenticated && showLinkedinSearchButton && (
                 <div className="relative hidden sm:flex items-center rounded-lg px-3 py-1 border border-blue-200 bg-blue-50 cursor-pointer w-88">
                   <input
                     type="text"
