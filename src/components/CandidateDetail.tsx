@@ -295,7 +295,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <div className="absolute bottom-0 left-0 right-0 p-4 ml-6 flex space-x-1 items-center">
             <button
               onClick={() => setShowMore(true)}
-              className="text-[#0F47F2] text-sm"
+              className="text-[#0F47F2] text-sm font-medium bg-gradient-to-r from-white to-gray-100 hover:from-gray-50 hover:to-gray-200 py-2 px-4 rounded-md shadow-sm z-10 transition-colors duration-200"
             >
               VIEW MORE
             </button>
