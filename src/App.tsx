@@ -13,6 +13,7 @@ import {
 } from "./services/candidateService";
 import Header from "./components/Header";
 import FiltersSidebar from "./components/FiltersSidebar";
+import JobApplicationForm from "./components/JobApplicationForm";
 import CandidatesMain from "./components/CandidatesMain";
 import CandidateDetail from "./components/CandidateDetail";
 import TemplateSelector from "./components/TemplateSelector";
@@ -820,6 +821,12 @@ function MainApp() {
               pipelineId={currentPipelineId}
               onBack={handleBackFromPipelineShare}
             />
+          }
+        />
+        <Route
+          path="/jobs/:pipelineId"
+          element={
+            <JobApplicationForm/>
           }
         />
         <Route
