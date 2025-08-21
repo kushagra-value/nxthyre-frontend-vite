@@ -220,6 +220,15 @@ class JobPostService {
       throw new Error(error.response?.data?.error || "Failed to fetch searched candidate");
     }
   }
+
+  async getAIJD(jobId: number): Promise<{ job_description_markdown: string; technical_competencies: Array<{ skill: string; context: string; priority: string; years_implied: string; assessment_type: string; proficiency_level: string }> }> {
+    try {
+      const response = await apiClient.get(`/jobs/ai-jd/${jobId}/`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to fetch AI JD");
+    }
+  }
 }
 
 export const jobPostService = new JobPostService();
