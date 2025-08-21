@@ -895,6 +895,7 @@ function MainApp() {
                         setSearchQuery={setSearchQuery}
                         showLinkedinSearchButton={true}
                         showCreateRoleButton={true}
+                        showSearchBar={true}
                         candidates={candidates}
                         onSelectCandidate={setSelectedCandidate}
                         jobId={activeCategoryId ?? undefined} // Changed: Pass jobId prop
