@@ -862,14 +862,14 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           <div className="flex justify-between mt-6">
             <button
               onClick={() => setShowTestEmail(true)}
-              className="w-[25%] px-4 py-2 text-xs text-blue-500 border border-blue-500 rounded-lg flex items-center justify-center"
+              className="w-[25%] px-3 py-2 text-xs text-blue-500 border border-blue-500 rounded-lg flex items-center justify-center"
               disabled={loading}
             >
               Send Test
             </button>
             <button
               onClick={handleSendInvite}
-              className="w-[30%] px-4 py-2 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center font-medium"
+              className="w-[30%] px-3 py-2 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center font-medium"
               disabled={
                 loading ||
                 !jobId ||
