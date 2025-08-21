@@ -77,40 +77,10 @@ interface CandidateListItem {
       portfolio: string;
       resume: string;
     };
-  };
-  stage_slug: string;
-  job: {
-    id: number;
-    title: string;
-  };
-  current_stage: {
-    id: number;
-    name: string;
-    slug: string;
-  };
-  status_tags: {
-    text: string;
-    color: string;
-  }[];
-}
-
-interface SearchedCandidateItem {
-  id: number;
-  candidate: {
-    id: string;
-    name: string;
-    profile_picture_url: string | null;
-    location: string;
-    headline: string;
-    education: string;
-    experience_years: number;
-    current_company_duration: string;
-    notice_period_days: number;
-    current_salary_lpa: number;
-    linkedin_url: string;
     resume_url: string;
-    github_url: string;
+    current_salary_lpa: string;
   };
+  stage_slug: string;
   job: {
     id: number;
     title: string;
@@ -124,7 +94,6 @@ interface SearchedCandidateItem {
     text: string;
     color: string;
   }[];
-  stage_slug: string;
 }
 
 // Define Category interface
@@ -333,9 +302,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
   // States for API data
   const [stages, setStages] = useState<Stage[]>([]);
-  const [candidates, setCandidates] = useState<
-    CandidateListItem[] | SearchedCandidateItem[]
-  >([]);
+  const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
   const [activeJobId, setActiveJobId] = useState<number | null>(null); // Initially null
 
   // Dynamic category states
@@ -1795,51 +1762,25 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                     <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
                       {currentCandidates.map((candidate: any) => {
                         const isSearched = "current_stage" in candidate;
-                        const fullName = isSearched
-                          ? candidate.candidate.name
-                          : candidate.candidate.full_name;
-                        const avatar = isSearched
-                          ? candidate.candidate.profile_picture_url || ""
-                          : candidate.candidate.avatar;
+                        const fullName = candidate.candidate.full_name;
+                        const avatar =  candidate.candidate.avatar;
                         const headline = candidate.candidate.headline;
                         const location = candidate.candidate.location;
                         const linkedinUrl = candidate.candidate.linkedin_url;
-                        const isBackgroundVerified = isSearched
-                          ? false
-                          : candidate.candidate.is_background_verified;
-                        const experienceYears = isSearched
-                          ? candidate.candidate.experience_years.toString()
-                          : candidate.candidate.experience_years;
-                        const experienceSummaryTitle = isSearched
-                          ? headline
-                          : candidate.candidate.experience_summary?.title;
-                        const experienceSummaryDateRange = isSearched
-                          ? candidate.candidate.current_company_duration
-                          : candidate.candidate.experience_summary?.date_range;
-                        const educationSummaryTitle = isSearched
-                          ? candidate.candidate.education
-                          : candidate.candidate.education_summary?.title;
-                        const noticePeriodSummary = isSearched
-                          ? `${candidate.candidate.notice_period_days} days`
-                          : candidate.candidate.notice_period_summary;
-                        const skillsList = isSearched
-                          ? []
-                          : candidate.candidate.skills_list;
+                        const isBackgroundVerified = candidate.candidate.is_background_verified;
+                        const experienceYears = candidate.candidate.experience_years;
+                        const experienceSummaryTitle = candidate.candidate.experience_summary?.title;
+                        const experienceSummaryDateRange = candidate.candidate.experience_summary?.date_range;
+                        const educationSummaryTitle =  candidate.candidate.education_summary?.title;
+                        const noticePeriodSummary = candidate.candidate.notice_period_summary;
+                        const skillsList = candidate.candidate.skills_list;
                         const socialLinks = {
                           linkedin: linkedinUrl,
-                          github: isSearched
-                            ? candidate.candidate.github_url
-                            : candidate.candidate.social_links?.github,
-                          portfolio: isSearched
-                            ? ""
-                            : candidate.candidate.social_links?.portfolio,
-                          resume: isSearched
-                            ? candidate.candidate.resume_url
-                            : candidate.candidate.social_links?.resume,
+                          github: candidate.candidate.social_links?.github,
+                          portfolio: candidate.candidate.social_links?.portfolio,
+                          resume: candidate.candidate.social_links?.resume,
                         };
-                        const currentSalary = isSearched
-                          ? `${candidate.candidate.current_salary_lpa} LPA`
-                          : "9LPA";
+                        const currentSalary = candidate.candidate.current_salary_lpa;
                         return (
                           <div
                             key={candidate.id}
@@ -1996,19 +1937,13 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 </div>
                               )}
                               {/* need to update the current Company Data */}
-                              {(isSearched
-                                ? experienceSummaryDateRange
-                                : candidate.candidate.experience_summary
-                                    ?.date_range) && (
+                              { candidate.candidate.experience_summary?.date_range && (
                                 <div className="flex flex-col">
                                   <p className="text-[#A8A8A8] mr-[5px]">
                                     Current Company
                                   </p>
                                   <p className="text-[#4B5563]">
-                                    {isSearched
-                                      ? experienceSummaryDateRange
-                                      : candidate.candidate.experience_summary
-                                          ?.date_range}
+                                    {candidate.candidate.experience_summary?.date_range}
                                   </p>
                                 </div>
                               )}
@@ -2023,12 +1958,12 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 </div>
                               )}
                               {/* need to update the code for Current Salary */}
-                              {true && (
+                              {currentSalary && (
                                 <div className="flex flex-col">
                                   <p className="text-[#A8A8A8] mr-[5px]">
                                     Current Salary
                                   </p>
-                                  <p className="text-[#4B5563]">9LPA</p>
+                                  <p className="text-[#4B5563]">{currentSalary}</p>
                                 </div>
                               )}
                             </div>

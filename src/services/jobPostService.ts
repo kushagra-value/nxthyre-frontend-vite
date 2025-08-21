@@ -34,19 +34,27 @@ export interface SearchedCandidateItem {
   id: number;
   candidate: {
     id: string;
-    name: string;
-    profile_picture_url: string | null;
-    location: string;
+    full_name: string;
+    avatar: string;
     headline: string;
-    education: string;
-    experience_years: number;
-    current_company_duration: string;
-    notice_period_days: number;
-    current_salary_lpa: number;
+    location: string;
     linkedin_url: string;
+    is_background_verified: boolean;
+    experience_years: string;
+    experience_summary: { title: string; date_range: string };
+    education_summary: { title: string; date_range: string };
+    notice_period_summary: string;
+    skills_list: string[];
+    social_links: {
+      linkedin: string;
+      github: string;
+      portfolio: string;
+      resume: string;
+    };
     resume_url: string;
-    github_url: string;
+    current_salary_lpa: string;
   };
+  stage_slug: string;
   job: {
     id: number;
     title: string;
@@ -60,7 +68,6 @@ export interface SearchedCandidateItem {
     text: string;
     color: string;
   }[];
-  stage_slug: string;
 }
 
 export interface CreateJobData {
