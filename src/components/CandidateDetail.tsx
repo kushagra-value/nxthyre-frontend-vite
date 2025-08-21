@@ -296,7 +296,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                         {exp?.start_date} - {exp?.end_date || "Present"}
                       </p>
                       <p className="text-sm text-[#4B5563] mt-1">
-                        {{ exp?.description|linebreaks }}
+                        {exp?.description}
                       </p>
                     </div>
                   ))
