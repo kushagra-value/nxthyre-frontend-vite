@@ -260,34 +260,52 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               <Briefcase className="w-4 h-4 mr-2 text-[#4B5563]" />
               Experience
             </h3>
-            <div className="ml-2">
-              {experiences.length > 0 ? (
-                (showMore || experiences.length <= 1
-                  ? experiences
-                  : experiences.slice(0, 1)
-                ).map((exp, index) => (
-                  <div
-                    key={index}
-                    className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
-                  >
-                    <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
-                    <h4 className="font-medium text-[#111827] text-sm">
-                      {exp?.job_title}
-                    </h4>
-                    <p className="text-sm text-[#4B5563]">{`${exp?.company} | ${exp?.location}`}</p>
-                    <p className="text-sm text-[#6B7280]">
-                      {exp?.start_date} - {exp?.end_date || "Present"}
-                    </p>
-                    <p className="text-sm text-[#4B5563] mt-1">
-                      {exp?.description}
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-gray-500">
-                  No experience details available
-                </p>
-              )}
+            <div className="ml-2 relative">
+              <div
+                className={`${
+                  !showMore && experiences.length > 1
+                    ? "max-h-[150px] overflow-hidden"
+                    : ""
+                }`}
+                style={{
+                  maskImage:
+                    !showMore && experiences.length > 1
+                      ? "linear-gradient(to bottom, black 60%, transparent 100%)"
+                      : "none",
+                  WebkitMaskImage:
+                    !showMore && experiences.length > 1
+                      ? "linear-gradient(to bottom, black 60%, transparent 100%)"
+                      : "none",
+                }}
+              >
+                {experiences.length > 0 ? (
+                  (showMore || experiences.length <= 1
+                    ? experiences
+                    : experiences.slice(0, 1)
+                  ).map((exp, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
+                    >
+                      <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
+                      <h4 className="font-medium text-[#111827] text-sm">
+                        {exp?.job_title}
+                      </h4>
+                      <p className="text-sm text-[#4B5563]">{`${exp?.company} | ${exp?.location}`}</p>
+                      <p className="text-sm text-[#6B7280]">
+                        {exp?.start_date} - {exp?.end_date || "Present"}
+                      </p>
+                      <p className="text-sm text-[#4B5563] mt-1">
+                        {exp?.description}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No experience details available
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -295,7 +313,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <div className="absolute bottom-0 left-0 right-0 p-4 ml-6 flex space-x-1 items-center">
             <button
               onClick={() => setShowMore(true)}
-              className="text-[#0F47F2] text-sm font-medium bg-gradient-to-r from-white to-gray-100 hover:from-gray-50 hover:to-gray-200 py-2 px-4 rounded-md shadow-sm z-10 transition-colors duration-200"
+              className="text-[#0F47F2] text-sm"
             >
               VIEW MORE
             </button>
