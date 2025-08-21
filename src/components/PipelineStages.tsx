@@ -1872,11 +1872,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 <div
                                   className={`w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600] `}
                                 >
-                                  {fullName
-                                    .split(" ")
-                                    .map((n: string) => n[0])
-                                    .join("")
-                                    .slice(0, 2)}
+                                  {fullName?.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
