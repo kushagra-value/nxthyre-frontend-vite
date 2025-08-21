@@ -859,17 +859,17 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             <div className="border-b border-dashed border-gray-300"></div>
           </div>
 
-          <div className="flex justify-between space-x-8 mt-6">
+          <div className="flex justify-between mt-6">
             <button
               onClick={() => setShowTestEmail(true)}
-              className="w-full px-4 py-2 text-xs text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"
+              className="w-[25%] px-4 py-2 text-xs text-blue-500 border border-blue-500 rounded-lg flex items-center justify-center"
               disabled={loading}
             >
-              Send test email
+              Send Test
             </button>
             <button
               onClick={handleSendInvite}
-              className="w-full px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center font-medium"
+              className="w-[30%] px-4 py-2 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center font-medium"
               disabled={
                 loading ||
                 !jobId ||
@@ -877,7 +877,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 (!sendViaEmail && !sendViaWhatsApp && !sendViaPhone)
               }
             >
-              <Send className="w-4 h-4 mr-2" /> Send Invite
+              Send Invite <Send className="w-4 h-4 ml-2" />
             </button>
           </div>
         </div>
