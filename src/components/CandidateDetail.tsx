@@ -270,11 +270,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 style={{
                   maskImage:
                     !showMore && experiences.length > 1
-                      ? "linear-gradient(to bottom, black 60%, transparent 100%)"
+                      ? "linear-gradient(to bottom, black 10%, transparent 100%)"
                       : "none",
                   WebkitMaskImage:
                     !showMore && experiences.length > 1
-                      ? "linear-gradient(to bottom, black 60%, transparent 100%)"
+                      ? "linear-gradient(to bottom, black 10%, transparent 100%)"
                       : "none",
                 }}
               >
