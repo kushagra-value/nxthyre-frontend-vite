@@ -333,7 +333,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
   // States for API data
   const [stages, setStages] = useState<Stage[]>([]);
-  const [candidates, setCandidates] = useState<CandidateListItem[] | SearchedCandidateItem[]>([]);
+  const [candidates, setCandidates] = useState<
+    CandidateListItem[] | SearchedCandidateItem[]
+  >([]);
   const [activeJobId, setActiveJobId] = useState<number | null>(null); // Initially null
 
   // Dynamic category states
@@ -350,8 +352,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     null
   );
 
-  const [suggestions, setSuggestions] = useState<{id: string, name: string}[]>([]);
-  
+  const [suggestions, setSuggestions] = useState<
+    { id: string; name: string }[]
+  >([]);
+
   // Fetch categories when component mounts
   useEffect(() => {
     const fetchCategories = async () => {
@@ -406,23 +410,30 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   }, [showComments]);
 
   useEffect(() => {
-      if (currentView === "search" && searchQuery.length > 0 && activeJobId !== null) {
-        const fetchSuggestions = async () => {
-          try {
-            const res = await jobPostService.searchAutosuggest(searchQuery, activeJobId);
-            setSuggestions(res);
-          } catch (error) {
-            console.error("Error fetching suggestions:", error);
-          }
-        };
-  
-        const debounceTimer = setTimeout(fetchSuggestions, 300);
-  
-        return () => clearTimeout(debounceTimer);
-      } else {
-        setSuggestions([]);
-      }
-    }, [searchQuery, currentView, activeJobId]);
+    if (
+      currentView === "search" &&
+      searchQuery.length > 0 &&
+      activeJobId !== null
+    ) {
+      const fetchSuggestions = async () => {
+        try {
+          const res = await jobPostService.searchAutosuggest(
+            searchQuery,
+            activeJobId
+          );
+          setSuggestions(res);
+        } catch (error) {
+          console.error("Error fetching suggestions:", error);
+        }
+      };
+
+      const debounceTimer = setTimeout(fetchSuggestions, 300);
+
+      return () => clearTimeout(debounceTimer);
+    } else {
+      setSuggestions([]);
+    }
+  }, [searchQuery, currentView, activeJobId]);
 
   // API functions
   const fetchStages = async (jobId: number) => {
@@ -1228,13 +1239,16 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showSettingsPopup]);
 
-const handleSuggestionSelect = async (sug: {id: string, name: string}) => {
+  const handleSuggestionSelect = async (sug: { id: string; name: string }) => {
     setSearchQuery(sug.name);
     setSuggestions([]);
     if (activeJobId) {
       try {
         setCandidates([]);
-        const res = await jobPostService.getSearchedCandidate(sug.id, activeJobId);
+        const res = await jobPostService.getSearchedCandidate(
+          sug.id,
+          activeJobId
+        );
         const stageName = res.current_stage.name;
         setSelectedStage(stageName);
         if (stageName === "Uncontacted") {
@@ -1270,11 +1284,8 @@ const handleSuggestionSelect = async (sug: {id: string, name: string}) => {
           credits={credits}
           onBack={onBack}
           showCreateRoleButton={false}
-<<<<<<< Updated upstream
           showLinkedinSearchButton={false}
-=======
           showSearchBar={false}
->>>>>>> Stashed changes
         />
       </div>
 
@@ -1784,287 +1795,321 @@ const handleSuggestionSelect = async (sug: {id: string, name: string}) => {
                     <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
                       {currentCandidates.map((candidate: any) => {
                         const isSearched = "current_stage" in candidate;
-                        const fullName = isSearched ? candidate.candidate.name : candidate.candidate.full_name;
-                        const avatar = isSearched ? candidate.candidate.profile_picture_url || "" : candidate.candidate.avatar;
+                        const fullName = isSearched
+                          ? candidate.candidate.name
+                          : candidate.candidate.full_name;
+                        const avatar = isSearched
+                          ? candidate.candidate.profile_picture_url || ""
+                          : candidate.candidate.avatar;
                         const headline = candidate.candidate.headline;
                         const location = candidate.candidate.location;
                         const linkedinUrl = candidate.candidate.linkedin_url;
-                        const isBackgroundVerified = isSearched ? false : candidate.candidate.is_background_verified;
-                        const experienceYears = isSearched ? candidate.candidate.experience_years.toString() : candidate.candidate.experience_years;
-                        const experienceSummaryTitle = isSearched ? headline : candidate.candidate.experience_summary?.title;
-                        const experienceSummaryDateRange = isSearched ? candidate.candidate.current_company_duration : candidate.candidate.experience_summary?.date_range;
-                        const educationSummaryTitle = isSearched ? candidate.candidate.education : candidate.candidate.education_summary?.title;
-                        const noticePeriodSummary = isSearched ? `${candidate.candidate.notice_period_days} days` : candidate.candidate.notice_period_summary;
-                        const skillsList = isSearched ? [] : candidate.candidate.skills_list;
+                        const isBackgroundVerified = isSearched
+                          ? false
+                          : candidate.candidate.is_background_verified;
+                        const experienceYears = isSearched
+                          ? candidate.candidate.experience_years.toString()
+                          : candidate.candidate.experience_years;
+                        const experienceSummaryTitle = isSearched
+                          ? headline
+                          : candidate.candidate.experience_summary?.title;
+                        const experienceSummaryDateRange = isSearched
+                          ? candidate.candidate.current_company_duration
+                          : candidate.candidate.experience_summary?.date_range;
+                        const educationSummaryTitle = isSearched
+                          ? candidate.candidate.education
+                          : candidate.candidate.education_summary?.title;
+                        const noticePeriodSummary = isSearched
+                          ? `${candidate.candidate.notice_period_days} days`
+                          : candidate.candidate.notice_period_summary;
+                        const skillsList = isSearched
+                          ? []
+                          : candidate.candidate.skills_list;
                         const socialLinks = {
                           linkedin: linkedinUrl,
-                          github: isSearched ? candidate.candidate.github_url : candidate.candidate.social_links?.github,
-                          portfolio: isSearched ? "" : candidate.candidate.social_links?.portfolio,
-                          resume: isSearched ? candidate.candidate.resume_url : candidate.candidate.social_links?.resume,
+                          github: isSearched
+                            ? candidate.candidate.github_url
+                            : candidate.candidate.social_links?.github,
+                          portfolio: isSearched
+                            ? ""
+                            : candidate.candidate.social_links?.portfolio,
+                          resume: isSearched
+                            ? candidate.candidate.resume_url
+                            : candidate.candidate.social_links?.resume,
                         };
-                        const currentSalary = isSearched ? `${candidate.candidate.current_salary_lpa} LPA` : "9LPA";
+                        const currentSalary = isSearched
+                          ? `${candidate.candidate.current_salary_lpa} LPA`
+                          : "9LPA";
                         return (
-                        <div
-                          key={candidate.id}
-                          className={`pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
-                            selectedCandidate?.id === candidate.id.toString()
-                              ? "bg-blue-50 border-l-4 border-blue-500"
-                              : "border border-gray-200"
-                          }`}
-                          onClick={() => handleCandidateSelect(candidate)}
-                          tabIndex={0}
-                          role="button"
-                          aria-label={`Select candidate ${candidate.full_name}`}
-                        >
-                          <div className="flex px-4 items-center space-x-3">
-                            <input
-                              type="checkbox"
-                              checked={selectedCandidates.includes(
-                                candidate.id.toString()
-                              )}
-                              onChange={() =>
-                                handleCandidateCheckbox(candidate.id.toString())
-                              }
-                              className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mb-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                              onClick={(e) => e.stopPropagation()}
-                              aria-label={`Select  ${fullName}`}
-                            />
-                            <div className="border-b border-[#E2E2E2] flex items-center space-x-3 pb-5 w-full">
-                              <div
-                                className={`w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600] `}
-                              >
-                                {fullName
-                                  .split(" ")
-                                  .map((n: string) => n[0])
-                                  .join("")
-                                  .slice(0, 2)}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
-                                  <div className="flex items-center space-x-2 flex-wrap">
-                                    <h3 className="text-xs lg:text-base font-[400] text-gray-900">
-                                      {fullName}
-                                    </h3>
-                                    {isBackgroundVerified && (
-                                      <div
-                                        className="relative flex space-x-1"
-                                        onMouseEnter={() =>
-                                          setHoveredCandidateId(candidate.id)
-                                        }
-                                        onMouseLeave={() =>
-                                          setHoveredCandidateId(null)
-                                        }
-                                      >
-                                        <span className="mt-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-                                          <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="256"
-                                            height="256"
-                                            viewBox="0 0 256 256"
-                                            xmlSpace="preserve"
-                                          >
-                                            <g
-                                              transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)"
-                                              style={{
-                                                stroke: "none",
-                                                strokeWidth: 0,
-                                                strokeDasharray: "none",
-                                                strokeLinecap: "butt",
-                                                strokeLinejoin: "miter",
-                                                strokeMiterlimit: 10,
-                                                fill: "none",
-                                                fillRule: "nonzero",
-                                                opacity: 1,
-                                              }}
+                          <div
+                            key={candidate.id}
+                            className={`pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
+                              selectedCandidate?.id === candidate.id.toString()
+                                ? "bg-blue-50 border-l-4 border-blue-500"
+                                : "border border-gray-200"
+                            }`}
+                            onClick={() => handleCandidateSelect(candidate)}
+                            tabIndex={0}
+                            role="button"
+                            aria-label={`Select candidate ${candidate.full_name}`}
+                          >
+                            <div className="flex px-4 items-center space-x-3">
+                              <input
+                                type="checkbox"
+                                checked={selectedCandidates.includes(
+                                  candidate.id.toString()
+                                )}
+                                onChange={() =>
+                                  handleCandidateCheckbox(
+                                    candidate.id.toString()
+                                  )
+                                }
+                                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mb-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                onClick={(e) => e.stopPropagation()}
+                                aria-label={`Select  ${fullName}`}
+                              />
+                              <div className="border-b border-[#E2E2E2] flex items-center space-x-3 pb-5 w-full">
+                                <div
+                                  className={`w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600] `}
+                                >
+                                  {fullName
+                                    .split(" ")
+                                    .map((n: string) => n[0])
+                                    .join("")
+                                    .slice(0, 2)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
+                                    <div className="flex items-center space-x-2 flex-wrap">
+                                      <h3 className="text-xs lg:text-base font-[400] text-gray-900">
+                                        {fullName}
+                                      </h3>
+                                      {isBackgroundVerified && (
+                                        <div
+                                          className="relative flex space-x-1"
+                                          onMouseEnter={() =>
+                                            setHoveredCandidateId(candidate.id)
+                                          }
+                                          onMouseLeave={() =>
+                                            setHoveredCandidateId(null)
+                                          }
+                                        >
+                                          <span className="mt-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                                            <svg
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              width="256"
+                                              height="256"
+                                              viewBox="0 0 256 256"
+                                              xmlSpace="preserve"
                                             >
-                                              <polygon
-                                                points="45,6.18 57.06,0 64.41,11.38 77.94,12.06 78.62,25.59 90,32.94 83.82,45 90,57.06 78.62,64.41 77.94,77.94 64.41,78.62 57.06,90 45,83.82 32.94,90 25.59,78.62 12.06,77.94 11.38,64.41 0,57.06 6.18,45 0,32.94 11.38,25.59 12.06,12.06 25.59,11.38 32.94,0"
+                                              <g
+                                                transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)"
                                                 style={{
                                                   stroke: "none",
-                                                  strokeWidth: 1,
+                                                  strokeWidth: 0,
                                                   strokeDasharray: "none",
                                                   strokeLinecap: "butt",
                                                   strokeLinejoin: "miter",
                                                   strokeMiterlimit: 10,
-                                                  fill: "rgb(0,150,241)",
+                                                  fill: "none",
                                                   fillRule: "nonzero",
                                                   opacity: 1,
                                                 }}
-                                                transform="matrix(1 0 0 1 0 0)"
-                                              />
-                                              <polygon
-                                                points="40.16,58.47 26.24,45.08 29.7,41.48 40.15,51.52 61.22,31.08 64.7,34.67"
-                                                style={{
-                                                  stroke: "none",
-                                                  strokeWidth: 1,
-                                                  strokeDasharray: "none",
-                                                  strokeLinecap: "butt",
-                                                  strokeLinejoin: "miter",
-                                                  strokeMiterlimit: 10,
-                                                  fill: "rgb(255,255,255)",
-                                                  fillRule: "nonzero",
-                                                  opacity: 1,
-                                                }}
-                                                transform="matrix(1 0 0 1 0 0)"
-                                              />
-                                            </g>
-                                          </svg>
-                                        </span>
-                                        {hoveredCandidateId ===
-                                          candidate.id && (
-                                          <div
-                                            className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg p-3 text-sm text-gray-700 z-10"
-                                            role="tooltip"
-                                            aria-hidden={
-                                              hoveredCandidateId !==
-                                              candidate.id
-                                            }
-                                          >
-                                            Verified via last employer's
-                                            confirmation
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="flex space-x-1">
-                                    <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563] mt-1">
-                                      <MapPin className=" w-4 h-4" />
+                                              >
+                                                <polygon
+                                                  points="45,6.18 57.06,0 64.41,11.38 77.94,12.06 78.62,25.59 90,32.94 83.82,45 90,57.06 78.62,64.41 77.94,77.94 64.41,78.62 57.06,90 45,83.82 32.94,90 25.59,78.62 12.06,77.94 11.38,64.41 0,57.06 6.18,45 0,32.94 11.38,25.59 12.06,12.06 25.59,11.38 32.94,0"
+                                                  style={{
+                                                    stroke: "none",
+                                                    strokeWidth: 1,
+                                                    strokeDasharray: "none",
+                                                    strokeLinecap: "butt",
+                                                    strokeLinejoin: "miter",
+                                                    strokeMiterlimit: 10,
+                                                    fill: "rgb(0,150,241)",
+                                                    fillRule: "nonzero",
+                                                    opacity: 1,
+                                                  }}
+                                                  transform="matrix(1 0 0 1 0 0)"
+                                                />
+                                                <polygon
+                                                  points="40.16,58.47 26.24,45.08 29.7,41.48 40.15,51.52 61.22,31.08 64.7,34.67"
+                                                  style={{
+                                                    stroke: "none",
+                                                    strokeWidth: 1,
+                                                    strokeDasharray: "none",
+                                                    strokeLinecap: "butt",
+                                                    strokeLinejoin: "miter",
+                                                    strokeMiterlimit: 10,
+                                                    fill: "rgb(255,255,255)",
+                                                    fillRule: "nonzero",
+                                                    opacity: 1,
+                                                  }}
+                                                  transform="matrix(1 0 0 1 0 0)"
+                                                />
+                                              </g>
+                                            </svg>
+                                          </span>
+                                          {hoveredCandidateId ===
+                                            candidate.id && (
+                                            <div
+                                              className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg p-3 text-sm text-gray-700 z-10"
+                                              role="tooltip"
+                                              aria-hidden={
+                                                hoveredCandidateId !==
+                                                candidate.id
+                                              }
+                                            >
+                                              Verified via last employer's
+                                              confirmation
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="flex space-x-1">
+                                      <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563] mt-1">
+                                        <MapPin className=" w-4 h-4" />
 
-                                      {location.split(
-                                        ","
-                                      )[0] }
+                                        {location.split(",")[0]}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="flex space-x-2">
+                                    <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                                      {experienceSummaryTitle}
+                                    </p>
+                                    <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
+                                      |
+                                    </p>
+                                    <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                                      {educationSummaryTitle}
                                     </p>
                                   </div>
                                 </div>
-                                <div className="flex space-x-2">
-                                  <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
-                                    {experienceSummaryTitle}
+                              </div>
+                            </div>
+                            <div className="pt-5 pl-12 flex space-x-12 gap-2 text-xs lg:text-base font-[400px] ml-1">
+                              {experienceYears && (
+                                <div className="flex flex-col">
+                                  <p className="text-[#A8A8A8] mr-[5px]">
+                                    Experience
                                   </p>
-                                  <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
-                                    |
+                                  <p className="text-[#4B5563]">
+                                    {experienceYears}
                                   </p>
-                                  <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
-                                    {educationSummaryTitle}
+                                </div>
+                              )}
+                              {/* need to update the current Company Data */}
+                              {(isSearched
+                                ? experienceSummaryDateRange
+                                : candidate.candidate.experience_summary
+                                    ?.date_range) && (
+                                <div className="flex flex-col">
+                                  <p className="text-[#A8A8A8] mr-[5px]">
+                                    Current Company
                                   </p>
+                                  <p className="text-[#4B5563]">
+                                    {isSearched
+                                      ? experienceSummaryDateRange
+                                      : candidate.candidate.experience_summary
+                                          ?.date_range}
+                                  </p>
+                                </div>
+                              )}
+                              {noticePeriodSummary && (
+                                <div className="flex flex-col">
+                                  <p className="text-[#A8A8A8] mr-[5px]">
+                                    Notice Period
+                                  </p>
+                                  <p className="text-[#4B5563]">
+                                    {noticePeriodSummary}
+                                  </p>
+                                </div>
+                              )}
+                              {/* need to update the code for Current Salary */}
+                              {true && (
+                                <div className="flex flex-col">
+                                  <p className="text-[#A8A8A8] mr-[5px]">
+                                    Current Salary
+                                  </p>
+                                  <p className="text-[#4B5563]">9LPA</p>
+                                </div>
+                              )}
+                            </div>
+                            <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
+                              <div className="flex items-center space-x-1">
+                                {socialLinks.github && (
+                                  <button
+                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                    onClick={() =>
+                                      window.open(socialLinks.github, "_blank")
+                                    }
+                                    aria-label={`View ${fullName}'s GitHub profile`}
+                                  >
+                                    <Github className="w-4 h-4" />
+                                  </button>
+                                )}
+                                {socialLinks.linkedin && (
+                                  <button
+                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                    onClick={() =>
+                                      window.open(
+                                        socialLinks.linkedin?.linkedin,
+                                        "_blank"
+                                      )
+                                    }
+                                    aria-label={`View ${fullName}'s LinkedIn profile`}
+                                  >
+                                    <Linkedin className="w-4 h-4" />
+                                  </button>
+                                )}
+                                {socialLinks.resume && (
+                                  <button
+                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                    onClick={() =>
+                                      window.open(socialLinks.resume, "_blank")
+                                    }
+                                    aria-label={`View ${fullName}'s resume`}
+                                  >
+                                    <File className="w-4 h-4" />
+                                  </button>
+                                )}
+                                {socialLinks.portfolio && (
+                                  <button
+                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                    onClick={() =>
+                                      window.open(
+                                        socialLinks.portfolio,
+                                        "_blank"
+                                      )
+                                    }
+                                    aria-label={`View ${fullName}'s portfolio`}
+                                  >
+                                    <Link className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                              <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
+                                <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400]">
+                                  {candidate.status_tags.map(
+                                    (
+                                      tag: { text: string; color: string },
+                                      idx: number
+                                    ) => (
+                                      <span
+                                        key={idx}
+                                        className={`text-${tag.color}-500`}
+                                      >
+                                        {tag.text}
+                                      </span>
+                                    )
+                                  )}
                                 </div>
                               </div>
                             </div>
                           </div>
-                          <div className="pt-5 pl-12 flex space-x-12 gap-2 text-xs lg:text-base font-[400px] ml-1">
-                             {experienceYears && (
-                              <div className="flex flex-col">
-                                <p className="text-[#A8A8A8] mr-[5px]">
-                                  Experience
-                                </p>
-                                <p className="text-[#4B5563]">
-                                  {experienceYears}
-                                </p>
-                              </div>
-                            )}
-                            {/* need to update the current Company Data */}
-                            {(isSearched ? experienceSummaryDateRange : candidate.candidate.experience_summary?.date_range) && (
-                              <div className="flex flex-col">
-                                <p className="text-[#A8A8A8] mr-[5px]">
-                                  Current Company
-                                </p>
-                                <p className="text-[#4B5563]">
-                                  {isSearched ? experienceSummaryDateRange : candidate.candidate.experience_summary?.date_range}
-                                </p>
-                              </div>
-                            )}
-                            {noticePeriodSummary && (
-                              <div className="flex flex-col">
-                                <p className="text-[#A8A8A8] mr-[5px]">
-                                  Notice Period
-                                </p>
-                                <p className="text-[#4B5563]">
-                                  {noticePeriodSummary}
-                                </p>
-                              </div>
-                            )}
-                            {/* need to update the code for Current Salary */}
-                            {true && (
-                              <div className="flex flex-col">
-                                <p className="text-[#A8A8A8] mr-[5px]">
-                                  Current Salary
-                                </p>
-                                <p className="text-[#4B5563]">9LPA</p>
-                              </div>
-                            )}
-                          </div>
-                          <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
-                            <div className="flex items-center space-x-1">
-                              {socialLinks.github && (
-                                <button
-                                  className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                                  onClick={() =>
-                                    window.open(
-                                      socialLinks.github,
-                                      "_blank"
-                                    )
-                                  }
-                                  aria-label={`View ${fullName}'s GitHub profile`}
-                                >
-                                  <Github className="w-4 h-4" />
-                                </button>
-                              )}
-                              {socialLinks.linkedin && (
-                                <button
-                                  className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                                  onClick={() =>
-                                    window.open(
-                                      socialLinks.linkedin
-                                        ?.linkedin,
-                                      "_blank"
-                                    )
-                                  }
-                                  aria-label={`View ${fullName}'s LinkedIn profile`}
-                                >
-                                  <Linkedin className="w-4 h-4" />
-                                </button>
-                              )}
-                              {socialLinks.resume && (
-                                <button
-                                  className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                                  onClick={() =>
-                                    window.open(
-                                      socialLinks.resume,
-                                      "_blank"
-                                    )
-                                  }
-                                  aria-label={`View ${fullName}'s resume`}
-                                >
-                                  <File className="w-4 h-4" />
-                                </button>
-                              )}
-                              {socialLinks.portfolio && (
-                                <button
-                                  className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                                  onClick={() =>
-                                    window.open(
-                                      socialLinks.portfolio,
-                                      "_blank"
-                                    )
-                                  }
-                                  aria-label={`View ${fullName}'s portfolio`}
-                                >
-                                  <Link className="w-4 h-4" />
-                                </button>
-                              )}
-                            </div>
-                            <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
-                              
-                              <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400]">
-                                {candidate.status_tags.map((tag: {text: string, color: string}, idx: number) => (
-                                  <span key={idx} className={`text-${tag.color}-500`}>{tag.text}</span>
-                                ))}
-                              </div>
-                            
-                            </div>
-                          </div>
-                        </div>
-                      )})}
+                        );
+                      })}
                     </div>
                   </>
                 )}
