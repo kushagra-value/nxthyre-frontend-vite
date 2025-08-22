@@ -41,7 +41,7 @@ export interface SearchedCandidateItem {
     linkedin_url: string;
     is_background_verified: boolean;
     experience_years: string;
-    experience_summary: { title: string; date_range: string };
+    experience_summary: { title: string; date_range: string, duration_years: number };
     education_summary: { title: string; date_range: string };
     notice_period_summary: string;
     skills_list: string[];

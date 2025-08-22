@@ -68,7 +68,7 @@ interface CandidateListItem {
     linkedin_url: string;
     is_background_verified: boolean;
     experience_years: string;
-    experience_summary: { title: string; date_range: string };
+    experience_summary: { title: string; date_range: string, duration_years: number };
     education_summary: { title: string; date_range: string };
     notice_period_summary: string;
     skills_list: string[];
@@ -1811,7 +1811,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 <div
                                   className={`w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600] `}
                                 >
-                                  {fullName?.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+                                  {avatar?.slice(0, 2)}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
@@ -1941,7 +1941,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     Current Company
                                   </p>
                                   <p className="text-[#4B5563]">
-                                    {candidate.candidate.experience_summary?.date_range}
+                                   {candidate.candidate.experience_summary?.duration_years} {candidate.candidate.experience_summary?.duration_years>1 ? ("years"):("year")}
                                   </p>
                                 </div>
                               )}
