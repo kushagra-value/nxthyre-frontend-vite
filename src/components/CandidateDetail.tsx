@@ -245,16 +245,17 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           className={`overflow-hidden ${showMore ? "" : "min-h-[50vh]"}`}
           style={{ transition: "max-height 0.3s ease" }}
         >
-          <div className="mb-4 border-b border-gray-200">
-            <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] flex items-center">
-              <User className="w-4 h-4 mr-2 text-[#4B5563]" />
-              Profile Summary
-            </h3>
-            <p className="text-sm text-[#818283] leading-normal pt-2 pb-4 pl-6 pr-2 rounded-lg">
-              {detailedCandidate?.candidate?.profile_summary ||
-                "I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs). I hold a B.E/B.Tech in Computer Science & Engineering from HKBK College of Engineering. My experience includes developing AI models for NLP, computer vision, and Retrieval-Augmented Generation (RAG) based applications across various industries"}
-            </p>
-          </div>
+          {detailedCandidate?.candidate?.profile_summary && (
+            <div className="mb-4 border-b border-gray-200">
+              <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] flex items-center">
+                <User className="w-4 h-4 mr-2 text-[#4B5563]" />
+                Profile Summary
+              </h3>
+              <p className="text-sm text-[#818283] leading-normal pt-2 pb-4 pl-6 pr-2 rounded-lg">
+                {detailedCandidate?.candidate?.profile_summary}
+              </p>
+            </div>
+          )}
           <div>
             <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
               <Briefcase className="w-4 h-4 mr-2 text-[#4B5563]" />
@@ -361,77 +362,90 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           )}
         </div>
       </div>
-      <div className="mb-4">
-        <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
-          <Award className="w-4 h-4 mr-2 text-[#4B5563]" />
-          Certifications
-        </h3>
-        <div className="ml-2">
-          {detailedCandidate?.candidate?.certifications?.length > 0 ? (
-            detailedCandidate?.candidate?.certifications.map((cert, index) => (
-              <div
-                key={index}
-                className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
-              >
-                <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
-                <h4 className="font-medium text-[#111827] text-sm">
-                  {cert?.name}
-                </h4>
-                <p className="text-sm text-[#4B5563]">{cert?.issuer}</p>
-                <p className="text-sm text-[#6B7280]">{cert?.issued_date}</p>
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-gray-500">No certifications available</p>
-          )}
-        </div>
-      </div>
-      <div>
-        <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
-          <TrendingUp className="w-4 h-4 mr-2 text-[#4B5563]" />
-          Recommendations
-        </h3>
-        <div className="space-y-2">
-          {detailedCandidate?.candidate?.recommendations?.length > 0 ? (
-            detailedCandidate?.candidate?.recommendations.map((rec, index) => (
-              <div key={index} className="bg-gray-50 rounded-lg p-3">
-                <div className="flex items-start space-x-2 space-y-1">
-                  <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    <User className="w-3 h-3 text-white" />
-                  </div>
-                  <div className="flex-1">
+      {detailedCandidate?.candidate?.certifications && (
+        <div className="mb-4">
+          <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
+            <Award className="w-4 h-4 mr-2 text-[#4B5563]" />
+            Certifications
+          </h3>
+          <div className="ml-2">
+            {detailedCandidate?.candidate?.certifications?.length > 0 ? (
+              detailedCandidate?.candidate?.certifications.map(
+                (cert, index) => (
+                  <div
+                    key={index}
+                    className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
+                  >
+                    <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
                     <h4 className="font-medium text-[#111827] text-sm">
-                      {rec?.recommender_name}
+                      {cert?.name}
                     </h4>
-                    <p className="text-xs text-[#4B5563]">
-                      {rec?.recommender_title}
-                    </p>
-                    <p className="text-sm text-[#4B5563] mt-1">
-                      "{rec?.feedback}"
-                    </p>
-                    <p className="text-xs text-[#6B7280] mt-1">
-                      {rec?.date_received}
+                    <p className="text-sm text-[#4B5563]">{cert?.issuer}</p>
+                    <p className="text-sm text-[#6B7280]">
+                      {cert?.issued_date}
                     </p>
                   </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-gray-500">
-              No recommendations available
-            </p>
-          )}
+                )
+              )
+            ) : (
+              <p className="text-sm text-gray-500">
+                No certifications available
+              </p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+      {detailedCandidate?.candidate?.recommendations && (
+        <div>
+          <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
+            <TrendingUp className="w-4 h-4 mr-2 text-[#4B5563]" />
+            Recommendations
+          </h3>
+          <div className="space-y-2">
+            {detailedCandidate?.candidate?.recommendations?.length > 0 ? (
+              detailedCandidate?.candidate?.recommendations.map(
+                (rec, index) => (
+                  <div key={index} className="bg-gray-50 rounded-lg p-3">
+                    <div className="flex items-start space-x-2 space-y-1">
+                      <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <User className="w-3 h-3 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-[#111827] text-sm">
+                          {rec?.recommender_name}
+                        </h4>
+                        <p className="text-xs text-[#4B5563]">
+                          {rec?.recommender_title}
+                        </p>
+                        <p className="text-sm text-[#4B5563] mt-1">
+                          "{rec?.feedback}"
+                        </p>
+                        <p className="text-xs text-[#6B7280] mt-1">
+                          {rec?.date_received}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )
+              )
+            ) : (
+              <p className="text-sm text-gray-500">
+                No recommendations available
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 
   const SkillsTab = () => {
-    // Dummy data for vetted skills
+    // vetted skills
     const vettedSkills = [
-      { skill: "Meta Ads", rating: 3.5 },
-      { skill: "Flutter", rating: 4 },
-      { skill: "SEO", rating: 4.5 },
+      ...(detailedCandidate?.candidate?.ai_interview_report?.technicalSkills
+        ?.strongSkills || []),
+      ...(detailedCandidate?.candidate?.ai_interview_report?.technicalSkills
+        ?.weakSkills || []),
     ];
 
     // Extract resume skills from detailedCandidate
@@ -447,34 +461,28 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     return (
       <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
         {/* Vetted Skills Subsection */}
-        <div className="mb-6">
-          <h4 className="text-lg font-semibold text-gray-700 flex items-center">
-            <Star className="w-4 h-4 mr-2" />
+        <div className="bg-white rounded-xl p-2">
+          <h4 className="text-base font-medium text-[#4B5563] mb-4">
             Vetted Skills
-            <Info className="w-4 h-4 ml-2" />
           </h4>
-          {vettedSkills.length > 0 ? (
-            <div className="flex flex-wrap gap-4 mt-2">
-              {vettedSkills
-                .slice(0, isVettedExpanded ? vettedSkills.length : 6)
-                .map((skill) => (
-                  <div
-                    key={skill.skill}
-                    className="flex items-center bg-white p-2 rounded-lg"
-                  >
-                    <span className="text-sm text-blue-500 mr-2">
-                      {skill.skill}
-                    </span>
-                    <Star className="w-4 h-4 text-yellow-500" />
-                    <span className="ml-2 text-sm text-gray-600">
-                      {skill.rating}
-                    </span>
+          <div className="flex flex-wrap gap-3">
+            {vettedSkills.map((skill, index) => (
+              <div
+                key={index}
+                className="relative group bg-[#ECF1FF] rounded-md p-2 flex items-center justify-center space-x-2"
+              >
+                <span className="text-sm text-[#0F47F2]">{skill.skill}</span>
+                <Star className="w-4 h-4 text-[#FFC107] fill-[#FFC107]" />
+                <span className="text-sm text-[#4B5563]">{skill.rating}</span>
+                {skill.reason && (
+                  <div className="absolute z-50 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-blue-100 text-blue-600 text-xs rounded-md py-2 px-3 w-64 text-center">
+                    {skill.reason}
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent border-t-blue-600"></div>
                   </div>
-                ))}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-500">No vetted skills available</p>
-          )}
+                )}
+              </div>
+            ))}
+          </div>
           {!isVettedExpanded && vettedSkills.length > 6 && (
             <a
               href="#"

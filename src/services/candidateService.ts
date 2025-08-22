@@ -117,7 +117,58 @@ export interface CandidateDetailData {
     notice_period_days: number;
     application_type: string;
     stage: string;
-    ai_interview_report: string | null;
+    ai_interview_report: {
+      score: {
+        resume: number;
+        knowledge: number;
+        technical: number;
+        communication: number;
+      };
+      integrity_score: {
+        device_usage: number;
+        assistance: number;
+        reference_materials: number;
+        environmental_assistance: number;
+      };
+      QA_analysis: [
+        {
+          question: string;
+          answer: string;
+          score: number;
+          feedback: string;
+        }
+      ];
+      technicalSkills: {
+        weakSkills: [
+          {
+            skill: string;
+            rating: number;
+            reason: string;
+          }
+        ];
+        strongSkills: [
+          {
+            skill: string;
+            rating: number;
+            reason: string;
+          }
+        ];
+        skillsCoverage: string;
+      };
+      feedbacks: {
+        overallFeedback: string;
+        communicationFeedback: string;
+        resumeScoreReason: string;
+        developmentAreas: Array<string>;
+      };
+      questionsCovered: {
+        asked: number;
+        total: number;
+        coveragePercentage: number;
+      };
+      potential_red_flags: Array<string>;
+      transcript: string;
+    };
   };
 }
 
