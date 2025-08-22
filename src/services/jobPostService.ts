@@ -90,6 +90,8 @@ export interface CreateJobData {
   status: "DRAFT" | "PUBLISHED";
   workspace: number;
   ai_jd_object?: any;
+  ai_jd?:any;
+  technical_competencies?:string[];
 }
 
 class JobPostService {
@@ -159,7 +161,11 @@ class JobPostService {
       formData.append("workspace", String(data.workspace));
 
       // Append skills as a JSON string or individual entries based on API requirements
-      formData.append("skills", JSON.stringify(data.skills));
+      if (data.skills) {
+        data.skills.forEach((skill, index) => {
+          formData.append(`skills[${index}]`, skill);
+        });
+      }
 
       if (data.ai_jd_object) {
         formData.append("ai_jd_object", JSON.stringify(data.ai_jd_object));
@@ -207,10 +213,18 @@ class JobPostService {
       if (data.status) formData.append("status", data.status);
       if (data.workspace) formData.append("workspace", String(data.workspace));
       if (data.skills) {
-        formData.append("skills", JSON.stringify(data.skills));
+        data.skills.forEach((skill, index) => {
+          formData.append(`skills[${index}]`, skill);
+        });
       }
-      if (data.ai_jd_object) {
-        formData.append("ai_jd_object", JSON.stringify(data.ai_jd_object));
+      if (data.ai_jd) {
+        formData.append("ai_jd", String(data.ai_jd));
+      }
+      
+      if (data.technical_competencies) {
+        data.technical_competencies.forEach((tech:any, index:any) => {
+          formData.append(`technical_competencies[${index}]`, tech);
+        });
       }
       if (data.description_text) {
         formData.append("description", data.description_text);

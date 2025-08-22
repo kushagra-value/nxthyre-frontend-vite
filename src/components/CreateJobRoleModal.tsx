@@ -1061,6 +1061,18 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
                       setEditableJD(data);
                       setAiJdResponse((prev: any) => ({ ...prev, job_description_markdown: data }));
                     }}
+                    config={{
+                      toolbar: [
+                        "bold",
+                        "italic",
+                        "link",
+                        "bulletedList",
+                        "numberedList",
+                        "undo",
+                        "redo",
+                      ],
+                    }}
+                    className="rounded-lg"
                     disabled={isLoading}
                   />
                 </div>
