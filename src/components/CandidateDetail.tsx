@@ -171,6 +171,39 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     );
   }
 
+  const [references, setReferences] = useState<Reference[]>([]);
+
+  useEffect(() => {
+    const fetchReferences = async () => {
+      try {
+        const data = await candidateService.getBackgroundVerifications(
+          detailedCandidate.candidate.id
+        );
+        const mapped: Reference[] = data.map((item: any) => ({
+          initials: item.hr_name
+            .split(" ")
+            .map((n: string) => n[0])
+            .join("")
+            .toUpperCase(),
+          name: item.hr_name,
+          position: `${item.hr_title} at ${item.experience.company}`,
+          status: item.is_data_correct ? "positive" : "negative",
+          email: item.hr_email,
+          phone: item.hr_phone_number || "",
+          linkedin: item.hr_linkedin_url || "",
+          description: item.comments,
+        }));
+        setReferences(mapped);
+      } catch (error) {
+        console.error("Failed to fetch references:", error);
+      }
+    };
+
+    if (detailedCandidate.candidate.id) {
+      fetchReferences();
+    }
+  }, [detailedCandidate.candidate.id]);
+
   const handleAddComment = () => {
     if (newComment.trim()) {
       console.log("Adding comment:", newComment);
@@ -245,39 +278,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     linkedin: string;
     description: string;
   }
-
-  const [references, setReferences] = useState<Reference[]>([]);
-
-  useEffect(() => {
-    const fetchReferences = async () => {
-      try {
-        const data = await candidateService.getBackgroundVerifications(
-          detailedCandidate.candidate.id
-        );
-        const mapped: Reference[] = data.map((item: any) => ({
-          initials: item.hr_name
-            .split(" ")
-            .map((n: string) => n[0])
-            .join("")
-            .toUpperCase(),
-          name: item.hr_name,
-          position: `${item.hr_title} at ${item.experience.company}`,
-          status: item.is_data_correct ? "positive" : "negative",
-          email: item.hr_email,
-          phone: item.hr_phone_number || "",
-          linkedin: item.hr_linkedin_url || "",
-          description: item.comments,
-        }));
-        setReferences(mapped);
-      } catch (error) {
-        console.error("Failed to fetch references:", error);
-      }
-    };
-
-    if (detailedCandidate.candidate.id) {
-      fetchReferences();
-    }
-  }, [detailedCandidate.candidate.id]);
 
   const ProfileTab = () => {
     const [showMore, setShowMore] = useState(false);
