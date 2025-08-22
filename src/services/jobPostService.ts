@@ -14,7 +14,8 @@ export interface Job {
   salary_max: string;
   is_salary_confidential: boolean;
   visibility: "PRIVATE" | "PUBLIC";
-  enable_ai_interviews: boolean;
+  has_ai_interview_stage: boolean;
+  has_coding_contest_stage: boolean;
   description: string;
   skills: string[];
   status: "DRAFT" | "PUBLISHED";
@@ -28,6 +29,9 @@ export interface Job {
   invites_sent_count: number,
   total_applied: number,
   total_replied: number
+  job_description_markdown: string;
+  ai_jd: string;
+  technical_competencies: string[];
 }
 
 export interface SearchedCandidateItem {

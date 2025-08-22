@@ -2,23 +2,25 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Upload, FileText, ChevronDown, RotateCcw, ArrowLeft, ArrowRight, Underline, List, CheckCircle, Info, Check, Plus, Bold, Italic} from 'lucide-react';
 import { showToast } from '../utils/toast';
 import { jobPostService, Job, CreateJobData } from '../services/jobPostService';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 interface EditJobRoleModalProps {
   isOpen: boolean;
-  onClose: () => void;
-  workspaceId: number;
   jobId: number;
+  workspaceId: number;
+  handlePipelinesClick?: () => void;
+  onClose: () => void;
   onJobUpdated?: () => void;
 }
 
-const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, workspaceId, jobId, onJobUpdated }) => {
+const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, workspaceId, jobId, onJobUpdated , handlePipelinesClick}) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [formData, setFormData] = useState({
     allowInbound: true,
     keepPrivate: false,
-    shareExternally: false,
     title: '',
     skills: [] as string[],
     location: '',
@@ -34,7 +36,6 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, wo
     confidential: false,
     jobDescription: '',
     uploadType: 'paste' as 'paste' | 'upload',
-    shareThirdParty: false,
     codingRound: false,
   });
 
@@ -76,30 +77,13 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, wo
     'Others': 8,
   };
 
-  const dummyJD = `We are seeking a talented Head of Finance to join our dynamic team. The ideal candidate will have extensive experience in financial planning, analysis, and strategic decision-making.
-    Key Responsibilities:
-    • Lead financial planning and budgeting processes
-    • Oversee financial reporting and compliance
-    • Manage cash flow and investment strategies
-    • Collaborate with senior leadership on strategic initiatives
-    • Ensure regulatory compliance and risk management
+ 
+  const [competencies, setCompetencies] = useState<string[]>([]);
+  const [editableJD, setEditableJD] = useState('');
+  const [aiJdResponse, setAiJdResponse] = useState<any>(null);
+  const [originalDescription, setOriginalDescription] = useState('');
+  const [originalUploadType, setOriginalUploadType] = useState<'paste' | 'upload'>('paste');
 
-    Requirements:
-    • Bachelor's degree in Finance, Accounting, or related field
-    • 8+ years of progressive finance experience
-    • Strong analytical and leadership skills
-    • Experience with financial software and ERP systems
-    • Excellent communication and presentation abilities
-
-    We offer competitive compensation, comprehensive benefits, and opportunities for professional growth in a collaborative environment.`;
-
-  const keyCompetencies = [
-    'Financial Planning', 'Budget Management', 'Risk Assessment', 'Strategic Analysis',
-    'Team Leadership', 'Regulatory Compliance', 'Cash Flow Management', 'Investment Strategy'
-  ];
-
-  const [competencies, setCompetencies] = useState(keyCompetencies);
-  const [editableJD, setEditableJD] = useState(dummyJD);
 
   const isValidTextInput = (value: string): boolean => /^[a-zA-Z0-9, ]*$/.test(value);
 
@@ -309,14 +293,44 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, wo
   };
 
 
-  const handleNext = () => {
-    const errors = validateStep1();
-    if (errors.length > 0) {
-      showToast.error(errors.join(' '));
-      return;
-    }
-    setCurrentStep(2);
-  };
+  const handleNext = async () => {
+      const errors = validateStep1();
+      if (errors.length > 0) {
+        showToast.error(errors.join(' '));
+        return;
+      }
+  
+      if (formData.uploadType === 'upload' && !file) {
+        showToast.error('Please upload a file for the job description.');
+        return;
+      }
+  
+      setIsLoading(true);
+      try {
+        const needsRegenerate = formData.uploadType !== originalUploadType ||
+          (formData.uploadType === 'paste' ? formData.jobDescription !== originalDescription : true);
+  
+        if (needsRegenerate) {
+          const description = formData.uploadType === 'paste' ? formData.jobDescription : file!;
+          const aiResponse = await jobPostService.createAiJd(description);
+          setEditableJD(aiResponse.job_description_markdown);
+          setCompetencies(aiResponse.technical_competencies);
+          setAiJdResponse(aiResponse);
+          // Update originals after regeneration
+          if (formData.uploadType === 'paste') {
+            setOriginalDescription(formData.jobDescription);
+          } else {
+            setOriginalDescription('');
+          }
+          setOriginalUploadType(formData.uploadType);
+        }
+        setCurrentStep(2);
+      } catch (error: any) {
+        showToast.error(error.message || 'Failed to generate AI JD');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
   const handleBack = () => {
     setCurrentStep(1);
@@ -359,15 +373,18 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, wo
         salary_max: formData.maxSalary,
         is_salary_confidential: formData.confidential,
         visibility: formData.keepPrivate ? 'PRIVATE' : 'PUBLIC',
-        enable_ai_interviews: formData.aiInterviews,
-        skill_names: formData.skills,
+        has_coding_contest_stage: formData.codingRound,
+        has_ai_interview_stage: formData.aiInterviews,
+        skills: formData.skills,
         status: formData.keepPrivate ? 'DRAFT' : 'PUBLISHED',
         workspace: workspaceId,
+        ai_jd: editableJD,
+        technical_competencies: competencies,
         ...(formData.uploadType === 'paste' ? { description_text: formData.jobDescription } : { description_file: file! }),
       };
 
       await jobPostService.updateJob(jobId, jobData);
-      showToast.success(formData.shareExternally ? 'Job role updated and published successfully!' : 'Job role updated successfully!');
+      showToast.success(formData.keepPrivate ? 'Job role updated successfully!' : 'Job role updated and published successfully!');
       onJobUpdated?.();
       onClose();
       setShowSuccessModal(true);
@@ -427,16 +444,21 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, wo
           salary_max: formData.maxSalary,
           is_salary_confidential: formData.confidential,
           visibility: formData.keepPrivate ? 'PRIVATE' : 'PUBLIC',
-          enable_ai_interviews: formData.aiInterviews,
-          skill_names: formData.skills,
+          has_coding_contest_stage: formData.codingRound,
+          has_ai_interview_stage: formData.aiInterviews,
+          skills: formData.skills,
           status: formData.keepPrivate ? 'DRAFT' : 'PUBLISHED',
           workspace: workspaceId,
+          ai_jd: editableJD,
+          technical_competencies: competencies,
           ...(formData.uploadType === 'paste' ? { description_text: formData.jobDescription } : { description_file: file! }),
         };
   
         await jobPostService.updateJob(jobId, jobData);
-        showToast.success(formData.shareExternally ? 'Job role updated and published successfully!' : 'Job role updated successfully!');
+        showToast.success(formData.keepPrivate ? 'Job role updated successfully!' : 'Job role updated and published successfully!');
+        onJobUpdated?.();
         onClose();
+        setShowSuccessModal(true);
         setCurrentStep(1);
         setFile(null);
       } catch (error: any) {
@@ -453,14 +475,29 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, wo
       }
     };
 
-  const handleRegenerate = () => {
-    showToast.info('Feature Coming Soon!');
-  };
+  const handleRegenerate = async () => {
+      setIsLoading(true);
+      try {
+        const description = formData.uploadType === 'paste' ? formData.jobDescription : file!;
+        const aiResponse = await jobPostService.createAiJd(description);
+        setEditableJD(aiResponse.job_description_markdown);
+        setCompetencies(aiResponse.technical_competencies);
+        setAiJdResponse(aiResponse);
+        // Update originals after regeneration
+        if (formData.uploadType === 'paste') {
+          setOriginalDescription(formData.jobDescription);
+        } else {
+          setOriginalDescription('');
+        }
+        setOriginalUploadType(formData.uploadType);
+      } catch (error: any) {
+        showToast.error(error.message || 'Failed to regenerate AI JD');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const handleUpdateJD = () => {
-    showToast.success('Feature Coming Soon!');
-  };
-
+  
   const handleCancel = () => {
     if (formData.title || formData.skills.length > 0) {
       setShowCancelModal(true);
@@ -490,7 +527,6 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, wo
     setFormData({
       allowInbound: true,
       keepPrivate: false,
-      shareExternally: false,
       title: '',
       skills: [],
       location: '',
@@ -506,7 +542,6 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, wo
       confidential: false,
       jobDescription: '',
       uploadType: 'paste',
-      shareThirdParty: false,
       codingRound: false,
     });
     setSkillInput('');
@@ -516,11 +551,16 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, wo
     setFile(null);
     setCurrentStep(1);
     setValidationError('');
+    setCompetencies([]);
+    setEditableJD('');
+    setAiJdResponse(null);
+    setOriginalDescription('');
+    setOriginalUploadType('paste');
   };
 
   useEffect(() => {
     if (isOpen && jobId) {
-      setIsFetching(true);
+      setIsLoading(true);
       jobPostService.getJob(jobId)
         .then(async (job: Job) => {
           let workApproach: 'Onsite' | 'Remote' | 'Hybrid' = 'Onsite';
@@ -533,39 +573,35 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, wo
           setFormData({
             allowInbound: job.visibility === 'PUBLIC',
             keepPrivate: job.visibility === 'PRIVATE',
-            shareExternally: job.status === 'PUBLISHED',
             title: job.title,
-            skills: job.skills,
+            skills: job.skills || [],
             location: job.location,
             workApproach,
             hybrid: job.is_hybrid,
             seniority: job.seniority,
             department: departmentMap[job.department] || 'Others',
-            aiInterviews: job.enable_ai_interviews,
+            aiInterviews: job.has_ai_interview_stage || false,
             minExp: job.experience_min_years.toString(),
             maxExp: job.experience_max_years.toString(),
             minSalary: job.salary_min,
             maxSalary: job.salary_max,
             confidential: job.is_salary_confidential,
-            jobDescription: job.description,
+            jobDescription: job.description || '',
             uploadType: job.description ? 'paste' : 'upload',
-            shareThirdParty: false,
-            codingRound: false,
+            codingRound: job.has_coding_contest_stage || false,
           });
-
-          try {
-            const aiJD = await jobPostService.getAIJD(jobId);
-            setEditableJD(aiJD.job_description_markdown);
-            setCompetencies(aiJD.technical_competencies.map(c => c.skill));
-          } catch (error) {
-            showToast.error('Failed to fetch AI JD');
-          }
+          setOriginalDescription(job.description || '');
+          setOriginalUploadType('paste');
+          setEditableJD(job.ai_jd || '');
+          setCompetencies(job.technical_competencies || []);
+          setAiJdResponse(job.ai_jd || null);
+          setIsLoading(false);
         })
         .catch((error) => {
           showToast.error(error.message || 'Failed to fetch job details');
         })
         .finally(() => {
-          setIsFetching(false);
+          setIsLoading(false);
         });
     }
   }, [isOpen, jobId]);
@@ -1113,7 +1149,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, wo
           ) : (
             <div className="flex flex-col gap-4 items-center">
                 <button
-                  onClick={formData.shareThirdParty ? handleUpdateAndPublish : handleUpdate}
+                  onClick={formData.keepPrivate ? handleUpdate : handleUpdateAndPublish}
                   className="w-1/2 px-8 py-3 bg-blue-600 text-white text-lg font-medium rounded-lg hover:bg-blue-700 transition-colors flex justify-center items-center"
                   disabled={isLoading}
                 >
