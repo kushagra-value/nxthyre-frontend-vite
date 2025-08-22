@@ -2,6 +2,8 @@ import React, { useState, useRef , useEffect } from 'react';
 import { X, Upload, FileText, RotateCcw, ArrowLeft, ArrowRight, Bold, Italic, Underline, List, CheckCircle, Info, Check, Plus  } from 'lucide-react';
 import { showToast } from '../utils/toast';
 import { jobPostService, CreateJobData } from '../services/jobPostService';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 interface CreateJobRoleModalProps {
   isOpen: boolean;
@@ -76,31 +78,10 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
     'Others': 8,
   };
 
-  const dummyJD = `We are seeking a talented Head of Finance to join our dynamic team. The ideal candidate will have extensive experience in financial planning, analysis, and strategic decision-making.
 
-Key Responsibilities:
-• Lead financial planning and budgeting processes
-• Oversee financial reporting and compliance
-• Manage cash flow and investment strategies
-• Collaborate with senior leadership on strategic initiatives
-• Ensure regulatory compliance and risk management
-
-Requirements:
-• Bachelor's degree in Finance, Accounting, or related field
-• 8+ years of progressive finance experience
-• Strong analytical and leadership skills
-• Experience with financial software and ERP systems
-• Excellent communication and presentation abilities
-
-We offer competitive compensation, comprehensive benefits, and opportunities for professional growth in a collaborative environment.`;
-
-  const keyCompetencies = [
-    'Financial Planning', 'Budget Management', 'Risk Assessment', 'Strategic Analysis',
-    'Team Leadership', 'Regulatory Compliance', 'Cash Flow Management', 'Investment Strategy'
-  ];
-
-  const [competencies, setCompetencies] = useState(keyCompetencies);
-  const [editableJD, setEditableJD] = useState(dummyJD);
+  const [competencies, setCompetencies] = useState<string[]>([]);
+  const [editableJD, setEditableJD] = useState('');
+  const [aiJdResponse, setAiJdResponse] = useState<any>(null);
 
   // Validation for text inputs (allow only alphanumeric, comma, space)
   const isValidTextInput = (value: string): boolean => /^[a-zA-Z0-9, ]*$/.test(value);
@@ -298,23 +279,46 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
     return errors;
   };
 
-   const addCompetency = (e: React.KeyboardEvent) => {
+  const addCompetency = (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' && competencyInput.trim()) {
-        setCompetencies(prev => [...prev, competencyInput.trim()]);
+        const newCompetencies = [...competencies, competencyInput.trim()];
+        setCompetencies(newCompetencies);
+        setAiJdResponse((prev: any) => ({ ...prev, technical_competencies: newCompetencies }));
         setCompetencyInput('');
       }
     };
 
   const removeCompetency = (index: number) => {
-    setCompetencies(prev => prev.filter((_, i) => i !== index));
+    const newCompetencies = competencies.filter((_, i) => i !== index);
+    setCompetencies(newCompetencies);
+    setAiJdResponse((prev: any) => ({ ...prev, technical_competencies: newCompetencies }));
   };
-  const handleNext = () => {
+
+  const handleNext = async() => {
     const errors = validateStep1();
     if (errors.length > 0) {
       showToast.error(errors.join(' '));
       return;
     }
-    setCurrentStep(2);
+    if (formData.uploadType === 'upload' && !file) {
+          showToast.error('Please upload a file for the job description.');
+          return;
+        }
+    
+        setIsLoading(true);
+        try {
+          const description = formData.uploadType === 'paste' ? formData.jobDescription : file!;
+          const aiResponse = await jobPostService.createAiJd(description);
+          setEditableJD(aiResponse.job_description_markdown);
+          setCompetencies(aiResponse.technical_competencies);
+          setAiJdResponse(aiResponse);
+          setCurrentStep(2);
+        } catch (error: any) {
+          showToast.error(error.message || 'Failed to generate AI JD');
+        } finally {
+          setIsLoading(false);
+        }
+    
   };
 
   const handleBack = () => {
@@ -351,10 +355,12 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
         salary_max: formData.maxSalary,
         is_salary_confidential: formData.confidential,
         visibility: formData.keepPrivate ? 'PRIVATE' : 'PUBLIC',
-        enable_ai_interviews: formData.aiInterviews,
-        skill_names: formData.skills,
+        has_coding_contest_stage: formData.codingRound,
+        has_ai_interview_stage: formData.aiInterviews,
+        skills: formData.skills,
         status: formData.keepPrivate ? 'DRAFT' : 'PUBLISHED',
         workspace: workspaceId,
+        ai_jd_object: aiJdResponse,
         ...(formData.uploadType === 'paste' ? { description_text: formData.jobDescription } : { description_file: file! }),
       };
 
@@ -412,16 +418,20 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
         salary_max: formData.maxSalary,
         is_salary_confidential: formData.confidential,
         visibility: formData.keepPrivate ? 'PRIVATE' : 'PUBLIC',
-        enable_ai_interviews: formData.aiInterviews,
-        skill_names: formData.skills,
+        has_coding_contest_stage: formData.codingRound,
+        has_ai_interview_stage: formData.aiInterviews,
+        skills: formData.skills,
         status: formData.keepPrivate ? 'DRAFT' : 'PUBLISHED',
         workspace: workspaceId, // Assuming default workspace ID
+        ai_jd_object: aiJdResponse,
         ...(formData.uploadType === 'paste' ? { description_text: formData.jobDescription } : { description_file: file! }),
       };
 
       await jobPostService.createJob(jobData);
       showToast.success(formData.shareExternally ? 'Job role created and published successfully!' : 'Job role created successfully!');
+      onJobCreated?.(); // Trigger refresh of categories
       onClose();
+      setShowSuccessModal(true);
       setCurrentStep(1);
       setFile(null);
     } catch (error: any) {
@@ -439,11 +449,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
   };
 
   const handleRegenerate = () => {
-    showToast.info('Feature coming Soon!');
-  };
-
-  const handleUpdate = () => {
-    showToast.info('Feature Coming Soon!');
+    handleNext();
   };
 
   const handleCancel = () => {
@@ -502,6 +508,9 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
     setFile(null);
     setCurrentStep(1);
     setValidationError('');
+    setCompetencies([]);
+    setEditableJD('');
+    setAiJdResponse(null);
   };
 
   useEffect(() => {
@@ -798,7 +807,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                       className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                       disabled={isLoading}
                     /> */}
-                    <span className="ml-2  px-2 text-sm bg-gray-200 rounded-full font-medium text-gray-700">!</span>
+                    <span className="ml-2  px-2 text-sm bg-gray-200 rounded-full font-medium text-gray-700">i</span>
                   </label>
                   {showTooltip === 'inbound' && (
                     <div className="absolute top-full left-0 mt-2 w-80 p-3 bg-gray-50 text-gray-500 text-sm rounded-lg shadow-lg z-10">
@@ -820,7 +829,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                     onMouseLeave={() => setShowTooltip(null)}
                   >
                     
-                    <span className="ml-2  px-2 text-sm bg-gray-200 rounded-full font-medium text-gray-700">!</span>
+                    <span className="ml-2  px-2 text-sm bg-gray-200 rounded-full font-medium text-gray-700">i</span>
                   </label>
                   {showTooltip === 'private' && (
                     <div className="absolute top-full left-0 mt-2 w-80 p-3 bg-gray-50 text-gray-500 text-sm rounded-lg shadow-lg z-10">
@@ -830,26 +839,8 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                 </div>
               </div>
 
-              <div className='border-y-2 border-dotted border-gray-400 py-6 mt-6'>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">AI Interviews</span>
-                  <button
-                    onClick={() => setFormData(prev => ({ ...prev, aiInterviews: !prev.aiInterviews }))}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      formData.aiInterviews ? 'bg-blue-600' : 'bg-gray-300'
-                    }`}
-                    disabled={isLoading}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        formData.aiInterviews ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">Turning on this feature will enable AI interview, as a secondary screening round</p>
-              </div>
-              <div className='border-b-2 border-dotted border-gray-400 pb-6 mt-6'>
+              
+              <div className='border-y-2 border-dotted border-gray-400 pb-6 mt-6'>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">Coding Round</span>
                   <button
@@ -867,6 +858,25 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                   </button>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">Turning on this feature will enable Coding round, as a initial screening round to make more efficient screening</p>
+              </div>
+              <div className='border-b-2 border-dotted border-gray-400 py-6 mt-6'>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">AI Interviews</span>
+                  <button
+                    onClick={() => setFormData(prev => ({ ...prev, aiInterviews: !prev.aiInterviews }))}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      formData.aiInterviews ? 'bg-blue-600' : 'bg-gray-300'
+                    }`}
+                    disabled={isLoading}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        formData.aiInterviews ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Turning on this feature will enable AI interview, as a secondary screening round</p>
               </div>
 
               <div className="grid grid-cols-12 gap-4">
@@ -1039,7 +1049,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-gray-900">AI-Generated Job Description</h3>
                   <button
-                    onClick={() => showToast.info('Feature coming soon!')}
+                    onClick={() => handleNext}
                     className="flex items-center px-4 py-2 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors text-sm"
                     disabled={isLoading}
                   >
@@ -1048,30 +1058,14 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
                   </button>
                 </div>
                 <div className="border border-gray-300 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-3 border-b border-gray-200 pb-3">
-                    <button className="p-1 hover:bg-gray-100 rounded">
-                      <Bold className="w-4 h-4 text-gray-600" />
-                    </button>
-                    <button className="p-1 hover:bg-gray-100 rounded">
-                      <Italic className="w-4 h-4 text-gray-600" />
-                    </button>
-                    <button className="p-1 hover:bg-gray-100 rounded">
-                      <Underline className="w-4 h-4 text-gray-600" />
-                    </button>
-                    <div className="w-px h-4 bg-gray-300 mx-1"></div>
-                    <button className="p-1 hover:bg-gray-100 rounded">
-                      <List className="w-4 h-4 text-gray-600" />
-                    </button>
-                    <button className="p-1 hover:bg-gray-100 rounded">
-                      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                      </svg>
-                    </button>
-                  </div>
-                  <textarea
-                    value={editableJD}
-                    onChange={(e) => setEditableJD(e.target.value)}
-                    className="w-full h-48 resize-none border-none outline-none text-sm text-gray-700 leading-relaxed"
+                  <CKEditor
+                    editor={ClassicEditor}
+                    data={editableJD}
+                    onChange={(event:any, editor:any) => {
+                      const data = editor.getData();
+                      setEditableJD(data);
+                      setAiJdResponse((prev: any) => ({ ...prev, job_description_markdown: data }));
+                    }}
                     disabled={isLoading}
                   />
                 </div>
@@ -1120,7 +1114,7 @@ We offer competitive compensation, comprehensive benefits, and opportunities for
           ) : (
             <div className="flex flex-col gap-4 items-center">
                 <button
-                  onClick={formData.shareThirdParty ? handleCreateAndPublish : handleCreate}
+                  onClick={formData.allowInbound ? handleCreateAndPublish : handleCreate}
                   className="w-1/2 px-8 py-3 bg-blue-600 text-white text-lg font-medium rounded-lg hover:bg-blue-700 transition-colors flex justify-center items-center"
                   disabled={isLoading}
                 >
