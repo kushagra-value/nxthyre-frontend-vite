@@ -622,8 +622,8 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
                   </div>
                   ):(
                     <div className="text-center mb-8">
-                    <h2 className="text-md font-[400] text-gray-900 mb-2">Update JD</h2>
-                    <p className="text-gray-500 text-sm">Refine information of the job</p>
+                    <h2 className="text-md font-[400] text-gray-900 mb-2">Summary of JD</h2>
+                    <p className="text-gray-500 text-sm">Verification of the JD and submission of the job</p>
                   </div>
                   )}
             </div>
@@ -840,7 +840,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
               </div>
 
               
-              <div className='border-y-2 border-dotted border-gray-400 pb-6 mt-6'>
+              <div className='border-y-2 border-dotted border-gray-400 py-6 mt-6'>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">Coding Round</span>
                   <button
@@ -859,7 +859,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
                 </div>
                 <p className="text-xs text-gray-500 mt-1">Turning on this feature will enable Coding round, as a initial screening round to make more efficient screening</p>
               </div>
-              <div className='border-b-2 border-dotted border-gray-400 py-6 mt-6'>
+              <div className='border-b-2 border-dotted border-gray-400 pb-6 mt-6'>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">AI Interviews</span>
                   <button
@@ -1038,11 +1038,6 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Title Section */}
-              <div className="text-center mb-8">
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">Summary of JD</h2>
-                <p className="text-gray-500 text-sm">Verification of the JD and submission of the job</p>
-              </div>
 
               {/* AI-Generated Job Description */}
               <div>
