@@ -54,6 +54,7 @@ interface Stage {
   slug: string;
   sort_order: number;
   candidate_count: number;
+  activity_update:string;
 }
 
 interface CandidateListItem {
@@ -1070,35 +1071,32 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     switch (stageName) {
       case "Uncontacted":
         return {
-          text: "5 candidates sent you a message",
-          color: "text-blue-600",
+          color: "text-[#0F47F2]",
         };
       case "Applied":
-        return { text: "5 new candidates", color: "text-blue-600" };
+        return {  color: "text-[#0F47F2]" };
       case "Coding Round":
         return {
-          text: "Average 15% are only passing the round",
-          color: "text-orange-600",
+          color: "text-[#CD9B05]",
         };
       case "AI Interview":
-        return {
-          text: "95% of candidates are above par score",
-          color: "text-orange-600",
+        return { 
+          color: "text-[#CD9B05]",
         };
       case "Shortlisted":
-        return { text: "", color: "text-orange-600" };
+        return {  color: "text-[#CD9B05]" };
       case "First Interview":
-        return { text: "inactive for 2 days", color: "text-gray-500" };
+        return { color: "text-[#CD9B05]" };
       case "Other Interview":
-        return { text: "8 new notes updated", color: "text-blue-600" };
+        return {  color: "text-[#0F47F2]" };
       case "HR Round":
-        return { text: "2 new candidates", color: "text-blue-600" };
+        return {color: "text-[#0F47F2]" };
       case "Offer Sent":
-        return { text: "10 new offers", color: "text-blue-600" };
+        return { color: "text-[#0F47F2]" };
       case "Offer Accepted":
-        return { text: "1 new offer accepted", color: "text-blue-600" };
+        return {  color: "text-[#0F47F2]" };
       default:
-        return { text: "", color: "" };
+        return { color: "text-[#0F47F2]" };
     }
   };
 
@@ -1380,7 +1378,12 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       <span className="flex-1 font-medium">Prospect</span>
 
                       <p className={`text-xs text-blue-600`}>
-                        5 candidates sent you a message
+                       {
+                         stages.find((s) => ["Invites Sent"].includes(s.name))
+                         ?.activity_update ||
+                         stages.find((s) => ["Uncontacted"].includes(s.name))
+                           ?.activity_update 
+                      }
                       </p>
                     </div>
                     <span
@@ -1432,9 +1435,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               <span className="flex-1 font-medium">
                                 {stage.name}
                               </span>
-                              {description.text && (
+                              {stage.activity_update && (
                                 <p className={`text-xs ${description.color}`}>
-                                  {description.text}
+                                  {stage.activity_update}
                                 </p>
                               )}
                             </div>
@@ -1457,9 +1460,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       .map((stage) => {
                         const Icon = getStageIcon(stage);
                         const isSelected = selectedStage === stage;
-                        const candidateCount =
-                          pipelineCandidates[stage]?.length || 0;
-                        const description = getStageDescription(stage);
+                        const candidateCount = pipelineCandidates[stage]?.length || 0;
+                        
                         return (
                           <button
                             key={stage}
@@ -1479,7 +1481,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 <StageIcon
                                   className={`w-4 h-4 ${
                                     isSelected
-                                      ? "text-blue-600"
+                                      ? "text-[#0F47F2]"
                                       : "text-gray-600"
                                   }`}
                                 />
@@ -1490,15 +1492,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 <span className="flex-1 font-medium">
                                   {stage}
                                 </span>
-                                {description.text && (
-                                  <p className={`text-xs ${description.color}`}>
-                                    {description.text}
-                                  </p>
-                                )}
+                                
                               </div>
                               <span
                                 className={`px-2 py-1 text-sm ${
-                                  isSelected ? "text-blue-800" : "text-gray-400"
+                                  isSelected ? "text-[#0F47F2]" : "text-gray-400"
                                 }`}
                               >
                                 {candidateCount}
