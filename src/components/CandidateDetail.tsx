@@ -1,4 +1,4 @@
-import React, { useState, useEffect, startTransition } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Mail,
   Phone,
@@ -171,41 +171,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     );
   }
 
-  const [references, setReferences] = useState<Reference[]>([]);
-
-  useEffect(() => {
-    const fetchReferences = async () => {
-      try {
-        const data = await candidateService.getBackgroundVerifications(
-          detailedCandidate.candidate.id
-        );
-        const mapped: Reference[] = data.map((item: any) => ({
-          initials: item.hr_name
-            .split(" ")
-            .map((n: string) => n[0])
-            .join("")
-            .toUpperCase(),
-          name: item.hr_name,
-          position: `${item.hr_title} at ${item.experience.company}`,
-          status: item.is_data_correct ? "positive" : "negative",
-          email: item.hr_email,
-          phone: item.hr_phone_number || "",
-          linkedin: item.hr_linkedin_url || "",
-          description: item.comments,
-        }));
-        startTransition(() => {
-          setReferences(mapped);
-        });
-      } catch (error) {
-        console.error("Failed to fetch references:", error);
-      }
-    };
-
-    if (detailedCandidate.candidate.id) {
-      fetchReferences();
-    }
-  }, [detailedCandidate.candidate.id]);
-
   const handleAddComment = () => {
     if (newComment.trim()) {
       console.log("Adding comment:", newComment);
@@ -269,17 +234,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const displayPhone = hasContactInfo
     ? detailedCandidate.candidate.candidate_phone
     : "93********45";
-
-  interface Reference {
-    initials: string;
-    name: string;
-    position: string;
-    status: "positive" | "negative";
-    email: string;
-    phone: string;
-    linkedin: string;
-    description: string;
-  }
 
   const ProfileTab = () => {
     const [showMore, setShowMore] = useState(false);
@@ -589,30 +543,30 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   };
 
   const ReferencesTab = () => {
-    // const dummyReferences = [
-    //   {
-    //     initials: "SV",
-    //     name: "Suchandni Verma",
-    //     position: "HR Manager at Augnito",
-    //     status: "positive",
-    //     email: "suchandni.verma@augnito",
-    //     phone: "9876543210",
-    //     linkedin: "https://www.linkedin.com/in/suchandni-verma",
-    //     description:
-    //       "Exceptional digital marketer whose strategic campaigns and data-driven approach have significantly boosted our brand's online presence and conversions! Creative, proactive, and a pleasure to work with!",
-    //   },
-    //   {
-    //     initials: "AA",
-    //     name: "Ana De Armas",
-    //     position: "HR Manager at Augnito",
-    //     status: "negative",
-    //     email: "ana.dearmas@augnito",
-    //     phone: "9876543210",
-    //     linkedin: "https://www.linkedin.com/in/ana-de-armas",
-    //     description:
-    //       "I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs). I hold a degree in Computer Science and have experience in developing and deploying machine learning models. My expertise includes natural language processing, computer vision, and reinforcement learning. I am proficient in Python, TensorFlow, and PyTorch.",
-    //   },
-    // ];
+    const dummyReferences = [
+      {
+        initials: "SV",
+        name: "Suchandni Verma",
+        position: "HR Manager at Augnito",
+        status: "positive",
+        email: "suchandni.verma@augnito",
+        phone: "9876543210",
+        linkedin: "https://www.linkedin.com/in/suchandni-verma",
+        description:
+          "Exceptional digital marketer whose strategic campaigns and data-driven approach have significantly boosted our brand's online presence and conversions! Creative, proactive, and a pleasure to work with!",
+      },
+      {
+        initials: "AA",
+        name: "Ana De Armas",
+        position: "HR Manager at Augnito",
+        status: "negative",
+        email: "ana.dearmas@augnito",
+        phone: "9876543210",
+        linkedin: "https://www.linkedin.com/in/ana-de-armas",
+        description:
+          "I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs). I hold a degree in Computer Science and have experience in developing and deploying machine learning models. My expertise includes natural language processing, computer vision, and reinforcement learning. I am proficient in Python, TensorFlow, and PyTorch.",
+      },
+    ];
 
     return (
       <div className="bg-[#F0F0F0] p-4 rounded-lg shadow-sm">
@@ -623,7 +577,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </h3>
         </div>
         <div>
-          {references.map((reference, index) => (
+          {dummyReferences.map((reference, index) => (
             <ReferenceCard key={index} reference={reference} />
           ))}
         </div>
