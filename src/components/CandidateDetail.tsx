@@ -461,15 +461,16 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     return (
       <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
         {/* Vetted Skills Subsection */}
-        <div className="bg-white rounded-xl p-2">
-          <h4 className="text-base font-medium text-[#4B5563] mb-4">
-            Vetted Skills
-          </h4>
+        <h4 className="text-lg font-semibold text-gray-700 flex items-center">
+          <Star className="w-4 h-4 text-gray-700 mr-2" />
+          Vetted Skills
+        </h4>
+        <div className="">
           <div className="flex flex-wrap gap-3">
             {vettedSkills.map((skill, index) => (
               <div
                 key={index}
-                className="relative group bg-[#ECF1FF] rounded-md p-2 flex items-center justify-center space-x-2"
+                className="relative group bg-white rounded-md p-2 flex items-center justify-center space-x-2"
               >
                 <span className="text-sm text-[#0F47F2]">{skill.skill}</span>
                 <Star className="w-4 h-4 text-[#FFC107] fill-[#FFC107]" />
