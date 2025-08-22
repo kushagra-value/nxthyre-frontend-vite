@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, startTransition } from "react";
 import {
   Mail,
   Phone,
@@ -193,7 +193,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           linkedin: item.hr_linkedin_url || "",
           description: item.comments,
         }));
-        setReferences(mapped);
+        startTransition(() => {
+          setReferences(mapped);
+        });
       } catch (error) {
         console.error("Failed to fetch references:", error);
       }
