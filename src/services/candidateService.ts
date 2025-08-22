@@ -626,6 +626,20 @@ class CandidateService {
       );
     }
   }
+
+  async getBackgroundVerifications(candidateId: string): Promise<any[]> {
+    try {
+      const response = await apiClient.get(
+        `/candidates/${candidateId}/background-verifications/`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error ||
+          "Failed to fetch background verifications"
+      );
+    }
+  }
 }
 
 export const candidateService = new CandidateService();
