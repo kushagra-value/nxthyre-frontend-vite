@@ -638,7 +638,7 @@ const ArchiveIcon = () => (
               <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">Experience</h2>
                 
-                {displayCandidate.experience.map((exp:any, index:any) => {
+                {displayCandidate.experience?.map((exp:any, index:any) => {
                   // Generate company initial for icon
                   const companyInitial = exp.company.charAt(0).toUpperCase();
                   const colors = ['bg-orange-500', 'bg-blue-500', 'bg-purple-500'];
@@ -816,7 +816,7 @@ const ArchiveIcon = () => (
 
                       {/* Question Items */}
                       <div className="space-y-4">
-                        {(assessmentResults?.problem_results || []).map((item:any, index:any) => (
+                        {(assessmentResults?.problem_results || [])?.map((item:any, index:any) => (
                           <div key={item.id} className="bg-[#F5F9FB] border border-gray-400 rounded-lg">
                             <div className="flex items-center justify-left gap-4 m-4">
                               <span className="text-base font-[400] text-gray-600">Q{item.id}.</span>
@@ -908,7 +908,7 @@ const ArchiveIcon = () => (
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">References</h2>
                 
                 <div className="space-y-4">
-                  {details.references.map((ref:any, index:any) => (
+                  {details.references?.map((ref:any, index:any) => (
                     <div key={index} className="flex items-start gap-3">
                       <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-gray-900 text-sm font-bold">{ref.hr_name.split(' ').map((n:any) => n[0]).join('')}</span>
