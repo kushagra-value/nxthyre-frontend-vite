@@ -630,8 +630,7 @@ const ArchiveIcon = () => (
               <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Profile Summary</h2>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  {displayCandidate.profile_summary || selectedCandidate.profileSummary || 
-                  "Shikha Singh is a skilled digital marketing specialist with 5+years of experience in SEO, SEM, social media strategy, and content creation. Proficient in tools like Google Analytics and AdWords, she showcased exceptional knowledge, communication skills, and a proactive approach during recent interviews. She is highly recommended for client projects requiring innovative digital marketing solutions."}
+                  {displayCandidate.profile_summary}
                 </p>
               </section>
 
@@ -639,35 +638,7 @@ const ArchiveIcon = () => (
               <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">Experience</h2>
                 
-                {(details?.experience || [
-                  {
-                    job_title: "AI Engineer - Analyst",
-                    company: "Jupiter Fintech Pvt.Ltd",
-                    location: "Bangalore, Karnataka",
-                    start_date: "12/2019",
-                    end_date: null,
-                    description: "I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs).",
-                    is_current: true,
-                  },
-                  {
-                    job_title: "Digital Marketing, Gen AI Team",
-                    company: "Google",
-                    location: "Bangalore, Karnataka",
-                    start_date: "11/2022",
-                    end_date: "11/2024",
-                    description: "Worked on digital marketing strategies and AI implementation.",
-                    is_current: false,
-                  },
-                  {
-                    job_title: "Software Engineer Gen AI",
-                    company: "Hexaware Technologies",
-                    location: "Chennai, Tamil Nadu",
-                    start_date: "11/2020",
-                    end_date: "Present",
-                    description: "Developed AI solutions and software engineering projects.",
-                    is_current: false,
-                  }
-                ]).map((exp, index) => {
+                {displayCandidate.experience.map((exp:any, index:any) => {
                   // Generate company initial for icon
                   const companyInitial = exp.company.charAt(0).toUpperCase();
                   const colors = ['bg-orange-500', 'bg-blue-500', 'bg-purple-500'];
@@ -704,12 +675,9 @@ const ArchiveIcon = () => (
                 <div className="mb-4">
                   <h3 className="text-sm font-medium text-gray-700 mb-3">Resume Skills</h3>
                   <div className="flex flex-wrap gap-2">
-                    {(details?.skills_data?.skills_mentioned?.map((s) => s.skill) || 
-                      selectedCandidate.skills || 
-                      ['Python', 'Flask', 'Javascript', 'ReactJS', 'C#', 'Machine Learning', 'Deep Learning', 'TensorFlow', 'PyTorch', 'SQL', 'Git']
-                    ).map((skill, index) => (
+                    {displayCandidate.skills_data.endorsements?.slice(0, 11).map((s:any, index:any) => (
                       <span key={`resume-${index}`} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                        {skill}
+                        {s.skill_endorsed}
                       </span>
                     ))}
                   </div>
@@ -720,12 +688,9 @@ const ArchiveIcon = () => (
                 <div className="mb-6">
                   <h3 className="text-sm font-medium text-gray-700 mb-3">Resume Skills</h3>
                   <div className="flex flex-wrap gap-2">
-                    {(details?.skills_data?.skills_mentioned?.map((s) => s.skill) || 
-                      selectedCandidate.skills || 
-                      ['Python', 'Flask', 'Javascript', 'ReactJS', 'C#', 'Data Analysis', 'Computer Vision', 'NLP', 'AWS', 'Docker', 'Kubernetes']
-                    ).slice(0, 11).map((skill, index) => (
-                      <span key={`resume2-${index}`} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                        {skill}
+                    {displayCandidate.skills_data.skills_mentioned?.slice(0, 11).map((s, index) => (
+                      <span key={`resume-${index}`} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                        {s.skill}
                       </span>
                     ))}
                   </div>
@@ -737,7 +702,7 @@ const ArchiveIcon = () => (
               <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-gray-900">Assessment</h2>
-                  <span className="text-gray-500 text-sm">02/08/2024</span>
+                  <span className="text-gray-500 text-sm">{new Date(details.assessment?.ai_interview?.overall_summary?.knowledge || assessmentResults?.completed_at || '').toLocaleDateString()}</span>
                 </div>
 
                 {/* Assessment Tabs */}
@@ -765,15 +730,15 @@ const ArchiveIcon = () => (
                           <div className="mb-6 flex justify-between items-center gap-4">
                             <div className="flex flex-col items-center justify-center rounded-lg  w-48 p-4 bg-[#ECF1FF]">
                               <span className="text-sm text-gray-600">Resume</span>
-                              <span className="text-xl font-[400] text-[#EAB308]">72%</span>
+                              <span className="text-xl font-[400] text-[#EAB308]">{details.ai_interview_report.score.resume}%</span>
                             </div>
                             <div className="flex flex-col items-center justify-center rounded-lg  w-48 p-4 bg-[#ECF1FF]">
                               <span className="text-sm text-gray-600">Knowledge</span>
-                              <span className="text-xl font-[400] text-[#16A34A]">82%</span>
+                              <span className="text-xl font-[400] text-[#16A34A]">{details.ai_interview_report.score.knowledge}%</span>
                             </div>
                             <div className="flex flex-col items-center justify-center rounded-lg  w-48 p-4 bg-[#ECF1FF]">
                               <span className="text-sm text-gray-600">Communication</span>
-                              <span className="text-xl font-[400] text-[#0F47F2]">92%</span>
+                              <span className="text-xl font-[400] text-[#0F47F2]">{details.ai_interview_report.score.communication}%</span>
                             </div>
                           </div>
                           {/* Vetted Skills */}
@@ -786,31 +751,28 @@ const ArchiveIcon = () => (
                               </svg>
                             </div>
                             <div className="flex flex-wrap gap-2 mb-4">
-                              <div className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-                                <span className="text-blue-800 text-sm font-medium mr-2">Meta Ads</span>
-                                <div className="flex items-center">
-                                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path fill-rule="evenodd" clip-rule="evenodd" d="M9.41171 2.75414C9.08354 3.1826 8.71321 3.84365 8.17527 4.80869L7.90218 5.29857C7.88572 5.3281 7.86947 5.35735 7.85338 5.38631C7.60277 5.83731 7.39125 6.21797 7.05041 6.47671C6.7059 6.73824 6.28592 6.83262 5.79783 6.94231C5.76647 6.94935 5.73482 6.95647 5.70288 6.9637L5.17259 7.08368C4.12649 7.32037 3.41484 7.48322 2.92739 7.67532C2.45172 7.86277 2.35132 8.01635 2.31305 8.13943C2.27266 8.26931 2.27146 8.46798 2.55582 8.91973C2.84445 9.37823 3.33136 9.95006 4.04347 10.7828L4.40498 11.2056C4.42599 11.2301 4.44682 11.2544 4.46742 11.2785C4.80327 11.6702 5.0833 11.9968 5.21175 12.4099C5.33942 12.8205 5.29711 13.2519 5.2458 13.775C5.24265 13.8071 5.23947 13.8395 5.23629 13.8723L5.18163 14.4363C5.07406 15.5465 5.00152 16.3109 5.02606 16.8615C5.05053 17.4111 5.16662 17.5631 5.25892 17.6331C5.34101 17.6954 5.49275 17.7644 5.98711 17.6227C6.4895 17.4788 7.1572 17.1733 8.13672 16.7223L8.63321 16.4937C8.66379 16.4796 8.69412 16.4656 8.72412 16.4517C9.17812 16.2419 9.57196 16.0597 10.0017 16.0597C10.4315 16.0597 10.8253 16.2419 11.2793 16.4517C11.3094 16.4656 11.3396 16.4796 11.3702 16.4937L11.8667 16.7223C12.8462 17.1733 13.514 17.4788 14.0164 17.6227C14.5107 17.7644 14.6625 17.6954 14.7445 17.6331C14.8368 17.5631 14.9529 17.4111 14.9774 16.8615C15.0019 16.3109 14.9294 15.5465 14.8218 14.4363L14.7671 13.8723C14.764 13.8395 14.7608 13.8071 14.7576 13.775C14.7064 13.2519 14.664 12.8205 14.7917 12.4099C14.9201 11.9968 15.2002 11.6702 15.536 11.2784C15.5566 11.2544 15.5775 11.2301 15.5985 11.2056L15.96 10.7828C16.672 9.95006 17.159 9.37823 17.4476 8.91973C17.732 8.46798 17.7308 8.26931 17.6904 8.13943C17.6521 8.01635 17.5517 7.86277 17.076 7.67532C16.5886 7.48322 15.877 7.32037 14.8309 7.08368L14.3005 6.9637C14.2686 6.95647 14.237 6.94935 14.2056 6.9423C13.7175 6.83262 13.2975 6.73824 12.953 6.47671C12.6122 6.21797 12.4007 5.83731 12.15 5.38631C12.134 5.35735 12.1177 5.3281 12.1013 5.29857L11.8282 4.80869C11.2902 3.84365 10.9199 3.1826 10.5918 2.75414C10.264 2.32609 10.0965 2.28906 10.0017 2.28906C9.90696 2.28906 9.73946 2.32609 9.41171 2.75414ZM8.41929 1.99415C8.81646 1.47542 9.30746 1.03906 10.0017 1.03906C10.696 1.03906 11.187 1.47542 11.5842 1.99415C11.9745 2.50384 12.3884 3.24636 12.8942 4.15386L13.193 4.68995C13.5202 5.27675 13.6039 5.40141 13.7089 5.4811C13.8099 5.55779 13.9402 5.60056 14.5764 5.74451L15.1598 5.8765C16.1395 6.09813 16.9465 6.28072 17.5344 6.51236C18.1445 6.75282 18.6785 7.10723 18.884 7.76825C19.0875 8.42248 18.8588 9.02431 18.5055 9.58565C18.1621 10.1311 17.6137 10.7722 16.9439 11.5556L16.5485 12.018C16.1176 12.5217 16.0276 12.6451 15.9853 12.7811C15.9422 12.9198 15.9462 13.0801 16.0113 13.7517L16.071 14.3668C16.1724 15.4136 16.2551 16.2671 16.2261 16.9171C16.1967 17.5788 16.0464 18.2141 15.5004 18.6287C14.944 19.051 14.2969 19.0034 13.672 18.8244C13.0662 18.6508 12.311 18.303 11.3938 17.8807L10.8475 17.6291C10.2496 17.3539 10.1216 17.3097 10.0017 17.3097C9.88179 17.3097 9.75379 17.3539 9.15604 17.6291L8.60962 17.8807C7.69252 18.303 6.93725 18.6508 6.33142 18.8244C5.7066 19.0034 5.05937 19.051 4.50311 18.6287C3.95704 18.2141 3.80677 17.5788 3.77729 16.9171C3.74833 16.2671 3.83107 15.4135 3.93252 14.3668L3.99212 13.7517C4.05721 13.0801 4.06127 12.9198 4.01813 12.7811C3.97582 12.6451 3.88582 12.5217 3.45498 12.018L3.05958 11.5556C2.38971 10.7723 1.84132 10.1311 1.49798 9.58565C1.14462 9.02431 0.91599 8.42248 1.11943 7.76825C1.32499 7.10723 1.85893 6.75282 2.46909 6.51236C3.05689 6.28072 3.86399 6.09813 4.84369 5.8765L4.89674 5.8645L5.42703 5.74451C6.06322 5.60057 6.19356 5.55779 6.29461 5.4811C6.39957 5.40141 6.48325 5.27675 6.81037 4.68995L7.1092 4.15385C7.61505 3.24636 8.02894 2.50384 8.41929 1.99415Z" fill="#FFC107"/>
-                                  </svg>
-                                  <span className="text-blue-800 text-sm ml-1">3.5</span>
+                              {details.technicalSkills?.strongSkills?.map((skill:any, index:any) => (
+                                <div key={index} className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                                  <span className="text-blue-800 text-sm font-medium mr-2">{skill.skill}</span>
+                                  <div className="flex items-center">
+                                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M9.41171 2.75414C9.08354 3.1826 8.71321 3.84365 8.17527 4.80869L7.90218 5.29857C7.88572 5.3281 7.86947 5.35735 7.85338 5.38631C7.60277 5.83731 7.39125 6.21797 7.05041 6.47671C6.7059 6.73824 6.28592 6.83262 5.79783 6.94231C5.76647 6.94935 5.73482 6.95647 5.70288 6.9637L5.17259 7.08368C4.12649 7.32037 3.41484 7.48322 2.92739 7.67532C2.45172 7.86277 2.35132 8.01635 2.31305 8.13943C2.27266 8.26931 2.27146 8.46798 2.55582 8.91973C2.84445 9.37823 3.33136 9.95006 4.04347 10.7828L4.40498 11.2056C4.42599 11.2301 4.44682 11.2544 4.46742 11.2785C4.80327 11.6702 5.0833 11.9968 5.21175 12.4099C5.33942 12.8205 5.29711 13.2519 5.2458 13.775C5.24265 13.8071 5.23947 13.8395 5.23629 13.8723L5.18163 14.4363C5.07406 15.5465 5.00152 16.3109 5.02606 16.8615C5.05053 17.4111 5.16662 17.5631 5.25892 17.6331C5.34101 17.6954 5.49275 17.7644 5.98711 17.6227C6.4895 17.4788 7.1572 17.1733 8.13672 16.7223L8.63321 16.4937C8.66379 16.4796 8.69412 16.4656 8.72412 16.4517C9.17812 16.2419 9.57196 16.0597 10.0017 16.0597C10.4315 16.0597 10.8253 16.2419 11.2793 16.4517C11.3094 16.4656 11.3396 16.4796 11.3702 16.4937L11.8667 16.7223C12.8462 17.1733 13.514 17.4788 14.0164 17.6227C14.5107 17.7644 14.6625 17.6954 14.7445 17.6331C14.8368 17.5631 14.9529 17.4111 14.9774 16.8615C15.0019 16.3109 14.9294 15.5465 14.8218 14.4363L14.7671 13.8723C14.764 13.8395 14.7608 13.8071 14.7576 13.775C14.7064 13.2519 14.664 12.8205 14.7917 12.4099C14.9201 11.9968 15.2002 11.6702 15.536 11.2784C15.5566 11.2544 15.5775 11.2301 15.5985 11.2056L15.96 10.7828C16.672 9.95006 17.159 9.37823 17.4476 8.91973C17.732 8.46798 17.7308 8.26931 17.6904 8.13943C17.6521 8.01635 17.5517 7.86277 17.076 7.67532C16.5886 7.48322 15.877 7.32037 14.8309 7.08368L14.3005 6.9637C14.2686 6.95647 14.237 6.94935 14.2056 6.9423C13.7175 6.83262 13.2975 6.73824 12.953 6.47671C12.6122 6.21797 12.4007 5.83731 12.15 5.38631C12.134 5.35735 12.1177 5.3281 12.1013 5.29857L11.8282 4.80869C11.2902 3.84365 10.9199 3.1826 10.5918 2.75414C10.264 2.32609 10.0965 2.28906 10.0017 2.28906C9.90696 2.28906 9.73946 2.32609 9.41171 2.75414ZM8.41929 1.99415C8.81646 1.47542 9.30746 1.03906 10.0017 1.03906C10.696 1.03906 11.187 1.47542 11.5842 1.99415C11.9745 2.50384 12.3884 3.24636 12.8942 4.15386L13.193 4.68995C13.5202 5.27675 13.6039 5.40141 13.7089 5.4811C13.8099 5.55779 13.9402 5.60056 14.5764 5.74451L15.1598 5.8765C16.1395 6.09813 16.9465 6.28072 17.5344 6.51236C18.1445 6.75282 18.6785 7.10723 18.884 7.76825C19.0875 8.42248 18.8588 9.02431 18.5055 9.58565C18.1621 10.1311 17.6137 10.7722 16.9439 11.5556L16.5485 12.018C16.1176 12.5217 16.0276 12.6451 15.9853 12.7811C15.9422 12.9198 15.9462 13.0801 16.0113 13.7517L16.071 14.3668C16.1724 15.4136 16.2551 16.2671 16.2261 16.9171C16.1967 17.5788 16.0464 18.2141 15.5004 18.6287C14.944 19.051 14.2969 19.0034 13.672 18.8244C13.0662 18.6508 12.311 18.303 11.3938 17.8807L10.8475 17.6291C10.2496 17.3539 10.1216 17.3097 10.0017 17.3097C9.88179 17.3097 9.75379 17.3539 9.15604 17.6291L8.60962 17.8807C7.69252 18.303 6.93725 18.6508 6.33142 18.8244C5.7066 19.0034 5.05937 19.051 4.50311 18.6287C3.95704 18.2141 3.80677 17.5788 3.77729 16.9171C3.74833 16.2671 3.83107 15.4135 3.93252 14.3668L3.99212 13.7517C4.05721 13.0801 4.06127 12.9198 4.01813 12.7811C3.97582 12.6451 3.88582 12.5217 3.45498 12.018L3.05958 11.5556C2.38971 10.7723 1.84132 10.1311 1.49798 9.58565C1.14462 9.02431 0.91599 8.42248 1.11943 7.76825C1.32499 7.10723 1.85893 6.75282 2.46909 6.51236C3.05689 6.28072 3.86399 6.09813 4.84369 5.8765L4.89674 5.8645L5.42703 5.74451C6.06322 5.60057 6.19356 5.55779 6.29461 5.4811C6.39957 5.40141 6.48325 5.27675 6.81037 4.68995L7.1092 4.15385C7.61505 3.24636 8.02894 2.50384 8.41929 1.99415Z" fill="#FFC107"/>
+                                    </svg>
+                                    <span className="text-blue-800 text-sm ml-1">{skill.rating}</span>
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-                                <span className="text-blue-800 text-sm font-medium mr-2">Flutter</span>
-                                <div className="flex items-center">
-                                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path fill-rule="evenodd" clip-rule="evenodd" d="M9.41171 2.75414C9.08354 3.1826 8.71321 3.84365 8.17527 4.80869L7.90218 5.29857C7.88572 5.3281 7.86947 5.35735 7.85338 5.38631C7.60277 5.83731 7.39125 6.21797 7.05041 6.47671C6.7059 6.73824 6.28592 6.83262 5.79783 6.94231C5.76647 6.94935 5.73482 6.95647 5.70288 6.9637L5.17259 7.08368C4.12649 7.32037 3.41484 7.48322 2.92739 7.67532C2.45172 7.86277 2.35132 8.01635 2.31305 8.13943C2.27266 8.26931 2.27146 8.46798 2.55582 8.91973C2.84445 9.37823 3.33136 9.95006 4.04347 10.7828L4.40498 11.2056C4.42599 11.2301 4.44682 11.2544 4.46742 11.2785C4.80327 11.6702 5.0833 11.9968 5.21175 12.4099C5.33942 12.8205 5.29711 13.2519 5.2458 13.775C5.24265 13.8071 5.23947 13.8395 5.23629 13.8723L5.18163 14.4363C5.07406 15.5465 5.00152 16.3109 5.02606 16.8615C5.05053 17.4111 5.16662 17.5631 5.25892 17.6331C5.34101 17.6954 5.49275 17.7644 5.98711 17.6227C6.4895 17.4788 7.1572 17.1733 8.13672 16.7223L8.63321 16.4937C8.66379 16.4796 8.69412 16.4656 8.72412 16.4517C9.17812 16.2419 9.57196 16.0597 10.0017 16.0597C10.4315 16.0597 10.8253 16.2419 11.2793 16.4517C11.3094 16.4656 11.3396 16.4796 11.3702 16.4937L11.8667 16.7223C12.8462 17.1733 13.514 17.4788 14.0164 17.6227C14.5107 17.7644 14.6625 17.6954 14.7445 17.6331C14.8368 17.5631 14.9529 17.4111 14.9774 16.8615C15.0019 16.3109 14.9294 15.5465 14.8218 14.4363L14.7671 13.8723C14.764 13.8395 14.7608 13.8071 14.7576 13.775C14.7064 13.2519 14.664 12.8205 14.7917 12.4099C14.9201 11.9968 15.2002 11.6702 15.536 11.2784C15.5566 11.2544 15.5775 11.2301 15.5985 11.2056L15.96 10.7828C16.672 9.95006 17.159 9.37823 17.4476 8.91973C17.732 8.46798 17.7308 8.26931 17.6904 8.13943C17.6521 8.01635 17.5517 7.86277 17.076 7.67532C16.5886 7.48322 15.877 7.32037 14.8309 7.08368L14.3005 6.9637C14.2686 6.95647 14.237 6.94935 14.2056 6.9423C13.7175 6.83262 13.2975 6.73824 12.953 6.47671C12.6122 6.21797 12.4007 5.83731 12.15 5.38631C12.134 5.35735 12.1177 5.3281 12.1013 5.29857L11.8282 4.80869C11.2902 3.84365 10.9199 3.1826 10.5918 2.75414C10.264 2.32609 10.0965 2.28906 10.0017 2.28906C9.90696 2.28906 9.73946 2.32609 9.41171 2.75414ZM8.41929 1.99415C8.81646 1.47542 9.30746 1.03906 10.0017 1.03906C10.696 1.03906 11.187 1.47542 11.5842 1.99415C11.9745 2.50384 12.3884 3.24636 12.8942 4.15386L13.193 4.68995C13.5202 5.27675 13.6039 5.40141 13.7089 5.4811C13.8099 5.55779 13.9402 5.60056 14.5764 5.74451L15.1598 5.8765C16.1395 6.09813 16.9465 6.28072 17.5344 6.51236C18.1445 6.75282 18.6785 7.10723 18.884 7.76825C19.0875 8.42248 18.8588 9.02431 18.5055 9.58565C18.1621 10.1311 17.6137 10.7722 16.9439 11.5556L16.5485 12.018C16.1176 12.5217 16.0276 12.6451 15.9853 12.7811C15.9422 12.9198 15.9462 13.0801 16.0113 13.7517L16.071 14.3668C16.1724 15.4136 16.2551 16.2671 16.2261 16.9171C16.1967 17.5788 16.0464 18.2141 15.5004 18.6287C14.944 19.051 14.2969 19.0034 13.672 18.8244C13.0662 18.6508 12.311 18.303 11.3938 17.8807L10.8475 17.6291C10.2496 17.3539 10.1216 17.3097 10.0017 17.3097C9.88179 17.3097 9.75379 17.3539 9.15604 17.6291L8.60962 17.8807C7.69252 18.303 6.93725 18.6508 6.33142 18.8244C5.7066 19.0034 5.05937 19.051 4.50311 18.6287C3.95704 18.2141 3.80677 17.5788 3.77729 16.9171C3.74833 16.2671 3.83107 15.4135 3.93252 14.3668L3.99212 13.7517C4.05721 13.0801 4.06127 12.9198 4.01813 12.7811C3.97582 12.6451 3.88582 12.5217 3.45498 12.018L3.05958 11.5556C2.38971 10.7723 1.84132 10.1311 1.49798 9.58565C1.14462 9.02431 0.91599 8.42248 1.11943 7.76825C1.32499 7.10723 1.85893 6.75282 2.46909 6.51236C3.05689 6.28072 3.86399 6.09813 4.84369 5.8765L4.89674 5.8645L5.42703 5.74451C6.06322 5.60057 6.19356 5.55779 6.29461 5.4811C6.39957 5.40141 6.48325 5.27675 6.81037 4.68995L7.1092 4.15385C7.61505 3.24636 8.02894 2.50384 8.41929 1.99415Z" fill="#FFC107"/>
-                                  </svg>                                  <span className="text-blue-800 text-sm ml-1">4</span>
+                              )) || []}
+                              {details.technicalSkills?.weakSkills?.map((skill:any, index:any) => (
+                                <div key={index} className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                                  <span className="text-blue-800 text-sm font-medium mr-2">{skill.skill}</span>
+                                  <div className="flex items-center">
+                                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M9.41171 2.75414C9.08354 3.1826 8.71321 3.84365 8.17527 4.80869L7.90218 5.29857C7.88572 5.3281 7.86947 5.35735 7.85338 5.38631C7.60277 5.83731 7.39125 6.21797 7.05041 6.47671C6.7059 6.73824 6.28592 6.83262 5.79783 6.94231C5.76647 6.94935 5.73482 6.95647 5.70288 6.9637L5.17259 7.08368C4.12649 7.32037 3.41484 7.48322 2.92739 7.67532C2.45172 7.86277 2.35132 8.01635 2.31305 8.13943C2.27266 8.26931 2.27146 8.46798 2.55582 8.91973C2.84445 9.37823 3.33136 9.95006 4.04347 10.7828L4.40498 11.2056C4.42599 11.2301 4.44682 11.2544 4.46742 11.2785C4.80327 11.6702 5.0833 11.9968 5.21175 12.4099C5.33942 12.8205 5.29711 13.2519 5.2458 13.775C5.24265 13.8071 5.23947 13.8395 5.23629 13.8723L5.18163 14.4363C5.07406 15.5465 5.00152 16.3109 5.02606 16.8615C5.05053 17.4111 5.16662 17.5631 5.25892 17.6331C5.34101 17.6954 5.49275 17.7644 5.98711 17.6227C6.4895 17.4788 7.1572 17.1733 8.13672 16.7223L8.63321 16.4937C8.66379 16.4796 8.69412 16.4656 8.72412 16.4517C9.17812 16.2419 9.57196 16.0597 10.0017 16.0597C10.4315 16.0597 10.8253 16.2419 11.2793 16.4517C11.3094 16.4656 11.3396 16.4796 11.3702 16.4937L11.8667 16.7223C12.8462 17.1733 13.514 17.4788 14.0164 17.6227C14.5107 17.7644 14.6625 17.6954 14.7445 17.6331C14.8368 17.5631 14.9529 17.4111 14.9774 16.8615C15.0019 16.3109 14.9294 15.5465 14.8218 14.4363L14.7671 13.8723C14.764 13.8395 14.7608 13.8071 14.7576 13.775C14.7064 13.2519 14.664 12.8205 14.7917 12.4099C14.9201 11.9968 15.2002 11.6702 15.536 11.2784C15.5566 11.2544 15.5775 11.2301 15.5985 11.2056L15.96 10.7828C16.672 9.95006 17.159 9.37823 17.4476 8.91973C17.732 8.46798 17.7308 8.26931 17.6904 8.13943C17.6521 8.01635 17.5517 7.86277 17.076 7.67532C16.5886 7.48322 15.877 7.32037 14.8309 7.08368L14.3005 6.9637C14.2686 6.95647 14.237 6.94935 14.2056 6.9423C13.7175 6.83262 13.2975 6.73824 12.953 6.47671C12.6122 6.21797 12.4007 5.83731 12.15 5.38631C12.134 5.35735 12.1177 5.3281 12.1013 5.29857L11.8282 4.80869C11.2902 3.84365 10.9199 3.1826 10.5918 2.75414C10.264 2.32609 10.0965 2.28906 10.0017 2.28906C9.90696 2.28906 9.73946 2.32609 9.41171 2.75414ZM8.41929 1.99415C8.81646 1.47542 9.30746 1.03906 10.0017 1.03906C10.696 1.03906 11.187 1.47542 11.5842 1.99415C11.9745 2.50384 12.3884 3.24636 12.8942 4.15386L13.193 4.68995C13.5202 5.27675 13.6039 5.40141 13.7089 5.4811C13.8099 5.55779 13.9402 5.60056 14.5764 5.74451L15.1598 5.8765C16.1395 6.09813 16.9465 6.28072 17.5344 6.51236C18.1445 6.75282 18.6785 7.10723 18.884 7.76825C19.0875 8.42248 18.8588 9.02431 18.5055 9.58565C18.1621 10.1311 17.6137 10.7722 16.9439 11.5556L16.5485 12.018C16.1176 12.5217 16.0276 12.6451 15.9853 12.7811C15.9422 12.9198 15.9462 13.0801 16.0113 13.7517L16.071 14.3668C16.1724 15.4136 16.2551 16.2671 16.2261 16.9171C16.1967 17.5788 16.0464 18.2141 15.5004 18.6287C14.944 19.051 14.2969 19.0034 13.672 18.8244C13.0662 18.6508 12.311 18.303 11.3938 17.8807L10.8475 17.6291C10.2496 17.3539 10.1216 17.3097 10.0017 17.3097C9.88179 17.3097 9.75379 17.3539 9.15604 17.6291L8.60962 17.8807C7.69252 18.303 6.93725 18.6508 6.33142 18.8244C5.7066 19.0034 5.05937 19.051 4.50311 18.6287C3.95704 18.2141 3.80677 17.5788 3.77729 16.9171C3.74833 16.2671 3.83107 15.4135 3.93252 14.3668L3.99212 13.7517C4.05721 13.0801 4.06127 12.9198 4.01813 12.7811C3.97582 12.6451 3.88582 12.5217 3.45498 12.018L3.05958 11.5556C2.38971 10.7723 1.84132 10.1311 1.49798 9.58565C1.14462 9.02431 0.91599 8.42248 1.11943 7.76825C1.32499 7.10723 1.85893 6.75282 2.46909 6.51236C3.05689 6.28072 3.86399 6.09813 4.84369 5.8765L4.89674 5.8645L5.42703 5.74451C6.06322 5.60057 6.19356 5.55779 6.29461 5.4811C6.39957 5.40141 6.48325 5.27675 6.81037 4.68995L7.1092 4.15385C7.61505 3.24636 8.02894 2.50384 8.41929 1.99415Z" fill="#FFC107"/>
+                                    </svg>
+                                    <span className="text-blue-800 text-sm ml-1">{skill.rating}</span>
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-                                <span className="text-blue-800 text-sm font-medium mr-2">SEO</span>
-                                <div className="flex items-center">
-                                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path fill-rule="evenodd" clip-rule="evenodd" d="M9.41171 2.75414C9.08354 3.1826 8.71321 3.84365 8.17527 4.80869L7.90218 5.29857C7.88572 5.3281 7.86947 5.35735 7.85338 5.38631C7.60277 5.83731 7.39125 6.21797 7.05041 6.47671C6.7059 6.73824 6.28592 6.83262 5.79783 6.94231C5.76647 6.94935 5.73482 6.95647 5.70288 6.9637L5.17259 7.08368C4.12649 7.32037 3.41484 7.48322 2.92739 7.67532C2.45172 7.86277 2.35132 8.01635 2.31305 8.13943C2.27266 8.26931 2.27146 8.46798 2.55582 8.91973C2.84445 9.37823 3.33136 9.95006 4.04347 10.7828L4.40498 11.2056C4.42599 11.2301 4.44682 11.2544 4.46742 11.2785C4.80327 11.6702 5.0833 11.9968 5.21175 12.4099C5.33942 12.8205 5.29711 13.2519 5.2458 13.775C5.24265 13.8071 5.23947 13.8395 5.23629 13.8723L5.18163 14.4363C5.07406 15.5465 5.00152 16.3109 5.02606 16.8615C5.05053 17.4111 5.16662 17.5631 5.25892 17.6331C5.34101 17.6954 5.49275 17.7644 5.98711 17.6227C6.4895 17.4788 7.1572 17.1733 8.13672 16.7223L8.63321 16.4937C8.66379 16.4796 8.69412 16.4656 8.72412 16.4517C9.17812 16.2419 9.57196 16.0597 10.0017 16.0597C10.4315 16.0597 10.8253 16.2419 11.2793 16.4517C11.3094 16.4656 11.3396 16.4796 11.3702 16.4937L11.8667 16.7223C12.8462 17.1733 13.514 17.4788 14.0164 17.6227C14.5107 17.7644 14.6625 17.6954 14.7445 17.6331C14.8368 17.5631 14.9529 17.4111 14.9774 16.8615C15.0019 16.3109 14.9294 15.5465 14.8218 14.4363L14.7671 13.8723C14.764 13.8395 14.7608 13.8071 14.7576 13.775C14.7064 13.2519 14.664 12.8205 14.7917 12.4099C14.9201 11.9968 15.2002 11.6702 15.536 11.2784C15.5566 11.2544 15.5775 11.2301 15.5985 11.2056L15.96 10.7828C16.672 9.95006 17.159 9.37823 17.4476 8.91973C17.732 8.46798 17.7308 8.26931 17.6904 8.13943C17.6521 8.01635 17.5517 7.86277 17.076 7.67532C16.5886 7.48322 15.877 7.32037 14.8309 7.08368L14.3005 6.9637C14.2686 6.95647 14.237 6.94935 14.2056 6.9423C13.7175 6.83262 13.2975 6.73824 12.953 6.47671C12.6122 6.21797 12.4007 5.83731 12.15 5.38631C12.134 5.35735 12.1177 5.3281 12.1013 5.29857L11.8282 4.80869C11.2902 3.84365 10.9199 3.1826 10.5918 2.75414C10.264 2.32609 10.0965 2.28906 10.0017 2.28906C9.90696 2.28906 9.73946 2.32609 9.41171 2.75414ZM8.41929 1.99415C8.81646 1.47542 9.30746 1.03906 10.0017 1.03906C10.696 1.03906 11.187 1.47542 11.5842 1.99415C11.9745 2.50384 12.3884 3.24636 12.8942 4.15386L13.193 4.68995C13.5202 5.27675 13.6039 5.40141 13.7089 5.4811C13.8099 5.55779 13.9402 5.60056 14.5764 5.74451L15.1598 5.8765C16.1395 6.09813 16.9465 6.28072 17.5344 6.51236C18.1445 6.75282 18.6785 7.10723 18.884 7.76825C19.0875 8.42248 18.8588 9.02431 18.5055 9.58565C18.1621 10.1311 17.6137 10.7722 16.9439 11.5556L16.5485 12.018C16.1176 12.5217 16.0276 12.6451 15.9853 12.7811C15.9422 12.9198 15.9462 13.0801 16.0113 13.7517L16.071 14.3668C16.1724 15.4136 16.2551 16.2671 16.2261 16.9171C16.1967 17.5788 16.0464 18.2141 15.5004 18.6287C14.944 19.051 14.2969 19.0034 13.672 18.8244C13.0662 18.6508 12.311 18.303 11.3938 17.8807L10.8475 17.6291C10.2496 17.3539 10.1216 17.3097 10.0017 17.3097C9.88179 17.3097 9.75379 17.3539 9.15604 17.6291L8.60962 17.8807C7.69252 18.303 6.93725 18.6508 6.33142 18.8244C5.7066 19.0034 5.05937 19.051 4.50311 18.6287C3.95704 18.2141 3.80677 17.5788 3.77729 16.9171C3.74833 16.2671 3.83107 15.4135 3.93252 14.3668L3.99212 13.7517C4.05721 13.0801 4.06127 12.9198 4.01813 12.7811C3.97582 12.6451 3.88582 12.5217 3.45498 12.018L3.05958 11.5556C2.38971 10.7723 1.84132 10.1311 1.49798 9.58565C1.14462 9.02431 0.91599 8.42248 1.11943 7.76825C1.32499 7.10723 1.85893 6.75282 2.46909 6.51236C3.05689 6.28072 3.86399 6.09813 4.84369 5.8765L4.89674 5.8645L5.42703 5.74451C6.06322 5.60057 6.19356 5.55779 6.29461 5.4811C6.39957 5.40141 6.48325 5.27675 6.81037 4.68995L7.1092 4.15385C7.61505 3.24636 8.02894 2.50384 8.41929 1.99415Z" fill="#FFC107"/>
-                                  </svg>                                  <span className="text-blue-800 text-sm ml-1">4.5</span>
-                                </div>
-                              </div>
+                              )) || []}
                             </div>
                             <button className="text-blue-600 text-sm hover:underline flex items-center gap-1">
                               Show more skills
@@ -825,16 +787,15 @@ const ArchiveIcon = () => (
                         <div className="border-l border-gray-200 pl-4">
                           <h3 className="text-base font-medium text-gray-900 mb-6">General Summary</h3>
                           <p className="text-gray-700 text-sm leading-relaxed mb-8">
-                            Shikha demonstrates solid domain knowledge and experience in ML engineering, particularly with AWS. However, clarity in communication needs improvement. He covers many questions, but responses sometimes lack depth or are unclear due to noise interference.
+                            {details.feedbacks?.overallFeedback || details.assessment?.ai_interview?.general_summary}
                           </p>
                           
                           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                             <h4 className="text-base font-medium text-red-800 mb-3">Potential Red Flags</h4>
                             <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
-                              <li>Tab switch count: 1</li>
-                              <li>Casual attire</li>
-                              <li>Slightly low eye contact</li>
-                              <li>Sub-optimal background</li>
+                              {details.ai_interview_report?.potential_red_flags?.map((flag, index) => (
+                                <li key={index}>{flag}</li>
+                              )) || []}
                             </ol>
                           </div>
                           
@@ -849,44 +810,13 @@ const ArchiveIcon = () => (
                   ) : (
                     <div>
                       <div className="flex items-center justify-between mb-6">
-                        <span className="text-base font-medium text-gray-900">Questions <span className="text-gray-500">(5)</span></span>
-                        <span className="text-blue-600 text-xl font-medium">Score: <span className="font-bold">4</span>/5</span>
+                        <span className="text-base font-medium text-gray-900">Questions <span className="text-gray-500">({assessmentResults?.problem_results?.length || 0})</span></span>
+                        <span className="text-blue-600 text-xl font-medium">Score: <span className="font-bold">{assessmentResults?.total_score || 0}</span>/{assessmentResults?.problem_results?.length || 0}</span>
                       </div>
 
                       {/* Question Items */}
                       <div className="space-y-4">
-                        {[
-                          {
-                            id: 1,
-                            question: "Write a function to reverse a given string. For example, if the input is 'hello', the output should be 'olleh'.",
-                            language: "Python",
-                            lines: "7 hidden lines",
-                            difficulty: "Easy",
-                            status: "Pass",
-                            date: "02/08/2024",
-                            score: "4/5",
-                          },
-                          {
-                            id: 2,
-                            question: "Write a function to reverse a given string. For example, if the input is 'hello', the output should be 'olleh'.",
-                            language: "Python",
-                            lines: "7 hidden lines",
-                            difficulty: "Easy",
-                            status: "Pass",
-                            date: "02/08/2024",
-                            score: "4/5",
-                          },
-                          {
-                            id: 3,
-                            question: "Write a function to reverse a given string. For example, if the input is 'hello', the output should be 'olleh'.",
-                            language: "Python",
-                            lines: "7 hidden lines",
-                            difficulty: "Easy",
-                            status: "Pass",
-                            date: "02/08/2024",
-                            score: "4/5",
-                          },
-                        ].map((item) => (
+                        {(assessmentResults?.problem_results || []).map((item:any, index:any) => (
                           <div key={item.id} className="bg-[#F5F9FB] border border-gray-400 rounded-lg">
                             <div className="flex items-center justify-left gap-4 m-4">
                               <span className="text-base font-[400] text-gray-600">Q{item.id}.</span>
@@ -894,7 +824,7 @@ const ArchiveIcon = () => (
                             </div>
                             <div className="px-4 border border-gray-200 bg-white rounded-lg">
                             <div className="flex items-center justify-between text-sm text-gray-500 ml-2 pl-8 border-b border-gray-200 py-2">
-                              <div className="text-sm text-gray-400">{item.language}</div>
+                              <div className="text-sm text-gray-400">{item.language || 'N/A'}</div>
                               <div className="flex items-center gap-3">
                                 <button className="text-gray-400 hover:text-gray-600 flex items-center gap-1">
                                   <svg width="16" height="16" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
@@ -910,9 +840,9 @@ const ArchiveIcon = () => (
                                     <path d="M9 13.7797V4.17969" stroke="#818283" stroke-linecap="round"/>
                                     <path d="M13 13.8203V9.82031" stroke="#818283" stroke-linecap="round"/>
                                   </svg>
-                                  <span className="text-sm">Easy</span>
+                                  <span className="text-sm">{item.problem.difficulty}</span>
                                 </button>
-                                <button className="text-green-400 hover:text-green-600 flex items-center gap-1">
+                                <button className={`${item.status === 'Accepted' ? 'text-green-400' : item.status === 'Wrong Answer' ? 'text-red-400' : 'text-gray-400'} hover:text-green-600 flex items-center gap-1`}>
                                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
                                     <g clip-path="url(#clip0_2726_638)">
                                       <path d="M8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16Z" fill="#2FD08D"/>
@@ -924,13 +854,13 @@ const ArchiveIcon = () => (
                                       </clipPath>
                                     </defs>
                                   </svg>
-                                  <span className="text-sm">pass</span>
+                                  <span className="text-sm">{item.status === 'Accepted' ? 'pass' : item.status.toLowerCase()}</span>
                                 </button>
 
                               </div>
                             </div>
                             <div className="flex items-center justify-between text-sm text-gray-400 ml-2 pl-8 py-2">
-                              <span className="">{item.lines}</span>
+                              {item.source_code?.split("\n").length}
                             </div>
                             </div>
                             
@@ -946,53 +876,30 @@ const ArchiveIcon = () => (
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Notes</h2>
                 
                 <div className="space-y-4">
-                  {/* Note 1 */}
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-white text-xs font-bold">SV</span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <div>
-                          <div>
-                            <span className="font-medium text-gray-900 text-sm">Name of the person</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-500 text-xs ml-2">Company</span>
-                          </div>
-                        </div>
-                        
-                        <span className="text-gray-400 text-xs">Posted Date</span>
+                  {displayCandidate.notes.map((note:any, index:any) => (
+                    <div key={index} className="flex gap-3">
+                      <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xs font-bold">{note.postedBy.email.charAt(0).toUpperCase()}</span>
                       </div>
-                      <p className="text-gray-700 text-sm">
-                        The innovative AI engineer skillfully solved complex problems, collaborated effectively, and delivered precise, reusable solutions with creative insight.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Note 2 */}
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-white text-xs font-bold">SV</span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
                           <div>
-                            <span className="font-medium text-gray-900 text-sm">Name of the person</span>
+                            <div>
+                              <span className="font-medium text-gray-900 text-sm">{note.postedBy.email}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500 text-xs ml-2">{note.organisation.orgName}</span>
+                            </div>
                           </div>
-                          <div>
-                            <span className="text-gray-500 text-xs ml-2">Company</span>
-                          </div>
+                          
+                          <span className="text-gray-400 text-xs">{new Date(note.posted_at).toLocaleDateString()}</span>
                         </div>
-                        
-                        <span className="text-gray-400 text-xs">Posted Date</span>
+                        <p className="text-gray-700 text-sm">
+                          {note.content}
+                        </p>
                       </div>
-                      <p className="text-gray-700 text-sm">
-                        The innovative AI engineer skillfully solved complex problems, collaborated effectively, and delivered precise, reusable solutions with creative insight.
-                      </p>
                     </div>
-                  </div>
+                  ))}
                 </div>
               </section>
 
@@ -1001,77 +908,54 @@ const ArchiveIcon = () => (
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">References</h2>
                 
                 <div className="space-y-4">
-                  {/* Reference 1 */}
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-gray-900 text-sm font-bold">SV</span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-medium text-gray-900 text-sm">Suchondhi Verma</h3>
-                          <p className="text-gray-500 text-xs">HR Manager at Suprhit</p>
-                          <p className="text-gray-700 text-sm mt-2">
-                            Experienced digital marketer across strategic campaigns and data-driven approach have significantly boosted our brand's online presence. Her expertise in both creative and analytical...
-                          </p>
-                          
-                          {/* Contact Icons */}
-                          <div className="flex items-center gap-2 mt-3">
-                            <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
-                              <svg width="12" height="12" viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M6.06529 3.62527e-07H8.9347C10.2169 -1.56375e-05 11.2324 -2.35867e-05 12.0272 0.122512C12.8452 0.248608 13.5073 0.514304 14.0294 1.11299C14.5515 1.71169 14.7832 2.47085 14.8932 3.40878C15 4.32015 15 5.48464 15 6.95488V7.04512C15 8.51536 15 9.67984 14.8932 10.5912C14.7832 11.5291 14.5515 12.2883 14.0294 12.887C13.5073 13.4857 12.8452 13.7514 12.0272 13.8775C11.2324 14 10.2169 14 8.9347 14H6.0653C4.78314 14 3.76757 14 2.97278 13.8775C2.15481 13.7514 1.49275 13.4857 0.970633 12.887C0.448521 12.2883 0.21681 11.5291 0.106842 10.5912C-2.06629e-05 9.67984 -1.36373e-05 8.51536 3.16189e-07 7.04512V6.95488C-1.36373e-05 5.48464 -2.06629e-05 4.32015 0.106842 3.40878C0.21681 2.47085 0.448521 1.71169 0.970633 1.11299C1.49275 0.514304 2.15481 0.248608 2.97278 0.122512C3.76757 -2.35867e-05 4.78313 -1.56375e-05 6.06529 3.62527e-07ZM3.11222 1.31181C2.4103 1.42002 2.00589 1.62295 1.71063 1.96152C1.41537 2.30009 1.23839 2.76381 1.14402 3.56868C1.04762 4.39081 1.04651 5.47456 1.04651 7C1.04651 8.52544 1.04762 9.6092 1.14402 10.4314C1.23839 11.2362 1.41537 11.6999 1.71063 12.0385C2.00589 12.377 2.4103 12.58 3.11222 12.6882C3.82919 12.7987 4.77431 12.8 6.10465 12.8H8.89535C10.2257 12.8 11.1708 12.7987 11.8878 12.6882C12.5897 12.58 12.9941 12.377 13.2894 12.0385C13.5846 11.6999 13.7616 11.2362 13.856 10.4314C13.9524 9.6092 13.9535 8.52544 13.9535 7C13.9535 5.47456 13.9524 4.39081 13.856 3.56868C13.7616 2.76381 13.5846 2.30009 13.2894 1.96152C12.9941 1.62295 12.5897 1.42002 11.8878 1.31181C11.1708 1.20127 10.2257 1.2 8.89535 1.2H6.10465C4.77431 1.2 3.82919 1.20127 3.11222 1.31181ZM2.91197 3.41589C3.09698 3.16132 3.42693 3.12693 3.64894 3.33906L5.15514 4.77833C5.80604 5.40032 6.25793 5.83072 6.63949 6.11208C7.00877 6.38448 7.25923 6.47592 7.5 6.47592C7.74077 6.47592 7.99123 6.38448 8.36051 6.11208C8.74207 5.83072 9.19395 5.40032 9.84488 4.77833L11.3511 3.33906C11.5731 3.12693 11.903 3.16132 12.088 3.41589C12.273 3.67046 12.243 4.04879 12.021 4.26094L10.4886 5.72528C9.87021 6.31616 9.369 6.79512 8.9266 7.12136C8.46579 7.4612 8.01705 7.67592 7.5 7.67592C6.98295 7.67592 6.53421 7.4612 6.07338 7.12136C5.63101 6.79512 5.12981 6.31616 4.51141 5.72528L2.97897 4.26094C2.75697 4.04879 2.72697 3.67046 2.91197 3.41589Z" fill="#F5F9FB"/>
-                              </svg>
+                  {details.references.map((ref:any, index:any) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-gray-900 text-sm font-bold">{ref.hr_name.split(' ').map((n:any) => n[0]).join('')}</span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="font-medium text-gray-900 text-sm">{ref.hr_name}</h3>
+                            <p className="text-gray-500 text-xs">{ref.hr_title} at {ref.experience.company}</p>
+                            <p className="text-gray-700 text-sm mt-2">
+                            {ref.comments}
+                            </p>
+                            
+                            {/* Contact Icons */}
+                            <div className="flex items-center gap-2 mt-3">
+                              <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
+                                <svg width="12" height="12" viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path fill-rule="evenodd" clip-rule="evenodd" d="M6.06529 3.62527e-07H8.9347C10.2169 -1.56375e-05 11.2324 -2.35867e-05 12.0272 0.122512C12.8452 0.248608 13.5073 0.514304 14.0294 1.11299C14.5515 1.71169 14.7832 2.47085 14.8932 3.40878C15 4.32015 15 5.48464 15 6.95488V7.04512C15 8.51536 15 9.67984 14.8932 10.5912C14.7832 11.5291 14.5515 12.2883 14.0294 12.887C13.5073 13.4857 12.8452 13.7514 12.0272 13.8775C11.2324 14 10.2169 14 8.9347 14H6.0653C4.78314 14 3.76757 14 2.97278 13.8775C2.15481 13.7514 1.49275 13.4857 0.970633 12.887C0.448521 12.2883 0.21681 11.5291 0.106842 10.5912C-2.06629e-05 9.67984 -1.36373e-05 8.51536 3.16189e-07 7.04512V6.95488C-1.36373e-05 5.48464 -2.06629e-05 4.32015 0.106842 3.40878C0.21681 2.47085 0.448521 1.71169 0.970633 1.11299C1.49275 0.514304 2.15481 0.248608 2.97278 0.122512C3.76757 -2.35867e-05 4.78313 -1.56375e-05 6.06529 3.62527e-07ZM3.11222 1.31181C2.4103 1.42002 2.00589 1.62295 1.71063 1.96152C1.41537 2.30009 1.23839 2.76381 1.14402 3.56868C1.04762 4.39081 1.04651 5.47456 1.04651 7C1.04651 8.52544 1.04762 9.6092 1.14402 10.4314C1.23839 11.2362 1.41537 11.6999 1.71063 12.0385C2.00589 12.377 2.4103 12.58 3.11222 12.6882C3.82919 12.7987 4.77431 12.8 6.10465 12.8H8.89535C10.2257 12.8 11.1708 12.7987 11.8878 12.6882C12.5897 12.58 12.9941 12.377 13.2894 12.0385C13.5846 11.6999 13.7616 11.2362 13.856 10.4314C13.9524 9.6092 13.9535 8.52544 13.9535 7C13.9535 5.47456 13.9524 4.39081 13.856 3.56868C13.7616 2.76381 13.5846 2.30009 13.2894 1.96152C12.9941 1.62295 12.5897 1.42002 11.8878 1.31181C11.1708 1.20127 10.2257 1.2 8.89535 1.2H6.10465C4.77431 1.2 3.82919 1.20127 3.11222 1.31181ZM2.91197 3.41589C3.09698 3.16132 3.42693 3.12693 3.64894 3.33906L5.15514 4.77833C5.80604 5.40032 6.25793 5.83072 6.63949 6.11208C7.00877 6.38448 7.25923 6.47592 7.5 6.47592C7.74077 6.47592 7.99123 6.38448 8.36051 6.11208C8.74207 5.83072 9.19395 5.40032 9.84488 4.77833L11.3511 3.33906C11.5731 3.12693 11.903 3.16132 12.088 3.41589C12.273 3.67046 12.243 4.04879 12.021 4.26094L10.4886 5.72528C9.87021 6.31616 9.369 6.79512 8.9266 7.12136C8.46579 7.4612 8.01705 7.67592 7.5 7.67592C6.98295 7.67592 6.53421 7.4612 6.07338 7.12136C5.63101 6.79512 5.12981 6.31616 4.51141 5.72528L2.97897 4.26094C2.75697 4.04879 2.72697 3.67046 2.91197 3.41589Z" fill="#F5F9FB"/>
+                                </svg>
 
+                              </div>
+                              <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
+                                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path fill-rule="evenodd" clip-rule="evenodd" d="M1.40609 0.924395C2.75026 -0.419776 5.01861 -0.317592 5.95453 1.35945L6.47378 2.28987C7.08495 3.38502 6.82453 4.7668 5.92981 5.67246C5.91789 5.68879 5.85468 5.78074 5.84684 5.9414C5.83684 6.14648 5.90965 6.62075 6.64443 7.35554C7.37898 8.09008 7.85318 8.16313 8.0584 8.15313C8.21921 8.14529 8.31122 8.08216 8.32754 8.07016C9.23322 7.17552 10.615 6.91502 11.7102 7.52619L12.6406 8.04552C14.3176 8.98144 14.4198 11.2497 13.0756 12.5939C12.3566 13.3128 11.4006 13.9517 10.2772 13.9943C8.61229 14.0575 5.8478 13.6275 3.11016 10.8898C0.372484 8.15217 -0.0574584 5.38774 0.00565117 3.72285C0.0482469 2.5994 0.687096 1.64338 1.40609 0.924395ZM4.9066 1.9443C4.4273 1.08554 3.13943 0.888256 2.25469 1.773C1.63436 2.39333 1.23107 3.07804 1.2049 3.76832C1.15226 5.15671 1.49505 7.57756 3.95876 10.0412C6.42249 12.5049 8.84327 12.8477 10.2317 12.795C10.922 12.7689 11.6067 12.3656 12.227 11.7453C13.1117 10.8606 12.9144 9.57269 12.0557 9.09345L11.1253 8.5742C10.5465 8.25113 9.73351 8.36138 9.16281 8.93207C9.10673 8.98808 8.7499 9.32107 8.11672 9.35187C7.46842 9.38339 6.68379 9.09209 5.79588 8.20417C4.90764 7.31593 4.61641 6.53107 4.64817 5.88271C4.67922 5.24944 5.01221 4.89293 5.06789 4.83721C5.63858 4.2665 5.74883 3.4535 5.42584 2.87472L4.9066 1.9443Z" fill="white"/>
+                                </svg>
+                              </div>
+                              <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
+                                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path fill-rule="evenodd" clip-rule="evenodd" d="M14 14H11.2V9.10068C11.2 7.75668 10.6071 7.00684 9.5438 7.00684C8.3867 7.00684 7.7 7.78818 7.7 9.10068V14H4.9V4.9H7.7V5.92334C7.7 5.92334 8.5785 4.38184 10.5581 4.38184C12.5384 4.38184 14 5.59027 14 8.09067V14ZM1.7094 3.44463C0.765101 3.44463 0 2.67327 0 1.72197C0 0.771373 0.765101 0 1.7094 0C2.653 0 3.4181 0.771373 3.4181 1.72197C3.4188 2.67327 2.653 3.44463 1.7094 3.44463ZM0 14H3.5V4.9H0V14Z" fill="white"/>
+                                </svg>
+                              </div>
                             </div>
-                            <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
-                              <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M1.40609 0.924395C2.75026 -0.419776 5.01861 -0.317592 5.95453 1.35945L6.47378 2.28987C7.08495 3.38502 6.82453 4.7668 5.92981 5.67246C5.91789 5.68879 5.85468 5.78074 5.84684 5.9414C5.83684 6.14648 5.90965 6.62075 6.64443 7.35554C7.37898 8.09008 7.85318 8.16313 8.0584 8.15313C8.21921 8.14529 8.31122 8.08216 8.32754 8.07016C9.23322 7.17552 10.615 6.91502 11.7102 7.52619L12.6406 8.04552C14.3176 8.98144 14.4198 11.2497 13.0756 12.5939C12.3566 13.3128 11.4006 13.9517 10.2772 13.9943C8.61229 14.0575 5.8478 13.6275 3.11016 10.8898C0.372484 8.15217 -0.0574584 5.38774 0.00565117 3.72285C0.0482469 2.5994 0.687096 1.64338 1.40609 0.924395ZM4.9066 1.9443C4.4273 1.08554 3.13943 0.888256 2.25469 1.773C1.63436 2.39333 1.23107 3.07804 1.2049 3.76832C1.15226 5.15671 1.49505 7.57756 3.95876 10.0412C6.42249 12.5049 8.84327 12.8477 10.2317 12.795C10.922 12.7689 11.6067 12.3656 12.227 11.7453C13.1117 10.8606 12.9144 9.57269 12.0557 9.09345L11.1253 8.5742C10.5465 8.25113 9.73351 8.36138 9.16281 8.93207C9.10673 8.98808 8.7499 9.32107 8.11672 9.35187C7.46842 9.38339 6.68379 9.09209 5.79588 8.20417C4.90764 7.31593 4.61641 6.53107 4.64817 5.88271C4.67922 5.24944 5.01221 4.89293 5.06789 4.83721C5.63858 4.2665 5.74883 3.4535 5.42584 2.87472L4.9066 1.9443Z" fill="white"/>
-                              </svg>
-                            </div>
-                            <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
-                              <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M14 14H11.2V9.10068C11.2 7.75668 10.6071 7.00684 9.5438 7.00684C8.3867 7.00684 7.7 7.78818 7.7 9.10068V14H4.9V4.9H7.7V5.92334C7.7 5.92334 8.5785 4.38184 10.5581 4.38184C12.5384 4.38184 14 5.59027 14 8.09067V14ZM1.7094 3.44463C0.765101 3.44463 0 2.67327 0 1.72197C0 0.771373 0.765101 0 1.7094 0C2.653 0 3.4181 0.771373 3.4181 1.72197C3.4188 2.67327 2.653 3.44463 1.7094 3.44463ZM0 14H3.5V4.9H0V14Z" fill="white"/>
-                              </svg>
-                            </div>
+                            
+                            <button className="flex items-center text-blue-600 text-sm mt-2 hover:underline">View Less <ChevronDown className="w-4 h-4 rotate-180" /></button>
                           </div>
-                          
-                          <button className="flex items-center text-blue-600 text-sm mt-2 hover:underline">View Less <ChevronDown className="w-4 h-4 rotate-180" /></button>
-                        </div>
-                        <div className="w-10 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-sm"><svg width="12" height="15" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M5.23013 2.20782C5.08005 2.96783 4.8279 4.10778 3.90533 5.03033C3.82118 5.11449 3.72908 5.20331 3.63156 5.29737C2.77519 6.12337 1.5 7.3533 1.5 9.375C1.5 10.4726 1.97218 11.512 2.70071 12.2811C3.43375 13.0548 4.37196 13.5 5.25 13.5H9C9.26377 13.5 9.48458 13.4318 9.61522 13.3447C9.7236 13.2725 9.75 13.2091 9.75 13.125C9.75 13.0409 9.7236 12.9775 9.61522 12.9053C9.48458 12.8182 9.26377 12.75 9 12.75H8.25C7.83577 12.75 7.5 12.4142 7.5 12C7.5 11.5858 7.83577 11.25 8.25 11.25H9H9.375C9.63877 11.25 9.85958 11.1818 9.99022 11.0947C10.0986 11.0225 10.125 10.9591 10.125 10.875C10.125 10.7909 10.0986 10.7275 9.99022 10.6553C9.85958 10.5682 9.63877 10.5 9.375 10.5H8.625C8.21078 10.5 7.875 10.1642 7.875 9.75C7.875 9.33578 8.21078 9 8.625 9H9.375H9.75C10.0138 9 10.2346 8.93182 10.3652 8.84468C10.4736 8.77245 10.5 8.70907 10.5 8.625C10.5 8.54093 10.4736 8.47755 10.3652 8.40532C10.2346 8.31818 10.0138 8.25 9.75 8.25H9C8.58578 8.25 8.25 7.91423 8.25 7.5C8.25 7.08577 8.58578 6.75 9 6.75H9.75C10.0138 6.75 10.2346 6.68183 10.3652 6.59468C10.4736 6.52245 10.5 6.45907 10.5 6.375C10.5 6.29093 10.4736 6.22755 10.3652 6.15532C10.2346 6.06817 10.0138 6 9.75 6H6.375C6.1329 6 5.90573 5.88316 5.76495 5.68625C5.62425 5.48953 5.58705 5.23704 5.66505 5.00813L5.66752 5.00086L5.67758 4.96998C5.68665 4.94167 5.7003 4.89839 5.71702 4.84231C5.75047 4.72993 5.79623 4.56734 5.84325 4.37165C5.9385 3.97511 6.0336 3.46579 6.05212 2.9719C6.07132 2.45877 6.00322 2.0653 5.86605 1.82494C5.78482 1.68273 5.66235 1.5538 5.3778 1.51319C5.3421 1.63652 5.30925 1.80429 5.2611 2.05018C5.2515 2.09949 5.24123 2.15194 5.23013 2.20782ZM7.35262 4.5C7.4439 4.08152 7.53105 3.56029 7.551 3.0281C7.57395 2.41623 7.5132 1.6847 7.16873 1.08131C6.7854 0.409763 6.10987 0 5.175 0C4.88887 0 4.62037 0.0946951 4.40267 0.285105C4.20493 0.458085 4.09248 0.672337 4.02304 0.844657C3.91205 1.12004 3.84347 1.47684 3.78559 1.77796C3.77636 1.82597 3.7674 1.87256 3.75859 1.91718C3.61244 2.65717 3.42212 3.39222 2.84467 3.96967C2.77852 4.03582 2.69813 4.11203 2.60691 4.19851C1.7648 4.99685 0 6.6699 0 9.375C0 10.9025 0.652823 12.3005 1.61179 13.3127C2.56625 14.3202 3.87804 15 5.25 15H9C9.48623 15 10.0154 14.8807 10.4473 14.5928C10.9014 14.29 11.25 13.7909 11.25 13.125C11.25 12.7735 11.1529 12.4684 10.9943 12.2141C11.3615 11.9068 11.625 11.4539 11.625 10.875C11.625 10.5235 11.5279 10.2184 11.3693 9.96412C11.7365 9.65677 12 9.20393 12 8.625C12 8.1684 11.8361 7.79025 11.5867 7.5C11.8361 7.20975 12 6.8316 12 6.375C12 5.70907 11.6514 5.20995 11.1973 4.90721C10.7654 4.61929 10.2362 4.5 9.75 4.5H7.35262Z" fill="white"/>
-                          </svg>
-                          </span>
+                          <div className="w-10 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-sm"><svg width="12" height="15" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M5.23013 2.20782C5.08005 2.96783 4.8279 4.10778 3.90533 5.03033C3.82118 5.11449 3.72908 5.20331 3.63156 5.29737C2.77519 6.12337 1.5 7.3533 1.5 9.375C1.5 10.4726 1.97218 11.512 2.70071 12.2811C3.43375 13.0548 4.37196 13.5 5.25 13.5H9C9.26377 13.5 9.48458 13.4318 9.61522 13.3447C9.7236 13.2725 9.75 13.2091 9.75 13.125C9.75 13.0409 9.7236 12.9775 9.61522 12.9053C9.48458 12.8182 9.26377 12.75 9 12.75H8.25C7.83577 12.75 7.5 12.4142 7.5 12C7.5 11.5858 7.83577 11.25 8.25 11.25H9H9.375C9.63877 11.25 9.85958 11.1818 9.99022 11.0947C10.0986 11.0225 10.125 10.9591 10.125 10.875C10.125 10.7909 10.0986 10.7275 9.99022 10.6553C9.85958 10.5682 9.63877 10.5 9.375 10.5H8.625C8.21078 10.5 7.875 10.1642 7.875 9.75C7.875 9.33578 8.21078 9 8.625 9H9.375H9.75C10.0138 9 10.2346 8.93182 10.3652 8.84468C10.4736 8.77245 10.5 8.70907 10.5 8.625C10.5 8.54093 10.4736 8.47755 10.3652 8.40532C10.2346 8.31818 10.0138 8.25 9.75 8.25H9C8.58578 8.25 8.25 7.91423 8.25 7.5C8.25 7.08577 8.58578 6.75 9 6.75H9.75C10.0138 6.75 10.2346 6.68183 10.3652 6.59468C10.4736 6.52245 10.5 6.45907 10.5 6.375C10.5 6.29093 10.4736 6.22755 10.3652 6.15532C10.2346 6.06817 10.0138 6 9.75 6H6.375C6.1329 6 5.90573 5.88316 5.76495 5.68625C5.62425 5.48953 5.58705 5.23704 5.66505 5.00813L5.66752 5.00086L5.67758 4.96998C5.68665 4.94167 5.7003 4.89839 5.71702 4.84231C5.75047 4.72993 5.79623 4.56734 5.84325 4.37165C5.9385 3.97511 6.0336 3.46579 6.05212 2.9719C6.07132 2.45877 6.00322 2.0653 5.86605 1.82494C5.78482 1.68273 5.66235 1.5538 5.3778 1.51319C5.3421 1.63652 5.30925 1.80429 5.2611 2.05018C5.2515 2.09949 5.24123 2.15194 5.23013 2.20782ZM7.35262 4.5C7.4439 4.08152 7.53105 3.56029 7.551 3.0281C7.57395 2.41623 7.5132 1.6847 7.16873 1.08131C6.7854 0.409763 6.10987 0 5.175 0C4.88887 0 4.62037 0.0946951 4.40267 0.285105C4.20493 0.458085 4.09248 0.672337 4.02304 0.844657C3.91205 1.12004 3.84347 1.47684 3.78559 1.77796C3.77636 1.82597 3.7674 1.87256 3.75859 1.91718C3.61244 2.65717 3.42212 3.39222 2.84467 3.96967C2.77852 4.03582 2.69813 4.11203 2.60691 4.19851C1.7648 4.99685 0 6.6699 0 9.375C0 10.9025 0.652823 12.3005 1.61179 13.3127C2.56625 14.3202 3.87804 15 5.25 15H9C9.48623 15 10.0154 14.8807 10.4473 14.5928C10.9014 14.29 11.25 13.7909 11.25 13.125C11.25 12.7735 11.1529 12.4684 10.9943 12.2141C11.3615 11.9068 11.625 11.4539 11.625 10.875C11.625 10.5235 11.5279 10.2184 11.3693 9.96412C11.7365 9.65677 12 9.20393 12 8.625C12 8.1684 11.8361 7.79025 11.5867 7.5C11.8361 7.20975 12 6.8316 12 6.375C12 5.70907 11.6514 5.20995 11.1973 4.90721C10.7654 4.61929 10.2362 4.5 9.75 4.5H7.35262Z" fill="white"/>
+                            </svg>
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  ))}
 
-                  {/* Reference 2 */}
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-gray-900 text-sm font-bold">AA</span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-medium text-gray-900 text-sm">Ana De Armas</h3>
-                          <p className="text-gray-500 text-xs">HR Manager at Suprhit</p>
-                          <p className="text-gray-700 text-sm mt-2">
-                            I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs). I hold...
-                          </p>
-                          
-                          <button className="flex items-center text-blue-600 text-sm mt-2 hover:underline">View More <ChevronDown className="w-4 h-4" /></button>
-                        </div>
-                        <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-sm"><svg width="12" height="15" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M5.23013 12.7922C5.08005 12.0322 4.8279 10.8922 3.90533 9.96967C3.82118 9.88551 3.72908 9.79669 3.63156 9.70263C2.77519 8.87663 1.5 7.6467 1.5 5.625C1.5 4.52745 1.97218 3.48795 2.70071 2.7189C3.43375 1.9452 4.37196 1.5 5.25 1.5H9C9.26377 1.5 9.48457 1.56818 9.61522 1.65532C9.7236 1.72755 9.75 1.79093 9.75 1.875C9.75 1.95907 9.7236 2.02245 9.61522 2.09468C9.48457 2.18182 9.26377 2.25 9 2.25H8.25C7.83577 2.25 7.5 2.58578 7.5 3C7.5 3.41422 7.83577 3.75 8.25 3.75H9H9.375C9.63877 3.75 9.85957 3.81818 9.99022 3.90532C10.0986 3.97755 10.125 4.04093 10.125 4.125C10.125 4.20907 10.0986 4.27245 9.99022 4.34468C9.85957 4.43182 9.63877 4.5 9.375 4.5H8.625C8.21078 4.5 7.875 4.83578 7.875 5.25C7.875 5.66422 8.21078 6 8.625 6H9.375H9.75C10.0138 6 10.2346 6.06818 10.3652 6.15532C10.4736 6.22755 10.5 6.29093 10.5 6.375C10.5 6.45907 10.4736 6.52245 10.3652 6.59468C10.2346 6.68182 10.0138 6.75 9.75 6.75H9C8.58578 6.75 8.25 7.08577 8.25 7.5C8.25 7.91423 8.58578 8.25 9 8.25H9.75C10.0138 8.25 10.2346 8.31817 10.3652 8.40532C10.4736 8.47755 10.5 8.54093 10.5 8.625C10.5 8.70907 10.4736 8.77245 10.3652 8.84468C10.2346 8.93183 10.0138 9 9.75 9H6.375C6.1329 9 5.90573 9.11684 5.76495 9.31375C5.62425 9.51047 5.58705 9.76296 5.66505 9.99187L5.66535 9.99267L5.66752 9.99914L5.67758 10.03C5.68665 10.0583 5.7003 10.1016 5.71702 10.1577C5.75047 10.2701 5.79623 10.4327 5.84325 10.6283C5.9385 11.0249 6.0336 11.5342 6.05212 12.0281C6.07132 12.5412 6.00322 12.9347 5.86605 13.1751C5.78482 13.3173 5.66235 13.4462 5.3778 13.4868C5.3421 13.3635 5.30925 13.1957 5.2611 12.9498C5.2515 12.9005 5.24123 12.8481 5.23013 12.7922ZM7.35262 10.5C7.4439 10.9185 7.53105 11.4397 7.551 11.9719C7.57395 12.5838 7.5132 13.3153 7.16873 13.9187C6.7854 14.5902 6.10987 15 5.175 15C4.88887 15 4.62037 14.9053 4.40267 14.7149C4.20493 14.5419 4.09248 14.3277 4.02304 14.1553C3.91205 13.88 3.84347 13.5232 3.78559 13.222C3.77636 13.174 3.7674 13.1274 3.75859 13.0828C3.61244 12.3428 3.42212 11.6078 2.84467 11.0303C2.77852 10.9642 2.69813 10.888 2.60691 10.8015C1.7648 10.0031 0 8.3301 0 5.625C0 4.09755 0.652823 2.69955 1.61179 1.68735C2.56625 0.6798 3.87804 0 5.25 0H9C9.48623 0 10.0154 0.119325 10.4473 0.407175C10.9014 0.70995 11.25 1.20907 11.25 1.875C11.25 2.22653 11.1529 2.53163 10.9943 2.78588C11.3615 3.09323 11.625 3.54607 11.625 4.125C11.625 4.47653 11.5279 4.78163 11.3693 5.03588C11.7365 5.34323 12 5.79607 12 6.375C12 6.8316 11.8361 7.20975 11.5867 7.5C11.8361 7.79025 12 8.1684 12 8.625C12 9.29093 11.6514 9.79005 11.1973 10.0928C10.7654 10.3807 10.2362 10.5 9.75 10.5H7.35262Z" fill="white"/>
-                          </svg>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  
                 </div>
               </section>
             </div>
