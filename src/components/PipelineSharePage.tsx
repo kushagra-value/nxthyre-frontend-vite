@@ -702,7 +702,7 @@ const ArchiveIcon = () => (
               <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-gray-900">Assessment</h2>
-                  <span className="text-gray-500 text-sm">{new Date(details.assessment?.ai_interview?.overall_summary?.knowledge || assessmentResults?.completed_at || '').toLocaleDateString()}</span>
+                  <span className="text-gray-500 text-sm">23. 08. 2024</span>
                 </div>
 
                 {/* Assessment Tabs */}
