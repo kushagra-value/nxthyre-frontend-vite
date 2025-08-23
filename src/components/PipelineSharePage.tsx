@@ -69,6 +69,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [stageIdMap, setStageIdMap] = useState<{ [key: string]: number }>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [candidateDetails, setCandidateDetails] = useState<any>(null);
+  const [assessmentResults, setAssessmentResults] = useState<any>(null);
   const [loadingCandidateDetails, setLoadingCandidateDetails] = useState(false);
 
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
@@ -213,18 +214,33 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     setDraggedCandidate({ candidate, fromStage });
   };
 
-  const fetchCandidateDetails = async (candidateId: string) => {
-      setLoadingCandidateDetails(true);
-      try {
-        const details = await candidateService.getCandidateDetails(candidateId);
-        setCandidateDetails(details);
-      } catch (error) {
-        console.error("Error fetching candidate details:", error);
-        showToast.error("Failed to load candidate details");
-      } finally {
-        setLoadingCandidateDetails(false);
-      }
-    };
+  const fetchCandidateDetails = async (applicationId: string) => {
+    setLoadingCandidateDetails(true);
+    try {
+      const details = await apiClient.get(`/jobs/applications/${applicationId}/kanban-detail/`);
+      setCandidateDetails(details.data);
+    } catch (error) {
+      console.error("Error fetching candidate details:", error);
+      showToast.error("Failed to load candidate details");
+    } finally {
+      setLoadingCandidateDetails(false);
+    }
+  };
+
+  useEffect(() => {
+    if (candidateDetails) {
+      const fetchAssessmentResults = async () => {
+        try {
+          const res = await apiClient.get(`/api/assessment/results?candidate_id=${candidateDetails.candidate.id}&job_id=${jobId}`);
+          setAssessmentResults(res.data);
+        } catch (error) {
+          console.error("Error fetching assessment results:", error);
+          showToast.error("Failed to load assessment results");
+        }
+      };
+      fetchAssessmentResults();
+    }
+  }, [candidateDetails, jobId]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -346,10 +362,11 @@ const ArchiveIcon = () => (
 
 
 
-  const handleCandidateClick = (candidate: number) => {
+  const handleCandidateClick = (candidate: any) => {
     setSelectedCandidate(candidate);
     setShowCandidateProfile(true);
     setActiveProfileTab("profile");
+    fetchCandidateDetails(candidate.id);
   };
 
   const handleAccessSubmit = async () => {
@@ -476,8 +493,8 @@ const ArchiveIcon = () => (
   const renderCandidateProfile = () => {
   if (!selectedCandidate) return null;
 
-  const details = candidateDetails?.candidate;
-  const displayCandidate = details || selectedCandidate;
+  const details = candidateDetails;
+  const displayCandidate = details?.candidate || selectedCandidate;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 z-[60] flex">
@@ -506,9 +523,9 @@ const ArchiveIcon = () => (
                 {/* Profile Info */}
                 <div className="flex items-start gap-6">
                   <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200">
-                    {displayCandidate.avatar_url ? (
+                    {displayCandidate.profile_picture_url ? (
                       <img
-                        src={displayCandidate.avatar_url}
+                        src={displayCandidate.profile_picture_url}
                         alt={displayCandidate.full_name}
                         className="w-full h-full object-cover"
                       />
@@ -521,27 +538,27 @@ const ArchiveIcon = () => (
                 
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                      <h1 className="text-2xl font-bold text-gray-900">{selectedCandidate.name}</h1>
+                      <h1 className="text-2xl font-bold text-gray-900">{displayCandidate.full_name}</h1>
                       <span className="bg-blue-100 text-blue-600 text-sm px-2 py-1 rounded-md font-medium">75%</span>
                     </div>
                     <p className="text-gray-600 mb-2">
-                      {displayCandidate.headline || `${selectedCandidate.role} | ${selectedCandidate.company}`}
+                      {displayCandidate.headline}
                     </p>
-                    <p className="text-gray-500 text-sm">Bangalore, India</p>
+                    <p className="text-gray-500 text-sm">{displayCandidate.location}</p>
                   </div>
                 </div>
 
                 {/* Contact Info */}
                 <div className="text-right text-gray-600">
                   <div className="flex items-center justify-end gap-2 mb-1">
-                    <span className="text-gray-600">{displayCandidate.candidate_email || "Shikhasingh1220@gmail.com"}</span>
+                    <span className="text-gray-600">{displayCandidate.email}</span>
                     <svg width="18" height="18" viewBox="0 0 18 15" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M7.24465 3.7763e-07H10.672C12.2035 -1.6289e-05 13.4165 -2.45745e-05 14.3658 0.127617C15.3428 0.258967 16.1337 0.535734 16.7573 1.15937C17.3809 1.78301 17.6577 2.5738 17.7891 3.55082C17.9167 4.50016 17.9167 5.71317 17.9167 7.24467V7.33867C17.9167 8.87017 17.9167 10.0832 17.7891 11.0325C17.6577 12.0095 17.3809 12.8003 16.7573 13.424C16.1337 14.0476 15.3428 14.3243 14.3658 14.4558C13.4165 14.5833 12.2035 14.5833 10.672 14.5833H7.24466C5.71319 14.5833 4.50016 14.5833 3.55082 14.4558C2.5738 14.3243 1.78301 14.0476 1.15937 13.424C0.535734 12.8003 0.258967 12.0095 0.127617 11.0325C-2.46738e-05 10.0832 -1.6289e-05 8.87017 3.77668e-07 7.33867V7.24467C-1.6289e-05 5.71317 -2.46738e-05 4.50016 0.127617 3.55082C0.258967 2.5738 0.535734 1.78301 1.15937 1.15937C1.78301 0.535734 2.5738 0.258967 3.55082 0.127617C4.50016 -2.45745e-05 5.71318 -1.6289e-05 7.24465 3.7763e-07ZM3.71738 1.36647C2.87897 1.47918 2.39593 1.69058 2.04325 2.04325C1.69058 2.39593 1.47918 2.87897 1.36647 3.71738C1.25133 4.57376 1.25 5.70267 1.25 7.29167C1.25 8.88067 1.25133 10.0096 1.36647 10.866C1.47918 11.7043 1.69058 12.1874 2.04325 12.5401C2.39593 12.8927 2.87897 13.1042 3.71738 13.2168C4.57376 13.332 5.70265 13.3333 7.29167 13.3333H10.625C12.214 13.3333 13.3429 13.332 14.1993 13.2168C15.0377 13.1042 15.5207 12.8927 15.8734 12.5401C16.2261 12.1874 16.4375 11.7043 16.5502 10.866C16.6653 10.0096 16.6667 8.88067 16.6667 7.29167C16.6667 5.70267 16.6653 4.57376 16.5502 3.71738C16.4375 2.87897 16.2261 2.39593 15.8734 2.04325C15.5207 1.69058 15.0377 1.47918 14.1993 1.36647C13.3429 1.25133 12.214 1.25 10.625 1.25H7.29167C5.70265 1.25 4.57376 1.25133 3.71738 1.36647ZM3.47819 3.55822C3.69918 3.29304 4.09328 3.25722 4.35845 3.47819L6.15753 4.97743C6.93499 5.62533 7.47475 6.07367 7.9305 6.36675C8.37158 6.6505 8.67075 6.74575 8.95833 6.74575C9.24592 6.74575 9.54508 6.6505 9.98617 6.36675C10.4419 6.07367 10.9817 5.62533 11.7592 4.97743L13.5582 3.47819C13.8234 3.25722 14.2175 3.29304 14.4385 3.55822C14.6594 3.82339 14.6236 4.21749 14.3584 4.43848L12.528 5.96383C11.7894 6.57933 11.1907 7.07825 10.6623 7.41808C10.1119 7.77208 9.57592 7.99575 8.95833 7.99575C8.34075 7.99575 7.80475 7.77208 7.25432 7.41808C6.72593 7.07825 6.12727 6.57933 5.38863 5.96383L3.55822 4.43848C3.29304 4.21749 3.25722 3.82339 3.47819 3.55822Z" fill="#818283"/>
                     </svg>
 
                   </div>
                   <div className="flex items-center justify-end gap-2">
-                    <span className="text-gray-600">{displayCandidate.candidate_phone || "9375 4575 45"}</span>
+                    <span className="text-gray-600">{displayCandidate.phone}</span>
                     <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M1.60696 1.05645C3.14316 -0.479744 5.73555 -0.362962 6.80518 1.55365L7.3986 2.617C8.09709 3.8686 7.79946 5.44777 6.77692 6.48281C6.7633 6.50147 6.69106 6.60656 6.6821 6.79017C6.67067 7.02455 6.75388 7.56658 7.59364 8.40633C8.43312 9.24581 8.97506 9.32929 9.2096 9.31786C9.39338 9.3089 9.49854 9.23675 9.51719 9.22304C10.5523 8.2006 12.1315 7.90288 13.383 8.60136L14.4464 9.19488C16.363 10.2645 16.4797 12.8568 14.9436 14.393C14.1218 15.2147 13.0293 15.9448 11.7453 15.9935C9.84261 16.0657 6.6832 15.5743 3.55447 12.4455C0.425696 9.31676 -0.0656668 6.15741 0.00645848 4.25469C0.0551394 2.97075 0.785252 1.87815 1.60696 1.05645ZM5.60754 2.22205C5.05977 1.24062 3.58792 1.01515 2.57679 2.02628C1.86783 2.73523 1.40694 3.51775 1.37703 4.30665C1.31687 5.89338 1.70863 8.66006 4.5243 11.4757C7.33999 14.2914 10.1066 14.6831 11.6934 14.6229C12.4823 14.593 13.2648 14.1322 13.9737 13.4232C14.9848 12.4121 14.7593 10.9402 13.778 10.3925L12.7146 9.79909C12.0532 9.42987 11.124 9.55587 10.4718 10.2081C10.4077 10.2721 9.99988 10.6526 9.27625 10.6878C8.53534 10.7239 7.63862 10.391 6.62386 9.37619C5.60873 8.36107 5.2759 7.46408 5.3122 6.7231C5.34768 5.99937 5.72824 5.59192 5.79188 5.52824C6.44409 4.87601 6.57009 3.94686 6.20096 3.2854L5.60754 2.22205Z" fill="#818283"/>
                     </svg>
@@ -570,13 +587,13 @@ const ArchiveIcon = () => (
                         </defs>
                       </svg>
 
-                      <span>{displayCandidate.total_experience || "5"} Years</span>
+                      <span>{displayCandidate.total_experience} Years</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
                         <path fill-rule="evenodd" clip-rule="evenodd" d="M5.01163 2C5.30061 2 5.53488 2.23985 5.53488 2.53571V3.08051C5.99677 3.07142 6.50563 3.07142 7.06529 3.07143H9.9347C10.4944 3.07142 11.0033 3.07142 11.4651 3.08051V2.53571C11.4651 2.23985 11.6994 2 11.9884 2C12.2773 2 12.5116 2.23985 12.5116 2.53571V3.12649C12.693 3.14065 12.8647 3.15844 13.0272 3.18081C13.8452 3.2934 14.5073 3.53063 15.0294 4.06517C15.5515 4.59972 15.7832 5.27754 15.8932 6.11499C15.9283 6.38262 15.9519 6.67471 15.9677 6.99291C15.9886 7.05076 16 7.11329 16 7.17857C16 7.22809 15.9934 7.27603 15.9812 7.32154C16 7.89436 16 8.54486 16 9.28114V10.75C16 11.0459 15.7657 11.2857 15.4767 11.2857C15.1878 11.2857 14.9535 11.0459 14.9535 10.75V9.32143C14.9535 8.71143 14.9533 8.1805 14.9443 7.71429H2.05564C2.04674 8.1805 2.04651 8.71143 2.04651 9.32143V10.75C2.04651 12.112 2.04762 13.0796 2.14402 13.8137C2.23839 14.5323 2.41537 14.9464 2.71063 15.2486C3.00589 15.5509 3.4103 15.7321 4.11222 15.8287C4.82919 15.9274 5.77431 15.9286 7.10465 15.9286H9.89535C10.1843 15.9286 10.4186 16.1684 10.4186 16.4643C10.4186 16.7601 10.1843 17 9.89535 17H7.0653C5.78314 17 4.76757 17 3.97278 16.8906C3.15481 16.778 2.49275 16.5408 1.97063 16.0063C1.44852 15.4717 1.21681 14.7939 1.10684 13.9564C0.999979 13.1427 0.999986 12.103 1 10.7903V9.28114C0.999993 8.54479 0.999986 7.89436 1.01884 7.32155C1.00657 7.27604 1 7.22809 1 7.17857C1 7.1133 1.0114 7.05075 1.03228 6.9929C1.0481 6.6747 1.07169 6.38261 1.10684 6.11499C1.21681 5.27754 1.44852 4.59972 1.97063 4.06517C2.49275 3.53063 3.15481 3.2934 3.97278 3.18081C4.13528 3.15844 4.30702 3.14065 4.48837 3.12649V2.53571C4.48837 2.23985 4.72264 2 5.01163 2ZM2.1035 6.64286H14.8965C14.8853 6.50758 14.8719 6.37945 14.856 6.25775C14.7616 5.53911 14.5846 5.12508 14.2894 4.82279C13.9941 4.52049 13.5897 4.3393 12.8878 4.24269C12.1708 4.14399 11.2257 4.14286 9.89535 4.14286H7.10465C5.77431 4.14286 4.82919 4.14399 4.11222 4.24269C3.4103 4.3393 3.00589 4.52049 2.71063 4.82279C2.41537 5.12508 2.23839 5.53911 2.14402 6.25775C2.12804 6.37945 2.11467 6.50758 2.1035 6.64286ZM12.686 12C11.8191 12 11.1163 12.7196 11.1163 13.6071C11.1163 14.4947 11.8191 15.2143 12.686 15.2143C13.553 15.2143 14.2558 14.4947 14.2558 13.6071C14.2558 12.7196 13.553 12 12.686 12ZM10.0698 13.6071C10.0698 12.1278 11.2411 10.9286 12.686 10.9286C14.131 10.9286 15.3023 12.1278 15.3023 13.6071C15.3023 14.1531 15.1428 14.6609 14.8689 15.0843L15.8467 16.0855C16.0511 16.2947 16.0511 16.6339 15.8467 16.8431C15.6424 17.0523 15.3111 17.0523 15.1068 16.8431L14.1288 15.8419C13.7153 16.1224 13.2193 16.2857 12.686 16.2857C11.2411 16.2857 10.0698 15.0865 10.0698 13.6071Z" fill="#4B5563"/>
                       </svg>
-                      <span>{displayCandidate.notice_period_days || "15"} Days</span>
+                      <span>{displayCandidate.notice_period_days} Days</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
@@ -589,7 +606,7 @@ const ArchiveIcon = () => (
                         </clipPath>
                         </defs>
                       </svg>
-                      <span>{displayCandidate.current_salary || "20"} LPA</span>
+                      <span>{displayCandidate.current_salary} LPA</span>
                     </div>
                   </div>
                 </div>
