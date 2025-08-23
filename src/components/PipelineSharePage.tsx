@@ -734,11 +734,11 @@ const ArchiveIcon = () => (
                             </div>
                             <div className="flex flex-col items-center justify-center rounded-lg  w-48 p-4 bg-[#ECF1FF]">
                               <span className="text-sm text-gray-600">Knowledge</span>
-                              <span className="text-xl font-[400] text-[#16A34A]">{displayCandidate.assessment?.ai_interview?.overall_summary.knowledge}%</span>
+                              <span className="text-xl font-[400] text-[#16A34A]">{details?.assessment?.ai_interview?.overall_summary.knowledge}%</span>
                             </div>
                             <div className="flex flex-col items-center justify-center rounded-lg  w-48 p-4 bg-[#ECF1FF]">
                               <span className="text-sm text-gray-600">Communication</span>
-                              <span className="text-xl font-[400] text-[#0F47F2]">{displayCandidate.assessment?.ai_interview?.overall_summary?.communication}%</span>
+                              <span className="text-xl font-[400] text-[#0F47F2]">{details?.assessment?.ai_interview?.overall_summary?.communication}%</span>
                             </div>
                           </div>
                           {/* Vetted Skills */}
@@ -751,7 +751,7 @@ const ArchiveIcon = () => (
                               </svg>
                             </div>
                             <div className="flex flex-wrap gap-2 mb-4">
-                              {displayCandidate.technicalSkills?.strongSkills?.map((skill:any, index:any) => (
+                              {displayCandidate?.ai_interview_report.technicalSkills?.strongSkills?.map((skill:any, index:any) => (
                                 <div key={index} className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
                                   <span className="text-blue-800 text-sm font-medium mr-2">{skill.skill}</span>
                                   <div className="flex items-center">
@@ -762,7 +762,7 @@ const ArchiveIcon = () => (
                                   </div>
                                 </div>
                               )) || []}
-                              {displayCandidate.technicalSkills?.weakSkills?.map((skill:any, index:any) => (
+                              {displayCandidate?.ai_interview_report.technicalSkills?.weakSkills?.map((skill:any, index:any) => (
                                 <div key={index} className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
                                   <span className="text-blue-800 text-sm font-medium mr-2">{skill.skill}</span>
                                   <div className="flex items-center">
@@ -787,7 +787,7 @@ const ArchiveIcon = () => (
                         <div className="border-l border-gray-200 pl-4">
                           <h3 className="text-base font-medium text-gray-900 mb-6">General Summary</h3>
                           <p className="text-gray-700 text-sm leading-relaxed mb-8">
-                            {displayCandidate.assessment?.ai_interview?.general_summary}
+                            {details.assessment?.ai_interview?.general_summary}
                           </p>
                           
                           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -908,7 +908,7 @@ const ArchiveIcon = () => (
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">References</h2>
                 
                 <div className="space-y-4">
-                  {(displayCandidate.references || [])?.map((ref:any, index:any) => (
+                  {(details?.references || [])?.map((ref:any, index:any) => (
                     <div key={index} className="flex items-start gap-3">
                       <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-gray-900 text-sm font-bold">{ref?.hr_name?.split(' ').map((n:any) => n[0]).join('')}</span>
