@@ -876,7 +876,7 @@ const ArchiveIcon = () => (
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Notes</h2>
                 
                 <div className="space-y-4">
-                  {displayCandidate.notes.map((note:any, index:any) => (
+                  {(displayCandidate.notes || [])?.map((note:any, index:any) => (
                     <div key={index} className="flex gap-3">
                       <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-white text-xs font-bold">{note.postedBy.email.charAt(0).toUpperCase()}</span>
