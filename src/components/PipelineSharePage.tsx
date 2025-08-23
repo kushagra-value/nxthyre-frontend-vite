@@ -675,7 +675,7 @@ const ArchiveIcon = () => (
                 <div className="mb-4">
                   <h3 className="text-sm font-medium text-gray-700 mb-3">Resume Skills</h3>
                   <div className="flex flex-wrap gap-2">
-                    {displayCandidate.skills_data.endorsements?.slice(0, 11).map((s:any, index:any) => (
+                    {displayCandidate.skills_data?.endorsements?.slice(0, 11).map((s:any, index:any) => (
                       <span key={`resume-${index}`} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
                         {s.skill_endorsed}
                       </span>
@@ -688,7 +688,7 @@ const ArchiveIcon = () => (
                 <div className="mb-6">
                   <h3 className="text-sm font-medium text-gray-700 mb-3">Resume Skills</h3>
                   <div className="flex flex-wrap gap-2">
-                    {displayCandidate.skills_data.skills_mentioned?.slice(0, 11).map((s:any, index:any) => (
+                    {displayCandidate.skills_data?.skills_mentioned?.slice(0, 11).map((s:any, index:any) => (
                       <span key={`resume-${index}`} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
                         {s.skill}
                       </span>
@@ -730,15 +730,15 @@ const ArchiveIcon = () => (
                           <div className="mb-6 flex justify-between items-center gap-4">
                             <div className="flex flex-col items-center justify-center rounded-lg  w-48 p-4 bg-[#ECF1FF]">
                               <span className="text-sm text-gray-600">Resume</span>
-                              <span className="text-xl font-[400] text-[#EAB308]">{details.ai_interview_report.score.resume}%</span>
+                              <span className="text-xl font-[400] text-[#EAB308]">{details.ai_interview_report?.score.resume}%</span>
                             </div>
                             <div className="flex flex-col items-center justify-center rounded-lg  w-48 p-4 bg-[#ECF1FF]">
                               <span className="text-sm text-gray-600">Knowledge</span>
-                              <span className="text-xl font-[400] text-[#16A34A]">{details.ai_interview_report.score.knowledge}%</span>
+                              <span className="text-xl font-[400] text-[#16A34A]">{details.ai_interview_report?.score.knowledge}%</span>
                             </div>
                             <div className="flex flex-col items-center justify-center rounded-lg  w-48 p-4 bg-[#ECF1FF]">
                               <span className="text-sm text-gray-600">Communication</span>
-                              <span className="text-xl font-[400] text-[#0F47F2]">{details.ai_interview_report.score.communication}%</span>
+                              <span className="text-xl font-[400] text-[#0F47F2]">{details.ai_interview_report?.score.communication}%</span>
                             </div>
                           </div>
                           {/* Vetted Skills */}
