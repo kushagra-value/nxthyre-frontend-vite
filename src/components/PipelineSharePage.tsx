@@ -688,7 +688,7 @@ const ArchiveIcon = () => (
                 <div className="mb-6">
                   <h3 className="text-sm font-medium text-gray-700 mb-3">Resume Skills</h3>
                   <div className="flex flex-wrap gap-2">
-                    {displayCandidate.skills_data.skills_mentioned?.slice(0, 11).map((s, index) => (
+                    {displayCandidate.skills_data.skills_mentioned?.slice(0, 11).map((s:any, index:any) => (
                       <span key={`resume-${index}`} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
                         {s.skill}
                       </span>
@@ -793,7 +793,7 @@ const ArchiveIcon = () => (
                           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                             <h4 className="text-base font-medium text-red-800 mb-3">Potential Red Flags</h4>
                             <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
-                              {details.ai_interview_report?.potential_red_flags?.map((flag, index) => (
+                              {details.ai_interview_report?.potential_red_flags?.map((flag:any, index:any) => (
                                 <li key={index}>{flag}</li>
                               )) || []}
                             </ol>
