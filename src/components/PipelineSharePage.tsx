@@ -911,15 +911,15 @@ const ArchiveIcon = () => (
                   {(displayCandidate.references || [])?.map((ref:any, index:any) => (
                     <div key={index} className="flex items-start gap-3">
                       <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-gray-900 text-sm font-bold">{ref.hr_name.split(' ').map((n:any) => n[0]).join('')}</span>
+                        <span className="text-gray-900 text-sm font-bold">{ref?.hr_name.split(' ').map((n:any) => n[0]).join('')}</span>
                       </div>
                       <div className="flex-1">
                         <div className="flex items-start justify-between">
                           <div>
-                            <h3 className="font-medium text-gray-900 text-sm">{ref.hr_name}</h3>
-                            <p className="text-gray-500 text-xs">{ref.hr_title} at {ref.experience.company}</p>
+                            <h3 className="font-medium text-gray-900 text-sm">{ref?.hr_name}</h3>
+                            <p className="text-gray-500 text-xs">{ref?.hr_title} at {ref?.experience.company}</p>
                             <p className="text-gray-700 text-sm mt-2">
-                            {ref.comments}
+                            {ref?.comments}
                             </p>
                             
                             {/* Contact Icons */}
