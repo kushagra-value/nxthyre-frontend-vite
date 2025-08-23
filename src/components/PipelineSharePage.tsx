@@ -879,23 +879,23 @@ const ArchiveIcon = () => (
                   {(displayCandidate.notes || [])?.map((note:any, index:any) => (
                     <div key={index} className="flex gap-3">
                       <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-white text-xs font-bold">{note.postedBy.email.charAt(0).toUpperCase()}</span>
+                        <span className="text-white text-xs font-bold">{note?.postedBy.email.charAt(0).toUpperCase()}</span>
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
                           <div>
                             <div>
-                              <span className="font-medium text-gray-900 text-sm">{note.postedBy.email}</span>
+                              <span className="font-medium text-gray-900 text-sm">{note?.postedBy.email}</span>
                             </div>
                             <div>
-                              <span className="text-gray-500 text-xs ml-2">{note.organisation.orgName}</span>
+                              <span className="text-gray-500 text-xs ml-2">{note?.organisation.orgName}</span>
                             </div>
                           </div>
                           
-                          <span className="text-gray-400 text-xs">{new Date(note.posted_at).toLocaleDateString()}</span>
+                          <span className="text-gray-400 text-xs">{new Date(note?.posted_at).toLocaleDateString()}</span>
                         </div>
                         <p className="text-gray-700 text-sm">
-                          {note.content}
+                          {note?.content}
                         </p>
                       </div>
                     </div>
