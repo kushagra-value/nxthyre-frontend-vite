@@ -879,16 +879,16 @@ const ArchiveIcon = () => (
                   {(displayCandidate.notes || [])?.map((note:any, index:any) => (
                     <div key={index} className="flex gap-3">
                       <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-white text-xs font-bold">{note?.postedBy.email.charAt(0).toUpperCase()}</span>
+                        <span className="text-white text-xs font-bold">{note?.postedBy?.email.charAt(0).toUpperCase()}</span>
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
                           <div>
                             <div>
-                              <span className="font-medium text-gray-900 text-sm">{note?.postedBy.email}</span>
+                              <span className="font-medium text-gray-900 text-sm">{note?.postedBy?.email}</span>
                             </div>
                             <div>
-                              <span className="text-gray-500 text-xs ml-2">{note?.organisation.orgName}</span>
+                              <span className="text-gray-500 text-xs ml-2">{note?.organisation?.orgName}</span>
                             </div>
                           </div>
                           
@@ -911,7 +911,7 @@ const ArchiveIcon = () => (
                   {(displayCandidate.references || [])?.map((ref:any, index:any) => (
                     <div key={index} className="flex items-start gap-3">
                       <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-gray-900 text-sm font-bold">{ref?.hr_name.split(' ').map((n:any) => n[0]).join('')}</span>
+                        <span className="text-gray-900 text-sm font-bold">{ref?.hr_name?.split(' ').map((n:any) => n[0]).join('')}</span>
                       </div>
                       <div className="flex-1">
                         <div className="flex items-start justify-between">
