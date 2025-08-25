@@ -1,9 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { ChevronDown, ArrowLeft, Mail, MessageSquare, Phone, Settings, Send, X } from "lucide-react";
+import {
+  ChevronDown,
+  ArrowLeft,
+  Mail,
+  MessageSquare,
+  Phone,
+  Settings,
+  Send,
+  X,
+  ChevronUp,
+  Plus,
+  Trash2,
+  Edit,
+  Check,
+} from "lucide-react";
 import { showToast } from "../utils/toast";
 import { Template, candidateService } from "../services/candidateService";
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
 interface EditTemplateModalProps {
   isOpen: boolean;
@@ -17,7 +31,7 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
   templateName = "Head of Finance Template",
 }) => {
   const [templates, setTemplates] = useState<Template[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [formData, setFormData] = useState({
     templateName: templateName,
     subject: "Exciting Opportunity at Weekday: Head of Finance in Pune",
@@ -41,12 +55,29 @@ Best regards,
     sendViaEmail: true,
     sendViaWhatsApp: false,
     sendViaPhone: false,
-    followUpTemplates: [] as { send_after_hours: number; followup_mode: 'EMAIL' | 'WHATSAPP' | 'CALL'; followup_body: string; followup_subject: string; order_no: number }[],
+    followUpTemplates: [] as {
+      send_after_hours: string;
+      followup_mode: "EMAIL" | "WHATSAPP" | "CALL";
+      followup_body: string;
+      order_no: number;
+    }[],
   });
   const [showTestEmail, setShowTestEmail] = useState(false);
   const [showAdvanceOptions, setShowAdvanceOptions] = useState(false);
   const [testEmail, setTestEmail] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [isFollowUpsExpanded, setIsFollowUpsExpanded] = useState(false);
+  const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
+  const [newFollowUp, setNewFollowUp] = useState<{
+    send_after_hours: "24hrs" | "48hrs" | "72hrs";
+    followup_mode: "EMAIL" | "WHATSAPP" | "CALL";
+    followup_body: string;
+  }>({
+    send_after_hours: "24hrs",
+    followup_mode: "EMAIL",
+    followup_body: "",
+  });
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -60,7 +91,7 @@ Best regards,
           handleTemplateSelect(firstTemplateId);
         }
       } catch (error) {
-        showToast.error('Failed to fetch templates');
+        showToast.error("Failed to fetch templates");
       } finally {
         setLoading(false);
       }
@@ -72,7 +103,7 @@ Best regards,
 
   const handleTemplateSelect = (templateId: string) => {
     setSelectedTemplate(templateId);
-    const template = templates.find(t => t.id === Number(templateId));
+    const template = templates.find((t) => t.id === Number(templateId));
     if (template) {
       setFormData({
         templateName: template.name,
@@ -81,19 +112,18 @@ Best regards,
         sendViaEmail: template.can_be_sent_via_email,
         sendViaWhatsApp: template.can_be_sent_via_whatsapp,
         sendViaPhone: template.can_be_sent_via_call,
-        followUpTemplates: template.follow_up_steps.map(step => ({
-          send_after_hours: step.send_after_hours,
-          followup_mode: step.mode as 'EMAIL' | 'WHATSAPP' | 'CALL',
+        followUpTemplates: template.follow_up_steps.map((step) => ({
+          send_after_hours: `${step.send_after_hours}hrs`,
+          followup_mode: step.mode as "EMAIL" | "WHATSAPP" | "CALL",
           followup_body: step.body,
-          followup_subject: step.subject || '',
           order_no: step.order,
         })),
       });
     } else {
       setFormData({
-        templateName: '',
-        subject: '',
-        body: '',
+        templateName: "",
+        subject: "",
+        body: "",
         sendViaEmail: true,
         sendViaWhatsApp: false,
         sendViaPhone: false,
@@ -104,15 +134,19 @@ Best regards,
 
   const handleSave = async () => {
     if (!formData.templateName.trim()) {
-      showToast.error('Please enter a template name');
+      showToast.error("Please enter a template name");
       return;
     }
-    if (!formData.sendViaEmail && !formData.sendViaWhatsApp && !formData.sendViaPhone) {
-      showToast.error('Please select at least one channel');
+    if (
+      !formData.sendViaEmail &&
+      !formData.sendViaWhatsApp &&
+      !formData.sendViaPhone
+    ) {
+      showToast.error("Please select at least one channel");
       return;
     }
     if (!selectedTemplate) {
-      showToast.error('Please select a template to edit');
+      showToast.error("Please select a template to edit");
       return;
     }
     setLoading(true);
@@ -127,9 +161,12 @@ Best regards,
         can_be_sent_via_call: formData.sendViaPhone,
         follow_up_steps: formData.followUpTemplates.map((step, index) => ({
           id: step.order_no + 1,
-          send_after_hours: step.send_after_hours,
+          send_after_hours: step.send_after_hours as
+            | "24hrs"
+            | "48hrs"
+            | "72hrs",
           mode: step.followup_mode,
-          subject: step.followup_subject,
+          subject: "",
           body: step.followup_body,
           order: index,
         })),
@@ -153,51 +190,70 @@ Best regards,
     setShowTestEmail(false);
   };
 
-  const addFollowUp = () => {
-    setFormData({
-      ...formData,
-      followUpTemplates: [
-        ...formData.followUpTemplates,
-        { send_after_hours: 0, followup_mode: 'EMAIL', followup_body: '', followup_subject: '', order_no: formData.followUpTemplates.length },
-      ],
-    });
-  };
-
-  const updateFollowUp = (index: number, field: string, value: any) => {
-    const updated = [...formData.followUpTemplates];
-    updated[index] = { ...updated[index], [field]: value };
-    setFormData({ ...formData, followUpTemplates: updated });
-  };
-
   const removeFollowUp = (index: number) => {
     setFormData({
       ...formData,
-      followUpTemplates: formData.followUpTemplates.filter((_, i) => i !== index),
+      followUpTemplates: formData.followUpTemplates.filter(
+        (_, i) => i !== index
+      ),
     });
   };
+
+  // const addFollowUp = () => {
+  //   setFormData({
+  //     ...formData,
+  //     followUpTemplates: [
+  //       ...formData.followUpTemplates,
+  //       {
+  //         send_after_hours: 0,
+  //         followup_mode: "EMAIL",
+  //         followup_body: "",
+  //         followup_subject: "",
+  //         order_no: formData.followUpTemplates.length,
+  //       },
+  //     ],
+  //   });
+  // };
+
+  // const updateFollowUp = (index: number, field: string, value: any) => {
+  //   const updated = [...formData.followUpTemplates];
+  //   updated[index] = { ...updated[index], [field]: value };
+  //   setFormData({ ...formData, followUpTemplates: updated });
+  // };
+
+  // const removeFollowUp = (index: number) => {
+  //   setFormData({
+  //     ...formData,
+  //     followUpTemplates: formData.followUpTemplates.filter(
+  //       (_, i) => i !== index
+  //     ),
+  //   });
+  // };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-      <div 
-        className={`bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-4xl max-h-[calc(100vh-2rem)] h-full transform transition-transform duration-300 ease-out p-4 flex flex-col ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
+      <div
+        className={`bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-4xl max-h-[calc(100vh-2rem)] h-full transform transition-transform duration-300 ease-out p-6 flex flex-col ${
+          isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between p-2">
           <div className="flex items-center space-x-3">
-            <button 
+            <button
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-4 h-4 text-gray-600" />
             </button>
-            <h2 className="text-lg font-semibold text-gray-900">Edit Template</h2>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Edit Template
+            </h2>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto space-y-4">
+        <div className="flex-1 overflow-y-auto space-y-4 p-4">
           {templates.length === 0 ? (
             <div className="text-center text-gray-600 py-8">
               No templates created yet. Please create a template.
@@ -205,7 +261,9 @@ Best regards,
           ) : (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Select Template</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Template
+                </label>
                 <div className="relative">
                   <select
                     value={selectedTemplate}
@@ -225,11 +283,15 @@ Best regards,
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Template Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Template Name
+                </label>
                 <input
                   type="text"
                   value={formData.templateName}
-                  onChange={(e) => setFormData({ ...formData, templateName: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, templateName: e.target.value })
+                  }
                   placeholder="Enter template name"
                   className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   disabled={loading}
@@ -237,133 +299,387 @@ Best regards,
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Subject
+                </label>
                 <CKEditor
                   editor={ClassicEditor}
                   data={formData.subject}
-                  onChange={(event: any, editor: any) => setFormData({ ...formData, subject: editor.getData() })}
+                  onChange={(event: any, editor: any) =>
+                    setFormData({ ...formData, subject: editor.getData() })
+                  }
                   config={{
-                    toolbar: ['bold', 'italic', 'link', 'bulletedList', 'numberedList', 'undo', 'redo'],
+                    toolbar: [
+                      "bold",
+                      "italic",
+                      "link",
+                      "bulletedList",
+                      "numberedList",
+                      "undo",
+                      "redo",
+                    ],
                   }}
                   disabled={loading}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Body</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Body
+                </label>
                 <CKEditor
                   editor={ClassicEditor}
                   data={formData.body}
-                  onChange={(event: any, editor: any) => setFormData({ ...formData, body: editor.getData() })}
+                  onChange={(event: any, editor: any) =>
+                    setFormData({ ...formData, body: editor.getData() })
+                  }
                   config={{
-                    toolbar: ['bold', 'italic', 'link', 'bulletedList', 'numberedList', 'undo', 'redo'],
+                    toolbar: [
+                      "bold",
+                      "italic",
+                      "link",
+                      "bulletedList",
+                      "numberedList",
+                      "undo",
+                      "redo",
+                    ],
                   }}
                   disabled={loading}
                 />
               </div>
 
               <div>
-                <p className="text-sm text-gray-600 mb-2">The following will be sent to candidate via</p>
-                <div className="flex space-x-2">
+                <p className="block text-sm font-medium text-gray-600 mb-2">
+                  Reachout Channels
+                </p>
+                <div className="flex space-x-3">
                   <button
-                    onClick={() => setFormData({ ...formData, sendViaEmail: !formData.sendViaEmail })}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${formData.sendViaEmail ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        sendViaEmail: !formData.sendViaEmail,
+                      })
+                    }
+                    className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      formData.sendViaEmail
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
                     disabled={loading}
                   >
-                    <Mail className="w-4 h-4 inline mr-1" /> Email
+                    Email{" "}
+                    {formData.sendViaEmail ? (
+                      <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-blue-800 rounded-full ml-1">
+                        <Check className="w-3 h-3 text-semibold pt-[1px]" />
+                      </div>
+                    ) : (
+                      <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-gray-600 rounded-full ml-1">
+                        <Plus className="w-3 h-3 text-semibold pl-[1px]" />
+                      </div>
+                    )}
                   </button>
                   <button
-                    onClick={() => setFormData({ ...formData, sendViaWhatsApp: !formData.sendViaWhatsApp })}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${formData.sendViaWhatsApp ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        sendViaWhatsApp: !formData.sendViaWhatsApp,
+                      })
+                    }
+                    className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      formData.sendViaWhatsApp
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
                     disabled={loading}
                   >
-                    <MessageSquare className="w-4 h-4 inline mr-1" /> WhatsApp
+                    WhatsApp{" "}
+                    {formData.sendViaWhatsApp ? (
+                      <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-blue-800 rounded-full ml-1">
+                        <Check className="w-3 h-3 text-semibold pt-[1px]" />
+                      </div>
+                    ) : (
+                      <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-gray-600 rounded-full ml-1">
+                        <Plus className="w-3 h-3 text-semibold pr-[1px]" />
+                      </div>
+                    )}
                   </button>
                   <button
-                    onClick={() => setFormData({ ...formData, sendViaPhone: !formData.sendViaPhone })}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${formData.sendViaPhone ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        sendViaPhone: !formData.sendViaPhone,
+                      })
+                    }
+                    className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      formData.sendViaPhone
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
                     disabled={loading}
                   >
-                    <Phone className="w-4 h-4 inline mr-1" /> Call
+                    Phone{" "}
+                    {formData.sendViaPhone ? (
+                      <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-blue-800 rounded-full ml-1">
+                        <Check className="w-3 h-3 text-semibold pt-[1px]" />
+                      </div>
+                    ) : (
+                      <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-gray-600 rounded-full ml-1">
+                        <Plus className="w-3 h-3 text-semibold pl-[1px]" />
+                      </div>
+                    )}
                   </button>
+                </div>
+                <div className="p-3 bg-blue-50 text-sm font-medium text-blue-500 rounded-lg mt-3">
+                  {formData.sendViaEmail &&
+                  formData.sendViaWhatsApp &&
+                  formData.sendViaPhone ? (
+                    <div>
+                      Note: Email will be sent to candidate’s inbox, with
+                      WhatsApp message and bot phone alert to check mail.
+                    </div>
+                  ) : formData.sendViaEmail && formData.sendViaWhatsApp ? (
+                    <div>
+                      Note: Email will be sent to candidate’s inbox, with
+                      WhatsApp message to check mail.
+                    </div>
+                  ) : formData.sendViaEmail && formData.sendViaPhone ? (
+                    <div>
+                      Note: Email will be sent to candidate’s inbox, with AI
+                      phone alert to check mail.
+                    </div>
+                  ) : formData.sendViaWhatsApp && formData.sendViaPhone ? (
+                    <div>
+                      Note: WhatsApp message and AI-generated call will be sent
+                      to the candidate.
+                    </div>
+                  ) : formData.sendViaEmail ? (
+                    <div>Note: Email will be sent to candidate's inbox.</div>
+                  ) : formData.sendViaWhatsApp ? (
+                    <div>
+                      Note: WhatsApp message will be sent to the candidate's
+                      WhatsApp number.
+                    </div>
+                  ) : formData.sendViaPhone ? (
+                    <div>
+                      Note: An AI-generated call will be made to the candidate's
+                      phone number.
+                    </div>
+                  ) : (
+                    <div className="text-sm font-medium text-gray-400 mb-2">
+                      {" "}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="space-y-2 pt-4 border-t border-gray-200">
-                <div className="w-full flex justify-end">
-                  <button
-                    onClick={() => setShowAdvanceOptions(!showAdvanceOptions)}
-                    className="text-blue-600 text-xs hover:bg-blue-50 transition-colors flex items-center justify-end"
-                    disabled={loading}
-                  >
-                    <Settings className="w-4 h-4 mr-2" /> {showAdvanceOptions ? 'Hide' : 'View'} Advance Options
-                  </button>
-                </div>
-
-                {showAdvanceOptions && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Follow-ups</label>
-                    {formData.followUpTemplates.map((followUp, index) => (
-                      <div key={index} className="flex flex-col items-start mb-2 space-x-2">
-                        <div className="flex items-center mb-2 space-x-4">
-                          <button
-                            onClick={() => removeFollowUp(index)}
-                            className="ml-2 p-1 text-red-500 hover:text-red-700"
-                            disabled={loading}
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-500">Send After</span>
-                            <input
-                              type="number"
-                              value={followUp.send_after_hours}
-                              onChange={(e) => updateFollowUp(index, 'send_after_hours', Number(e.target.value))}
-                              className="text-sm w-20 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              placeholder="Hours"
-                              disabled={loading}
-                            />
-                            <span className="text-xs text-gray-500">hrs</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-500">Mode of Followup</span>
-                            <select
-                              value={followUp.followup_mode}
-                              onChange={(e) => updateFollowUp(index, 'followup_mode', e.target.value as 'EMAIL' | 'WHATSAPP' | 'CALL')}
-                              className="text-sm w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              disabled={loading}
-                            >
-                              <option value="EMAIL">Email</option>
-                              <option value="WHATSAPP">WhatsApp</option>
-                              <option value="CALL">Call</option>
-                            </select>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-2 w-full">
-                          <CKEditor
-                            editor={ClassicEditor}
-                            className="w-full"
-                            data={followUp.followup_body}
-                            onChange={(event: any, editor: any) => updateFollowUp(index, 'followup_body', editor.getData())}
-                            config={{
-                              toolbar: ['bold', 'italic', 'link', 'bulletedList', 'numberedList', 'undo', 'redo'],
-                            }}
-                            disabled={loading}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                    <button
-                      onClick={addFollowUp}
-                      className="text-sm text-blue-600 hover:text-blue-700 mt-2"
-                      disabled={loading}
+              <div className="space-y-8 pt-2">
+                <div>
+                  <div className="pb-2 mb-4 border-b border-dashed border-gray-300"></div>
+                  <div className="text-sm font-medium text-gray-700 mb-2">
+                    <div
+                      className="flex justify-between text-sm font-medium text-gray-700 mb-2 cursor-pointer hover:bg-gray-100 rounded-lg p-2 transition-colors"
+                      onClick={() =>
+                        setIsFollowUpsExpanded(!isFollowUpsExpanded)
+                      }
                     >
-                      + Add Follow-up
-                    </button>
+                      <div className="flex justify-start items-center space-x-3 mb-2">
+                        <Settings className="inline w-4 h-4 mr-1" />
+                        <span>Follow Ups</span>
+                      </div>
+                      {isFollowUpsExpanded ? (
+                        <ChevronUp className="inline w-4 h-4 ml-1" />
+                      ) : (
+                        <ChevronDown className="inline w-4 h-4 ml-1" />
+                      )}
+                    </div>
+                    {isFollowUpsExpanded && (
+                      <div className="mx-2 my-2">
+                        {formData.followUpTemplates.map((followUp, index) => (
+                          <div
+                            key={index}
+                            className="bg-gray-200 border-b border-gray-400 mb-2 pt-2 rounded-lg"
+                          >
+                            <div className="flex justify-between items-center px-8">
+                              <span className="text-sm font-medium text-gray-600">
+                                Follow Up {index + 1}
+                              </span>
+                              <div className="flex space-x-2">
+                                <button
+                                  onClick={() => removeFollowUp(index)}
+                                  className="p-1 text-gray-500 hover:text-gray-600"
+                                >
+                                  <Edit className="w-4 h-4 text-gray-500" />
+                                </button>
+                                <button
+                                  onClick={() => removeFollowUp(index)}
+                                  className="p-1 text-gray-500 hover:text-gray-600"
+                                >
+                                  <Trash2 className="w-4 h-4 text-gray-500" />
+                                </button>
+                              </div>
+                            </div>
+                            <div className="pt-2 border-b border-gray-400 rounded-lg"></div>
+                            <div className="my-4 px-8">
+                              <div className="flex items-center text-gray-600">
+                                <p>Will be sent around</p>{" "}
+                                <span className="pl-1"></span>
+                                <span>
+                                  {followUp.send_after_hours.replace("hrs", "")}{" "}
+                                  hrs from now
+                                </span>
+                                <span className="pl-1"> </span>
+                                <p>via {followUp.followup_mode}.</p>
+                              </div>
+                              <div className="flex items-center gap-2 mt-2">
+                                <span className="text-gray-400">
+                                  {followUp.followup_body}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        {isAddingFollowUp && (
+                          <div className="my-4 bg-blue-50 rounded-lg">
+                            <div className="px-8 pt-2 flex justify-between items-center">
+                              <span className="text-sm font-medium text-blue-600">
+                                Follow Up
+                              </span>
+                              <div className="flex space-x-2 mt-2">
+                                <button
+                                  onClick={() => setIsAddingFollowUp(false)}
+                                  className="text-red-500 text-xs rounded-full"
+                                  disabled={loading}
+                                >
+                                  <span className="w-4 h-4 flex items-center justify-center rounded-full border-2 border-red-500 text-red-500">
+                                    <span className="text-xs mb-1 font-semibold">
+                                      x
+                                    </span>
+                                  </span>
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setFormData({
+                                      ...formData,
+                                      followUpTemplates: [
+                                        ...formData.followUpTemplates,
+                                        {
+                                          ...newFollowUp,
+                                          followup_mode:
+                                            newFollowUp.followup_mode,
+                                          order_no:
+                                            formData.followUpTemplates.length,
+                                        },
+                                      ],
+                                    });
+                                    setIsAddingFollowUp(false);
+                                    setNewFollowUp({
+                                      send_after_hours: "24hrs",
+                                      followup_mode: "EMAIL",
+                                      followup_body: "",
+                                    });
+                                  }}
+                                  className=" text-blue-500 text-xs rounded-full"
+                                  disabled={loading}
+                                >
+                                  <span className="w-4 h-4 flex items-center justify-center rounded-full border-2 border-blue-500 text-blue-500">
+                                    <Check className="w-2 h-2 font-semibold" />
+                                  </span>
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setIsAddingFollowUp(false);
+                                  }}
+                                  className=" text-gray-200 text-xs rounded-full"
+                                  disabled={loading}
+                                >
+                                  <Trash2 className="w-4 h-4 text-gray-300" />
+                                </button>
+                              </div>
+                            </div>
+                            <div className="border-b border-blue-400 rounded-full w-full pt-2 mb-3"></div>
+                            <div className="px-8 pb-4 flex flex-col items-start space-y-3">
+                              <div className="flex items-center space-x-4">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-gray-500">
+                                    Send After
+                                  </span>
+                                  <select
+                                    value={newFollowUp.send_after_hours}
+                                    onChange={(e) =>
+                                      setNewFollowUp({
+                                        ...newFollowUp,
+                                        send_after_hours: e.target.value as
+                                          | "24hrs"
+                                          | "48hrs"
+                                          | "72hrs",
+                                      })
+                                    }
+                                    className="text-sm w-24 px-2 py-1 text-blue-600 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    disabled={loading}
+                                  >
+                                    <option value="24hrs">24 hrs</option>
+                                    <option value="48hrs">48 hrs</option>
+                                    <option value="72hrs">72 hrs</option>
+                                  </select>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-gray-500">
+                                    Via
+                                  </span>
+                                  <select
+                                    value={newFollowUp.followup_mode}
+                                    onChange={(e) =>
+                                      setNewFollowUp({
+                                        ...newFollowUp,
+                                        followup_mode: e.target.value as
+                                          | "EMAIL"
+                                          | "WHATSAPP"
+                                          | "CALL",
+                                      })
+                                    }
+                                    className="text-sm w-24 px-2 py-1 text-blue-600 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    disabled={loading}
+                                  >
+                                    <option value="EMAIL">Email</option>
+                                    <option value="WHATSAPP">WhatsApp</option>
+                                    <option value="CALL">Call</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div className="w-full">
+                                <label className="text-xs text-gray-500 mb-2 block">
+                                  Message
+                                </label>
+                                <input
+                                  type="text"
+                                  value={newFollowUp.followup_body}
+                                  onChange={(e) =>
+                                    setNewFollowUp({
+                                      ...newFollowUp,
+                                      followup_body: e.target.value,
+                                    })
+                                  }
+                                  style={{ color: "#2563EB" }}
+                                  placeholder=" Type your message"
+                                  className="text-sm w-full px-2 py-1 text-gray-300 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        <button
+                          onClick={() => setIsAddingFollowUp(true)}
+                          className="flex items-center justify-center text-sm text-blue-600 hover:text-blue-700 mt-4"
+                          disabled={loading || isAddingFollowUp}
+                        >
+                          <Plus className="w-4 h-4 mr-2 mt-[2px] text-blue-600 border border-blue-500 rounded-md" />
+                          Add Follow Up
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
-
+                  <div className="border-b border-dashed border-gray-300"></div>
+                </div>
                 <div className="flex justify-between space-x-8">
                   <button
                     onClick={() => setShowTestEmail(true)}
@@ -388,25 +704,29 @@ Best regards,
 
       {showTestEmail && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-          <div 
+          <div
             className={`bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-md max-h-[calc(100vh-2rem)] h-full transform transition-transform duration-300 ease-out p-4 flex flex-col ${
-              showTestEmail ? 'translate-x-0' : 'translate-x-full'
+              showTestEmail ? "translate-x-0" : "translate-x-full"
             }`}
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <button 
+                <button
                   onClick={() => setShowTestEmail(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4 text-gray-600" />
                 </button>
-                <h2 className="text-lg font-semibold text-gray-900">Send Test Email</h2>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Send Test Email
+                </h2>
               </div>
             </div>
             <div className="flex-1 overflow-y-auto space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Test Email Address</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Test Email Address
+                </label>
                 <input
                   type="email"
                   value={testEmail}
