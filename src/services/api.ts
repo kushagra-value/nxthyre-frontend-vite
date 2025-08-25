@@ -3,7 +3,7 @@ import { auth } from "../config/firebase";
 
 // TODO: Replace with your actual backend URL...
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api";
+  import.meta.env.VITE_API_BASE_URL || "https://nxthyre-server-staging-863630644667.asia-south1.run.app/api";
 
 // Create axios instance
 const apiClient = axios.create({
