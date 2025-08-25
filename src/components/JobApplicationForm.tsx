@@ -8,6 +8,7 @@ interface JobApplicationFormProps {
 const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
   jobID,
 }) => {
+  const jobId = jobID;
   const [job, setJob] = useState<Job | null>(null); // State to store job data
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState<string | null>(null); // Error state
@@ -28,8 +29,8 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        if (jobID) {
-          const jobData = await jobPostService.getJob(Number(jobID));
+        if (jobId) {
+          const jobData = await jobPostService.getJob(Number(jobId));
           console.log('Fetched job data:', jobData); 
           setJob(jobData);
         }
@@ -42,7 +43,7 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
       }
     };
     fetchJob();
-  }, [jobID]);
+  }, [jobId]);
 
   if (loading) {
     return <div className="min-h-screen bg-[#F5F9FB] flex justify-center items-center">Loading...</div>;
