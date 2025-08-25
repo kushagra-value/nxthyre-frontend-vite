@@ -43,10 +43,12 @@ interface DraggedCandidate {
 }
 
 interface PipelineSharePageProps {
+  pipelineName: string;
   onBack?: () => void;
 }
 
 const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
+  pipelineName,
   onBack,
 }) => {
   const { pipelineId } = useParams<{ pipelineId: string }>();
@@ -1076,7 +1078,7 @@ const ArchiveIcon = () => (
               <div className="flex items-center">
       
                 <h1 className="text-xl font-semibold text-gray-900">
-                  Head of Google Ads Marketing
+                  {pipelineName}
                 </h1>
               </div>
               <div className="flex gap-2 items-center">

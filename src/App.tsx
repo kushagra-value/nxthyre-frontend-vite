@@ -847,6 +847,7 @@ function MainApp() {
       </div>
     );
   }
+  const job = categories.find((cat) => cat.id === Number(currentPipelineId));
 
   return (
     <>
@@ -867,7 +868,7 @@ function MainApp() {
           path="/pipelines/:pipelineId"
           element={
             <PipelineSharePage
-              pipelineId={currentPipelineId}
+              pipelineName={job?.name || ""}
               onBack={handleBackFromPipelineShare}
             />
           }
