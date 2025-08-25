@@ -1608,7 +1608,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
   return (
     <>
-      <div className="bg-white rounded-lg overflow-y-hidden relative h-full">
+      <div className="bg-white rounded-lg overflow-hidden relative h-full">
         {selectedStage === "Uncontacted" && (
           <div className="mb-3">
             <button
