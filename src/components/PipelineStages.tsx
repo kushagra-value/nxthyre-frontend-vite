@@ -280,15 +280,11 @@ interface PipelineCandidate {
 
 interface PipelineStagesProps {
   onBack: () => void;
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
   onOpenLogoutModal: () => void;
 }
 
 const PipelineStages: React.FC<PipelineStagesProps> = ({
   onBack,
-  activeTab,
-  setActiveTab,
   onOpenLogoutModal,
 }) => {
   const { user } = useAuthContext();
@@ -296,6 +292,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const [selectedCandidate, setSelectedCandidate] =
     useState<PipelineCandidate | null>(null);
   const [showComments, setShowComments] = useState(false);
+  const [activeStageTab, setActiveStageTab] = useState("Uncontacted");
   const [newComment, setNewComment] = useState("");
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
@@ -1217,13 +1214,13 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         const stageName = res.current_stage.name;
         setSelectedStage(stageName);
         if (stageName === "Uncontacted") {
-          setActiveTab("uncontacted");
+          setActiveStageTab("uncontacted");
           setViewMode("prospect");
         } else if (stageName === "Invites Sent") {
-          setActiveTab("invited");
+          setActiveStageTab("invited");
           setViewMode("prospect");
         } else if (stageName === "Inbox") {
-          setActiveTab("inbox");
+          setActiveStageTab("inbox");
           setViewMode("prospect");
         } else {
           setViewMode("stage");
@@ -1348,7 +1345,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   onClick={() => {
                     setViewMode("prospect");
                     setSelectedStage("Uncontacted");
-                    setActiveTab("uncontacted");
+                    setActiveStageTab("uncontacted");
                   }}
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
                     viewMode === "prospect"
@@ -1519,7 +1516,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         <button
                           key={tab.id}
                           onClick={() => {
-                            setActiveTab(tab.id);
+                            setActiveStageTab(tab.id);
                             if (tab.id === "uncontacted")
                               setSelectedStage("Uncontacted");
                             else if (tab.id === "invited")
@@ -1528,7 +1525,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               setSelectedStage("Inbox");
                           }}
                           className={`py-2 text-sm lg:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 focus-visible:border-b-2 focus-visible:border-blue-600 ${
-                            activeTab === tab.id
+                            activeStageTab === tab.id
                               ? "text-blue-600 border-blue-500"
                               : "text-gray-600 border-transparent hover:text-gray-700"
                           }`}

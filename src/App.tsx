@@ -965,8 +965,6 @@ function MainApp() {
                   <Toaster />
                   <PipelineStages
                     onBack={handleBackFromPipelines}
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
                     onOpenLogoutModal={handleOpenLogoutModal}
                   />
                 </>
