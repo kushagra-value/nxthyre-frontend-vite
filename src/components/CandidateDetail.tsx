@@ -235,6 +235,15 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     ? detailedCandidate.candidate.candidate_phone
     : "93********45";
 
+  const getInitials = (name: string) => {
+    if (!name) return "??";
+    return name
+      .split(" ")
+      .map((word) => word[0]?.toUpperCase())
+      .join("")
+      .slice(0, 2);
+  };
+
   const ProfileTab = () => {
     const [showMore, setShowMore] = useState(false);
     const experiences = detailedCandidate?.candidate?.experience || [];
@@ -459,26 +468,26 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const [isResumeExpanded, setIsResumeExpanded] = useState(false);
 
     return (
-      <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
+      <div className="bg-blue-50 p-4 rounded-lg shadow-sm space-y-4">
         {/* Vetted Skills Subsection */}
-        <h4 className="text-lg font-semibold text-gray-700 flex items-center">
-          <Star className="w-4 h-4 text-gray-700 mr-2" />
-          Vetted Skills
-        </h4>
-        <div className="">
-          <div className="flex flex-wrap gap-3">
+        <div>
+          <h4 className="text-lg font-semibold text-gray-700 flex items-center">
+            <Star className="w-4 h-4 mr-2" />
+            Vetted Skills
+          </h4>
+          <div className="flex flex-wrap gap-3 mt-2">
             {vettedSkills.map((skill, index) => (
               <div
                 key={index}
                 className="relative group bg-white rounded-md p-2 flex items-center justify-center space-x-2"
               >
-                <span className="text-sm text-[#0F47F2]">{skill.skill}</span>
+                <span className="text-xs text-blue-500">{skill.skill}</span>
                 <Star className="w-4 h-4 text-[#FFC107] fill-[#FFC107]" />
-                <span className="text-sm text-[#4B5563]">{skill.rating}</span>
+                <span className="text-xs text-[#4B5563]">{skill.rating}</span>
                 {skill.reason && (
-                  <div className="absolute z-50 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-blue-100 text-blue-600 text-xs rounded-md py-2 px-3 w-64 text-center">
+                  <div className="absolute z-1000 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-white text-gray-600 text-xs rounded-md py-2 px-3 w-64 text-center">
                     {skill.reason}
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent border-t-blue-600"></div>
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent border-t-gray-600"></div>
                   </div>
                 )}
               </div>
@@ -542,31 +551,56 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     );
   };
 
+  // Define the type for a reference object
+  interface Reference {
+    initials: string;
+    name: string;
+    position: string;
+    status: string;
+    email: string;
+    phone: string;
+    linkedin: string;
+    description: string;
+  }
+
   const ReferencesTab = () => {
-    const dummyReferences = [
-      {
-        initials: "SV",
-        name: "Suchandni Verma",
-        position: "HR Manager at Augnito",
-        status: "positive",
-        email: "suchandni.verma@augnito",
-        phone: "9876543210",
-        linkedin: "https://www.linkedin.com/in/suchandni-verma",
-        description:
-          "Exceptional digital marketer whose strategic campaigns and data-driven approach have significantly boosted our brand's online presence and conversions! Creative, proactive, and a pleasure to work with!",
-      },
-      {
-        initials: "AA",
-        name: "Ana De Armas",
-        position: "HR Manager at Augnito",
-        status: "negative",
-        email: "ana.dearmas@augnito",
-        phone: "9876543210",
-        linkedin: "https://www.linkedin.com/in/ana-de-armas",
-        description:
-          "I am a Machine Learning Engineer with a strong passion for AI, deep learning, and large language models (LLMs). I hold a degree in Computer Science and have experience in developing and deploying machine learning models. My expertise includes natural language processing, computer vision, and reinforcement learning. I am proficient in Python, TensorFlow, and PyTorch.",
-      },
-    ];
+    const [references, setReferences] = useState<Reference[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+      if (candidate?.id) {
+        setLoading(true);
+        candidateService
+          .getBackgroundVerifications(candidate.id)
+          .then((data) => {
+            const mappedReferences = data.map((item) => ({
+              initials: getInitials(item.hr_name),
+              name: item.hr_name,
+              position: `${item.hr_title} at ${item.experience.company}`,
+              status: item.is_data_correct ? "positive" : "negative",
+              email: item.hr_email,
+              phone: item.hr_phone_number,
+              linkedin: item.hr_linkedin_url,
+              description: item.comments,
+            }));
+            setReferences(mappedReferences);
+            setLoading(false);
+          })
+          .catch((err) => {
+            setError("Failed to load references");
+            setLoading(false);
+          });
+      }
+    }, [candidate?.id]);
+
+    if (loading) {
+      return <div>Loading references...</div>;
+    }
+
+    if (error) {
+      return <div>{error}</div>;
+    }
 
     return (
       <div className="bg-[#F0F0F0] p-4 rounded-lg shadow-sm">
@@ -577,14 +611,20 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </h3>
         </div>
         <div>
-          {dummyReferences.map((reference, index) => (
-            <ReferenceCard key={index} reference={reference} />
-          ))}
+          {references.length > 0 ? (
+            references.map((reference, index) => (
+              <ReferenceCard key={index} reference={reference} />
+            ))
+          ) : (
+            <p>No references available</p>
+          )}
         </div>
       </div>
     );
   };
 
+  // The ReferenceCard component remains unchanged, as the mapped fields match the expected props
+  // No modifications needed here, but included for context
   const ReferenceCard = ({ reference }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showPopup, setShowPopup] = useState<
@@ -898,7 +938,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     <div
       className={`bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-3 ${
         showConfirm ? "space-y-0" : "space-y-6"
-      } min-h-[81vh] relative overflow-hidden`}
+      } min-h-[81vh] relative`}
     >
       <div className="flex space-x-3 items-center mt-1">
         <div
