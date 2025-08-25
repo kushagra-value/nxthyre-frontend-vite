@@ -253,7 +253,7 @@ Best regards,
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto space-y-4">
+        <div className="flex-1 overflow-y-auto space-y-4 p-4">
           {templates.length === 0 ? (
             <div className="text-center text-gray-600 py-8">
               No templates created yet. Please create a template.
