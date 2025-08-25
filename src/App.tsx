@@ -1078,7 +1078,7 @@ function MainApp() {
                                           Share Pipelines
                                         </button>
                                         
-                                        {category.status === "DRAFT" && (
+                                        {category.status === "DRAFT"  && category.visibility === "PRIVATE" && (
                                           <button
                                             onClick={() =>
                                               handleCategoryAction(
@@ -1341,7 +1341,9 @@ function MainApp() {
                             </h3>
                             <p className="text-gray-600 mb-6">
                               Are you sure you want to publish {categories.find((cat) => cat.id === showPublishModal)?.name}?
-                              This action will publish job on LinkedIn.
+                              This action will publish job on LinkedIn and Cutshort.
+                              <span className="text-gray-400 text-sm mb-6">(Note: Once published, the job will be visible on both platforms within
+            24–48 hours.)</span>
                             </p>
                             <div className="flex space-x-3">
                               <button
@@ -1376,7 +1378,8 @@ function MainApp() {
                             </h3>
                             <p className="text-gray-600 mb-6">
                               Are you sure you want to Unpublish {categories.find((cat) => cat.id === showUnpublishModal)?.name}? 
-                              This action cannot be undone.
+                              <span className="text-gray-400 text-sm mb-6">(Note: this action will be unpublish job on LinkedIn and Cutshort within
+                              24–48 hours.)</span>
                             </p>
                             <div className="flex space-x-3">
                               <button
