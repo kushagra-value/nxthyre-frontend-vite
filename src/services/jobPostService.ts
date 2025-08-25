@@ -231,9 +231,7 @@ class JobPostService {
       }
       
       if (data.technical_competencies) {
-        data.technical_competencies.forEach((tech:any) => {
-          formData.append(`technical_competencies`, tech);
-        });
+        formData.append("technical_competencies", JSON.stringify(data.technical_competencies));
       }
       if (data.description_text) {
         formData.append("description", data.description_text);
