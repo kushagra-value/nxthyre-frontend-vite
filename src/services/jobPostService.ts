@@ -14,7 +14,8 @@ export interface Job {
   salary_max: string;
   is_salary_confidential: boolean;
   visibility: "PRIVATE" | "PUBLIC";
-  enable_ai_interviews: boolean;
+  has_ai_interview_stage: boolean;
+  has_coding_contest_stage: boolean;
   description: string;
   skills: string[];
   status: "DRAFT" | "PUBLISHED";
@@ -28,6 +29,9 @@ export interface Job {
   invites_sent_count: number,
   total_applied: number,
   total_replied: number
+  job_description_markdown: string;
+  ai_jd: string;
+  technical_competencies: string[];
 }
 
 export interface SearchedCandidateItem {
@@ -41,7 +45,7 @@ export interface SearchedCandidateItem {
     linkedin_url: string;
     is_background_verified: boolean;
     experience_years: string;
-    experience_summary: { title: string; date_range: string };
+    experience_summary: { title: string; date_range: string, duration_years: number };
     education_summary: { title: string; date_range: string };
     notice_period_summary: string;
     skills_list: string[];
@@ -82,12 +86,16 @@ export interface CreateJobData {
   salary_max: string;
   is_salary_confidential: boolean;
   visibility: "PRIVATE" | "PUBLIC";
-  enable_ai_interviews: boolean;
+  has_coding_contest_stage: boolean;
+  has_ai_interview_stage: boolean;
   description_text?: string; // Optional: for pasted text
   description_file?: File;
-  skill_names: string[];
+  skills: string[];
   status: "DRAFT" | "PUBLISHED";
   workspace: number;
+  ai_jd_object?: any;
+  ai_jd?:any;
+  technical_competencies?:string[];
 }
 
 class JobPostService {
@@ -118,6 +126,25 @@ class JobPostService {
     }
   }
 
+   async createAiJd(description: string | File): Promise<any> {
+      try {
+        const formData = new FormData();
+        if (typeof description === 'string') {
+          formData.append('description_text', description);
+        } else {
+          formData.append('description_file', description);
+        }
+        const response = await apiClient.post('/jobs/create-ai-jd/', formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        return response.data;
+      } catch (error: any) {
+        throw new Error(error.response?.data?.error || "Failed to create AI JD");
+      }
+    }
+
   async createJob(data: CreateJobData): Promise<Job> {
     try {
       const formData = new FormData();
@@ -132,14 +159,21 @@ class JobPostService {
       formData.append("salary_max", data.salary_max);
       formData.append("is_salary_confidential", String(data.is_salary_confidential));
       formData.append("visibility", data.visibility);
-      formData.append("enable_ai_interviews", String(data.enable_ai_interviews));
+      formData.append("has_coding_contest_stage", String(data.has_coding_contest_stage));
+      formData.append("has_ai_interview_stage", String(data.has_ai_interview_stage));
       formData.append("status", data.status);
       formData.append("workspace", String(data.workspace));
 
       // Append skills as a JSON string or individual entries based on API requirements
-      data.skill_names.forEach((skill, index) => {
-        formData.append(`skills`, skill);
-      });
+      if (data.skills) {
+        data.skills.forEach((skill, index) => {
+          formData.append(`skills[${index}]`, skill);
+        });
+      }
+
+      if (data.ai_jd_object) {
+        formData.append("ai_jd_object", JSON.stringify(data.ai_jd_object));
+      }
 
       // Append description_text or description_file
       if (data.description_text) {
@@ -176,13 +210,24 @@ class JobPostService {
       if (data.is_salary_confidential !== undefined)
         formData.append("is_salary_confidential", String(data.is_salary_confidential));
       if (data.visibility) formData.append("visibility", data.visibility);
-      if (data.enable_ai_interviews !== undefined)
-        formData.append("enable_ai_interviews", String(data.enable_ai_interviews));
+      if (data.has_ai_interview_stage !== undefined)
+        formData.append("has_ai_interview_stage", String(data.has_ai_interview_stage));
+      if (data.has_coding_contest_stage !== undefined)
+        formData.append("has_coding_contest_stage", String(data.has_coding_contest_stage));
       if (data.status) formData.append("status", data.status);
       if (data.workspace) formData.append("workspace", String(data.workspace));
-      if (data.skill_names) {
-        data.skill_names.forEach((skill, index) => {
-          formData.append(`skills`, skill);
+      if (data.skills) {
+        data.skills.forEach((skill, index) => {
+          formData.append(`skills[${index}]`, skill);
+        });
+      }
+      if (data.ai_jd) {
+        formData.append("ai_jd", String(data.ai_jd));
+      }
+      
+      if (data.technical_competencies) {
+        data.technical_competencies.forEach((tech:any, index:any) => {
+          formData.append(`technical_competencies[${index}]`, tech);
         });
       }
       if (data.description_text) {
