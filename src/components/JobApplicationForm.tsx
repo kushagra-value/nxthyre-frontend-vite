@@ -10,10 +10,10 @@ const JobApplicationForm = () => {
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState<string | null>(null); // Error state
   const [formData, setFormData] = useState({
-    name: 'Zentisu Agatsuma',
-    title: 'Demon Slayer',
-    mailId: 'Demon Slayer',
-    contactNumber: 'Demon Slayer',
+    name: '',
+    title: '',
+    mailId: '',
+    contactNumber: '',
     currentCTA: '',
     expectedCTA: '',
     noticePeriod: ''
