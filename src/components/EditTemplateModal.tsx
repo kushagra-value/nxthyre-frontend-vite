@@ -239,7 +239,7 @@ Best regards,
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between mb-4 p-4">
+        <div className="flex items-center justify-between p-2">
           <div className="flex items-center space-x-3">
             <button
               onClick={onClose}
