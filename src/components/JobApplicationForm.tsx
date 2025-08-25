@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { jobPostService, Job } from '../services/jobPostService'; // Import the service and Job type
+import { useParams } from 'react-router-dom'; // For getting job ID from URL
 
-interface JobApplicationFormProps {
-  jobID: string;
-}
-
-const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
-  jobID,
-}) => {
-  const jobId = jobID;
+const JobApplicationForm = () => {
+  
+  const { id } = useParams<{ id: string }>();
   const [job, setJob] = useState<Job | null>(null); // State to store job data
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState<string | null>(null); // Error state
@@ -29,21 +25,20 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        if (jobId) {
-          const jobData = await jobPostService.getJob(Number(jobId));
+        if (id) {
+          const jobData = await jobPostService.getJob(Number(id));
           console.log('Fetched job data:', jobData); 
           setJob(jobData);
         }
       } catch (err: any) {
         console.error('Error fetching job:', err); // Log the error
         setError(err.message || 'Failed to load job details');
-        setError(err.message || 'Failed to load job details');
       } finally {
         setLoading(false);
       }
     };
     fetchJob();
-  }, [jobId]);
+  }, [id]);
 
   if (loading) {
     return <div className="min-h-screen bg-[#F5F9FB] flex justify-center items-center">Loading...</div>;

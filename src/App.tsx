@@ -672,7 +672,7 @@ function MainApp() {
   const handleCopyJobLink = (jobId: number) => {
     const job = categories.find((cat) => cat.id === jobId);
     if (job) {
-      const jobLink = `${window.location.origin}/jobs/${job.id}`;
+      const jobLink = `${window.location.origin}/jobs/${job.id}/`;
       navigator.clipboard
         .writeText(jobLink)
         .then(() => {
@@ -873,10 +873,10 @@ function MainApp() {
           }
         />
         <Route
-          path="/jobs/:pipelineId"
+          path="/jobs/:id"
           element={
             <JobApplicationForm 
-            jobID={currentPipelineId}/>
+            />
           }
         />
         <Route
