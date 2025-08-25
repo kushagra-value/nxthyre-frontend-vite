@@ -7,6 +7,7 @@ import {
   Trash2,
   Share2,
   Pause,
+  Globe,
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import { jobPostService } from "../services/jobPostService";
@@ -15,6 +16,8 @@ interface CategoryItem {
   id: number;
   name: string;
   count: number;
+  status?: string;
+  visibility?: string;
   invitesSent: number;
   totalReplied: number;
   totalApplied: number;
@@ -26,6 +29,7 @@ interface CategoryDropdownProps {
   onEditJobRole: (jobId: number) => void;
   onEditTemplate: (jobId: number) => void;
   onDeleteJob: (jobId: number) => void;
+  onPublishJob: (jobId: number) => void;
   onUnpublishJob: (jobId: number) => void;
   onCopyJobLink: (jobId: number) => void;
   onSharePipelines: (jobId: number) => void;
@@ -39,6 +43,7 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   onEditJobRole,
   onEditTemplate,
   onDeleteJob,
+  onPublishJob,
   onUnpublishJob,
   onCopyJobLink,
   onSharePipelines,
@@ -128,6 +133,9 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
         break;
       case "unpublish-job":
         onUnpublishJob(jobId);
+        break;
+      case "publish-job":
+        onPublishJob(jobId);
         break;
       case "copy-link":
         onCopyJobLink(jobId);
@@ -249,6 +257,23 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
                         <Share2 className="w-4 h-4 mr-2" />
                         Share Pipelines
                       </button>
+
+                      {category.status === "DRAFT" && (
+                        <button
+                          onClick={() =>
+                            handleActionClick(
+                              "publish-job",
+                              category.id
+                            )
+                          }
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                        >
+                          <Globe className="w-4 h-4 mr-2" />
+                          Publish Job
+                        </button>
+                      )}
+
+                      {category.status === "PUBLISHED" && category.visibility === "PUBLIC" && (
                       <button
                         onClick={() =>
                           handleActionClick("unpublish-job", category.id)
@@ -258,6 +283,7 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
                         <Pause className="w-4 h-4 mr-2" />
                         Unpublish Job
                       </button>
+                      )}
                       <button
                         onClick={() =>
                           handleActionClick("archive", category.id)

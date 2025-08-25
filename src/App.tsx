@@ -41,6 +41,7 @@ import {
   ArrowLeft,
   Pause,
   Copy,
+  Globe,
 } from "lucide-react";
 import { showToast } from "./utils/toast";
 
@@ -48,6 +49,8 @@ interface Category {
   id: number;
   name: string;
   count: number;
+  status: "DRAFT" | "PUBLISHED";
+  visibility: "PRIVATE" | "PUBLIC";
 }
 
 interface Filters {
@@ -126,6 +129,7 @@ function MainApp() {
   );
   const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
   const [showUnpublishModal, setShowUnpublishModal] = useState<number | null>(null);
+  const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
   const [showShareLoader, setShowShareLoader] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -194,6 +198,7 @@ function MainApp() {
         name: job.title,
         count: job.total_candidates || 0,
         status: job.status,
+        visibility: job.visibility,
       }));
       setCategories(mappedCategories);
       if (mappedCategories.length > 0) {
@@ -723,6 +728,24 @@ function MainApp() {
     setShowCategoryActions(null);
   };
 
+  const handlePublishJobRole = async (jobId: number) => {
+    const job = categories.find((cat) => cat.id === jobId);
+    if (job) {
+      try {
+        await jobPostService.updateJob(jobId, { status: "PUBLISHED", visibility: "PUBLIC" });
+        await fetchCategories();
+        showToast.success(`Successfully published job ${job.name}`);
+        if (activeCategoryId === jobId) {
+          setActiveCategoryId(categories[0]?.id || null);
+        }
+      } catch (error) {
+        showToast.error("Failed to publish job role");
+      }
+    }
+    setShowPublishModal(null);
+    setShowCategoryActions(null);
+  };
+
   const handleEditTemplate = (jobId: number) => {
     const job = categories.find((cat) => cat.id === jobId);
     if (job) {
@@ -762,10 +785,13 @@ function MainApp() {
       case "share-pipelines":
         handleSharePipelines(jobId);
         break;
+      case "share-pipelines":
+        handleSharePipelines(jobId);
+        break;
       case "archive":
         showToast.success(`Archived ${jobId}`);
         break;
-      case "unpublish-job":
+      case "publish-job":
         setShowUnpublishModal(jobId);
         break;
       case "delete":
@@ -922,7 +948,7 @@ function MainApp() {
             isAuthenticated ? (
               showPipelineSharePage ? (
                 <PipelineSharePage
-                  pipelineId={currentPipelineId}
+                  pipelineName={job?.name || "Pipeline Name"}
                   onBack={handleBackFromPipelineShare}
                 />
               ) : showShareableProfile ? (
@@ -1047,6 +1073,23 @@ function MainApp() {
                                           <Share2 className="w-4 h-4 mr-2" />
                                           Share Pipelines
                                         </button>
+                                        
+                                        {category.status === "DRAFT" && (
+                                          <button
+                                            onClick={() =>
+                                              handleCategoryAction(
+                                                "publish-job",
+                                                category.id
+                                              )
+                                            }
+                                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                          >
+                                            <Globe className="w-4 h-4 mr-2" />
+                                            Publish Job
+                                          </button>
+                                        )}
+
+                                        {category.status === "PUBLISHED" && category.visibility === "PUBLIC" && (
                                         <button
                                           onClick={() =>
                                             handleCategoryAction(
@@ -1059,6 +1102,7 @@ function MainApp() {
                                           <Pause className="w-4 h-4 mr-2" />
                                           Unpublish Job
                                         </button>
+                                        )}
                                         <button
                                           onClick={() =>
                                             handleCategoryAction(
@@ -1116,6 +1160,9 @@ function MainApp() {
                                       }
                                       onUnpublishJob={(jobId:any) =>
                                         setShowUnpublishModal(jobId)
+                                      }
+                                      onPublishJob={(jobId:any) =>
+                                        setShowPublishModal(jobId)
                                       }
                                       onCopyJobLink={handleCopyJobLink}
                                       onSharePipelines={handleSharePipelines}
@@ -1200,24 +1247,6 @@ function MainApp() {
                             </div>
                           </div>
                         )}
-                        {/* <div className="lg:w-[30%] order-3 sticky top-16 self-start will-change-transform">
-                          {showTemplateSelector && selectedCandidate ? (
-                            <TemplateSelector
-                              candidate={selectedCandidate}
-                              onBack={handleBackFromTemplate}
-                              updateCandidateEmail={updateCandidateEmail}
-                              jobId={filters.jobId}
-                            />
-                          ) : (
-                            <CandidateDetail
-                              candidate={selectedCandidate}
-                              candidates={candidates}
-                              onSendInvite={handleSendInvite}
-                              updateCandidateEmail={updateCandidateEmail}
-                              deductCredits={deductCredits}
-                            />
-                          )}
-                        </div> */}
                       </div>
                     </div>
 
@@ -1289,6 +1318,41 @@ function MainApp() {
                                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                               >
                                 Sign Out
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {showPublishModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                          <div className="text-center">
+                            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                              <Globe className="w-6 h-6 text-green-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              Confirm Publish Job
+                            </h3>
+                            <p className="text-gray-600 mb-6">
+                              Are you sure you want to publish {categories.find((cat) => cat.id === showPublishModal)?.name}?
+                              This action will publish job on LinkedIn.
+                            </p>
+                            <div className="flex space-x-3">
+                              <button
+                                onClick={() => setShowPublishModal(null)}
+                                className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handlePublishJobRole(showPublishModal)
+                                }
+                                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                              >
+                                Publish
                               </button>
                             </div>
                           </div>
