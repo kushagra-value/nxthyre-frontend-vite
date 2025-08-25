@@ -253,7 +253,7 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
                         onClick={() =>
                           handleActionClick("unpublish-job", category.id)
                         }
-                        className="w-full px-4 py-2 text-left text-sm text-yellow-600 hover:bg-yellow-50 flex items-center"
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
                       >
                         <Pause className="w-4 h-4 mr-2" />
                         Unpublish Job
