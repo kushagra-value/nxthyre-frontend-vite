@@ -1095,7 +1095,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                           {skill.rating}
                         </span>
                         {skill.reason && (
-                          <div className="absolute z-1000 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-blue-50 text-gray-600 text-xs rounded-md py-2 px-3 w-64 text-center">
+                          <div className="absolute z-1000 invisible group-hover:visible opacity-0 group-hover:opacity-100 group-hover:z-1000 transition-all duration-200 -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-blue-50 text-gray-600 text-xs rounded-md py-2 px-3 w-64 text-center">
                             {skill.reason}
                             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent border-t-gray-600"></div>
                           </div>
@@ -1608,7 +1608,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
   return (
     <>
-      <div className="bg-white rounded-lg relative h-full">
+      <div className="bg-white rounded-lg overflow-hidden relative h-full">
         {selectedStage === "Uncontacted" && (
           <div className="mb-3">
             <button
@@ -1647,7 +1647,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             ))}
           </div>
         </div>
-        <div className="py-2 max-h-[90vh]">
+        <div className="py-2 overflow-y-auto max-h-[90vh]">
           {/* {externalNotes} */}
           {renderTabContent()}
         </div>
