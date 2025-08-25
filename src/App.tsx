@@ -715,6 +715,7 @@ function MainApp() {
     if (job) {
       try {
         await jobPostService.unpublishJob(jobId);
+        await jobPostService.updateJob(jobId, { status: "DRAFT", visibility: "PRIVATE" });
         await fetchCategories();
         showToast.success(`Successfully unpublished job ${job.name}`);
         if (activeCategoryId === jobId) {
@@ -789,7 +790,7 @@ function MainApp() {
         handleSharePipelines(jobId);
         break;
       case "archive":
-        showToast.success(`Archived ${jobId}`);
+        showToast.success(`Feature Coming Soon`);
         break;
       case "publish-job":
         setShowPublishModal(jobId);
@@ -1374,7 +1375,7 @@ function MainApp() {
                               Confirm Unpublish Job
                             </h3>
                             <p className="text-gray-600 mb-6">
-                              Are you sure you want to Unpublish {showUnpublishModal}?
+                              Are you sure you want to Unpublish {categories.find((cat) => cat.id === showUnpublishModal)?.name}? 
                               This action cannot be undone.
                             </p>
                             <div className="flex space-x-3">
@@ -1408,7 +1409,7 @@ function MainApp() {
                               Confirm Delete Job
                             </h3>
                             <p className="text-gray-600 mb-6">
-                              Are you sure you want to delete {showDeleteModal}?
+                              Are you sure you want to delete {categories.find((cat) => cat.id === showDeleteModal)?.name}? 
                               This action cannot be undone.
                             </p>
                             <div className="flex space-x-3">
