@@ -1342,9 +1342,10 @@ function MainApp() {
                             <p className="text-gray-600 mb-6">
                               Are you sure you want to publish {categories.find((cat) => cat.id === showPublishModal)?.name}?
                               This action will publish job on LinkedIn and Cutshort.
-                              <span className="text-gray-400 text-sm mb-6">(Note: Once published, the job will be visible on both platforms within
-            24–48 hours.)</span>
+                              
                             </p>
+                            <span className="text-gray-400 text-sm mb-6">(Note: Once published, the job will be visible on both platforms within
+            24–48 hours.)</span>
                             <div className="flex space-x-3">
                               <button
                                 onClick={() => setShowPublishModal(null)}
@@ -1378,9 +1379,11 @@ function MainApp() {
                             </h3>
                             <p className="text-gray-600 mb-6">
                               Are you sure you want to Unpublish {categories.find((cat) => cat.id === showUnpublishModal)?.name}? 
-                              <span className="text-gray-400 text-sm mb-6">(Note: this action will be unpublish job on LinkedIn and Cutshort within
-                              24–48 hours.)</span>
+                              
                             </p>
+                            <span className="text-gray-400 text-sm mb-6">(Note: this action will unpublish job on LinkedIn and Cutshort within
+                              24–48 hours.)
+                            </span>
                             <div className="flex space-x-3">
                               <button
                                 onClick={() => setShowUnpublishModal(null)}
