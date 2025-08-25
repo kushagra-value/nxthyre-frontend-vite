@@ -1095,9 +1095,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                           {skill.rating}
                         </span>
                         {skill.reason && (
-                          <div className="absolute z-50 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-blue-100 text-blue-600 text-xs rounded-md py-2 px-3 w-64 text-center">
+                          <div className="absolute z-1000 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-white text-gray-600 text-xs rounded-md py-2 px-3 w-64 text-center">
                             {skill.reason}
-                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent border-t-blue-600"></div>
+                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent border-t-gray-600"></div>
                           </div>
                         )}
                       </div>
@@ -1608,7 +1608,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
   return (
     <>
-      <div className="bg-white rounded-lg overflow-hidden relative h-full">
+      <div className="bg-white rounded-lg overflow-y-hidden relative h-full">
         {selectedStage === "Uncontacted" && (
           <div className="mb-3">
             <button
