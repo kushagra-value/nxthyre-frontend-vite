@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom'; // For getting job ID from URL
 import { jobPostService, Job } from '../services/jobPostService'; // Import the service and Job type
 
-const JobApplicationForm = () => {
-  const { id } = useParams<{ id: string }>(); // Get job ID from URL (e.g., /jobs/roles/351)
+interface JobApplicationFormProps {
+  jobID: string;
+}
+
+const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
+  jobID,
+}) => {
   const [job, setJob] = useState<Job | null>(null); // State to store job data
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState<string | null>(null); // Error state
@@ -24,8 +28,8 @@ const JobApplicationForm = () => {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        if (id) {
-          const jobData = await jobPostService.getJob(Number(id));
+        if (jobID) {
+          const jobData = await jobPostService.getJob(Number(jobID));
           console.log('Fetched job data:', jobData); 
           setJob(jobData);
         }
@@ -38,7 +42,7 @@ const JobApplicationForm = () => {
       }
     };
     fetchJob();
-  }, [id]);
+  }, [jobID]);
 
   if (loading) {
     return <div className="min-h-screen bg-[#F5F9FB] flex justify-center items-center">Loading...</div>;

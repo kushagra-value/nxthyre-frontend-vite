@@ -875,7 +875,8 @@ function MainApp() {
         <Route
           path="/jobs/:pipelineId"
           element={
-            <JobApplicationForm/>
+            <JobApplicationForm 
+            jobID={currentPipelineId}/>
           }
         />
         <Route
