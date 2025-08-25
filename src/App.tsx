@@ -868,7 +868,7 @@ function MainApp() {
           path="/pipelines/:pipelineId"
           element={
             <PipelineSharePage
-              pipelineName={job?.name || ""}
+              pipelineName={job?.name || "Pipeline Name"}
               onBack={handleBackFromPipelineShare}
             />
           }
