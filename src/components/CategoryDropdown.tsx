@@ -8,6 +8,7 @@ import {
   Share2,
   Pause,
   Globe,
+  Copy,
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import { jobPostService } from "../services/jobPostService";
@@ -238,6 +239,19 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Edit Job Role
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          handleActionClick(
+                            "copy-link",
+                            category.id
+                          )
+                        }
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy Job Link
                       </button>
                       <button
                         onClick={() =>

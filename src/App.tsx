@@ -792,6 +792,9 @@ function MainApp() {
         showToast.success(`Archived ${jobId}`);
         break;
       case "publish-job":
+        setShowPublishModal(jobId);
+        break;
+      case "unpublish-job":
         setShowUnpublishModal(jobId);
         break;
       case "delete":
