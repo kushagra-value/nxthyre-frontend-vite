@@ -26,9 +26,12 @@ const JobApplicationForm = () => {
       try {
         if (id) {
           const jobData = await jobPostService.getJob(Number(id));
+          console.log('Fetched job data:', jobData); 
           setJob(jobData);
         }
       } catch (err: any) {
+        console.error('Error fetching job:', err); // Log the error
+        setError(err.message || 'Failed to load job details');
         setError(err.message || 'Failed to load job details');
       } finally {
         setLoading(false);
@@ -123,7 +126,7 @@ const JobApplicationForm = () => {
                         <path d="M1 9.33594H17.6667" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
                     </div>
-                  <span className="text-[18px] text-[#818283] font-[400]">{job.is_hybrid ? 'Hybrid' : 'On-site'}</span>
+                  <span className="text-[18px] text-[#818283] font-[400]">{job.is_hybrid === true ? 'Hybrid' : 'On-site'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-4 h-4 flex justify-center items-center">

@@ -5,13 +5,13 @@ export interface Job {
   id: number;
   title: string;
   location: string;
-  is_hybrid: boolean;
+  is_hybrid?: boolean;
   seniority: string;
-  department: number;
+  department_name: string;
   experience_min_years: number;
   experience_max_years: number;
-  salary_min: string;
-  salary_max: string;
+  salary_min: number | null;
+  salary_max: number | null;
   is_salary_confidential: boolean;
   visibility: "PRIVATE" | "PUBLIC";
   has_ai_interview_stage: boolean;
@@ -19,10 +19,15 @@ export interface Job {
   description: string;
   skills: string[];
   status: "DRAFT" | "PUBLISHED";
-  pipeline: number;
   posted_by: string;
-  organization: number;
-  workspace: number;
+  organization_details: {
+    id: number;
+    name: string;
+  };
+  workspace_details: {
+    id: number;
+    name: string;
+  };
   created_at: string;
   updated_at: string;
   total_candidates: number,
