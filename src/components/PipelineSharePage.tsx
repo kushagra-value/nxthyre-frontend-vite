@@ -35,7 +35,7 @@ import { showToast } from "../utils/toast";
 import apiClient from "../services/api"; // Adjust path as necessary
 import { useAuthContext } from "../context/AuthContext"; // Adjust path as necessary
 import candidateService from "../services/candidateService";
-
+import { useParams } from "react-router-dom";
 
 interface DraggedCandidate {
   candidate: any;
@@ -43,14 +43,13 @@ interface DraggedCandidate {
 }
 
 interface PipelineSharePageProps {
-  pipelineId: string;
   onBack?: () => void;
 }
 
 const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
-  pipelineId,
   onBack,
 }) => {
+  const { pipelineId } = useParams<{ pipelineId: string }>();
   const { isAuthenticated, loading: authLoading } = useAuthContext();
   const [isFetching, setIsFetching] = useState(false);
   const [draggedCandidate, setDraggedCandidate] =
