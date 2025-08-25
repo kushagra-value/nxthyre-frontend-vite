@@ -171,8 +171,8 @@ class JobPostService {
 
       // Append skills as a JSON string or individual entries based on API requirements
       if (data.skills) {
-        data.skills.forEach((skill, index) => {
-          formData.append(`skills[${index}]`, skill);
+        data.skills.forEach((skill) => {
+          formData.append(`skills`, skill);
         });
       }
 
@@ -222,8 +222,8 @@ class JobPostService {
       if (data.status) formData.append("status", data.status);
       if (data.workspace) formData.append("workspace", String(data.workspace));
       if (data.skills) {
-        data.skills.forEach((skill, index) => {
-          formData.append(`skills[${index}]`, skill);
+        data.skills.forEach((skill) => {
+          formData.append('skills', skill);  // Use same key 'skills' for each value
         });
       }
       if (data.ai_jd) {
@@ -231,8 +231,8 @@ class JobPostService {
       }
       
       if (data.technical_competencies) {
-        data.technical_competencies.forEach((tech:any, index:any) => {
-          formData.append(`technical_competencies[${index}]`, tech);
+        data.technical_competencies.forEach((tech:any) => {
+          formData.append(`technical_competencies`, tech);
         });
       }
       if (data.description_text) {
