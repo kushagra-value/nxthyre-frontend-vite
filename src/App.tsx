@@ -39,6 +39,8 @@ import {
   LogOut,
   Share2,
   ArrowLeft,
+  Pause,
+  Copy,
 } from "lucide-react";
 import { showToast } from "./utils/toast";
 
@@ -123,6 +125,7 @@ function MainApp() {
     null
   );
   const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
+  const [showUnpublishModal, setShowUnpublishModal] = useState<number | null>(null);
   const [showShareLoader, setShowShareLoader] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -190,6 +193,7 @@ function MainApp() {
         id: job.id,
         name: job.title,
         count: job.total_candidates || 0,
+        status: job.status,
       }));
       setCategories(mappedCategories);
       if (mappedCategories.length > 0) {
@@ -665,18 +669,57 @@ function MainApp() {
     setShowCategoryActions(null);
   };
 
+  const handleCopyJobLink = (jobId: number) => {
+    const job = categories.find((cat) => cat.id === jobId);
+    if (job) {
+      const jobLink = `${window.location.origin}/jobs/${job.id}`;
+      navigator.clipboard
+        .writeText(jobLink)
+        .then(() => {
+          showToast.success(`Job link copied to clipboard: ${job.name}`);
+        })
+        .catch(() => {
+          showToast.error("Failed to copy job link");
+        });
+    } else {
+      showToast.error("Job not found");
+    }
+    setShowCategoryActions(null);
+  }
+
   const handleDeleteJobRole = async (jobId: number) => {
+    const job = categories.find((cat) => cat.id === jobId);
+    if (job) {
     try {
       await jobPostService.deleteJob(jobId);
       await fetchCategories();
-      showToast.success(`Successfully deleted job with job id ${jobId}`);
+      showToast.success(`Successfully deleted job  ${job.name}`);
       if (activeCategoryId === jobId) {
         setActiveCategoryId(categories[0]?.id || null);
       }
     } catch (error) {
       showToast.error("Failed to delete job role");
     }
+    }
     setShowDeleteModal(null);
+    setShowCategoryActions(null);
+  };
+
+  const handleUnpublishJobRole = async (jobId: number) => {
+    const job = categories.find((cat) => cat.id === jobId);
+    if (job) {
+      try {
+        await jobPostService.unpublishJob(jobId);
+        await fetchCategories();
+        showToast.success(`Successfully unpublished job ${job.name}`);
+        if (activeCategoryId === jobId) {
+          setActiveCategoryId(categories[0]?.id || null);
+        }
+      } catch (error) {
+        showToast.error("Failed to unpublish job role");
+      }
+    }
+    setShowUnpublishModal(null);
     setShowCategoryActions(null);
   };
 
@@ -710,6 +753,9 @@ function MainApp() {
       case "edit-job":
         handleEditJobRole(jobId);
         break;
+      case "copy-link":
+        handleCopyJobLink(jobId);
+        break;
       case "edit-template":
         handleEditTemplate(jobId);
         break;
@@ -718,6 +764,9 @@ function MainApp() {
         break;
       case "archive":
         showToast.success(`Archived ${jobId}`);
+        break;
+      case "unpublish-job":
+        setShowUnpublishModal(jobId);
         break;
       case "delete":
         setShowDeleteModal(jobId);
@@ -963,6 +1012,18 @@ function MainApp() {
                                         <button
                                           onClick={() =>
                                             handleCategoryAction(
+                                              "copy-link",
+                                              category.id
+                                            )
+                                          }
+                                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                        >
+                                          <Copy className="w-4 h-4 mr-2" />
+                                          Copy Job Link
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            handleCategoryAction(
                                               "edit-template",
                                               category.id
                                             )
@@ -983,6 +1044,18 @@ function MainApp() {
                                         >
                                           <Share2 className="w-4 h-4 mr-2" />
                                           Share Pipelines
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            handleCategoryAction(
+                                              "unpublish-job",
+                                              category.id
+                                            )
+                                          }
+                                          className="w-full px-4 py-2 text-left text-sm text-yellow-600 hover:bg-yellow-50 flex items-center"
+                                        >
+                                          <Pause className="w-4 h-4 mr-2" />
+                                          Unpublish Job
                                         </button>
                                         <button
                                           onClick={() =>
@@ -1039,6 +1112,10 @@ function MainApp() {
                                       onDeleteJob={(jobId) =>
                                         setShowDeleteModal(jobId)
                                       }
+                                      onUnpublishJob={(jobId:any) =>
+                                        setShowUnpublishModal(jobId)
+                                      }
+                                      onCopyJobLink={handleCopyJobLink}
                                       onSharePipelines={handleSharePipelines}
                                       onSelectCategory={(jobId) => {
                                         setActiveCategoryId(jobId);
@@ -1210,6 +1287,41 @@ function MainApp() {
                                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                               >
                                 Sign Out
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {showUnpublishModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                          <div className="text-center">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                              <Pause className="w-6 h-6 text-red-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              Confirm Unpublish Job
+                            </h3>
+                            <p className="text-gray-600 mb-6">
+                              Are you sure you want to Unpublish {showUnpublishModal}?
+                              This action cannot be undone.
+                            </p>
+                            <div className="flex space-x-3">
+                              <button
+                                onClick={() => setShowUnpublishModal(null)}
+                                className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleUnpublishJobRole(showUnpublishModal)
+                                }
+                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                              >
+                                Unpublish
                               </button>
                             </div>
                           </div>

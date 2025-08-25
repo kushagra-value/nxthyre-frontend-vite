@@ -6,6 +6,7 @@ import {
   Archive,
   Trash2,
   Share2,
+  Pause,
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import { jobPostService } from "../services/jobPostService";
@@ -25,6 +26,8 @@ interface CategoryDropdownProps {
   onEditJobRole: (jobId: number) => void;
   onEditTemplate: (jobId: number) => void;
   onDeleteJob: (jobId: number) => void;
+  onUnpublishJob: (jobId: number) => void;
+  onCopyJobLink: (jobId: number) => void;
   onSharePipelines: (jobId: number) => void;
   onSelectCategory: (jobId: number) => void;
   activeCategoryId: number | null;
@@ -36,6 +39,8 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   onEditJobRole,
   onEditTemplate,
   onDeleteJob,
+  onUnpublishJob,
+  onCopyJobLink,
   onSharePipelines,
   onSelectCategory,
   activeCategoryId,
@@ -121,8 +126,14 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
       case "share-pipelines":
         onSharePipelines(jobId);
         break;
+      case "unpublish-job":
+        onUnpublishJob(jobId);
+        break;
+      case "copy-link":
+        onCopyJobLink(jobId);
+        break;
       case "archive":
-        showToast.success(`Archived ${jobId}`);
+        showToast.info(`Feature coming soon!`);
         break;
       case "delete":
         onDeleteJob(jobId);
@@ -144,7 +155,7 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
 
         {categories.map((category) => (
           <div
-            key={category.name}
+            key={category.id}
             className="relative group"
             onMouseEnter={() => setHoveredItem(category.id)}
             onMouseLeave={() => setHoveredItem(null)}
@@ -237,6 +248,15 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
                       >
                         <Share2 className="w-4 h-4 mr-2" />
                         Share Pipelines
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleActionClick("unpublish-job", category.id)
+                        }
+                        className="w-full px-4 py-2 text-left text-sm text-yellow-600 hover:bg-yellow-50 flex items-center"
+                      >
+                        <Pause className="w-4 h-4 mr-2" />
+                        Unpublish Job
                       </button>
                       <button
                         onClick={() =>

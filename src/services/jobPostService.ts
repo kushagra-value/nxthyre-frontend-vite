@@ -246,6 +246,15 @@ class JobPostService {
       throw new Error(error.response?.data?.error || "Failed to update job");
     }
   }
+  
+  async unpublishJob(id: number): Promise<void> {
+    try {
+      const response = await apiClient.post(`/jobs/roles/${id}/unpublish-from-pyjamahr/`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to unpublish job");
+    }
+  }
 
   async deleteJob(id: number): Promise<void> {
     try {
