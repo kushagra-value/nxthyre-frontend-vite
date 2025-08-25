@@ -35,7 +35,7 @@ import { showToast } from "../utils/toast";
 import apiClient from "../services/api"; // Adjust path as necessary
 import { useAuthContext } from "../context/AuthContext"; // Adjust path as necessary
 import candidateService from "../services/candidateService";
-
+import { useParams } from "react-router-dom";
 
 interface DraggedCandidate {
   candidate: any;
@@ -43,14 +43,15 @@ interface DraggedCandidate {
 }
 
 interface PipelineSharePageProps {
-  pipelineId: string;
+  pipelineName: string;
   onBack?: () => void;
 }
 
 const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
-  pipelineId,
+  pipelineName,
   onBack,
 }) => {
+  const { pipelineId } = useParams<{ pipelineId: string }>();
   const { isAuthenticated, loading: authLoading } = useAuthContext();
   const [isFetching, setIsFetching] = useState(false);
   const [draggedCandidate, setDraggedCandidate] =
@@ -1077,7 +1078,7 @@ const ArchiveIcon = () => (
               <div className="flex items-center">
       
                 <h1 className="text-xl font-semibold text-gray-900">
-                  Head of Google Ads Marketing
+                  {pipelineName}
                 </h1>
               </div>
               <div className="flex gap-2 items-center">

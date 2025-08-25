@@ -6,6 +6,9 @@ import {
   Archive,
   Trash2,
   Share2,
+  Pause,
+  Globe,
+  Copy,
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import { jobPostService } from "../services/jobPostService";
@@ -14,6 +17,8 @@ interface CategoryItem {
   id: number;
   name: string;
   count: number;
+  status?: string;
+  visibility?: string;
   invitesSent: number;
   totalReplied: number;
   totalApplied: number;
@@ -25,6 +30,9 @@ interface CategoryDropdownProps {
   onEditJobRole: (jobId: number) => void;
   onEditTemplate: (jobId: number) => void;
   onDeleteJob: (jobId: number) => void;
+  onPublishJob: (jobId: number) => void;
+  onUnpublishJob: (jobId: number) => void;
+  onCopyJobLink: (jobId: number) => void;
   onSharePipelines: (jobId: number) => void;
   onSelectCategory: (jobId: number) => void;
   activeCategoryId: number | null;
@@ -36,6 +44,9 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   onEditJobRole,
   onEditTemplate,
   onDeleteJob,
+  onPublishJob,
+  onUnpublishJob,
+  onCopyJobLink,
   onSharePipelines,
   onSelectCategory,
   activeCategoryId,
@@ -70,6 +81,8 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
           id: job.id,
           name: job.title,
           count: job.total_candidates || 0,
+          status: job.status,
+          visibility: job.visibility,
           invitesSent: job.invites_sent_count || 0,
           totalReplied: job.total_replied || 0,
           totalApplied: job.total_applied || 0,
@@ -121,8 +134,17 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
       case "share-pipelines":
         onSharePipelines(jobId);
         break;
+      case "unpublish-job":
+        onUnpublishJob(jobId);
+        break;
+      case "publish-job":
+        onPublishJob(jobId);
+        break;
+      case "copy-link":
+        onCopyJobLink(jobId);
+        break;
       case "archive":
-        showToast.success(`Archived ${jobId}`);
+        showToast.info(`Feature coming soon!`);
         break;
       case "delete":
         onDeleteJob(jobId);
@@ -144,7 +166,7 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
 
         {categories.map((category) => (
           <div
-            key={category.name}
+            key={category.id}
             className="relative group"
             onMouseEnter={() => setHoveredItem(category.id)}
             onMouseLeave={() => setHoveredItem(null)}
@@ -220,6 +242,19 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
                         <Edit className="w-4 h-4 mr-2" />
                         Edit Job Role
                       </button>
+
+                      <button
+                        onClick={() =>
+                          handleActionClick(
+                            "copy-link",
+                            category.id
+                          )
+                        }
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy Job Link
+                      </button>
                       <button
                         onClick={() =>
                           handleActionClick("edit-template", category.id)
@@ -238,6 +273,33 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
                         <Share2 className="w-4 h-4 mr-2" />
                         Share Pipelines
                       </button>
+
+                      {category.status === "DRAFT" && (
+                        <button
+                          onClick={() =>
+                            handleActionClick(
+                              "publish-job",
+                              category.id
+                            )
+                          }
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                        >
+                          <Globe className="w-4 h-4 mr-2" />
+                          Publish Job
+                        </button>
+                      )}
+
+                      {category.status === "PUBLISHED" && category.visibility === "PUBLIC" && (
+                      <button
+                        onClick={() =>
+                          handleActionClick("unpublish-job", category.id)
+                        }
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                      >
+                        <Pause className="w-4 h-4 mr-2" />
+                        Unpublish Job
+                      </button>
+                      )}
                       <button
                         onClick={() =>
                           handleActionClick("archive", category.id)

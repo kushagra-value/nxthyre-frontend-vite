@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { jobPostService, Job } from '../services/jobPostService'; // Import the service and Job type
+import { useParams } from 'react-router-dom'; // For getting job ID from URL
 
 const JobApplicationForm = () => {
+  
+  const { id } = useParams<{ id: string }>();
+  console.log('Job ID from URL:', id); // Log the job ID to verify it's being captured
+  const [job, setJob] = useState<Job | null>(null); // State to store job data
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState<string | null>(null); // Error state
   const [formData, setFormData] = useState({
-    name: 'Zentisu Agatsuma',
-    title: 'Demon Slayer',
-    mailId: 'Demon Slayer',
-    contactNumber: 'Demon Slayer',
+    name: '',
+    title: '',
+    mailId: '',
+    contactNumber: '',
     currentCTA: '',
     expectedCTA: '',
     noticePeriod: ''
@@ -14,6 +22,32 @@ const JobApplicationForm = () => {
   const handleInputChange = (field:any, value:any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  useEffect(() => {
+    const fetchJob = async () => {
+      try {
+        if (id) {
+          const jobData = await jobPostService.getJob(Number(id));
+          console.log('Fetched job data:', jobData); 
+          setJob(jobData);
+        }
+      } catch (err: any) {
+        console.error('Error fetching job:', err); // Log the error
+        setError(err.message || 'Failed to load job details');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchJob();
+  }, [id]);
+
+  if (loading) {
+    return <div className="min-h-screen bg-[#F5F9FB] flex justify-center items-center">Loading...</div>;
+  }
+
+  if (error || !job) {
+    return <div className="min-h-screen bg-[#F5F9FB] flex justify-center items-center">{error || 'Job not found'}</div>;
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F9FB]">
@@ -63,7 +97,7 @@ const JobApplicationForm = () => {
             {/* Job posting header */}
             <div className="mb-6 ">
               <p className="text-[18px] text-[#818283] font-[400] mb-2">We are looking for</p>
-              <h1 className="text-[34px] font-[500] text-[#181D25] mb-4">Digital Marketer Manager</h1>
+              <h1 className="text-[34px] font-[500] text-[#181D25] mb-4">{job.title}</h1>
               
               {/* Job meta info */}
               <div className="flex items-center gap-6 text-sm text-gray-600">
@@ -74,7 +108,7 @@ const JobApplicationForm = () => {
                         <path d="M7.66406 10.1719C9.04477 10.1719 10.1641 9.05259 10.1641 7.67188C10.1641 6.29116 9.04477 5.17188 7.66406 5.17188C6.28335 5.17188 5.16406 6.29116 5.16406 7.67188C5.16406 9.05259 6.28335 10.1719 7.66406 10.1719Z" stroke="#4B5563" stroke-width="1.5"/>
                         </svg>
                     </div>
-                    <span className="text-[18px] text-[#818283] font-[400]">Bangalore</span>
+                    <span className="text-[18px] text-[#818283] font-[400]">{job.location}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-4 h-4 flex justify-center items-center">
@@ -83,7 +117,7 @@ const JobApplicationForm = () => {
                         <path d="M6.00781 4.33333V3.5C6.00781 2.11929 7.12706 1 8.50781 1C9.88856 1 11.0078 2.11929 11.0078 3.5V4.33333" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
                     </div>
-                  <span className="text-[18px] text-[#818283] font-[400]">1-4 years</span>
+                  <span className="text-[18px] text-[#818283] font-[400]">{job.experience_min_years}-{job.experience_max_years} years</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-4 h-4 flex justify-center items-center">
@@ -103,7 +137,7 @@ const JobApplicationForm = () => {
                         <path d="M9.33464 13.783C10.2551 13.783 11.0013 13.1611 11.0013 12.3941C11.0013 11.627 10.2551 11.0052 9.33464 11.0052C8.41414 11.0052 7.66797 10.3834 7.66797 9.61629C7.66797 8.84929 8.41414 8.22746 9.33464 8.22746M9.33464 13.783C8.41414 13.783 7.66797 13.1611 7.66797 12.3941M9.33464 13.783V14.3385M9.33464 8.22746V7.67188M9.33464 8.22746C10.2551 8.22746 11.0013 8.84929 11.0013 9.61629" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
                     </div>
-                  <span className="text-[18px] text-[#818283] font-[400]">5- 10 LPA</span>
+                  <span className="text-[18px] text-[#818283] font-[400]">{job.is_salary_confidential ? 'Confidential' : `${job.salary_min || 'N/A'} - ${job.salary_max || 'N/A'} LPA`}</span>
                 </div>
               </div>
             </div>
@@ -129,14 +163,15 @@ const JobApplicationForm = () => {
             <div className="mb-6">
               <h3 className="font-[500] text-[24px] text-[#4B5563] mb-4">Skills</h3>
               <div className="flex flex-wrap gap-3">
-                {[
-                  'Google Ads', 'LinkedIn Ads', 'Digital Marketing', 'AI Analytics', 'SEO/SEM', 'Social Media Marketing', 'Data Visualization',
-                  'Performance Marketing', 'Marketing Automation', 'Google Analytics', 'Content Strategy'
-                ].map((skill) => (
-                  <span key={skill} className="px-3 py-1 bg-[#F0F0F0] text-[#4B5563] font-[400] rounded-[6px] text-[18px]">
-                    {skill}
-                  </span>
-                ))}
+                {job.skills.length > 0 ? (
+                  job.skills.map((skill) => (
+                    <span key={skill} className="px-3 py-1 bg-[#F0F0F0] text-[#4B5563] font-[400] rounded-[6px] text-[18px]">
+                      {skill}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-[18px] text-[#818283] font-[400]">No skills listed</span>
+                )}
               </div>
             </div>
 
@@ -144,14 +179,15 @@ const JobApplicationForm = () => {
             <div className="mb-6">
               <h3 className="font-[500] text-[24px] text-[#4B5563] mb-4">Key competencies</h3>
               <div className="flex flex-wrap gap-3">
-                {[
-                  'Strategic Planning', 'Analytics Thinking', 'Digital Marketing', 'Adaptability', 'AI Tool Integration', 'Communication',
-                  'ROI Advocacy', 'Customer-Centric Focus'
-                ].map((competency) => (
-                  <span key={competency} className="px-3 py-1 bg-[#F0F0F0] text-[#4B5563] font-[400] rounded-[6px] text-[18px]">
-                    {competency}
-                  </span>
-                ))}
+                {job.technical_competencies.length > 0 ? (
+                  job.technical_competencies.map((competency) => (
+                    <span key={competency} className="px-3 py-1 bg-[#F0F0F0] text-[#4B5563] font-[400] rounded-[6px] text-[18px]">
+                      {competency}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-[18px] text-[#818283] font-[400]">No competencies listed</span>
+                )}
               </div>
             </div>
 
@@ -159,38 +195,19 @@ const JobApplicationForm = () => {
             <div>
               <h3 className="font-[500] text-[24px] text-[#4B5563] mb-3">Requirements</h3>
               <ul className="space-y-2 text-[#4B5563] text-[20px] text-[400]">
-                <li className="flex items-start gap-2">
-                  <span>•</span>
-                  <span>5+ years of experience in digital marketing for consumer-facing digital products, preferably at scale.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span >•</span>
-                  <span>Expert proficiency in tools like Google Analytics, HubSpot, SEMrush, AI platforms (e.g., Google Cloud AI, IBM Watson), and other industry-standard marketing software.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span >•</span>
-                  <span>Strong portfolio showcasing end-to-end campaigns, performance metrics, AI-driven insights, and branding alignment.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span >•</span>
-                  <span>Exceptional marketing skills with deep understanding of SEO/SEM, content creation, A/B testing, and data visualization.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span >•</span>
-                  <span>Strong grasp of AI analytics, personalization techniques, and marketing automation in a fast-paced, iterative environment.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span >•</span>
-                  <span>Experience leading marketing projects independently while collaborating across cross-functional teams. Excellent presentation, storytelling, and communication skills with a track record of advocating for marketing ROI.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span >•</span>
-                  <span>Bachelor's or Master's degree in Marketing, Business, Data Science, or related field is preferred.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span >•</span>
-                  <span>Experience in e-commerce or high-frequency transactional platforms.</span>
-                </li>
+                {job.ai_jd ? (
+                  job.ai_jd
+                    .split('\n')
+                    .filter((line) => line.trim().startsWith('*'))
+                    .map((line, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <span>•</span>
+                        <span>{line.replace('*', '').trim()}</span>
+                      </li>
+                    ))
+                ) : (
+                  <li className="text-[18px] text-[#818283] font-[400]">No requirements listed</li>
+                )}
               </ul>
             </div>
           </div>

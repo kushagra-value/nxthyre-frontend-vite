@@ -5,13 +5,13 @@ export interface Job {
   id: number;
   title: string;
   location: string;
-  is_hybrid: boolean;
+  is_hybrid?: boolean;
   seniority: string;
-  department: number;
+  department_name: string;
   experience_min_years: number;
   experience_max_years: number;
-  salary_min: string;
-  salary_max: string;
+  salary_min: number | null;
+  salary_max: number | null;
   is_salary_confidential: boolean;
   visibility: "PRIVATE" | "PUBLIC";
   has_ai_interview_stage: boolean;
@@ -19,10 +19,15 @@ export interface Job {
   description: string;
   skills: string[];
   status: "DRAFT" | "PUBLISHED";
-  pipeline: number;
   posted_by: string;
-  organization: number;
-  workspace: number;
+  organization_details: {
+    id: number;
+    name: string;
+  };
+  workspace_details: {
+    id: number;
+    name: string;
+  };
   created_at: string;
   updated_at: string;
   total_candidates: number,
@@ -166,8 +171,8 @@ class JobPostService {
 
       // Append skills as a JSON string or individual entries based on API requirements
       if (data.skills) {
-        data.skills.forEach((skill, index) => {
-          formData.append(`skills[${index}]`, skill);
+        data.skills.forEach((skill) => {
+          formData.append(`skills`, skill);
         });
       }
 
@@ -217,8 +222,8 @@ class JobPostService {
       if (data.status) formData.append("status", data.status);
       if (data.workspace) formData.append("workspace", String(data.workspace));
       if (data.skills) {
-        data.skills.forEach((skill, index) => {
-          formData.append(`skills[${index}]`, skill);
+        data.skills.forEach((skill) => {
+          formData.append('skills', skill);  // Use same key 'skills' for each value
         });
       }
       if (data.ai_jd) {
@@ -226,9 +231,7 @@ class JobPostService {
       }
       
       if (data.technical_competencies) {
-        data.technical_competencies.forEach((tech:any, index:any) => {
-          formData.append(`technical_competencies[${index}]`, tech);
-        });
+        formData.append("technical_competencies", JSON.stringify(data.technical_competencies));
       }
       if (data.description_text) {
         formData.append("description", data.description_text);
@@ -244,6 +247,15 @@ class JobPostService {
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to update job");
+    }
+  }
+  
+  async unpublishJob(id: number): Promise<void> {
+    try {
+      const response = await apiClient.post(`/jobs/roles/${id}/unpublish-from-pyjamahr/`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to unpublish job");
     }
   }
 
