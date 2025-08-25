@@ -126,7 +126,7 @@ const JobApplicationForm = () => {
                         <path d="M1 9.33594H17.6667" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
                     </div>
-                  <span className="text-[18px] text-[#818283] font-[400]">{job.is_hybrid === true ? 'Hybrid' : 'On-site'}</span>
+                  <span className="text-[18px] text-[#818283] font-[400]">Full Time</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-4 h-4 flex justify-center items-center">
