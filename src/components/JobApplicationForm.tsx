@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom'; // For getting job ID from URL
 const JobApplicationForm = () => {
   
   const { id } = useParams<{ id: string }>();
+  console.log('Job ID from URL:', id); // Log the job ID to verify it's being captured
   const [job, setJob] = useState<Job | null>(null); // State to store job data
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState<string | null>(null); // Error state
