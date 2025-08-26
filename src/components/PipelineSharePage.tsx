@@ -587,7 +587,7 @@ const ArchiveIcon = () => (
                   <div>
                     <div className="flex items-center gap-3 mb-2">
                       <h1 className="text-2xl font-bold text-gray-900">{displayCandidate.full_name}</h1>
-                      <span className="bg-blue-100 text-blue-600 text-sm px-2 py-1 rounded-md font-medium">75%</span>
+                      <span className="bg-blue-100 text-blue-600 text-sm px-2 py-1 rounded-md font-medium">{displayCandidate}</span>
                     </div>
                     <p className="text-gray-600 mb-2">
                       {displayCandidate.headline}
@@ -799,7 +799,7 @@ const ArchiveIcon = () => (
                               </svg>
                             </div>
                             <div className="flex flex-wrap gap-2 mb-4">
-                              {displayCandidate?.ai_interview_report.technicalSkills?.strongSkills?.map((skill:any, index:any) => (
+                              {displayCandidate?.ai_interview_report?.technicalSkills?.strongSkills?.map((skill:any, index:any) => (
                                 <div key={index} className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
                                   <span className="text-blue-800 text-sm font-medium mr-2">{skill.skill}</span>
                                   <div className="flex items-center">
@@ -810,7 +810,7 @@ const ArchiveIcon = () => (
                                   </div>
                                 </div>
                               )) || []}
-                              {displayCandidate?.ai_interview_report.technicalSkills?.weakSkills?.map((skill:any, index:any) => (
+                              {displayCandidate?.ai_interview_report?.technicalSkills?.weakSkills?.map((skill:any, index:any) => (
                                 <div key={index} className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
                                   <span className="text-blue-800 text-sm font-medium mr-2">{skill.skill}</span>
                                   <div className="flex items-center">
