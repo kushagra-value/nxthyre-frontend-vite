@@ -274,7 +274,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     });
     setEditingIndex(index);
     setIsEditingFollowUp(true);
-    setIsAddingFollowUp(true); // show form
   };
 
   const [detailedCandidate, setDetailedCandidate] =
@@ -671,9 +670,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                   {/* Saved wale he ye bhai */}
                   {followUpTemplates.map((followUp, index) => (
                     <div key={index}>
-                      {isEditingFollowUp &&
-                      editingIndex === index &&
-                      isAddingFollowUp ? (
+                      {isEditingFollowUp && editingIndex === index ? (
                         <div className="my-4 bg-blue-50 rounded-lg">
                           <div className="px-8 pt-2 flex justify-between items-center">
                             <span className="text-sm font-medium text-blue-600">
