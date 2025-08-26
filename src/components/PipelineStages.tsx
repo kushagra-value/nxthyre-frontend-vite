@@ -1183,15 +1183,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     }
   }, [isAuthenticated]);
 
-  const deductCredits = async () => {
-    try {
-      const data = await creditService.getCreditBalance();
-      setCredits(data.credit_balance);
-    } catch (error) {
-      showToast.error("Failed to update credit balance");
-    }
-  };
-
   const handleOpenLogoutModal = () => {
     setShowLogoutModal(true);
   };
