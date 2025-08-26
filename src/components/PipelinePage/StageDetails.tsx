@@ -731,14 +731,27 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       </h4>
                       <p className="text-sm text-[#818283]">{cert.authority}</p>
                       <p className="text-sm text-[#818283]">
+                        {cert.licenseNumber}
+                      </p>
+                      <a
+                        href={cert.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-[#0F47F2] hover:underline"
+                      >
+                        {cert.url}
+                      </a>
+                      <p className="text-sm text-[#818283]">
                         {cert.startDate && (
                           <span>
                             {cert.startDate?.month}/{cert.startDate?.year} -{" "}
                           </span>
                         )}
-                        {cert.endDate
-                          ? `${cert.endDate?.month}/${cert.endDate?.year}`
-                          : "Present"}
+                        {cert.endDate && (
+                          <span>
+                            {cert.endDate?.month}/{cert.endDate?.year}
+                          </span>
+                        )}
                       </p>
                     </div>
                   ))
