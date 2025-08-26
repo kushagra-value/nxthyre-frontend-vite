@@ -339,6 +339,12 @@ Best regards,
                   disabled={loading}
                 />
               </div>
+              <style>{`
+            .ck-editor__editable_inline::before {
+              color: #4b5563 !important; /* Tailwind's text-gray-600 */
+              font-style: normal !important; /* remove italics if you want normal text */
+            }
+          `}</style>
 
               <div>
                 <p className="block text-sm font-medium text-gray-600 mb-2">

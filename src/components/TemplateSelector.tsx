@@ -529,6 +529,13 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               ],
             }}
           />
+
+          <style>{`
+            .ck-editor__editable_inline::before {
+              color: #4b5563 !important; /* Tailwind's text-gray-600 */
+              font-style: normal !important; /* remove italics if you want normal text */
+            }
+          `}</style>
         </div>
 
         {/* Follow-up Templates */}
@@ -946,6 +953,12 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 }}
                 className="w-full h-24 rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+              <style>{`
+            .ck-editor__editable_inline::before {
+              color: #4b5563 !important; /* Tailwind's text-gray-600 */
+              font-style: normal !important; /* remove italics if you want normal text */
+            }
+          `}</style>
             </div>
 
             <div>
