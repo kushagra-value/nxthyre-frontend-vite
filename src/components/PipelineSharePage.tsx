@@ -82,6 +82,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
         language: string;
         difficulty: string;
         status: string;
+        score: number;
       }[]
     >([]);
     const [date, setDate] = useState("");
@@ -270,6 +271,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
             language: pr.language || "N/A",
             difficulty: getDifficultyLevel(pr.problem.difficulty),
             status: mapStatus(pr.status),
+            score: pr.score,
           }));
           setCodingQuestions(questions);
           const completedDate = new Date(res.completed_at);
@@ -857,7 +859,7 @@ const ArchiveIcon = () => (
                     <div>
                       <div className="flex items-center justify-between mb-6">
                         <span className="text-base font-medium text-gray-900">Questions <span className="text-gray-500">({totalQuestions})</span></span>
-                        <span className="text-blue-600 text-xl font-medium">Score: <span className="font-bold">{assessmentResults?.total_score || 0}</span>/{assessmentResults?.problem_results?.length || 0}</span>
+                        <span className="text-base font-medium">Score: <span className="text-xl bg-blue-600 font-bold bg-blue-50 rounded-md px-2 py-1">{codingQuestions?.reduce((sum, item) => sum + item.score, 0)}</span>/{totalQuestions}</span>
                       </div>
 
                       {/* Question Items */}
@@ -869,9 +871,9 @@ const ArchiveIcon = () => (
 
                           return (
                           <div key={item.id} className="bg-[#F5F9FB] border border-gray-400 rounded-lg">
-                            <div className="flex items-center justify-left gap-4 m-4">
+                            <div className="flex items-start justify-left gap-4 m-4">
                               <span className="text-base font-[400] text-gray-600">Q{index+1}.</span>
-                              <p className="text-sm text-gray-400 flex-1 whitespace-pre-line leading-relaxed">{visibleLines.join("\n")}{!isExpanded && hiddenLineCount > 0 && " ..."}</p>
+                              <p className="text-sm text-gray-400 flex-1 whitespace-pre-line leading-relaxed">{visibleLines.join("\n")}{!isExpanded && hiddenLineCount > 0 && "... "}</p>
                             </div>
 
                             <div className="px-4 border border-gray-200 bg-white rounded-lg">
@@ -911,7 +913,7 @@ const ArchiveIcon = () => (
                                       </defs>
                                     </svg>
                                   )
-                                  :(
+                                  : item.status === 'Fail'? (
                                     <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
                                       <g clip-path="url(#clip0_2216_8607)">
                                       <path d="M6.5 13C10.0899 13 13 10.0899 13 6.5C13 2.91015 10.0899 0 6.5 0C2.91015 0 0 2.91015 0 6.5C0 10.0899 2.91015 13 6.5 13Z" fill="#FD374B"/>
@@ -923,6 +925,8 @@ const ArchiveIcon = () => (
                                       </clipPath>
                                       </defs>
                                     </svg>
+                                  ):(
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-skip-forward-icon lucide-skip-forward"><path d="M21 4v16"/><path d="M6.029 4.285A2 2 0 0 0 3 6v12a2 2 0 0 0 3.029 1.715l9.997-5.998a2 2 0 0 0 .003-3.432z"/></svg>
                                   )}
 
                                   <span
@@ -940,7 +944,7 @@ const ArchiveIcon = () => (
 
                               </div>
                             </div>
-                            <div className={`flex items-center justify-between text-sm text-gray-400 ml-2 pl-8 ${!isExpanded && hiddenLineCount > 0 && "py-2"} `}>
+                            <div className={`flex items-center justify-between text-sm text-gray-400 ml-2 pl-8 ${!isExpanded && hiddenLineCount > 0 && "py-1"} `}>
                               {!isExpanded && hiddenLineCount > 0 && (
                                 <p className="px-4 py-3 text-sm text-[#BCBCBC] bg-white">
                                   {hiddenLineCount} hidden lines
