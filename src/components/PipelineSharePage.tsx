@@ -234,7 +234,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
         try {
           const res = await candidateService.getAssessmentResults(
             Number(jobId),
-            selectedCandidate.publicIdentifier
+            candidateDetails.candidate.id
           );
           setAssessmentResults(res.data);
         } catch (error) {
