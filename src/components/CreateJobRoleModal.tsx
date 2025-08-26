@@ -1147,7 +1147,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
                 className="w-1/2 px-6 py-2 bg-blue-600 text-white text-lg font-medium rounded-lg hover:bg-blue-700 transition-colors flex justify-center items-center"
                 disabled={isLoading}
               >
-                Next
+                {isLoading ? 'Loading...' : 'Next Step'}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </button>
             </div>
