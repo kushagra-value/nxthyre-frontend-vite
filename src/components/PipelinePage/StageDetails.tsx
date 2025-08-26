@@ -1556,14 +1556,14 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 if (nextStage)
                   moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
               }}
-              className="flex w-[50%] lg:w-[60%] px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex justify-center items-center w-[50%] lg:w-[60%] px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               <UserRoundCheck className="w-5 h-5 mr-2" />
               Move to Next Stage
             </button>
-            <button className="flex justify-between items-center px-3 py-2 bg-blue-50 text-blue-700 border border-blue-700 rounded-lg hover:bg-blue-100 transition-colors">
-              <Send className="w-5 h-5" />
-              <span className="mr-1">Resend</span>
+            <button className="flex justify-center items-center px-3 py-2 bg-blue-50 text-blue-700 border border-blue-700 rounded-lg hover:bg-blue-100 transition-colors">
+              <Send className="w-5 h-5 mr-2" />
+              <span>Resend</span>
             </button>
             <button
               onClick={handleDeleteCandidate}
