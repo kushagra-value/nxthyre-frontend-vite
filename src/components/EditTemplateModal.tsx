@@ -199,6 +199,26 @@ Best regards,
     });
   };
 
+  // New states
+  const [isEditingFollowUp, setIsEditingFollowUp] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
+  // Edit Follow Up handler
+  const editFollowUp = (index: number) => {
+    const followUpToEdit = formData.followUpTemplates[index];
+    setNewFollowUp({
+      send_after_hours: followUpToEdit.send_after_hours as
+        | "24hrs"
+        | "48hrs"
+        | "72hrs",
+      followup_mode: followUpToEdit.followup_mode,
+      followup_body: followUpToEdit.followup_body,
+    });
+    setEditingIndex(index);
+    setIsEditingFollowUp(true);
+    setIsAddingFollowUp(true); // show form
+  };
+
   // const addFollowUp = () => {
   //   setFormData({
   //     ...formData,
@@ -503,7 +523,7 @@ Best regards,
                               </span>
                               <div className="flex space-x-2">
                                 <button
-                                  onClick={() => removeFollowUp(index)}
+                                  onClick={() => editFollowUp(index)}
                                   className="p-1 text-gray-500 hover:text-gray-600"
                                 >
                                   <Edit className="w-4 h-4 text-gray-500" />
@@ -540,11 +560,18 @@ Best regards,
                           <div className="my-4 bg-blue-50 rounded-lg">
                             <div className="px-8 pt-2 flex justify-between items-center">
                               <span className="text-sm font-medium text-blue-600">
-                                Follow Up
+                                {isEditingFollowUp
+                                  ? "Edit Follow Up"
+                                  : "Follow Up"}
                               </span>
                               <div className="flex space-x-2 mt-2">
+                                {/* Cancel button */}
                                 <button
-                                  onClick={() => setIsAddingFollowUp(false)}
+                                  onClick={() => {
+                                    setIsAddingFollowUp(false);
+                                    setIsEditingFollowUp(false);
+                                    setEditingIndex(null);
+                                  }}
                                   className="text-red-500 text-xs rounded-full"
                                   disabled={loading}
                                 >
@@ -554,22 +581,47 @@ Best regards,
                                     </span>
                                   </span>
                                 </button>
+
+                                {/* Save button (handles add & edit) */}
                                 <button
                                   onClick={() => {
-                                    setFormData({
-                                      ...formData,
-                                      followUpTemplates: [
+                                    if (
+                                      isEditingFollowUp &&
+                                      editingIndex !== null
+                                    ) {
+                                      // ✅ update existing follow-up
+                                      const updatedFollowUps = [
                                         ...formData.followUpTemplates,
-                                        {
-                                          ...newFollowUp,
-                                          followup_mode:
-                                            newFollowUp.followup_mode,
-                                          order_no:
-                                            formData.followUpTemplates.length,
-                                        },
-                                      ],
-                                    });
+                                      ];
+                                      updatedFollowUps[editingIndex] = {
+                                        ...updatedFollowUps[editingIndex],
+                                        ...newFollowUp,
+                                      };
+                                      setFormData({
+                                        ...formData,
+                                        followUpTemplates: updatedFollowUps,
+                                      });
+                                    } else {
+                                      // ✅ add new follow-up
+                                      setFormData({
+                                        ...formData,
+                                        followUpTemplates: [
+                                          ...formData.followUpTemplates,
+                                          {
+                                            ...newFollowUp,
+                                            followup_mode:
+                                              newFollowUp.followup_mode,
+                                            order_no:
+                                              formData.followUpTemplates.length,
+                                          },
+                                        ],
+                                      });
+                                    }
+
+                                    // reset states
                                     setIsAddingFollowUp(false);
+                                    setIsEditingFollowUp(false);
+                                    setEditingIndex(null);
                                     setNewFollowUp({
                                       send_after_hours: "24hrs",
                                       followup_mode: "EMAIL",
@@ -583,9 +635,13 @@ Best regards,
                                     <Check className="w-2 h-2 font-semibold" />
                                   </span>
                                 </button>
+
+                                {/* Delete draft button (just closes form) */}
                                 <button
                                   onClick={() => {
                                     setIsAddingFollowUp(false);
+                                    setIsEditingFollowUp(false);
+                                    setEditingIndex(null);
                                   }}
                                   className=" text-gray-200 text-xs rounded-full"
                                   disabled={loading}
@@ -594,9 +650,12 @@ Best regards,
                                 </button>
                               </div>
                             </div>
+
                             <div className="border-b border-blue-400 rounded-full w-full pt-2 mb-3"></div>
+
                             <div className="px-8 pb-4 flex flex-col items-start space-y-3">
                               <div className="flex items-center space-x-4">
+                                {/* Send After */}
                                 <div className="flex items-center gap-2">
                                   <span className="text-xs text-gray-500">
                                     Send After
@@ -620,6 +679,8 @@ Best regards,
                                     <option value="72hrs">72 hrs</option>
                                   </select>
                                 </div>
+
+                                {/* Via */}
                                 <div className="flex items-center gap-2">
                                   <span className="text-xs text-gray-500">
                                     Via
@@ -644,6 +705,8 @@ Best regards,
                                   </select>
                                 </div>
                               </div>
+
+                              {/* Message */}
                               <div className="w-full">
                                 <label className="text-xs text-gray-500 mb-2 block">
                                   Message
@@ -665,6 +728,7 @@ Best regards,
                             </div>
                           </div>
                         )}
+
                         <button
                           onClick={() => setIsAddingFollowUp(true)}
                           className="flex items-center justify-center text-sm text-blue-600 hover:text-blue-700 mt-4"
