@@ -1123,19 +1123,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                   Must have Research Paper
                 </span>
               </label>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={tempFilters.hasBehance}
-                  onChange={(e) =>
-                    updateTempFilters("hasBehance", e.target.checked)
-                  }
-                  className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <span className="ml-2 text-xs text-gray-700">
-                  Must have Behance
-                </span>
-              </label>
+              
               <label className="flex items-center">
                 <input
                   type="checkbox"
