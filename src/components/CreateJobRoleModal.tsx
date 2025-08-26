@@ -82,6 +82,9 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
   const [competencies, setCompetencies] = useState<string[]>([]);
   const [editableJD, setEditableJD] = useState('');
   const [aiJdResponse, setAiJdResponse] = useState<any>(null);
+  const [originalDescription, setOriginalDescription] = useState('');
+  const [originalUploadType, setOriginalUploadType] = useState<'paste' | 'upload'>('paste');
+  
 
   // Validation for text inputs (allow only alphanumeric, comma, space)
   const isValidTextInput = (value: string): boolean => /^[a-zA-Z0-9, ]*$/.test(value);
@@ -307,11 +310,23 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
     
         setIsLoading(true);
         try {
-          const description = formData.uploadType === 'paste' ? formData.jobDescription : file!;
-          const aiResponse = await jobPostService.createAiJd(description);
-          setEditableJD(aiResponse.job_description_markdown);
-          setCompetencies(aiResponse.technical_competencies);
-          setAiJdResponse(aiResponse);
+          const needsRegenerate = formData.uploadType !== originalUploadType ||
+            (formData.uploadType === 'paste' ? formData.jobDescription !== originalDescription : true);
+    
+          if (needsRegenerate) {
+            const description = formData.uploadType === 'paste' ? formData.jobDescription : file!;
+            const aiResponse = await jobPostService.createAiJd(description);
+            setEditableJD(aiResponse.job_description_markdown);
+            setCompetencies(aiResponse.technical_competencies);
+            setAiJdResponse(aiResponse);
+            // Update originals after regeneration
+            if (formData.uploadType === 'paste') {
+              setOriginalDescription(formData.jobDescription);
+            } else {
+              setOriginalDescription('');
+            }
+            setOriginalUploadType(formData.uploadType);
+          }
           setCurrentStep(2);
         } catch (error: any) {
           showToast.error(error.message || 'Failed to generate AI JD');
@@ -448,8 +463,26 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
     }
   };
 
-  const handleRegenerate = () => {
-    handleNext();
+  const handleRegenerate = async () => {
+    setIsLoading(true);
+    try {
+      const description = formData.uploadType === 'paste' ? formData.jobDescription : file!;
+      const aiResponse = await jobPostService.createAiJd(description);
+      setEditableJD(aiResponse.job_description_markdown);
+      setCompetencies(aiResponse.technical_competencies);
+      setAiJdResponse(aiResponse);
+      // Update originals after regeneration
+      if (formData.uploadType === 'paste') {
+        setOriginalDescription(formData.jobDescription);
+      } else {
+        setOriginalDescription('');
+      }
+      setOriginalUploadType(formData.uploadType);
+    } catch (error: any) {
+      showToast.error(error.message || 'Failed to regenerate AI JD');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -811,7 +844,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
                   </label>
                   {showTooltip === 'inbound' && (
                     <div className="absolute top-full left-0 mt-2 w-80 p-3 bg-gray-50 text-gray-500 text-sm rounded-lg shadow-lg z-10">
-                      NxtHyre can post your jobs on social sites like LinkedIn to get a high number of job applicants (along with your LinkedIn as hiring POC)
+                      NxtHyre can post your jobs on social sites like LinkedIn, Google Jobs,Times Ascent, Cutshort and others to get a high number of job applicants (along with your LinkedIn as hiring POC)
                     </div>
                   )}
                 </div>
@@ -833,7 +866,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
                   </label>
                   {showTooltip === 'private' && (
                     <div className="absolute top-full left-0 mt-2 w-80 p-3 bg-gray-50 text-gray-500 text-sm rounded-lg shadow-lg z-10">
-                       NxtHyre will not post LinkedIn on NxtHyre job portal
+                       NxtHyre will not post on LinkedIn, Google Jobs,Times Ascent, Cutshort and other job portals.
                     </div>
                   )}
                 </div>
@@ -1044,7 +1077,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({ isOpen, workspa
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-gray-900">AI-Generated Job Description</h3>
                   <button
-                    onClick={() => handleNext}
+                    onClick={() => handleRegenerate}
                     className="flex items-center px-4 py-2 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors text-sm"
                     disabled={isLoading}
                   >

@@ -786,9 +786,6 @@ function MainApp() {
       case "share-pipelines":
         handleSharePipelines(jobId);
         break;
-      case "share-pipelines":
-        handleSharePipelines(jobId);
-        break;
       case "archive":
         showToast.success(`Feature Coming Soon`);
         break;
@@ -1339,7 +1336,7 @@ function MainApp() {
                             </h3>
                             <p className="text-gray-600 mb-6">
                               Are you sure you want to publish {categories.find((cat) => cat.id === showPublishModal)?.name}?
-                              This action will publish job on LinkedIn and Cutshort.
+                              This action will publish job on LinkedIn, Google Jobs,Times Ascent, Cutshort and others.
                               
                             </p>
                             <span className="text-gray-400 text-sm mb-6">(Note: Once published, the job will be visible on both platforms within
@@ -1379,7 +1376,7 @@ function MainApp() {
                               Are you sure you want to Unpublish {categories.find((cat) => cat.id === showUnpublishModal)?.name}? 
                               
                             </p>
-                            <span className="text-gray-400 text-sm mb-6">(Note: this action will unpublish job on LinkedIn and Cutshort within
+                            <span className="text-gray-400 text-sm mb-6">(Note: this action will unpublish job on published over LinkedIn, Google Jobs,Times Ascent, Cutshort and others within
                               24–48 hours.)
                             </span>
                             <div className="flex space-x-3">

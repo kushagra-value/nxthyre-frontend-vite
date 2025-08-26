@@ -577,14 +577,14 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, wo
             skills: job.skills || [],
             location: job.location,
             workApproach,
-            hybrid: job.is_hybrid,
+            hybrid: job.is_hybrid ?? false,
             seniority: job.seniority,
-            department: departmentMap[job.department] || 'Others',
+            department: departmentMap[Number(job.department_name)] || 'Others',
             aiInterviews: job.has_ai_interview_stage || false,
             minExp: job.experience_min_years.toString(),
             maxExp: job.experience_max_years.toString(),
-            minSalary: job.salary_min,
-            maxSalary: job.salary_max,
+            minSalary: String(job.salary_min),
+            maxSalary: String(job.salary_max),
             confidential: job.is_salary_confidential,
             jobDescription: job.description || '',
             uploadType: job.description ? 'paste' : 'upload',
@@ -1068,7 +1068,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, wo
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-gray-900">AI-Generated Job Description</h3>
                   <button
-                    onClick={() => showToast.info('Feature coming soon!')}
+                    onClick={() => handleRegenerate}
                     className="flex items-center px-4 py-2 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors text-sm"
                     disabled={isLoading}
                   >
@@ -1077,30 +1077,26 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, wo
                   </button>
                 </div>
                 <div className="border border-gray-300 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-3 border-b border-gray-200 pb-3">
-                    <button className="p-1 hover:bg-gray-100 rounded">
-                      <Bold className="w-4 h-4 text-gray-600" />
-                    </button>
-                    <button className="p-1 hover:bg-gray-100 rounded">
-                      <Italic className="w-4 h-4 text-gray-600" />
-                    </button>
-                    <button className="p-1 hover:bg-gray-100 rounded">
-                      <Underline className="w-4 h-4 text-gray-600" />
-                    </button>
-                    <div className="w-px h-4 bg-gray-300 mx-1"></div>
-                    <button className="p-1 hover:bg-gray-100 rounded">
-                      <List className="w-4 h-4 text-gray-600" />
-                    </button>
-                    <button className="p-1 hover:bg-gray-100 rounded">
-                      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                      </svg>
-                    </button>
-                  </div>
-                  <textarea
-                    value={editableJD}
-                    onChange={(e) => setEditableJD(e.target.value)}
-                    className="w-full h-48 resize-none border-none outline-none text-sm text-gray-700 leading-relaxed"
+                  <CKEditor
+                    editor={ClassicEditor}
+                    data={editableJD}
+                    onChange={(event:any, editor:any) => {
+                      const data = editor.getData();
+                      setEditableJD(data);
+                      setAiJdResponse((prev: any) => ({ ...prev, job_description_markdown: data }));
+                    }}
+                    config={{
+                      toolbar: [
+                        "bold",
+                        "italic",
+                        "link",
+                        "bulletedList",
+                        "numberedList",
+                        "undo",
+                        "redo",
+                      ],
+                    }}
+                    className="rounded-lg"
                     disabled={isLoading}
                   />
                 </div>
