@@ -302,23 +302,14 @@ Best regards,
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Subject
                 </label>
-                <CKEditor
-                  editor={ClassicEditor}
-                  data={formData.subject}
-                  onChange={(event: any, editor: any) =>
-                    setFormData({ ...formData, subject: editor.getData() })
+                <input
+                  type="text"
+                  value={formData.subject}
+                  onChange={(e) =>
+                    setFormData({ ...formData, subject: e.target.value })
                   }
-                  config={{
-                    toolbar: [
-                      "bold",
-                      "italic",
-                      "link",
-                      "bulletedList",
-                      "numberedList",
-                      "undo",
-                      "redo",
-                    ],
-                  }}
+                  placeholder="Type your subject"
+                  className="w-full rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={loading}
                 />
               </div>

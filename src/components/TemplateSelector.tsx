@@ -491,23 +491,12 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           <label className="block text-sm font-medium text-gray-600 mb-2">
             Subject
           </label>
-          <CKEditor
-            editor={ClassicEditor}
-            data={subject}
-            onChange={(event: any, editor: any) => setSubject(editor.getData())}
+          <input
+            type="text"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
             placeholder="Type your subject"
-            className="rounded-lg"
-            config={{
-              toolbar: [
-                "bold",
-                "italic",
-                "link",
-                "bulletedList",
-                "numberedList",
-                "undo",
-                "redo",
-              ],
-            }}
+            className="w-full rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -919,27 +908,17 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               />
             </div>
 
+            {/* Subject */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
                 Subject
               </label>
-              <CKEditor
-                editor={ClassicEditor}
-                data={subject}
-                onChange={(event: any, editor: any) =>
-                  setSubject(editor.getData())
-                }
-                config={{
-                  toolbar: [
-                    "bold",
-                    "italic",
-                    "link",
-                    "bulletedList",
-                    "numberedList",
-                    "undo",
-                    "redo",
-                  ],
-                }}
+              <input
+                type="text"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Type your subject"
+                className="w-full rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
