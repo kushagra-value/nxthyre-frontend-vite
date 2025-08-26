@@ -88,6 +88,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     followup_body: `Hi ${candidate.full_name}, Type your message ...`,
   });
 
+  const [isEditingFollowUp, setIsEditingFollowUp] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
   useEffect(() => {
     const fetchTemplates = async () => {
       setLoading(true);
@@ -131,8 +134,11 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
       setSendViaPhone(template.can_be_sent_via_call);
       setFollowUpTemplates(
         template.follow_up_steps.map((step) => ({
-          send_after_hours: step.send_after_hours,
-          followup_mode: step.mode as "EMAIL" | "WHATSAPP" | "CALL", // Adjust casing
+          send_after_hours: `${step.send_after_hours}hrs` as
+            | "24hrs"
+            | "48hrs"
+            | "72hrs",
+          followup_mode: step.mode as "EMAIL" | "WHATSAPP" | "CALL",
           followup_body: step.body,
           order_no: step.order,
         }))
@@ -255,26 +261,20 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     }
   };
 
-  const addFollowUp = () => {
-    setFollowUpTemplates([
-      ...followUpTemplates,
-      {
-        send_after_hours: "24hrs",
-        followup_mode: "EMAIL",
-        followup_body: "",
-        order_no: followUpTemplates.length,
-      },
-    ]);
-  };
-
-  const updateFollowUp = (index: number, field: string, value: any) => {
-    const updated = [...followUpTemplates];
-    updated[index] = { ...updated[index], [field]: value };
-    setFollowUpTemplates(updated);
-  };
-
   const removeFollowUp = (index: number) => {
     setFollowUpTemplates(followUpTemplates.filter((_, i) => i !== index));
+  };
+
+  const editFollowUp = (index: number) => {
+    const followUpToEdit = followUpTemplates[index];
+    setNewFollowUp({
+      send_after_hours: followUpToEdit.send_after_hours,
+      followup_mode: followUpToEdit.followup_mode,
+      followup_body: followUpToEdit.followup_body,
+    });
+    setEditingIndex(index);
+    setIsEditingFollowUp(true);
+    setIsAddingFollowUp(true); // show form
   };
 
   const [detailedCandidate, setDetailedCandidate] =
@@ -670,46 +670,169 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 <div className="mx-2 my-2">
                   {/* Saved wale he ye bhai */}
                   {followUpTemplates.map((followUp, index) => (
-                    <div
-                      key={index}
-                      className="bg-gray-200 border-b border-gray-400 mb-2 pt-2 rounded-lg"
-                    >
-                      <div className="flex justify-between items-center px-8">
-                        <span className="text-sm font-medium text-gray-600">
-                          Follow Up {index + 1}
-                        </span>
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => removeFollowUp(index)}
-                            className="p-1 text-gray-500 hover:text-gray-600"
-                          >
-                            <Edit className="w-4 h-4 text-gray-500" />
-                          </button>
-                          <button
-                            onClick={() => removeFollowUp(index)}
-                            className="p-1 text-gray-500 hover:text-gray-600"
-                          >
-                            <Trash2 className="w-4 h-4 text-gray-500" />
-                          </button>
+                    <div key={index}>
+                      {isEditingFollowUp &&
+                      editingIndex === index &&
+                      isAddingFollowUp ? (
+                        <div className="my-4 bg-blue-50 rounded-lg">
+                          <div className="px-8 pt-2 flex justify-between items-center">
+                            <span className="text-sm font-medium text-blue-600">
+                              Edit Follow Up
+                            </span>
+                            <div className="flex space-x-2 mt-2">
+                              <button
+                                onClick={() => {
+                                  setIsAddingFollowUp(false);
+                                  setIsEditingFollowUp(false);
+                                  setEditingIndex(null);
+                                }}
+                                className="text-red-500 text-xs rounded-full"
+                                disabled={loading}
+                              >
+                                <span className="w-4 h-4 flex items-center justify-center rounded-full border-2 border-red-500 text-red-500">
+                                  <span className="text-xs mb-1 font-semibold">
+                                    x
+                                  </span>
+                                </span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const updatedFollowUps = [
+                                    ...followUpTemplates,
+                                  ];
+                                  updatedFollowUps[index] = {
+                                    ...updatedFollowUps[index],
+                                    ...newFollowUp,
+                                  };
+                                  setFollowUpTemplates(updatedFollowUps);
+                                  setIsAddingFollowUp(false);
+                                  setIsEditingFollowUp(false);
+                                  setEditingIndex(null);
+                                  setNewFollowUp({
+                                    send_after_hours: "24hrs",
+                                    followup_mode: "EMAIL",
+                                    followup_body: `Hi ${candidate.full_name}, Type your message ...`,
+                                  });
+                                }}
+                                className=" text-blue-500 text-xs rounded-full"
+                                disabled={loading}
+                              >
+                                <span className="w-4 h-4 flex items-center justify-center rounded-full border-2 border-blue-500 text-blue-500">
+                                  <Check className="w-2 h-2 font-semibold" />
+                                </span>
+                              </button>
+                            </div>
+                          </div>
+                          <div className="border-b border-blue-400 rounded-full w-full pt-2 mb-3"></div>
+                          <div className="px-8 pb-4 flex flex-col items-start space-y-3">
+                            <div className="flex items-center space-x-4">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-500">
+                                  Send After
+                                </span>
+                                <select
+                                  value={newFollowUp.send_after_hours}
+                                  onChange={(e) =>
+                                    setNewFollowUp({
+                                      ...newFollowUp,
+                                      send_after_hours: e.target.value as
+                                        | "24hrs"
+                                        | "48hrs"
+                                        | "72hrs",
+                                    })
+                                  }
+                                  className="text-sm w-24 px-2 py-1 text-blue-600 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  disabled={loading}
+                                >
+                                  <option value="24hrs">24 hrs</option>
+                                  <option value="48hrs">48 hrs</option>
+                                  <option value="72hrs">72 hrs</option>
+                                </select>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-500">
+                                  Via
+                                </span>
+                                <select
+                                  value={newFollowUp.followup_mode}
+                                  onChange={(e) =>
+                                    setNewFollowUp({
+                                      ...newFollowUp,
+                                      followup_mode: e.target.value as
+                                        | "EMAIL"
+                                        | "WHATSAPP"
+                                        | "CALL",
+                                    })
+                                  }
+                                  className="text-sm w-24 px-2 py-1 text-blue-600 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  disabled={loading}
+                                >
+                                  <option value="EMAIL">Email</option>
+                                  <option value="WHATSAPP">WhatsApp</option>
+                                  <option value="CALL">Call</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div className="w-full">
+                              <label className="text-xs text-gray-500 mb-2 block">
+                                Message
+                              </label>
+                              <input
+                                type="text"
+                                value={newFollowUp.followup_body}
+                                onChange={(e) =>
+                                  setNewFollowUp({
+                                    ...newFollowUp,
+                                    followup_body: e.target.value,
+                                  })
+                                }
+                                style={{ color: "#2563EB" }}
+                                placeholder=" Type your message"
+                                className="text-sm w-full px-2 py-1 text-gray-300 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              />
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      <div className="pt-2 border-b border-gray-400 rounded-lg"></div>
-                      <div className="my-4 px-8">
-                        <div className="flex items-center text-gray-600">
-                          <p>Will be sent around</p>{" "}
-                          <span className="pl-1"></span>
-                          <span>{followUp.send_after_hours} hrs from now</span>
-                          <span className="pl-1"> </span>
-                          <p>via {followUp.followup_mode}.</p>
+                      ) : (
+                        <div className="bg-gray-200 border-b border-gray-400 mb-2 pt-2 rounded-lg">
+                          <div className="flex justify-between items-center px-8">
+                            <span className="text-sm font-medium text-gray-600">
+                              Follow Up {index + 1}
+                            </span>
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => editFollowUp(index)}
+                                className="p-1 text-gray-500 hover:text-gray-600"
+                              >
+                                <Edit className="w-4 h-4 text-gray-500" />
+                              </button>
+                              <button
+                                onClick={() => removeFollowUp(index)}
+                                className="p-1 text-gray-500 hover:text-gray-600"
+                              >
+                                <Trash2 className="w-4 h-4 text-gray-500" />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="pt-2 border-b border-gray-400 rounded-lg"></div>
+                          <div className="my-4 px-8">
+                            <div className="flex items-center text-gray-600">
+                              <p>Will be sent around</p>{" "}
+                              <span className="pl-1"></span>
+                              <span>
+                                {followUp.send_after_hours} hrs from now
+                              </span>
+                              <span className="pl-1"> </span>
+                              <p>via {followUp.followup_mode}.</p>
+                            </div>
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-gray-400">
+                                {followUp.followup_body}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 mt-2">
-                          <span className="text-gray-400">
-                            {followUp.followup_body}
-                            {/* Hi {candidate.full_name}, bumping this up one last
-                            time. Thanks! */}
-                          </span>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   ))}
 
@@ -718,11 +841,15 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                     <div className="my-4 bg-blue-50 rounded-lg">
                       <div className="px-8 pt-2 flex justify-between items-center">
                         <span className="text-sm font-medium text-blue-600">
-                          Follow Up
+                          {isEditingFollowUp ? "Edit Follow Up" : "Follow Up"}
                         </span>
                         <div className="flex space-x-2 mt-2">
                           <button
-                            onClick={() => setIsAddingFollowUp(false)}
+                            onClick={() => {
+                              setIsAddingFollowUp(false);
+                              setIsEditingFollowUp(false);
+                              setEditingIndex(null);
+                            }}
                             className="text-red-500 text-xs rounded-full"
                             disabled={loading}
                           >
@@ -734,18 +861,26 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                           </button>
                           <button
                             onClick={() => {
-                              setFollowUpTemplates([
-                                ...followUpTemplates,
-                                {
+                              if (isEditingFollowUp && editingIndex !== null) {
+                                const updatedFollowUps = [...followUpTemplates];
+                                updatedFollowUps[editingIndex] = {
+                                  ...updatedFollowUps[editingIndex],
                                   ...newFollowUp,
-                                  followup_mode: newFollowUp.followup_mode as
-                                    | "EMAIL"
-                                    | "WHATSAPP"
-                                    | "CALL",
-                                  order_no: followUpTemplates.length,
-                                },
-                              ]);
+                                };
+                                setFollowUpTemplates(updatedFollowUps);
+                              } else {
+                                setFollowUpTemplates([
+                                  ...followUpTemplates,
+                                  {
+                                    ...newFollowUp,
+                                    followup_mode: newFollowUp.followup_mode,
+                                    order_no: followUpTemplates.length,
+                                  },
+                                ]);
+                              }
                               setIsAddingFollowUp(false);
+                              setIsEditingFollowUp(false);
+                              setEditingIndex(null);
                               setNewFollowUp({
                                 send_after_hours: "24hrs",
                                 followup_mode: "EMAIL",
@@ -762,6 +897,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                           <button
                             onClick={() => {
                               setIsAddingFollowUp(false);
+                              setIsEditingFollowUp(false);
+                              setEditingIndex(null);
                             }}
                             className=" text-gray-200 text-xs rounded-full"
                             disabled={loading}

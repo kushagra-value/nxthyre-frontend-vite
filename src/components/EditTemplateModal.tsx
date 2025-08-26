@@ -648,9 +648,7 @@ Best regards,
                                     className="text-sm w-24 px-2 py-1 text-blue-600 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     disabled={loading}
                                   >
-                                    <option value="24hrs">
-                                      24 hrs - 1 day
-                                    </option>
+                                    <option value="24hrs">24 hrs</option>
                                     <option value="48hrs">48 hrs</option>
                                     <option value="72hrs">72 hrs</option>
                                   </select>
