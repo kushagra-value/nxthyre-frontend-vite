@@ -274,7 +274,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               <div
                 className={`${
                   !showMore && experiences.length > 1
-                    ? "max-h-[120px] overflow-hidden"
+                    ? "max-h-[250px] overflow-hidden"
                     : ""
                 }`}
                 style={{
