@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { jobPostService, Job } from '../services/jobPostService'; // Import the service and Job type
 import { useParams } from 'react-router-dom'; // For getting job ID from URL
 
@@ -18,9 +18,90 @@ const JobApplicationForm = () => {
     expectedCTA: '',
     noticePeriod: ''
   });
+  const [resume, setResume] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleInputChange = (field:any, value:any) => {
+  const handleInputChange = (field:keyof typeof formData, value:any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const files = e.dataTransfer?.files;
+    if (files && files.length > 0) {
+      handleFileChange(files[0]);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      handleFileChange(files[0]);
+    }
+  };
+
+  const handleFileChange = (file: File) => {
+    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (allowedTypes.includes(file.type)) {
+      setResume(file);
+      setUploadError(null);
+    } else {
+      setUploadError('Only PDF or DOC/DOCX files are allowed.');
+      setResume(null);
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleUploadClick();
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id || !resume) {
+      setSubmitError('Please fill all fields and upload a resume.');
+      return;
+    }
+    setSubmitLoading(true);
+    setSubmitError(null);
+    try {
+      await jobPostService.applyToJob(Number(id), { ...formData, resume });
+      setSubmitSuccess(true);
+    } catch (err: any) {
+      setSubmitError(err.message || 'Failed to submit application.');
+    } finally {
+      setSubmitLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -218,15 +299,18 @@ const JobApplicationForm = () => {
           <div className=" pr-12  pl-24 py-4">
             <h2 className="font-[500] text-[24px] text-[#4B5563] mb-5">Fill Your Details</h2>
             
+            <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-6">
-              {/* Name */}
+              
               <div>
                 <label className="block text-[20px] font-[400] text-[#4B5563] mb-3">Name</label>
                 <input
+                  id="name"
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   className="w-full px-3 py-2 text-[20px] font-[500] text-[#0F47F2]  border border-[#0F47F2] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0F47F2] focus:border-transparent"
+                  required
                 />
               </div>
 
@@ -234,10 +318,12 @@ const JobApplicationForm = () => {
               <div>
                 <label className="block text-[20px] font-[400] text-[#4B5563] mb-3">Title</label>
                 <input
+                  id="title"
                   type="text"
                   value={formData.title}
                   onChange={(e) => handleInputChange('title', e.target.value)}
                   className="w-full px-3 py-2 text-[20px] font-[500] text-[#0F47F2]  border border-[#0F47F2] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0F47F2] focus:border-transparent"
+                  required
                 />
               </div>
 
@@ -245,10 +331,12 @@ const JobApplicationForm = () => {
               <div>
                 <label className="block text-[20px] font-[400] text-[#4B5563] mb-3">Mail Id</label>
                 <input
+                  id="email"
                   type="email"
                   value={formData.mailId}
                   onChange={(e) => handleInputChange('mailId', e.target.value)}
                   className="w-full px-3 py-2 text-[20px] font-[500] text-[#0F47F2]  border border-[#0F47F2] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0F47F2] focus:border-transparent"
+                  required
                 />
               </div>
 
@@ -256,10 +344,12 @@ const JobApplicationForm = () => {
               <div>
                 <label className="block text-[20px] font-[400] text-[#4B5563] mb-3">Contact Number</label>
                 <input
+                  id="contact_number"
                   type="tel"
                   value={formData.contactNumber}
                   onChange={(e) => handleInputChange('contactNumber', e.target.value)}
                   className="w-full px-3 py-2 text-[20px] font-[500] text-[#0F47F2]  border border-[#0F47F2] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0F47F2] focus:border-transparent"
+                  required
                 />
               </div>
 
@@ -268,21 +358,25 @@ const JobApplicationForm = () => {
                 <div>
                   <label className="block text-[20px] font-[400] text-[#4B5563] mb-3">Current CTA</label>
                   <input
+                    id="current_cta"
                     type="text"
                     value={formData.currentCTA}
                     onChange={(e) => handleInputChange('currentCTA', e.target.value)}
                     placeholder="₹5 LPA"
                     className="w-full px-3 py-2 text-[20px] font-[500] text-[#0F47F2]  border border-[#0F47F2] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0F47F2] focus:border-transparent text-gray-500"
+                    required
                   />
                 </div>
                 <div>
                   <label className="block text-[20px] font-[400] text-[#4B5563] mb-3">Expected CTA</label>
                   <input
+                    id="expected_cta"
                     type="text"
                     value={formData.expectedCTA}
                     onChange={(e) => handleInputChange('expectedCTA', e.target.value)}
                     placeholder="₹8 LPA"
                     className="w-full px-3 py-2 text-[20px] font-[500] text-[#0F47F2]  border border-[#0F47F2] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0F47F2] focus:border-transparent text-gray-500"
+                    required
                   />
                 </div>
               </div>
@@ -291,37 +385,71 @@ const JobApplicationForm = () => {
               <div>
                 <label className="block text-[20px] font-[400] text-[#4B5563] mb-3">Notice Period</label>
                 <input
+                  id="notice_period"
                   type="text"
                   value={formData.noticePeriod}
                   onChange={(e) => handleInputChange('noticePeriod', e.target.value)}
-                  placeholder="2 Days"
+                  placeholder="30 Days"
                   className="w-full px-3 py-2 text-[20px] font-[500] text-[#0F47F2]  border border-[#0F47F2] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0F47F2] focus:border-transparent text-gray-500"
+                  required
                 />
               </div>
 
               {/* Upload Resume */}
               <div>
                 <label className="block text-[20px] font-[400] text-[#4B5563] mb-3">Upload Resume (PDF)</label>
-                <div className="border-2 border-dashed border-[#0F47F2] rounded-xl p-6 text-center">
+                <label htmlFor="resume-upload">
+                <div className="border-2 border-dashed border-[#0F47F2] rounded-xl p-6 text-center" 
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    onClick={handleUploadClick}
+                    onKeyDown={handleKeyDown}
+                    tabIndex={0}
+                    role="button"
+                    aria-label="Upload resume">
                   <div className="flex flex-col items-center">
                     <div className="w-8 h-8  mb-2 flex items-center justify-center">
                       <svg width="33" height="33" viewBox="0 0 33 33" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path opacity="0.5" d="M24.2484 11.8516C27.6194 11.8703 29.445 12.0198 30.636 13.2107C31.9979 14.5726 31.9979 16.7645 31.9979 21.1482V22.6981C31.9979 27.0818 31.9979 29.2738 30.636 30.6356C29.2741 31.9975 27.0822 31.9975 22.6985 31.9975H10.2994C5.9156 31.9975 3.72372 31.9975 2.36186 30.6356C1 29.2738 1 27.0818 1 22.6981V21.1482C1 16.7645 1 14.5726 2.36186 13.2107C3.55277 12.0198 5.3784 11.8703 8.74947 11.8516" stroke="#0F47F2" stroke-width="2" stroke-linecap="round"/>
                     <path d="M16.4973 0.999823V21.1484M16.4973 21.1484L21.147 15.7238M16.4973 21.1484L11.8477 15.7238" stroke="#0F47F2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-
                     </div>
-                    <p className="text-[16px] font-[400] text-[#4B5563]">Drag and drop your job description file here</p>
-                    <p className="text-[14px] font-[400] text-[#818283] mt-1">or click to browse</p>
-                  </div>
+                    {resume ? (
+                        <p className="text-[16px] font-[400] text-[#4B5563]">{resume.name}</p>
+                      ) : (
+                        <>
+                          <p className="text-[16px] font-[400] text-[#4B5563]">Drag and drop your resume file here</p>
+                          <p className="text-[14px] font-[400] text-[#818283] mt-1">or click to browse</p>
+                        </>
+                      )}
                 </div>
               </div>
-
+              </label>
+                <input
+                  id="resume-upload"
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleFileSelect}
+                  hidden
+                  required
+                />
+                {uploadError && <p className="text-red-500 mt-2">{uploadError}</p>}
               {/* Submit Button */}
-              <button className=" bg-[#0F47F2] text-[#ECF1FF] py-3 px-6 text-[20px] rounded-xl hover:bg-blue-800 transition-colors font-[400] mt-6">
-                Submit Application
+              <button 
+                type="submit" 
+                className="bg-[#0F47F2] text-[#ECF1FF] py-3 px-6 text-[20px] rounded-xl hover:bg-blue-800 transition-colors font-[400] mt-6 disabled:opacity-50"
+                disabled={submitLoading}
+              >
+                {submitLoading ? 'Submitting...' : 'Submit Application'}
               </button>
-            </div>
+              {submitError && <p className="text-red-500 mt-2">{submitError}</p>}
+              {submitSuccess && <p className="text-green-500 mt-2">Application submitted successfully!</p>}
+              </div>
+              </div>
+            </form>
           </div>
         </div>
       </div>

@@ -345,6 +345,38 @@ class JobPostService {
     }
   }
 
+  async applyToJob(jobId: number, applicationData: {
+    name: string;
+    title: string;
+    mailId: string;
+    contactNumber: string;
+    currentCTA: string;
+    expectedCTA: string;
+    noticePeriod: string;
+    resume: File;
+  }): Promise<any> {
+    try {
+      const formData = new FormData();
+      formData.append('name', applicationData.name);
+      formData.append('title', applicationData.title);
+      formData.append('email', applicationData.mailId);
+      formData.append('contact_number', applicationData.contactNumber);
+      formData.append('current_cta', applicationData.currentCTA);
+      formData.append('expected_cta', applicationData.expectedCTA);
+      formData.append('notice_period', applicationData.noticePeriod);
+      formData.append('resume', applicationData.resume);
+
+      const response = await apiClient.post(`/jobs/${jobId}/apply/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to apply to job');
+    }
+  }
+
   async getAIJD(
     jobId: number
   ): Promise<{
