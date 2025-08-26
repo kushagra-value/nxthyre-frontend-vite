@@ -74,9 +74,36 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [loadingCandidateDetails, setLoadingCandidateDetails] = useState(false);
 
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
-  
+
+  const [codingQuestions, setCodingQuestions] = useState<
+      {
+        name: string;
+        question: string;
+        language: string;
+        difficulty: string;
+        status: string;
+      }[]
+    >([]);
+    const [date, setDate] = useState("");
+    const [totalQuestions, setTotalQuestions] = useState(0);
 
   const jobId = pipelineId;
+
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  const getDifficultyLevel = (diff: any) => {
+    const num = parseInt(diff);
+    if (num < 8) return "Easy";
+    if (num < 10) return "Medium";
+    return "Hard";
+  };
+
+  const mapStatus = (status: any) => {
+    if (status === "Accepted") return "Pass";
+    if (status === "Wrong Answer") return "Fail";
+    return "Skip";
+  };
+
 
   const shareableStages = [
     {
@@ -236,6 +263,21 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
             Number(jobId),
             candidateDetails.candidate.id
           );
+
+          const questions = res.problem_results.map((pr: any) => ({
+            name: pr.problem.name,
+            question: pr.problem.description,
+            language: pr.language || "N/A",
+            difficulty: getDifficultyLevel(pr.problem.difficulty),
+            status: mapStatus(pr.status),
+          }));
+          setCodingQuestions(questions);
+          const completedDate = new Date(res.completed_at);
+          setDate(completedDate.toLocaleDateString("en-GB"));
+
+          const total_questions = res.problem_results.length;
+          setTotalQuestions(total_questions);
+
           setAssessmentResults(res.data);
         } catch (error) {
           console.error("Error fetching assessment results:", error);
@@ -706,7 +748,7 @@ const ArchiveIcon = () => (
               <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-gray-900">Assessment</h2>
-                  <span className="text-gray-500 text-sm">{new Date( assessmentResults?.completed_at || '').toLocaleDateString()}</span>
+                  <span className="text-gray-500 text-sm">{date}</span>
                 </div>
 
                 {/* Assessment Tabs */}
@@ -814,28 +856,41 @@ const ArchiveIcon = () => (
                   ) : (
                     <div>
                       <div className="flex items-center justify-between mb-6">
-                        <span className="text-base font-medium text-gray-900">Questions <span className="text-gray-500">({assessmentResults?.problem_results?.length || 0})</span></span>
+                        <span className="text-base font-medium text-gray-900">Questions <span className="text-gray-500">({totalQuestions})</span></span>
                         <span className="text-blue-600 text-xl font-medium">Score: <span className="font-bold">{assessmentResults?.total_score || 0}</span>/{assessmentResults?.problem_results?.length || 0}</span>
                       </div>
 
                       {/* Question Items */}
                       <div className="space-y-4">
-                        {(assessmentResults?.problem_results || [])?.map((item:any, index:any) => (
+                        {codingQuestions?.map((item:any, index:any) => {
+                          const lines = item.question.split("\n");
+                          const visibleLines = isExpanded ? lines : lines.slice(0, 2);
+                          const hiddenLineCount = Math.max(0, lines.length - 2);
+
+                          return (
                           <div key={item.id} className="bg-[#F5F9FB] border border-gray-400 rounded-lg">
                             <div className="flex items-center justify-left gap-4 m-4">
-                              <span className="text-base font-[400] text-gray-600">Q{item.id}.</span>
-                              <p className="text-sm text-gray-400 leading-relaxed">{item.question}</p>
+                              <span className="text-base font-[400] text-gray-600">Q{index+1}.</span>
+                              <p className="text-sm text-gray-400 leading-relaxed">{item.name}</p>
                             </div>
+
+                            <p className="text-sm text-[#818283] flex-1 whitespace-pre-line">
+                              {visibleLines.join("\n")}
+                              {!isExpanded && hiddenLineCount > 0 && " ..."}
+                            </p>
                             <div className="px-4 border border-gray-200 bg-white rounded-lg">
                             <div className="flex items-center justify-between text-sm text-gray-500 ml-2 pl-8 border-b border-gray-200 py-2">
                               <div className="text-sm text-gray-400">{item.language || 'N/A'}</div>
                               <div className="flex items-center gap-3">
-                                <button className="text-gray-400 hover:text-gray-600 flex items-center gap-1">
+                                <button className="text-gray-400 hover:text-gray-600 flex items-center gap-1"
+                                onClick={() => setIsExpanded(!isExpanded)}
+                                >
                                   <svg width="16" height="16" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
                                     <path d="M1 9.5C1 5.49306 1 3.48959 2.2448 2.2448C3.48959 1 5.49306 1 9.5 1C13.5069 1 15.5104 1 16.7552 2.2448C18 3.48959 18 5.49306 18 9.5C18 13.5069 18 15.5104 16.7552 16.7552C15.5104 18 13.5069 18 9.5 18C5.49306 18 3.48959 18 2.2448 16.7552C1 15.5104 1 13.5069 1 9.5Z" stroke="#818283"/>
                                     <path d="M13.75 5.25781H11.2M13.75 5.25781V7.80781M13.75 5.25781L10.775 8.23281M5.25 13.7578H7.8M5.25 13.7578V11.2078M5.25 13.7578L8.225 10.7828" stroke="#818283" stroke-linecap="round" stroke-linejoin="round"/>
                                   </svg>
-                                  <span className="text-sm">Expand</span>
+                                 
+                                  <span className="text-sm">{isExpanded ? "Collapse" : "Expand"}{" "}</span>
                                 </button>
                                 <button className="text-gray-400 hover:text-gray-600 flex items-center gap-1">
                                   <svg width="16" height="16" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
@@ -844,9 +899,9 @@ const ArchiveIcon = () => (
                                     <path d="M9 13.7797V4.17969" stroke="#818283" stroke-linecap="round"/>
                                     <path d="M13 13.8203V9.82031" stroke="#818283" stroke-linecap="round"/>
                                   </svg>
-                                  <span className="text-sm">{item.problem.difficulty}</span>
+                                  <span className="text-sm">{item.difficulty}</span>
                                 </button>
-                                <button className={`${item.status === 'Accepted' ? 'text-green-400' : item.status === 'Wrong Answer' ? 'text-red-400' : 'text-gray-400'} hover:text-green-600 flex items-center gap-1`}>
+                                <button className={`${item.status === 'Pass' ? 'text-[#007A5A]' : item.status === 'Fail' ? 'text-[#ED051C]' : 'text-gray-400'} hover:text-gray-600 flex items-center gap-1`}>
                                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
                                     <g clip-path="url(#clip0_2726_638)">
                                       <path d="M8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16Z" fill="#2FD08D"/>
@@ -858,18 +913,33 @@ const ArchiveIcon = () => (
                                       </clipPath>
                                     </defs>
                                   </svg>
-                                  <span className="text-sm">{item.status === 'Accepted' ? 'pass' : item.status.toLowerCase()}</span>
+                                  <span
+                                    className={`${
+                                      item.status === "Pass"
+                                        ? "text-[#007A5A]"
+                                        : item.status === "Fail"
+                                        ? "text-[#ED051C]"
+                                        : "text-[#818283]"
+                                    } font-medium`}
+                                  >
+                                    {item.status}
+                                  </span>
                                 </button>
 
                               </div>
                             </div>
                             <div className="flex items-center justify-between text-sm text-gray-400 ml-2 pl-8 py-2">
-                              {item.source_code?.split("\n").length}
+                              {!isExpanded && hiddenLineCount > 0 && (
+                                <p className="px-4 py-3 text-sm text-[#BCBCBC] bg-white">
+                                  {hiddenLineCount} hidden lines
+                                </p>
+                              )}
                             </div>
+                            
                             </div>
                             
                           </div>
-                        ))}
+                        )})}
                       </div>
                     </div>
                   )}
