@@ -864,23 +864,19 @@ const ArchiveIcon = () => (
                       <div className="space-y-4">
                         {codingQuestions?.map((item:any, index:any) => {
                           const lines = item.question.split("\n");
-                          const visibleLines = isExpanded ? lines : lines.slice(0, 2);
+                          const visibleLines = isExpanded ? lines : lines.slice(0, 1);
                           const hiddenLineCount = Math.max(0, lines.length - 2);
 
                           return (
                           <div key={item.id} className="bg-[#F5F9FB] border border-gray-400 rounded-lg">
                             <div className="flex items-center justify-left gap-4 m-4">
                               <span className="text-base font-[400] text-gray-600">Q{index+1}.</span>
-                              <p className="text-sm text-gray-400 leading-relaxed">{item.name}</p>
+                              <p className="text-sm text-gray-400 flex-1 whitespace-pre-line leading-relaxed">{visibleLines.join("\n")}{!isExpanded && hiddenLineCount > 0 && " ..."}</p>
                             </div>
 
-                            <p className="text-sm text-[#818283] flex-1 whitespace-pre-line">
-                              {visibleLines.join("\n")}
-                              {!isExpanded && hiddenLineCount > 0 && " ..."}
-                            </p>
                             <div className="px-4 border border-gray-200 bg-white rounded-lg">
-                            <div className="flex items-center justify-between text-sm text-gray-500 ml-2 pl-8 border-b border-gray-200 py-2">
-                              <div className="text-sm text-gray-400">{item.language || 'N/A'}</div>
+                            <div className={`flex items-center justify-between text-sm text-gray-500 ml-2 pl-8 ${!isExpanded && hiddenLineCount > 0 && "border-b border-gray-200"} py-2`}>
+                              <div className="text-sm text-gray-400">{item.language || ' '}</div>
                               <div className="flex items-center gap-3">
                                 <button className="text-gray-400 hover:text-gray-600 flex items-center gap-1"
                                 onClick={() => setIsExpanded(!isExpanded)}
@@ -902,17 +898,33 @@ const ArchiveIcon = () => (
                                   <span className="text-sm">{item.difficulty}</span>
                                 </button>
                                 <button className={`${item.status === 'Pass' ? 'text-[#007A5A]' : item.status === 'Fail' ? 'text-[#ED051C]' : 'text-gray-400'} hover:text-gray-600 flex items-center gap-1`}>
-                                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
-                                    <g clip-path="url(#clip0_2726_638)">
-                                      <path d="M8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16Z" fill="#2FD08D"/>
-                                      <path d="M6.068 7.983L7.809 9.7295L12.374 5.134L13 5.769L7.809 11L5.4415 8.6185L6.068 7.983ZM7.123 7.828L9.932 5L10.5585 5.635L7.75 8.465L7.123 7.828ZM5.985 10.243L5.367 10.866L3 8.485L3.6255 7.85L5.985 10.243Z" fill="white"/>
-                                    </g>
-                                    <defs>
-                                      <clipPath id="clip0_2726_638">
-                                        <rect width="16" height="16" fill="white"/>
+                                  {item.status === 'Pass'? (
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
+                                      <g clip-path="url(#clip0_2726_638)">
+                                        <path d="M8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16Z" fill="#2FD08D"/>
+                                        <path d="M6.068 7.983L7.809 9.7295L12.374 5.134L13 5.769L7.809 11L5.4415 8.6185L6.068 7.983ZM7.123 7.828L9.932 5L10.5585 5.635L7.75 8.465L7.123 7.828ZM5.985 10.243L5.367 10.866L3 8.485L3.6255 7.85L5.985 10.243Z" fill="white"/>
+                                      </g>
+                                      <defs>
+                                        <clipPath id="clip0_2726_638">
+                                          <rect width="16" height="16" fill="white"/>
+                                        </clipPath>
+                                      </defs>
+                                    </svg>
+                                  )
+                                  :(
+                                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                      <g clip-path="url(#clip0_2216_8607)">
+                                      <path d="M6.5 13C10.0899 13 13 10.0899 13 6.5C13 2.91015 10.0899 0 6.5 0C2.91015 0 0 2.91015 0 6.5C0 10.0899 2.91015 13 6.5 13Z" fill="#FD374B"/>
+                                      <path d="M8.30306 8.98304C8.21373 8.9834 8.12523 8.96594 8.04272 8.93169C7.96022 8.89745 7.88537 8.84709 7.82255 8.78358L7.33297 8.294C7.29382 8.25095 7.27273 8.1945 7.27406 8.13633C7.27539 8.07816 7.29903 8.02273 7.3401 7.98152C7.38117 7.9403 7.43652 7.91646 7.49468 7.91493C7.55285 7.91339 7.60937 7.93428 7.65256 7.97328L8.14327 8.46286C8.18574 8.50507 8.24318 8.52877 8.30306 8.52877C8.36294 8.52877 8.42039 8.50507 8.46286 8.46286C8.50507 8.42039 8.52877 8.36294 8.52877 8.30306C8.52877 8.24318 8.50507 8.18574 8.46286 8.14327L6.98052 6.65979C6.9383 6.61733 6.9146 6.55988 6.9146 6.5C6.9146 6.44012 6.9383 6.38267 6.98052 6.34021L8.46286 4.85673C8.50507 4.81426 8.52877 4.75682 8.52877 4.69694C8.52877 4.63706 8.50507 4.57961 8.46286 4.53714C8.42039 4.49493 8.36294 4.47123 8.30306 4.47123C8.24318 4.47123 8.18574 4.49493 8.14327 4.53714L6.65979 6.01949C6.61733 6.0617 6.55988 6.0854 6.5 6.0854C6.44012 6.0854 6.38267 6.0617 6.34021 6.01949L4.85673 4.53714C4.81426 4.49493 4.75682 4.47123 4.69694 4.47123C4.63706 4.47123 4.57961 4.49493 4.53714 4.53714C4.49493 4.57961 4.47123 4.63706 4.47123 4.69694C4.47123 4.75682 4.49493 4.81426 4.53714 4.85673L6.01949 6.34021C6.0617 6.38267 6.0854 6.44012 6.0854 6.5C6.0854 6.55988 6.0617 6.61733 6.01949 6.65979L4.53714 8.14327C4.49493 8.18574 4.47123 8.24318 4.47123 8.30306C4.47123 8.36294 4.49493 8.42039 4.53714 8.46286C4.57961 8.50507 4.63706 8.52877 4.69694 8.52877C4.75682 8.52877 4.81426 8.50507 4.85673 8.46286L6.34021 6.98052C6.38267 6.9383 6.44012 6.9146 6.5 6.9146C6.55988 6.9146 6.61733 6.9383 6.65979 6.98052L6.93632 7.25704C6.97885 7.29987 7.00262 7.35784 7.00241 7.4182C7.0022 7.47856 6.97801 7.53636 6.93518 7.57889C6.89235 7.62142 6.83438 7.6452 6.77402 7.64498C6.71366 7.64477 6.65586 7.62059 6.61333 7.57776L6.5 7.46443L5.17745 8.78358C5.1152 8.85039 5.04013 8.90397 4.95672 8.94113C4.87331 8.9783 4.78327 8.99828 4.69197 8.99989C4.60067 9.0015 4.50998 8.98471 4.42531 8.95051C4.34064 8.91631 4.26373 8.86541 4.19916 8.80084C4.13459 8.73627 4.08369 8.65936 4.04949 8.57469C4.01529 8.49002 3.99849 8.39933 4.00011 8.30803C4.00172 8.21673 4.0217 8.12669 4.05887 8.04328C4.09603 7.95987 4.14961 7.8848 4.21642 7.82255L5.53784 6.5L4.21642 5.17745C4.14961 5.1152 4.09603 5.04013 4.05887 4.95672C4.0217 4.87331 4.00172 4.78327 4.00011 4.69197C3.99849 4.60067 4.01529 4.50998 4.04949 4.42531C4.08369 4.34064 4.13459 4.26373 4.19916 4.19916C4.26373 4.13459 4.34064 4.08369 4.42531 4.04949C4.50998 4.01529 4.60067 3.99849 4.69197 4.00011C4.78327 4.00172 4.87331 4.0217 4.95672 4.05887C5.04013 4.09603 5.1152 4.14961 5.17745 4.21642L6.5 5.53784L7.82255 4.21642C7.8848 4.14961 7.95987 4.09603 8.04328 4.05887C8.12669 4.0217 8.21673 4.00172 8.30803 4.00011C8.39933 3.99849 8.49002 4.01529 8.57469 4.04949C8.65936 4.08369 8.73627 4.13459 8.80084 4.19916C8.86541 4.26373 8.91631 4.34064 8.95051 4.42531C8.98471 4.50998 9.0015 4.60067 8.99989 4.69197C8.99828 4.78327 8.9783 4.87331 8.94113 4.95672C8.90397 5.04013 8.85039 5.1152 8.78358 5.17745L7.46216 6.5L8.78358 7.82255C8.87856 7.91764 8.94322 8.03875 8.96941 8.17057C8.99559 8.3024 8.98213 8.43902 8.93071 8.5632C8.8793 8.68737 8.79224 8.79353 8.68052 8.86825C8.56881 8.94298 8.43746 8.98292 8.30306 8.98304Z" fill="white"/>
+                                      </g>
+                                      <defs>
+                                      <clipPath id="clip0_2216_8607">
+                                      <rect width="13" height="13" fill="white"/>
                                       </clipPath>
-                                    </defs>
-                                  </svg>
+                                      </defs>
+                                    </svg>
+                                  )}
+
                                   <span
                                     className={`${
                                       item.status === "Pass"
@@ -928,7 +940,7 @@ const ArchiveIcon = () => (
 
                               </div>
                             </div>
-                            <div className="flex items-center justify-between text-sm text-gray-400 ml-2 pl-8 py-2">
+                            <div className={`flex items-center justify-between text-sm text-gray-400 ml-2 pl-8 ${!isExpanded && hiddenLineCount > 0 && "py-2"} `}>
                               {!isExpanded && hiddenLineCount > 0 && (
                                 <p className="px-4 py-3 text-sm text-[#BCBCBC] bg-white">
                                   {hiddenLineCount} hidden lines
