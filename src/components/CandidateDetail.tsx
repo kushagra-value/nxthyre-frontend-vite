@@ -303,7 +303,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                       </h4>
                       <p className="text-sm text-[#4B5563]">{`${exp?.company} | ${exp?.location}`}</p>
                       <p className="text-sm text-[#6B7280]">
-                        {exp?.start_date} - {exp?.end_date || "Present"}
+                        {exp?.start_date && (
+                          <span>
+                            {exp?.start_date} - {exp?.end_date || "Present"}
+                          </span>
+                        )}
                       </p>
                       <p className="text-sm text-[#4B5563] mt-1">
                         {exp?.description}
@@ -357,7 +361,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 </h4>
                 <p className="text-sm text-[#4B5563]">{edu?.specialization}</p>
                 <p className="text-sm text-[#6B7280]">
-                  {edu?.start_date} - {edu?.end_date}
+                  {edu?.start_date && (
+                    <span>
+                      {edu?.start_date} - {edu?.end_date}
+                    </span>
+                  )}
                 </p>
                 {edu?.institution && (
                   <p className="text-sm text-[#4B5563]">{edu?.institution}</p>
@@ -390,9 +398,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                       {cert?.name}
                     </h4>
                     <p className="text-sm text-[#4B5563]">{cert?.issuer}</p>
-                    <p className="text-sm text-[#6B7280]">
-                      {cert?.issued_date}
-                    </p>
+                    {cert.issued_date && (
+                      <p className="text-sm text-[#6B7280]">
+                        {cert?.issued_date}
+                      </p>
+                    )}
                   </div>
                 )
               )
