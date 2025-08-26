@@ -794,9 +794,6 @@ function MainApp() {
       case "share-pipelines":
         handleSharePipelines(jobId);
         break;
-      case "share-pipelines":
-        handleSharePipelines(jobId);
-        break;
       case "archive":
         showToast.success(`Feature Coming Soon`);
         break;
@@ -967,8 +964,6 @@ function MainApp() {
                   <Toaster />
                   <PipelineStages
                     onBack={handleBackFromPipelines}
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
                     onOpenLogoutModal={handleOpenLogoutModal}
                   />
                 </>
@@ -1080,20 +1075,21 @@ function MainApp() {
                                           Share Pipelines
                                         </button>
 
-                                        {category.status === "DRAFT" && (
-                                          <button
-                                            onClick={() =>
-                                              handleCategoryAction(
-                                                "publish-job",
-                                                category.id
-                                              )
-                                            }
-                                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                          >
-                                            <Globe className="w-4 h-4 mr-2" />
-                                            Publish Job
-                                          </button>
-                                        )}
+                                        {category.status === "DRAFT" &&
+                                          category.visibility === "PRIVATE" && (
+                                            <button
+                                              onClick={() =>
+                                                handleCategoryAction(
+                                                  "publish-job",
+                                                  category.id
+                                                )
+                                              }
+                                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                            >
+                                              <Globe className="w-4 h-4 mr-2" />
+                                              Publish Job
+                                            </button>
+                                          )}
 
                                         {category.status === "PUBLISHED" &&
                                           category.visibility === "PUBLIC" && (
@@ -1349,8 +1345,13 @@ function MainApp() {
                                   (cat) => cat.id === showPublishModal
                                 )?.name
                               }
-                              ? This action will publish job on LinkedIn.
+                              ? This action will publish job on LinkedIn, Google
+                              Jobs,Times Ascent, Cutshort and others.
                             </p>
+                            <span className="text-gray-400 text-sm mb-6">
+                              (Note: Once published, the job will be visible on
+                              both platforms within 24–48 hours.)
+                            </span>
                             <div className="flex space-x-3">
                               <button
                                 onClick={() => setShowPublishModal(null)}
@@ -1383,7 +1384,7 @@ function MainApp() {
                               Confirm Unpublish Job
                             </h3>
                             <p className="text-gray-600 mb-6">
-                              Are you sure you want to Unpublish{" "}
+                              Are you sure you want to Unpublish
                               {
                                 categories.find(
                                   (cat) => cat.id === showUnpublishModal
@@ -1391,6 +1392,11 @@ function MainApp() {
                               }
                               ? This action cannot be undone.
                             </p>
+                            <span className="text-gray-400 text-sm mb-6">
+                              (Note: this action will unpublish job on published
+                              over LinkedIn, Google Jobs,Times Ascent, Cutshort
+                              and others within 24–48 hours.)
+                            </span>
                             <div className="flex space-x-3">
                               <button
                                 onClick={() => setShowUnpublishModal(null)}
