@@ -893,7 +893,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     className="pl-3 pr-2 py-1.5 text-blue-600 text-sm font-medium flex items-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleSaveToPipeline(candidate.id,1926);
+                      handleSaveToPipeline(candidate.id,3882);
                     }}
                     aria-label={`Save ${candidate.full_name} to pipeline`}
                   >
