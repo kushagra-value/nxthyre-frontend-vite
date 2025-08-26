@@ -110,11 +110,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           const data = await candidateService.getCandidateDetails(candidate.id);
           setDetailedCandidate({
             ...data,
-            candidate: {
-              ...data.candidate,
-              candidate_email: candidate.candidate_email,
-              candidate_phone: candidate.candidate_phone,
-            },
           });
         } catch (error) {
           console.error("Error fetching candidate details:", error);
@@ -124,7 +119,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       };
       fetchCandidateDetails();
     }
-  }, [candidate?.id, candidate?.candidate_email, candidate?.candidate_phone]);
+  }, [candidate?.id]);
 
   if (loading) {
     return (
@@ -222,18 +217,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const formattedPhone = phone.replace(/[^0-9+]/g, "");
     window.open(`https://wa.me/${formattedPhone}`, "_blank");
   };
-
-  const hasContactInfo =
-    !!detailedCandidate.candidate.candidate_email &&
-    !!detailedCandidate.candidate.candidate_phone;
-  const displayEmail = hasContactInfo
-    ? detailedCandidate.candidate.candidate_email
-    : `${detailedCandidate.candidate.full_name
-        ?.toLocaleLowerCase()
-        ?.slice(0, 2)}*********@gmail.com`;
-  const displayPhone = hasContactInfo
-    ? detailedCandidate.candidate.candidate_phone
-    : "93********45";
 
   const getInitials = (name: string) => {
     if (!name) return "??";
@@ -625,7 +608,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   // The ReferenceCard component remains unchanged, as the mapped fields match the expected props
   // No modifications needed here, but included for context
-  const ReferenceCard = ({ reference }) => {
+  const ReferenceCard = (reference:any) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showPopup, setShowPopup] = useState<
       "email" | "phone" | "linkedin" | null
@@ -637,7 +620,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         ? reference.description.substring(0, truncateLength) + "..."
         : reference.description;
 
-    const handleMouseEnter = (type) => {
+    const handleMouseEnter = (type:any) => {
       setShowPopup(type);
     };
 
@@ -978,16 +961,16 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
-            <span className="text-sm text-gray-700">{displayEmail}</span>
+            <span className="text-sm text-gray-700">{detailedCandidate?.candidate?.email}</span>
           </div>
           <button
             className={`flex space-x-2 ml-auto p-1 ${
-              hasContactInfo
+              detailedCandidate?.candidate?.email
                 ? "text-gray-400 hover:text-gray-600"
                 : "text-gray-300 cursor-not-allowed"
             }`}
-            onClick={() => hasContactInfo && handleCopy(displayEmail)}
-            disabled={!hasContactInfo}
+            onClick={() => detailedCandidate?.candidate?.email && handleCopy(detailedCandidate?.candidate?.email)}
+            disabled={!detailedCandidate?.candidate?.email}
           >
             <Copy className="w-4 h-4" />
           </button>
@@ -995,28 +978,28 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
-            <span className="text-sm text-gray-700">{displayPhone}</span>
+            <span className="text-sm text-gray-700">{detailedCandidate?.candidate?.phone}</span>
           </div>
           <div>
             <button
               className={`p-1 ${
-                hasContactInfo
+                detailedCandidate?.candidate?.phone
                   ? "text-gray-400 hover:text-gray-600"
                   : "text-gray-300 cursor-not-allowed"
               }`}
-              onClick={() => hasContactInfo && handleWhatsApp(displayPhone)}
-              disabled={!hasContactInfo}
+              onClick={() => detailedCandidate?.candidate?.phone && handleWhatsApp(detailedCandidate?.candidate?.phone)}
+              disabled={!detailedCandidate?.candidate?.phone}
             >
               <FontAwesomeIcon icon={faWhatsapp} />
             </button>
             <button
               className={`p-1 ${
-                hasContactInfo
+                detailedCandidate?.candidate?.phone
                   ? "text-gray-400 hover:text-gray-600"
                   : "text-gray-300 cursor-not-allowed"
               }`}
-              onClick={() => hasContactInfo && handleCopy(displayPhone)}
-              disabled={!hasContactInfo}
+              onClick={() => detailedCandidate?.candidate?.phone && handleCopy(detailedCandidate?.candidate?.phone)}
+              disabled={!detailedCandidate?.candidate?.phone}
             >
               <Copy className="w-4 h-4" />
             </button>
