@@ -859,7 +859,7 @@ const ArchiveIcon = () => (
                     <div>
                       <div className="flex items-center justify-between mb-6">
                         <span className="text-base font-medium text-gray-900">Questions <span className="text-gray-500">({totalQuestions})</span></span>
-                        <span className="text-base font-medium">Score: <span className="text-xl bg-blue-600 font-bold bg-blue-50 rounded-md px-2 py-1">{codingQuestions?.reduce((sum, item) => sum + item.score, 0)}</span>/{totalQuestions}</span>
+                        <span className="text-base font-medium">Score: <span className="text-xl text-blue-600 font-bold bg-blue-50 rounded-md px-2">{codingQuestions?.reduce((sum, item) => sum + item.score, 0)}</span>/{totalQuestions}</span>
                       </div>
 
                       {/* Question Items */}
@@ -899,7 +899,7 @@ const ArchiveIcon = () => (
                                   </svg>
                                   <span className="text-sm">{item.difficulty}</span>
                                 </button>
-                                <button className={`${item.status === 'Pass' ? 'text-[#007A5A]' : item.status === 'Fail' ? 'text-[#ED051C]' : 'text-gray-400'} hover:text-gray-600 flex items-center gap-1`}>
+                                <button className={`${item.status === 'Pass' ? 'text-[#007A5A]' : item.status === 'Fail' ? 'text-[#ED051C]' : 'text-yellow-600'} hover:text-gray-600 flex items-center gap-1`}>
                                   {item.status === 'Pass'? (
                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
                                       <g clip-path="url(#clip0_2726_638)">
@@ -926,7 +926,7 @@ const ArchiveIcon = () => (
                                       </defs>
                                     </svg>
                                   ):(
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-skip-forward-icon lucide-skip-forward"><path d="M21 4v16"/><path d="M6.029 4.285A2 2 0 0 0 3 6v12a2 2 0 0 0 3.029 1.715l9.997-5.998a2 2 0 0 0 .003-3.432z"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" className="bg-yellow-300 rounded-full p-1 lucide lucide-skip-forward-icon lucide-skip-forward"><path d="M21 4v16"/><path d="M6.029 4.285A2 2 0 0 0 3 6v12a2 2 0 0 0 3.029 1.715l9.997-5.998a2 2 0 0 0 .003-3.432z"/></svg>
                                   )}
 
                                   <span
