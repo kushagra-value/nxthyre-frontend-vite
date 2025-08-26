@@ -274,17 +274,17 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               <div
                 className={`${
                   !showMore && experiences.length > 1
-                    ? "max-h-[150px] overflow-hidden"
+                    ? "max-h-[120px] overflow-hidden"
                     : ""
                 }`}
                 style={{
                   maskImage:
                     !showMore && experiences.length > 1
-                      ? "linear-gradient(to bottom, black 10%, transparent 100%)"
+                      ? "linear-gradient(to bottom, black 60%, transparent 100%)"
                       : "none",
                   WebkitMaskImage:
                     !showMore && experiences.length > 1
-                      ? "linear-gradient(to bottom, black 10%, transparent 100%)"
+                      ? "linear-gradient(to bottom, black 60%, transparent 100%)"
                       : "none",
                 }}
               >
