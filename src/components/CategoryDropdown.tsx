@@ -80,7 +80,7 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
         const mappedCategories: CategoryItem[] = jobs.map((job) => ({
           id: job.id,
           name: job.title,
-          count: job.total_candidates || 0,
+          count: job.count || 0,
           status: job.status,
           visibility: job.visibility,
           invitesSent: job.invites_sent_count || 0,
@@ -245,10 +245,7 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
 
                       <button
                         onClick={() =>
-                          handleActionClick(
-                            "copy-link",
-                            category.id
-                          )
+                          handleActionClick("copy-link", category.id)
                         }
                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
                       >
@@ -277,10 +274,7 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
                       {category.status === "DRAFT" && (
                         <button
                           onClick={() =>
-                            handleActionClick(
-                              "publish-job",
-                              category.id
-                            )
+                            handleActionClick("publish-job", category.id)
                           }
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
                         >
@@ -289,17 +283,18 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
                         </button>
                       )}
 
-                      {category.status === "PUBLISHED" && category.visibility === "PUBLIC" && (
-                      <button
-                        onClick={() =>
-                          handleActionClick("unpublish-job", category.id)
-                        }
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                      >
-                        <Pause className="w-4 h-4 mr-2" />
-                        Unpublish Job
-                      </button>
-                      )}
+                      {category.status === "PUBLISHED" &&
+                        category.visibility === "PUBLIC" && (
+                          <button
+                            onClick={() =>
+                              handleActionClick("unpublish-job", category.id)
+                            }
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                          >
+                            <Pause className="w-4 h-4 mr-2" />
+                            Unpublish Job
+                          </button>
+                        )}
                       <button
                         onClick={() =>
                           handleActionClick("archive", category.id)
