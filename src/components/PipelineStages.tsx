@@ -54,7 +54,7 @@ interface Stage {
   slug: string;
   sort_order: number;
   candidate_count: number;
-  activity_update:string;
+  activity_update: string;
 }
 
 interface CandidateListItem {
@@ -68,7 +68,11 @@ interface CandidateListItem {
     linkedin_url: string;
     is_background_verified: boolean;
     experience_years: string;
-    experience_summary: { title: string; date_range: string, duration_years: number };
+    experience_summary: {
+      title: string;
+      date_range: string;
+      duration_years: number;
+    };
     education_summary: { title: string; date_range: string };
     notice_period_summary: string;
     skills_list: string[];
@@ -281,11 +285,15 @@ interface PipelineCandidate {
 interface PipelineStagesProps {
   onBack: () => void;
   onOpenLogoutModal: () => void;
+  onSendInvite: (applicationId: number) => Promise<void>;
+  deductCredits: () => Promise<void>;
 }
 
 const PipelineStages: React.FC<PipelineStagesProps> = ({
   onBack,
   onOpenLogoutModal,
+  onSendInvite,
+  deductCredits,
 }) => {
   const { user } = useAuthContext();
   const [selectedStage, setSelectedStage] = useState("Uncontacted");
@@ -1071,27 +1079,27 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           color: "text-[#0F47F2]",
         };
       case "Applied":
-        return {  color: "text-[#0F47F2]" };
+        return { color: "text-[#0F47F2]" };
       case "Coding Round":
         return {
           color: "text-[#CD9B05]",
         };
       case "AI Interview":
-        return { 
+        return {
           color: "text-[#CD9B05]",
         };
       case "Shortlisted":
-        return {  color: "text-[#CD9B05]" };
+        return { color: "text-[#CD9B05]" };
       case "First Interview":
         return { color: "text-[#CD9B05]" };
       case "Other Interview":
-        return {  color: "text-[#0F47F2]" };
+        return { color: "text-[#0F47F2]" };
       case "HR Round":
-        return {color: "text-[#0F47F2]" };
+        return { color: "text-[#0F47F2]" };
       case "Offer Sent":
         return { color: "text-[#0F47F2]" };
       case "Offer Accepted":
-        return {  color: "text-[#0F47F2]" };
+        return { color: "text-[#0F47F2]" };
       default:
         return { color: "text-[#0F47F2]" };
     }
@@ -1174,15 +1182,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       fetchCreditBalance();
     }
   }, [isAuthenticated]);
-
-  const deductCredits = async () => {
-    try {
-      const data = await creditService.getCreditBalance();
-      setCredits(data.credit_balance);
-    } catch (error) {
-      showToast.error("Failed to update credit balance");
-    }
-  };
 
   const handleOpenLogoutModal = () => {
     setShowLogoutModal(true);
@@ -1375,12 +1374,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       <span className="flex-1 font-medium">Prospect</span>
 
                       <p className={`text-xs text-blue-600`}>
-                       {
-                         stages.find((s) => ["Invites Sent"].includes(s.name))
-                         ?.activity_update ||
-                         stages.find((s) => ["Uncontacted"].includes(s.name))
-                           ?.activity_update 
-                      }
+                        {stages.find((s) => ["Invites Sent"].includes(s.name))
+                          ?.activity_update ||
+                          stages.find((s) => ["Uncontacted"].includes(s.name))
+                            ?.activity_update}
                       </p>
                     </div>
                     <span
@@ -1457,8 +1454,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       .map((stage) => {
                         const Icon = getStageIcon(stage);
                         const isSelected = selectedStage === stage;
-                        const candidateCount = pipelineCandidates[stage]?.length || 0;
-                        
+                        const candidateCount =
+                          pipelineCandidates[stage]?.length || 0;
+
                         return (
                           <button
                             key={stage}
@@ -1489,11 +1487,12 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 <span className="flex-1 font-medium">
                                   {stage}
                                 </span>
-                                
                               </div>
                               <span
                                 className={`px-2 py-1 text-sm ${
-                                  isSelected ? "text-[#0F47F2]" : "text-gray-400"
+                                  isSelected
+                                    ? "text-[#0F47F2]"
+                                    : "text-gray-400"
                                 }`}
                               >
                                 {candidateCount}
@@ -1758,24 +1757,32 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       {currentCandidates.map((candidate: any) => {
                         const isSearched = "current_stage" in candidate;
                         const fullName = candidate.candidate.full_name;
-                        const avatar =  candidate.candidate.avatar;
+                        const avatar = candidate.candidate.avatar;
                         const headline = candidate.candidate.headline;
                         const location = candidate.candidate.location;
                         const linkedinUrl = candidate.candidate.linkedin_url;
-                        const isBackgroundVerified = candidate.candidate.is_background_verified;
-                        const experienceYears = candidate.candidate.experience_years;
-                        const experienceSummaryTitle = candidate.candidate.experience_summary?.title;
-                        const experienceSummaryDateRange = candidate.candidate.experience_summary?.date_range;
-                        const educationSummaryTitle =  candidate.candidate.education_summary?.title;
-                        const noticePeriodSummary = candidate.candidate.notice_period_summary;
+                        const isBackgroundVerified =
+                          candidate.candidate.is_background_verified;
+                        const experienceYears =
+                          candidate.candidate.experience_years;
+                        const experienceSummaryTitle =
+                          candidate.candidate.experience_summary?.title;
+                        const experienceSummaryDateRange =
+                          candidate.candidate.experience_summary?.date_range;
+                        const educationSummaryTitle =
+                          candidate.candidate.education_summary?.title;
+                        const noticePeriodSummary =
+                          candidate.candidate.notice_period_summary;
                         const skillsList = candidate.candidate.skills_list;
                         const socialLinks = {
                           linkedin: linkedinUrl,
                           github: candidate.candidate.social_links?.github,
-                          portfolio: candidate.candidate.social_links?.portfolio,
+                          portfolio:
+                            candidate.candidate.social_links?.portfolio,
                           resume: candidate.candidate.social_links?.resume,
                         };
-                        const currentSalary = candidate.candidate.current_salary_lpa;
+                        const currentSalary =
+                          candidate.candidate.current_salary_lpa;
                         return (
                           <div
                             key={candidate.id}
@@ -1932,13 +1939,21 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 </div>
                               )}
                               {/* need to update the current Company Data */}
-                              { candidate.candidate.experience_summary?.date_range && (
+                              {candidate.candidate.experience_summary
+                                ?.date_range && (
                                 <div className="flex flex-col">
                                   <p className="text-[#A8A8A8] mr-[5px]">
                                     Current Company
                                   </p>
                                   <p className="text-[#4B5563]">
-                                   {candidate.candidate.experience_summary?.duration_years} {candidate.candidate.experience_summary?.duration_years>1 ? ("years"):("year")}
+                                    {
+                                      candidate.candidate.experience_summary
+                                        ?.duration_years
+                                    }{" "}
+                                    {candidate.candidate.experience_summary
+                                      ?.duration_years > 1
+                                      ? "years"
+                                      : "year"}
                                   </p>
                                 </div>
                               )}
@@ -1958,7 +1973,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   <p className="text-[#A8A8A8] mr-[5px]">
                                     Current Salary
                                   </p>
-                                  <p className="text-[#4B5563]">{currentSalary}</p>
+                                  <p className="text-[#4B5563]">
+                                    {currentSalary}
+                                  </p>
                                 </div>
                               )}
                             </div>
@@ -2059,6 +2076,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               archiveCandidate={archiveCandidate}
               stageData={selectedCandidate?.stageData}
               jobId={activeJobId ?? 0}
+              onSendInvite={onSendInvite}
+              deductCredits={deductCredits}
             />
           </div>
         </div>

@@ -965,6 +965,8 @@ function MainApp() {
                   <PipelineStages
                     onBack={handleBackFromPipelines}
                     onOpenLogoutModal={handleOpenLogoutModal}
+                    onSendInvite={handleSendInvite}
+                    deductCredits={deductCredits}
                   />
                 </>
               ) : (

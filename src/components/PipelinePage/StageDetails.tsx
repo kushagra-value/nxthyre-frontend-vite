@@ -32,8 +32,10 @@ import {
   MessageSquareText,
   SignalMedium,
   CheckCheck,
+  UserRoundCheck,
 } from "lucide-react";
 import candidateService from "../../services/candidateService";
+import { showToast } from "../../utils/toast";
 
 interface Stage {
   id: number;
@@ -292,6 +294,8 @@ interface StageDetailsProps {
   archiveCandidate: (applicationId: number) => Promise<void>;
   transferredStageData?: PipelineCandidate["stageData"];
   jobId: number;
+  deductCredits: () => Promise<void>;
+  onSendInvite: (applicationId: number) => Promise<void>;
 }
 
 const StageDetails: React.FC<StageDetailsProps> = ({
@@ -303,6 +307,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   archiveCandidate,
   transferredStageData,
   jobId,
+  deductCredits,
+  onSendInvite,
 }) => {
   const [activeTab, setActiveTab] = useState("Profile");
   const [showMoreProfile, setShowMoreProfile] = useState(false);
@@ -328,6 +334,30 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   const [totalQuestions, setTotalQuestions] = useState(0);
 
   const [activities, setActivities] = useState<Activity[]>([]);
+
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const handleSendInviteClick = async () => {
+    setShowConfirm(true);
+  };
+
+  const confirmSpend = async () => {
+    setShowConfirm(false);
+    try {
+      await deductCredits();
+      if (selectedCandidate?.id) {
+        await onSendInvite(Number(selectedCandidate.id));
+      } else {
+        showToast.error("No candidate selected");
+      }
+    } catch {
+      showToast.error("Failed to deduct credits");
+    }
+  };
+
+  const cancelSpend = () => {
+    setShowConfirm(false);
+  };
 
   useEffect(() => {
     setActiveTab("Profile");
@@ -610,10 +640,18 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                           {exp.companyName} | {exp.location}
                         </p>
                         <p className="text-sm text-[#818283]">
-                          {exp.startDate?.month}/{exp.startDate?.year} -{" "}
-                          {exp.isCurrent
-                            ? "Present"
-                            : `${exp.endDate?.month}/${exp.endDate?.year}`}
+                          {exp.startDate && (
+                            <span>
+                              {exp.startDate.month}/{exp.startDate.year} -{" "}
+                            </span>
+                          )}
+                          {exp.isCurrent ? (
+                            "Present"
+                          ) : exp.endDate ? (
+                            <span>
+                              {exp.endDate?.month}/{exp.endDate?.year}
+                            </span>
+                          ) : null}
                         </p>
                         <p className="text-sm text-[#818283] mt-1">
                           {exp.description}
@@ -657,9 +695,16 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                         )}
                       </h4>
                       <p className="text-sm text-[#818283]">{edu.schoolName}</p>
-                      <p className="text-sm text-[#818283]">
-                        {edu.startDate?.year} - {edu.endDate?.year}
-                      </p>
+                      {edu.startDate?.year &&
+                      edu.endDate?.year &&
+                      edu.startDate.year !== 0 &&
+                      edu.endDate.year !== 0 ? (
+                        <p className="text-sm text-[#818283]">
+                          {edu.startDate.year} - {edu.endDate.year}
+                        </p>
+                      ) : (
+                        " "
+                      )}
                     </div>
                   ))
                 ) : (
@@ -686,10 +731,27 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       </h4>
                       <p className="text-sm text-[#818283]">{cert.authority}</p>
                       <p className="text-sm text-[#818283]">
-                        {cert.startDate?.month}/{cert.startDate?.year} -{" "}
-                        {cert.endDate
-                          ? `${cert.endDate?.month}/${cert.endDate?.year}`
-                          : "Present"}
+                        {cert.licenseNumber}
+                      </p>
+                      <a
+                        href={cert.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-[#0F47F2] hover:underline"
+                      >
+                        {cert.url}
+                      </a>
+                      <p className="text-sm text-[#818283]">
+                        {cert.startDate && (
+                          <span>
+                            {cert.startDate?.month}/{cert.startDate?.year} -{" "}
+                          </span>
+                        )}
+                        {cert.endDate && (
+                          <span>
+                            {cert.endDate?.month}/{cert.endDate?.year}
+                          </span>
+                        )}
                       </p>
                     </div>
                   ))
@@ -910,8 +972,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         return (
           <div className="bg-[#F5F9FB] px-4 py-3 rounded-xl space-y-6">
             <div className="flex justify-between items-center">
-              <h3 className="text-xl font-medium text-[#4B5563]">
-                Questions ({totalQuestions})
+              <h3 className="text-xl text-[#4B5563]">
+                <span className="font-medium">Questions</span> ({totalQuestions}
+                )
               </h3>
               <p className="text-base text-[#818283]">{date}</p>
             </div>
@@ -1526,13 +1589,14 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 if (nextStage)
                   moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
               }}
-              className="w-[50%] lg:w-[60%] px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex justify-center items-center w-[50%] lg:w-[60%] px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
+              <UserRoundCheck className="w-5 h-5 mr-2" />
               Move to Next Stage
             </button>
-            <button className="flex justify-between items-center px-3 py-2 bg-blue-50 text-blue-700 border border-blue-700 rounded-lg hover:bg-blue-100 transition-colors">
-              <span className="mr-1">Resend</span>
-              <Send className="w-5 h-5" />
+            <button className="flex justify-center items-center px-3 py-2 bg-blue-50 text-blue-700 border border-blue-700 rounded-lg hover:bg-blue-100 transition-colors">
+              <Send className="w-5 h-5 mr-2" />
+              <span>Resend</span>
             </button>
             <button
               onClick={handleDeleteCandidate}
@@ -1614,6 +1678,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             <button
               className="flex-1 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
               style={{ width: "100%" }}
+              onClick={handleSendInviteClick}
             >
               Send Invite & Reveal Info
             </button>
@@ -1652,6 +1717,36 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           {renderTabContent()}
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 bg-gray-400 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg w-80 p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Confirm Usage
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              This will cost you{" "}
+              <span className="font-semibold">3 credits</span>. Do you want to
+              proceed?
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={cancelSpend}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmSpend}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

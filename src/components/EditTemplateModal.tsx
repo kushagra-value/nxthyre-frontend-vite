@@ -112,7 +112,7 @@ Best regards,
         sendViaEmail: template.can_be_sent_via_email,
         sendViaWhatsApp: template.can_be_sent_via_whatsapp,
         sendViaPhone: template.can_be_sent_via_call,
-        followUpTemplates: template.follow_up_steps.map((step) => ({
+        followUpTemplates: template.follow_up_steps.map((step: any) => ({
           send_after_hours: `${step.send_after_hours}hrs`,
           followup_mode: step.mode as "EMAIL" | "WHATSAPP" | "CALL",
           followup_body: step.body,
@@ -199,36 +199,25 @@ Best regards,
     });
   };
 
-  // const addFollowUp = () => {
-  //   setFormData({
-  //     ...formData,
-  //     followUpTemplates: [
-  //       ...formData.followUpTemplates,
-  //       {
-  //         send_after_hours: 0,
-  //         followup_mode: "EMAIL",
-  //         followup_body: "",
-  //         followup_subject: "",
-  //         order_no: formData.followUpTemplates.length,
-  //       },
-  //     ],
-  //   });
-  // };
+  // New states
+  const [isEditingFollowUp, setIsEditingFollowUp] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
-  // const updateFollowUp = (index: number, field: string, value: any) => {
-  //   const updated = [...formData.followUpTemplates];
-  //   updated[index] = { ...updated[index], [field]: value };
-  //   setFormData({ ...formData, followUpTemplates: updated });
-  // };
-
-  // const removeFollowUp = (index: number) => {
-  //   setFormData({
-  //     ...formData,
-  //     followUpTemplates: formData.followUpTemplates.filter(
-  //       (_, i) => i !== index
-  //     ),
-  //   });
-  // };
+  // Edit Follow Up handler
+  const editFollowUp = (index: number) => {
+    const followUpToEdit = formData.followUpTemplates[index];
+    setNewFollowUp({
+      send_after_hours: followUpToEdit.send_after_hours as
+        | "24hrs"
+        | "48hrs"
+        | "72hrs",
+      followup_mode: followUpToEdit.followup_mode,
+      followup_body: followUpToEdit.followup_body,
+    });
+    setEditingIndex(index);
+    setIsEditingFollowUp(true);
+    setIsAddingFollowUp(true); // show form
+  };
 
   if (!isOpen) return null;
 
@@ -272,7 +261,7 @@ Best regards,
                     disabled={loading}
                   >
                     <option value="">Choose a template</option>
-                    {templates.map((template) => (
+                    {templates.map((template: any) => (
                       <option key={template.id} value={template.id}>
                         {template.name}
                       </option>
@@ -302,23 +291,14 @@ Best regards,
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Subject
                 </label>
-                <CKEditor
-                  editor={ClassicEditor}
-                  data={formData.subject}
-                  onChange={(event: any, editor: any) =>
-                    setFormData({ ...formData, subject: editor.getData() })
+                <input
+                  type="text"
+                  value={formData.subject}
+                  onChange={(e) =>
+                    setFormData({ ...formData, subject: e.target.value })
                   }
-                  config={{
-                    toolbar: [
-                      "bold",
-                      "italic",
-                      "link",
-                      "bulletedList",
-                      "numberedList",
-                      "undo",
-                      "redo",
-                    ],
-                  }}
+                  placeholder="Type your subject"
+                  className="w-full rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={loading}
                 />
               </div>
@@ -334,6 +314,7 @@ Best regards,
                     setFormData({ ...formData, body: editor.getData() })
                   }
                   config={{
+                    placeholder: "Type your message",
                     toolbar: [
                       "bold",
                       "italic",
@@ -347,6 +328,12 @@ Best regards,
                   disabled={loading}
                 />
               </div>
+              <style>{`
+            .ck-editor__editable_inline::before {
+              color: #4b5563 !important; /* Tailwind's text-gray-600 */
+              font-style: normal !important; /* remove italics if you want normal text */
+            }
+          `}</style>
 
               <div>
                 <p className="block text-sm font-medium text-gray-600 mb-2">
@@ -494,59 +481,71 @@ Best regards,
                     </div>
                     {isFollowUpsExpanded && (
                       <div className="mx-2 my-2">
-                        {formData.followUpTemplates.map((followUp, index) => (
-                          <div
-                            key={index}
-                            className="bg-gray-200 border-b border-gray-400 mb-2 pt-2 rounded-lg"
-                          >
-                            <div className="flex justify-between items-center px-8">
-                              <span className="text-sm font-medium text-gray-600">
-                                Follow Up {index + 1}
-                              </span>
-                              <div className="flex space-x-2">
-                                <button
-                                  onClick={() => removeFollowUp(index)}
-                                  className="p-1 text-gray-500 hover:text-gray-600"
-                                >
-                                  <Edit className="w-4 h-4 text-gray-500" />
-                                </button>
-                                <button
-                                  onClick={() => removeFollowUp(index)}
-                                  className="p-1 text-gray-500 hover:text-gray-600"
-                                >
-                                  <Trash2 className="w-4 h-4 text-gray-500" />
-                                </button>
+                        {formData.followUpTemplates.map(
+                          (followUp: any, index: any) => (
+                            <div key={index}>
+                              <div className="bg-gray-200 border-b border-gray-400 mb-2 pt-2 rounded-lg">
+                                <div className="flex justify-between items-center px-8">
+                                  <span className="text-sm font-medium text-gray-600">
+                                    Follow Up {index + 1}
+                                  </span>
+                                  <div className="flex space-x-2">
+                                    <button
+                                      onClick={() => editFollowUp(index)}
+                                      className="p-1 text-gray-500 hover:text-gray-600"
+                                    >
+                                      <Edit className="w-4 h-4 text-gray-500" />
+                                    </button>
+                                    <button
+                                      onClick={() => removeFollowUp(index)}
+                                      className="p-1 text-gray-500 hover:text-gray-600"
+                                    >
+                                      <Trash2 className="w-4 h-4 text-gray-500" />
+                                    </button>
+                                  </div>
+                                </div>
+                                <div className="pt-2 border-b border-gray-400 rounded-lg"></div>
+                                <div className="my-4 px-8">
+                                  <div className="flex items-center text-gray-600">
+                                    <p>Will be sent around</p>
+                                    <span className="pl-1"></span>
+                                    <span>
+                                      {followUp.send_after_hours.replace(
+                                        "hrs",
+                                        ""
+                                      )}{" "}
+                                      hrs from now
+                                    </span>
+                                    <span className="pl-1"> </span>
+                                    <p>via {followUp.followup_mode}.</p>
+                                  </div>
+                                  <div className="flex items-center gap-2 mt-2">
+                                    <span className="text-gray-400">
+                                      {followUp.followup_body}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
                             </div>
-                            <div className="pt-2 border-b border-gray-400 rounded-lg"></div>
-                            <div className="my-4 px-8">
-                              <div className="flex items-center text-gray-600">
-                                <p>Will be sent around</p>{" "}
-                                <span className="pl-1"></span>
-                                <span>
-                                  {followUp.send_after_hours.replace("hrs", "")}{" "}
-                                  hrs from now
-                                </span>
-                                <span className="pl-1"> </span>
-                                <p>via {followUp.followup_mode}.</p>
-                              </div>
-                              <div className="flex items-center gap-2 mt-2">
-                                <span className="text-gray-400">
-                                  {followUp.followup_body}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                          )
+                        )}
+
                         {isAddingFollowUp && (
                           <div className="my-4 bg-blue-50 rounded-lg">
                             <div className="px-8 pt-2 flex justify-between items-center">
                               <span className="text-sm font-medium text-blue-600">
-                                Follow Up
+                                {isEditingFollowUp
+                                  ? "Edit Follow Up"
+                                  : "Follow Up"}
                               </span>
                               <div className="flex space-x-2 mt-2">
+                                {/* Cancel button */}
                                 <button
-                                  onClick={() => setIsAddingFollowUp(false)}
+                                  onClick={() => {
+                                    setIsAddingFollowUp(false);
+                                    setIsEditingFollowUp(false);
+                                    setEditingIndex(null);
+                                  }}
                                   className="text-red-500 text-xs rounded-full"
                                   disabled={loading}
                                 >
@@ -556,22 +555,47 @@ Best regards,
                                     </span>
                                   </span>
                                 </button>
+
+                                {/* Save button (handles add & edit) */}
                                 <button
                                   onClick={() => {
-                                    setFormData({
-                                      ...formData,
-                                      followUpTemplates: [
+                                    if (
+                                      isEditingFollowUp &&
+                                      editingIndex !== null
+                                    ) {
+                                      // ✅ update existing follow-up
+                                      const updatedFollowUps = [
                                         ...formData.followUpTemplates,
-                                        {
-                                          ...newFollowUp,
-                                          followup_mode:
-                                            newFollowUp.followup_mode,
-                                          order_no:
-                                            formData.followUpTemplates.length,
-                                        },
-                                      ],
-                                    });
+                                      ];
+                                      updatedFollowUps[editingIndex] = {
+                                        ...updatedFollowUps[editingIndex],
+                                        ...newFollowUp,
+                                      };
+                                      setFormData({
+                                        ...formData,
+                                        followUpTemplates: updatedFollowUps,
+                                      });
+                                    } else {
+                                      // ✅ add new follow-up
+                                      setFormData({
+                                        ...formData,
+                                        followUpTemplates: [
+                                          ...formData.followUpTemplates,
+                                          {
+                                            ...newFollowUp,
+                                            followup_mode:
+                                              newFollowUp.followup_mode,
+                                            order_no:
+                                              formData.followUpTemplates.length,
+                                          },
+                                        ],
+                                      });
+                                    }
+
+                                    // reset states
                                     setIsAddingFollowUp(false);
+                                    setIsEditingFollowUp(false);
+                                    setEditingIndex(null);
                                     setNewFollowUp({
                                       send_after_hours: "24hrs",
                                       followup_mode: "EMAIL",
@@ -585,9 +609,13 @@ Best regards,
                                     <Check className="w-2 h-2 font-semibold" />
                                   </span>
                                 </button>
+
+                                {/* Delete draft button (just closes form) */}
                                 <button
                                   onClick={() => {
                                     setIsAddingFollowUp(false);
+                                    setIsEditingFollowUp(false);
+                                    setEditingIndex(null);
                                   }}
                                   className=" text-gray-200 text-xs rounded-full"
                                   disabled={loading}
@@ -596,9 +624,12 @@ Best regards,
                                 </button>
                               </div>
                             </div>
+
                             <div className="border-b border-blue-400 rounded-full w-full pt-2 mb-3"></div>
+
                             <div className="px-8 pb-4 flex flex-col items-start space-y-3">
                               <div className="flex items-center space-x-4">
+                                {/* Send After */}
                                 <div className="flex items-center gap-2">
                                   <span className="text-xs text-gray-500">
                                     Send After
@@ -622,6 +653,8 @@ Best regards,
                                     <option value="72hrs">72 hrs</option>
                                   </select>
                                 </div>
+
+                                {/* Via */}
                                 <div className="flex items-center gap-2">
                                   <span className="text-xs text-gray-500">
                                     Via
@@ -646,6 +679,8 @@ Best regards,
                                   </select>
                                 </div>
                               </div>
+
+                              {/* Message */}
                               <div className="w-full">
                                 <label className="text-xs text-gray-500 mb-2 block">
                                   Message
@@ -667,6 +702,7 @@ Best regards,
                             </div>
                           </div>
                         )}
+
                         <button
                           onClick={() => setIsAddingFollowUp(true)}
                           className="flex items-center justify-center text-sm text-blue-600 hover:text-blue-700 mt-4"
