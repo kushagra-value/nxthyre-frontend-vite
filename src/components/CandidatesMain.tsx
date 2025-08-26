@@ -736,7 +736,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
  
               </div>
               <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-3">
                   <button
                       className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                       aria-label={`View ${candidate.full_name}'s portfolio`}
