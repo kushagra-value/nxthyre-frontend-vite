@@ -724,12 +724,12 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 </div>
                 )}
                 {/* need to update the code for Current Salary */}
-                {true && 
+                {candidate.current_salary_lpa && 
                 (
                   <div className="flex flex-col">
                   <p className="text-[#A8A8A8] mr-[5px]">Current Salary</p>
                   <p className="text-[#4B5563]">
-                    9LPA
+                    {candidate.current_salary_lpa}
                   </p>
                 </div>
                 )}
@@ -738,7 +738,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
               <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
                 <div className="flex items-center space-x-1">
                   <button
-                      className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                      className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                       aria-label={`View ${candidate.full_name}'s portfolio`}
                     >
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -754,7 +754,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     </button>
                     {candidate.social_links?.github && (
                       <button
-                        className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(candidate.social_links?.github, "_blank")
                         }
@@ -775,7 +775,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     )}
                     {candidate.social_links?.linkedin && (
                       <button
-                        className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(
                             candidate.social_links?.linkedin,
@@ -798,7 +798,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     )}
                     
                     <button
-                      className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                      className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                       aria-label={`View ${candidate.full_name}'s portfolio`}
                     >
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -816,7 +816,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                       </svg>
                     </button>
                     <button
-                      className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                      className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                       aria-label={`View ${candidate.full_name}'s portfolio`}
                     >
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -832,7 +832,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
 
                     </button>
                     <button
-                      className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                      className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                       aria-label={`View ${candidate.full_name}'s portfolio`}
                     >
                       <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -842,7 +842,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     </button>
                     {candidate.social_links?.portfolio && (
                       <button
-                        className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(
                             candidate.social_links?.portfolio,
@@ -874,7 +874,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     )}
                     {candidate.social_links?.resume && (
                       <button
-                        className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() =>
                           window.open(candidate.social_links?.resume, "_blank")
                         }

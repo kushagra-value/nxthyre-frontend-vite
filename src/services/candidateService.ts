@@ -5,6 +5,7 @@ export interface CandidateListItem {
   full_name: string;
   candidate_email: string;
   candidate_phone: string;
+  current_salary_lpa:string;
   avatar: string;
   headline: string;
   location: string;
