@@ -34,6 +34,7 @@ import {
   CheckCheck,
 } from "lucide-react";
 import candidateService from "../../services/candidateService";
+import { showToast } from "../../utils/toast";
 
 interface Stage {
   id: number;
@@ -292,6 +293,8 @@ interface StageDetailsProps {
   archiveCandidate: (applicationId: number) => Promise<void>;
   transferredStageData?: PipelineCandidate["stageData"];
   jobId: number;
+  deductCredits: () => Promise<void>;
+  onSendInvite: (applicationId: number) => Promise<void>;
 }
 
 const StageDetails: React.FC<StageDetailsProps> = ({
@@ -303,6 +306,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   archiveCandidate,
   transferredStageData,
   jobId,
+  deductCredits,
+  onSendInvite,
 }) => {
   const [activeTab, setActiveTab] = useState("Profile");
   const [showMoreProfile, setShowMoreProfile] = useState(false);
@@ -328,6 +333,30 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   const [totalQuestions, setTotalQuestions] = useState(0);
 
   const [activities, setActivities] = useState<Activity[]>([]);
+
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const handleSendInviteClick = async () => {
+    setShowConfirm(true);
+  };
+
+  const confirmSpend = async () => {
+    setShowConfirm(false);
+    try {
+      await deductCredits();
+      if (selectedCandidate?.id) {
+        await onSendInvite(Number(selectedCandidate.id));
+      } else {
+        showToast.error("No candidate selected");
+      }
+    } catch {
+      showToast.error("Failed to deduct credits");
+    }
+  };
+
+  const cancelSpend = () => {
+    setShowConfirm(false);
+  };
 
   useEffect(() => {
     setActiveTab("Profile");
@@ -1614,6 +1643,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             <button
               className="flex-1 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
               style={{ width: "100%" }}
+              onClick={handleSendInviteClick}
             >
               Send Invite & Reveal Info
             </button>
@@ -1652,6 +1682,36 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           {renderTabContent()}
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 bg-gray-400 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg w-80 p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Confirm Usage
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              This will cost you{" "}
+              <span className="font-semibold">3 credits</span>. Do you want to
+              proceed?
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={cancelSpend}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmSpend}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

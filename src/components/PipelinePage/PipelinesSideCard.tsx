@@ -215,6 +215,8 @@ interface PipelinesSideCardProps {
   archiveCandidate: (applicationId: number) => Promise<void>;
   stageData?: PipelineCandidate["stageData"];
   jobId: number; // jobId prop for sharing profile
+  onSendInvite: (applicationId: number) => Promise<void>;
+  deductCredits: () => Promise<void>;
 }
 
 const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
@@ -232,6 +234,8 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
   archiveCandidate,
   stageData,
   jobId,
+  onSendInvite,
+  deductCredits,
 }) => {
   const { user } = useAuthContext();
   const handleShareProfile = () => {
@@ -360,6 +364,8 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
             archiveCandidate={archiveCandidate} // You need to pass archiveCandidate as a prop to PipelinesSideCard
             transferredStageData={stageData} // You need to pass stageData as a prop to PipelinesSideCard
             jobId={jobId}
+            onSendInvite={onSendInvite}
+            deductCredits={deductCredits}
           />
         </>
       ) : (
