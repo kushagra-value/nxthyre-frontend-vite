@@ -232,7 +232,10 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     if (candidateDetails) {
       const fetchAssessmentResults = async () => {
         try {
-          const res = await apiClient.get(`/api/assessment/results?candidate_id=${candidateDetails.candidate.id}&job_id=${jobId}`);
+          const res = await candidateService.getAssessmentResults(
+            Number(jobId),
+            selectedCandidate.publicIdentifier
+          );
           setAssessmentResults(res.data);
         } catch (error) {
           console.error("Error fetching assessment results:", error);
