@@ -696,13 +696,15 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       </h4>
                       <p className="text-sm text-[#818283]">{edu.schoolName}</p>
                       {edu.startDate?.year &&
-                        edu.endDate?.year &&
-                        edu.startDate.year !== 0 &&
-                        edu.endDate.year !== 0 && (
-                          <p className="text-sm text-[#818283]">
-                            {edu.startDate.year} - {edu.endDate.year}
-                          </p>
-                        )}
+                      edu.endDate?.year &&
+                      edu.startDate.year !== 0 &&
+                      edu.endDate.year !== 0 ? (
+                        <p className="text-sm text-[#818283]">
+                          {edu.startDate.year} - {edu.endDate.year}
+                        </p>
+                      ) : (
+                        " "
+                      )}
                     </div>
                   ))
                 ) : (
