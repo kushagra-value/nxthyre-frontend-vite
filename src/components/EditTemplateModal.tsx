@@ -325,6 +325,7 @@ Best regards,
                     setFormData({ ...formData, body: editor.getData() })
                   }
                   config={{
+                    placeholder: "Type your message",
                     toolbar: [
                       "bold",
                       "italic",

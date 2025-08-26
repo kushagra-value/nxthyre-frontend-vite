@@ -514,10 +514,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             data={body}
             onChange={(event: any, editor: any) => setBody(editor.getData())}
             className={`${isBodyExpanded ? "h-96" : "h-48"} w-full rounded-lg`}
-            placeholder="Type your message"
             onFocus={() => setIsBodyExpanded(true)}
             onBlur={() => setIsBodyExpanded(false)}
             config={{
+              placeholder: "Type your message",
               toolbar: [
                 "bold",
                 "italic",
@@ -933,6 +933,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                   setBody(editor.getData())
                 }
                 config={{
+                  placeholder: "Type your message",
                   toolbar: [
                     "bold",
                     "italic",
@@ -943,7 +944,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                     "redo",
                   ],
                 }}
-                placeholder="Type your message"
                 className="w-full h-24 rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
