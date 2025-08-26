@@ -587,7 +587,9 @@ const ArchiveIcon = () => (
                   <div>
                     <div className="flex items-center gap-3 mb-2">
                       <h1 className="text-2xl font-bold text-gray-900">{displayCandidate.full_name}</h1>
-                      <span className="bg-blue-100 text-blue-600 text-sm px-2 py-1 rounded-md font-medium">{displayCandidate}</span>
+                      {details?.assessment?.ai_interview?.overall_summary.knowledge && (
+                      <span className="bg-blue-100 text-blue-600 text-sm px-2 py-1 rounded-md font-medium">{details?.assessment?.ai_interview?.overall_summary.knowledge}</span>
+                      )}
                     </div>
                     <p className="text-gray-600 mb-2">
                       {displayCandidate.headline}
