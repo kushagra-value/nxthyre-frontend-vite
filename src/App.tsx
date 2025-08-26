@@ -128,7 +128,9 @@ function MainApp() {
     null
   );
   const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
-  const [showUnpublishModal, setShowUnpublishModal] = useState<number | null>(null);
+  const [showUnpublishModal, setShowUnpublishModal] = useState<number | null>(
+    null
+  );
   const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
   const [showShareLoader, setShowShareLoader] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -196,7 +198,7 @@ function MainApp() {
       const mappedCategories: Category[] = jobs.map((job) => ({
         id: job.id,
         name: job.title,
-        count: job.total_candidates || 0,
+        count: job.count || 0,
         status: job.status,
         visibility: job.visibility,
       }));
@@ -690,21 +692,21 @@ function MainApp() {
       showToast.error("Job not found");
     }
     setShowCategoryActions(null);
-  }
+  };
 
   const handleDeleteJobRole = async (jobId: number) => {
     const job = categories.find((cat) => cat.id === jobId);
     if (job) {
-    try {
-      await jobPostService.deleteJob(jobId);
-      await fetchCategories();
-      showToast.success(`Successfully deleted job  ${job.name}`);
-      if (activeCategoryId === jobId) {
-        setActiveCategoryId(categories[0]?.id || null);
+      try {
+        await jobPostService.deleteJob(jobId);
+        await fetchCategories();
+        showToast.success(`Successfully deleted job  ${job.name}`);
+        if (activeCategoryId === jobId) {
+          setActiveCategoryId(categories[0]?.id || null);
+        }
+      } catch (error) {
+        showToast.error("Failed to delete job role");
       }
-    } catch (error) {
-      showToast.error("Failed to delete job role");
-    }
     }
     setShowDeleteModal(null);
     setShowCategoryActions(null);
@@ -715,7 +717,10 @@ function MainApp() {
     if (job) {
       try {
         await jobPostService.unpublishJob(jobId);
-        await jobPostService.updateJob(jobId, { status: "DRAFT", visibility: "PRIVATE" });
+        await jobPostService.updateJob(jobId, {
+          status: "DRAFT",
+          visibility: "PRIVATE",
+        });
         await fetchCategories();
         showToast.success(`Successfully unpublished job ${job.name}`);
         if (activeCategoryId === jobId) {
@@ -733,7 +738,10 @@ function MainApp() {
     const job = categories.find((cat) => cat.id === jobId);
     if (job) {
       try {
-        await jobPostService.updateJob(jobId, { status: "PUBLISHED", visibility: "PUBLIC" });
+        await jobPostService.updateJob(jobId, {
+          status: "PUBLISHED",
+          visibility: "PUBLIC",
+        });
         await fetchCategories();
         showToast.success(`Successfully published job ${job.name}`);
         if (activeCategoryId === jobId) {
@@ -903,13 +911,7 @@ function MainApp() {
             />
           }
         />
-        <Route
-          path="/jobs/:id"
-          element={
-            <JobApplicationForm 
-            />
-          }
-        />
+        <Route path="/jobs/:id" element={<JobApplicationForm />} />
         <Route
           path="/candidate-profiles/:candidateId"
           element={
@@ -1077,7 +1079,7 @@ function MainApp() {
                                           <Share2 className="w-4 h-4 mr-2" />
                                           Share Pipelines
                                         </button>
-                                        
+
                                         {category.status === "DRAFT" && (
                                           <button
                                             onClick={() =>
@@ -1093,20 +1095,21 @@ function MainApp() {
                                           </button>
                                         )}
 
-                                        {category.status === "PUBLISHED" && category.visibility === "PUBLIC" && (
-                                        <button
-                                          onClick={() =>
-                                            handleCategoryAction(
-                                              "unpublish-job",
-                                              category.id
-                                            )
-                                          }
-                                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                        >
-                                          <Pause className="w-4 h-4 mr-2" />
-                                          Unpublish Job
-                                        </button>
-                                        )}
+                                        {category.status === "PUBLISHED" &&
+                                          category.visibility === "PUBLIC" && (
+                                            <button
+                                              onClick={() =>
+                                                handleCategoryAction(
+                                                  "unpublish-job",
+                                                  category.id
+                                                )
+                                              }
+                                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                            >
+                                              <Pause className="w-4 h-4 mr-2" />
+                                              Unpublish Job
+                                            </button>
+                                          )}
                                         <button
                                           onClick={() =>
                                             handleCategoryAction(
@@ -1162,10 +1165,10 @@ function MainApp() {
                                       onDeleteJob={(jobId) =>
                                         setShowDeleteModal(jobId)
                                       }
-                                      onUnpublishJob={(jobId:any) =>
+                                      onUnpublishJob={(jobId: any) =>
                                         setShowUnpublishModal(jobId)
                                       }
-                                      onPublishJob={(jobId:any) =>
+                                      onPublishJob={(jobId: any) =>
                                         setShowPublishModal(jobId)
                                       }
                                       onCopyJobLink={handleCopyJobLink}
@@ -1340,8 +1343,13 @@ function MainApp() {
                               Confirm Publish Job
                             </h3>
                             <p className="text-gray-600 mb-6">
-                              Are you sure you want to publish {categories.find((cat) => cat.id === showPublishModal)?.name}?
-                              This action will publish job on LinkedIn.
+                              Are you sure you want to publish{" "}
+                              {
+                                categories.find(
+                                  (cat) => cat.id === showPublishModal
+                                )?.name
+                              }
+                              ? This action will publish job on LinkedIn.
                             </p>
                             <div className="flex space-x-3">
                               <button
@@ -1375,8 +1383,13 @@ function MainApp() {
                               Confirm Unpublish Job
                             </h3>
                             <p className="text-gray-600 mb-6">
-                              Are you sure you want to Unpublish {categories.find((cat) => cat.id === showUnpublishModal)?.name}? 
-                              This action cannot be undone.
+                              Are you sure you want to Unpublish{" "}
+                              {
+                                categories.find(
+                                  (cat) => cat.id === showUnpublishModal
+                                )?.name
+                              }
+                              ? This action cannot be undone.
                             </p>
                             <div className="flex space-x-3">
                               <button
@@ -1409,8 +1422,13 @@ function MainApp() {
                               Confirm Delete Job
                             </h3>
                             <p className="text-gray-600 mb-6">
-                              Are you sure you want to delete {categories.find((cat) => cat.id === showDeleteModal)?.name}? 
-                              This action cannot be undone.
+                              Are you sure you want to delete{" "}
+                              {
+                                categories.find(
+                                  (cat) => cat.id === showDeleteModal
+                                )?.name
+                              }
+                              ? This action cannot be undone.
                             </p>
                             <div className="flex space-x-3">
                               <button

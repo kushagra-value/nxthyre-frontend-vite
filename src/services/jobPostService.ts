@@ -30,13 +30,14 @@ export interface Job {
   };
   created_at: string;
   updated_at: string;
-  total_candidates: number,
-  invites_sent_count: number,
-  total_applied: number,
-  total_replied: number
+  total_candidates: number;
+  invites_sent_count: number;
+  total_applied: number;
+  total_replied: number;
   job_description_markdown: string;
   ai_jd: string;
   technical_competencies: string[];
+  count: number;
 }
 
 export interface SearchedCandidateItem {
@@ -50,7 +51,11 @@ export interface SearchedCandidateItem {
     linkedin_url: string;
     is_background_verified: boolean;
     experience_years: string;
-    experience_summary: { title: string; date_range: string, duration_years: number };
+    experience_summary: {
+      title: string;
+      date_range: string;
+      duration_years: number;
+    };
     education_summary: { title: string; date_range: string };
     notice_period_summary: string;
     skills_list: string[];
@@ -99,8 +104,8 @@ export interface CreateJobData {
   status: "DRAFT" | "PUBLISHED";
   workspace: number;
   ai_jd_object?: any;
-  ai_jd?:any;
-  technical_competencies?:string[];
+  ai_jd?: any;
+  technical_competencies?: string[];
 }
 
 class JobPostService {
@@ -124,31 +129,35 @@ class JobPostService {
 
   async getLocationSuggestions(query: string): Promise<string[]> {
     try {
-      const response = await apiClient.get(`/jobs/location-suggestions/?q=${encodeURIComponent(query)}`);
+      const response = await apiClient.get(
+        `/jobs/location-suggestions/?q=${encodeURIComponent(query)}`
+      );
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch location suggestions");
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch location suggestions"
+      );
     }
   }
 
-   async createAiJd(description: string | File): Promise<any> {
-      try {
-        const formData = new FormData();
-        if (typeof description === 'string') {
-          formData.append('description_text', description);
-        } else {
-          formData.append('description_file', description);
-        }
-        const response = await apiClient.post('/jobs/create-ai-jd/', formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        return response.data;
-      } catch (error: any) {
-        throw new Error(error.response?.data?.error || "Failed to create AI JD");
+  async createAiJd(description: string | File): Promise<any> {
+    try {
+      const formData = new FormData();
+      if (typeof description === "string") {
+        formData.append("description_text", description);
+      } else {
+        formData.append("description_file", description);
       }
+      const response = await apiClient.post("/jobs/create-ai-jd/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to create AI JD");
     }
+  }
 
   async createJob(data: CreateJobData): Promise<Job> {
     try {
@@ -158,14 +167,29 @@ class JobPostService {
       formData.append("is_hybrid", String(data.is_hybrid));
       formData.append("seniority", data.seniority);
       formData.append("department", String(data.department));
-      formData.append("experience_min_years", String(data.experience_min_years));
-      formData.append("experience_max_years", String(data.experience_max_years));
+      formData.append(
+        "experience_min_years",
+        String(data.experience_min_years)
+      );
+      formData.append(
+        "experience_max_years",
+        String(data.experience_max_years)
+      );
       formData.append("salary_min", data.salary_min);
       formData.append("salary_max", data.salary_max);
-      formData.append("is_salary_confidential", String(data.is_salary_confidential));
+      formData.append(
+        "is_salary_confidential",
+        String(data.is_salary_confidential)
+      );
       formData.append("visibility", data.visibility);
-      formData.append("has_coding_contest_stage", String(data.has_coding_contest_stage));
-      formData.append("has_ai_interview_stage", String(data.has_ai_interview_stage));
+      formData.append(
+        "has_coding_contest_stage",
+        String(data.has_coding_contest_stage)
+      );
+      formData.append(
+        "has_ai_interview_stage",
+        String(data.has_ai_interview_stage)
+      );
       formData.append("status", data.status);
       formData.append("workspace", String(data.workspace));
 
@@ -203,35 +227,55 @@ class JobPostService {
       const formData = new FormData();
       if (data.title) formData.append("title", data.title);
       if (data.location) formData.append("location", data.location);
-      if (data.is_hybrid !== undefined) formData.append("is_hybrid", String(data.is_hybrid));
+      if (data.is_hybrid !== undefined)
+        formData.append("is_hybrid", String(data.is_hybrid));
       if (data.seniority) formData.append("seniority", data.seniority);
-      if (data.department) formData.append("department", String(data.department));
+      if (data.department)
+        formData.append("department", String(data.department));
       if (data.experience_min_years !== undefined)
-        formData.append("experience_min_years", String(data.experience_min_years));
+        formData.append(
+          "experience_min_years",
+          String(data.experience_min_years)
+        );
       if (data.experience_max_years !== undefined)
-        formData.append("experience_max_years", String(data.experience_max_years));
+        formData.append(
+          "experience_max_years",
+          String(data.experience_max_years)
+        );
       if (data.salary_min) formData.append("salary_min", data.salary_min);
       if (data.salary_max) formData.append("salary_max", data.salary_max);
       if (data.is_salary_confidential !== undefined)
-        formData.append("is_salary_confidential", String(data.is_salary_confidential));
+        formData.append(
+          "is_salary_confidential",
+          String(data.is_salary_confidential)
+        );
       if (data.visibility) formData.append("visibility", data.visibility);
       if (data.has_ai_interview_stage !== undefined)
-        formData.append("has_ai_interview_stage", String(data.has_ai_interview_stage));
+        formData.append(
+          "has_ai_interview_stage",
+          String(data.has_ai_interview_stage)
+        );
       if (data.has_coding_contest_stage !== undefined)
-        formData.append("has_coding_contest_stage", String(data.has_coding_contest_stage));
+        formData.append(
+          "has_coding_contest_stage",
+          String(data.has_coding_contest_stage)
+        );
       if (data.status) formData.append("status", data.status);
       if (data.workspace) formData.append("workspace", String(data.workspace));
       if (data.skills) {
         data.skills.forEach((skill) => {
-          formData.append('skills', skill);  // Use same key 'skills' for each value
+          formData.append("skills", skill); // Use same key 'skills' for each value
         });
       }
       if (data.ai_jd) {
         formData.append("ai_jd", String(data.ai_jd));
       }
-      
+
       if (data.technical_competencies) {
-        formData.append("technical_competencies", JSON.stringify(data.technical_competencies));
+        formData.append(
+          "technical_competencies",
+          JSON.stringify(data.technical_competencies)
+        );
       }
       if (data.description_text) {
         formData.append("description", data.description_text);
@@ -249,10 +293,12 @@ class JobPostService {
       throw new Error(error.response?.data?.error || "Failed to update job");
     }
   }
-  
+
   async unpublishJob(id: number): Promise<void> {
     try {
-      const response = await apiClient.post(`/jobs/roles/${id}/unpublish-from-pyjamahr/`);
+      const response = await apiClient.post(
+        `/jobs/roles/${id}/unpublish-from-pyjamahr/`
+      );
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to unpublish job");
@@ -267,25 +313,51 @@ class JobPostService {
     }
   }
 
-  async searchAutosuggest(query: string, jobId: number): Promise<{id: string, name: string}[]> {
+  async searchAutosuggest(
+    query: string,
+    jobId: number
+  ): Promise<{ id: string; name: string }[]> {
     try {
-      const response = await apiClient.get(`/jobs/search/autosuggest/?q=${query}&job_id=${jobId}`);
+      const response = await apiClient.get(
+        `/jobs/search/autosuggest/?q=${query}&job_id=${jobId}`
+      );
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch autosuggest");
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch autosuggest"
+      );
     }
   }
 
-  async getSearchedCandidate(candidateId: string, jobId: number): Promise<SearchedCandidateItem> {
+  async getSearchedCandidate(
+    candidateId: string,
+    jobId: number
+  ): Promise<SearchedCandidateItem> {
     try {
-      const response = await apiClient.get(`/jobs/search/candidates/?candidate_id=${candidateId}&job_id=${jobId}`);
+      const response = await apiClient.get(
+        `/jobs/search/candidates/?candidate_id=${candidateId}&job_id=${jobId}`
+      );
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch searched candidate");
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch searched candidate"
+      );
     }
   }
 
-  async getAIJD(jobId: number): Promise<{ job_description_markdown: string; technical_competencies: Array<{ skill: string; context: string; priority: string; years_implied: string; assessment_type: string; proficiency_level: string }> }> {
+  async getAIJD(
+    jobId: number
+  ): Promise<{
+    job_description_markdown: string;
+    technical_competencies: Array<{
+      skill: string;
+      context: string;
+      priority: string;
+      years_implied: string;
+      assessment_type: string;
+      proficiency_level: string;
+    }>;
+  }> {
     try {
       const response = await apiClient.get(`/jobs/ai-jd/${jobId}/`);
       return response.data;
