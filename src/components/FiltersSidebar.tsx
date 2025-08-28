@@ -441,8 +441,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       await onApplyFilters(tempFilters);
 
       // Refetch recent searches to update the JobTitlesSlider
-      const searches = await candidateService.getRecentSearches();
-      setRecentSearches(searches);
+      // const searches = await candidateService.getRecentSearches();
+      // setRecentSearches(searches);
     } catch (error) {
       console.error(
         "Error applying filters or fetching recent searches:",
