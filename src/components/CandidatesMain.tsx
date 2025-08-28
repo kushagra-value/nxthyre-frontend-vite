@@ -89,6 +89,10 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   // Local state for search input
   const [localSearchTerm, setLocalSearchTerm] = useState("");
 
+  const [showRevealDialog, setShowRevealDialog] = useState(false);
+  const [pendingReveal, setPendingReveal] = useState<{ candidateId: string; onSuccess: (prem: any) => void } | null>(null);
+  const [revealLoading, setRevealLoading] = useState(false);
+
   const tabs = [
     {
       id: "outbound",
@@ -428,6 +432,22 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
     }
   };
 
+  const handleConfirmReveal = async () => {
+    if (!pendingReveal) return;
+    setRevealLoading(true);
+    try {
+      const prem = await handleReveal(pendingReveal.candidateId);
+      await deductCredits();
+      pendingReveal.onSuccess(prem);
+    } catch (e) {
+      // Error already handled in handleReveal
+    } finally {
+      setShowRevealDialog(false);
+      setPendingReveal(null);
+      setRevealLoading(false);
+    }
+  };
+
   const startIndex = (currentPage - 1) * candidatesPerPage;
   const endIndex = Math.min(startIndex + candidatesPerPage, candidates.length);
   const [hoveredCandidateId, setHoveredCandidateId] = useState<string | null>(null);
@@ -579,6 +599,43 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                 area-label="Cancel export dialog"
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showRevealDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold text-gray-900">Reveal Premium Data</h3>
+            <p className="text-sm text-gray-600 mt-2">Your credits will be deducted. Confirm?</p>
+            <div className="mt-4 flex justify-end space-x-2">
+              <button
+                className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                onClick={() => {
+                  setShowRevealDialog(false);
+                  setPendingReveal(null);
+                }}
+                disabled={revealLoading}
+                aria-label="Cancel reveal"
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                onClick={handleConfirmReveal}
+                disabled={revealLoading}
+                aria-label="Confirm reveal"
+              >
+                {revealLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Revealing...
+                  </>
+                ) : (
+                  "Confirm"
+                )}
               </button>
             </div>
           </div>
@@ -779,19 +836,18 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                         <button 
                           onClick={async (e) => {
                             e.stopPropagation();
-                            let finalUrl = url;
-                            if (!finalUrl) {
-                              const confirmed = window.confirm("Reveal premium data? Credits will be deducted.");
-                              if (!confirmed) return;
-                              try {
-                                const prem = await handleReveal(candidate.id);
-                                await deductCredits();
-                                finalUrl = prem.premium_data.github_url;
-                              } catch {
-                                return;
-                              }
+                            if (url) {
+                              window.open(url, "_blank");
+                            } else {
+                              setPendingReveal({
+                                candidateId: candidate.id,
+                                onSuccess: (prem) => {
+                                  const finalUrl = prem.premium_data.github_url;
+                                  if (finalUrl) window.open(finalUrl, "_blank");
+                                }
+                              });
+                              setShowRevealDialog(true);
                             }
-                            if (finalUrl) window.open(finalUrl, "_blank");
                           }}
                           className="text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full"
                           aria-label={`View ${candidate.full_name}'s Github profile`}
@@ -817,21 +873,20 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     return (
                     <button
                       className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                      onClick={async (e) => {
+                      onClick={(e) => {
                         e.stopPropagation();
-                        let finalUrl = url;
-                        if (!finalUrl) {
-                          const confirmed = window.confirm("Reveal premium data? Credits will be deducted.");
-                          if (!confirmed) return;
-                          try {
-                            const prem = await handleReveal(candidate.id);
-                            await deductCredits();
-                            finalUrl = prem.premium_data.linkedin_url;
-                          } catch {
-                            return;
-                          }
+                        if (url) {
+                          window.open(url, "_blank");
+                        } else {
+                          setPendingReveal({
+                            candidateId: candidate.id,
+                            onSuccess: (prem) => {
+                              const finalUrl = prem.premium_data.linkedin_url;
+                              if (finalUrl) window.open(finalUrl, "_blank");
+                            }
+                          });
+                          setShowRevealDialog(true);
                         }
-                        if (finalUrl) window.open(finalUrl, '_blank');
                       }}
                       aria-label={`View ${candidate.full_name}'s LinkedIn profile`}
                     >
@@ -855,21 +910,20 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                     return (
                         <button
                           className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                          onClick={async (e) => {
+                          onClick={(e) => {
                             e.stopPropagation();
-                            let finalUrl = url;
-                            if (!finalUrl) {
-                              const confirmed = window.confirm("Reveal premium data? Credits will be deducted.");
-                              if (!confirmed) return;
-                              try {
-                                const prem = await handleReveal(candidate.id);
-                                await deductCredits();
-                                finalUrl = prem.premium_data.dribble_username;
-                              } catch {
-                                return;
-                              }
+                            if (url) {
+                              window.open(url, "_blank");
+                            } else {
+                              setPendingReveal({
+                                candidateId: candidate.id,
+                                onSuccess: (prem) => {
+                                  const finalUrl = prem.premium_data.dribble_username;
+                                  if (finalUrl) window.open(finalUrl, "_blank");
+                                }
+                              });
+                              setShowRevealDialog(true);
                             }
-                            if (finalUrl) window.open(finalUrl, '_blank');
                           }}
                           aria-label={`View ${candidate.full_name}'s dribble`}
                         >
@@ -896,21 +950,20 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                       return (
                     <button
                       className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                      onClick={async (e) => {
+                      onClick={(e) => {
                         e.stopPropagation();
-                        let finalUrl = url;
-                        if (!finalUrl) {
-                          const confirmed = window.confirm("Reveal premium data? Credits will be deducted.");
-                          if (!confirmed) return;
-                          try {
-                            const prem = await handleReveal(candidate.id);
-                            await deductCredits();
-                            finalUrl = prem.premium_data.resume_url;
-                          } catch {
-                            return;
-                          }
+                        if (url) {
+                          window.open(url, "_blank");
+                        } else {
+                          setPendingReveal({
+                            candidateId: candidate.id,
+                            onSuccess: (prem) => {
+                              const finalUrl = prem.premium_data.resume_url;
+                              if (finalUrl) window.open(finalUrl, "_blank");
+                            }
+                          });
+                          setShowRevealDialog(true);
                         }
-                        if (finalUrl) window.open(finalUrl, '_blank');
                       }}
                       aria-label={`View ${candidate.full_name}'s resume`}
                     >
@@ -929,21 +982,20 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                       return (
                     <button
                       className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                      onClick={async (e) => {
+                      onClick={(e) => {
                         e.stopPropagation();
-                        let finalUrl = url;
-                        if (!finalUrl) {
-                          const confirmed = window.confirm("Reveal premium data? Credits will be deducted.");
-                          if (!confirmed) return;
-                          try {
-                            const prem = await handleReveal(candidate.id);
-                            await deductCredits();
-                            finalUrl = prem.premium_data.behance_username;
-                          } catch {
-                            return;
-                          }
+                        if (url) {
+                          window.open(url, "_blank");
+                        } else {
+                          setPendingReveal({
+                            candidateId: candidate.id,
+                            onSuccess: (prem) => {
+                              const finalUrl = prem.premium_data.behance_username;
+                              if (finalUrl) window.open(finalUrl, "_blank");
+                            }
+                          });
+                          setShowRevealDialog(true);
                         }
-                        if (finalUrl) window.open(finalUrl, '_blank');
                       }}
                       aria-label={`View ${candidate.full_name}'s behance`}
                     >
@@ -962,21 +1014,20 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                       return (
                     <button
                       className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                      onClick={async (e) => {
+                      onClick={(e) => {
                         e.stopPropagation();
-                        let finalUrl = url;
-                        if (!finalUrl) {
-                          const confirmed = window.confirm("Reveal premium data? Credits will be deducted.");
-                          if (!confirmed) return;
-                          try {
-                            const prem = await handleReveal(candidate.id);
-                            await deductCredits();
-                            finalUrl = prem.premium_data.twitter_url;
-                          } catch {
-                            return;
-                          }
+                        if (url) {
+                          window.open(url, "_blank");
+                        } else {
+                          setPendingReveal({
+                            candidateId: candidate.id,
+                            onSuccess: (prem) => {
+                              const finalUrl = prem.premium_data.twitter_url;
+                              if (finalUrl) window.open(finalUrl, "_blank");
+                            }
+                          });
+                          setShowRevealDialog(true);
                         }
-                        if (finalUrl) window.open(finalUrl, '_blank');
                       }}
                       aria-label={`View ${candidate.full_name}'s twitter`}
                     >
@@ -995,21 +1046,20 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                       return (
                     <button
                       className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                      onClick={async (e) => {
+                      onClick={(e) => {
                         e.stopPropagation();
-                        let finalUrl = url;
-                        if (!finalUrl) {
-                          const confirmed = window.confirm("Reveal premium data? Credits will be deducted.");
-                          if (!confirmed) return;
-                          try {
-                            const prem = await handleReveal(candidate.id);
-                            await deductCredits();
-                            finalUrl = prem.premium_data.pinterest_username;
-                          } catch {
-                            return;
-                          }
+                        if (url) {
+                          window.open(url, "_blank");
+                        } else {
+                          setPendingReveal({
+                            candidateId: candidate.id,
+                            onSuccess: (prem) => {
+                              const finalUrl = prem.premium_data.pinterest_username;
+                              if (finalUrl) window.open(finalUrl, "_blank");
+                            }
+                          });
+                          setShowRevealDialog(true);
                         }
-                        if (finalUrl) window.open(finalUrl, '_blank');
                       }}
                       aria-label={`View ${candidate.full_name}'s pinterest`}
                     >
@@ -1028,21 +1078,20 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                       return (
                     <button
                       className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                      onClick={async (e) => {
+                      onClick={(e) => {
                         e.stopPropagation();
-                        let finalUrl = url;
-                        if (!finalUrl) {
-                          const confirmed = window.confirm("Reveal premium data? Credits will be deducted.");
-                          if (!confirmed) return;
-                          try {
-                            const prem = await handleReveal(candidate.id);
-                            await deductCredits();
-                            finalUrl = prem.premium_data.instagram_username;
-                          } catch {
-                            return;
-                          }
+                        if (url) {
+                          window.open(url, "_blank");
+                        } else {
+                          setPendingReveal({
+                            candidateId: candidate.id,
+                            onSuccess: (prem) => {
+                              const finalUrl = prem.premium_data.instagram_username;
+                              if (finalUrl) window.open(finalUrl, "_blank");
+                            }
+                          });
+                          setShowRevealDialog(true);
                         }
-                        if (finalUrl) window.open(finalUrl, '_blank');
                       }}
                       aria-label={`View ${candidate.full_name}'s instagram`}
                     >
@@ -1061,21 +1110,20 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
                       return (
                     <button
                       className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                      onClick={async (e) => {
+                      onClick={(e) => {
                         e.stopPropagation();
-                        let finalUrl = url;
-                        if (!finalUrl) {
-                          const confirmed = window.confirm("Reveal premium data? Credits will be deducted.");
-                          if (!confirmed) return;
-                          try {
-                            const prem = await handleReveal(candidate.id);
-                            await deductCredits();
-                            finalUrl = prem.premium_data?.portfolio_url;
-                          } catch {
-                            return;
-                          }
+                        if (url) {
+                          window.open(url, "_blank");
+                        } else {
+                          setPendingReveal({
+                            candidateId: candidate.id,
+                            onSuccess: (prem) => {
+                              const finalUrl = prem.premium_data?.portfolio_url;
+                              if (finalUrl) window.open(finalUrl, "_blank");
+                            }
+                          });
+                          setShowRevealDialog(true);
                         }
-                        if (finalUrl) window.open(finalUrl, '_blank');
                       }}
                       aria-label={`View ${candidate.full_name}'s portfolio`}
                     >
