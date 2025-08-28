@@ -56,7 +56,7 @@ Best regards,
     sendViaWhatsApp: false,
     sendViaPhone: false,
     followUpTemplates: [] as {
-      send_after_hours: string;
+      send_after_hours: number;
       followup_mode: "EMAIL" | "WHATSAPP" | "CALL";
       followup_body: string;
       order_no: number;
@@ -70,11 +70,11 @@ Best regards,
   const [isFollowUpsExpanded, setIsFollowUpsExpanded] = useState(false);
   const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
   const [newFollowUp, setNewFollowUp] = useState<{
-    send_after_hours: "24hrs" | "48hrs" | "72hrs";
+    send_after_hours: number;
     followup_mode: "EMAIL" | "WHATSAPP" | "CALL";
     followup_body: string;
   }>({
-    send_after_hours: "24hrs",
+    send_after_hours: 24,
     followup_mode: "EMAIL",
     followup_body: "",
   });
@@ -113,7 +113,7 @@ Best regards,
         sendViaWhatsApp: template.can_be_sent_via_whatsapp,
         sendViaPhone: template.can_be_sent_via_call,
         followUpTemplates: template.follow_up_steps.map((step: any) => ({
-          send_after_hours: `${step.send_after_hours}hrs`,
+          send_after_hours: Number(step.send_after_hours),
           followup_mode: step.mode as "EMAIL" | "WHATSAPP" | "CALL",
           followup_body: step.body,
           order_no: step.order,
@@ -161,10 +161,7 @@ Best regards,
         can_be_sent_via_call: formData.sendViaPhone,
         follow_up_steps: formData.followUpTemplates.map((step, index) => ({
           id: step.order_no + 1,
-          send_after_hours: step.send_after_hours as
-            | "24hrs"
-            | "48hrs"
-            | "72hrs",
+          send_after_hours: step.send_after_hours,
           mode: step.followup_mode,
           subject: "",
           body: step.followup_body,
@@ -207,10 +204,7 @@ Best regards,
   const editFollowUp = (index: number) => {
     const followUpToEdit = formData.followUpTemplates[index];
     setNewFollowUp({
-      send_after_hours: followUpToEdit.send_after_hours as
-        | "24hrs"
-        | "48hrs"
-        | "72hrs",
+      send_after_hours: followUpToEdit.send_after_hours,
       followup_mode: followUpToEdit.followup_mode,
       followup_body: followUpToEdit.followup_body,
     });
@@ -597,7 +591,7 @@ Best regards,
                                     setIsEditingFollowUp(false);
                                     setEditingIndex(null);
                                     setNewFollowUp({
-                                      send_after_hours: "24hrs",
+                                      send_after_hours: 24,
                                       followup_mode: "EMAIL",
                                       followup_body: "",
                                     });
@@ -639,10 +633,9 @@ Best regards,
                                     onChange={(e) =>
                                       setNewFollowUp({
                                         ...newFollowUp,
-                                        send_after_hours: e.target.value as
-                                          | "24hrs"
-                                          | "48hrs"
-                                          | "72hrs",
+                                        send_after_hours: Number(
+                                          e.target.value
+                                        ),
                                       })
                                     }
                                     className="text-sm w-24 px-2 py-1 text-blue-600 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
