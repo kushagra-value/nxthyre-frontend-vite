@@ -66,7 +66,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   const [sendViaPhone, setSendViaPhone] = useState(false);
   const [followUpTemplates, setFollowUpTemplates] = useState<
     {
-      send_after_hours: "24hrs" | "48hrs" | "72hrs";
+      send_after_hours: number;
       followup_mode: "EMAIL" | "WHATSAPP" | "CALL";
       followup_body: string;
       order_no: number;
@@ -79,11 +79,11 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
 
   const [newFollowUp, setNewFollowUp] = useState<{
-    send_after_hours: "24hrs" | "48hrs" | "72hrs";
+    send_after_hours: number;
     followup_mode: "EMAIL" | "WHATSAPP" | "CALL";
     followup_body: string;
   }>({
-    send_after_hours: "24hrs",
+    send_after_hours: 24,
     followup_mode: "EMAIL",
     followup_body: `Hi ${candidate.full_name}, Type your message ...`,
   });
@@ -134,10 +134,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
       setSendViaPhone(template.can_be_sent_via_call);
       setFollowUpTemplates(
         template.follow_up_steps.map((step) => ({
-          send_after_hours: `${step.send_after_hours}hrs` as
-            | "24hrs"
-            | "48hrs"
-            | "72hrs",
+          send_after_hours: Number(step.send_after_hours),
           followup_mode: step.mode as "EMAIL" | "WHATSAPP" | "CALL",
           followup_body: step.body,
           order_no: step.order,
@@ -706,7 +703,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                   setIsEditingFollowUp(false);
                                   setEditingIndex(null);
                                   setNewFollowUp({
-                                    send_after_hours: "24hrs",
+                                    send_after_hours: 24,
                                     followup_mode: "EMAIL",
                                     followup_body: `Hi ${candidate.full_name}, Type your message ...`,
                                   });
@@ -732,10 +729,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                   onChange={(e) =>
                                     setNewFollowUp({
                                       ...newFollowUp,
-                                      send_after_hours: e.target.value as
-                                        | "24hrs"
-                                        | "48hrs"
-                                        | "72hrs",
+                                      send_after_hours: Number(e.target.value),
                                     })
                                   }
                                   className="text-sm w-24 px-2 py-1 text-blue-600 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -879,7 +873,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                               setIsEditingFollowUp(false);
                               setEditingIndex(null);
                               setNewFollowUp({
-                                send_after_hours: "24hrs",
+                                send_after_hours: 24,
                                 followup_mode: "EMAIL",
                                 followup_body: `Hi ${candidate.full_name}, Type your message ...`,
                               });
@@ -916,10 +910,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                               onChange={(e) =>
                                 setNewFollowUp({
                                   ...newFollowUp,
-                                  send_after_hours: e.target.value as
-                                    | "24hrs"
-                                    | "48hrs"
-                                    | "72hrs",
+                                  send_after_hours: Number(e.target.value),
                                 })
                               }
                               className="text-sm w-24 px-2 py-1 text-blue-600 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

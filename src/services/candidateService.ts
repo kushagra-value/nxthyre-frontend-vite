@@ -5,7 +5,7 @@ export interface CandidateListItem {
   full_name: string;
   candidate_email: string;
   candidate_phone: string;
-  current_salary_lpa:string;
+  current_salary_lpa: string;
   avatar: string;
   headline: string;
   location: string;
@@ -220,7 +220,7 @@ export type ExportCandidateResponse = string;
 
 export interface FollowUpStep {
   id: number;
-  send_after_hours: "24hrs" | "48hrs" | "72hrs";
+  send_after_hours: number;
   mode: "EMAIL" | "WHATSAPP" | "CALL";
   subject: string;
   body: string;
@@ -431,7 +431,7 @@ class CandidateService {
     message_body: string;
 
     followups: {
-      send_after_hours: "24hrs" | "48hrs" | "72hrs";
+      send_after_hours: number;
       followup_mode: "EMAIL" | "WHATSAPP" | "CALL";
       followup_body: string;
       order_no: number;
