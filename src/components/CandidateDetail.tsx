@@ -90,6 +90,22 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const [notesView, setNotesView] = useState("my");
   const [showConfirm, setShowConfirm] = useState(false);
 
+  const random70to99 = () => Math.floor(Math.random() * 30 + 70);
+
+// In ProfileTab or where email/phone shown, update display
+ const displayEmail = detailedCandidate?.candidate?.premium_data_unlocked &&
+    detailedCandidate?.candidate?.premium_data_availability?.email &&
+    detailedCandidate?.candidate?.premium_data?.email
+    ? detailedCandidate.candidate.premium_data.email
+    : `${(detailedCandidate?.candidate?.full_name || '').slice(0, 3).toLowerCase()}***********@gmail.com`;
+
+  // Updated display logic for phone
+  const displayPhone = detailedCandidate?.candidate?.premium_data_unlocked &&
+    detailedCandidate?.candidate?.premium_data_availability?.phone_number &&
+    detailedCandidate?.candidate?.premium_data?.phone
+    ? detailedCandidate.candidate.premium_data.phone
+    : `${random70to99()}********${random70to99()}`;
+
   const tabs = [
     { name: "Profile" },
     { name: "Education" },
@@ -185,13 +201,39 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   };
 
   const handleSendInviteClick = async () => {
+    if (detailedCandidate?.candidate?.premium_data_unlocked) {
+    try {
+      onSendInvite();
+    } catch {
+      showToast.error("Failed to deduct credits");
+    }
+  } else {
+    // Show confirmation popup if premium_data_unlocked is false
     setShowConfirm(true);
+  }
+  };
+
+  const handleReveal = async (candidateId: string) => {
+    try {
+      const premResponse = await candidateService.revealPremiumData(candidateId);
+      const updated = candidates.map(c => c.id === candidateId ? {
+        ...c,
+        premium_data_unlocked: true,
+        premium_data: premResponse.premium_data
+      } : c);
+      return premResponse;
+    } catch (e) {
+      showToast.error("Failed to reveal premium data");
+      throw e;
+    }
+    
   };
 
   const confirmSpend = async () => {
     setShowConfirm(false);
     try {
-      await deductCredits();
+      await handleReveal(detailedCandidate.candidate.id);
+      deductCredits();
       onSendInvite();
     } catch {
       showToast.error("Failed to deduct credits");
@@ -971,7 +1013,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
-            <span className="text-sm text-gray-700">{detailedCandidate?.candidate?.email}</span>
+            <span className="text-sm text-gray-700">{displayEmail}</span>
           </div>
           <button
             className={`flex space-x-2 ml-auto p-1 ${
@@ -979,7 +1021,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 ? "text-gray-400 hover:text-gray-600"
                 : "text-gray-300 cursor-not-allowed"
             }`}
-            onClick={() => detailedCandidate?.candidate?.email && handleCopy(detailedCandidate?.candidate?.email)}
+            onClick={() => detailedCandidate?.candidate?.email && handleCopy(displayEmail)}
             disabled={!detailedCandidate?.candidate?.email}
           >
             <Copy className="w-4 h-4" />
@@ -988,7 +1030,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
-            <span className="text-sm text-gray-700">{detailedCandidate?.candidate?.phone}</span>
+            <span className="text-sm text-gray-700">{displayPhone}</span>
           </div>
           <div>
             <button
