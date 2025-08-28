@@ -210,24 +210,24 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     }
   };
 
-  const handleCandidateClick = async (candidate: CandidateListItem) => {
-  if (!candidate.premium_data_unlocked) {
-    const confirmed = window.confirm("Your credits will be deducted. Confirm?");
-    if (!confirmed) return;
-    try {
-      await handleReveal(candidate.id);
-      await deductCredits();
-    } catch {
-      return;
-    }
-  }
-  setSelectedCandidate(candidate);
-};
+//   const handleCandidateClick = async (candidate: CandidateListItem) => {
+//   if (!candidate.premium_data_unlocked) {
+//     const confirmed = window.confirm("Your credits will be deducted. Confirm?");
+//     if (!confirmed) return;
+//     try {
+//       await handleReveal(candidate.id);
+//       await deductCredits();
+//     } catch {
+//       return;
+//     }
+//   }
+//   setSelectedCandidate(candidate);
+// };
 
-  // const handleCandidateClick = async (candidate: CandidateListItem) => {
-  //   setSelectedCandidate(candidate);
-  //   await deductCredits();
-  // };
+  const handleCandidateClick = async (candidate: CandidateListItem) => {
+    setSelectedCandidate(candidate);
+    await deductCredits();
+  };
 
   const handleSaveToPipeline = async (
     candidateId: string,
