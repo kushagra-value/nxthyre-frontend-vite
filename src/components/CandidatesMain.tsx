@@ -827,7 +827,7 @@ const handleExportCandidates = async (format: "csv" | "xlsx") => {
               </div>
               <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
                 <div className="flex items-center space-x-3">
-                  {candidate.premium_data_availability.github_username && ((() => {
+                  {candidate.premium_data_availability?.github_username && ((() => {
                       const url = candidate.premium_data_unlocked 
                         ? candidate.premium_data?.github_url 
                         : null;
