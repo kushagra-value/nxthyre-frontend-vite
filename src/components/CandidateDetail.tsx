@@ -506,83 +506,48 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     return (
       <div className="bg-blue-50 p-4 rounded-lg shadow-sm space-y-4">
         {/* Vetted Skills Subsection */}
-        <div>
-          <h4 className="text-lg font-semibold text-gray-700 flex items-center">
-            <Star className="w-4 h-4 mr-2" />
-            Vetted Skills
-          </h4>
-          <div className="flex flex-wrap gap-3 mt-2">
-            {vettedSkills.map((skill, index) => (
-              <div
-                key={index}
-                className="relative group bg-white rounded-md p-2 flex items-center justify-center space-x-2"
-              >
-                <span className="text-xs text-blue-500">{skill.skill}</span>
-                <Star className="w-4 h-4 text-[#FFC107] fill-[#FFC107]" />
-                <span className="text-xs text-[#4B5563]">{skill.rating}</span>
-                {skill.reason && (
-                  <div className="absolute z-1000 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-white text-gray-600 text-xs rounded-md py-2 px-3 w-64 text-center">
-                    {skill.reason}
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent border-t-gray-600"></div>
-                  </div>
-                )}
+        {detailedCandidate?.candidate?.application_type === "prevetted" && (
+          // {/* Resume Skills Subsection */}
+          <div>
+            <h4 className="text-lg font-semibold text-gray-700 flex items-center">
+              <IdCard className="w-4 h-4 mr-2" />
+              Resume
+            </h4>
+            {resumeSkills.length > 0 ? (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {resumeSkills
+                  .slice(0, isResumeExpanded ? resumeSkills.length : 10)
+                  .map((skill, index) => (
+                    <span
+                      key={index}
+                      className="p-2 bg-white text-blue-500 text-xs rounded-lg"
+                    >
+                      {skill}
+                    </span>
+                  ))}
               </div>
-            ))}
+            ) : (
+              <p className="text-sm text-gray-500">
+                No skills listed in resume
+              </p>
+            )}
+            {!isResumeExpanded && resumeSkills.length > 10 && (
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsResumeExpanded(true);
+                }}
+                className="text-blue-500 text-sm mt-2 flex items-center"
+              >
+                View More
+                <span className="ml-1">
+                  <ChevronDown className="text-blue-500" />
+                </span>
+              </a>
+            )}
           </div>
-          {!isVettedExpanded && vettedSkills.length > 6 && (
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                setIsVettedExpanded(true);
-              }}
-              className="text-blue-500 text-sm mt-2 flex items-center"
-            >
-              View More
-              <span className="ml-1">
-                <ChevronDown className="text-blue-500" />
-              </span>
-            </a>
-          )}
-        </div>
-        {/* Resume Skills Subsection */}
-        <div>
-          <h4 className="text-lg font-semibold text-gray-700 flex items-center">
-            <IdCard className="w-4 h-4 mr-2" />
-            Resume
-          </h4>
-          {resumeSkills.length > 0 ? (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {resumeSkills
-                .slice(0, isResumeExpanded ? resumeSkills.length : 10)
-                .map((skill, index) => (
-                  <span
-                    key={index}
-                    className="p-2 bg-white text-blue-500 text-xs rounded-lg"
-                  >
-                    {skill}
-                  </span>
-                ))}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-500">No skills listed in resume</p>
-          )}
-          {!isResumeExpanded && resumeSkills.length > 10 && (
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                setIsResumeExpanded(true);
-              }}
-              className="text-blue-500 text-sm mt-2 flex items-center"
-            >
-              View More
-              <span className="ml-1">
-                <ChevronDown className="text-blue-500" />
-              </span>
-            </a>
-          )}
-        </div>
+        )}
       </div>
     );
   };
