@@ -713,7 +713,13 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 role="button"
                 aria-label={`Select candidate ${candidate.full_name}`}
               >
-                <div className={`absolute top-0 left-0 rotate-45 w-10 h-10 ${candidate.premium_data_unlocked? 'bg-green-500':''}`}></div>
+                
+
+                {candidate.premium_data_unlocked && (
+                <svg width="21" height="18" viewBox="0 0 21 18" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute top-0 left-0">
+                <path d="M0.5 17.5L0.5 4.5C0.5 2.29086 2.29086 0.5 4.5 0.5L20.5 0.5L10.5 9L0.5 17.5Z" fill="#16A34A"/>
+                </svg>
+              )}
                 <div className="flex px-4 items-center space-x-3">
                   <input
                     type="checkbox"
