@@ -716,9 +716,15 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 
 
                 {candidate.premium_data_unlocked && (
-                <svg width="21" height="18" viewBox="0 0 21 18" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute top-0 left-0 z-10">
-                <path d="M0.5 17.5L0.5 4.5C0.5 2.29086 2.29086 0.5 4.5 0.5L20.5 0.5L10.5 9L0.5 17.5Z" fill="#3B82F6"/>
+                  <button
+                    className="absolute top-0 left-0 z-10 "
+                    title="Information revealed"
+                  >
+                <svg width="21" height="18" viewBox="0 0 21 18" fill="none" xmlns="http://www.w3.org/2000/svg" className="">
+                  <path d="M0.5 17.5L0.5 4.5C0.5 2.29086 2.29086 0.5 4.5 0.5L20.5 0.5L10.5 9L0.5 17.5Z" fill="#3B82F6"/>
                 </svg>
+              </button>
+                
               )}
                 <div className="flex px-4 items-center space-x-3">
                   <input
