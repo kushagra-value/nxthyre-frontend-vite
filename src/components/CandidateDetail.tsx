@@ -1006,7 +1006,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               {detailedCandidate?.candidate?.headline}
             </p>
             {detailedCandidate.candidate?.headline && (
-              <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-10 -left-1 w-max max-w-xs z-10">
+              <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-10 -left-2 w-max max-w-xs z-10">
                 {detailedCandidate.candidate?.headline}
               </div>
             )}
