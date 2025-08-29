@@ -92,19 +92,23 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   const random70to99 = () => Math.floor(Math.random() * 30 + 70);
 
-// In ProfileTab or where email/phone shown, update display
- const displayEmail = detailedCandidate?.candidate?.premium_data_unlocked &&
+  // In ProfileTab or where email/phone shown, update display
+  const displayEmail =
+    detailedCandidate?.candidate?.premium_data_unlocked &&
     detailedCandidate?.candidate?.premium_data_availability?.email &&
     detailedCandidate?.candidate?.premium_data?.email
-    ? detailedCandidate.candidate.premium_data.email
-    : `${(detailedCandidate?.candidate?.full_name || '').slice(0, 3).toLowerCase()}***********@gmail.com`;
+      ? detailedCandidate.candidate.premium_data.email
+      : `${(detailedCandidate?.candidate?.full_name || "")
+          .slice(0, 3)
+          .toLowerCase()}***********@gmail.com`;
 
   // Updated display logic for phone
-  const displayPhone = detailedCandidate?.candidate?.premium_data_unlocked &&
+  const displayPhone =
+    detailedCandidate?.candidate?.premium_data_unlocked &&
     detailedCandidate?.candidate?.premium_data_availability?.phone_number &&
     detailedCandidate?.candidate?.premium_data?.phone
-    ? detailedCandidate.candidate.premium_data.phone
-    : `${random70to99()}********${random70to99()}`;
+      ? detailedCandidate.candidate.premium_data.phone
+      : `${random70to99()}********${random70to99()}`;
 
   const tabs = [
     { name: "Profile" },
@@ -202,31 +206,36 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   const handleSendInviteClick = async () => {
     if (detailedCandidate?.candidate?.premium_data_unlocked) {
-    try {
-      onSendInvite();
-    } catch {
-      showToast.error("Failed to deduct credits");
+      try {
+        onSendInvite();
+      } catch {
+        showToast.error("Failed to deduct credits");
+      }
+    } else {
+      // Show confirmation popup if premium_data_unlocked is false
+      setShowConfirm(true);
     }
-  } else {
-    // Show confirmation popup if premium_data_unlocked is false
-    setShowConfirm(true);
-  }
   };
 
   const handleReveal = async (candidateId: string) => {
     try {
-      const premResponse = await candidateService.revealPremiumData(candidateId);
-      const updated = candidates.map(c => c.id === candidateId ? {
-        ...c,
-        premium_data_unlocked: true,
-        premium_data: premResponse.premium_data
-      } : c);
+      const premResponse = await candidateService.revealPremiumData(
+        candidateId
+      );
+      const updated = candidates.map((c) =>
+        c.id === candidateId
+          ? {
+              ...c,
+              premium_data_unlocked: true,
+              premium_data: premResponse.premium_data,
+            }
+          : c
+      );
       return premResponse;
     } catch (e) {
       showToast.error("Failed to reveal premium data");
       throw e;
     }
-    
   };
 
   const confirmSpend = async () => {
@@ -404,7 +413,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           )}
         </div>
       </div>
-      {detailedCandidate?.candidate?.certifications && (
+      {detailedCandidate?.candidate?.certifications?.length > 0 && (
         <div className="mb-4">
           <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
             <Award className="w-4 h-4 mr-2 text-[#4B5563]" />
@@ -439,44 +448,36 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
         </div>
       )}
-      {detailedCandidate?.candidate?.recommendations && (
+      {detailedCandidate?.candidate?.recommendations?.length > 0 && (
         <div>
           <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
             <TrendingUp className="w-4 h-4 mr-2 text-[#4B5563]" />
             Recommendations
           </h3>
           <div className="space-y-2">
-            {detailedCandidate?.candidate?.recommendations?.length > 0 ? (
-              detailedCandidate?.candidate?.recommendations.map(
-                (rec, index) => (
-                  <div key={index} className="bg-gray-50 rounded-lg p-3">
-                    <div className="flex items-start space-x-2 space-y-1">
-                      <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <User className="w-3 h-3 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-medium text-[#111827] text-sm">
-                          {rec?.recommender_name}
-                        </h4>
-                        <p className="text-xs text-[#4B5563]">
-                          {rec?.recommender_title}
-                        </p>
-                        <p className="text-sm text-[#4B5563] mt-1">
-                          "{rec?.feedback}"
-                        </p>
-                        <p className="text-xs text-[#6B7280] mt-1">
-                          {rec?.date_received}
-                        </p>
-                      </div>
-                    </div>
+            {detailedCandidate?.candidate?.recommendations.map((rec, index) => (
+              <div key={index} className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-start space-x-2 space-y-1">
+                  <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <User className="w-3 h-3 text-white" />
                   </div>
-                )
-              )
-            ) : (
-              <p className="text-sm text-gray-500">
-                No recommendations available
-              </p>
-            )}
+                  <div className="flex-1">
+                    <h4 className="font-medium text-[#111827] text-sm">
+                      {rec?.recommender_name}
+                    </h4>
+                    <p className="text-xs text-[#4B5563]">
+                      {rec?.recommender_title}
+                    </p>
+                    <p className="text-sm text-[#4B5563] mt-1">
+                      "{rec?.feedback}"
+                    </p>
+                    <p className="text-xs text-[#6B7280] mt-1">
+                      {rec?.date_received}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -504,46 +505,49 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
     return (
       <div className="bg-blue-50 p-4 rounded-lg shadow-sm space-y-4">
-        {/* Vetted Skills Subsection */}
-        <div>
-          <h4 className="text-lg font-semibold text-gray-700 flex items-center">
-            <Star className="w-4 h-4 mr-2" />
-            Vetted Skills
-          </h4>
-          <div className="flex flex-wrap gap-3 mt-2">
-            {vettedSkills.map((skill, index) => (
-              <div
-                key={index}
-                className="relative group bg-white rounded-md p-2 flex items-center justify-center space-x-2"
+        {(detailedCandidate?.candidate?.application_type === "prevetted" ||
+          detailedCandidate?.candidate?.is_prevetted) && (
+          // {/* Vetted Skills Subsection */}
+          <div>
+            <h4 className="text-lg font-semibold text-gray-700 flex items-center">
+              <Star className="w-4 h-4 mr-2" />
+              Vetted Skills
+            </h4>
+            <div className="flex flex-wrap gap-3 mt-2">
+              {vettedSkills.map((skill, index) => (
+                <div
+                  key={index}
+                  className="relative group bg-white rounded-md p-2 flex items-center justify-center space-x-2"
+                >
+                  <span className="text-xs text-blue-500">{skill.skill}</span>
+                  <Star className="w-4 h-4 text-[#FFC107] fill-[#FFC107]" />
+                  <span className="text-xs text-[#4B5563]">{skill.rating}</span>
+                  {skill.reason && (
+                    <div className="absolute z-1000 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-white text-gray-600 text-xs rounded-md py-2 px-3 w-64 text-center">
+                      {skill.reason}
+                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent border-t-gray-600"></div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            {!isVettedExpanded && vettedSkills.length > 6 && (
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsVettedExpanded(true);
+                }}
+                className="text-blue-500 text-sm mt-2 flex items-center"
               >
-                <span className="text-xs text-blue-500">{skill.skill}</span>
-                <Star className="w-4 h-4 text-[#FFC107] fill-[#FFC107]" />
-                <span className="text-xs text-[#4B5563]">{skill.rating}</span>
-                {skill.reason && (
-                  <div className="absolute z-1000 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-white text-gray-600 text-xs rounded-md py-2 px-3 w-64 text-center">
-                    {skill.reason}
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent border-t-gray-600"></div>
-                  </div>
-                )}
-              </div>
-            ))}
+                View More
+                <span className="ml-1">
+                  <ChevronDown className="text-blue-500" />
+                </span>
+              </a>
+            )}
           </div>
-          {!isVettedExpanded && vettedSkills.length > 6 && (
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                setIsVettedExpanded(true);
-              }}
-              className="text-blue-500 text-sm mt-2 flex items-center"
-            >
-              View More
-              <span className="ml-1">
-                <ChevronDown className="text-blue-500" />
-              </span>
-            </a>
-          )}
-        </div>
+        )}
         {/* Resume Skills Subsection */}
         <div>
           <h4 className="text-lg font-semibold text-gray-700 flex items-center">
@@ -651,7 +655,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               <ReferenceCard key={index} reference={reference} />
             ))
           ) : (
-            <p>No references available</p>
+            <p className="text-gray-500 pl-7">No references available</p>
           )}
         </div>
       </div>
@@ -660,7 +664,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   // The ReferenceCard component remains unchanged, as the mapped fields match the expected props
   // No modifications needed here, but included for context
-  const ReferenceCard = (reference:any) => {
+  const ReferenceCard = (reference: any) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showPopup, setShowPopup] = useState<
       "email" | "phone" | "linkedin" | null
@@ -672,7 +676,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         ? reference.description.substring(0, truncateLength) + "..."
         : reference.description;
 
-    const handleMouseEnter = (type:any) => {
+    const handleMouseEnter = (type: any) => {
       setShowPopup(type);
     };
 
@@ -932,9 +936,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 </div>
               ))
             ) : notesView === "my" ? (
-              <div>No team notes available. You can add a new note below.</div>
+              <div className="text-gray-500 pl-10">
+                No team notes available. You can add a new note below.
+              </div>
             ) : (
-              <div>
+              <div className="text-gray-500 pl-10">
                 No community notes available. You can add a new note below.
               </div>
             )}
@@ -981,16 +987,29 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             detailedCandidate?.candidate?.full_name
           )} rounded-full flex items-center justify-center text-white`}
         >
-          <User className="w-6 h-6" />
+          {detailedCandidate?.candidate?.profile_picture_url ? (
+            <img
+              src={detailedCandidate?.candidate?.profile_picture_url}
+              alt={detailedCandidate?.candidate?.full_name}
+              className="w-full h-full rounded-full"
+            />
+          ) : (
+            <User className="w-6 h-6" />
+          )}
         </div>
         <div>
           <h2 className="text-base lg:text-[16px] font-bold text-gray-900">
             {detailedCandidate?.candidate?.full_name}
           </h2>
-          <div className="flex">
+          <div className="relative group">
             <p className="text-sm text-gray-500 max-w-[32ch] truncate">
               {detailedCandidate?.candidate?.headline}
             </p>
+            {detailedCandidate.candidate?.headline && (
+              <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-10 -left-1 w-max max-w-xs z-10">
+                {detailedCandidate.candidate?.headline}
+              </div>
+            )}
           </div>
           <div className="flex">
             <p className="text-sm text-gray-500">
@@ -1017,12 +1036,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
           <button
             className={`flex space-x-2 ml-auto p-1 ${
-              detailedCandidate?.candidate?.email
+              displayEmail
                 ? "text-gray-400 hover:text-gray-600"
                 : "text-gray-300 cursor-not-allowed"
             }`}
-            onClick={() => detailedCandidate?.candidate?.email && handleCopy(displayEmail)}
-            disabled={!detailedCandidate?.candidate?.email}
+            onClick={() => displayEmail && handleCopy(displayEmail)}
+            disabled={!displayEmail}
           >
             <Copy className="w-4 h-4" />
           </button>
@@ -1035,23 +1054,23 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <div>
             <button
               className={`p-1 ${
-                detailedCandidate?.candidate?.phone
+                displayPhone
                   ? "text-gray-400 hover:text-gray-600"
                   : "text-gray-300 cursor-not-allowed"
               }`}
-              onClick={() => detailedCandidate?.candidate?.phone && handleWhatsApp(detailedCandidate?.candidate?.phone)}
-              disabled={!detailedCandidate?.candidate?.phone}
+              onClick={() => displayPhone && handleWhatsApp(displayPhone)}
+              disabled={!displayPhone}
             >
               <FontAwesomeIcon icon={faWhatsapp} />
             </button>
             <button
               className={`p-1 ${
-                detailedCandidate?.candidate?.phone
+                displayPhone
                   ? "text-gray-400 hover:text-gray-600"
                   : "text-gray-300 cursor-not-allowed"
               }`}
-              onClick={() => detailedCandidate?.candidate?.phone && handleCopy(detailedCandidate?.candidate?.phone)}
-              disabled={!detailedCandidate?.candidate?.phone}
+              onClick={() => displayPhone && handleCopy(displayPhone)}
+              disabled={!displayPhone}
             >
               <Copy className="w-4 h-4" />
             </button>

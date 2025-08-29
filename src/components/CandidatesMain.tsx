@@ -739,9 +739,17 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     <div
                       className={`w-14 h-14 ${getAvatarColor(
                         candidate.full_name
-                      )} rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600] `}
+                      )} rounded-full flex items-center justify-center text-white text-xs lg:text-base font-[600] `}
                     >
-                      {candidate.avatar}
+                      {candidate?.profile_picture_url ? (
+                        <img
+                          src={candidate.profile_picture_url}
+                          alt={candidate.full_name}
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      ) : (
+                        candidate.avatar
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
@@ -833,16 +841,30 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                           </p>
                         </div>
                       </div>
-                      <div className="flex space-x-2">
-                        <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
-                          {candidate.experience_summary?.title}
-                        </p>
-                        <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
-                          |
-                        </p>
-                        <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
-                          {candidate.education_summary?.title}
-                        </p>
+                      <div className="flex items-center space-x-2">
+                        <div className="relative group">
+                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                            {candidate.experience_summary?.title}
+                          </p>
+                          {candidate.experience_summary?.title && (
+                            <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-5 -left-1 w-max max-w-xs z-10">
+                              {candidate.experience_summary?.title}
+                            </div>
+                          )}
+                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 ml-2">
+                            |
+                          </p>
+                        </div>
+                        <div className="relative group">
+                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                            {candidate.education_summary?.title}
+                          </p>
+                          {candidate.education_summary?.title && (
+                            <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-5 -left-1 w-max max-w-xs z-10">
+                              {candidate.education_summary?.title}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
