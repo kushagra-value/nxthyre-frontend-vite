@@ -13,6 +13,7 @@ export interface CandidateListItem {
   experience_summary: {
     title: string;
     date_range: string;
+    duration_years:number;
   };
   education_summary: {
     title: string;

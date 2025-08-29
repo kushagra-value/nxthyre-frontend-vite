@@ -857,11 +857,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     </div>
                   )}
                   {/* need to update the current Company Data */}
-                  {candidate.experience_years && (
+                  {candidate.experience_summary.duration_years && (
                     <div className="flex flex-col">
                       <p className="text-[#A8A8A8] mr-[5px]">Current Company</p>
                       <p className="text-[#4B5563]">
-                        {candidate.experience_years}
+                        {candidate.experience_summary.duration_years} years
                       </p>
                     </div>
                   )}
