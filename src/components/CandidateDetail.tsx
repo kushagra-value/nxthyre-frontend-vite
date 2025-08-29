@@ -1034,14 +1034,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
           <button
             className={`flex space-x-2 ml-auto p-1 ${
-              detailedCandidate?.candidate?.email
+              displayEmail
                 ? "text-gray-400 hover:text-gray-600"
                 : "text-gray-300 cursor-not-allowed"
             }`}
-            onClick={() =>
-              detailedCandidate?.candidate?.email && handleCopy(displayEmail)
-            }
-            disabled={!detailedCandidate?.candidate?.email}
+            onClick={() => displayEmail && handleCopy(displayEmail)}
+            disabled={!displayEmail}
           >
             <Copy className="w-4 h-4" />
           </button>
@@ -1054,29 +1052,23 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <div>
             <button
               className={`p-1 ${
-                detailedCandidate?.candidate?.phone
+                displayPhone
                   ? "text-gray-400 hover:text-gray-600"
                   : "text-gray-300 cursor-not-allowed"
               }`}
-              onClick={() =>
-                detailedCandidate?.candidate?.phone &&
-                handleWhatsApp(detailedCandidate?.candidate?.phone)
-              }
-              disabled={!detailedCandidate?.candidate?.phone}
+              onClick={() => displayPhone && handleWhatsApp(displayPhone)}
+              disabled={!displayPhone}
             >
               <FontAwesomeIcon icon={faWhatsapp} />
             </button>
             <button
               className={`p-1 ${
-                detailedCandidate?.candidate?.phone
+                displayPhone
                   ? "text-gray-400 hover:text-gray-600"
                   : "text-gray-300 cursor-not-allowed"
               }`}
-              onClick={() =>
-                detailedCandidate?.candidate?.phone &&
-                handleCopy(detailedCandidate?.candidate?.phone)
-              }
-              disabled={!detailedCandidate?.candidate?.phone}
+              onClick={() => displayPhone && handleCopy(displayPhone)}
+              disabled={!displayPhone}
             >
               <Copy className="w-4 h-4" />
             </button>
