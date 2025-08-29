@@ -828,16 +828,30 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                           </p>
                         </div>
                       </div>
-                      <div className="flex space-x-2">
-                        <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
-                          {candidate.experience_summary?.title}
-                        </p>
+                      <div className="flex items-center space-x-2">
+                        <div className="relative group">
+                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                            {candidate.experience_summary?.title}
+                          </p>
+                          {candidate.experience_summary?.title && (
+                            <div className="absolute hidden group-hover:block bg-[#0F47F2] text-white text-xs lg:text-base font-[400] rounded-md px-2 py-1 -top-8 left-0 w-max max-w-xs z-10">
+                              {candidate.experience_summary?.title}
+                            </div>
+                          )}
+                        </div>
                         <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
                           |
                         </p>
-                        <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
-                          {candidate.education_summary?.title}
-                        </p>
+                        <div className="relative group">
+                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                            {candidate.education_summary?.title}
+                          </p>
+                          {candidate.education_summary?.title && (
+                            <div className="absolute hidden group-hover:block bg-[#0F47F2] text-white text-xs lg:text-base font-[400] rounded-md px-2 py-1 -top-8 left-0 w-max max-w-xs z-10">
+                              {candidate.education_summary?.title}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
