@@ -3,12 +3,13 @@ import apiClient from "./api";
 export interface CandidateListItem {
   id: string;
   full_name: string;
-  current_salary_lpa:string;
+  current_salary_lpa: string;
   avatar: string;
   headline: string;
   location: string;
   linkedin_url?: string;
   is_background_verified: boolean;
+  profile_picture_url: string;
   experience_years: string;
   experience_summary: {
     title: string;
@@ -143,8 +144,8 @@ export interface CandidateDetailData {
     notice_period_days: number;
     application_type: string;
     stage: string;
-    premium_data_unlocked:boolean;
-    has_premium_data:boolean;
+    premium_data_unlocked: boolean;
+    has_premium_data: boolean;
     premium_data_availability: {
       email: boolean;
       resume_url: boolean;
@@ -610,8 +611,12 @@ class CandidateService {
     }
   }
 
-  async revealPremiumData(candidateId: string): Promise<{message: string, premium_data: any}> {
-    const response = await apiClient.post(`/candidates/${candidateId}/reveal-premium-data/`);
+  async revealPremiumData(
+    candidateId: string
+  ): Promise<{ message: string; premium_data: any }> {
+    const response = await apiClient.post(
+      `/candidates/${candidateId}/reveal-premium-data/`
+    );
     return response.data;
   }
 

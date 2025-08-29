@@ -726,9 +726,17 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     <div
                       className={`w-14 h-14 ${getAvatarColor(
                         candidate.full_name
-                      )} rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600] `}
+                      )} rounded-full flex items-center justify-center text-white text-xs lg:text-base font-[600] `}
                     >
-                      {candidate.avatar}
+                      {candidate?.profile_picture_url ? (
+                        <img
+                          src={candidate.profile_picture_url}
+                          alt={candidate.full_name}
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      ) : (
+                        candidate.avatar
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
