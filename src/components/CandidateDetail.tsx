@@ -413,7 +413,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           )}
         </div>
       </div>
-      {detailedCandidate?.candidate?.certifications && (
+      {detailedCandidate?.candidate.certifications && (
         <div className="mb-4">
           <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
             <Award className="w-4 h-4 mr-2 text-[#4B5563]" />
@@ -448,7 +448,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
         </div>
       )}
-      {detailedCandidate?.candidate?.recommendations && (
+      {detailedCandidate?.candidate.recommendations && (
         <div>
           <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
             <TrendingUp className="w-4 h-4 mr-2 text-[#4B5563]" />
