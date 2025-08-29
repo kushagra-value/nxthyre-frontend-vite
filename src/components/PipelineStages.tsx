@@ -1594,6 +1594,12 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       </button>
                     )}
 
+                    {viewMode === "prospect" ?(
+                      <div className="relative">
+                        
+                      
+                      </div>
+                    ): (
                     <div className="relative">
                       <button
                         className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -1703,6 +1709,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         </div>
                       )}
                     </div>
+                    )}
 
                     <div className="relative flex space-x-2">
                       <button
