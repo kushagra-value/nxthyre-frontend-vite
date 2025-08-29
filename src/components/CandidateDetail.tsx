@@ -517,21 +517,21 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               <div className="relative group">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="lucide lucide-circle-alert-icon lucide-circle-alert"
+                  className="lucide lucide-circle-alert-icon lucide-circle-alert text-gray-500"
                 >
                   <circle cx="12" cy="12" r="10" />
                   <line x1="12" x2="12" y1="8" y2="12" />
                   <line x1="12" x2="12.01" y1="16" y2="16" />
                 </svg>
-                <div className="absolute hidden group-hover:block bg-gray-200 text-gray-600 text-xs rounded-md px-2 py-1 -top-8 left-1/2 transform -translate-x-1/2 w-max max-w-xs z-10">
+                <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs rounded-md px-2 py-1 -top-8 left-1/2 transform -translate-x-1/2 w-max max-w-xs z-10">
                   Vetted skills: Abilities verified through assessments or
                   reviews to ensure proficiency.
                 </div>
