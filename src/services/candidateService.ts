@@ -3,9 +3,7 @@ import apiClient from "./api";
 export interface CandidateListItem {
   id: string;
   full_name: string;
-  candidate_email: string;
-  candidate_phone: string;
-  current_salary_lpa: string;
+  current_salary_lpa:string;
   avatar: string;
   headline: string;
   location: string;
@@ -22,12 +20,39 @@ export interface CandidateListItem {
   };
   notice_period_summary: string;
   skills_list: string[];
-  social_links: {
-    linkedin?: string;
-    github?: string;
-    portfolio?: string;
-    resume?: string;
+  premium_data_unlocked: boolean;
+  premium_data_availability: {
+    email: boolean;
+    resume_url: boolean;
+    resume_text: boolean;
+    linkedin_url: boolean;
+    portfolio_url: boolean;
+    phone_number: boolean;
+    dribble_username: boolean;
+    behance_username: boolean;
+    instagram_username: boolean;
+    pinterest_username: boolean;
+    twitter_username: boolean;
+    github_username: boolean;
+    all_emails: boolean;
+    all_phone_numbers: boolean;
   };
+  premium_data: {
+    email: string;
+    phone: string;
+    linkedin_url: string | null;
+    github_url: string | null;
+    twitter_url: string | null;
+    resume_url: string;
+    resume_text: string;
+    portfolio_url: string | null;
+    dribble_username: string;
+    behance_username: string;
+    instagram_username: string;
+    pinterest_username: string;
+    all_emails: string[];
+    all_phone_numbers: string[];
+  } | null;
 }
 
 export interface CandidateDetailData {
@@ -118,6 +143,40 @@ export interface CandidateDetailData {
     notice_period_days: number;
     application_type: string;
     stage: string;
+    premium_data_unlocked:boolean;
+    has_premium_data:boolean;
+    premium_data_availability: {
+      email: boolean;
+      resume_url: boolean;
+      resume_text: boolean;
+      linkedin_url: boolean;
+      portfolio_url: boolean;
+      phone_number: boolean;
+      dribble_username: boolean;
+      behance_username: boolean;
+      instagram_username: boolean;
+      pinterest_username: boolean;
+      twitter_username: boolean;
+      github_username: boolean;
+      all_emails: boolean;
+      all_phone_numbers: boolean;
+    };
+    premium_data: {
+      email: string;
+      phone: string;
+      linkedin_url: string | null;
+      github_url: string | null;
+      twitter_url: string | null;
+      resume_url: string;
+      resume_text: string;
+      portfolio_url: string | null;
+      dribble_username: string;
+      behance_username: string;
+      instagram_username: string;
+      pinterest_username: string;
+      all_emails: string[];
+      all_phone_numbers: string[];
+    } | null;
     ai_interview_report: {
       score: {
         resume: number;
@@ -549,6 +608,11 @@ class CandidateService {
         error.response?.data?.error || "Failed to fetch recent searches"
       );
     }
+  }
+
+  async revealPremiumData(candidateId: string): Promise<{message: string, premium_data: any}> {
+    const response = await apiClient.post(`/candidates/${candidateId}/reveal-premium-data/`);
+    return response.data;
   }
 
   async getCandidateNotes(candidateId: string): Promise<Note[]> {

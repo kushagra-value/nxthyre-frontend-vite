@@ -69,79 +69,6 @@ interface FiltersSidebarProps {
   isSearchMode: boolean;
 }
 
-const JobTitlesSlider: React.FC<{
-  recentSearches: { id: number; query: string }[];
-  onSelectSearch: (query: string) => void;
-}> = ({ recentSearches, onSelectSearch }) => {
-  const sliderRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (sliderRef.current) {
-      const totalWidth = sliderRef.current.scrollWidth;
-      const visibleWidth = sliderRef.current.clientWidth;
-      const initialScroll = totalWidth / 2 - visibleWidth / 2;
-      sliderRef.current.scrollTo({ left: initialScroll, behavior: "instant" });
-    }
-  }, [recentSearches]);
-
-  const scrollLeft = () => {
-    if (sliderRef.current) {
-      sliderRef.current.scrollBy({
-        left: -sliderRef.current.clientWidth,
-        behavior: "smooth",
-      });
-    }
-  };
-
-  const scrollRight = () => {
-    if (sliderRef.current) {
-      sliderRef.current.scrollBy({
-        left: sliderRef.current.clientWidth,
-        behavior: "smooth",
-      });
-    }
-  };
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm lg:text-base font-semibold text-gray-800 flex items-center">
-          <History className="w-4 h-4 mr-2 text-gray-800" />
-          Recent Searched Job Titles
-        </h3>
-      </div>
-      <div className="flex items-center">
-        <button onClick={scrollLeft} className="p-1">
-          <ChevronLeft className="w-4 h-4 text-gray-500" />
-        </button>
-        <div
-          ref={sliderRef}
-          className="slider-container overflow-x-scroll w-96"
-          style={{
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-          }}
-        >
-          <div className="slider flex gap-1">
-            {recentSearches.map((search) => (
-              <button
-                key={search.id}
-                onClick={() => onSelectSearch(search.query)}
-                className="w-full px-2 py-1 bg-white text-xs text-gray-600 rounded border hover:bg-gray-50 whitespace-nowrap text-center"
-              >
-                {search.query}
-              </button>
-            ))}
-          </div>
-        </div>
-        <button onClick={scrollRight} className="p-1">
-          <ChevronRight className="w-4 h-4 text-gray-500" />
-        </button>
-      </div>
-    </div>
-  );
-};
-
 interface FilterMenuProps {
   filters: FiltersSidebarProps["filters"];
   updateTempFilters: (key: string, value: any) => void;
@@ -277,17 +204,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     setTempFilters(filters);
   }, [filters]);
 
-  useEffect(() => {
-    const fetchRecentSearches = async () => {
-      try {
-        const searches = await candidateService.getRecentSearches();
-        setRecentSearches(searches);
-      } catch (error) {
-        console.error("Error fetching recent searches:", error);
-      }
-    };
-    fetchRecentSearches();
-  }, []);
 
   // Fetch keyword suggestions
   const fetchKeywordSuggestions = useCallback(
@@ -525,8 +441,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       await onApplyFilters(tempFilters);
 
       // Refetch recent searches to update the JobTitlesSlider
-      const searches = await candidateService.getRecentSearches();
-      setRecentSearches(searches);
+      // const searches = await candidateService.getRecentSearches();
+      // setRecentSearches(searches);
     } catch (error) {
       console.error(
         "Error applying filters or fetching recent searches:",

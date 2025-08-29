@@ -33,6 +33,7 @@ import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
+import { has } from "lodash";
 
 interface TemplateSelectorProps {
   candidate: CandidateListItem;
@@ -286,8 +287,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             ...data,
             candidate: {
               ...data.candidate,
-              candidate_email: candidate.candidate_email,
-              candidate_phone: candidate.candidate_phone,
             },
           });
         } catch (error) {
@@ -298,7 +297,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
       };
       fetchCandidateDetails();
     }
-  }, [candidate?.id, candidate?.candidate_email, candidate?.candidate_phone]);
+  }, [candidate?.id]);
 
   const handleShareProfile = () => {
     if (detailedCandidate && detailedCandidate.candidate) {
@@ -329,17 +328,22 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     window.open(`https://wa.me/${formattedPhone}`, "_blank");
   };
 
-  const hasContactInfo =
-    !!detailedCandidate?.candidate?.candidate_email &&
-    !!detailedCandidate?.candidate?.candidate_phone;
-  const displayEmail = hasContactInfo
-    ? detailedCandidate?.candidate?.candidate_email
-    : `${detailedCandidate?.candidate?.full_name
-        ?.toLocaleLowerCase()
-        ?.slice(0, 2)}*********@gmail.com`;
-  const displayPhone = hasContactInfo
-    ? detailedCandidate?.candidate?.candidate_phone
-    : "93********45";
+  const random70to99 = () => Math.floor(Math.random() * 30 + 70);
+  
+  const hasEmail = candidate.premium_data_availability.email; 
+  const hasPhone = candidate.premium_data_availability.phone_number;
+  const displayEmail = detailedCandidate?.candidate?.premium_data_unlocked &&
+    detailedCandidate?.candidate?.premium_data_availability?.email &&
+    detailedCandidate?.candidate?.premium_data?.email
+    ? detailedCandidate.candidate.premium_data.email
+    : `${(detailedCandidate?.candidate?.full_name || '').slice(0, 3).toLowerCase()}***********@gmail.com`;
+
+  // Updated display logic for phone
+  const displayPhone = detailedCandidate?.candidate?.premium_data_unlocked &&
+    detailedCandidate?.candidate?.premium_data_availability?.phone_number &&
+    detailedCandidate?.candidate?.premium_data?.phone
+    ? detailedCandidate.candidate.premium_data.phone
+    : `${random70to99()}********${random70to99()}`;
 
   return (
     <>
@@ -401,12 +405,12 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             </div>
             <button
               className={`flex space-x-2 ml-auto p-1 ${
-                hasContactInfo
+                hasEmail
                   ? "text-gray-400 hover:text-gray-600"
                   : "text-gray-300 cursor-not-allowed"
               }`}
-              onClick={() => hasContactInfo && handleCopy(displayEmail)}
-              disabled={!hasContactInfo}
+              onClick={() => hasEmail && handleCopy(displayEmail)}
+              disabled={!hasEmail}
             >
               <div className="w-7 h-7 flex justify-center items-center bg-gray-200 rounded-full">
                 <Copy className="w-4 h-4 text-gray-400" />
@@ -423,12 +427,12 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             <div>
               <button
                 className={`p-1 ${
-                  hasContactInfo
+                  hasPhone
                     ? "text-gray-400 hover:text-gray-600"
                     : "text-gray-300 cursor-not-allowed"
                 }`}
-                onClick={() => hasContactInfo && handleWhatsApp(displayPhone)}
-                disabled={!hasContactInfo}
+                onClick={() => hasPhone && handleWhatsApp(displayPhone)}
+                disabled={!hasPhone}
               >
                 <div className="w-7 h-7 flex justify-center items-center bg-gray-200 rounded-full">
                   <FontAwesomeIcon icon={faWhatsapp} />
@@ -436,12 +440,12 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               </button>
               <button
                 className={`p-1 ${
-                  hasContactInfo
+                  hasPhone
                     ? "text-gray-400 hover:text-gray-600"
                     : "text-gray-300 cursor-not-allowed"
                 }`}
-                onClick={() => hasContactInfo && handleCopy(displayPhone)}
-                disabled={!hasContactInfo}
+                onClick={() => hasPhone && handleCopy(displayPhone)}
+                disabled={!hasPhone}
               >
                 <div className="w-7 h-7 flex justify-center items-center bg-gray-200 rounded-full">
                   <Copy className="w-4 h-4 text-gray-400" />
