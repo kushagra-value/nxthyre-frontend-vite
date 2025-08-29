@@ -618,7 +618,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   // The ReferenceCard component remains unchanged, as the mapped fields match the expected props
   // No modifications needed here, but included for context
-  const ReferenceCard = (reference:any) => {
+  const ReferenceCard = (reference: any) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showPopup, setShowPopup] = useState<
       "email" | "phone" | "linkedin" | null
@@ -630,7 +630,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         ? reference.description.substring(0, truncateLength) + "..."
         : reference.description;
 
-    const handleMouseEnter = (type:any) => {
+    const handleMouseEnter = (type: any) => {
       setShowPopup(type);
     };
 
@@ -939,7 +939,15 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             detailedCandidate?.candidate?.full_name
           )} rounded-full flex items-center justify-center text-white`}
         >
-          <User className="w-6 h-6" />
+          {detailedCandidate?.candidate?.profile_picture_url ? (
+            <img
+              src={detailedCandidate?.candidate?.profile_picture_url}
+              alt={detailedCandidate?.candidate?.full_name}
+              className="w-full h-full rounded-full"
+            />
+          ) : (
+            <User className="w-6 h-6" />
+          )}
         </div>
         <div>
           <h2 className="text-base lg:text-[16px] font-bold text-gray-900">
@@ -971,7 +979,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
-            <span className="text-sm text-gray-700">{detailedCandidate?.candidate?.email}</span>
+            <span className="text-sm text-gray-700">
+              {detailedCandidate?.candidate?.email}
+            </span>
           </div>
           <button
             className={`flex space-x-2 ml-auto p-1 ${
@@ -979,7 +989,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 ? "text-gray-400 hover:text-gray-600"
                 : "text-gray-300 cursor-not-allowed"
             }`}
-            onClick={() => detailedCandidate?.candidate?.email && handleCopy(detailedCandidate?.candidate?.email)}
+            onClick={() =>
+              detailedCandidate?.candidate?.email &&
+              handleCopy(detailedCandidate?.candidate?.email)
+            }
             disabled={!detailedCandidate?.candidate?.email}
           >
             <Copy className="w-4 h-4" />
@@ -988,7 +1001,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
-            <span className="text-sm text-gray-700">{detailedCandidate?.candidate?.phone}</span>
+            <span className="text-sm text-gray-700">
+              {detailedCandidate?.candidate?.phone}
+            </span>
           </div>
           <div>
             <button
@@ -997,7 +1012,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                   ? "text-gray-400 hover:text-gray-600"
                   : "text-gray-300 cursor-not-allowed"
               }`}
-              onClick={() => detailedCandidate?.candidate?.phone && handleWhatsApp(detailedCandidate?.candidate?.phone)}
+              onClick={() =>
+                detailedCandidate?.candidate?.phone &&
+                handleWhatsApp(detailedCandidate?.candidate?.phone)
+              }
               disabled={!detailedCandidate?.candidate?.phone}
             >
               <FontAwesomeIcon icon={faWhatsapp} />
@@ -1008,7 +1026,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                   ? "text-gray-400 hover:text-gray-600"
                   : "text-gray-300 cursor-not-allowed"
               }`}
-              onClick={() => detailedCandidate?.candidate?.phone && handleCopy(detailedCandidate?.candidate?.phone)}
+              onClick={() =>
+                detailedCandidate?.candidate?.phone &&
+                handleCopy(detailedCandidate?.candidate?.phone)
+              }
               disabled={!detailedCandidate?.candidate?.phone}
             >
               <Copy className="w-4 h-4" />
