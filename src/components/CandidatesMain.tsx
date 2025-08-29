@@ -702,7 +702,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             {candidates.map((candidate) => (
               <div
                 key={candidate.id}
-                className={`pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
+                className={`relative pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500  ${
                   selectedCandidate?.id === candidate.id
                     ? "bg-blue-50 border-l-4 border-blue-500"
                     : "border border-gray-200"
@@ -713,6 +713,19 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 role="button"
                 aria-label={`Select candidate ${candidate.full_name}`}
               >
+                
+
+                {candidate.premium_data_unlocked && (
+                  <button
+                    className="absolute top-0 left-0 z-10 "
+                    title="Information revealed"
+                  >
+                <svg width="21" height="18" viewBox="0 0 21 18" fill="none" xmlns="http://www.w3.org/2000/svg" className="">
+                  <path d="M0.5 17.5L0.5 4.5C0.5 2.29086 2.29086 0.5 4.5 0.5L20.5 0.5L10.5 9L0.5 17.5Z" fill="#3B82F6"/>
+                </svg>
+              </button>
+                
+              )}
                 <div className="flex px-4 items-center space-x-3">
                   <input
                     type="checkbox"
@@ -859,7 +872,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   </div>
                 </div>
                 <div className="pt-5 pl-12 flex space-x-12 gap-2 text-xs lg:text-base font-[400px] ml-1">
-                  {candidate.experience_years && (
+                  {candidate?.experience_years && (
                     <div className="flex flex-col">
                       <p className="text-[#A8A8A8] mr-[5px]">Experience</p>
                       <p className="text-[#4B5563]">
@@ -868,11 +881,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     </div>
                   )}
                   {/* need to update the current Company Data */}
-                  {candidate.experience_years && (
+                  {candidate?.experience_summary?.duration_years && (
                     <div className="flex flex-col">
                       <p className="text-[#A8A8A8] mr-[5px]">Current Company</p>
                       <p className="text-[#4B5563]">
-                        {candidate.experience_years}
+                        {candidate?.experience_summary?.duration_years} years
                       </p>
                     </div>
                   )}
