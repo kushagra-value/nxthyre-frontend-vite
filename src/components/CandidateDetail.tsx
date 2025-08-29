@@ -505,7 +505,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
     return (
       <div className="bg-blue-50 p-4 rounded-lg shadow-sm space-y-4">
-        {detailedCandidate?.candidate?.application_type === "prevetted" && (
+        {(detailedCandidate?.candidate?.application_type === "prevetted" ||
+          detailedCandidate?.candidate?.is_prevetted) && (
           // {/* Vetted Skills Subsection */}
           <div>
             <h4 className="text-lg font-semibold text-gray-700 flex items-center">
