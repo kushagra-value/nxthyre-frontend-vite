@@ -834,20 +834,20 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                             {candidate.experience_summary?.title}
                           </p>
                           {candidate.experience_summary?.title && (
-                            <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-6 left-0 w-max max-w-xs z-10">
+                            <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-5 -left-1 w-max max-w-xs z-10">
                               {candidate.experience_summary?.title}
                             </div>
                           )}
+                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 ml-2">
+                            |
+                          </p>
                         </div>
-                        <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
-                          |
-                        </p>
                         <div className="relative group">
                           <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
                             {candidate.education_summary?.title}
                           </p>
                           {candidate.education_summary?.title && (
-                            <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-6 left-0 w-max max-w-xs z-10">
+                            <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-5 -left-1 w-max max-w-xs z-10">
                               {candidate.education_summary?.title}
                             </div>
                           )}
