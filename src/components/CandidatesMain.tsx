@@ -698,11 +698,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         </div>
       ) : (
         <>
-          <div className="relative space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
+          <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
             {candidates.map((candidate) => (
               <div
                 key={candidate.id}
-                className={`pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
+                className={`relative pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 overflow-hidden ${
                   selectedCandidate?.id === candidate.id
                     ? "bg-blue-50 border-l-4 border-blue-500"
                     : "border border-gray-200"
@@ -713,7 +713,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 role="button"
                 aria-label={`Select candidate ${candidate.full_name}`}
               >
-                <div className={`absolute bottom-0 left-0 w-10 h-10 ${candidate.premium_data_unlocked? 'bg-green-100':''}`}></div>
+                <div className={`absolute top-0 left-0 rotate-45 w-10 h-10 ${candidate.premium_data_unlocked? 'bg-green-500':''}`}></div>
                 <div className="flex px-4 items-center space-x-3">
                   <input
                     type="checkbox"
