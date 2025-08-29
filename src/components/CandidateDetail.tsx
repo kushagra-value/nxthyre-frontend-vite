@@ -335,8 +335,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                       <h4 className="font-medium text-[#111827] text-sm">
                         {exp?.job_title}
                       </h4>
-                      <p className="text-sm text-[#4B5563]">{`${exp?.company} | ${exp?.location}`}</p>
-                      <p className="text-sm text-[#6B7280]">
+                      <p className="text-sm text-gray-400">{`${exp?.company} | ${exp?.location}`}</p>
+                      <p className="text-sm text-gray-400">
                         {exp?.start_date && (
                           <span>
                             {exp?.start_date} - {exp?.end_date || "Present"}
@@ -994,7 +994,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               className="w-full h-full rounded-full"
             />
           ) : (
-            <User className="w-6 h-6" />
+            detailedCandidate?.candidate?.full_name?.slice(0, 2).toUpperCase()
           )}
         </div>
         <div>
@@ -1006,7 +1006,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               {detailedCandidate?.candidate?.headline}
             </p>
             {detailedCandidate.candidate?.headline && (
-              <div className="absolute hidden group-hover:block bg-gray-400 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-10 -left-2 w-max max-w-xs z-10">
+              <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-10 -left-2 w-max max-w-xs z-10">
                 {detailedCandidate.candidate?.headline}
               </div>
             )}
