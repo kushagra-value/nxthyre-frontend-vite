@@ -834,7 +834,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                             {candidate.experience_summary?.title}
                           </p>
                           {candidate.experience_summary?.title && (
-                            <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-1 -top-8 left-0 w-max max-w-xs z-10">
+                            <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-4 left-0 w-max max-w-xs z-10">
                               {candidate.experience_summary?.title}
                             </div>
                           )}
@@ -847,7 +847,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                             {candidate.education_summary?.title}
                           </p>
                           {candidate.education_summary?.title && (
-                            <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -top-4 left-0 w-max max-w-xs z-10">
+                            <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-4 left-0 w-max max-w-xs z-10">
                               {candidate.education_summary?.title}
                             </div>
                           )}

@@ -1001,10 +1001,15 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <h2 className="text-base lg:text-[16px] font-bold text-gray-900">
             {detailedCandidate?.candidate?.full_name}
           </h2>
-          <div className="flex">
+          <div className="relative group">
             <p className="text-sm text-gray-500 max-w-[32ch] truncate">
               {detailedCandidate?.candidate?.headline}
             </p>
+            {detailedCandidate.candidate?.headline && (
+              <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-4 left-0 w-max max-w-xs z-10">
+                {detailedCandidate.candidate?.headline}
+              </div>
+            )}
           </div>
           <div className="flex">
             <p className="text-sm text-gray-500">
