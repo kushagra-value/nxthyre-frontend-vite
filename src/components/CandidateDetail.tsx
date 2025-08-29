@@ -654,7 +654,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               <ReferenceCard key={index} reference={reference} />
             ))
           ) : (
-            <p>No references available</p>
+            <p className="text-gray-500 pl-6">No references available</p>
           )}
         </div>
       </div>
@@ -935,9 +935,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 </div>
               ))
             ) : notesView === "my" ? (
-              <div>No team notes available. You can add a new note below.</div>
+              <div className="text-gray-500 pl-8">
+                No team notes available. You can add a new note below.
+              </div>
             ) : (
-              <div>
+              <div className="text-gray-500 pl-8">
                 No community notes available. You can add a new note below.
               </div>
             )}
