@@ -234,6 +234,12 @@ export interface CandidateDetailData {
   };
 }
 
+export interface ReferenceData {
+  hr_name: string;
+  hr_title: string;
+  is_data_correct: boolean
+}
+
 export interface ShareableProfileSensitiveCandidate {
   id: string;
   profile_picture_url: string;
@@ -429,6 +435,17 @@ class CandidateService {
       }
       throw new Error(
         error.response?.data?.error || "Failed to search candidates"
+      );
+    }
+  }
+
+   async getCandidateReferences(candidateId: string): Promise<ReferenceData[]> {
+    try {
+      const response = await apiClient.get(`/organization/candidates/reference/${candidateId}/`);
+      return response.data;
+    } catch (error:any){
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch candidate references"
       );
     }
   }

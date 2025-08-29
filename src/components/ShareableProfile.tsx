@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Copy, Mail, ArrowLeft, User, Building2, GraduationCap, Award, Star, Phone, MapPin } from 'lucide-react';
 import { showToast } from '../utils/toast';
 import { useNavigate } from "react-router-dom";
-import { candidateService, ShareableProfileSensitiveCandidate } from '../services/candidateService';
+import { candidateService, ShareableProfileSensitiveCandidate, ReferenceData } from '../services/candidateService';
 
 interface ShareableProfileProps {
   candidateId: string;
@@ -11,6 +11,9 @@ interface ShareableProfileProps {
 const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [references, setReferences] = useState<ReferenceData[]>([]);
+  const [referencesLoading, setReferencesLoading] = useState(false);
+  const [referencesError, setReferencesError] = useState<string | null>(null);
   const navigate = useNavigate();
   const [anonymizedCandidate, setAnonymizedCandidate] = useState<ShareableProfileSensitiveCandidate | null>(null);
 
@@ -26,7 +29,20 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
         setLoading(false);
       }
     };
+
+    const fetchReferences = async () => {
+      setReferencesLoading(true);
+      try {
+        const data = await candidateService.getCandidateReferences(candidateId);
+        setReferences(data);
+      } catch (err) {
+        setReferencesError('Failed to load candidate references');
+      } finally {
+        setReferencesLoading(false);
+      }
+    };
     fetchShareableProfile();
+    fetchReferences();
   }, [candidateId]);
 
   const candidateProfileUrl = `https://nxthyre-frontend-vite.vercel.app/candidate-profiles/${candidateId}`;
@@ -294,27 +310,39 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({ candidateId, onBack
               <div className="mr-8 col-span-1">
                   <h3 className="text-lg font-semibold text-blue-600 mb-4">References</h3>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-gray-900">Ana De Armas</div>
-                        <div className="text-sm text-gray-600">HR Manager at *************</div>
+                    {referencesLoading ? (
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                        <p className="text-sm text-gray-600">Loading references...</p>
                       </div>
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-gray-900">Ana De Armas</div>
-                        <div className="text-sm text-gray-600">HR Manager at *************</div>
+                    ) : referencesError ? (
+                      <p className="text-sm text-red-600">{referencesError}</p>
+                    ) : references.length === 0 ? (
+                      <p className="text-sm text-gray-600">No references available</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {references.map((ref, index) => (
+                          <div key={index} className="flex items-center justify-between">
+                            <div>
+                              <div className="font-medium text-gray-900">{ref.hr_name}</div>
+                              <div className="text-sm text-gray-600">{ref.hr_title} at *************</div>
+                            </div>
+                              {ref.is_data_correct ? (
+                                <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="15" cy="15" r="15" fill="#16A34A"/>
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M14.2301 10.2078C14.0801 10.9678 13.8279 12.1078 12.9053 13.0303C12.8212 13.1145 12.7291 13.2033 12.6316 13.2974C11.7752 14.1234 10.5 15.3533 10.5 17.375C10.5 18.4726 10.9722 19.512 11.7007 20.2811C12.4338 21.0548 13.372 21.5 14.25 21.5H18C18.2638 21.5 18.4846 21.4318 18.6152 21.3447C18.7236 21.2725 18.75 21.2091 18.75 21.125C18.75 21.0409 18.7236 20.9775 18.6152 20.9053C18.4846 20.8182 18.2638 20.75 18 20.75H17.25C16.8358 20.75 16.5 20.4142 16.5 20C16.5 19.5858 16.8358 19.25 17.25 19.25H18H18.375C18.6388 19.25 18.8596 19.1818 18.9902 19.0947C19.0986 19.0225 19.125 18.9591 19.125 18.875C19.125 18.7909 19.0986 18.7275 18.9902 18.6553C18.8596 18.5682 18.6388 18.5 18.375 18.5H17.625C17.2108 18.5 16.875 18.1642 16.875 17.75C16.875 17.3358 17.2108 17 17.625 17H18.375H18.75C19.0138 17 19.2346 16.9318 19.3652 16.8447C19.4736 16.7725 19.5 16.7091 19.5 16.625C19.5 16.5409 19.4736 16.4775 19.3652 16.4053C19.2346 16.3182 19.0138 16.25 18.75 16.25H18C17.5858 16.25 17.25 15.9142 17.25 15.5C17.25 15.0858 17.5858 14.75 18 14.75H18.75C19.0138 14.75 19.2346 14.6818 19.3652 14.5947C19.4736 14.5224 19.5 14.4591 19.5 14.375C19.5 14.2909 19.4736 14.2276 19.3652 14.1553C19.2346 14.0682 19.0138 14 18.75 14H15.375C15.1329 14 14.9057 13.8832 14.7649 13.6863C14.6242 13.4895 14.587 13.237 14.6651 13.0081L14.6675 13.0009L14.6776 12.97C14.6867 12.9417 14.7003 12.8984 14.717 12.8423C14.7505 12.7299 14.7962 12.5673 14.8433 12.3717C14.9385 11.9751 15.0336 11.4658 15.0521 10.9719C15.0713 10.4588 15.0032 10.0653 14.866 9.82494C14.7848 9.68273 14.6624 9.5538 14.3778 9.51319C14.3421 9.63652 14.3092 9.80429 14.2611 10.0502C14.2515 10.0995 14.2412 10.1519 14.2301 10.2078ZM16.3526 12.5C16.4439 12.0815 16.531 11.5603 16.551 11.0281C16.5739 10.4162 16.5132 9.6847 16.1687 9.08131C15.7854 8.40976 15.1099 8 14.175 8C13.8889 8 13.6204 8.0947 13.4027 8.28511C13.2049 8.45809 13.0925 8.67234 13.023 8.84466C12.9121 9.12004 12.8435 9.47684 12.7856 9.77796C12.7764 9.82597 12.7674 9.87256 12.7586 9.91718C12.6124 10.6572 12.4221 11.3922 11.8447 11.9697C11.7785 12.0358 11.6981 12.112 11.6069 12.1985C10.7648 12.9969 9 14.6699 9 17.375C9 18.9025 9.65282 20.3005 10.6118 21.3127C11.5662 22.3202 12.878 23 14.25 23H18C18.4862 23 19.0154 22.8807 19.4473 22.5928C19.9014 22.29 20.25 21.7909 20.25 21.125C20.25 20.7735 20.1529 20.4684 19.9943 20.2141C20.3615 19.9068 20.625 19.4539 20.625 18.875C20.625 18.5235 20.5279 18.2184 20.3693 17.9641C20.7365 17.6568 21 17.2039 21 16.625C21 16.1684 20.8361 15.7902 20.5867 15.5C20.8361 15.2098 21 14.8316 21 14.375C21 13.7091 20.6514 13.2099 20.1973 12.9072C19.7654 12.6193 19.2362 12.5 18.75 12.5H16.3526Z" fill="white"/>
+                                </svg>
+                              ):(
+                                <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="15" cy="15" r="15" transform="matrix(1 0 0 -1 0 30)" fill="#ED051C"/>
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M14.2301 19.7922C14.08 19.0322 13.8279 17.8922 12.9053 16.9697C12.8212 16.8855 12.7291 16.7967 12.6316 16.7026C11.7752 15.8766 10.5 14.6467 10.5 12.625C10.5 11.5274 10.9722 10.488 11.7007 9.7189C12.4338 8.9452 13.372 8.5 14.25 8.5H18C18.2638 8.5 18.4846 8.56818 18.6152 8.65532C18.7236 8.72755 18.75 8.79093 18.75 8.875C18.75 8.95907 18.7236 9.02245 18.6152 9.09468C18.4846 9.18182 18.2638 9.25 18 9.25H17.25C16.8358 9.25 16.5 9.58578 16.5 10C16.5 10.4142 16.8358 10.75 17.25 10.75H18H18.375C18.6388 10.75 18.8596 10.8182 18.9902 10.9053C19.0986 10.9775 19.125 11.0409 19.125 11.125C19.125 11.2091 19.0986 11.2725 18.9902 11.3447C18.8596 11.4318 18.6388 11.5 18.375 11.5H17.625C17.2108 11.5 16.875 11.8358 16.875 12.25C16.875 12.6642 17.2108 13 17.625 13H18.375H18.75C19.0138 13 19.2346 13.0682 19.3652 13.1553C19.4736 13.2275 19.5 13.2909 19.5 13.375C19.5 13.4591 19.4736 13.5225 19.3652 13.5947C19.2346 13.6818 19.0138 13.75 18.75 13.75H18C17.5858 13.75 17.25 14.0858 17.25 14.5C17.25 14.9142 17.5858 15.25 18 15.25H18.75C19.0138 15.25 19.2346 15.3182 19.3652 15.4053C19.4736 15.4776 19.5 15.5409 19.5 15.625C19.5 15.7091 19.4736 15.7724 19.3652 15.8447C19.2346 15.9318 19.0138 16 18.75 16H15.375C15.1329 16 14.9057 16.1168 14.7649 16.3137C14.6242 16.5105 14.587 16.763 14.6651 16.9919L14.6653 16.9927L14.6675 16.9991L14.6776 17.03C14.6866 17.0583 14.7003 17.1016 14.717 17.1577C14.7505 17.2701 14.7962 17.4327 14.8433 17.6283C14.9385 18.0249 15.0336 18.5342 15.0521 19.0281C15.0713 19.5412 15.0032 19.9347 14.866 20.1751C14.7848 20.3173 14.6623 20.4462 14.3778 20.4868C14.3421 20.3635 14.3092 20.1957 14.2611 19.9498C14.2515 19.9005 14.2412 19.8481 14.2301 19.7922ZM16.3526 17.5C16.4439 17.9185 16.531 18.4397 16.551 18.9719C16.5739 19.5838 16.5132 20.3153 16.1687 20.9187C15.7854 21.5902 15.1099 22 14.175 22C13.8889 22 13.6204 21.9053 13.4027 21.7149C13.2049 21.5419 13.0925 21.3277 13.023 21.1553C12.9121 20.88 12.8435 20.5232 12.7856 20.222C12.7764 20.174 12.7674 20.1274 12.7586 20.0828C12.6124 19.3428 12.4221 18.6078 11.8447 18.0303C11.7785 17.9642 11.6981 17.888 11.6069 17.8015C10.7648 17.0031 9 15.3301 9 12.625C9 11.0975 9.65282 9.69955 10.6118 8.68735C11.5662 7.6798 12.878 7 14.25 7H18C18.4862 7 19.0154 7.11932 19.4473 7.40718C19.9014 7.70995 20.25 8.20907 20.25 8.875C20.25 9.22653 20.1529 9.53163 19.9943 9.78588C20.3615 10.0932 20.625 10.5461 20.625 11.125C20.625 11.4765 20.5279 11.7816 20.3693 12.0359C20.7365 12.3432 21 12.7961 21 13.375C21 13.8316 20.8361 14.2098 20.5867 14.5C20.8361 14.7902 21 15.1684 21 15.625C21 16.2909 20.6514 16.7901 20.1973 17.0928C19.7654 17.3807 19.2362 17.5 18.75 17.5H16.3526Z" fill="white"/>
+                                </svg>
+                              )}
+                            
+                          </div>
+                        ))}
                       </div>
-                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-gray-900">Ana De Armas</div>
-                        <div className="text-sm text-gray-600">HR Manager at *************</div>
-                      </div>
-                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                    </div>
+                    )}
                   </div>
                 </div>
                 {/* Community Notes */}
