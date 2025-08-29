@@ -838,10 +838,12 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                               {candidate.experience_summary?.title}
                             </div>
                           )}
-                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 ml-2">
+                        </div>
+                        {candidate.experience_summary?.title && (
+                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
                             |
                           </p>
-                        </div>
+                        )}
                         <div className="relative group">
                           <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
                             {candidate.education_summary?.title}
