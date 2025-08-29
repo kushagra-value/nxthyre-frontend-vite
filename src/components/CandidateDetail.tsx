@@ -413,7 +413,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           )}
         </div>
       </div>
-      {detailedCandidate?.candidate.certifications && (
+      {detailedCandidate?.candidate?.certifications?.length > 0 && (
         <div className="mb-4">
           <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
             <Award className="w-4 h-4 mr-2 text-[#4B5563]" />
@@ -448,44 +448,36 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
         </div>
       )}
-      {detailedCandidate?.candidate.recommendations && (
+      {detailedCandidate?.candidate?.recommendations?.length > 0 && (
         <div>
           <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
             <TrendingUp className="w-4 h-4 mr-2 text-[#4B5563]" />
             Recommendations
           </h3>
           <div className="space-y-2">
-            {detailedCandidate?.candidate?.recommendations?.length > 0 ? (
-              detailedCandidate?.candidate?.recommendations.map(
-                (rec, index) => (
-                  <div key={index} className="bg-gray-50 rounded-lg p-3">
-                    <div className="flex items-start space-x-2 space-y-1">
-                      <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <User className="w-3 h-3 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-medium text-[#111827] text-sm">
-                          {rec?.recommender_name}
-                        </h4>
-                        <p className="text-xs text-[#4B5563]">
-                          {rec?.recommender_title}
-                        </p>
-                        <p className="text-sm text-[#4B5563] mt-1">
-                          "{rec?.feedback}"
-                        </p>
-                        <p className="text-xs text-[#6B7280] mt-1">
-                          {rec?.date_received}
-                        </p>
-                      </div>
-                    </div>
+            {detailedCandidate?.candidate?.recommendations.map((rec, index) => (
+              <div key={index} className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-start space-x-2 space-y-1">
+                  <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <User className="w-3 h-3 text-white" />
                   </div>
-                )
-              )
-            ) : (
-              <p className="text-sm text-gray-500">
-                No recommendations available
-              </p>
-            )}
+                  <div className="flex-1">
+                    <h4 className="font-medium text-[#111827] text-sm">
+                      {rec?.recommender_name}
+                    </h4>
+                    <p className="text-xs text-[#4B5563]">
+                      {rec?.recommender_title}
+                    </p>
+                    <p className="text-sm text-[#4B5563] mt-1">
+                      "{rec?.feedback}"
+                    </p>
+                    <p className="text-xs text-[#6B7280] mt-1">
+                      {rec?.date_received}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
