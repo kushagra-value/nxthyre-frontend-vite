@@ -25,28 +25,25 @@ import {
   Trash2,
   Copy,
   Delete,
-   DollarSign, Users, Share, Eye, 
-   MailIcon,
-   PhoneIcon,
-   Link,
-   ChevronDown
+  DollarSign, Users, Share, Eye,
+  MailIcon,
+  PhoneIcon,
+  Link,
+  ChevronDown
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import apiClient from "../services/api"; // Adjust path as necessary
 import { useAuthContext } from "../context/AuthContext"; // Adjust path as necessary
 import candidateService from "../services/candidateService";
 import { useParams } from "react-router-dom";
-
 interface DraggedCandidate {
   candidate: any;
   fromStage: any;
 }
-
 interface PipelineSharePageProps {
   pipelineName: string;
   onBack?: () => void;
 }
-
 const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   pipelineName,
   onBack,
@@ -73,9 +70,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [candidateDetails, setCandidateDetails] = useState<any>(null);
   const [assessmentResults, setAssessmentResults] = useState<any>(null);
   const [loadingCandidateDetails, setLoadingCandidateDetails] = useState(false);
-
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
-
   const [codingQuestions, setCodingQuestions] = useState<
       {
         name: string;
@@ -88,25 +83,20 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     >([]);
     const [date, setDate] = useState("");
     const [totalQuestions, setTotalQuestions] = useState(0);
-
   const jobId = pipelineId;
-
   const [isExpanded, setIsExpanded] = useState(false);
-  
+ 
   const getDifficultyLevel = (diff: any) => {
     const num = parseInt(diff);
     if (num < 8) return "Easy";
     if (num < 10) return "Medium";
     return "Hard";
   };
-
   const mapStatus = (status: any) => {
     if (status === "Accepted") return "Pass";
     if (status === "Wrong Answer") return "Fail";
     return "Skip";
   };
-
-
   const shareableStages = [
     {
       name: "Shortlisted",
@@ -158,7 +148,6 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       textColor: "text-gray-400",
     },
   ];
-
   const stageOrder = {
     Shortlisted: 0,
     "First Interview": 1,
@@ -168,17 +157,14 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     "Offer Sent": 5,
     Archives: 6,
   };
-
   const getDaysAgo = (date: Date) => {
     const today = new Date();
     const diffTime = Math.abs(today.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
-
   useEffect(() => {
     if (!isAuthenticated) return;
-
     const fetchData = async () => {
       setIsFetching(true);
       try {
@@ -186,13 +172,11 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           `/jobs/applications/kanban-view/?job_id=${jobId}`
         );
         const data = response.data;
-
         const stageIdMapTemp: { [key: string]: number } = {};
         data.forEach((stage: any) => {
           stageIdMapTemp[stage.name] = stage.id;
         });
         setStageIdMap(stageIdMapTemp);
-
         const processedData: { [key: string]: any[] } = {};
         shareableStages.forEach((stage) => {
           const apiStage = data.find((s: any) => s.name === stage.name);
@@ -239,11 +223,9 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     };
     fetchData();
   }, [jobId, isAuthenticated]);
-
   const handleDragStart = (candidate: any, fromStage: string) => {
     setDraggedCandidate({ candidate, fromStage });
   };
-
   const fetchCandidateDetails = async (applicationId: string) => {
     setLoadingCandidateDetails(true);
     try {
@@ -256,7 +238,6 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       setLoadingCandidateDetails(false);
     }
   };
-
   useEffect(() => {
     if (candidateDetails) {
       const fetchAssessmentResults = async () => {
@@ -265,7 +246,6 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
             Number(jobId),
             candidateDetails.candidate.id
           );
-
           const questions = res.problem_results.map((pr: any) => ({
             name: pr.problem.name,
             question: pr.problem.description,
@@ -277,10 +257,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           setCodingQuestions(questions);
           const completedDate = new Date(res.completed_at);
           setDate(completedDate.toLocaleDateString("en-GB"));
-
           const total_questions = res.problem_results.length;
           setTotalQuestions(total_questions);
-
           setAssessmentResults(res.data);
         } catch (error) {
           console.error("Error fetching assessment results:", error);
@@ -290,48 +268,39 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       fetchAssessmentResults();
     }
   }, [candidateDetails, jobId]);
-
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
   };
-
   const handleDrop = (e: React.DragEvent, toStage: string) => {
     e.preventDefault();
     if (!draggedCandidate) return;
-
     const { candidate, fromStage } = draggedCandidate;
     if (fromStage === toStage) {
       setDraggedCandidate(null);
       return;
     }
-
     const fromOrder = stageOrder[fromStage];
     const toOrder = stageOrder[toStage];
-
     if (toOrder < fromOrder) {
       showToast.error("Cannot move candidate to a previous stage.");
       setDraggedCandidate(null);
       return;
     }
-
     const isMovingForward = toOrder > fromOrder;
     setFeedbackData({ candidate, fromStage, toStage, isMovingForward });
     setShowFeedbackModal(true);
     setDraggedCandidate(null);
   };
-
   const handleFeedbackSubmit = async () => {
     if (!feedbackData || !feedbackComment.trim()) {
       showToast.error("Please enter a comment");
       return;
     }
-
     const toStageId = stageIdMap[feedbackData.toStage];
     if (!toStageId) {
       showToast.error("Invalid stage");
       return;
     }
-
     try {
       const response = await apiClient.patch(
         `/jobs/applications/${feedbackData.candidate.id}/?view=kanban`,
@@ -343,7 +312,6 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           },
         }
       );
-
       setStageCandidates((prevStages: any) => {
         const newStages = { ...prevStages };
         newStages[feedbackData.fromStage] = newStages[
@@ -361,7 +329,6 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
         ];
         return newStages;
       });
-
       showToast.success(
         `${feedbackData.candidate.name} moved to ${feedbackData.toStage}`
       );
@@ -377,7 +344,6 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       }
     }
   };
-
   const BackArrowIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <g clipPath="url(#clip0_2438_2128)">
@@ -391,7 +357,6 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     </defs>
   </svg>
 );
-
 const MoveCandidateIcon = () => (
   <svg width="17" height="18" viewBox="0 0 17 18" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M7.66536 7.33073C9.50631 7.33073 10.9987 5.83835 10.9987 3.9974C10.9987 2.15645 9.50631 0.664062 7.66536 0.664062C5.82442 0.664062 4.33203 2.15645 4.33203 3.9974C4.33203 5.83835 5.82442 7.33073 7.66536 7.33073Z" stroke="currentColor"/>
@@ -400,7 +365,6 @@ const MoveCandidateIcon = () => (
     <path d="M10.1667 10.1085C9.39467 9.93277 8.55075 9.83594 7.66667 9.83594C3.98477 9.83594 1 11.5149 1 13.5859C1 15.657 1 17.3359 7.66667 17.3359C12.4062 17.3359 13.7763 16.4874 14.1723 15.2526" stroke="currentColor"/>
   </svg>
 );
-
 const ArchiveIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M8.83789 11.9968C8.83789 11.4276 8.83789 11.1429 8.92312 10.9183C9.03676 10.619 9.25473 10.3811 9.52908 10.257C9.73484 10.1641 9.99574 10.1641 10.5174 10.1641H13.8764C14.398 10.1641 14.6589 10.1641 14.8647 10.257C15.139 10.3811 15.357 10.619 15.4707 10.9183C15.5559 11.1429 15.5559 11.4276 15.5559 11.9968C15.5559 12.5661 15.5559 12.8508 15.4707 13.0753C15.357 13.3747 15.139 13.6126 14.8647 13.7366C14.6589 13.8296 14.398 13.8296 13.8764 13.8296H10.5174C9.99574 13.8296 9.73484 13.8296 9.52908 13.7366C9.25473 13.6126 9.03676 13.3747 8.92312 13.0753C8.83789 12.8508 8.83789 12.5661 8.83789 11.9968Z" stroke="currentColor" strokeWidth="1.2"/>
@@ -408,16 +372,13 @@ const ArchiveIcon = () => (
     <path d="M1 3.44368C1 2.29172 1 1.71574 1.32794 1.35786C1.65589 1 2.1837 1 3.23933 1H21.154C22.2096 1 22.7374 1 23.0654 1.35786C23.3933 1.71574 23.3933 2.29172 23.3933 3.44368C23.3933 4.59564 23.3933 5.17161 23.0654 5.52949C22.7374 5.88735 22.2096 5.88735 21.154 5.88735H3.23933C2.1837 5.88735 1.65589 5.88735 1.32794 5.52949C1 5.17161 1 4.59564 1 3.44368Z" stroke="currentColor" strokeWidth="1.2"/>
   </svg>
 );
-
-
-
-  const handleCandidateClick = (candidate: any) => {
+  const handleCandidateClick = (candidate: any, stage: string) => {
     setSelectedCandidate(candidate);
+    setCurrentStage(stage);
     setShowCandidateProfile(true);
     setActiveProfileTab("profile");
     fetchCandidateDetails(candidate.id);
   };
-
   const handleAccessSubmit = async () => {
     if (!accessEmail.trim()) {
       showToast.error("Please enter an email address");
@@ -454,7 +415,6 @@ const ArchiveIcon = () => (
       setIsSharing(false);
     }
   };
-
   const CustomFileIcon = () => (
   <svg width="16" height="15" viewBox="0 0 16 15" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M5.89941 7.3C5.89941 6.97387 5.89941 6.81077 5.9527 6.68211C6.02374 6.51061 6.16002 6.37432 6.33154 6.30327C6.46018 6.25 6.62328 6.25 6.94941 6.25H9.04941C9.37554 6.25 9.53864 6.25 9.6673 6.30327C9.8388 6.37432 9.97509 6.51061 10.0461 6.68211C10.0994 6.81077 10.0994 6.97387 10.0994 7.3C10.0994 7.62613 10.0994 7.78923 10.0461 7.91789C9.97509 8.08939 9.8388 8.22568 9.6673 8.29673C9.53864 8.35 9.37554 8.35 9.04941 8.35H6.94941C6.62328 8.35 6.46018 8.35 6.33154 8.29673C6.16002 8.22568 6.02374 8.08939 5.9527 7.91789C5.89941 7.78923 5.89941 7.62613 5.89941 7.3Z" stroke="#818283" strokeWidth="1.25"/>
@@ -462,7 +422,6 @@ const ArchiveIcon = () => (
     <path d="M1 2.4C1 1.74003 1 1.41005 1.20502 1.20502C1.41005 1 1.74003 1 2.4 1H13.6C14.26 1 14.5899 1 14.795 1.20502C15 1.41005 15 1.74003 15 2.4C15 3.05997 15 3.38995 14.795 3.59498C14.5899 3.8 14.26 3.8 13.6 3.8H2.4C1.74003 3.8 1.41005 3.8 1.20502 3.59498C1 3.38995 1 3.05997 1 2.4Z" stroke="#818283" strokeWidth="1.25"/>
   </svg>
 );
-
   const renderCandidateCard = (candidate: any, stage: string) => (
   <div
     key={candidate.id}
@@ -472,7 +431,7 @@ const ArchiveIcon = () => (
   >
     {/* Main Grid Container - 12 columns */}
     <div className="grid grid-cols-12 gap-3 items-start">
-      
+     
       {/* Profile Initials */}
       <div className="col-span-2">
         <div className="w-10 h-10 rounded-full bg-[#0F47F2] flex items-center justify-center">
@@ -481,11 +440,11 @@ const ArchiveIcon = () => (
           </span>
         </div>
       </div>
-      
+     
       {/* Name and Title */}
       <div className="col-span-7">
         <button
-          onClick={() => handleCandidateClick(candidate)}
+          onClick={() => handleCandidateClick(candidate, stage)}
           className="text-sm font-semibold text-gray-900 hover:text-blue-600 text-left block mb-1"
         >
           {candidate.name}
@@ -494,21 +453,21 @@ const ArchiveIcon = () => (
           {candidate.role} | {candidate.company}
         </p>
       </div>
-      
+     
       {/* Percentage Badge */}
       <div className="col-span-3 text-right">
         <span className="text-lg font-[400] text-blue-600 bg-blue-50 border border-gray-200 px-1 rounded-md">
           75%
         </span>
       </div>
-      
+     
       {/* Experience Info - starts from column 3 */}
       <div className="col-start-3 col-span-10">
         <div className="flex items-center gap-1 text-gray-500 text-xs mt-2">
           <span>5Y • 15 NP • 20 LPA • Bangalore</span>
         </div>
       </div>
-      
+     
       {/* Social Icons - starts from column 3 */}
       <div className="col-start-3 col-span-7">
         <div className="flex gap-2 mt-2">
@@ -523,76 +482,70 @@ const ArchiveIcon = () => (
           </button>
         </div>
       </div>
-      
+     
       {/* Custom File Icon - below percentage, right aligned */}
       <div className="mt-2 col-start-10 col-span-3 text-right">
         <button className="w-6 h-6 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors ml-auto">
           <CustomFileIcon />
         </button>
       </div>
-      
+     
     </div>
   </div>
 );
-
   const handleGoToDashboard = () => {
     window.location.href = "/";
   };
-
   const handleMoveToNext = () => {
-      if (!selectedCandidate || !currentStage) return;
-      const currentOrder = stageOrder[currentStage];
-      const nextOrder = currentOrder + 1;
-      const nextStageName = Object.keys(stageOrder).find(key => stageOrder[key] === nextOrder);
-      if (!nextStageName) {
-        showToast.error("No next stage available.");
-        return;
-      }
-      setFeedbackData({ 
-        candidate: selectedCandidate, 
-        fromStage: currentStage, 
-        toStage: nextStageName, 
-        isMovingForward: true 
-      });
-      setShowFeedbackModal(true);
-    };
-  
-    const handleArchive = () => {
-      if (!selectedCandidate || !currentStage) return;
-      setFeedbackData({ 
-        candidate: selectedCandidate, 
-        fromStage: currentStage, 
-        toStage: "Archives", 
-        isMovingForward: true 
-      });
-      setShowFeedbackModal(true);
-    };
+    if (!selectedCandidate || !currentStage) return;
+    const currentOrder = stageOrder[currentStage];
+    const nextOrder = currentOrder + 1;
+    const nextStageName = Object.keys(stageOrder).find(key => stageOrder[key] === nextOrder);
+    if (!nextStageName) {
+      showToast.error("No next stage available.");
+      return;
+    }
+    setFeedbackData({ 
+      candidate: selectedCandidate, 
+      fromStage: currentStage, 
+      toStage: nextStageName, 
+      isMovingForward: true 
+    });
+    setShowFeedbackModal(true);
+  };
 
+  const handleArchive = () => {
+    if (!selectedCandidate || !currentStage) return;
+    setFeedbackData({ 
+      candidate: selectedCandidate, 
+      fromStage: currentStage, 
+      toStage: "Archives", 
+      isMovingForward: true 
+    });
+    setShowFeedbackModal(true);
+  };
   const renderCandidateProfile = () => {
   if (!selectedCandidate) return null;
-
   const details = candidateDetails;
   const displayCandidate = details?.candidate || selectedCandidate;
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 z-[60] flex">
       <div className="ml-auto w-2/3 bg-gray-100 shadow-xl h-full overflow-y-auto py-6">
         <div className="max-w-4xl mx-auto">
           {/* Header Section */}
           <div className="flex items-center justify-between mb-6">
-            <button 
+            <button
               onClick={() => setShowCandidateProfile(false)}
               className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
             >
               <BackArrowIcon />
             </button>
-            
+           
             <button className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors border border-gray-300 rounded-lg px-3 py-2 bg-[#ECF1FF]">
               <Share2 size={16} />
               <span className="text-sm">Share</span>
             </button>
           </div>
-
           {/* Main Content Card */}
           <div className="overflow-hidden">
             {/* Profile Header */}
@@ -613,7 +566,7 @@ const ArchiveIcon = () => (
                       </div>
                     )}
                   </div>
-                
+               
                   <div>
                     <div className="flex items-center gap-3 mb-2">
                       <h1 className="text-2xl font-bold text-gray-900">{displayCandidate.full_name}</h1>
@@ -627,7 +580,6 @@ const ArchiveIcon = () => (
                     <p className="text-gray-500 text-sm">{displayCandidate.location}</p>
                   </div>
                 </div>
-
                 {/* Contact Info */}
                 <div className="text-right text-gray-600">
                   <div className="flex items-center justify-end gap-2 mb-1">
@@ -635,7 +587,6 @@ const ArchiveIcon = () => (
                     <svg width="18" height="18" viewBox="0 0 18 15" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M7.24465 3.7763e-07H10.672C12.2035 -1.6289e-05 13.4165 -2.45745e-05 14.3658 0.127617C15.3428 0.258967 16.1337 0.535734 16.7573 1.15937C17.3809 1.78301 17.6577 2.5738 17.7891 3.55082C17.9167 4.50016 17.9167 5.71317 17.9167 7.24467V7.33867C17.9167 8.87017 17.9167 10.0832 17.7891 11.0325C17.6577 12.0095 17.3809 12.8003 16.7573 13.424C16.1337 14.0476 15.3428 14.3243 14.3658 14.4558C13.4165 14.5833 12.2035 14.5833 10.672 14.5833H7.24466C5.71319 14.5833 4.50016 14.5833 3.55082 14.4558C2.5738 14.3243 1.78301 14.0476 1.15937 13.424C0.535734 12.8003 0.258967 12.0095 0.127617 11.0325C-2.46738e-05 10.0832 -1.6289e-05 8.87017 3.77668e-07 7.33867V7.24467C-1.6289e-05 5.71317 -2.46738e-05 4.50016 0.127617 3.55082C0.258967 2.5738 0.535734 1.78301 1.15937 1.15937C1.78301 0.535734 2.5738 0.258967 3.55082 0.127617C4.50016 -2.45745e-05 5.71318 -1.6289e-05 7.24465 3.7763e-07ZM3.71738 1.36647C2.87897 1.47918 2.39593 1.69058 2.04325 2.04325C1.69058 2.39593 1.47918 2.87897 1.36647 3.71738C1.25133 4.57376 1.25 5.70267 1.25 7.29167C1.25 8.88067 1.25133 10.0096 1.36647 10.866C1.47918 11.7043 1.69058 12.1874 2.04325 12.5401C2.39593 12.8927 2.87897 13.1042 3.71738 13.2168C4.57376 13.332 5.70265 13.3333 7.29167 13.3333H10.625C12.214 13.3333 13.3429 13.332 14.1993 13.2168C15.0377 13.1042 15.5207 12.8927 15.8734 12.5401C16.2261 12.1874 16.4375 11.7043 16.5502 10.866C16.6653 10.0096 16.6667 8.88067 16.6667 7.29167C16.6667 5.70267 16.6653 4.57376 16.5502 3.71738C16.4375 2.87897 16.2261 2.39593 15.8734 2.04325C15.5207 1.69058 15.0377 1.47918 14.1993 1.36647C13.3429 1.25133 12.214 1.25 10.625 1.25H7.29167C5.70265 1.25 4.57376 1.25133 3.71738 1.36647ZM3.47819 3.55822C3.69918 3.29304 4.09328 3.25722 4.35845 3.47819L6.15753 4.97743C6.93499 5.62533 7.47475 6.07367 7.9305 6.36675C8.37158 6.6505 8.67075 6.74575 8.95833 6.74575C9.24592 6.74575 9.54508 6.6505 9.98617 6.36675C10.4419 6.07367 10.9817 5.62533 11.7592 4.97743L13.5582 3.47819C13.8234 3.25722 14.2175 3.29304 14.4385 3.55822C14.6594 3.82339 14.6236 4.21749 14.3584 4.43848L12.528 5.96383C11.7894 6.57933 11.1907 7.07825 10.6623 7.41808C10.1119 7.77208 9.57592 7.99575 8.95833 7.99575C8.34075 7.99575 7.80475 7.77208 7.25432 7.41808C6.72593 7.07825 6.12727 6.57933 5.38863 5.96383L3.55822 4.43848C3.29304 4.21749 3.25722 3.82339 3.47819 3.55822Z" fill="#818283"/>
                     </svg>
-
                   </div>
                   <div className="flex items-center justify-end gap-2">
                     <span className="text-gray-600">{displayCandidate.premium_data.phone}</span>
@@ -645,13 +596,12 @@ const ArchiveIcon = () => (
                   </div>
                 </div>
               </div>
-
               {/* Stats and Actions */}
               <div className=" flex items-center justify-between">
                 <div className="flex items-center gap-6">
                   <div className="w-20">
                   </div>
-                  
+                 
                   <div className="flex items-center gap-6 text-sm text-gray-600">
                     <div className="flex items-center gap-2">
                       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
@@ -666,7 +616,6 @@ const ArchiveIcon = () => (
                         </clipPath>
                         </defs>
                       </svg>
-
                       <span>{displayCandidate.total_experience} Years</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -678,7 +627,8 @@ const ArchiveIcon = () => (
                     <div className="flex items-center gap-2">
                       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
                         <g clip-path="url(#clip0_2718_9537)">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M8.961 0.937501H9.039C9.71288 0.937478 10.2748 0.937463 10.7209 0.997433C11.1917 1.06074 11.6168 1.19999 11.9584 1.5416C12.3 1.8832 12.4393 2.3083 12.5026 2.77914C12.5469 3.10884 12.5584 3.50182 12.5615 3.9565C13.0478 3.97211 13.4814 4.00055 13.8668 4.05236C14.746 4.17057 15.4578 4.41966 16.0191 4.98093C16.5803 5.54221 16.8294 6.25392 16.9477 7.13324C17.0625 7.98765 17.0625 9.07935 17.0625 10.4577V10.5423C17.0625 11.9207 17.0625 13.0124 16.9477 13.8668C16.8294 14.7461 16.5803 15.4578 16.0191 16.0191C15.4578 16.5803 14.746 16.8294 13.8668 16.9477C13.0124 17.0625 11.9207 17.0625 10.5423 17.0625H7.45769C6.07937 17.0625 4.98764 17.0625 4.13324 16.9477C3.25392 16.8294 2.54221 16.5803 1.98093 16.0191C1.41966 15.4578 1.17057 14.7461 1.05236 13.8668C0.937478 13.0124 0.937485 11.9207 0.9375 10.5423V10.4577C0.937485 9.07935 0.937478 7.98765 1.05236 7.13324C1.17057 6.25392 1.41966 5.54221 1.98093 4.98093C2.54221 4.41966 3.25392 4.17057 4.13324 4.05236C4.51856 4.00055 4.95216 3.97211 5.43855 3.9565C5.44155 3.50182 5.45311 3.10884 5.49743 2.77914C5.56074 2.3083 5.69999 1.8832 6.0416 1.5416C6.3832 1.19999 6.8083 1.06074 7.27914 0.997433C7.72522 0.937463 8.28713 0.937478 8.961 0.937501ZM6.56385 3.93884C6.84745 3.93749 7.1452 3.9375 7.45768 3.9375H10.5423C10.8548 3.9375 11.1526 3.93749 11.4362 3.93884C11.433 3.5111 11.4225 3.18844 11.3876 2.92904C11.3411 2.58295 11.2606 2.43483 11.1629 2.33709C11.0652 2.23935 10.9171 2.15894 10.5709 2.11241C10.2087 2.0637 9.723 2.0625 9 2.0625C8.277 2.0625 7.7913 2.0637 7.42904 2.11241C7.08295 2.15894 6.93482 2.23935 6.83709 2.33709C6.73935 2.43483 6.65894 2.58295 6.61241 2.92904C6.57753 3.18844 6.56701 3.5111 6.56385 3.93884ZM4.28314 5.16732C3.52857 5.26877 3.09383 5.45903 2.77643 5.77643C2.45902 6.09383 2.26877 6.52857 2.16732 7.28314C2.06369 8.05388 2.0625 9.0699 2.0625 10.5C2.0625 11.9301 2.06369 12.9461 2.16732 13.7169C2.26877 14.4714 2.45902 14.9062 2.77643 15.2236C3.09383 15.541 3.52857 15.7313 4.28314 15.8327C5.05388 15.9363 6.06988 15.9375 7.5 15.9375H10.5C11.9301 15.9375 12.9461 15.9363 13.7169 15.8327C14.4714 15.7313 14.9062 15.541 15.2236 15.2236C15.541 14.9062 15.7313 14.4714 15.8327 13.7169C15.9363 12.9461 15.9375 11.9301 15.9375 10.5C15.9375 9.0699 15.9363 8.05388 15.8327 7.28314C15.7313 6.52857 15.541 6.09383 15.2236 5.77643C14.9062 5.45903 14.4714 5.26877 13.7169 5.16732C12.9461 5.0637 11.9301 5.0625 10.5 5.0625H7.5C6.06988 5.0625 5.05388 5.0637 4.28314 5.16732ZM9 6.9375C9.31065 6.9375 9.5625 7.18934 9.5625 7.5V7.50765C10.3791 7.71338 11.0625 8.35725 11.0625 9.24998C11.0625 9.56063 10.8106 9.81248 10.5 9.81248C10.1894 9.81248 9.9375 9.56063 9.9375 9.24998C9.9375 8.96198 9.61815 8.56253 9 8.56253C8.38185 8.56253 8.0625 8.96198 8.0625 9.24998C8.0625 9.53805 8.38185 9.9375 9 9.9375C10.0387 9.9375 11.0625 10.6574 11.0625 11.75C11.0625 12.6428 10.3791 13.2866 9.5625 13.4924V13.5C9.5625 13.8107 9.31065 14.0625 9 14.0625C8.68935 14.0625 8.4375 13.8107 8.4375 13.5V13.4924C7.6209 13.2866 6.9375 12.6428 6.9375 11.75C6.9375 11.4394 7.18934 11.1875 7.5 11.1875C7.81065 11.1875 8.0625 11.4394 8.0625 11.75C8.0625 12.038 8.38185 12.4375 9 12.4375C9.61815 12.4375 9.9375 12.038 9.9375 11.75C9.9375 11.462 9.61815 11.0625 9 11.0625C7.96133 11.0625 6.9375 10.3427 6.9375 9.24998C6.9375 8.35725 7.6209 7.71338 8.4375 7.50765V7.5C8.4375 7.18934 8.68935 6.9375 9 6.9375Z" fill="#4B5563"/>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M8.961 0.937501H9.039C9.71288 0.937478 10.2748 0.937463 10.7209 0.997433C11.1917 1.06074 11.6168 1.19999 11.9584 1.5416C12.3 1.8832 12.4393 2.3083 12.5026 2.77914C12.5469 3.10884 12.5584 3.50182 12.5615 3.9565C13.0478 3.97211 13.4814 4.00055 13.8668 4.05236C14.746 4.17057 15.4578 4.41966 16.0191 4.98093C16.5803 5.54221 16.8294 6.25392 16.9477 7.13324C17.0625 7.98765 17.0625 9.07935 17.0625 10.4577V10.5423C17.0625 11.9207 17.0625 13.0124 16.9477 13.8668C16.8294 14.7461 16.5803 15.4578 16.0191 16.0191C15.4578 16.5803 14.746 16.8294 13.8668 16.9477C13.0124 17.0625 11.9207 17.0625 10.5423 17.0625H7.45769C6.07937 17.0625 4.98764 17.0625 4.13324 16.9477C3.25392 16.8294 2.54221 16.5803 1.98093 16.0191C1.41966 15.4578 1.17057 14.7461 1.05236 13.8668C0.937478 13.0124 0.937485 11.9207 0.9375 10.5423V10.4577C0.937485 9.07935 0.937478 7.98765 1.05236 7.13324C1.17057 6.25392 1.41966 5.54221 1.98093 4.98093C2.54221 4.41966 3.25392 4.17057 4.13324 4.05236C4.51856 4.00055 4.95216 3.97211 5.43855 3.9565C5.44155 3.50182 5.45311 3.10884 5.49743 2.77914C5.56074 2.3083 5.69999 1.8832 6.0416 1.5416C6.3832 1.19999 6.8083 1.06074 7.27914 0.997433C7.72522 0.937463 8.28713 0.937478 8.961 0.937501ZM6.56385 3.93884C6.84745 3.93749 7.1452 3.9375 7.45768 3.9375H10.5423C10.8548 3.9375 11.1526 3.93749 11.4362 3.93884C11.433 3.5111 11.4225 3.18844 11.3876 2.92904C11.3411 2.58295 11.2606 2.43483 11.1629 2.33709C11.0652 2.23935 10.9171 2.15894 10.5709 2.11241C10.2087 2.0637 9.723 2.0625 9 2.0625C8.277 2.0625 7.7913 2.0637 7.42904 2.11241C7.08295 2.15894 6.93482 2.23935 6.83709 2.33709C6.73935 2.43483 6.65894 2.58295 6.61241 2.92904C6.57753 3.18844 6.56701 3.5111 6.56385 3.93884ZM4.28314 5.16732C3.52857 5.26877 3.09383 5.45903 2.77643 5.77643C2.45902 6.09383 2.26877 6.52857 2.16732 7.28314C2.06369 8.05388 2.0625 9.0699 2.0625 10.5C2.0625 11.9301 2.06369 12.9461 2.16732 13.7169C2.26877 14.4714 2.45902 14.9062 2.77643 15.2236C3.09383 15.541 3.52857 15.7313 4.28314 15.8327C5.05388 15.9363 6.06988 15.9375 7.5 15.9375H10.5C11.9301 15.9375 12.9461 15.9363 13.7169 15.8327C14.4714 15.7313 14.9062 15.541 15.2236 15.2236C15.541 14.9062 15.7313 14.4714 15.8327 13.7169C15.9363 12.9461 15.9375 11.9301 15.9375 10.5C15.9375 9.0699 15.9363 8.05388 15.8327 7.28314C15.7313 6.52857 15.541 6.09383 15.2236 5.77643C14.9062 5.45903 14.4714 5.26877 13.7169 5.16732C12.9461 5.0637 11.9301 5.0625 10.5 5.0625H7.5C6.06988 5.0625 5.05388 5.0637 4.28314 5.16732Z" fill="#4B5563"/>
+                        <path d="M9 6.9375C9.31065 6.9375 9.5625 7.18934 9.5625 7.5V7.50765C10.3791 7.71338 11.0625 8.35725 11.0625 9.24998C11.0625 9.56063 10.8106 9.81248 10.5 9.81248C10.1894 9.81248 9.9375 9.56063 9.9375 9.24998C9.9375 8.96198 9.61815 8.56253 9 8.56253C8.38185 8.56253 8.0625 8.96198 8.0625 9.24998C8.0625 9.53805 8.38185 9.9375 9 9.9375C10.0387 9.9375 11.0625 10.6574 11.0625 11.75C11.0625 12.6428 10.3791 13.2866 9.5625 13.4924V13.5C9.5625 13.8107 9.31065 14.0625 9 14.0625C8.68935 14.0625 8.4375 13.8107 8.4375 13.5V13.4924C7.6209 13.2866 6.9375 12.6428 6.9375 11.75C6.9375 11.4394 7.18934 11.1875 7.5 11.1875C7.81065 11.1875 8.0625 11.4394 8.0625 11.75C8.0625 12.038 8.38185 12.4375 9 12.4375C9.61815 12.4375 9.9375 12.038 9.9375 11.75C9.9375 11.462 9.61815 11.0625 9 11.0625C7.96133 11.0625 6.9375 10.3427 6.9375 9.24998C6.9375 8.35725 7.6209 7.71338 8.4375 7.50765V7.5C8.4375 7.18934 8.68935 6.9375 9 6.9375Z" fill="#4B5563"/>
                         </g>
                         <defs>
                         <clipPath id="clip0_2718_9537">
@@ -690,26 +640,23 @@ const ArchiveIcon = () => (
                     </div>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-3">
                   <button 
-                   onClick={handleMoveToNext}
-                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors">
+                    onClick={handleMoveToNext}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors">
                     <MoveCandidateIcon />
                     Move to Next Round
                   </button>
                   <button 
-                  onClick={handleArchive}
-                  className="border border-gray-300 hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                    onClick={handleArchive}
+                    className="border border-gray-300 hover:bg-gray-50 p-2 rounded-lg transition-colors">
                     <ArchiveIcon />
                   </button>
                 </div>
               </div>
             </div>
-
             {/* Content Sections */}
             <div className="">
-
               {/* Profile Summary */}
               <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Profile Summary</h2>
@@ -717,17 +664,16 @@ const ArchiveIcon = () => (
                   {displayCandidate.profile_summary}
                 </p>
               </section>
-
               {/* Experience */}
               <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">Experience</h2>
-                
+               
                 {displayCandidate.experience?.map((exp:any, index:any) => {
                   // Generate company initial for icon
                   const companyInitial = exp.company.charAt(0).toUpperCase();
                   const colors = ['bg-orange-500', 'bg-blue-500', 'bg-purple-500'];
                   const colorClass = colors[index % colors.length];
-                  
+                 
                   return (
                     <div key={index} className="flex gap-4 mb-4">
                       <div className={`w-8 h-8 ${index===0 ? "":"pt-3"} ${colorClass} rounded-full flex items-center justify-center flex-shrink-0`}>
@@ -742,7 +688,7 @@ const ArchiveIcon = () => (
                               {exp.start_date} - {exp.is_current ? "Present" : exp.end_date}
                             </span>
                           </div>
-                          
+                         
                         </div>
                         <p className="text-gray-700 text-sm">{exp.description}</p>
                       </div>
@@ -750,11 +696,10 @@ const ArchiveIcon = () => (
                   );
                 })}
               </section>
-
               {/* Skills */}
               <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Skills</h2>
-                
+               
                 {/* Resume Skills */}
                 <div className="mb-4">
                   <h3 className="text-sm font-medium text-gray-700 mb-3">Resume Skills</h3>
@@ -767,7 +712,6 @@ const ArchiveIcon = () => (
                   </div>
                   <button className="text-blue-600 text-sm mt-2 hover:underline">Show more verified skills</button>
                 </div>
-
                 {/* Resume Skills (Second Row) */}
                 <div className="mb-6">
                   <h3 className="text-sm font-medium text-gray-700 mb-3">Resume Skills</h3>
@@ -781,46 +725,43 @@ const ArchiveIcon = () => (
                   <button className="text-blue-600 text-sm mt-2 hover:underline">Show more skills</button>
                 </div>
               </section>
-
               {/* Assessment */}
               <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-gray-900">Assessment</h2>
                   <span className="text-gray-500 text-sm">{date}</span>
                 </div>
-
                 {/* Assessment Tabs */}
                 <div className="flex mb-6 border-b border-gray-200">
-                  <button 
+                  <button
                     className={`px-4 py-2 text-sm font-medium ${!showAssessmentModal ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"}`}
                     onClick={() => setShowAssessmentModal(false)}
                   >
                     Coding Round
                   </button>
-                  <button 
+                  <button
                     className={`px-4 py-2 text-sm font-medium ${showAssessmentModal ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"}`}
                     onClick={() => setShowAssessmentModal(true)}
                   >
                     AI Interview
                   </button>
                 </div>
-
                   {showAssessmentModal ? (
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <h3 className="text-base font-medium text-gray-900 mb-6">Overall Score</h3>
-                          
+                         
                           {/* Resume Score */}
                           <div className="mb-6 flex justify-between items-center gap-4">
-                            <div className="flex flex-col items-center justify-center rounded-lg  w-48 p-4 bg-[#ECF1FF]">
+                            <div className="flex flex-col items-center justify-center rounded-lg w-48 p-4 bg-[#ECF1FF]">
                               <span className="text-sm text-gray-600">Resume</span>
                               <span className="text-xl font-[400] text-[#EAB308]">{displayCandidate.ai_interview_report?.score.resume}%</span>
                             </div>
-                            <div className="flex flex-col items-center justify-center rounded-lg  w-48 p-4 bg-[#ECF1FF]">
+                            <div className="flex flex-col items-center justify-center rounded-lg w-48 p-4 bg-[#ECF1FF]">
                               <span className="text-sm text-gray-600">Knowledge</span>
                               <span className="text-xl font-[400] text-[#16A34A]">{details?.assessment?.ai_interview?.overall_summary.knowledge}%</span>
                             </div>
-                            <div className="flex flex-col items-center justify-center rounded-lg  w-48 p-4 bg-[#ECF1FF]">
+                            <div className="flex flex-col items-center justify-center rounded-lg w-48 p-4 bg-[#ECF1FF]">
                               <span className="text-sm text-gray-600">Communication</span>
                               <span className="text-xl font-[400] text-[#0F47F2]">{details?.assessment?.ai_interview?.overall_summary?.communication}%</span>
                             </div>
@@ -866,14 +807,13 @@ const ArchiveIcon = () => (
                             </button>
                           </div>
                         </div>
-
                         {/* Right Side - General Summary */}
                         <div className="border-l border-gray-200 pl-4">
                           <h3 className="text-base font-medium text-gray-900 mb-6">General Summary</h3>
                           <p className="text-gray-700 text-sm leading-relaxed mb-8">
                             {details.assessment?.ai_interview?.general_summary}
                           </p>
-                          
+                         
                           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                             <h4 className="text-base font-medium text-red-800 mb-3">Potential Red Flags</h4>
                             <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
@@ -882,7 +822,7 @@ const ArchiveIcon = () => (
                               )) || []}
                             </ol>
                           </div>
-                          
+                         
                           <button className="text-blue-600 text-sm mt-6 hover:underline flex items-center gap-1">
                             Show Interview Details
                             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -897,21 +837,18 @@ const ArchiveIcon = () => (
                         <span className="text-base font-medium text-gray-900">Questions <span className="text-gray-500">({totalQuestions})</span></span>
                         <span className="text-base font-medium">Score: <span className="text-xl text-blue-600 font-bold bg-blue-50 rounded-md px-2">{codingQuestions?.reduce((sum, item) => sum + item.score, 0)}</span>/{totalQuestions}</span>
                       </div>
-
                       {/* Question Items */}
                       <div className="space-y-4">
                         {codingQuestions?.map((item:any, index:any) => {
                           const lines = item.question.split("\n");
                           const visibleLines = isExpanded ? lines : lines.slice(0, 1);
                           const hiddenLineCount = Math.max(0, lines.length - 2);
-
                           return (
                           <div key={item.id} className="bg-[#F5F9FB] border border-gray-400 rounded-lg">
                             <div className="flex items-start justify-left gap-4 m-4">
                               <span className="text-base font-[400] text-gray-600">Q{index+1}.</span>
                               <p className="text-sm text-gray-400 flex-1 whitespace-pre-line leading-relaxed">{visibleLines.join("\n")}{!isExpanded && hiddenLineCount > 0 && "... "}</p>
                             </div>
-
                             <div className="px-4 border border-gray-200 bg-white rounded-lg">
                             <div className={`flex items-center justify-between text-sm text-gray-500 ml-2 pl-8 ${!isExpanded && hiddenLineCount > 0 && "border-b border-gray-200"} py-2`}>
                               <div className="text-sm text-gray-400">{item.language || ' '}</div>
@@ -923,7 +860,7 @@ const ArchiveIcon = () => (
                                     <path d="M1 9.5C1 5.49306 1 3.48959 2.2448 2.2448C3.48959 1 5.49306 1 9.5 1C13.5069 1 15.5104 1 16.7552 2.2448C18 3.48959 18 5.49306 18 9.5C18 13.5069 18 15.5104 16.7552 16.7552C15.5104 18 13.5069 18 9.5 18C5.49306 18 3.48959 18 2.2448 16.7552C1 15.5104 1 13.5069 1 9.5Z" stroke="#818283"/>
                                     <path d="M13.75 5.25781H11.2M13.75 5.25781V7.80781M13.75 5.25781L10.775 8.23281M5.25 13.7578H7.8M5.25 13.7578V11.2078M5.25 13.7578L8.225 10.7828" stroke="#818283" stroke-linecap="round" stroke-linejoin="round"/>
                                   </svg>
-                                 
+                                
                                   <span className="text-sm">{isExpanded ? "Collapse" : "Expand"}{" "}</span>
                                 </button>
                                 <button className="text-gray-400 hover:text-gray-600 flex items-center gap-1">
@@ -953,7 +890,7 @@ const ArchiveIcon = () => (
                                     <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
                                       <g clip-path="url(#clip0_2216_8607)">
                                       <path d="M6.5 13C10.0899 13 13 10.0899 13 6.5C13 2.91015 10.0899 0 6.5 0C2.91015 0 0 2.91015 0 6.5C0 10.0899 2.91015 13 6.5 13Z" fill="#FD374B"/>
-                                      <path d="M8.30306 8.98304C8.21373 8.9834 8.12523 8.96594 8.04272 8.93169C7.96022 8.89745 7.88537 8.84709 7.82255 8.78358L7.33297 8.294C7.29382 8.25095 7.27273 8.1945 7.27406 8.13633C7.27539 8.07816 7.29903 8.02273 7.3401 7.98152C7.38117 7.9403 7.43652 7.91646 7.49468 7.91493C7.55285 7.91339 7.60937 7.93428 7.65256 7.97328L8.14327 8.46286C8.18574 8.50507 8.24318 8.52877 8.30306 8.52877C8.36294 8.52877 8.42039 8.50507 8.46286 8.46286C8.50507 8.42039 8.52877 8.36294 8.52877 8.30306C8.52877 8.24318 8.50507 8.18574 8.46286 8.14327L6.98052 6.65979C6.9383 6.61733 6.9146 6.55988 6.9146 6.5C6.9146 6.44012 6.9383 6.38267 6.98052 6.34021L8.46286 4.85673C8.50507 4.81426 8.52877 4.75682 8.52877 4.69694C8.52877 4.63706 8.50507 4.57961 8.46286 4.53714C8.42039 4.49493 8.36294 4.47123 8.30306 4.47123C8.24318 4.47123 8.18574 4.49493 8.14327 4.53714L6.65979 6.01949C6.61733 6.0617 6.55988 6.0854 6.5 6.0854C6.44012 6.0854 6.38267 6.0617 6.34021 6.01949L4.85673 4.53714C4.81426 4.49493 4.75682 4.47123 4.69694 4.47123C4.63706 4.47123 4.57961 4.49493 4.53714 4.53714C4.49493 4.57961 4.47123 4.63706 4.47123 4.69694C4.47123 4.75682 4.49493 4.81426 4.53714 4.85673L6.01949 6.34021C6.0617 6.38267 6.0854 6.44012 6.0854 6.5C6.0854 6.55988 6.0617 6.61733 6.01949 6.65979L4.53714 8.14327C4.49493 8.18574 4.47123 8.24318 4.47123 8.30306C4.47123 8.36294 4.49493 8.42039 4.53714 8.46286C4.57961 8.50507 4.63706 8.52877 4.69694 8.52877C4.75682 8.52877 4.81426 8.50507 4.85673 8.46286L6.34021 6.98052C6.38267 6.9383 6.44012 6.9146 6.5 6.9146C6.55988 6.9146 6.61733 6.9383 6.65979 6.98052L6.93632 7.25704C6.97885 7.29987 7.00262 7.35784 7.00241 7.4182C7.0022 7.47856 6.97801 7.53636 6.93518 7.57889C6.89235 7.62142 6.83438 7.6452 6.77402 7.64498C6.71366 7.64477 6.65586 7.62059 6.61333 7.57776L6.5 7.46443L5.17745 8.78358C5.1152 8.85039 5.04013 8.90397 4.95672 8.94113C4.87331 8.9783 4.78327 8.99828 4.69197 8.99989C4.60067 9.0015 4.50998 8.98471 4.42531 8.95051C4.34064 8.91631 4.26373 8.86541 4.19916 8.80084C4.13459 8.73627 4.08369 8.65936 4.04949 8.57469C4.01529 8.49002 3.99849 8.39933 4.00011 8.30803C4.00172 8.21673 4.0217 8.12669 4.05887 8.04328C4.09603 7.95987 4.14961 7.8848 4.21642 7.82255L5.53784 6.5L4.21642 5.17745C4.14961 5.1152 4.09603 5.04013 4.05887 4.95672C4.0217 4.87331 4.00172 4.78327 4.00011 4.69197C3.99849 4.60067 4.01529 4.50998 4.04949 4.42531C4.08369 4.34064 4.13459 4.26373 4.19916 4.19916C4.26373 4.13459 4.34064 4.08369 4.42531 4.04949C4.50998 4.01529 4.60067 3.99849 4.69197 4.00011C4.78327 4.00172 4.87331 4.0217 4.95672 4.05887C5.04013 4.09603 5.1152 4.14961 5.17745 4.21642L6.5 5.53784L7.82255 4.21642C7.8848 4.14961 7.95987 4.09603 8.04328 4.05887C8.12669 4.0217 8.21673 4.00172 8.30803 4.00011C8.39933 3.99849 8.49002 4.01529 8.57469 4.04949C8.65936 4.08369 8.73627 4.13459 8.80084 4.19916C8.86541 4.26373 8.91631 4.34064 8.95051 4.42531C8.98471 4.50998 9.0015 4.60067 8.99989 4.69197C8.99828 4.78327 8.9783 4.87331 8.94113 4.95672C8.90397 5.04013 8.85039 5.1152 8.78358 5.17745L7.46216 6.5L8.78358 7.82255C8.87856 7.91764 8.94322 8.03875 8.96941 8.17057C8.99559 8.3024 8.98213 8.43902 8.93071 8.5632C8.8793 8.68737 8.79224 8.79353 8.68052 8.86825C8.56881 8.94298 8.43746 8.98292 8.30306 8.98304Z" fill="white"/>
+                                      <path d="M8.30306 8.98304C8.21373 8.9834 8.12523 8.96594 8.04272 8.93169C7.96022 8.89745 7.88537 8.84709 7.82255 8.78358L7.33297 8.294C7.29382 8.25095 7.27273 8.1945 7.27406 8.13633C7.27539 8.07816 7.29903 8.02273 7.3401 7.98152C7.38117 7.9403 7.43652 7.91646 7.49468 7.91493C7.55285 7.91339 7.60937 7.93428 7.65256 7.97328L8.14327 8.46286C8.18574 8.50507 8.24318 8.52877 8.30306 8.52877C8.36294 8.52877 8.42039 8.50507 8.46286 8.46286C8.50507 8.42039 8.52877 8.36294 8.52877 8.30306C8.52877 8.24318 8.50507 8.18574 8.46286 8.14327L6.98052 6.65979C6.9383 6.61733 6.9146 6.55988 6.9146 6.5C6.9146 6.44012 6.9383 6.38267 6.98052 6.34021L8.46286 4.85673C8.50507 4.81426 8.52877 4.75682 8.52877 4.69694C8.52877 4.63706 8.50507 4.57961 8.46286 4.53714C8.42039 4.49493 8.36294 4.47123 8.30306 4.47123C8.24318 4.47123 8.18574 4.49493 8.14327 4.53714L6.65979 6.01949C6.61733 6.0617 6.55988 6.0854 6.5 6.0854C6.44012 6.0854 6.38267 6.0617 6.34021 6.01949L4.85673 4.53714C4.81426 4.49493 4.75682 4.47123 4.69694 4.47123C4.63706 4.47123 4.57961 4.49493 4.53714 4.53714C4.49493 4.57961 4.47123 4.63706 4.47123 4.69694C4.47123 4.75682 4.49493 4.81426 4.53714 4.85673L6.01949 6.34021C6.0617 6.38267 6.0854 6.44012 6.0854 6.5C6.0854 6.55988 6.0617 6.61733 6.01949 6.65979L4.53714 8.14327C4.49493 8.18574 4.47123 8.24318 4.47123 8.30306C4.47123 8.36294 4.49493 8.42039 4.53714 8.46286C4.57961 8.50507 4.63706 8.52877 4.69694 8.52877C4.75682 8.52877 4.81426 8.50507 4.85673 8.46286L6.34021 6.98052C6.38267 6.9383 6.44012 6.9146 6.5 6.9146C6.55988 6.9146 6.61733 6.9383 6.65979 6.98052L6.93632 7.25704C6.97885 7.29987 7.00262 7.35784 7.00241 7.4182C7.0022 7.47856 6.97801 7.53636 6.93518 7.57889C6.89235 7.62142 6.83438 7.6452 6.77402 7.64498C6.71366 7.64477 6.65586 7.62059 6.61333 7.57776L6.5 7.46443L5.17745 8.78358C5.1152 8.85039 5.04013 8.90397 4.95672 8.94113C4.87331 8.9783 4.78327 8.99828 4.69197 8.99989C4.60067 9.0015 4.50998 8.98471 4.42531 8.95051C4.34064 8.91631 4.26373 8.86541 4.19916 8.80084C4.13459 8.73627 4.08369 8.65936 4.04949 8.57469C4.01529 8.49002 3.99849 8.39933 4.00011 8.30803C4.00172 8.21673 4.0217 8.12669 4.05887 8.04328C4.09603 7.95987 4.14961 7.8848 4.21642 7.82255L5.53784 6.5L4.21642 5.17745C4.14961 5.1152 4.09603 5.04013 4.05887 4.95672C4.0217 4.87331 4.00172 4.78327 4.00011 4.69197C3.99849 4.60067 4.01529 4.50998 4.04949 4.42531C4.08369 4.34064 4.13459 4.26373 4.19916 4.19916C4.26373 4.13459 4.34064 4.08369 4.42531 4.04949C4.50998 4.01529 4.60067 3.99849 4.69197 4.00011C4.78327 4.00172 4.87331 4.0217 4.95672 4.05887C5.04013 4.09603 5.1152 4.14961 5.17745 4.21642L6.5 5.53784L7.82255 4.21642C7.8848 4.14961 7.95987 4.09603 8.04328 4.05887C8.12669 4.87331 4.87331 4.0217 4.95672 4.05887C5.04013 4.09603 5.1152 4.14961 5.17745 4.21642L6.5 5.53784L7.82255 4.21642C7.8848 4.14961 7.95987 4.09603 8.04328 4.05887C8.12669 4.0217 8.21673 4.00172 8.30803 4.00011C8.39933 3.99849 8.49002 4.01529 8.57469 4.04949C8.65936 4.08369 8.73627 4.13459 8.80084 4.19916C8.86541 4.26373 8.91631 4.34064 8.95051 4.42531C8.98471 4.50998 9.0015 4.60067 8.99989 4.69197C8.99828 4.78327 8.9783 4.87331 8.94113 4.95672C8.90397 5.04013 8.85039 5.1152 8.78358 5.17745L7.46216 6.5L8.78358 7.82255C8.87856 7.91764 8.94322 8.03875 8.96941 8.17057C8.99559 8.3024 8.98213 8.43902 8.93071 8.5632C8.8793 8.68737 8.79224 8.79353 8.68052 8.86825C8.56881 8.94298 8.43746 8.98292 8.30306 8.98304Z" fill="white"/>
                                       </g>
                                       <defs>
                                       <clipPath id="clip0_2216_8607">
@@ -964,7 +901,6 @@ const ArchiveIcon = () => (
                                   ):(
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" className="bg-yellow-300 rounded-full p-1 lucide lucide-skip-forward-icon lucide-skip-forward"><path d="M21 4v16"/><path d="M6.029 4.285A2 2 0 0 0 3 6v12a2 2 0 0 0 3.029 1.715l9.997-5.998a2 2 0 0 0 .003-3.432z"/></svg>
                                   )}
-
                                   <span
                                     className={`${
                                       item.status === "Pass"
@@ -977,7 +913,6 @@ const ArchiveIcon = () => (
                                     {item.status}
                                   </span>
                                 </button>
-
                               </div>
                             </div>
                             <div className={`flex items-center justify-between text-sm text-gray-400 ml-2 pl-8 ${!isExpanded && hiddenLineCount > 0 && "py-1"} `}>
@@ -987,20 +922,19 @@ const ArchiveIcon = () => (
                                 </p>
                               )}
                             </div>
-                            
+                           
                             </div>
-                            
+                           
                           </div>
                         )})}
                       </div>
                     </div>
                   )}
                 </section>
-
               {/* Notes */}
               <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Notes</h2>
-                
+               
                 <div className="space-y-4">
                   {(displayCandidate.notes || [])?.map((note:any, index:any) => (
                     <div key={index} className="flex gap-3">
@@ -1017,7 +951,7 @@ const ArchiveIcon = () => (
                               <span className="text-gray-500 text-xs ml-2">{note?.organisation?.orgName}</span>
                             </div>
                           </div>
-                          
+                         
                           <span className="text-gray-400 text-xs">{new Date(note?.posted_at).toLocaleDateString()}</span>
                         </div>
                         <p className="text-gray-700 text-sm">
@@ -1028,11 +962,10 @@ const ArchiveIcon = () => (
                   ))}
                 </div>
               </section>
-
               {/* References */}
               <section className="p-8 bg-white rounded-3xl shadow-sm">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">References</h2>
-                
+               
                 <div className="space-y-4">
                   {(details?.references || [])?.map((ref:any, index:any) => (
                     <div key={index} className="flex items-start gap-3">
@@ -1047,32 +980,31 @@ const ArchiveIcon = () => (
                             <p className="text-gray-700 text-sm mt-2">
                             {ref?.comments}
                             </p>
-                            
+                           
                             {/* Contact Icons */}
                             <div className="flex items-center gap-2 mt-3">
                               <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
                                 <svg width="12" height="12" viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                                   <path fill-rule="evenodd" clip-rule="evenodd" d="M6.06529 3.62527e-07H8.9347C10.2169 -1.56375e-05 11.2324 -2.35867e-05 12.0272 0.122512C12.8452 0.248608 13.5073 0.514304 14.0294 1.11299C14.5515 1.71169 14.7832 2.47085 14.8932 3.40878C15 4.32015 15 5.48464 15 6.95488V7.04512C15 8.51536 15 9.67984 14.8932 10.5912C14.7832 11.5291 14.5515 12.2883 14.0294 12.887C13.5073 13.4857 12.8452 13.7514 12.0272 13.8775C11.2324 14 10.2169 14 8.9347 14H6.0653C4.78314 14 3.76757 14 2.97278 13.8775C2.15481 13.7514 1.49275 13.4857 0.970633 12.887C0.448521 12.2883 0.21681 11.5291 0.106842 10.5912C-2.06629e-05 9.67984 -1.36373e-05 8.51536 3.16189e-07 7.04512V6.95488C-1.36373e-05 5.48464 -2.06629e-05 4.32015 0.106842 3.40878C0.21681 2.47085 0.448521 1.71169 0.970633 1.11299C1.49275 0.514304 2.15481 0.248608 2.97278 0.122512C3.76757 -2.35867e-05 4.78313 -1.56375e-05 6.06529 3.62527e-07ZM3.11222 1.31181C2.4103 1.42002 2.00589 1.62295 1.71063 1.96152C1.41537 2.30009 1.23839 2.76381 1.14402 3.56868C1.04762 4.39081 1.04651 5.47456 1.04651 7C1.04651 8.52544 1.04762 9.6092 1.14402 10.4314C1.23839 11.2362 1.41537 11.6999 1.71063 12.0385C2.00589 12.377 2.4103 12.58 3.11222 12.6882C3.82919 12.7987 4.77431 12.8 6.10465 12.8H8.89535C10.2257 12.8 11.1708 12.7987 11.8878 12.6882C12.5897 12.58 12.9941 12.377 13.2894 12.0385C13.5846 11.6999 13.7616 11.2362 13.856 10.4314C13.9524 9.6092 13.9535 8.52544 13.9535 7C13.9535 5.47456 13.9524 4.39081 13.856 3.56868C13.7616 2.76381 13.5846 2.30009 13.2894 1.96152C12.9941 1.62295 12.5897 1.42002 11.8878 1.31181C11.1708 1.20127 10.2257 1.2 8.89535 1.2H6.10465C4.77431 1.2 3.82919 1.20127 3.11222 1.31181ZM2.91197 3.41589C3.09698 3.16132 3.42693 3.12693 3.64894 3.33906L5.15514 4.77833C5.80604 5.40032 6.25793 5.83072 6.63949 6.11208C7.00877 6.38448 7.25923 6.47592 7.5 6.47592C7.74077 6.47592 7.99123 6.38448 8.36051 6.11208C8.74207 5.83072 9.19395 5.40032 9.84488 4.77833L11.3511 3.33906C11.5731 3.12693 11.903 3.16132 12.088 3.41589C12.273 3.67046 12.243 4.04879 12.021 4.26094L10.4886 5.72528C9.87021 6.31616 9.369 6.79512 8.9266 7.12136C8.46579 7.4612 8.01705 7.67592 7.5 7.67592C6.98295 7.67592 6.53421 7.4612 6.07338 7.12136C5.63101 6.79512 5.12981 6.31616 4.51141 5.72528L2.97897 4.26094C2.75697 4.04879 2.72697 3.67046 2.91197 3.41589Z" fill="#F5F9FB"/>
                                 </svg>
-
                               </div>
                               <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
                                 <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path fill-rule="evenodd" clip-rule="evenodd" d="M1.40609 0.924395C2.75026 -0.419776 5.01861 -0.317592 5.95453 1.35945L6.47378 2.28987C7.08495 3.38502 6.82453 4.7668 5.92981 5.67246C5.91789 5.68879 5.85468 5.78074 5.84684 5.9414C5.83684 6.14648 5.90965 6.62075 6.64443 7.35554C7.37898 8.09008 7.85318 8.16313 8.0584 8.15313C8.21921 8.14529 8.31122 8.08216 8.32754 8.07016C9.23322 7.17552 10.615 6.91502 11.7102 7.52619L12.6406 8.04552C14.3176 8.98144 14.4198 11.2497 13.0756 12.5939C12.3566 13.3128 11.4006 13.9517 10.2772 13.9943C8.61229 14.0575 5.8478 13.6275 3.11016 10.8898C0.372484 8.15217 -0.0574584 5.38774 0.00565117 3.72285C0.0482469 2.5994 0.687096 1.64338 1.40609 0.924395ZM4.9066 1.9443C4.4273 1.08554 3.13943 0.888256 2.25469 1.773C1.63436 2.39333 1.23107 3.07804 1.2049 3.76832C1.15226 5.15671 1.49505 7.57756 3.95876 10.0412C6.42249 12.5049 8.84327 12.8477 10.2317 12.795C10.922 12.7689 11.6067 12.3656 12.227 11.7453C13.1117 10.8606 12.9144 9.57269 12.0557 9.09345L11.1253 8.5742C10.5465 8.25113 9.73351 8.36138 9.16281 8.93207C9.10673 8.98808 8.7499 9.32107 8.11672 9.35187C7.46842 9.38339 6.68379 9.09209 5.79588 8.20417C4.90764 7.31593 4.61641 6.53107 4.64817 5.88271C4.67922 5.24944 5.01221 4.89293 5.06789 4.83721C5.63858 4.2665 5.74883 3.4535 5.42584 2.87472L4.9066 1.9443Z" fill="white"/>
+                                  <path fill-rule="evenodd" clip-rule="evenodd" d="M1.40609 0.924395C2.75026 -0.419776 5.01861 -0.317592 5.95453 1.35945L6.47378 2.28987C7.08495 3.38502 6.82453 4.7668 5.92981 5.67246C5.91789 5.68879 5.85468 5.78074 5.84684 5.9414C5.83684 6.14648 5.90965 6.62075 6.64443 7.35554C7.37898 8.09008 7.85318 8.16313 8.0584 8.15313C8.21921 8.14529 8.31122 8.08216 8.32754 8.07016C9.23322 7.17552 10.615 6.91502 11.7102 7.52619L12.6406 8.04552C14.3176 8.98144 14.4198 11.2497 13.0756 12.5939C12.3566 13.3128 11.4006 13.9517 10.2772 13.9943C8.61229 14.0575 5.8478 13.6275 3.11016 10.8898C0.372484 8.15217 -0.0574584 5.38774 0.00565117 3.72285C0.0482469 2.5994 0.687096 1.64338 1.40609 0.924395ZM4.9066 1.9443C4.4273 1.08554 3.13943 0.888256 2.25469 1.773C1.63436 2.39333 1.23107 3.07804 1.2049 3.76832C1.15226 5.15671 1.49505 7.57756 3.95876 10.0412C6.42249 12.5049 8.84327 12.8477 10.2317 12.795C10.922 12.7689 11.6067 12.3656 12.227 11.7453C13.1117 10.8606 12.9144 9.57269 12.0557 9.09345L11.1253 8.5742C10.5465 8.25113 9.73351 8.36138 9.16281 8.93207C9.10673 8.98808 9.7499 9.32107 9.11672 9.35187C7.46842 9.38339 6.68379 9.09209 5.79588 8.20417C4.90764 7.31593 4.61641 6.53107 4.64817 5.88271C4.67922 5.24944 5.01221 4.89293 5.06789 4.83721C5.63858 4.2665 5.74883 3.4535 5.42584 2.87472L4.9066 1.9443Z" fill="white"/>
                                 </svg>
                               </div>
                               <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
                                 <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path fill-rule="evenodd" clip-rule="evenodd" d="M14 14H11.2V9.10068C11.2 7.75668 10.6071 7.00684 9.5438 7.00684C8.3867 7.00684 7.7 7.78818 7.7 9.10068V14H4.9V4.9H7.7V5.92334C7.7 5.92334 8.5785 4.38184 10.5581 4.38184C12.5384 4.38184 14 5.59027 14 8.09067V14ZM1.7094 3.44463C0.765101 3.44463 0 2.67327 0 1.72197C0 0.771373 0.765101 0 1.7094 0C2.653 0 3.4181 0.771373 3.4181 1.72197C3.4188 2.67327 2.653 3.44463 1.7094 3.44463ZM0 14H3.5V4.9H0V14Z" fill="white"/>
+                                  <path fill-rule="evenodd" clip-rule="evenodd" d="M14 14H11.2V9.10068C11.2 7.75668 10.6071 7.00684 9.5438 7.00684C8.3867 7.00684 7.7 7.78818 7.7 9.10068V14H4.9V4.9H7.7V5.92334C7.7 5.92334 8.5785 4.38184 10.5581 4.38184C12.5384 4.38184 14 5.59027 14 8.09067V14Z M1.7094 3.44463C0.765101 3.44463 0 2.67327 0 1.72197C0 0.771373 0.765101 0 1.7094 0C2.653 0 3.4181 0.771373 3.4181 1.72197C3.4188 2.67327 2.653 3.44463 1.7094 3.44463ZM0 14H3.5V4.9H0V14Z" fill="white"/>
                                 </svg>
                               </div>
                             </div>
-                            
+                           
                             <button className="flex items-center text-blue-600 text-sm mt-2 hover:underline">View Less <ChevronDown className="w-4 h-4 rotate-180" /></button>
                           </div>
                           <div className="w-10 h-8 bg-green-500 rounded-full flex items-center justify-center">
                             <span className="text-white text-sm"><svg width="12" height="15" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M5.23013 2.20782C5.08005 2.96783 4.8279 4.10778 3.90533 5.03033C3.82118 5.11449 3.72908 5.20331 3.63156 5.29737C2.77519 6.12337 1.5 7.3533 1.5 9.375C1.5 10.4726 1.97218 11.512 2.70071 12.2811C3.43375 13.0548 4.37196 13.5 5.25 13.5H9C9.26377 13.5 9.48458 13.4318 9.61522 13.3447C9.7236 13.2725 9.75 13.2091 9.75 13.125C9.75 13.0409 9.7236 12.9775 9.61522 12.9053C9.48458 12.8182 9.26377 12.75 9 12.75H8.25C7.83577 12.75 7.5 12.4142 7.5 12C7.5 11.5858 7.83577 11.25 8.25 11.25H9H9.375C9.63877 11.25 9.85958 11.1818 9.99022 11.0947C10.0986 11.0225 10.125 10.9591 10.125 10.875C10.125 10.7909 10.0986 10.7275 9.99022 10.6553C9.85958 10.5682 9.63877 10.5 9.375 10.5H8.625C8.21078 10.5 7.875 10.1642 7.875 9.75C7.875 9.33578 8.21078 9 8.625 9H9.375H9.75C10.0138 9 10.2346 8.93182 10.3652 8.84468C10.4736 8.77245 10.5 8.70907 10.5 8.625C10.5 8.54093 10.4736 8.47755 10.3652 8.40532C10.2346 8.31818 10.0138 8.25 9.75 8.25H9C8.58578 8.25 8.25 7.91423 8.25 7.5C8.25 7.08577 8.58578 6.75 9 6.75H9.75C10.0138 6.75 10.2346 6.68183 10.3652 6.59468C10.4736 6.52245 10.5 6.45907 10.5 6.375C10.5 6.29093 10.4736 6.22755 10.3652 6.15532C10.2346 6.06817 10.0138 6 9.75 6H6.375C6.1329 6 5.90573 5.88316 5.76495 5.68625C5.62425 5.48953 5.58705 5.23704 5.66505 5.00813L5.66752 5.00086L5.67758 4.96998C5.68665 4.94167 5.7003 4.89839 5.71702 4.84231C5.75047 4.72993 5.79623 4.56734 5.84325 4.37165C5.9385 3.97511 6.0336 3.46579 6.05212 2.9719C6.07132 2.45877 6.00322 2.0653 5.86605 1.82494C5.78482 1.68273 5.66235 1.5538 5.3778 1.51319C5.3421 1.63652 5.30925 1.80429 5.2611 2.05018C5.2515 2.09949 5.24123 2.15194 5.23013 2.20782ZM7.35262 4.5C7.4439 4.08152 7.53105 3.56029 7.551 3.0281C7.57395 2.41623 7.5132 1.6847 7.16873 1.08131C6.7854 0.409763 6.10987 0 5.175 0C4.88887 0 4.62037 0.0946951 4.40267 0.285105C4.20493 0.458085 4.09248 0.672337 4.02304 0.844657C3.91205 1.12004 3.84347 1.47684 3.78559 1.77796C3.77636 1.82597 3.7674 1.87256 3.75859 1.91718C3.61244 2.65717 3.42212 3.39222 2.84467 3.96967C2.77852 4.03582 2.69813 4.11203 2.60691 4.19851C1.7648 4.99685 0 6.6699 0 9.375C0 10.9025 0.652823 12.3005 1.61179 13.3127C2.56625 14.3202 3.87804 15 5.25 15H9C9.48623 15 10.0154 14.8807 10.4473 14.5928C10.9014 14.29 11.25 13.7909 11.25 13.125C11.25 12.7735 11.1529 12.4684 10.9943 12.2141C11.3615 11.9068 11.625 11.4539 11.625 10.875C11.625 10.5235 11.5279 10.2184 11.3693 9.96412C11.7365 9.65677 12 9.20393 12 8.625C12 8.1684 11.8361 7.79025 11.5867 7.5C11.8361 7.20975 12 6.8316 12 6.375C12 5.70907 11.6514 5.20995 11.1973 4.90721C10.7654 4.61929 10.2362 4.5 9.75 4.5H7.35262Z" fill="white"/>
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M5.23013 2.20782C5.08005 2.96783 4.8279 4.10778 3.90533 5.03033C3.82118 5.11449 3.72908 5.20331 3.63156 5.29737C2.77519 6.12337 1.5 7.3533 1.5 9.375C1.5 10.4726 1.97218 11.512 2.70071 12.2811C3.43375 13.0548 4.37196 13.5 5.25 13.5H9C9.26377 13.5 9.48458 13.4318 9.61522 13.3447C9.7236 13.2725 9.75 13.2091 9.75 13.125C9.75 13.0409 9.7236 12.9775 9.61522 12.9053C9.48458 12.8182 9.26377 12.75 9 12.75H8.25C7.83577 12.75 7.5 12.4142 7.5 12C7.5 11.5858 7.83577 11.25 8.25 11.25H9H9.375C9.63877 11.25 9.85958 11.1818 9.99022 11.0947C10.0986 11.0225 10.125 10.9591 10.125 10.875C10.125 10.7909 10.0986 10.7275 9.99022 10.6553C9.85958 10.5682 9.63877 10.5 9.375 10.5H9.375C8.21078 10.5 7.875 10.1642 7.875 9.75C7.875 9.33578 8.21078 9 8.625 9H9.375H9.75C10.0138 9 10.2346 8.93182 10.3652 8.84468C10.4736 8.77245 10.5 8.70907 10.5 8.625C10.5 8.54093 10.4736 8.47755 10.3652 8.40532C10.2346 8.31818 10.0138 8.25 9.75 8.25H9C8.58578 8.25 8.25 7.91423 8.25 7.5C8.25 7.08577 8.58578 6.75 9 6.75H9.75C10.0138 6.75 10.2346 6.68183 10.3652 6.59468C10.4736 6.52245 10.5 6.45907 10.5 6.375C10.5 6.29093 10.4736 6.22755 10.3652 6.15532C10.2346 6.06817 10.0138 6 9.75 6H6.375C6.1329 6 5.90573 5.88316 5.76495 5.68625C5.62425 5.48953 5.58705 5.23704 5.66505 5.00813L5.66752 5.00086L5.67758 4.96998C5.68665 4.94167 5.7003 4.89839 5.71702 4.84231C5.75047 4.72993 5.79623 4.56734 5.84325 4.37165C5.9385 3.97511 6.0336 3.46579 6.05212 2.9719C6.07132 2.45877 6.00322 2.0653 5.86605 1.82494C5.78482 1.68273 5.66235 1.5538 5.3778 1.51319C5.3421 1.63652 5.30925 1.80429 5.2611 2.05018C5.2515 2.09949 5.24123 2.15194 5.23013 2.20782ZM7.35262 4.5C7.4439 4.08152 7.53105 3.56029 7.551 3.0281C7.57395 2.41623 7.5132 1.6847 7.16873 1.08131C6.7854 0.409763 6.10987 0 5.175 0C4.88887 0 4.62037 0.0946951 4.40267 0.285105C4.20493 0.458085 4.09248 0.672337 4.02304 0.844657C3.91205 1.12004 3.84347 1.47684 3.78559 1.77796C3.77636 1.82597 3.7674 1.87256 3.75859 1.91718C3.61244 2.65717 3.42212 3.39222 2.84467 3.96967C2.77852 4.03582 2.69813 4.11203 2.60691 4.19851C1.7648 4.99685 0 6.6699 0 9.375C0 10.9025 0.652823 12.3005 1.61179 13.3127C2.56625 14.3202 3.87804 15 5.25 15H9C9.48623 15 10.0154 14.8807 10.4473 14.5928C10.9014 14.29 11.25 13.7909 11.25 13.125C11.25 12.7735 11.1529 12.4684 10.9943 12.2141C11.3615 11.9068 11.625 11.4539 11.625 10.875C11.625 10.5235 11.5279 10.2184 11.3693 9.96412C11.7365 9.65677 12 9.20393 12 8.625C12 8.1684 11.8361 7.79025 11.5867 7.5C11.8361 7.20975 12 6.8316 12 6.375C12 5.70907 11.6514 5.20995 11.1973 4.90721C10.7654 4.61929 10.2362 4.5 9.75 4.5H7.35262Z" fill="white"/>
                             </svg>
                             </span>
                           </div>
@@ -1080,8 +1012,7 @@ const ArchiveIcon = () => (
                       </div>
                     </div>
                   ))}
-
-                  
+                 
                 </div>
               </section>
             </div>
@@ -1091,23 +1022,17 @@ const ArchiveIcon = () => (
     </div>
   );
 };
-
-
   const getStageCount = (stageName: string) =>
     stageCandidates[stageName]?.length || 0;
-
   if (authLoading) {
     return <div>Loading authentication...</div>;
   }
-
   if (!isAuthenticated) {
     return <div>You need to be logged in to view this page.</div>;
   }
-
   if (isFetching) {
     return <div>Loading pipeline data...</div>;
   }
-
   return (
     <>
       <div className="bg-gradient-to-b from-[#F2F5FF] to-[#DAF0FF]">
@@ -1151,7 +1076,7 @@ const ArchiveIcon = () => (
           <div className="bg-white rounded-lg px-8 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-      
+     
                 <h1 className="text-xl font-semibold text-gray-900">
                   {pipelineName}
                 </h1>
@@ -1196,10 +1121,10 @@ const ArchiveIcon = () => (
                       onDrop={(e) => handleDrop(e, stage.name)}
                     >
                       <div className={`bg-white rounded-lg p-3 space-y-3`}>
-                        
+                       
                           <div className="w-full flex items-center justify-between gap-4 mb-4 bg-white border border-gray-200 py-2 pr-4 rounded-md">
                             <div className="flex items-center gap-4">
-                            <div className={`${stage.bgColor} w-1 h-8 rounded-tr-xl rounded-br-xl` }> 
+                            <div className={`${stage.bgColor} w-1 h-8 rounded-tr-xl rounded-br-xl` }>
                             </div>
                             <h3 className="font-[400] text-gray-900 text-lg">
                                 {stage.name}
@@ -1211,7 +1136,7 @@ const ArchiveIcon = () => (
                               {stageCount}
                             </p>
                           </div>
-                        
+                       
                         <div className="overflow-y-auto max-h-[70vh] hide-scrollbar">
                           <div className="space-y-3">
                             {candidates.map((candidate: any) =>
@@ -1233,7 +1158,7 @@ const ArchiveIcon = () => (
             </div>
           </div>
         </div>
-        
+       
       </div>
       {showAccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -1324,12 +1249,12 @@ const ArchiveIcon = () => (
                {(feedbackData.toStage==="Archives") ? (
                 <div className="flex items-center text-center mb-6 gap-4">
                   <h3 className="text-lg font-[400] text-gray-800 mb-1">
-                    Are you sure want to 
+                    Are you sure want to
                     <span className="text-xl font-[400] text-[#0F47F2]">
                       Archive Candidate?
                     </span>
                   </h3>
-                  
+                 
                 </div>
                ):
                (
@@ -1342,7 +1267,7 @@ const ArchiveIcon = () => (
                   </p>
                 </div>
                 )}
-              
+             
                 <div className="mb-6">
                   <div className="bg-blue-50 rounded-2xl p-4 border border-blue-100">
                     <div className="grid grid-cols-12 gap-3 items-start">
@@ -1354,7 +1279,7 @@ const ArchiveIcon = () => (
                           </span>
                         </div>
                       </div>
-                    
+                   
                       {/* Name and Title */}
                       <div className="col-span-7">
                         <h4 className="text-sm font-semibold text-gray-900 mb-1">
@@ -1364,14 +1289,14 @@ const ArchiveIcon = () => (
                           {feedbackData.candidate.role} | {feedbackData.candidate.company}
                         </p>
                       </div>
-                    
+                   
                       {/* Percentage Badge */}
                       <div className="col-span-3 text-right">
                         <span className="text-lg font-[400] text-blue-600 bg-blue-100 border border-blue-200 px-1 rounded-md">
                           75%
                         </span>
                       </div>
-                    
+                   
                       {/* Experience Info */}
                       <div className="col-start-3 col-span-10">
                         <div className="flex items-center gap-1 text-gray-500 text-xs mt-2">
@@ -1381,9 +1306,7 @@ const ArchiveIcon = () => (
                     </div>
                   </div>
                 </div>
-
                 {/* Stage Transition */}
-
                 {(feedbackData.toStage!=="Archives") && (
                   <div className="flex items-center justify-center gap-3 mb-6">
                   <span className="text-sm text-gray-600 font-medium">
@@ -1397,9 +1320,9 @@ const ArchiveIcon = () => (
                   </span>
                 </div>
                 )}
-              
-              
-              
+             
+             
+             
               {/* Comment Section */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1412,7 +1335,6 @@ const ArchiveIcon = () => (
                   className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-24 resize-none text-sm placeholder-gray-400"
                 />
               </div>
-
               {/* Action buttons */}
               <div className="flex gap-3">
                 {feedbackData.toStage==="Archives" && (
@@ -1430,10 +1352,7 @@ const ArchiveIcon = () => (
                 >
                   Cancel
                 </button>
-
                 {feedbackData.toStage!=="Archives" && (
-
-
                 <button
                   onClick={handleFeedbackSubmit}
                   disabled={!feedbackComment.trim()}
@@ -1451,5 +1370,4 @@ const ArchiveIcon = () => (
     </>
   );
 };
-
 export default PipelineSharePage;
