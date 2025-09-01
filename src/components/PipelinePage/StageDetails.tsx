@@ -409,7 +409,14 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
           const mappedActivities: Activity[] = apiActivities.map(
             (item: any) => {
-              const date = new Date(item.timestamp).toLocaleDateString();
+              const date = new Date(item.timestamp).toLocaleDateString(
+                "en-US",
+                {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                }
+              );
               let description = "";
               let via = "";
               let note = "";
