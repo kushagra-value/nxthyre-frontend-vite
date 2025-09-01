@@ -626,6 +626,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     description: string;
   }
 
+  interface ReferenceCardProps {
+    reference: Reference;
+    key?: number; // Optional, as key is passed by React's map
+  }
+
   const ReferencesTab = () => {
     const [references, setReferences] = useState<Reference[]>([]);
     const [loading, setLoading] = useState(true);
@@ -688,7 +693,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   // The ReferenceCard component remains unchanged, as the mapped fields match the expected props
   // No modifications needed here, but included for context
-  const ReferenceCard = (reference: Reference) => {
+  const ReferenceCard: React.FC<ReferenceCardProps> = ({ reference }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showPopup, setShowPopup] = useState<
       "email" | "phone" | "linkedin" | null
