@@ -253,8 +253,6 @@ function MainApp() {
             debouncedSearchQuery,
             controller.signal
           );
-          console.log("Universal search response:", response);
-          console.log("Universal search results:", response.results);
           const candidates = response.results.map((candidate: any) => ({
             ...candidate,
           }));
