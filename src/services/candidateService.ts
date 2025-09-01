@@ -57,6 +57,19 @@ export interface CandidateListItem {
   } | null;
 }
 
+export interface CandidateSearchResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: CandidateListItem[];
+  sourcing_counts?: {
+    inbound: number;
+    outbound: number;
+    active: number;
+    prevetted: number;
+  };
+}
+
 export interface CandidateDetailData {
   recruiter_id: string;
   credit_balance: number;
@@ -360,15 +373,9 @@ export type Note = {
 class CandidateService {
   async getCandidates(
     filters: any
-  ): Promise<{ results: CandidateListItem[]; count: number }> {
+  ): Promise<CandidateSearchResponse> {
     try {
       const response = await apiClient.post("/candidates/search/", { filters });
-      if (Array.isArray(response.data)) {
-        return {
-          results: response.data,
-          count: response.data.length,
-        };
-      }
       return response.data;
     } catch (error: any) {
       throw new Error(
@@ -379,20 +386,13 @@ class CandidateService {
 
   async searchCandidates(
     params: any
-  ): Promise<{ results: CandidateListItem[]; count: number }> {
+  ): Promise<CandidateSearchResponse> {
     try {
       const { page, ...body } = params;
       const response = await apiClient.post(
         `/candidates/search/?page=${page || 1}`,
         body
       );
-
-      if (Array.isArray(response.data)) {
-        return {
-          results: response.data,
-          count: response.data.length,
-        };
-      }
       return response.data;
     } catch (error: any) {
       throw new Error(
@@ -401,7 +401,7 @@ class CandidateService {
     }
   }
 
-  async universalSearch(query: string, signal?: AbortSignal): Promise<any> {
+  async universalSearch(query: string, signal?: AbortSignal): Promise<CandidateSearchResponse> {
     try {
       let normalizedQuery = query;
       // Check if the query is a LinkedIn URL
@@ -427,8 +427,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       if (error.name === "AbortError") {
-        // Request was aborted, do nothing
-        return [];
+        return { count: 0, next: null, previous: null, results: [] };
       }
       throw new Error(
         error.response?.data?.error || "Failed to search candidates"

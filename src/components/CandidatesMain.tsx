@@ -48,6 +48,12 @@ interface CandidatesMainProps {
   sortBy: string;
   setSortBy: (sortBy: string) => void;
   loadingCandidates: boolean;
+  sourcingCounts: {
+    inbound: number;
+    outbound: number;
+    active: number;
+    prevetted: number;
+  };
 }
 
 const CandidatesMain: React.FC<CandidatesMainProps> = ({
@@ -68,6 +74,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   sortBy,
   setSortBy,
   loadingCandidates,
+  sourcingCounts,
 }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
@@ -95,27 +102,27 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const [revealLoading, setRevealLoading] = useState(false);
 
   const tabs = [
-    {
-      id: "outbound",
-      label: "Outbound",
-      count: activeTab === "outbound" ? totalCount : 0,
-    },
-    {
-      id: "active",
-      label: "Active",
-      count: activeTab === "active" ? totalCount : 0,
-    },
-    {
-      id: "inbound",
-      label: "Inbound",
-      count: activeTab === "inbound" ? totalCount : 0,
-    },
-    {
-      id: "prevetted",
-      label: "Prevetted",
-      count: activeTab === "prevetted" ? totalCount : 0,
-    },
-  ];
+  {
+    id: "outbound",
+    label: "Outbound",
+    count: activeTab === "outbound" ? totalCount : sourcingCounts.outbound,
+  },
+  {
+    id: "active",
+    label: "Active",
+    count: activeTab === "active" ? totalCount : sourcingCounts.active,
+  },
+  {
+    id: "inbound",
+    label: "Inbound",
+    count: activeTab === "inbound" ? totalCount : sourcingCounts.inbound,
+  },
+  {
+    id: "prevetted",
+    label: "Prevetted",
+    count: activeTab === "prevetted" ? totalCount : sourcingCounts.prevetted,
+  },
+];
 
   const sortOptions = [
     { value: "", label: "Relevance" },

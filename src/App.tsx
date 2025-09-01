@@ -131,6 +131,13 @@ function MainApp() {
   const [showUnpublishModal, setShowUnpublishModal] = useState<number | null>(
     null
   );
+
+  const [sourcingCounts, setSourcingCounts] = useState({
+  inbound: 0,
+  outbound: 0,
+  active: 0,
+  prevetted: 0
+});
   const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
   const [showShareLoader, setShowShareLoader] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -190,6 +197,12 @@ function MainApp() {
   useEffect(() => {
     setIsSearchMode(debouncedSearchQuery.trim() !== "");
   }, [debouncedSearchQuery]);
+
+  useEffect(() => {
+    if (activeCategoryId) {
+      fetchJobDetailsAndSetFilters(activeCategoryId);
+    }
+  }, [activeCategoryId]);
 
   const fetchCategories = async () => {
     setLoadingCategories(true);
@@ -258,6 +271,9 @@ function MainApp() {
           }));
           setCandidates(candidates);
           setTotalCount(candidates.length);
+          if (response.sourcing_counts) {
+            setSourcingCounts(response.sourcing_counts);
+          }
           if (candidates.length > 0 && !selectedCandidate) {
             setSelectedCandidate(candidates[0]);
           }
@@ -419,6 +435,9 @@ function MainApp() {
             response = await candidateService.searchCandidates(filterParams);
             setCandidates(response.results);
             setTotalCount(response.count);
+            if (response.sourcing_counts) {
+              setSourcingCounts(response.sourcing_counts);
+            }
             if (response.results.length === 0) {
               setSelectedCandidate(null);
               showToast.error("No results found for the applied filters.");
@@ -426,6 +445,7 @@ function MainApp() {
               setSelectedCandidate(response.results[0]);
             }
           }
+
         }
       } catch (error) {
         showToast.error("Failed to fetch candidates");
@@ -484,9 +504,9 @@ function MainApp() {
   }, [
     activeTab,
     sortBy,
-    activeCategoryId,
     debouncedSearchQuery,
-    isAuthenticated,
+    activeCategoryId,
+    isAuthenticated, 
     currentPage,
   ]);
 
@@ -1225,6 +1245,7 @@ function MainApp() {
                             sortBy={sortBy}
                             setSortBy={setSortBy}
                             loadingCandidates={loadingCandidates}
+                            sourcingCounts={sourcingCounts}
                           />
                         </div>
                         {/* CandidateDetail remains in its original div with 30% width */}
