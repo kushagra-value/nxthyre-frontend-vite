@@ -701,9 +701,20 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
           <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
             {candidates.map((candidate) => {
               // Extract college name from education_summary.title
-              const collegeName = candidate?.education_summary?.title
+              let collegeName = candidate?.education_summary?.title
                 ? candidate.education_summary.title.split("-")[0].trim()
                 : "";
+
+              // Convert to camelCase
+              const toCamelCase = (str: any) =>
+                str
+                  .toLowerCase()
+                  .replace(/[^a-zA-Z0-9 ]/g, "") // remove special chars
+                  .replace(/ (.)/g, (group1: any) => group1.toUpperCase());
+
+              collegeName = toCamelCase(collegeName);
+
+              console.log(collegeName);
               return (
                 <div
                   key={candidate.id}
