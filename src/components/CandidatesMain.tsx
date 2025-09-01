@@ -713,19 +713,26 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 role="button"
                 aria-label={`Select candidate ${candidate.full_name}`}
               >
-                
-
                 {candidate.premium_data_unlocked && (
                   <button
                     className="absolute top-0 left-0 z-10 "
                     title="Information revealed"
                   >
-                <svg width="21" height="18" viewBox="0 0 21 18" fill="none" xmlns="http://www.w3.org/2000/svg" className="">
-                  <path d="M0.5 17.5L0.5 4.5C0.5 2.29086 2.29086 0.5 4.5 0.5L20.5 0.5L10.5 9L0.5 17.5Z" fill="#3B82F6"/>
-                </svg>
-              </button>
-                
-              )}
+                    <svg
+                      width="21"
+                      height="18"
+                      viewBox="0 0 21 18"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className=""
+                    >
+                      <path
+                        d="M0.5 17.5L0.5 4.5C0.5 2.29086 2.29086 0.5 4.5 0.5L20.5 0.5L10.5 9L0.5 17.5Z"
+                        fill="#3B82F6"
+                      />
+                    </svg>
+                  </button>
+                )}
                 <div className="flex px-4 items-center space-x-3">
                   <input
                     type="checkbox"
@@ -754,7 +761,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
                         <div className="flex items-center space-x-2 flex-wrap">
-                          <h3 className="text-xs lg:text-base font-[400] text-gray-900">
+                          <h3 className="text-xs lg:text-base font-[600] text-gray-900">
                             {candidate.full_name}
                           </h3>
                           {candidate.is_background_verified && (

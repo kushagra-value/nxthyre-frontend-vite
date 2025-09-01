@@ -1054,6 +1054,26 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           />
         </svg>
       ),
+      "Salary Negotiation": () => (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="17"
+          height="18"
+          viewBox="0 0 17 18"
+          fill="none"
+          stroke="#818283"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          className="lucide lucide-handshake-icon lucide-handshake"
+        >
+          <path d="m11 17 2 2a1 1 0 1 0 3-3" />
+          <path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4" />
+          <path d="m21 3 1 11h-2" />
+          <path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3" />
+          <path d="M3 4h8" />
+        </svg>
+      ),
       "Offer Sent": () => (
         <svg
           width="19"
@@ -1371,9 +1391,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             }}
                           >
                             <span>{category.name}</span>
-                            <span className="text-gray-600 bg-gray-100 px-2 py-1 rounded text-sm">
+                            {/* <span className="text-gray-600 bg-gray-100 px-2 py-1 rounded text-sm">
                               {category.count}
-                            </span>
+                            </span> */}
                           </div>
                         ))}
                       </div>
@@ -1684,9 +1704,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         </svg>
                         Upload</button>
                       </div>
-                    ): 
-                    // else check if the current stage is AI interview or Coding round then show settings icon
-                    (["AI Interview", "Coding Round"].includes(selectedStage) && 
+                    ): (["AI Interview", "Coding Round"].includes(selectedStage) && 
                     (
                     <div className="relative">
                       <button
@@ -1773,7 +1791,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 </label>
                                 <select
                                   value={sendAfter}
-                                  onChange={(e) => setSendAfter(e.target.value)}
+                                  onChange={(e) => 
+                                     setSendAfter(e.target.value)}
                                   className="w-20 px-2 py-1 text-blue-500 border bg-blue-50 border-blue-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
                                   aria-label="Send after hours"
                                 >
@@ -1921,7 +1940,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
                                     <div className="flex items-center space-x-2 flex-wrap">
-                                      <h3 className="text-xs lg:text-base font-[400] text-gray-900">
+                                      <h3 className="text-xs lg:text-base font-[600] text-gray-900">
                                         {fullName}
                                       </h3>
                                       {isBackgroundVerified && (

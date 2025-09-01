@@ -75,6 +75,13 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   >([]);
   const [loading, setLoading] = useState(false);
 
+  // Optional: Agar subject mein HTML nahi chahiye, toh strip karne ka function
+  const stripHtml = (htmlString: any) => {
+    const div = document.createElement("div");
+    div.innerHTML = htmlString;
+    return div.textContent || div.innerText || "";
+  };
+
   const [isFollowUpsExpanded, setIsFollowUpsExpanded] = useState(false);
 
   const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
@@ -329,21 +336,25 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   };
 
   const random70to99 = () => Math.floor(Math.random() * 30 + 70);
-  
-  const hasEmail = candidate.premium_data_availability.email; 
+
+  const hasEmail = candidate.premium_data_availability.email;
   const hasPhone = candidate.premium_data_availability.phone_number;
-  const displayEmail = detailedCandidate?.candidate?.premium_data_unlocked &&
+  const displayEmail =
+    detailedCandidate?.candidate?.premium_data_unlocked &&
     detailedCandidate?.candidate?.premium_data_availability?.email &&
     detailedCandidate?.candidate?.premium_data?.email
-    ? detailedCandidate.candidate.premium_data.email
-    : `${(detailedCandidate?.candidate?.full_name || '').slice(0, 3).toLowerCase()}***********@gmail.com`;
+      ? detailedCandidate.candidate.premium_data.email
+      : `${(detailedCandidate?.candidate?.full_name || "")
+          .slice(0, 3)
+          .toLowerCase()}***********@gmail.com`;
 
   // Updated display logic for phone
-  const displayPhone = detailedCandidate?.candidate?.premium_data_unlocked &&
+  const displayPhone =
+    detailedCandidate?.candidate?.premium_data_unlocked &&
     detailedCandidate?.candidate?.premium_data_availability?.phone_number &&
     detailedCandidate?.candidate?.premium_data?.phone
-    ? detailedCandidate.candidate.premium_data.phone
-    : `${random70to99()}********${random70to99()}`;
+      ? detailedCandidate.candidate.premium_data.phone
+      : `${random70to99()}********${random70to99()}`;
 
   return (
     <>
@@ -465,10 +476,14 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               key={selectedTemplate}
               value={selectedTemplate}
               onChange={(e) => handleTemplateSelect(e.target.value)}
-              className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+              className={`w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white ${
+                selectedTemplate === "" ? "text-gray-400" : "text-gray-800"
+              }`}
               disabled={loading}
             >
-              <option value="">Select a template</option>
+              <option value="" className="text-gray-400">
+                Select a template
+              </option>
               <option value="create-new" className="font-bold text-blue-600">
                 + Create New Template
               </option>
@@ -476,7 +491,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 <option
                   key={template.id}
                   value={template.id}
-                  className="hover:bg-blue-300"
+                  className="text-gray-800 hover:bg-blue-300"
                 >
                   {template.name}
                 </option>
@@ -493,7 +508,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           </label>
           <input
             type="text"
-            value={subject}
+            value={stripHtml(subject)}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Type your subject"
             className="w-full rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"

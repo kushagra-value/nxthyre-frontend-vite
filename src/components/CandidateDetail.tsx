@@ -26,6 +26,8 @@ import {
   ThumbsUp,
   ChevronUp,
   Linkedin,
+  Circle,
+  CircleIcon,
 } from "lucide-react";
 
 // Custom SVG Icon for IdCard
@@ -335,8 +337,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                       <h4 className="font-medium text-[#111827] text-sm">
                         {exp?.job_title}
                       </h4>
-                      <p className="text-sm text-[#4B5563]">{`${exp?.company} | ${exp?.location}`}</p>
-                      <p className="text-sm text-[#6B7280]">
+                      <p className="text-sm text-gray-400">{`${exp?.company} | ${exp?.location}`}</p>
+                      <p className="text-sm text-gray-400">
                         {exp?.start_date && (
                           <span>
                             {exp?.start_date} - {exp?.end_date || "Present"}
@@ -511,7 +513,29 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <div>
             <h4 className="text-lg font-semibold text-gray-700 flex items-center">
               <Star className="w-4 h-4 mr-2" />
-              Vetted Skills
+              <span className="mr-2">Vetted Skills</span>
+              <div className="relative group">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-circle-alert-icon lucide-circle-alert text-gray-500"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" x2="12" y1="8" y2="12" />
+                  <line x1="12" x2="12.01" y1="16" y2="16" />
+                </svg>
+                <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs rounded-md px-2 py-1 -top-8 left-1/2 transform -translate-x-1/2 w-max max-w-xs z-10">
+                  Vetted skills: Abilities verified through assessments or
+                  reviews to ensure proficiency.
+                </div>
+              </div>
             </h4>
             <div className="flex flex-wrap gap-3 mt-2">
               {vettedSkills.map((skill, index) => (
@@ -994,7 +1018,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               className="w-full h-full rounded-full"
             />
           ) : (
-            <User className="w-6 h-6" />
+            detailedCandidate?.candidate?.full_name?.slice(0, 2).toUpperCase()
           )}
         </div>
         <div>
@@ -1006,7 +1030,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               {detailedCandidate?.candidate?.headline}
             </p>
             {detailedCandidate.candidate?.headline && (
-              <div className="absolute hidden group-hover:block bg-gray-400 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-10 -left-2 w-max max-w-xs z-10">
+              <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-10 -left-2 w-max max-w-xs z-10">
                 {detailedCandidate.candidate?.headline}
               </div>
             )}

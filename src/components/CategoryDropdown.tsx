@@ -80,7 +80,7 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
         const mappedCategories: CategoryItem[] = jobs.map((job) => ({
           id: job.id,
           name: job.title,
-          count: job.count || 0,
+          count: job.inbound_count || 0,
           status: job.status,
           visibility: job.visibility,
           invitesSent: job.invites_sent_count || 0,
