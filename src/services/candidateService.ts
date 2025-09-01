@@ -401,10 +401,7 @@ class CandidateService {
     }
   }
 
-  async universalSearch(
-    query: string,
-    signal?: AbortSignal
-  ): Promise<CandidateListItem[]> {
+  async universalSearch(query: string, signal?: AbortSignal): Promise<any> {
     try {
       let normalizedQuery = query;
       // Check if the query is a LinkedIn URL
