@@ -705,14 +705,17 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 ? candidate.education_summary.title.split("-")[0].trim()
                 : "";
 
-              // Convert to camelCase
-              const toCamelCase = (str: any) =>
+              // Convert to Title Case (each word's first letter capitalized)
+              const toTitleCase = (str: any) =>
                 str
                   .toLowerCase()
-                  .replace(/[^a-zA-Z0-9 ]/g, "") // remove special chars
-                  .replace(/ (.)/g, (group1: any) => group1.toUpperCase());
+                  .split(" ")
+                  .map(
+                    (word: any) => word.charAt(0).toUpperCase() + word.slice(1)
+                  )
+                  .join(" ");
 
-              collegeName = toCamelCase(collegeName);
+              collegeName = toTitleCase(collegeName);
 
               console.log(collegeName);
               return (
