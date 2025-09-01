@@ -804,7 +804,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 )}
               </div>
             </div>
-            {reference.description.length > truncateLength && (
+            {reference?.description?.length > truncateLength && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="text-blue-500 text-sm mt-2 flex items-center focus:outline-none"

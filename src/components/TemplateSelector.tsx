@@ -798,7 +798,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                 }
                                 style={{ color: "#2563EB" }}
                                 placeholder=" Type your message"
-                                className="text-sm w-full px-2 py-1 text-gray-300 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="text-sm w-full px-2 py-2 text-gray-300 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                               />
                             </div>
                           </div>
