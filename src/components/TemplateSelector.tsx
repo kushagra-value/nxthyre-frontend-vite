@@ -491,7 +491,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 <option
                   key={template.id}
                   value={template.id}
-                  className="text-gray-700 hover:bg-blue-300"
+                  className=" hover:bg-blue-300"
                 >
                   {template.name}
                 </option>
