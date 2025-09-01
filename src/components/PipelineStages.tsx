@@ -299,7 +299,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const [selectedStage, setSelectedStage] = useState("Uncontacted");
   const [activeStageTab, setActiveStageTab] = useState("uncontacted");
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadFiles, setUploadFiles] = useState<File[] | null>(null);
   const [selectedCandidate, setSelectedCandidate] =
     useState<PipelineCandidate | null>(null);
   const [showComments, setShowComments] = useState(false);
@@ -373,24 +373,26 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
   // Handle file upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setUploadFile(e.target.files[0]);
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      const pdfFiles = filesArray.filter(file => file.type === 'application/pdf');
+      if (pdfFiles.length !== filesArray.length) {
+        showToast.error("Only PDF files are allowed.");
+      }
+      setUploadFiles(pdfFiles);
     }
   };
 
   const handleUploadCandidates = async () => {
-    if (!uploadFile || !activeJobId) {
-      showToast.error("Please select a file and ensure a job is selected");
+    if (!uploadFiles || uploadFiles.length === 0 || !activeJobId) {
+      showToast.error("Please select PDF files and ensure a job is selected");
       return;
     }
     try {
-      const formData = new FormData();
-      formData.append("file", uploadFile);
-      formData.append("job_id", activeJobId.toString());
-      await jobPostService.uploadCandidates(formData);
+      await jobPostService.uploadResumes(activeJobId, uploadFiles);
       showToast.success("Candidates uploaded successfully");
       setShowUploadModal(false);
-      setUploadFile(null);
+      setUploadFiles(null);
       // Refresh candidates for Uncontacted stage
       fetchCandidates(activeJobId, "uncontacted");
     } catch (error) {
@@ -1750,6 +1752,12 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   / 100
                                 </span>
                               </div>
+                              <button 
+                                onClick={handleCutoffUpdate}
+                                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md text-sm"
+                              >
+                                Update Cutoff
+                              </button>
                             </div>
                           </div>
                           <div className="pt-4">
@@ -2175,6 +2183,35 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           </div>
         </div>
       </div>
+      {showUploadModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h2 className="text-lg font-semibold mb-4">Upload Resumes</h2>
+            <input
+              type="file"
+              multiple
+              accept=".pdf"
+              onChange={handleFileChange}
+              className="mb-4 w-full"
+            />
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => setShowUploadModal(false)}
+                className="px-4 py-2 bg-gray-200 rounded-md"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUploadCandidates}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+              >
+                Upload
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

@@ -294,16 +294,21 @@ class JobPostService {
     }
   }
 
-  async uploadCandidates(formData: FormData): Promise<void> {
+  async uploadResumes(jobId: number | string, resumes: File[]): Promise<void> {
     try {
-      const response = await apiClient.post(`/jobs/upload-resumes/`, formData, {
+      const formData = new FormData();
+      formData.append("job_id", String(jobId));
+      resumes.forEach((resume, index) => {
+        formData.append("resumes", resume);
+      });
+      const response = await apiClient.post("/api/candidates/upload-resumes/", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to upload candidates");
+      throw new Error(error.response?.data?.error || "Failed to upload resumes");
     }
   }
 
