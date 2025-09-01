@@ -980,6 +980,26 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           />
         </svg>
       ),
+      "Salary Negotiation": () => (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          className="lucide lucide-handshake-icon lucide-handshake"
+        >
+          <path d="m11 17 2 2a1 1 0 1 0 3-3" />
+          <path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4" />
+          <path d="m21 3 1 11h-2" />
+          <path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3" />
+          <path d="M3 4h8" />
+        </svg>
+      ),
       "Offer Sent": () => (
         <svg
           width="19"
@@ -1297,9 +1317,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             }}
                           >
                             <span>{category.name}</span>
-                            <span className="text-gray-600 bg-gray-100 px-2 py-1 rounded text-sm">
+                            {/* <span className="text-gray-600 bg-gray-100 px-2 py-1 rounded text-sm">
                               {category.count}
-                            </span>
+                            </span> */}
                           </div>
                         ))}
                       </div>
@@ -1594,121 +1614,120 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       </button>
                     )}
 
-                    {viewMode === "prospect" ?(
+                    {viewMode === "prospect" ? (
+                      <div className="relative"></div>
+                    ) : (
                       <div className="relative">
-                        
-                      
-                      </div>
-                    ): (
-                    <div className="relative">
-                      <button
-                        className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowSettingsPopup(!showSettingsPopup);
-                        }}
-                        aria-label="Open settings"
-                      >
-                        <svg
-                          width="13"
-                          height="15"
-                          viewBox="0 0 13 15"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="text-gray-400 text-xs lg:text-base font-[400] mr-1"
+                        <button
+                          className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowSettingsPopup(!showSettingsPopup);
+                          }}
+                          aria-label="Open settings"
                         >
-                          <path
-                            d="M3.95966 2.38894C5.19943 1.64006 5.81934 1.26562 6.5 1.26562C7.18066 1.26562 7.80057 1.64006 9.04033 2.38894L9.45967 2.64223C10.6994 3.39111 11.3193 3.76555 11.6597 4.38229C12 4.99904 12 5.74792 12 7.2457V7.75222C12 9.25003 12 9.9989 11.6597 10.6156C11.3193 11.2324 10.6994 11.6068 9.45967 12.3557L9.04033 12.609C7.80057 13.3579 7.18066 13.7323 6.5 13.7323C5.81934 13.7323 5.19943 13.3579 3.95966 12.609L3.54034 12.3557C2.30057 11.6068 1.68068 11.2324 1.34034 10.6156C1 9.9989 1 9.25003 1 7.75222V7.2457C1 5.74792 1 4.99904 1.34034 4.38229C1.68068 3.76555 2.30057 3.39111 3.54034 2.64223L3.95966 2.38894Z"
-                            stroke="#818283"
-                          />
-                          <path
-                            d="M6.5013 9.37281C7.51382 9.37281 8.33464 8.53559 8.33464 7.50281C8.33464 6.47004 7.51382 5.63281 6.5013 5.63281C5.48878 5.63281 4.66797 6.47004 4.66797 7.50281C4.66797 8.53559 5.48878 9.37281 6.5013 9.37281Z"
-                            stroke="#818283"
-                          />
-                        </svg>
-                        Settings
-                      </button>
-                      {showSettingsPopup && (
-                        <div
-                          ref={settingsPopupRef}
-                          className="absolute top-full right-0 mt-2 p-4 w-96 bg-white border border-gray-200 rounded-md shadow-lg"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <div className="border-b border-gray-400">
-                            <div className="pb-4">
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Cutoff Score
-                              </label>
-                              <div className="flex items-center space-x-2">
-                                <input
-                                  type="text"
-                                  value={cutoffScore}
-                                  onChange={(e) => {
-                                    const value = e.target.value.replace(
-                                      /[^0-9]/g,
-                                      ""
-                                    );
-                                    if (
-                                      value === "" ||
-                                      (parseInt(value) >= 0 &&
-                                        parseInt(value) <= 100)
-                                    ) {
-                                      setCutoffScore(value);
+                          <svg
+                            width="13"
+                            height="15"
+                            viewBox="0 0 13 15"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="text-gray-400 text-xs lg:text-base font-[400] mr-1"
+                          >
+                            <path
+                              d="M3.95966 2.38894C5.19943 1.64006 5.81934 1.26562 6.5 1.26562C7.18066 1.26562 7.80057 1.64006 9.04033 2.38894L9.45967 2.64223C10.6994 3.39111 11.3193 3.76555 11.6597 4.38229C12 4.99904 12 5.74792 12 7.2457V7.75222C12 9.25003 12 9.9989 11.6597 10.6156C11.3193 11.2324 10.6994 11.6068 9.45967 12.3557L9.04033 12.609C7.80057 13.3579 7.18066 13.7323 6.5 13.7323C5.81934 13.7323 5.19943 13.3579 3.95966 12.609L3.54034 12.3557C2.30057 11.6068 1.68068 11.2324 1.34034 10.6156C1 9.9989 1 9.25003 1 7.75222V7.2457C1 5.74792 1 4.99904 1.34034 4.38229C1.68068 3.76555 2.30057 3.39111 3.54034 2.64223L3.95966 2.38894Z"
+                              stroke="#818283"
+                            />
+                            <path
+                              d="M6.5013 9.37281C7.51382 9.37281 8.33464 8.53559 8.33464 7.50281C8.33464 6.47004 7.51382 5.63281 6.5013 5.63281C5.48878 5.63281 4.66797 6.47004 4.66797 7.50281C4.66797 8.53559 5.48878 9.37281 6.5013 9.37281Z"
+                              stroke="#818283"
+                            />
+                          </svg>
+                          Settings
+                        </button>
+                        {showSettingsPopup && (
+                          <div
+                            ref={settingsPopupRef}
+                            className="absolute top-full right-0 mt-2 p-4 w-96 bg-white border border-gray-200 rounded-md shadow-lg"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="border-b border-gray-400">
+                              <div className="pb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Cutoff Score
+                                </label>
+                                <div className="flex items-center space-x-2">
+                                  <input
+                                    type="text"
+                                    value={cutoffScore}
+                                    onChange={(e) => {
+                                      const value = e.target.value.replace(
+                                        /[^0-9]/g,
+                                        ""
+                                      );
+                                      if (
+                                        value === "" ||
+                                        (parseInt(value) >= 0 &&
+                                          parseInt(value) <= 100)
+                                      ) {
+                                        setCutoffScore(value);
+                                      }
+                                    }}
+                                    className="w-8 px-2 py-1 text-blue-500 bg-blue-50 border border-blue-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                    placeholder="75"
+                                    aria-label="Cutoff score (0-100)"
+                                  />
+                                  <span className="text-sm text-gray-500">
+                                    / 100
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="pt-4">
+                              <div className="flex flex-col space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <span className=" text-sm font-medium text-gray-700">
+                                    Follow Up
+                                  </span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <label className="text-sm font-medium text-gray-700">
+                                    Send After
+                                  </label>
+                                  <select
+                                    value={sendAfter}
+                                    onChange={(e) =>
+                                      setSendAfter(e.target.value)
                                     }
-                                  }}
-                                  className="w-8 px-2 py-1 text-blue-500 bg-blue-50 border border-blue-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                  placeholder="75"
-                                  aria-label="Cutoff score (0-100)"
-                                />
-                                <span className="text-sm text-gray-500">
-                                  / 100
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="pt-4">
-                            <div className="flex flex-col space-y-3">
-                              <div className="flex items-center justify-between">
-                                <span className=" text-sm font-medium text-gray-700">
-                                  Follow Up
-                                </span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <label className="text-sm font-medium text-gray-700">
-                                  Send After
-                                </label>
-                                <select
-                                  value={sendAfter}
-                                  onChange={(e) => setSendAfter(e.target.value)}
-                                  className="w-20 px-2 py-1 text-blue-500 border bg-blue-50 border-blue-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                  aria-label="Send after hours"
-                                >
-                                  <option value="1">1 hr</option>
-                                  <option value="2">2 hrs</option>
-                                  <option value="4">4 hrs</option>
-                                  <option value="8">8 hrs</option>
-                                  <option value="24">24 hrs</option>
-                                </select>
+                                    className="w-20 px-2 py-1 text-blue-500 border bg-blue-50 border-blue-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                    aria-label="Send after hours"
+                                  >
+                                    <option value="1">1 hr</option>
+                                    <option value="2">2 hrs</option>
+                                    <option value="4">4 hrs</option>
+                                    <option value="8">8 hrs</option>
+                                    <option value="24">24 hrs</option>
+                                  </select>
 
-                                <label className="text-sm font-medium text-gray-700">
-                                  Via
-                                </label>
-                                <select
-                                  value={sendVia}
-                                  onChange={(e) => setSendVia(e.target.value)}
-                                  className="w-32 px-2 py-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                  aria-label="Send via method"
-                                >
-                                  <option value="email">E-mail</option>
-                                  <option value="call">Call</option>
-                                  <option value="whatsapp">WhatsApp</option>
-                                </select>
+                                  <label className="text-sm font-medium text-gray-700">
+                                    Via
+                                  </label>
+                                  <select
+                                    value={sendVia}
+                                    onChange={(e) => setSendVia(e.target.value)}
+                                    className="w-32 px-2 py-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                    aria-label="Send via method"
+                                  >
+                                    <option value="email">E-mail</option>
+                                    <option value="call">Call</option>
+                                    <option value="whatsapp">WhatsApp</option>
+                                  </select>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
+                        )}
+                      </div>
                     )}
 
                     <div className="relative flex space-x-2">
@@ -1827,7 +1846,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
                                     <div className="flex items-center space-x-2 flex-wrap">
-                                      <h3 className="text-xs lg:text-base font-[400] text-gray-900">
+                                      <h3 className="text-xs lg:text-base font-[600] text-gray-900">
                                         {fullName}
                                       </h3>
                                       {isBackgroundVerified && (
