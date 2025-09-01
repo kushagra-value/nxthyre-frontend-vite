@@ -75,6 +75,13 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   >([]);
   const [loading, setLoading] = useState(false);
 
+  // Optional: Agar subject mein HTML nahi chahiye, toh strip karne ka function
+  const stripHtml = (htmlString: any) => {
+    const div = document.createElement("div");
+    div.innerHTML = htmlString;
+    return div.textContent || div.innerText || "";
+  };
+
   const [isFollowUpsExpanded, setIsFollowUpsExpanded] = useState(false);
 
   const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
@@ -469,7 +476,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               key={selectedTemplate}
               value={selectedTemplate}
               onChange={(e) => handleTemplateSelect(e.target.value)}
-              className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+              className="text-sm text-gray-500 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
               disabled={loading}
             >
               <option value="" className="text-gray-400">
@@ -499,10 +506,15 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           </label>
           <input
             type="text"
-            value={subject}
+            value={stripHtml(subject)}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Type your subject"
             className="w-full rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          {/* Subject ka HTML preview */}
+          <div
+            className="mt-2 text-sm text-gray-800 bg-gray-100 p-2 rounded-lg"
+            dangerouslySetInnerHTML={{ __html: subject }}
           />
         </div>
 
@@ -534,6 +546,11 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 "redo",
               ],
             }}
+          />
+          {/* Body ka HTML preview */}
+          <div
+            className="mt-4 text-sm text-gray-800 bg-gray-100 p-4 rounded-lg border border-gray-300"
+            dangerouslySetInnerHTML={{ __html: body }}
           />
 
           <style>{`
