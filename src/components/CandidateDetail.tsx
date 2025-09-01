@@ -696,7 +696,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
     const truncateLength = 100;
     const truncatedDescription =
-      reference.description.length > truncateLength
+      reference?.description?.length > truncateLength
         ? reference.description.substring(0, truncateLength) + "..."
         : reference.description;
 
