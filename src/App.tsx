@@ -131,6 +131,13 @@ function MainApp() {
   const [showUnpublishModal, setShowUnpublishModal] = useState<number | null>(
     null
   );
+
+  const [sourcingCounts, setSourcingCounts] = useState({
+  inbound: 0,
+  outbound: 0,
+  active: 0,
+  prevetted: 0
+});
   const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
   const [showShareLoader, setShowShareLoader] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -260,6 +267,9 @@ function MainApp() {
           }));
           setCandidates(candidates);
           setTotalCount(candidates.length);
+          if (response.sourcing_counts) {
+            setSourcingCounts(response.sourcing_counts);
+          }
           if (candidates.length > 0 && !selectedCandidate) {
             setSelectedCandidate(candidates[0]);
           }
@@ -1227,6 +1237,7 @@ function MainApp() {
                             sortBy={sortBy}
                             setSortBy={setSortBy}
                             loadingCandidates={loadingCandidates}
+                            sourcingCounts={sourcingCounts}
                           />
                         </div>
                         {/* CandidateDetail remains in its original div with 30% width */}
