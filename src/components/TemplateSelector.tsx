@@ -329,21 +329,25 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   };
 
   const random70to99 = () => Math.floor(Math.random() * 30 + 70);
-  
-  const hasEmail = candidate.premium_data_availability.email; 
+
+  const hasEmail = candidate.premium_data_availability.email;
   const hasPhone = candidate.premium_data_availability.phone_number;
-  const displayEmail = detailedCandidate?.candidate?.premium_data_unlocked &&
+  const displayEmail =
+    detailedCandidate?.candidate?.premium_data_unlocked &&
     detailedCandidate?.candidate?.premium_data_availability?.email &&
     detailedCandidate?.candidate?.premium_data?.email
-    ? detailedCandidate.candidate.premium_data.email
-    : `${(detailedCandidate?.candidate?.full_name || '').slice(0, 3).toLowerCase()}***********@gmail.com`;
+      ? detailedCandidate.candidate.premium_data.email
+      : `${(detailedCandidate?.candidate?.full_name || "")
+          .slice(0, 3)
+          .toLowerCase()}***********@gmail.com`;
 
   // Updated display logic for phone
-  const displayPhone = detailedCandidate?.candidate?.premium_data_unlocked &&
+  const displayPhone =
+    detailedCandidate?.candidate?.premium_data_unlocked &&
     detailedCandidate?.candidate?.premium_data_availability?.phone_number &&
     detailedCandidate?.candidate?.premium_data?.phone
-    ? detailedCandidate.candidate.premium_data.phone
-    : `${random70to99()}********${random70to99()}`;
+      ? detailedCandidate.candidate.premium_data.phone
+      : `${random70to99()}********${random70to99()}`;
 
   return (
     <>
@@ -468,7 +472,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
               disabled={loading}
             >
-              <option value="">Select a template</option>
+              <option value="" className="text-gray-400">
+                Select a template
+              </option>
               <option value="create-new" className="font-bold text-blue-600">
                 + Create New Template
               </option>
