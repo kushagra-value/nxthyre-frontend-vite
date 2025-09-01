@@ -198,6 +198,12 @@ function MainApp() {
     setIsSearchMode(debouncedSearchQuery.trim() !== "");
   }, [debouncedSearchQuery]);
 
+  useEffect(() => {
+    if (activeCategoryId) {
+      fetchJobDetailsAndSetFilters(activeCategoryId);
+    }
+  }, [activeCategoryId]);
+
   const fetchCategories = async () => {
     setLoadingCategories(true);
     try {
@@ -431,6 +437,9 @@ function MainApp() {
             response = await candidateService.searchCandidates(filterParams);
             setCandidates(response.results);
             setTotalCount(response.count);
+            if (response.sourcing_counts) {
+              setSourcingCounts(response.sourcing_counts);
+            }
             if (response.results.length === 0) {
               setSelectedCandidate(null);
               showToast.error("No results found for the applied filters.");
@@ -438,6 +447,7 @@ function MainApp() {
               setSelectedCandidate(response.results[0]);
             }
           }
+
         }
       } catch (error) {
         showToast.error("Failed to fetch candidates");
@@ -496,9 +506,7 @@ function MainApp() {
   }, [
     activeTab,
     sortBy,
-    activeCategoryId,
     debouncedSearchQuery,
-    isAuthenticated,
     currentPage,
   ]);
 
