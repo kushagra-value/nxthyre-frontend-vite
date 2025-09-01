@@ -858,7 +858,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                             <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
                               {candidate.headline}
                               {collegeName && (
-                                <span className="text-[#4B5563]">
+                                <span>
                                   {" "}
                                   {"from"} {collegeName}
                                 </span>
@@ -868,7 +868,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                               <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-5 -left-2 w-max max-w-xs z-10">
                                 {candidate.headline}{" "}
                                 {collegeName && (
-                                  <span className="text-[#4B5563]">
+                                  <span>
                                     {" "}
                                     {"from"} {collegeName}
                                   </span>
