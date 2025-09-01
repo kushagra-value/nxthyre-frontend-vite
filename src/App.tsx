@@ -249,10 +249,15 @@ function MainApp() {
       try {
         let response;
         if (debouncedSearchQuery.trim() !== "") {
-          const candidates = await candidateService.universalSearch(
+          const response = await candidateService.universalSearch(
             debouncedSearchQuery,
             controller.signal
           );
+          console.log("Universal search response:", response);
+          console.log("Universal search results:", response.results);
+          const candidates = response.results.map((candidate: any) => ({
+            ...candidate,
+          }));
           setCandidates(candidates);
           setTotalCount(candidates.length);
           if (candidates.length > 0 && !selectedCandidate) {
