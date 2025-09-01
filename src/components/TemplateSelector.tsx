@@ -476,7 +476,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               key={selectedTemplate}
               value={selectedTemplate}
               onChange={(e) => handleTemplateSelect(e.target.value)}
-              className="text-sm text-gray-500 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+              className={`text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white ${
+                selectedTemplate === "" ? "text-gray-400" : "text-gray-700"
+              }`}
               disabled={loading}
             >
               <option value="" className="text-gray-400">
@@ -489,7 +491,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 <option
                   key={template.id}
                   value={template.id}
-                  className="hover:bg-blue-300"
+                  className="text-gray-700 hover:bg-blue-300"
                 >
                   {template.name}
                 </option>
