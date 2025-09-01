@@ -14,7 +14,7 @@ export interface CandidateListItem {
   experience_summary: {
     title: string;
     date_range: string;
-    duration_years:number;
+    duration_years: number;
   };
   education_summary: {
     title: string;
@@ -237,7 +237,7 @@ export interface CandidateDetailData {
 export interface ReferenceData {
   hr_name: string;
   hr_title: string;
-  is_data_correct: boolean
+  is_data_correct: boolean;
 }
 
 export interface ShareableProfileSensitiveCandidate {
@@ -425,7 +425,7 @@ class CandidateService {
       }
       const rawUrl = `/candidates/universal-search/?query=${encodeURIComponent(
         normalizedQuery
-      )}`;
+      )}&page=1`;
       const response = await apiClient.get(rawUrl, { signal });
       return response.data;
     } catch (error: any) {
@@ -439,11 +439,13 @@ class CandidateService {
     }
   }
 
-   async getCandidateReferences(candidateId: string): Promise<ReferenceData[]> {
+  async getCandidateReferences(candidateId: string): Promise<ReferenceData[]> {
     try {
-      const response = await apiClient.get(`/organization/candidates/reference/${candidateId}/`);
+      const response = await apiClient.get(
+        `/organization/candidates/reference/${candidateId}/`
+      );
       return response.data;
-    } catch (error:any){
+    } catch (error: any) {
       throw new Error(
         error.response?.data?.error || "Failed to fetch candidate references"
       );

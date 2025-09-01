@@ -1459,7 +1459,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
                 {isLoading
                   ? "Loading..."
                   : formData.allowInbound
-                  ? "Create & Publish"
+                  ? "Create Job"
                   : "Create"}
               </button>
 
