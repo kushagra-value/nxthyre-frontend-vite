@@ -518,6 +518,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({ isOpen, onClose, wo
     resetForm();
   };
   const handlePipelineButtonClick = () => {
+    handlePipelinesClick?.();
     setShowSuccessModal(false);
     onClose();
     resetForm();
