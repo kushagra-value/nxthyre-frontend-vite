@@ -756,7 +756,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             </p>
             <div className="flex mt-3 space-x-3">
               <div
-                className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer relative"
+                className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer relative hover:bg-blue-500 hover:text-white"
                 onMouseEnter={() => handleMouseEnter("email")}
                 onMouseLeave={handleMouseLeave}
               >
@@ -777,7 +777,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 )}
               </div>
               <div
-                className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer relative"
+                className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer relative hover:bg-blue-500 hover:text-white"
                 onMouseEnter={() => handleMouseEnter("phone")}
                 onMouseLeave={handleMouseLeave}
               >
@@ -798,7 +798,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 )}
               </div>
               <div
-                className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer relative"
+                className="w-6 h-6 bg-[#4B5563] rounded-full flex items-center justify-center cursor-pointer relative hover:bg-blue-500 hover:text-white"
                 onMouseEnter={() => handleMouseEnter("linkedin")}
                 onMouseLeave={handleMouseLeave}
               >
