@@ -688,7 +688,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   // The ReferenceCard component remains unchanged, as the mapped fields match the expected props
   // No modifications needed here, but included for context
-  const ReferenceCard = (reference: any) => {
+  const ReferenceCard = (reference: Reference) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showPopup, setShowPopup] = useState<
       "email" | "phone" | "linkedin" | null
