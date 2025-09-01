@@ -511,11 +511,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             placeholder="Type your subject"
             className="w-full rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          {/* Subject ka HTML preview */}
-          <div
-            className="mt-2 text-sm text-gray-800 bg-gray-100 p-2 rounded-lg"
-            dangerouslySetInnerHTML={{ __html: subject }}
-          />
         </div>
 
         {/* Body */}
@@ -546,11 +541,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 "redo",
               ],
             }}
-          />
-          {/* Body ka HTML preview */}
-          <div
-            className="mt-4 text-sm text-gray-800 bg-gray-100 p-4 rounded-lg border border-gray-300"
-            dangerouslySetInnerHTML={{ __html: body }}
           />
 
           <style>{`
