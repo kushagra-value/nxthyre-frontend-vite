@@ -301,7 +301,7 @@ class JobPostService {
       resumes.forEach((resume, index) => {
         formData.append("resumes", resume);
       });
-      const response = await apiClient.post("/api/candidates/upload-resumes/", formData, {
+      const response = await apiClient.post("/candidates/upload-resumes/", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
