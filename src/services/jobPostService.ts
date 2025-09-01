@@ -294,6 +294,41 @@ class JobPostService {
     }
   }
 
+  async uploadCandidates(formData: FormData): Promise<void> {
+    try {
+      const response = await apiClient.post(`/jobs/upload-resumes/`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to upload candidates");
+    }
+  }
+
+  async updateCutoff(jobId: number, stageType: string, cutoffScore: number): Promise<void> {
+    try {
+      const response = await apiClient.patch(`/jobs/update-cutoff/`, {
+        job_id: jobId,
+        stage_type: stageType,
+        cutoff_score: cutoffScore
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to update cutoff score");
+    }
+  }
+
+  async getCutOff(jobId: number, stageType: string): Promise<{ cutoff_score: number }> {
+    try {
+      const response = await apiClient.get(`/jobs/get-cutoff/?job_id=${jobId}&stage_type=${stageType}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to fetch cutoff score");
+    }
+  }
+
   async unpublishJob(id: number): Promise<void> {
     try {
       const response = await apiClient.post(
