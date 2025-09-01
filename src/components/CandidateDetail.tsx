@@ -643,14 +643,17 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           .getBackgroundVerifications(candidate.id)
           .then((data) => {
             const mappedReferences = data.map((item) => ({
-              initials: getInitials(item.hr_name),
-              name: item.hr_name,
-              position: `${item.hr_title} at ${item.experience.company}`,
+              initials: getInitials(item.hr_name || ""),
+              name: item.hr_name || "Unknown",
+              position:
+                item.hr_title && item.experience?.company
+                  ? `${item.hr_title} at ${item.experience.company}`
+                  : "Position not available",
               status: item.is_data_correct ? "positive" : "negative",
-              email: item.hr_email,
-              phone: item.hr_phone_number,
-              linkedin: item.hr_linkedin_url,
-              description: item.comments,
+              email: item.hr_email || "N/A",
+              phone: item.hr_phone_number || "N/A",
+              linkedin: item.hr_linkedin_url || "N/A",
+              description: item.comments || "No comments provided",
             }));
             setReferences(mappedReferences);
             setLoading(false);
@@ -663,11 +666,20 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     }, [candidate?.id]);
 
     if (loading) {
-      return <div>Loading references...</div>;
+      return (
+        <div className="text-center text-gray-500 mt-6">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-base font-medium">Loading references...</p>
+        </div>
+      );
     }
 
     if (error) {
-      return <div>{error}</div>;
+      return (
+        <div className="text-center text-gray-500 mt-6">
+          <p className="text-base font-medium">{error}</p>
+        </div>
+      );
     }
 
     return (
@@ -691,8 +703,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     );
   };
 
-  // The ReferenceCard component remains unchanged, as the mapped fields match the expected props
-  // No modifications needed here, but included for context
   const ReferenceCard: React.FC<ReferenceCardProps> = ({ reference }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showPopup, setShowPopup] = useState<
@@ -701,11 +711,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
     const truncateLength = 100;
     const truncatedDescription =
-      reference?.description?.length > truncateLength
-        ? reference?.description?.substring(0, truncateLength) + "..."
-        : reference?.description;
+      reference.description.length > truncateLength
+        ? reference.description.substring(0, truncateLength) + "..."
+        : reference.description;
 
-    const handleMouseEnter = (type: any) => {
+    const handleMouseEnter = (type: "email" | "phone" | "linkedin") => {
       setShowPopup(type);
     };
 
@@ -715,21 +725,21 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
     return (
       <div className="border-b border-gray-400 mb-4 pb-4">
-        <div className="">
+        <div>
           <div className="flex justify-between items-center w-full mb-2">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-full flex items-center justify-center text-[#4B5563] bg-[#DFFBE2]">
-                {reference?.initials}
+                {reference.initials}
               </div>
-              <div className="">
+              <div>
                 <h4 className="text-lg text-[#4B5563] font-semibold">
-                  {reference?.name}
+                  {reference.name}
                 </h4>
-                <p className="text-sm text-gray-600">{reference?.position}</p>
+                <p className="text-sm text-gray-600">{reference.position}</p>
               </div>
             </div>
             <div>
-              {reference?.status === "positive" ? (
+              {reference.status === "positive" ? (
                 <div className="flex items-center justify-center w-5 h-5 bg-green-500 rounded-full">
                   <ThumbsUp className="w-3 h-3 text-white" />
                 </div>
@@ -742,7 +752,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
           <div className="ml-[52px] flex-1">
             <p className="text-[#818283] text-sm leading-snug mt-2 mb-2">
-              {isExpanded ? reference?.description : truncatedDescription}
+              {isExpanded ? reference.description : truncatedDescription}
             </p>
             <div className="flex mt-3 space-x-3">
               <div
@@ -751,17 +761,17 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 onMouseLeave={handleMouseLeave}
               >
                 <Mail className="w-3 h-3 text-white" />
-                {showPopup === "email" && (
+                {showPopup === "email" && reference.email !== "N/A" && (
                   <div
                     className="absolute bottom-8 left-0 bg-blue-50 p-2 rounded-md shadow-md z-10"
-                    onMouseEnter={() => setShowPopup("email")} // Keep popup visible
-                    onMouseLeave={handleMouseLeave} // Allow it to hide when leaving popup
+                    onMouseEnter={() => setShowPopup("email")}
+                    onMouseLeave={handleMouseLeave}
                   >
                     <p
                       className="text-sm text-blue-700 select-text"
                       style={{ userSelect: "text" }}
                     >
-                      {reference?.email}
+                      {reference.email}
                     </p>
                   </div>
                 )}
@@ -772,17 +782,17 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 onMouseLeave={handleMouseLeave}
               >
                 <PhoneIcon className="w-3 h-3 text-white" />
-                {showPopup === "phone" && (
+                {showPopup === "phone" && reference.phone !== "N/A" && (
                   <div
                     className="absolute bottom-8 left-0 bg-blue-50 p-2 rounded-md shadow-md z-10"
-                    onMouseEnter={() => setShowPopup("phone")} // Keep popup visible
-                    onMouseLeave={handleMouseLeave} // Allow it to hide when leaving popup
+                    onMouseEnter={() => setShowPopup("phone")}
+                    onMouseLeave={handleMouseLeave}
                   >
                     <p
                       className="text-sm text-blue-700 select-text"
                       style={{ userSelect: "text" }}
                     >
-                      {reference?.phone}
+                      {reference.phone}
                     </p>
                   </div>
                 )}
@@ -793,23 +803,23 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 onMouseLeave={handleMouseLeave}
               >
                 <Linkedin className="w-3 h-3 text-white" />
-                {showPopup === "linkedin" && (
+                {showPopup === "linkedin" && reference.linkedin !== "N/A" && (
                   <div
                     className="absolute bottom-8 left-0 bg-blue-50 p-2 rounded-md shadow-md z-10"
-                    onMouseEnter={() => setShowPopup("linkedin")} // Keep popup visible
-                    onMouseLeave={handleMouseLeave} // Allow it to hide when leaving popup
+                    onMouseEnter={() => setShowPopup("linkedin")}
+                    onMouseLeave={handleMouseLeave}
                   >
                     <p
                       className="text-sm text-blue-700 select-text"
                       style={{ userSelect: "text" }}
                     >
-                      {reference?.linkedin}
+                      {reference.linkedin}
                     </p>
                   </div>
                 )}
               </div>
             </div>
-            {reference?.description?.length > truncateLength && (
+            {reference.description.length > truncateLength && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="text-blue-500 text-sm mt-2 flex items-center focus:outline-none"
