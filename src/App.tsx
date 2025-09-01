@@ -507,6 +507,8 @@ function MainApp() {
     activeTab,
     sortBy,
     debouncedSearchQuery,
+    activeCategoryId,
+    isAuthenticated, 
     currentPage,
   ]);
 
