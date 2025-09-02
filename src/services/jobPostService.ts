@@ -314,7 +314,7 @@ class JobPostService {
 
   async updateCutoff(jobId: number, stageType: string, cutoffScore: number): Promise<void> {
     try {
-      const response = await apiClient.patch(`/jobs/update-cutoff/`, {
+      const response = await apiClient.patch(`/jobs/cutoff-score/`, {
         job_id: jobId,
         stage_type: stageType,
         cutoff_score: cutoffScore
@@ -327,7 +327,7 @@ class JobPostService {
 
   async getCutOff(jobId: number, stageType: string): Promise<{ cutoff_score: number }> {
     try {
-      const response = await apiClient.get(`/jobs/get-cutoff/?job_id=${jobId}&stage_type=${stageType}`);
+      const response = await apiClient.get(`/jobs/cutoff-score/?job_id=${jobId}&stage_type=${stageType}`);
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to fetch cutoff score");

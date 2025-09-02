@@ -1762,6 +1762,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       setCutoffScore(value);
                                     }
                                   }}
+                                  maxLength={3}
                                   className="w-8 px-2 py-1 text-blue-500 bg-blue-50 border border-blue-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
                                   placeholder="75"
                                   aria-label="Cutoff score (0-100)"
@@ -1770,6 +1771,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   / 100
                                 </span>
                               </div>
+                              {(cutoffScore && (parseInt(cutoffScore) < 0 || parseInt(cutoffScore) > 100)) && (
+                                <p className="text-xs text-red-500 mt-1">Score must be between 0 and 100</p>
+                              )}
                               <button 
                                 onClick={handleCutoffUpdate}
                                 className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md text-sm"
