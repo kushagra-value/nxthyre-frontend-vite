@@ -509,6 +509,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       data.candidate.ai_interview_report
     );
 
+    const premiumData = candidateData.premium_data || {};
+
     return {
       id: data.id.toString(),
       candidateId: candidateData.id,
@@ -528,9 +530,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       notice_period_days: candidateData.notice_period_days,
       current_salary: candidateData.current_salary,
       application_type: candidateData.application_type,
-      total_experience: candidateData.total_experience,
-      email: candidateData.premium_data.email || "",
-      phone: candidateData.premium_data.phone || "",
+      total_experience: candidateData.total_experience,     
       positions: candidateData.experience.map((exp: any) => ({
         title: exp.job_title,
         companyName: exp.company,
@@ -599,15 +599,23 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       recommendations: { received: candidateData.recommendations, given: [] },
       
       notes: candidateData.notes,
+      email: premiumData.email || "",
+      phone: premiumData.phone || "",
       premium_data: {
-        email: candidateData.premium_data.email,
-        phone: candidateData.premium_data.phone,
-        linkedin_url: candidateData.premium_data.linkedin_url,
-        github_url: candidateData.premium_data.github_url,
-        twitter_url: candidateData.premium_data.twitter_url,
-        resume_url: candidateData.premium_data.resume_url,
-        portfolio_url: candidateData.premium_data.portfolio_url,
-      },
+        email: premiumData.email,
+        phone: premiumData.phone,
+        linkedin_url: premiumData.linkedin_url,
+        github_url: premiumData.github_url,
+        twitter_url: premiumData.twitter_url,
+        resume_url: premiumData.resume_url,
+        portfolio_url: premiumData.portfolio_url,
+        behance_username: premiumData.behance_username,
+        dribble_username: premiumData.dribbble_username,
+        instagram_username: premiumData.instagram_username,
+        pinterest_username: premiumData.pinterest_username,
+        resume_text: premiumData.resume_text,
+        all_phone_numbers: premiumData.all_phone_numbers || [],
+        all_emails: premiumData.all_emails || [],      },
       stageData: {
         [stageProperty]: mappedStageData,
       },
