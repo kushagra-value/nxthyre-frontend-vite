@@ -34,6 +34,7 @@ import {
   CheckCheck,
   UserRoundCheck,
 } from "lucide-react";
+import { PipelineCandidate } from "../../data/pipelineData";
 import candidateService from "../../services/candidateService";
 import { showToast } from "../../utils/toast";
 
@@ -88,201 +89,6 @@ interface Activity {
       via: string;
     }>;
   };
-}
-
-interface PipelineCandidate {
-  id: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  publicIdentifier: string;
-  headline: string;
-  summary: string;
-  profilePicture: { displayImageUrl: string; artifacts: any[] };
-  location: { country: string; city: string };
-  industry: string;
-  email: string;
-  phone: { type: string; number: string };
-  positions: Array<{
-    title: string;
-    companyName: string;
-    companyUrn: string;
-    startDate: { month: number; year: number };
-    endDate?: { month: number; year: number };
-    isCurrent: boolean;
-    location: string;
-    description: string;
-  }>;
-  educations: Array<{
-    schoolName: string;
-    degreeName: string;
-    fieldOfStudy: string;
-    startDate: { year: number };
-    endDate: { year: number };
-    activities: string;
-    description: string;
-    isTopTier?: boolean;
-  }>;
-  certifications: Array<{
-    name: string;
-    authority: string;
-    licenseNumber: string;
-    startDate: { month: number; year: number };
-    endDate?: { month: number; year: number };
-    url: string;
-  }>;
-  skills: Array<{ name: string; endorsementCount: number }>;
-  endorsements: Array<{
-    skill_endorsed: string;
-    endorser_name: string;
-    endorser_title: string;
-    endorser_company: string;
-    endorser_profile_pic_url: string;
-  }>;
-  recommendations: { received: any[]; given: any[] };
-  visibility: {
-    profile: "PUBLIC" | "CONNECTIONS" | "PRIVATE";
-    email: boolean;
-    phone: boolean;
-  };
-  connections: any[];
-  meta: {
-    fetchedAt: string;
-    dataCompleteness: "full" | "partial";
-    source: string;
-    scopesGranted: string[];
-  };
-  external_notes: Note[];
-  feedbackNotes: Array<{
-    subject: string;
-    comment: string;
-    author: string;
-    date: string;
-  }>;
-  candidateNotes: Array<{
-    comment: string;
-    author: string;
-    date: string;
-  }>;
-  stageData: {
-    uncontacted?: {
-      notes: string[];
-    };
-    invitesSent?: {
-      currentStatus: string;
-      notes: string[];
-      dateSent: string;
-      responseStatus: string;
-    };
-    applied?: {
-      appliedDate: string;
-      resumeScore: number;
-      skillsMatch: string;
-      experienceMatch: string;
-      highlights: string;
-      notes: string[];
-    };
-    aiInterview?: {
-      interviewedDate: string;
-      resumeScore: number;
-      knowledgeScore: number;
-      communicationScore: number;
-      integrityScore: number;
-      technicalScore: number;
-      proctoring: {
-        deviceUsage: number;
-        assistance: number;
-        referenceMaterial: number;
-        environment: number;
-      };
-      questions: string[];
-      notes: string[];
-      feedbacks: {
-        overallFeedback: string;
-        communicationFeedback: string;
-        resumeScoreReason: string;
-        developmentAreas: Array<string>;
-      };
-      technicalSkills: {
-        weakSkills: Array<{ skill: string; rating: number; reason: string }>;
-        strongSkills: Array<{ skill: string; rating: number; reason: string }>;
-        skillsCoverage: string;
-      };
-      potentialRedFlags: Array<string>;
-    };
-    shortlisted?: {
-      interviewedDate: string;
-      resumeScore: number;
-      knowledgeScore: number;
-      communicationScore: number;
-      integrityScore: number;
-      technicalScore: number;
-      proctoring: {
-        deviceUsage: number;
-        assistance: number;
-        referenceMaterial: number;
-        environment: number;
-      };
-      questions: string[];
-      notes: string[];
-    };
-    firstInterview?: {
-      followups: string[];
-      interviewNotes: string[];
-      interviewDate: string;
-      interviewerName: string;
-      interviewerEmail: string;
-    };
-    otherInterviews?: {
-      followups: string[];
-      interviewNotes: string[];
-      interviewDate: string;
-      interviewerName: string;
-      interviewerEmail: string;
-    };
-    hrRound?: {
-      followups: string[];
-      interviewNotes: string[];
-      interviewDate: string;
-      interviewerName: string;
-      interviewerEmail: string;
-    };
-    salaryNegotiation?: {
-      salary: string;
-      negotiation: string;
-      followups: string[];
-      interviewNotes: string[];
-      interviewDate: string;
-      interviewerName: string;
-      interviewerEmail: string;
-    };
-    offerSent?: {
-      offerAcceptanceStatus: string;
-      offerSentDate: string;
-      followups: string[];
-      interviewNotes: string[];
-      interviewerName: string;
-      interviewerEmail: string;
-    };
-    archived?: {
-      reason: string;
-      archivedDate: string;
-      notes: string[];
-    };
-  };
-  activities?: Activity[];
-  totalExperience?: number;
-  noticePeriodDays?: number;
-  currentSalary?: string;
-  githubUrl?: string;
-  twitterUrl?: string;
-  portfolioUrl?: string;
-  resumeUrl?: string;
-  linkedinUrl?: string;
-  isRecentlyPromoted?: boolean;
-  isBackgroundVerified?: boolean;
-  isPrevetted?: boolean;
-  applicationType?: string;
 }
 
 interface StageDetailsProps {
@@ -367,13 +173,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
     const fetchData = async () => {
       console.log(
         "Fetching assessment results for candidate:",
-        selectedCandidate?.publicIdentifier + " and jobId: " + jobId
+        selectedCandidate?.candidateId + " and jobId: " + jobId
       );
-      if (selectedCandidate?.publicIdentifier && jobId) {
+      if (selectedCandidate?.candidateId && jobId) {
         try {
           const data = await candidateService.getAssessmentResults(
             jobId,
-            selectedCandidate.publicIdentifier
+            selectedCandidate?.candidateId
           );
 
           // console.log("Assessment results data:", data);
@@ -397,14 +203,14 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       }
     };
     fetchData();
-  }, [selectedCandidate?.publicIdentifier, jobId]);
+  }, [selectedCandidate?.candidateId, jobId]);
 
   useEffect(() => {
     const fetchActivity = async () => {
       if (selectedCandidate?.id) {
         try {
           const apiActivities = await candidateService.getCandidateActivity(
-            selectedCandidate.publicIdentifier
+            selectedCandidate?.candidateId
           );
 
           const mappedActivities: Activity[] = apiActivities.map(
@@ -423,13 +229,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
               if (item.type === "stage_move") {
                 const d = item.data;
-                description = `${selectedCandidate.firstName} has been moved from ${d.from_stage_name} to ${d.to_stage_name}`;
+                description = `${selectedCandidate.fullName} has been moved from ${d.from_stage_name} to ${d.to_stage_name}`;
                 via = "system";
               }
 
               if (item.type === "communication_sent") {
                 const d = item.data;
-                description = `${selectedCandidate.firstName} sent you a message `;
+                description = `${selectedCandidate.fullName} sent you a message `;
                 via = d.mode.toLowerCase();
                 if (d.replies?.length > 0) {
                   note = d.replies
@@ -473,7 +279,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       }
     };
     fetchActivity();
-  }, [selectedCandidate?.publicIdentifier]);
+  }, [selectedCandidate?.candidateId]);
 
   const [isExpanded, setIsExpanded] = React.useState(false);
 
@@ -553,7 +359,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       try {
         setIsLoading(true);
         const fetchedNotes = await candidateService.getCandidateNotes(
-          selectedCandidate.publicIdentifier
+          selectedCandidate?.candidateId
         );
         setNotes(fetchedNotes);
       } catch (error) {
@@ -565,7 +371,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       }
     };
     fetchNotes();
-  }, [selectedCandidate.publicIdentifier]);
+  }, [selectedCandidate?.candidateId]);
 
   // Handle adding a new note
   const handleAddComment = async () => {
@@ -579,14 +385,14 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           : { communityNotes: newComment, is_community_note: true };
 
       await candidateService.postCandidateNote(
-        selectedCandidate.publicIdentifier,
+        selectedCandidate?.candidateId,
         payload
       );
       setNewComment("");
 
       // Refetch notes to update the UI
       const updatedNotes = await candidateService.getCandidateNotes(
-        selectedCandidate.publicIdentifier
+        selectedCandidate?.candidateId
       );
       setNotes(updatedNotes);
     } catch (error) {
@@ -614,14 +420,14 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           selectedCandidate.recommendations.received || [];
         return (
           <div className="bg-[#F5F9FB] py-4 px-2 rounded-xl space-y-6">
-            {selectedCandidate.summary && (
+            {selectedCandidate.profile_summary && (
               <div>
                 <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
                   <User className="w-4 h-4 mr-2 text-[#4B5563]" />
                   Profile Summary
                 </h3>
                 <p className="text-sm pl-6 text-[#818283]">
-                  {selectedCandidate.summary ||
+                  {selectedCandidate.profile_summary ||
                     selectedCandidate.headline ||
                     "No summary available"}
                 </p>
@@ -695,7 +501,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     >
                       <h4 className="text-sm font-medium text-[#4B5563]">
                         {edu.degreeName} in {edu.fieldOfStudy}
-                        {edu.isTopTier && (
+                        {edu.is_top_tier && (
                           <span className="ml-2 text-xs bg-blue-100 text-blue-800 rounded px-1">
                             Top Tier
                           </span>
@@ -826,60 +632,61 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 </div>
               </div>
             )}
-            {(selectedCandidate.totalExperience ||
-              selectedCandidate.noticePeriodDays ||
-              selectedCandidate.currentSalary ||
-              selectedCandidate.applicationType ||
-              selectedCandidate.isRecentlyPromoted ||
-              selectedCandidate.isBackgroundVerified ||
-              selectedCandidate.isPrevetted) && (
+            {(selectedCandidate.total_experience ||
+              selectedCandidate.notice_period_days ||
+              selectedCandidate.current_salary ||
+              selectedCandidate.application_type ||
+              selectedCandidate.is_recently_promoted ||
+              selectedCandidate.is_background_verified ||
+              selectedCandidate.is_prevetted) && (
               <div>
                 <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
                   <TrendingUp className="w-4 h-4 mr-2 text-[#4B5563]" />
                   Additional Info
                 </h3>
                 <div className="ml-6 space-y-1 text-sm text-[#818283]">
-                  {selectedCandidate.totalExperience && (
+                  {selectedCandidate.total_experience && (
                     <p>
-                      Total Experience: {selectedCandidate.totalExperience}{" "}
+                      Total Experience: {selectedCandidate.total_experience}{" "}
                       years
                     </p>
                   )}
-                  {selectedCandidate.noticePeriodDays && (
+                  {selectedCandidate.notice_period_days && (
                     <p>
-                      Notice Period: {selectedCandidate.noticePeriodDays} days
+                      Notice Period: {selectedCandidate.notice_period_days} days
                     </p>
                   )}
-                  {selectedCandidate.currentSalary && (
-                    <p>Current Salary: {selectedCandidate.currentSalary} LPA</p>
+                  {selectedCandidate.current_salary && (
+                    <p>Current Salary: {selectedCandidate.current_salary} LPA</p>
                   )}
-                  {selectedCandidate.applicationType && (
-                    <p>Application Type: {selectedCandidate.applicationType}</p>
+                  {selectedCandidate.application_type && (
+                    <p>Application Type: {selectedCandidate.application_type}</p>
                   )}
-                  {selectedCandidate.isRecentlyPromoted && (
+                  {selectedCandidate.is_recently_promoted && (
                     <p>Recently Promoted</p>
                   )}
-                  {selectedCandidate.isBackgroundVerified && (
+                  {selectedCandidate.is_background_verified && (
                     <p>Background Verified</p>
                   )}
-                  {selectedCandidate.isPrevetted && <p>Pre-vetted</p>}
+                  {selectedCandidate.is_prevetted && <p>Pre-vetted</p>}
                 </div>
               </div>
             )}
-            {(selectedCandidate.githubUrl ||
-              selectedCandidate.linkedinUrl ||
-              selectedCandidate.twitterUrl ||
-              selectedCandidate.portfolioUrl ||
-              selectedCandidate.resumeUrl) && (
+    
+            {(selectedCandidate?.premium_data_availability?.github_username ||
+              selectedCandidate?.premium_data_availability?.linkedin_url ||
+              selectedCandidate?.premium_data_availability?.twitter_username ||
+              selectedCandidate?.premium_data_availability?.portfolio_url ||
+              selectedCandidate?.premium_data_availability?.resume_url) && (
               <div>
                 <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
                   <Link className="w-4 h-4 mr-2 text-[#4B5563]" />
                   Links
                 </h3>
                 <div className="ml-6 space-y-1 text-sm">
-                  {selectedCandidate.linkedinUrl && (
+                  {selectedCandidate?.premium_data_availability?.linkedin_url && selectedCandidate?.premium_data?.linkedin_url && (
                     <a
-                      href={selectedCandidate.linkedinUrl}
+                      href={selectedCandidate?.premium_data?.linkedin_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[#0F47F2] flex items-center"
@@ -887,9 +694,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       <Linkedin className="w-4 h-4 mr-2" /> LinkedIn
                     </a>
                   )}
-                  {selectedCandidate.githubUrl && (
+                  {selectedCandidate?.premium_data_availability?.github_username && selectedCandidate?.premium_data?.github_url && (
                     <a
-                      href={selectedCandidate.githubUrl}
+                      href={selectedCandidate?.premium_data?.github_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[#0F47F2] flex items-center"
@@ -897,9 +704,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       <Github className="w-4 h-4 mr-2" /> GitHub
                     </a>
                   )}
-                  {selectedCandidate.twitterUrl && (
+                  {selectedCandidate?.premium_data_availability?.twitter_username && selectedCandidate?.premium_data?.twitter_url && (
                     <a
-                      href={selectedCandidate.twitterUrl}
+                      href={selectedCandidate?.premium_data?.twitter_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[#0F47F2] flex items-center"
@@ -907,9 +714,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       <Twitter className="w-4 h-4 mr-2" /> Twitter
                     </a>
                   )}
-                  {selectedCandidate.portfolioUrl && (
+                  {selectedCandidate?.premium_data_availability?.portfolio_url && selectedCandidate?.premium_data?.portfolio_url && (
                     <a
-                      href={selectedCandidate.portfolioUrl}
+                      href={selectedCandidate?.premium_data?.portfolio_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[#0F47F2] flex items-center"
@@ -917,9 +724,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       <Link className="w-4 h-4 mr-2" /> Portfolio
                     </a>
                   )}
-                  {selectedCandidate.resumeUrl && (
+                  {selectedCandidate?.premium_data_availability?.resume_url && selectedCandidate?.premium_data?.resume_url && (
                     <a
-                      href={selectedCandidate.resumeUrl}
+                      href={selectedCandidate?.premium_data?.resume_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[#0F47F2] flex items-center"
@@ -1705,14 +1512,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 }`}
               >
                 {tab}
-                {tab === "Activity" && (
-                  <span className="ml-1">
-                    ({(selectedCandidate?.activities?.length || 0) + 1})
-                  </span>
-                )}
                 {tab === "Notes" && (
                   <span className="ml-1">
-                    ({selectedCandidate?.candidateNotes?.length || 0})
+                    ({selectedCandidate?.notes?.length || 0})
                   </span>
                 )}
               </button>
