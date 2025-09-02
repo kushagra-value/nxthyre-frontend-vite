@@ -941,9 +941,12 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         <p className="text-[#A8A8A8] mr-[5px]">Notice Period</p>
                         <p className="text-[#4B5563]">
                           {candidate.notice_period_summary
-                            .slice(0, 1)
-                            .toUpperCase() +
-                            candidate.notice_period_summary.slice(1)}
+                            .split(" ")
+                            .map(
+                              (word) =>
+                                word.charAt(0).toUpperCase() + word.slice(1)
+                            )
+                            .join(" ")}
                         </p>
                       </div>
                     )}
