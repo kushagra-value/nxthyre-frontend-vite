@@ -102,27 +102,27 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const [revealLoading, setRevealLoading] = useState(false);
 
   const tabs = [
-  {
-    id: "outbound",
-    label: "Outbound",
-    count: activeTab === "outbound" ? totalCount : sourcingCounts.outbound,
-  },
-  {
-    id: "active",
-    label: "Active",
-    count: activeTab === "active" ? totalCount : sourcingCounts.active,
-  },
-  {
-    id: "inbound",
-    label: "Inbound",
-    count: activeTab === "inbound" ? totalCount : sourcingCounts.inbound,
-  },
-  {
-    id: "prevetted",
-    label: "Prevetted",
-    count: activeTab === "prevetted" ? totalCount : sourcingCounts.prevetted,
-  },
-];
+    {
+      id: "outbound",
+      label: "Outbound",
+      count: activeTab === "outbound" ? totalCount : sourcingCounts.outbound,
+    },
+    {
+      id: "active",
+      label: "Active",
+      count: activeTab === "active" ? totalCount : sourcingCounts.active,
+    },
+    {
+      id: "inbound",
+      label: "Inbound",
+      count: activeTab === "inbound" ? totalCount : sourcingCounts.inbound,
+    },
+    {
+      id: "prevetted",
+      label: "Prevetted",
+      count: activeTab === "prevetted" ? totalCount : sourcingCounts.prevetted,
+    },
+  ];
 
   const sortOptions = [
     { value: "", label: "Relevance" },
@@ -940,7 +940,13 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                       <div className="flex flex-col">
                         <p className="text-[#A8A8A8] mr-[5px]">Notice Period</p>
                         <p className="text-[#4B5563]">
-                          {candidate.notice_period_summary}
+                          {candidate.notice_period_summary
+                            .split(" ")
+                            .map(
+                              (word) =>
+                                word.charAt(0).toUpperCase() + word.slice(1)
+                            )
+                            .join(" ")}
                         </p>
                       </div>
                     )}

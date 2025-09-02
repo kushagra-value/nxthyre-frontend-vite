@@ -869,7 +869,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           >
             <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
               <GraduationCap className="w-4 h-4 mr-2 text-gray-500" />
-              Colleges
+              College Education
             </h3>
             {expandedSections.colleges ? (
               <ChevronUp className="w-4 h-4 text-gray-500" />
