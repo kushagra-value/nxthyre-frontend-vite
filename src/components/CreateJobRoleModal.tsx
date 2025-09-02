@@ -849,7 +849,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Skills <span className="text-red-500">*</span>
+                  Add Skills <span className="text-red-500">*</span>
                 </label>
                 <div className="border border-gray-300 rounded-lg px-4 pt-2 pb-2">
                   <input
@@ -1155,7 +1155,8 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
               <div className="grid grid-cols-12 gap-4">
                 <div className="col-span-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Enter Exp Range <span className="text-red-500">*</span>
+                    Enter Exp Range (In Years){" "}
+                    <span className="text-red-500">*</span>
                   </label>
                   <div className="flex space-x-2">
                     <input
@@ -1272,7 +1273,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
               <div>
                 <div className="flex items-center space-x-4 mb-3">
                   <span className="text-sm font-medium text-gray-700">
-                    Job Description <span className="text-red-500">*</span>
+                    Add Job Description <span className="text-red-500">*</span>
                   </span>
                   <div className="flex bg-gray-100 rounded-lg p-1">
                     <button
