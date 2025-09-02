@@ -266,8 +266,23 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     }
   };
 
+  // Add this state variable near the top with other state declarations
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    index: number | null;
+  }>({
+    isOpen: false,
+    index: null,
+  });
+
   const removeFollowUp = (index: number) => {
     setFollowUpTemplates(followUpTemplates.filter((_, i) => i !== index));
+    setDeleteConfirmation({ isOpen: false, index: null });
+  };
+
+  // Add this function to handle opening the confirmation modal:
+  const openDeleteConfirmation = (index: number) => {
+    setDeleteConfirmation({ isOpen: true, index });
   };
 
   const editFollowUp = (index: number) => {
@@ -817,7 +832,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                 <Edit className="w-4 h-4 text-gray-500" />
                               </button>
                               <button
-                                onClick={() => removeFollowUp(index)}
+                                onClick={() => openDeleteConfirmation(index)}
                                 className="p-1 text-gray-500 hover:text-gray-600"
                               >
                                 <Trash2 className="w-4 h-4 text-gray-500" />
@@ -1198,6 +1213,53 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                   Send Test
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmation.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Delete Follow Up
+              </h3>
+              <button
+                onClick={() =>
+                  setDeleteConfirmation({ isOpen: false, index: null })
+                }
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <X className="w-4 h-4 text-gray-500" />
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to delete this follow-up? This action cannot
+              be undone.
+            </p>
+
+            <div className="flex space-x-3 justify-end">
+              <button
+                onClick={() =>
+                  setDeleteConfirmation({ isOpen: false, index: null })
+                }
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (deleteConfirmation.index !== null) {
+                    removeFollowUp(deleteConfirmation.index);
+                  }
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>
