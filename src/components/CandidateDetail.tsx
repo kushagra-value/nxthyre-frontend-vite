@@ -286,10 +286,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
     return (
       <div className="relative bg-[#F0F0F0] p-3 rounded-lg">
-        <div
-          className={`overflow-hidden ${showMore ? "" : "min-h-[50vh]"}`}
-          style={{ transition: "max-height 0.3s ease" }}
-        >
+        <div>
           {detailedCandidate?.candidate?.profile_summary && (
             <div className="mb-4 border-b border-gray-200">
               <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] flex items-center">
@@ -301,7 +298,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               </p>
             </div>
           )}
-          <div>
+          <div
+            className={`overflow-hidden ${showMore ? "" : "min-h-[50vh]"}`}
+            style={{ transition: "max-height 0.3s ease" }}
+          >
             <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
               <Briefcase className="w-4 h-4 mr-2 text-[#4B5563]" />
               Experience
