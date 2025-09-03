@@ -143,8 +143,12 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const handleSendInviteClick = async () => {
-    setShowConfirm(true);
+  const handleSendInviteClick = () => {
+    if (selectedCandidate?.premium_data_unlocked) {
+      onSendInvite(Number(selectedCandidate.id));
+    } else {
+      setShowConfirm(true);
+    }
   };
 
   const confirmSpend = async () => {

@@ -1856,7 +1856,7 @@ const handleConfirmReveal = async () => {
                         return (
                           <div
                             key={candidate.id}
-                            className={`pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
+                            className={`relative pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
                               selectedCandidate?.id === candidate.id.toString()
                                 ? "bg-blue-50 border-l-4 border-blue-500"
                                 : "border border-gray-200"
@@ -1864,8 +1864,28 @@ const handleConfirmReveal = async () => {
                             onClick={() => handleCandidateSelect(candidate)}
                             tabIndex={0}
                             role="button"
-                            aria-label={`Select candidate ${candidate.full_name}`}
+                            aria-label={`Select candidate ${candidate.candidate.full_name}`}
                           >
+                            {candidate.candidate.premium_data_unlocked && (
+                              <button
+                                className="absolute top-0 left-0 z-10 "
+                                title="Information revealed"
+                              >
+                                <svg
+                                  width="21"
+                                  height="18"
+                                  viewBox="0 0 21 18"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className=""
+                                >
+                                  <path
+                                    d="M0.5 17.5L0.5 4.5C0.5 2.29086 2.29086 0.5 4.5 0.5L20.5 0.5L10.5 9L0.5 17.5Z"
+                                    fill="#3B82F6"
+                                  />
+                                </svg>
+                              </button>
+                            )}
                             <div className="flex px-4 items-center space-x-3">
                               <input
                                 type="checkbox"
