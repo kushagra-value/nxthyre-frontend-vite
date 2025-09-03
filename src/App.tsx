@@ -318,7 +318,7 @@ function MainApp() {
           const filterParams: any = {
             page,
             page_size: 20,
-            job_id: appliedFilters.jobId,
+            job_id: activeCategoryId,
             tab: appliedFilters.application_type,
             sort_by: sortBy,
           };
