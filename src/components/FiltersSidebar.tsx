@@ -664,7 +664,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               <input
                 type="text"
                 placeholder="Enter Location like Ahmedabad"
-                value={tempFilters.locations.join(", ")}
+                value={tempFilters.locations}
                 onChange={(e) => updateTempFilters("location", e.target.value)}
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
