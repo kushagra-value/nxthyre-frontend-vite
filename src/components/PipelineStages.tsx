@@ -37,7 +37,11 @@ import {
 import Header from "./Header";
 import { creditService } from "../services/creditService";
 import { useAuth } from "../hooks/useAuth";
-import { pipelineStages, pipelineCandidates, PipelineCandidate } from "../data/pipelineData";
+import {
+  pipelineStages,
+  pipelineCandidates,
+  PipelineCandidate,
+} from "../data/pipelineData";
 import { useAuthContext } from "../context/AuthContext";
 import apiClient from "../services/api";
 import { jobPostService } from "../services/jobPostService"; // Import jobPostService
@@ -536,7 +540,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       notice_period_days: candidateData.notice_period_days,
       current_salary: candidateData.current_salary,
       application_type: candidateData.application_type,
-      total_experience: candidateData.total_experience,     
+      total_experience: candidateData.total_experience,
       positions: candidateData.experience.map((exp: any) => ({
         title: exp.job_title,
         companyName: exp.company,
@@ -575,17 +579,17 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         authority: cert.authority,
         licenseNumber: cert.licenseNumber,
         startDate: cert.issued_date
-        ? {
-            month: new Date(cert.issued_date).getMonth() + 1,
-            year: new Date(cert.issued_date).getFullYear(),
-          }
-        : { month: 0, year: 0 },
-      endDate: cert.valid_until
-        ? {
-            month: new Date(cert.valid_until).getMonth() + 1,
-            year: new Date(cert.valid_until).getFullYear(),
-          }
-        : undefined,
+          ? {
+              month: new Date(cert.issued_date).getMonth() + 1,
+              year: new Date(cert.issued_date).getFullYear(),
+            }
+          : { month: 0, year: 0 },
+        endDate: cert.valid_until
+          ? {
+              month: new Date(cert.valid_until).getMonth() + 1,
+              year: new Date(cert.valid_until).getFullYear(),
+            }
+          : undefined,
         url: cert.url,
       })),
       skills: candidateData.skills_data.skills_mentioned.map((skill: any) => ({
@@ -593,17 +597,17 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         endorsementCount: skill.number_of_endorsements,
       })),
       endorsements: candidateData.skills_data.endorsements.map((end: any) => ({
-            endorser: {
-              id: "",
-              name: end.endorser_name,
-              headline: end.endorser_title,
-              profileImageUrl: end.endorser_profile_pic_url,
-            },
-            skill: end.skill_endorsed,
-            message: "",
-          })),
+        endorser: {
+          id: "",
+          name: end.endorser_name,
+          headline: end.endorser_title,
+          profileImageUrl: end.endorser_profile_pic_url,
+        },
+        skill: end.skill_endorsed,
+        message: "",
+      })),
       recommendations: { received: candidateData.recommendations, given: [] },
-      
+
       notes: candidateData.notes,
       email: premiumData.email || "",
       phone: premiumData.phone || "",
@@ -621,7 +625,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         pinterest_username: premiumData.pinterest_username,
         resume_text: premiumData.resume_text,
         all_phone_numbers: premiumData.all_phone_numbers || [],
-        all_emails: premiumData.all_emails || [],      },
+        all_emails: premiumData.all_emails || [],
+      },
       stageData: {
         [stageProperty]: mappedStageData,
       },
@@ -1933,7 +1938,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563] mt-1">
                                         <MapPin className=" w-4 h-4" />
 
-                                        {location.split(",")[0]}
+                                        {location}
                                       </p>
                                     </div>
                                   </div>
