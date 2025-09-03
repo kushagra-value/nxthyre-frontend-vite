@@ -285,85 +285,85 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const experiences = detailedCandidate?.candidate?.experience || [];
 
     return (
-      <div className="relative bg-[#F0F0F0] p-3 rounded-lg">
-        <div
-          className={`overflow-hidden ${showMore ? "" : "min-h-[50vh]"}`}
-          style={{ transition: "max-height 0.3s ease" }}
-        >
-          {detailedCandidate?.candidate?.profile_summary && (
-            <div className="mb-4 border-b border-gray-200">
-              <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] flex items-center">
-                <User className="w-4 h-4 mr-2 text-[#4B5563]" />
-                Profile Summary
-              </h3>
-              <p className="text-sm text-[#818283] leading-normal pt-2 pb-4 pl-6 pr-2 rounded-lg">
-                {detailedCandidate?.candidate?.profile_summary}
-              </p>
-            </div>
-          )}
-          <div>
-            <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
-              <Briefcase className="w-4 h-4 mr-2 text-[#4B5563]" />
-              Experience
+      <div className="bg-[#F0F0F0] p-3 rounded-lg relative">
+        {detailedCandidate?.candidate?.profile_summary && (
+          <div className="mb-4 border-b border-gray-200">
+            <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] flex items-center">
+              <User className="w-4 h-4 mr-2 text-[#4B5563]" />
+              Profile Summary
             </h3>
-            <div className="ml-2 relative">
-              <div
-                className={`${
+            <p className="text-sm text-[#818283] leading-normal pt-2 pb-4 pl-6 pr-2 rounded-lg">
+              {detailedCandidate?.candidate?.profile_summary}
+            </p>
+          </div>
+        )}
+
+        <div className="overflow-hidden">
+          <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
+            <Briefcase className="w-4 h-4 mr-2 text-[#4B5563]" />
+            Experience
+          </h3>
+          <div className="ml-2 relative">
+            <div
+              className={`relative ${
+                !showMore && experiences.length > 1 ? "overflow-hidden" : ""
+              }`}
+              style={{
+                maskImage:
                   !showMore && experiences.length > 1
-                    ? "max-h-[270px] overflow-hidden"
-                    : ""
-                }`}
-                style={{
-                  maskImage:
-                    !showMore && experiences.length > 1
-                      ? "linear-gradient(to bottom, black 60%, transparent 100%)"
-                      : "none",
-                  WebkitMaskImage:
-                    !showMore && experiences.length > 1
-                      ? "linear-gradient(to bottom, black 60%, transparent 100%)"
-                      : "none",
-                }}
-              >
-                {experiences.length > 0 ? (
-                  (showMore || experiences.length <= 1
-                    ? experiences
-                    : experiences.slice(0, 1)
-                  ).map((exp, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
+                    ? "linear-gradient(to bottom, black 96%, transparent 100%)"
+                    : "none",
+                WebkitMaskImage:
+                  !showMore && experiences.length > 1
+                    ? "linear-gradient(to bottom, black 96%, transparent 100%)"
+                    : "none",
+              }}
+            >
+              {experiences.length > 0 ? (
+                (showMore || experiences.length <= 1
+                  ? experiences
+                  : experiences.slice(0, 1)
+                ).map((exp, index) => (
+                  <div
+                    key={index}
+                    className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
+                  >
+                    <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5 bg-gray-200"></div>
+                    <h4 className="font-medium text-[#111827] text-sm">
+                      {exp?.job_title}
+                    </h4>
+                    <p className="text-sm text-gray-400">{`${exp?.company} | ${exp?.location}`}</p>
+                    <p className="text-sm text-gray-400">
+                      {exp?.start_date && (
+                        <span>
+                          {exp?.start_date} - {exp?.end_date || "Present"}
+                        </span>
+                      )}
+                    </p>
+                    <p
+                      className={`text-sm text-[#4B5563] mt-1 ${
+                        !showMore && experiences.length > 1
+                          ? "relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-12 after:bg-gradient-to-t after:from-[#F0F0F0] after:to-transparent"
+                          : ""
+                      }`}
                     >
-                      <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
-                      <h4 className="font-medium text-[#111827] text-sm">
-                        {exp?.job_title}
-                      </h4>
-                      <p className="text-sm text-gray-400">{`${exp?.company} | ${exp?.location}`}</p>
-                      <p className="text-sm text-gray-400">
-                        {exp?.start_date && (
-                          <span>
-                            {exp?.start_date} - {exp?.end_date || "Present"}
-                          </span>
-                        )}
-                      </p>
-                      <p className="text-sm text-[#4B5563] mt-1">
-                        {exp?.description}
-                      </p>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-500">
-                    No experience details available
-                  </p>
-                )}
-              </div>
+                      {exp?.description}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">
+                  No experience details available
+                </p>
+              )}
             </div>
           </div>
         </div>
         {experiences.length > 1 && !showMore && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 ml-6 flex space-x-1 items-center">
+          <div className="mt-1 ml-6 flex space-x-1 items-center">
             <button
               onClick={() => setShowMore(true)}
-              className="text-[#0F47F2] text-sm"
+              className="text-[#0F47F2] text-sm font-medium"
             >
               VIEW MORE
             </button>
@@ -507,71 +507,73 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
     return (
       <div className="bg-blue-50 p-4 rounded-lg shadow-sm space-y-4">
-        {(detailedCandidate?.candidate?.application_type === "prevetted" ||
-          detailedCandidate?.candidate?.is_prevetted) && (
-          // {/* Vetted Skills Subsection */}
-          <div>
-            <h4 className="text-lg font-semibold text-gray-700 flex items-center">
-              <Star className="w-4 h-4 mr-2" />
-              <span className="mr-2">Vetted Skills</span>
-              <div className="relative group">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-circle-alert-icon lucide-circle-alert text-gray-500"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" x2="12" y1="8" y2="12" />
-                  <line x1="12" x2="12.01" y1="16" y2="16" />
-                </svg>
-                <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs rounded-md px-2 py-1 -top-8 left-1/2 transform -translate-x-1/2 w-max max-w-xs z-10">
-                  Vetted skills: Abilities verified through assessments or
-                  reviews to ensure proficiency.
+        {detailedCandidate?.candidate?.application_type === "prevetted" &&
+          detailedCandidate?.candidate?.is_prevetted && (
+            // {/* Vetted Skills Subsection */}
+            <div>
+              <h4 className="text-lg font-semibold text-gray-700 flex items-center">
+                <Star className="w-4 h-4 mr-2" />
+                <span className="mr-2">Vetted Skills</span>
+                <div className="relative group mr-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="text-gray-700"
+                    strokeWidth="1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="lucide lucide-circle-alert-icon lucide-circle-alert text-gray-700 items-center"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" x2="12" y1="8" y2="12" />
+                    <line x1="12" x2="12.01" y1="16" y2="16" />
+                  </svg>
+                  <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs rounded-md px-2 py-1 -top-8 left-1/2 transform -translate-x-1/2 w-max max-w-xs z-10">
+                    Vetted skills: Abilities verified through assessments or
+                    reviews to ensure proficiency.
+                  </div>
                 </div>
+              </h4>
+              <div className="flex flex-wrap gap-3 mt-2">
+                {vettedSkills.map((skill, index) => (
+                  <div
+                    key={index}
+                    className="relative group bg-white rounded-md p-2 flex items-center justify-center space-x-2"
+                  >
+                    <span className="text-xs text-blue-500">{skill.skill}</span>
+                    <Star className="w-4 h-4 text-[#FFC107] fill-[#FFC107]" />
+                    <span className="text-xs text-[#4B5563]">
+                      {skill.rating}
+                    </span>
+                    {skill.reason && (
+                      <div className="absolute z-1000 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-white text-gray-600 text-xs rounded-md py-2 px-3 w-64 text-center">
+                        {skill.reason}
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent border-t-gray-600"></div>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            </h4>
-            <div className="flex flex-wrap gap-3 mt-2">
-              {vettedSkills.map((skill, index) => (
-                <div
-                  key={index}
-                  className="relative group bg-white rounded-md p-2 flex items-center justify-center space-x-2"
+              {!isVettedExpanded && vettedSkills.length > 6 && (
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsVettedExpanded(true);
+                  }}
+                  className="text-blue-500 text-sm mt-2 flex items-center"
                 >
-                  <span className="text-xs text-blue-500">{skill.skill}</span>
-                  <Star className="w-4 h-4 text-[#FFC107] fill-[#FFC107]" />
-                  <span className="text-xs text-[#4B5563]">{skill.rating}</span>
-                  {skill.reason && (
-                    <div className="absolute z-1000 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-white text-gray-600 text-xs rounded-md py-2 px-3 w-64 text-center">
-                      {skill.reason}
-                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent border-t-gray-600"></div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                  View More
+                  <span className="ml-1">
+                    <ChevronDown className="text-blue-500" />
+                  </span>
+                </a>
+              )}
             </div>
-            {!isVettedExpanded && vettedSkills.length > 6 && (
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setIsVettedExpanded(true);
-                }}
-                className="text-blue-500 text-sm mt-2 flex items-center"
-              >
-                View More
-                <span className="ml-1">
-                  <ChevronDown className="text-blue-500" />
-                </span>
-              </a>
-            )}
-          </div>
-        )}
+          )}
         {/* Resume Skills Subsection */}
         <div>
           <h4 className="text-lg font-semibold text-gray-700 flex items-center">

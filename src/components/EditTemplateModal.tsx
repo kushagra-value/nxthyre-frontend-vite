@@ -504,10 +504,7 @@ Best regards,
                                     <p>Will be sent around</p>
                                     <span className="pl-1"></span>
                                     <span>
-                                      {followUp.send_after_hours.replace(
-                                        "hrs",
-                                        ""
-                                      )}{" "}
+                                      {followUp.send_after_hours}
                                       hrs from now
                                     </span>
                                     <span className="pl-1"> </span>
