@@ -510,7 +510,11 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const applyFilters = async () => {
     try {
       // Apply the filters by calling the parent component's callback
-      await onApplyFilters(tempFilters);
+      const filtersForBackend = {
+        ...tempFilters,
+        keywords: tempFilters.keywords.join(", "), // Convert array to string for backend
+      };
+      await onApplyFilters(filtersForBackend);
 
       // Refetch recent searches to update the JobTitlesSlider
       // const searches = await candidateService.getRecentSearches();
