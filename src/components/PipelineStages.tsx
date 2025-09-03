@@ -43,6 +43,7 @@ import apiClient from "../services/api";
 import { jobPostService } from "../services/jobPostService"; // Import jobPostService
 import { showToast } from "../utils/toast";
 import PipelinesSideCard from "./PipelinePage/PipelinesSideCard";
+import { candidateService } from "../services/candidateService";
 
 // Define interfaces for API responses
 interface Stage {
@@ -143,7 +144,12 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"prospect" | "stage">("prospect"); // New state for view mode
-
+  const [showRevealDialog, setShowRevealDialog] = useState(false);
+  const [pendingReveal, setPendingReveal] = useState<{
+    candidateId: string;
+    onSuccess: (prem: any) => void;
+  } | null>(null);
+  const [revealLoading, setRevealLoading] = useState(false);
   // States for API data
   const [stages, setStages] = useState<Stage[]>([]);
   const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
@@ -166,6 +172,55 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const [suggestions, setSuggestions] = useState<
     { id: string; name: string }[]
   >([]);
+
+  const handleReveal = async (candidateId: string) => {
+  try {
+    const premResponse = await candidateService.revealPremiumData(candidateId);
+    const updated = candidates.map((c) =>
+      c.candidate.id === candidateId
+        ? {
+            ...c,
+            candidate: {
+              ...c.candidate,
+              premium_data_unlocked: true,
+              premium_data: premResponse.premium_data,
+              social_links: {
+                linkedin: premResponse.premium_data.linkedin_url,
+                github: premResponse.premium_data.github_url,
+                portfolio: premResponse.premium_data.portfolio_url,
+                resume: premResponse.premium_data.resume_url,
+              },
+            },
+          }
+        : c
+    );
+    setCandidates(updated);
+    if (selectedCandidate?.candidateId === candidateId) {
+      fetchCandidateDetails(updated.find((c) => c.candidate.id === candidateId)?.id || 0);
+    }
+    return premResponse.premium_data;
+  } catch (error) {
+    console.error("Error revealing premium data:", error);
+    showToast.error("Failed to reveal premium data");
+    throw error;
+  }
+};
+
+const handleConfirmReveal = async () => {
+  if (!pendingReveal) return;
+  setRevealLoading(true);
+  try {
+    const prem = await handleReveal(pendingReveal.candidateId);
+    await deductCredits();
+    pendingReveal.onSuccess(prem);
+  } catch (e) {
+    // Error already handled in handleReveal
+  } finally {
+    setShowRevealDialog(false);
+    setPendingReveal(null);
+    setRevealLoading(false);
+  }
+};
 
   // Fetch categories when component mounts
   useEffect(() => {
@@ -603,10 +658,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             message: "",
           })),
       recommendations: { received: candidateData.recommendations, given: [] },
-      
       notes: candidateData.notes,
       email: premiumData.email || "",
       phone: premiumData.phone || "",
+      premium_data_unlocked: candidateData.premium_data_unlocked,
+      premium_data_availability: candidateData.premium_data_availability,
       premium_data: {
         email: premiumData.email,
         phone: premiumData.phone,
@@ -1779,12 +1835,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   <>
                     <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
                       {currentCandidates.map((candidate: any) => {
-                        const isSearched = "current_stage" in candidate;
                         const fullName = candidate.candidate.full_name;
                         const avatar = candidate.candidate.avatar;
-                        const headline = candidate.candidate.headline;
                         const location = candidate.candidate.location;
-                        const linkedinUrl = candidate.candidate.linkedin_url;
                         const isBackgroundVerified =
                           candidate.candidate.is_background_verified;
                         const experienceYears =
@@ -1797,16 +1850,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           candidate.candidate.education_summary?.title;
                         const noticePeriodSummary =
                           candidate.candidate.notice_period_summary;
-                        const skillsList = candidate.candidate.skills_list;
-                        const socialLinks = {
-                          linkedin: linkedinUrl,
-                          github: candidate.candidate.social_links?.github,
-                          portfolio:
-                            candidate.candidate.social_links?.portfolio,
-                          resume: candidate.candidate.social_links?.resume,
-                        };
                         const currentSalary =
                           candidate.candidate.current_salary_lpa;
+
                         return (
                           <div
                             key={candidate.id}
@@ -2012,68 +2058,124 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             </div>
                             <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
                               <div className="flex items-center space-x-1">
-                                {socialLinks.github && (
-                                  <button
-                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                                    onClick={() =>
-                                      window.open(socialLinks.github, "_blank")
-                                    }
-                                    aria-label={`View ${fullName}'s GitHub profile`}
-                                  >
-                                    <Github className="w-4 h-4" />
-                                  </button>
+                                {candidate.candidate.premium_data_availability?.github_username && (
+                                  (() => {
+                                    const url = candidate.candidate.premium_data_unlocked ? candidate.candidate.social_links.github : null;
+                                    return (
+                                      <button
+                                        className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (url) {
+                                            window.open(url, "_blank");
+                                          } else {
+                                            setPendingReveal({
+                                              candidateId: candidate.candidate.id,
+                                              onSuccess: (prem) => {
+                                                const finalUrl = prem.github_url;
+                                                if (finalUrl) window.open(finalUrl, "_blank");
+                                              },
+                                            });
+                                            setShowRevealDialog(true);
+                                          }
+                                        }}
+                                        aria-label={`View ${candidate.candidate.full_name}'s GitHub profile`}
+                                      >
+                                        <Github className="w-4 h-4" />
+                                      </button>
+                                    );
+                                  })()
                                 )}
-                                {socialLinks.linkedin && (
-                                  <button
-                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                                    onClick={() =>
-                                      window.open(
-                                        socialLinks.linkedin?.linkedin,
-                                        "_blank"
-                                      )
-                                    }
-                                    aria-label={`View ${fullName}'s LinkedIn profile`}
-                                  >
-                                    <Linkedin className="w-4 h-4" />
-                                  </button>
+                                {candidate.candidate.premium_data_availability?.linkedin_url && (
+                                  (() => {
+                                    const url = candidate.candidate.premium_data_unlocked ? candidate.candidate.social_links.linkedin : null;
+                                    return (
+                                      <button
+                                        className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (url) {
+                                            window.open(url, "_blank");
+                                          } else {
+                                            setPendingReveal({
+                                              candidateId: candidate.candidate.id,
+                                              onSuccess: (prem) => {
+                                                const finalUrl = prem.linkedin_url;
+                                                if (finalUrl) window.open(finalUrl, "_blank");
+                                              },
+                                            });
+                                            setShowRevealDialog(true);
+                                          }
+                                        }}
+                                        aria-label={`View ${candidate.candidate.full_name}'s LinkedIn profile`}
+                                      >
+                                        <Linkedin className="w-4 h-4" />
+                                      </button>
+                                    );
+                                  })()
                                 )}
-                                {socialLinks.resume && (
-                                  <button
-                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                                    onClick={() =>
-                                      window.open(socialLinks.resume, "_blank")
-                                    }
-                                    aria-label={`View ${fullName}'s resume`}
-                                  >
-                                    <File className="w-4 h-4" />
-                                  </button>
+                                {candidate.candidate.premium_data_availability?.resume_url && (
+                                  (() => {
+                                    const url = candidate.candidate.premium_data_unlocked ? candidate.candidate.social_links.resume : null;
+                                    return (
+                                      <button
+                                        className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (url) {
+                                            window.open(url, "_blank");
+                                          } else {
+                                            setPendingReveal({
+                                              candidateId: candidate.candidate.id,
+                                              onSuccess: (prem) => {
+                                                const finalUrl = prem.resume_url;
+                                                if (finalUrl) window.open(finalUrl, "_blank");
+                                              },
+                                            });
+                                            setShowRevealDialog(true);
+                                          }
+                                        }}
+                                        aria-label={`View ${candidate.candidate.full_name}'s resume`}
+                                      >
+                                        <File className="w-4 h-4" />
+                                      </button>
+                                    );
+                                  })()
                                 )}
-                                {socialLinks.portfolio && (
-                                  <button
-                                    className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                                    onClick={() =>
-                                      window.open(
-                                        socialLinks.portfolio,
-                                        "_blank"
-                                      )
-                                    }
-                                    aria-label={`View ${fullName}'s portfolio`}
-                                  >
-                                    <Link className="w-4 h-4" />
-                                  </button>
+                                {candidate.candidate.premium_data_availability?.portfolio_url && (
+                                  (() => {
+                                    const url = candidate.candidate.premium_data_unlocked ? candidate.candidate.social_links.portfolio : null;
+                                    return (
+                                      <button
+                                        className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (url) {
+                                            window.open(url, "_blank");
+                                          } else {
+                                            setPendingReveal({
+                                              candidateId: candidate.candidate.id,
+                                              onSuccess: (prem) => {
+                                                const finalUrl = prem.portfolio_url;
+                                                if (finalUrl) window.open(finalUrl, "_blank");
+                                              },
+                                            });
+                                            setShowRevealDialog(true);
+                                          }
+                                        }}
+                                        aria-label={`View ${candidate.candidate.full_name}'s portfolio`}
+                                      >
+                                        <Link className="w-4 h-4" />
+                                      </button>
+                                    );
+                                  })()
                                 )}
                               </div>
                               <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
                                 <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400]">
                                   {candidate.status_tags.map(
-                                    (
-                                      tag: { text: string; color: string },
-                                      idx: number
-                                    ) => (
-                                      <span
-                                        key={idx}
-                                        className={`text-${tag.color}-500`}
-                                      >
+                                    (tag: { text: string; color: string }, idx: number) => (
+                                      <span key={idx} className={`text-${tag.color}-500`}>
                                         {tag.text}
                                       </span>
                                     )
@@ -2111,6 +2213,46 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           </div>
         </div>
       </div>
+      {showRevealDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Reveal Premium Data
+            </h3>
+            <p className="text-sm text-gray-600 mt-2">
+              Your credits will be deducted. Confirm?
+            </p>
+            <div className="mt-4 flex justify-end space-x-2">
+              <button
+                className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                onClick={() => {
+                  setShowRevealDialog(false);
+                  setPendingReveal(null);
+                }}
+                disabled={revealLoading}
+                aria-label="Cancel reveal"
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                onClick={handleConfirmReveal}
+                disabled={revealLoading}
+                aria-label="Confirm reveal"
+              >
+                {revealLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Revealing...
+                  </>
+                ) : (
+                  "Confirm"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {showUploadModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
