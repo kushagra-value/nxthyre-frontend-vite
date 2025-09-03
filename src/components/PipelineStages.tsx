@@ -725,7 +725,6 @@ const handleConfirmReveal = async () => {
 
   const handleAddComment = () => {
     if (newComment.trim()) {
-      console.log("Adding comment:", newComment, "by user:", user?.fullName);
       setNewComment("");
     }
   };
@@ -1251,11 +1250,6 @@ const handleConfirmReveal = async () => {
       }
     }
   };
-
-  console.log(
-    "Transferred stage data PipelineStages :::::::::::::::::::: ",
-    selectedCandidate?.stageData
-  );
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -2005,7 +1999,7 @@ const handleConfirmReveal = async () => {
                                       <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563] mt-1">
                                         <MapPin className=" w-4 h-4" />
 
-                                        {location}
+                                        {location.split(",")[0]}
                                       </p>
                                     </div>
                                   </div>

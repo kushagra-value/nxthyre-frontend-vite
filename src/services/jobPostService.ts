@@ -4,7 +4,7 @@ import apiClient from "./api";
 export interface Job {
   id: number;
   title: string;
-  location: string;
+  location: string[];
   is_hybrid?: boolean;
   seniority: string;
   department_name: string;
@@ -31,7 +31,8 @@ export interface Job {
   created_at: string;
   updated_at: string;
   total_candidates: number;
-  invites_sent_count: number;
+  inbound_count: number;
+  invites_sent: number;
   total_applied: number;
   total_replied: number;
   job_description_markdown: string;
@@ -301,36 +302,55 @@ class JobPostService {
       resumes.forEach((resume, index) => {
         formData.append("resumes", resume);
       });
-      const response = await apiClient.post("/candidates/upload-resumes/", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await apiClient.post(
+        "/candidates/upload-resumes/",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to upload resumes");
+      throw new Error(
+        error.response?.data?.error || "Failed to upload resumes"
+      );
     }
   }
 
-  async updateCutoff(jobId: number, stageType: string, cutoffScore: number): Promise<void> {
+  async updateCutoff(
+    jobId: number,
+    stageType: string,
+    cutoffScore: number
+  ): Promise<void> {
     try {
       const response = await apiClient.patch(`/jobs/cutoff-score/`, {
         job_id: jobId,
         stage_type: stageType,
-        cutoff_score: cutoffScore
+        cutoff_score: cutoffScore,
       });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to update cutoff score");
+      throw new Error(
+        error.response?.data?.error || "Failed to update cutoff score"
+      );
     }
   }
 
-  async getCutOff(jobId: number, stageType: string): Promise<{ cutoff_score: number }> {
+  async getCutOff(
+    jobId: number,
+    stageType: string
+  ): Promise<{ cutoff_score: number }> {
     try {
-      const response = await apiClient.get(`/jobs/cutoff-score/?job_id=${jobId}&stage_type=${stageType}`);
+      const response = await apiClient.get(
+        `/jobs/cutoff-score/?job_id=${jobId}&stage_type=${stageType}`
+      );
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch cutoff score");
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch cutoff score"
+      );
     }
   }
 
@@ -385,41 +405,42 @@ class JobPostService {
     }
   }
 
-  async applyToJob(jobId: number, applicationData: {
-    name: string;
-    title: string;
-    mailId: string;
-    contactNumber: string;
-    currentCTA: string;
-    expectedCTA: string;
-    noticePeriod: string;
-    resume: File;
-  }): Promise<any> {
+  async applyToJob(
+    jobId: number,
+    applicationData: {
+      name: string;
+      title: string;
+      mailId: string;
+      contactNumber: string;
+      currentCTA: string;
+      expectedCTA: string;
+      noticePeriod: string;
+      resume: File;
+    }
+  ): Promise<any> {
     try {
       const formData = new FormData();
-      formData.append('name', applicationData.name);
-      formData.append('title', applicationData.title);
-      formData.append('email', applicationData.mailId);
-      formData.append('contact_number', applicationData.contactNumber);
-      formData.append('current_cta', applicationData.currentCTA);
-      formData.append('expected_cta', applicationData.expectedCTA);
-      formData.append('notice_period', applicationData.noticePeriod);
-      formData.append('resume', applicationData.resume);
+      formData.append("name", applicationData.name);
+      formData.append("title", applicationData.title);
+      formData.append("email", applicationData.mailId);
+      formData.append("contact_number", applicationData.contactNumber);
+      formData.append("current_cta", applicationData.currentCTA);
+      formData.append("expected_cta", applicationData.expectedCTA);
+      formData.append("notice_period", applicationData.noticePeriod);
+      formData.append("resume", applicationData.resume);
 
       const response = await apiClient.post(`/jobs/${jobId}/apply/`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
       });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Failed to apply to job');
+      throw new Error(error.response?.data?.error || "Failed to apply to job");
     }
   }
 
-  async getAIJD(
-    jobId: number
-  ): Promise<{
+  async getAIJD(jobId: number): Promise<{
     job_description_markdown: string;
     technical_competencies: Array<{
       skill: string;

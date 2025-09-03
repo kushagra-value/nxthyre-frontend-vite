@@ -37,7 +37,6 @@ interface FiltersSidebarProps {
     maxTotalExp: string;
     city: string;
     country: string;
-    location: string;
     locations: string[];
     noticePeriod: string;
     companies: string;
@@ -268,7 +267,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       setIsLocationManuallyEdited(key === "location");
       const newCity = key === "city" ? value : tempFilters.city;
       const newCountry = key === "country" ? value : tempFilters.country;
-      const newLocation = key === "location" ? value : tempFilters.location;
+      const newLocation = key === "location" ? value : tempFilters.locations;
 
       // Construct locations array
       const locations = [];
@@ -287,8 +286,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         ...newFilters,
         city: newCity,
         country: newCountry,
-        location: newLocation,
-        locations, // Add locations array to filters for use in API call
+        locations: newLocation,
       };
     }
 
@@ -405,7 +403,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       maxTotalExp: "",
       city: "",
       country: "",
-      location: "",
       locations: [],
       noticePeriod: "",
       companies: "",
@@ -667,14 +664,14 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               <input
                 type="text"
                 placeholder="Enter Location like Ahmedabad"
-                value={tempFilters.location}
+                value={tempFilters.locations}
                 onChange={(e) => updateTempFilters("location", e.target.value)}
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
 
               {tempFilters.locations.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {tempFilters.locations.map((location, index) => (
+                  {tempFilters?.locations?.map((location, index) => (
                     <div
                       key={index}
                       className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200"

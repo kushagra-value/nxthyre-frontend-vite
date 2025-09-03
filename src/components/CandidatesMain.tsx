@@ -328,9 +328,6 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       const response: ExportCandidateResponse =
         await candidateService.exportCandidates(selectedCandidates);
 
-      // Log the response to inspect its structure
-      console.log("API Response:", response);
-
       if (typeof response !== "string") {
         throw new Error("Invalid response format: Expected a CSV string");
       }
@@ -724,7 +721,6 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
               collegeName = toTitleCase(collegeName);
 
-              console.log(collegeName);
               return (
                 <div
                   key={candidate.id}
