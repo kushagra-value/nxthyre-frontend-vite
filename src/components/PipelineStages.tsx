@@ -1938,7 +1938,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563] mt-1">
                                         <MapPin className=" w-4 h-4" />
 
-                                        {location}
+                                        {location.split(",")[0]}
                                       </p>
                                     </div>
                                   </div>

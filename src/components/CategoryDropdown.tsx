@@ -83,7 +83,7 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
           count: job.inbound_count || 0,
           status: job.status,
           visibility: job.visibility,
-          invitesSent: job.invites_sent_count || 0,
+          invitesSent: job.invites_sent || 0,
           totalReplied: job.total_replied || 0,
           totalApplied: job.total_applied || 0,
         }));

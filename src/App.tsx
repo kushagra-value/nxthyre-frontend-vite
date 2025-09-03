@@ -51,6 +51,9 @@ interface Category {
   count: number;
   status: "DRAFT" | "PUBLISHED";
   visibility: "PRIVATE" | "PUBLIC";
+  invites_sent: number;
+  total_replied: number;
+  total_applied: number;
 }
 
 interface Filters {
@@ -65,7 +68,6 @@ interface Filters {
   maxTotalExp: string;
   city: string;
   country: string;
-  location: string;
   locations: string[];
   noticePeriod: string;
   companies: string;
@@ -168,7 +170,6 @@ function MainApp() {
     maxTotalExp: "",
     city: "",
     country: "",
-    location: "",
     locations: [],
     noticePeriod: "",
     companies: "",
@@ -214,6 +215,9 @@ function MainApp() {
         count: job.inbound_count || 0,
         status: job.status,
         visibility: job.visibility,
+        invites_sent: job.invites_sent || 0,
+        total_applied: job.total_applied || 0,
+        total_replied: job.total_replied || 0,
       }));
       setCategories(mappedCategories);
       if (mappedCategories.length > 0) {
@@ -241,8 +245,7 @@ function MainApp() {
         maxTotalExp: job.experience_max_years
           ? job.experience_max_years.toString()
           : "",
-        location: job.location || "",
-        locations: job.location ? [job.location].filter(Boolean) : [],
+        locations: job.location ? job.location.filter(Boolean) : [],
         application_type: activeTab,
         sort_by: sortBy,
       };
@@ -287,7 +290,6 @@ function MainApp() {
             maxTotalExp: "",
             city: "",
             country: "",
-            location: "",
             locations: [],
             noticePeriod: "",
             companies: "",
@@ -617,7 +619,6 @@ function MainApp() {
         maxTotalExp: "",
         city: "",
         country: "",
-        location: "",
         locations: [],
         noticePeriod: "",
         companies: "",
