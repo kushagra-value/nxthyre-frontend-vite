@@ -2070,7 +2070,7 @@ const handleConfirmReveal = async () => {
                                             window.open(url, "_blank");
                                           } else {
                                             setPendingReveal({
-                                              candidateId: candidate.id,
+                                              candidateId: candidate.candidate.id,
                                               onSuccess: (prem) => {
                                                 const finalUrl = prem.premium_data.github_url;
                                                 if (finalUrl) window.open(finalUrl, "_blank");
@@ -2113,8 +2113,8 @@ const handleConfirmReveal = async () => {
                                     const url = candidate.candidate.premium_data_unlocked ? candidate.premium_data?.linkedin_url : null;
                                     return (
                                       <button
-                                        className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                                        onClick={(e) => {
+                                        className="text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                        onClick={async (e) => {
                                           e.stopPropagation();
                                           if (url) {
                                             window.open(url, "_blank");
