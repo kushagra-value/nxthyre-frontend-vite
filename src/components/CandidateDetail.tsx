@@ -299,7 +299,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             </div>
           )}
           <div
-            className={`overflow-hidden ${showMore ? "" : "min-h-[50vh]"}`}
+            className={`overflow-hidden ${showMore ? "" : "min-h-[30vh]"}`}
             style={{ transition: "max-height 0.3s ease" }}
           >
             <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
@@ -309,7 +309,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             <div className="ml-2 relative">
               <div
                 className={`${
-                  !showMore && experiences.length > 1 ? "overflow-hidden" : ""
+                  !showMore && experiences.length > 1
+                    ? "max-h-[50vh] overflow-hidden"
+                    : ""
                 }`}
                 style={{
                   maskImage:
