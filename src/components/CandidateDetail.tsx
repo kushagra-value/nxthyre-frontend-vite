@@ -311,11 +311,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               style={{
                 maskImage:
                   !showMore && experiences.length > 1
-                    ? "linear-gradient(to bottom, black 80%, transparent 100%)"
+                    ? "linear-gradient(to bottom, black 96%, transparent 100%)"
                     : "none",
                 WebkitMaskImage:
                   !showMore && experiences.length > 1
-                    ? "linear-gradient(to bottom, black 80%, transparent 100%)"
+                    ? "linear-gradient(to bottom, black 96%, transparent 100%)"
                     : "none",
               }}
             >
@@ -360,7 +360,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
         </div>
         {experiences.length > 1 && !showMore && (
-          <div className="mt-2 ml-6 flex space-x-1 items-center">
+          <div className="mt-1 ml-6 flex space-x-1 items-center">
             <button
               onClick={() => setShowMore(true)}
               className="text-[#0F47F2] text-sm font-medium"
