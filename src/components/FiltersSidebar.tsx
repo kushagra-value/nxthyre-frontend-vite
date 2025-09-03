@@ -267,7 +267,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       setIsLocationManuallyEdited(key === "location");
       const newCity = key === "city" ? value : tempFilters.city;
       const newCountry = key === "country" ? value : tempFilters.country;
-      const newLocation = key === "location" ? value : tempFilters.locations;
+      const newLocation =
+        key === "location" ? value : tempFilters.locations.join(", ");
 
       // Construct locations array
       const locations = [];
@@ -279,6 +280,11 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           .split(",")
           .map((loc: string) => loc.trim())
           .filter((loc: string) => loc && loc !== newCity); // Avoid duplicating city
+
+        if (manualLocations.length === 0 && key === "location") {
+          locations.push(newLocation); // Handle single location without comma
+        }
+
         locations.push(...manualLocations);
       }
 
@@ -286,7 +292,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         ...newFilters,
         city: newCity,
         country: newCountry,
-        locations: newLocation,
+        locations: locations,
       };
     }
 
@@ -381,10 +387,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     const updatedLocations = tempFilters.locations.filter(
       (loc) => loc !== locationToRemove
     );
-    const updatedLocationString = updatedLocations.join(", ");
 
     updateTempFilters("locations", updatedLocations);
-    updateTempFilters("location", updatedLocationString);
   };
 
   const resetFilters = () => {
@@ -664,27 +668,32 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               <input
                 type="text"
                 placeholder="Enter Location like Ahmedabad"
-                value={tempFilters.locations}
+                value={
+                  Array.isArray(tempFilters.locations)
+                    ? tempFilters.locations.join(", ")
+                    : ""
+                }
                 onChange={(e) => updateTempFilters("location", e.target.value)}
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
 
-              {tempFilters.locations.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {tempFilters?.locations?.map((location, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200"
-                    >
-                      <X
-                        className="w-3 h-3 text-gray-400 mr-1 cursor-pointer hover:text-gray-600"
-                        onClick={() => removeLocationTag(location)}
-                      />
-                      <span>{location}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {Array.isArray(tempFilters.locations) &&
+                tempFilters.locations.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {tempFilters.locations.map((location, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200"
+                      >
+                        <X
+                          className="w-3 h-3 text-gray-400 mr-1 cursor-pointer hover:text-gray-600"
+                          onClick={() => removeLocationTag(location)}
+                        />
+                        <span>{location}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
             </div>
           )}
         </div>
