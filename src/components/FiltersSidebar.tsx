@@ -26,7 +26,7 @@ import { showToast } from "../utils/toast";
 
 interface FiltersSidebarProps {
   filters: {
-    keywords: string;
+    keywords: string[];
     booleanSearch: boolean;
     semanticSearch: boolean;
     selectedCategories: string[];
@@ -197,28 +197,88 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   >([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestionsRef = useRef<HTMLDivElement>(null);
-  const [tempFilters, setTempFilters] = useState(filters);
+  const [tempFilters, setTempFilters] = useState({
+    ...filters,
+    keywords: Array.isArray(filters.keywords) ? filters.keywords : [],
+  });
+
+  const [currentKeyword, setCurrentKeyword] = useState<string>("");
+  const [countriesList, setCountriesList] = useState<string[]>([]);
+  const [citiesList, setCitiesList] = useState<string[]>([]);
+  const [cityToCountryMap, setCityToCountryMap] = useState<
+    Record<string, string>
+  >({}); 
 
   useEffect(() => {
-    setTempFilters(filters);
+    // Ensure keywords is always an array when filters change
+    setTempFilters({
+      ...filters,
+      keywords: Array.isArray(filters.keywords) ? filters.keywords : [],
+    });
   }, [filters]);
+
+   useEffect(() => {
+    fetch("https://countriesnow.space/api/v0.1/countries")
+      .then((res) => res.json())
+      .then((data) => {
+        const countries = data.data
+          .map((c: any) => c.country)
+          .sort((a: string, b: string) => a.localeCompare(b));
+        setCountriesList(countries);
+
+        // Create city-to-country mapping
+        const mapping: Record<string, string> = {};
+        data.data.forEach((c: any) => {
+          c.cities.forEach((city: string) => {
+            mapping[city] = c.country;
+          });
+        });
+        setCityToCountryMap(mapping);
+      })
+      .catch((error) => {
+        console.error("Error fetching countries and cities:", error);
+      });
+  }, []);
+
+  // Fetch cities when country changes
+  useEffect(() => {
+    if (tempFilters.country) {
+      fetch("https://countriesnow.space/api/v0.1/countries")
+        .then((res) => res.json())
+        .then((data) => {
+          const countryData = data.data.find(
+            (c: any) => c.country === tempFilters.country
+          );
+          if (countryData) {
+            setCitiesList(countryData.cities.sort());
+          } else {
+            setCitiesList([]);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching cities:", error);
+          setCitiesList([]);
+        });
+    } else {
+      setCitiesList([]);
+    }
+  }, [tempFilters.country]);
 
   // Fetch keyword suggestions
   const fetchKeywordSuggestions = useCallback(
     debounce(async (query: string) => {
-      const lastKeyword = query.split(",").pop()?.trim() || "";
-      if (lastKeyword.length >= 2) {
+      if (query.length >= 2) {
         try {
           const suggestions = await candidateService.getKeywordSuggestions(
-            lastKeyword
+            query
           );
-          const currentKeywords = tempFilters.keywords
-            .split(",")
-            .map((k) => k.trim().toLowerCase())
-            .filter((k) => k);
+          const currentKeywords = tempFilters.keywords.map((k) =>
+            k.toLowerCase()
+          );
           // Filter out suggestions that already exist in currentKeywords
           const filteredSuggestions = suggestions.filter(
-            (suggestion) => !currentKeywords.includes(suggestion.toLowerCase())
+            (suggestion: string) =>
+              !currentKeywords.includes(suggestion.toLowerCase())
           );
           setKeywordSuggestions(filteredSuggestions);
           setShowSuggestions(filteredSuggestions.length > 0);
@@ -265,11 +325,14 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     // Handle location and city/country
     if (key === "city" || key === "country" || key === "location") {
       setIsLocationManuallyEdited(key === "location");
-      const newCity = key === "city" ? value : tempFilters.city;
-      const newCountry = key === "country" ? value : tempFilters.country;
+      let newCity = key === "city" ? value : tempFilters.city;
+      let newCountry = key === "country" ? value : tempFilters.country;
       const newLocation =
         key === "location" ? value : tempFilters.locations.join(", ");
 
+      if (key === "city" && value && cityToCountryMap[value] && !newCountry) {
+        newCountry = cityToCountryMap[value];
+      }
       // Construct locations array
       const locations = [];
       if (newCity) {
@@ -339,36 +402,32 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
     setTempFilters(newFilters);
     if (key === "keywords") {
-      fetchKeywordSuggestions(value);
+      fetchKeywordSuggestions(currentKeyword);
     }
   };
 
   const handleKeywordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^a-zA-Z0-9\s,]/g, ""); // Allow only alphanumeric, commas and spaces
-    updateTempFilters("keywords", value);
+    const value = e.target.value.replace(/[^a-zA-Z0-9\s]/g, "");
+    setCurrentKeyword(value);
+    fetchKeywordSuggestions(value);
+  };
+
+  const addKeyword = (keyword: string) => {
+    const trimmed = keyword.trim();
+    if (trimmed) {
+      const lower = trimmed.toLowerCase();
+      if (tempFilters.keywords.some((k) => k.toLowerCase() === lower)) {
+        showToast.error("This keyword is already added.");
+        return;
+      }
+      updateTempFilters("keywords", [...tempFilters.keywords, trimmed]);
+    }
+    setCurrentKeyword("");
+    setShowSuggestions(false);
   };
 
   const handleSelectSuggestion = (suggestion: string) => {
-    const currentKeywords = tempFilters.keywords
-      .split(",")
-      .map((k) => k.trim().toLowerCase())
-      .filter((k) => k);
-
-    // Prevent adding duplicate suggestion
-    if (currentKeywords.includes(suggestion.toLowerCase())) {
-      showToast.error("This keyword is already added.");
-      return;
-    }
-
-    const keywordsArray = tempFilters.keywords
-      .split(",")
-      .map((k) => k.trim())
-      .filter((k) => k);
-    keywordsArray.pop();
-    keywordsArray.push(suggestion);
-    const newKeywords = keywordsArray.join(", ");
-    updateTempFilters("keywords", newKeywords);
-    setShowSuggestions(false);
+    addKeyword(suggestion);
   };
 
   const handleSelectRecentSearch = (query: string) => {
@@ -379,15 +438,27 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const handleKeywordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      applyFilters();
+      addKeyword(currentKeyword);
+    } else if (e.key === ",") {
+      e.preventDefault();
+      addKeyword(currentKeyword);
     }
+  };
+
+  const removeKeywordTag = (keywordToRemove: string) => {
+    const updatedKeywords = tempFilters.keywords.filter(
+      (k) => k !== keywordToRemove
+    );
+    updateTempFilters("keywords", updatedKeywords);
   };
 
   const removeLocationTag = (locationToRemove: string) => {
     const updatedLocations = tempFilters.locations.filter(
       (loc) => loc !== locationToRemove
     );
-
+    if (locationToRemove === tempFilters.city) {
+      updateTempFilters("city", "");
+    }
     updateTempFilters("locations", updatedLocations);
   };
 
@@ -395,8 +466,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     setIsLocationManuallyEdited(false);
     setKeywordSuggestions([]);
     setShowSuggestions(false);
+    setCurrentKeyword("");
     setTempFilters({
-      keywords: "",
+      keywords: [],
       booleanSearch: false,
       semanticSearch: false,
       selectedCategories: [],
@@ -492,8 +564,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <div className="relative">
               <input
                 type="text"
-                placeholder="Seperated by comma, For Ex: Gen AI Specialist, Gen AI engineer"
-                value={tempFilters.keywords}
+                placeholder="Type keyword and press comma or enter to add, e.g., Gen AI Specialist"
+                value={currentKeyword}
                 onChange={handleKeywordInputChange}
                 onKeyDown={handleKeywordKeyDown}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -515,6 +587,22 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 </div>
               )}
             </div>
+            {tempFilters.keywords.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {tempFilters.keywords.map((keyword, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200"
+                  >
+                    <X
+                      className="w-3 h-3 text-gray-400 mr-1 cursor-pointer hover:text-gray-600"
+                      onClick={() => removeKeywordTag(keyword)}
+                    />
+                    <span>{keyword}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -646,12 +734,14 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                   value={tempFilters.city}
                   onChange={(e) => updateTempFilters("city", e.target.value)}
                   className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
+                  disabled={!tempFilters.country && !citiesList.length}
                 >
                   <option value="">City</option>
-                  <option value="Mumbai">Mumbai</option>
-                  <option value="Bangalore">Bangalore</option>
-                  <option value="Delhi">Delhi</option>
-                  <option value="Hyderabad">Hyderabad</option>
+                  {citiesList.map((city) => (
+                    <option key={city} value={city}>
+                      {city}
+                    </option>
+                  ))}
                 </select>
                 <select
                   value={tempFilters.country}
@@ -659,10 +749,11 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                   className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
                 >
                   <option value="">Country</option>
-                  <option value="India">India</option>
-                  <option value="USA">USA</option>
-                  <option value="UK">UK</option>
-                  <option value="Canada">Canada</option>
+                  {countriesList.map((country) => (
+                    <option key={country} value={country}>
+                      {country}
+                    </option>
+                  ))}
                 </select>
               </div>
               <input
