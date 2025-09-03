@@ -430,7 +430,6 @@ function MainApp() {
             }
           }
 
-          console.log("Fetching candidates with params:", filterParams);
           if (isAuthenticated) {
             response = await candidateService.searchCandidates(filterParams);
             setCandidates(response.results);

@@ -671,7 +671,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
               {tempFilters.locations.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {tempFilters.locations.map((location, index) => (
+                  {tempFilters?.locations?.map((location, index) => (
                     <div
                       key={index}
                       className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200"

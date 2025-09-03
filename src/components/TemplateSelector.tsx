@@ -104,7 +104,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
       setLoading(true);
       try {
         const data = await candidateService.getTemplates();
-        console.log("Fetched templates:", data);
         setTemplates(data);
       } catch (error) {
         showToast.error("Failed to fetch templates");

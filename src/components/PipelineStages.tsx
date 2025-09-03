@@ -668,7 +668,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
   const handleAddComment = () => {
     if (newComment.trim()) {
-      console.log("Adding comment:", newComment, "by user:", user?.fullName);
       setNewComment("");
     }
   };
@@ -1194,11 +1193,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       }
     }
   };
-
-  console.log(
-    "Transferred stage data PipelineStages :::::::::::::::::::: ",
-    selectedCandidate?.stageData
-  );
 
   return (
     <div className="bg-gray-50 min-h-screen">
