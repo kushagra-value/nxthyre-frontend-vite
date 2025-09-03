@@ -309,9 +309,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             <div className="ml-2 relative">
               <div
                 className={`${
-                  !showMore && experiences.length > 1
-                    ? "max-h-[270px] overflow-hidden"
-                    : ""
+                  !showMore && experiences.length > 1 ? "overflow-hidden" : ""
                 }`}
                 style={{
                   maskImage:
