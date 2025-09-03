@@ -133,11 +133,11 @@ function MainApp() {
   );
 
   const [sourcingCounts, setSourcingCounts] = useState({
-  inbound: 0,
-  outbound: 0,
-  active: 0,
-  prevetted: 0
-});
+    inbound: 0,
+    outbound: 0,
+    active: 0,
+    prevetted: 0,
+  });
   const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
   const [showShareLoader, setShowShareLoader] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -242,9 +242,7 @@ function MainApp() {
           ? job.experience_max_years.toString()
           : "",
         location: job.location || "",
-        locations: job.location
-          ? [job.location.split(",")[0]?.trim()].filter(Boolean)
-          : [],
+        locations: job.location ? [job.location].filter(Boolean) : [],
         application_type: activeTab,
         sort_by: sortBy,
       };
@@ -445,7 +443,6 @@ function MainApp() {
               setSelectedCandidate(response.results[0]);
             }
           }
-
         }
       } catch (error) {
         showToast.error("Failed to fetch candidates");
@@ -506,7 +503,7 @@ function MainApp() {
     sortBy,
     debouncedSearchQuery,
     activeCategoryId,
-    isAuthenticated, 
+    isAuthenticated,
     currentPage,
   ]);
 
