@@ -77,14 +77,23 @@ const JobApplicationForm = () => {
     }
   };
 
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''; // Clear the file input value
+      fileInputRef.current.click(); // Trigger file input click
+    }
+  };
+
+  const handleUploadClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    triggerFileInput();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      handleUploadClick();
+      triggerFileInput(); // Use the new function instead of handleUploadClick
     }
   };
 
