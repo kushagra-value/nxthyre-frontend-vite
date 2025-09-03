@@ -37,10 +37,7 @@ import {
 import Header from "./Header";
 import { creditService } from "../services/creditService";
 import { useAuth } from "../hooks/useAuth";
-import CategoryDropdown from "./CategoryDropdown";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
-import { pipelineStages, pipelineCandidates } from "../data/pipelineData";
+import { pipelineStages, pipelineCandidates, PipelineCandidate } from "../data/pipelineData";
 import { useAuthContext } from "../context/AuthContext";
 import apiClient from "../services/api";
 import { jobPostService } from "../services/jobPostService"; // Import jobPostService
@@ -118,167 +115,6 @@ interface Note {
   organisation: {
     orgId: string;
     orgName: string;
-  };
-}
-
-interface PipelineCandidate {
-  id: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  publicIdentifier: string;
-  headline: string;
-  summary: string;
-  profilePicture: { displayImageUrl: string; artifacts: any[] };
-  location: { country: string; city: string };
-  industry: string;
-  email: string;
-  phone: { type: string; number: string };
-  positions: Array<{
-    title: string;
-    companyName: string;
-    companyUrn: string;
-    startDate: { month: number; year: number };
-    endDate?: { month: number; year: number };
-    isCurrent: boolean;
-    location: string;
-    description: string;
-  }>;
-  educations: Array<{
-    schoolName: string;
-    degreeName: string;
-    fieldOfStudy: string;
-    startDate: { year: number };
-    endDate: { year: number };
-    activities: string;
-    description: string;
-  }>;
-  certifications: Array<{
-    name: string;
-    authority: string;
-    licenseNumber: string;
-    startDate: { month: number; year: number };
-    endDate?: { month: number; year: number };
-    url: string;
-  }>;
-  skills: Array<{ name: string; endorsementCount: number }>;
-  endorsements: any[];
-  recommendations: { received: any[]; given: any[] };
-  visibility: {
-    profile: "PUBLIC" | "CONNECTIONS" | "PRIVATE";
-    email: boolean;
-    phone: boolean;
-  };
-  connections: any[];
-  meta: {
-    fetchedAt: string;
-    dataCompleteness: "full" | "partial";
-    source: string;
-    scopesGranted: string[];
-  };
-  external_notes: Note[];
-  feedbackNotes: Array<{
-    subject: string;
-    comment: string;
-    author: string;
-    date: string;
-  }>;
-  candidateNotes: Array<{
-    comment: string;
-    author: string;
-    date: string;
-  }>;
-  stageData: {
-    uncontacted?: {
-      notes: string[];
-    };
-    invitesSent?: {
-      currentStatus: string;
-      notes: string[];
-      dateSent: string;
-      responseStatus: string;
-    };
-    applied?: {
-      appliedDate: string;
-      resumeScore: number;
-      skillsMatch: string;
-      experienceMatch: string;
-      highlights: string;
-      notes: string[];
-    };
-    aiInterview?: {
-      interviewedDate: string;
-      resumeScore: number;
-      knowledgeScore: number;
-      communicationScore: number;
-      integrityScore: number;
-      proctoring: {
-        deviceUsage: number;
-        assistance: number;
-        referenceMaterial: number;
-        environment: number;
-      };
-      questions: string[];
-      notes: string[];
-    };
-    shortlisted?: {
-      interviewedDate: string;
-      resumeScore: number;
-      knowledgeScore: number;
-      communicationScore: number;
-      integrityScore: number;
-      proctoring: {
-        deviceUsage: number;
-        assistance: number;
-        referenceMaterial: number;
-        environment: number;
-      };
-      questions: string[];
-      notes: string[];
-    };
-    firstInterview?: {
-      followups: string[];
-      interviewNotes: string[];
-      interviewDate: string;
-      interviewerName: string;
-      interviewerEmail: string;
-    };
-    otherInterviews?: {
-      followups: string[];
-      interviewNotes: string[];
-      interviewDate: string;
-      interviewerName: string;
-      interviewerEmail: string;
-    };
-    hrRound?: {
-      followups: string[];
-      interviewNotes: string[];
-      interviewDate: string;
-      interviewerName: string;
-      interviewerEmail: string;
-    };
-    salaryNegotiation?: {
-      salary: string;
-      negotiation: string;
-      followups: string[];
-      interviewNotes: string[];
-      interviewDate: string;
-      interviewerName: string;
-      interviewerEmail: string;
-    };
-    offerSent?: {
-      offerAcceptanceStatus: string;
-      offerSentDate: string;
-      followups: string[];
-      interviewNotes: string[];
-      interviewerName: string;
-      interviewerEmail: string;
-    };
-    archived?: {
-      reason: string;
-      archivedDate: string;
-      notes: string[];
-    };
   };
 }
 
@@ -679,25 +515,28 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       data.candidate.ai_interview_report
     );
 
+    const premiumData = candidateData.premium_data || {};
+
     return {
       id: data.id.toString(),
-      firstName: candidateData.full_name.split(" ")[0] || "",
-      lastName: candidateData.full_name.split(" ").slice(1).join(" ") || "",
+      candidateId: candidateData.id,
       fullName: candidateData.full_name,
-      publicIdentifier: candidateData.id,
       headline: candidateData.headline,
-      summary: candidateData.profile_summary,
+      profile_summary: candidateData.profile_summary,
+      location: candidateData.location,
       profilePicture: {
         displayImageUrl: candidateData.profile_picture_url || "",
         artifacts: [],
       },
-      location: {
-        country: candidateData.location.split(", ")[1] || "",
-        city: candidateData.location.split(", ")[0] || "",
-      },
-      industry: "",
-      email: candidateData.email || "",
-      phone: { type: "number", number: "" },
+      gender: candidateData.gender,
+      is_recently_promoted: candidateData.is_recently_promoted,
+      is_background_verified: candidateData.is_background_verified,
+      is_active: candidateData.is_active,
+      is_prevetted: candidateData.is_prevetted,
+      notice_period_days: candidateData.notice_period_days,
+      current_salary: candidateData.current_salary,
+      application_type: candidateData.application_type,
+      total_experience: candidateData.total_experience,     
       positions: candidateData.experience.map((exp: any) => ({
         title: exp.job_title,
         companyName: exp.company,
@@ -735,27 +574,54 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         name: cert.name,
         authority: cert.authority,
         licenseNumber: cert.licenseNumber,
-        startDate: cert.startDate,
-        endDate: cert.endDate,
+        startDate: cert.issued_date
+        ? {
+            month: new Date(cert.issued_date).getMonth() + 1,
+            year: new Date(cert.issued_date).getFullYear(),
+          }
+        : { month: 0, year: 0 },
+      endDate: cert.valid_until
+        ? {
+            month: new Date(cert.valid_until).getMonth() + 1,
+            year: new Date(cert.valid_until).getFullYear(),
+          }
+        : undefined,
         url: cert.url,
       })),
       skills: candidateData.skills_data.skills_mentioned.map((skill: any) => ({
         name: skill.skill,
         endorsementCount: skill.number_of_endorsements,
       })),
-      endorsements: candidateData.skills_data.endorsements,
+      endorsements: candidateData.skills_data.endorsements.map((end: any) => ({
+            endorser: {
+              id: "",
+              name: end.endorser_name,
+              headline: end.endorser_title,
+              profileImageUrl: end.endorser_profile_pic_url,
+            },
+            skill: end.skill_endorsed,
+            message: "",
+          })),
       recommendations: { received: candidateData.recommendations, given: [] },
-      visibility: { profile: "PUBLIC", email: false, phone: false },
-      connections: [],
-      meta: {
-        fetchedAt: "",
-        dataCompleteness: "partial",
-        source: "",
-        scopesGranted: [],
-      },
-      external_notes: data.contextual_details.candidate_notes || [],
-      feedbackNotes: data.contextual_details.feedback_notes || [],
-      candidateNotes: data.candidate.notes || [],
+      
+      notes: candidateData.notes,
+      email: premiumData.email || "",
+      phone: premiumData.phone || "",
+      premium_data: {
+        email: premiumData.email,
+        phone: premiumData.phone,
+        linkedin_url: premiumData.linkedin_url,
+        github_url: premiumData.github_url,
+        twitter_url: premiumData.twitter_url,
+        resume_url: premiumData.resume_url,
+        portfolio_url: premiumData.portfolio_url,
+        behance_username: premiumData.behance_username,
+        dribble_username: premiumData.dribbble_username,
+        instagram_username: premiumData.instagram_username,
+        pinterest_username: premiumData.pinterest_username,
+        resume_text: premiumData.resume_text,
+        all_phone_numbers: premiumData.all_phone_numbers || [],
+        all_emails: premiumData.all_emails || [],      },
       stageData: {
         [stageProperty]: mappedStageData,
       },
@@ -776,14 +642,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   });
 
   // Compute comments from selectedCandidate
-  const feedbackComments =
-    selectedCandidate?.feedbackNotes?.map((note, index) =>
-      mapToComment(note, index, "feedback")
-    ) || [];
-  const candidateComments =
-    selectedCandidate?.candidateNotes?.map((note, index) =>
-      mapToComment(note, index, "note")
-    ) || [];
 
   const handleStageSelect = (stage: string) => {
     setSelectedStage(stage);
@@ -2238,8 +2096,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               selectedCandidate={selectedCandidate}
               showComments={showComments}
               setShowComments={setShowComments}
-              feedbackComments={feedbackComments}
-              candidateComments={candidateComments}
               newComment={newComment}
               setNewComment={setNewComment}
               handleAddComment={handleAddComment}

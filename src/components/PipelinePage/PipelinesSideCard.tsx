@@ -6,6 +6,7 @@ import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { useAuthContext } from "../../context/AuthContext";
 import { showToast } from "../../utils/toast";
 import StageDetails from "./StageDetails";
+import { PipelineCandidate } from "../../data/pipelineData";
 
 interface Stage {
   id: number;
@@ -28,169 +29,6 @@ interface Note {
   };
 }
 
-interface PipelineCandidate {
-  id: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  publicIdentifier: string;
-  headline: string;
-  summary: string;
-  profilePicture: { displayImageUrl: string; artifacts: any[] };
-  location: { country: string; city: string };
-  industry: string;
-  email: string;
-  phone: { type: string; number: string };
-  positions: Array<{
-    title: string;
-    companyName: string;
-    companyUrn: string;
-    startDate: { month: number; year: number };
-    endDate?: { month: number; year: number };
-    isCurrent: boolean;
-    location: string;
-    description: string;
-  }>;
-  educations: Array<{
-    schoolName: string;
-    degreeName: string;
-    fieldOfStudy: string;
-    startDate: { year: number };
-    endDate: { year: number };
-    activities: string;
-    description: string;
-  }>;
-  certifications: Array<{
-    name: string;
-    authority: string;
-    licenseNumber: string;
-    startDate: { month: number; year: number };
-    endDate?: { month: number; year: number };
-    url: string;
-  }>;
-  skills: Array<{ name: string; endorsementCount: number }>;
-  endorsements: any[];
-  recommendations: { received: any[]; given: any[] };
-  visibility: {
-    profile: "PUBLIC" | "CONNECTIONS" | "PRIVATE";
-    email: boolean;
-    phone: boolean;
-  };
-  connections: any[];
-  meta: {
-    fetchedAt: string;
-    dataCompleteness: "full" | "partial";
-    source: string;
-    scopesGranted: string[];
-  };
-  external_notes: Note[];
-  feedbackNotes: Array<{
-    subject: string;
-    comment: string;
-    author: string;
-    date: string;
-  }>;
-  candidateNotes: Array<{
-    comment: string;
-    author: string;
-    date: string;
-  }>;
-  stageData: {
-    uncontacted?: {
-      notes: string[];
-    };
-    invitesSent?: {
-      currentStatus: string;
-      notes: string[];
-      dateSent: string;
-      responseStatus: string;
-    };
-    applied?: {
-      appliedDate: string;
-      resumeScore: number;
-      skillsMatch: string;
-      experienceMatch: string;
-      highlights: string;
-      notes: string[];
-    };
-    aiInterview?: {
-      interviewedDate: string;
-      resumeScore: number;
-      knowledgeScore: number;
-      communicationScore: number;
-      integrityScore: number;
-      technicalScore: number;
-      proctoring: {
-        deviceUsage: number;
-        assistance: number;
-        referenceMaterial: number;
-        environment: number;
-      };
-      questions: string[];
-      notes: string[];
-    };
-    shortlisted?: {
-      interviewedDate: string;
-      resumeScore: number;
-      knowledgeScore: number;
-      communicationScore: number;
-      integrityScore: number;
-      technicalScore: number;
-      proctoring: {
-        deviceUsage: number;
-        assistance: number;
-        referenceMaterial: number;
-        environment: number;
-      };
-      questions: string[];
-      notes: string[];
-    };
-    firstInterview?: {
-      followups: string[];
-      interviewNotes: string[];
-      interviewDate: string;
-      interviewerName: string;
-      interviewerEmail: string;
-    };
-    otherInterviews?: {
-      followups: string[];
-      interviewNotes: string[];
-      interviewDate: string;
-      interviewerName: string;
-      interviewerEmail: string;
-    };
-    hrRound?: {
-      followups: string[];
-      interviewNotes: string[];
-      interviewDate: string;
-      interviewerName: string;
-      interviewerEmail: string;
-    };
-    salaryNegotiation?: {
-      salary: string;
-      negotiation: string;
-      followups: string[];
-      interviewNotes: string[];
-      interviewDate: string;
-      interviewerName: string;
-      interviewerEmail: string;
-    };
-    offerSent?: {
-      offerAcceptanceStatus: string;
-      offerSentDate: string;
-      followups: string[];
-      interviewNotes: string[];
-      interviewerName: string;
-      interviewerEmail: string;
-    };
-    archived?: {
-      reason: string;
-      archivedDate: string;
-      notes: string[];
-    };
-  };
-}
-
 interface Comment {
   id: string | number;
   avatar: string;
@@ -204,8 +42,6 @@ interface PipelinesSideCardProps {
   selectedCandidate: PipelineCandidate | null;
   showComments: boolean;
   setShowComments: (show: boolean) => void;
-  feedbackComments: Comment[];
-  candidateComments: Comment[];
   newComment: string;
   setNewComment: (comment: string) => void;
   handleAddComment: () => void;
@@ -223,8 +59,6 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
   selectedCandidate,
   showComments,
   setShowComments,
-  feedbackComments,
-  candidateComments,
   newComment,
   setNewComment,
   handleAddComment,
@@ -238,8 +72,10 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
   deductCredits,
 }) => {
   const { user } = useAuthContext();
+
+
   const handleShareProfile = () => {
-    window.open(`/candidate-profiles/${selectedCandidate?.id}`, "_blank");
+    window.open(`/candidate-profiles/${selectedCandidate?.candidateId}`, "_blank");
   };
 
   const handleCopy = (text: string) => {
@@ -257,19 +93,25 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
     const formattedPhone = phone.replace(/[^0-9+]/g, "");
     window.open(`https://wa.me/${formattedPhone}`, "_blank");
   };
+  
+  const random70to99 = () => Math.floor(Math.random() * 30 + 70);
 
-  const hasContactInfo =
-    !!selectedCandidate?.email && !!selectedCandidate?.phone;
-  const displayEmail = hasContactInfo
-    ? selectedCandidate?.email
-    : `${selectedCandidate?.fullName
-        ?.toLocaleLowerCase()
-        ?.slice(0, 2)}*********@gmail.com`;
-  const displayPhone = hasContactInfo
-    ? typeof selectedCandidate?.phone === "string"
-      ? selectedCandidate?.phone
-      : selectedCandidate?.phone?.number || ""
-    : "93********45";
+  const displayEmail =
+    selectedCandidate?.premium_data_unlocked &&
+    selectedCandidate?.premium_data_availability?.email &&
+    selectedCandidate?.premium_data?.email
+      ? selectedCandidate.premium_data.email
+      : `${(selectedCandidate?.fullName || "")
+          .slice(0, 3)
+          .toLowerCase()}***********@gmail.com`;
+
+  // Updated display logic for phone
+  const displayPhone =
+    selectedCandidate?.premium_data_unlocked &&
+    selectedCandidate?.premium_data_availability?.phone_number &&
+    selectedCandidate?.premium_data?.phone
+      ? selectedCandidate.premium_data.phone
+      : `${random70to99()}********${random70to99()}`;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 space-y-4 min-h-[81vh]">
@@ -277,8 +119,8 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
         <>
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
-              {selectedCandidate.firstName[0]}
-              {selectedCandidate.lastName[0]}
+              {/* show the initials from full name */}
+              {selectedCandidate?.fullName?.split(" ")?.map((n) => n[0]).join("").toUpperCase()?.slice(0, 2)}
             </div>
             <div>
               <h2 className="text-base lg:text-[16px] font-bold text-gray-900">
@@ -291,8 +133,7 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
               </div>
               <div className="flex">
                 <p className="text-sm text-gray-500">
-                  {selectedCandidate.location.city},{" "}
-                  {selectedCandidate.location.country}
+                  {selectedCandidate.location}
                 </p>
               </div>
             </div>
@@ -314,12 +155,12 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
               </div>
               <button
                 className={`flex space-x-2 ml-auto p-1 ${
-                  hasContactInfo
+                  displayEmail
                     ? "text-gray-400 hover:text-gray-600"
                     : "text-gray-300 cursor-not-allowed"
                 }`}
-                onClick={() => hasContactInfo && handleCopy(displayEmail)}
-                disabled={!hasContactInfo}
+                onClick={() => displayEmail && handleCopy(displayEmail)}
+                disabled={!displayEmail}
               >
                 <Copy className="w-4 h-4" />
               </button>
@@ -332,23 +173,23 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
               <div>
                 <button
                   className={`p-1 ${
-                    hasContactInfo
+                    displayPhone
                       ? "text-gray-400 hover:text-gray-600"
                       : "text-gray-300 cursor-not-allowed"
                   }`}
-                  onClick={() => hasContactInfo && handleWhatsApp(displayPhone)}
-                  disabled={!hasContactInfo}
+                  onClick={() => displayPhone && handleWhatsApp(displayPhone)}
+                  disabled={!displayPhone}
                 >
                   <FontAwesomeIcon icon={faWhatsapp} />
                 </button>
                 <button
                   className={`p-1 ${
-                    hasContactInfo
+                    displayPhone
                       ? "text-gray-400 hover:text-gray-600"
                       : "text-gray-300 cursor-not-allowed"
                   }`}
-                  onClick={() => hasContactInfo && handleCopy(displayPhone)}
-                  disabled={!hasContactInfo}
+                  onClick={() => displayPhone && handleCopy(displayPhone)}
+                  disabled={!displayPhone}
                 >
                   <Copy className="w-4 h-4" />
                 </button>
