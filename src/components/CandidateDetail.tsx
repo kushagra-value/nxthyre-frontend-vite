@@ -306,11 +306,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               <Briefcase className="w-4 h-4 mr-2 text-[#4B5563]" />
               Experience
             </h3>
-            <div className="ml-2 relative">
+            <div className="ml-2 relative min-h-[30vh]">
               <div
                 className={`${
                   !showMore && experiences.length > 1
-                    ? "max-h-[50vh] overflow-hidden"
+                    ? "min-h-[30vh] max-h-[50vh] overflow-hidden"
                     : ""
                 }`}
                 style={{
@@ -360,7 +360,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
         </div>
         {experiences.length > 1 && !showMore && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 ml-6 flex space-x-1 items-center">
+          <div className="absolute bottom-0 left-2 right-0 p-4 ml-6 flex space-x-1 items-center">
             <button
               onClick={() => setShowMore(true)}
               className="text-[#0F47F2] text-sm"
