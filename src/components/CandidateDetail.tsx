@@ -285,85 +285,85 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const experiences = detailedCandidate?.candidate?.experience || [];
 
     return (
-      <div className="bg-[#F0F0F0] p-3 rounded-lg">
-        <div>
-          {detailedCandidate?.candidate?.profile_summary && (
-            <div className="mb-4 border-b border-gray-200">
-              <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] flex items-center">
-                <User className="w-4 h-4 mr-2 text-[#4B5563]" />
-                Profile Summary
-              </h3>
-              <p className="text-sm text-[#818283] leading-normal pt-2 pb-4 pl-6 pr-2 rounded-lg">
-                {detailedCandidate?.candidate?.profile_summary}
-              </p>
-            </div>
-          )}
-          <div
-            className={`overflow-hidden ${showMore ? "" : "min-h-[30vh]"}`}
-            style={{ transition: "max-height 0.3s ease" }}
-          >
-            <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
-              <Briefcase className="w-4 h-4 mr-2 text-[#4B5563]" />
-              Experience
+      <div className="bg-[#F0F0F0] p-3 rounded-lg relative">
+        {detailedCandidate?.candidate?.profile_summary && (
+          <div className="mb-4 border-b border-gray-200">
+            <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] flex items-center">
+              <User className="w-4 h-4 mr-2 text-[#4B5563]" />
+              Profile Summary
             </h3>
-            <div className="ml-2 relative min-h-[30vh]">
-              <div
-                className={`${
+            <p className="text-sm text-[#818283] leading-normal pt-2 pb-4 pl-6 pr-2 rounded-lg">
+              {detailedCandidate?.candidate?.profile_summary}
+            </p>
+          </div>
+        )}
+
+        <div className="overflow-hidden">
+          <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
+            <Briefcase className="w-4 h-4 mr-2 text-[#4B5563]" />
+            Experience
+          </h3>
+          <div className="ml-2 relative">
+            <div
+              className={`relative ${
+                !showMore && experiences.length > 1 ? "overflow-hidden" : ""
+              }`}
+              style={{
+                maskImage:
                   !showMore && experiences.length > 1
-                    ? "min-h-[30vh] max-h-[50vh] overflow-hidden"
-                    : ""
-                }`}
-                style={{
-                  maskImage:
-                    !showMore && experiences.length > 1
-                      ? "linear-gradient(to bottom, black 60%, transparent 100%)"
-                      : "none",
-                  WebkitMaskImage:
-                    !showMore && experiences.length > 1
-                      ? "linear-gradient(to bottom, black 60%, transparent 100%)"
-                      : "none",
-                }}
-              >
-                {experiences.length > 0 ? (
-                  (showMore || experiences.length <= 1
-                    ? experiences
-                    : experiences.slice(0, 1)
-                  ).map((exp, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
+                    ? "linear-gradient(to bottom, black 80%, transparent 100%)"
+                    : "none",
+                WebkitMaskImage:
+                  !showMore && experiences.length > 1
+                    ? "linear-gradient(to bottom, black 80%, transparent 100%)"
+                    : "none",
+              }}
+            >
+              {experiences.length > 0 ? (
+                (showMore || experiences.length <= 1
+                  ? experiences
+                  : experiences.slice(0, 1)
+                ).map((exp, index) => (
+                  <div
+                    key={index}
+                    className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
+                  >
+                    <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5 bg-gray-200"></div>
+                    <h4 className="font-medium text-[#111827] text-sm">
+                      {exp?.job_title}
+                    </h4>
+                    <p className="text-sm text-gray-400">{`${exp?.company} | ${exp?.location}`}</p>
+                    <p className="text-sm text-gray-400">
+                      {exp?.start_date && (
+                        <span>
+                          {exp?.start_date} - {exp?.end_date || "Present"}
+                        </span>
+                      )}
+                    </p>
+                    <p
+                      className={`text-sm text-[#4B5563] mt-1 ${
+                        !showMore && experiences.length > 1
+                          ? "relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-12 after:bg-gradient-to-t after:from-[#F0F0F0] after:to-transparent"
+                          : ""
+                      }`}
                     >
-                      <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
-                      <h4 className="font-medium text-[#111827] text-sm">
-                        {exp?.job_title}
-                      </h4>
-                      <p className="text-sm text-gray-400">{`${exp?.company} | ${exp?.location}`}</p>
-                      <p className="text-sm text-gray-400">
-                        {exp?.start_date && (
-                          <span>
-                            {exp?.start_date} - {exp?.end_date || "Present"}
-                          </span>
-                        )}
-                      </p>
-                      <p className="text-sm text-[#4B5563] mt-1">
-                        {exp?.description}
-                      </p>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-500">
-                    No experience details available
-                  </p>
-                )}
-              </div>
+                      {exp?.description}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">
+                  No experience details available
+                </p>
+              )}
             </div>
           </div>
         </div>
         {experiences.length > 1 && !showMore && (
-          <div className="absolute bottom-0 left-2 right-0 p-4 ml-6 flex space-x-1 items-center">
+          <div className="mt-2 ml-6 flex space-x-1 items-center">
             <button
               onClick={() => setShowMore(true)}
-              className="text-[#0F47F2] text-sm"
+              className="text-[#0F47F2] text-sm font-medium"
             >
               VIEW MORE
             </button>
