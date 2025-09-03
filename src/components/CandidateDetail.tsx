@@ -285,7 +285,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const experiences = detailedCandidate?.candidate?.experience || [];
 
     return (
-      <div className="relative bg-[#F0F0F0] p-3 rounded-lg">
+      <div className="bg-[#F0F0F0] p-3 rounded-lg">
         <div>
           {detailedCandidate?.candidate?.profile_summary && (
             <div className="mb-4 border-b border-gray-200">
