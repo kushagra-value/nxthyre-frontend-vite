@@ -2058,6 +2058,58 @@ const handleConfirmReveal = async () => {
                             </div>
                             <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
                               <div className="flex items-center space-x-1">
+                                {candidate.candidate.premium_data_availability?.pinterest_username && (
+                                  (() => {
+                                    const url = candidate.candidate.premium_data_unlocked ? candidate.candidate.premium_data?.pinterest_username: null;
+                                    return (
+                                      <button
+                                        className="text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          if (url) {
+                                            window.open(url, "_blank");
+                                          } else {
+                                            setPendingReveal({
+                                              candidateId: candidate.candidate.id,
+                                              onSuccess: (prem) => {
+                                                const finalUrl =
+                                                  prem.candidate.premium_data.pinterest_username;
+                                                if (finalUrl)
+                                                  window.open(finalUrl, "_blank");
+                                            },
+                                          });
+                                          setShowRevealDialog(true);
+                                          }
+                                        }}
+                                        aria-label={`View ${candidate.candidate.full_name}'s Pinterest profile`}
+                                      >
+                                        <svg
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <g clip-path="url(#clip0_3112_1059)">
+                                          <path
+                                            d="M15.0039 11.8779C14.6007 11.8076 14.1789 11.8169 13.7664 11.8404C12.8289 11.8919 11.8914 11.981 10.9539 11.8966C10.5086 11.8544 10.0586 11.8123 9.60856 11.8216C8.79293 11.8357 8.10856 12.1029 7.70543 12.881C7.50387 13.2654 7.45699 13.6779 7.47106 14.1044C7.50387 15.3044 8.02418 15.9888 9.16793 16.331C10.0867 16.6029 11.0289 16.6404 11.9757 16.6216C12.3273 16.6216 12.6789 16.6404 13.0304 16.6169C13.757 16.5748 14.4695 16.4669 15.1586 16.2138C15.8711 15.9513 16.2976 15.4498 16.4523 14.7232C16.5132 14.4419 16.5414 14.1466 16.5367 13.8607C16.5273 12.8904 15.8711 12.0232 15.0039 11.8779ZM10.3914 15.0513C10.0867 15.3841 9.64606 15.3888 9.33199 15.0654C9.10231 14.831 8.97106 14.4701 8.97106 14.0201C8.98043 13.7154 9.06949 13.3826 9.33199 13.1154C9.64606 12.7919 10.0867 12.7966 10.3914 13.1248C10.8507 13.6216 10.8507 14.5544 10.3914 15.0513ZM14.6523 15.0748C14.3664 15.3701 13.9539 15.3794 13.6492 15.1076C13.1242 14.6294 13.1242 13.5654 13.6492 13.0826C13.9492 12.806 14.3617 12.8154 14.6523 13.1107C14.9195 13.3826 15.0086 13.7248 15.0226 14.0904C15.0086 14.4607 14.9148 14.7982 14.6523 15.0748Z"
+                                            fill="#4B5563"
+                                          />
+                                          <path
+                                            d="M12 0C5.37188 0 0 5.37188 0 12C0 18.6281 5.37188 24 12 24C18.6281 24 24 18.6281 24 12C24 5.37188 18.6281 0 12 0ZM18.15 13.05C18.0844 13.5844 17.9719 14.1328 17.7797 14.6344C17.2172 16.0734 16.0922 16.8656 14.6016 17.1047C13.7484 17.2406 12.8719 17.2453 11.925 17.3156C11.0766 17.2406 10.1438 17.2313 9.23906 17.0719C7.48594 16.7625 6.29531 15.5344 5.94844 13.7766C5.77031 12.8812 5.71875 11.9813 5.99531 11.0906C6.14062 10.6313 6.37969 10.2234 6.68906 9.85313C6.73125 9.80625 6.76875 9.73594 6.76406 9.675C6.7125 8.86875 6.80625 8.07187 7.04531 7.30312C7.24219 6.66094 7.09688 6.69844 7.80938 6.88594C8.66719 7.11094 9.41719 7.575 10.1531 8.05781C10.2375 8.11406 10.3687 8.1375 10.4719 8.11875C11.5125 7.95938 12.5484 7.95 13.5891 8.13281C13.6641 8.14688 13.7625 8.11875 13.8328 8.07656C14.4656 7.66406 15.1172 7.29375 15.8297 7.03594C16.0875 6.94219 16.3594 6.88125 16.6219 6.80156C16.7391 6.76875 16.7906 6.81094 16.8328 6.92344C17.1516 7.81406 17.2828 8.72812 17.2359 9.67031C17.2313 9.72187 17.2594 9.79219 17.2922 9.83437C18.0938 10.7625 18.2953 11.8687 18.15 13.05Z"
+                                            fill="#4B5563"
+                                          />
+                                        </g>
+                                        <defs>
+                                          <clipPath id="clip0_3112_1059">
+                                            <rect width="24" height="24" fill="white" />
+                                          </clipPath>
+                                        </defs>
+                                      </svg>
+                                      </button>
+                                    );
+                                  })()
+                                )}
                                 {candidate.candidate.premium_data_availability?.github_username && (
                                   (() => {
                                     const url = candidate.candidate.premium_data_unlocked ? candidate.candidate.premium_data?.github_url: null;
@@ -2156,7 +2208,7 @@ const handleConfirmReveal = async () => {
                                     );
                                   })()
                                 )}
-                                {candidate.premium_data_availability?.behance_username && (
+                                {candidate.candidate.premium_data_availability?.behance_username && (
                                   (() => {
                                     const url = candidate.candidate.premium_data_unlocked ? candidate.candidate.premium_data?.behance_username : null;
                                     return (
@@ -2170,7 +2222,7 @@ const handleConfirmReveal = async () => {
                                             setPendingReveal({
                                               candidateId: candidate.candidate.id,
                                               onSuccess: (prem) => {
-                                                const finalUrl = prem.premium_data.behance_username;
+                                                const finalUrl = prem.candidate.premium_data.behance_username;
                                                 if (finalUrl) window.open(finalUrl, "_blank");
                                               },
                                             });
@@ -2214,9 +2266,9 @@ const handleConfirmReveal = async () => {
                                     );
                                   })()
                                 )}
-                                {candidate.premium_data_availability?.instagram_username && (
+                                {candidate.candidate.premium_data_availability?.instagram_username && (
                                   (() => {
-                                    const url = candidate.candidate.premium_data_unlocked ? candidate.premium_data?.instagram_username : null;
+                                    const url = candidate.candidate.premium_data_unlocked ? candidate.candidate.premium_data?.instagram_username : null;
                                     return (
                                       <button
                                         className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2228,7 +2280,7 @@ const handleConfirmReveal = async () => {
                                             setPendingReveal({
                                               candidateId: candidate.candidate.id,
                                               onSuccess: (prem) => {
-                                                const finalUrl = prem.premium_data.instagram_username;
+                                                const finalUrl = prem.candidate.premium_data.instagram_username;
                                                 if (finalUrl) window.open(finalUrl, "_blank");
                                               },
                                             });
@@ -2260,10 +2312,10 @@ const handleConfirmReveal = async () => {
                                     );
                                   })()
                                 )}
-                                {candidate.premium_data_availability?.twitter_username &&
+                                {candidate.candidate.premium_data_availability?.twitter_username &&
                                   (() => {
-                                    const url = candidate.premium_data_unlocked
-                                      ? candidate.premium_data?.twitter_url
+                                    const url = candidate.candidate.premium_data_unlocked
+                                      ? candidate.candidate.premium_data?.twitter_url
                                       : null;
                                     return (
                                       <button
@@ -2277,7 +2329,7 @@ const handleConfirmReveal = async () => {
                                               candidateId: candidate.id,
                                               onSuccess: (prem) => {
                                                 const finalUrl =
-                                                  prem.premium_data.twitter_url;
+                                                  prem.candidate.premium_data.twitter_url;
                                                 if (finalUrl)
                                                   window.open(finalUrl, "_blank");
                                               },
@@ -2285,7 +2337,7 @@ const handleConfirmReveal = async () => {
                                             setShowRevealDialog(true);
                                           }
                                         }}
-                                        aria-label={`View ${candidate.full_name}'s twitter`}
+                                        aria-label={`View ${candidate.candidate.full_name}'s twitter`}
                                       >
                                         <svg
                                           width="26"
@@ -2308,10 +2360,10 @@ const handleConfirmReveal = async () => {
                                       </button>
                                     );
                                   })()}
-                                {candidate.premium_data_availability?.dribble_username &&
+                                {candidate.candidate.premium_data_availability?.dribble_username &&
                                   (() => {
-                                    const url = candidate.premium_data_unlocked
-                                      ? candidate.premium_data?.dribble_username
+                                    const url = candidate.candidate.premium_data_unlocked
+                                      ? candidate.candidate.premium_data?.dribble_username
                                       : null;
                                     return (
                                       <button
@@ -2322,10 +2374,10 @@ const handleConfirmReveal = async () => {
                                             window.open(url, "_blank");
                                           } else {
                                             setPendingReveal({
-                                              candidateId: candidate.id,
+                                              candidateId: candidate.candidate.id,
                                               onSuccess: (prem) => {
                                                 const finalUrl =
-                                                  prem.premium_data.dribble_username;
+                                                  prem.candidate.premium_data.dribble_username;
                                                 if (finalUrl)
                                                   window.open(finalUrl, "_blank");
                                               },
@@ -2333,7 +2385,7 @@ const handleConfirmReveal = async () => {
                                             setShowRevealDialog(true);
                                           }
                                         }}
-                                        aria-label={`View ${candidate.full_name}'s dribble`}
+                                        aria-label={`View ${candidate.candidate.full_name}'s dribble`}
                                       >
                                         <svg
                                           width="24"
@@ -2389,10 +2441,10 @@ const handleConfirmReveal = async () => {
                                       </button>
                                     );
                                   })()}
-                                {candidate.premium_data_availability?.resume_url &&
+                                {candidate.candidate.premium_data_availability?.resume_url &&
                                   (() => {
-                                    const url = candidate.premium_data_unlocked
-                                      ? candidate.premium_data?.resume_url
+                                    const url = candidate.candidate.premium_data_unlocked
+                                      ? candidate.candidate.premium_data?.resume_url
                                       : null;
                                     return (
                                       <button
@@ -2403,10 +2455,10 @@ const handleConfirmReveal = async () => {
                                             window.open(url, "_blank");
                                           } else {
                                             setPendingReveal({
-                                              candidateId: candidate.id,
+                                              candidateId: candidate.candidate.id,
                                               onSuccess: (prem) => {
                                                 const finalUrl =
-                                                  prem.premium_data.resume_url;
+                                                  prem.candidate.premium_data.resume_url;
                                                 if (finalUrl)
                                                   window.open(finalUrl, "_blank");
                                               },
@@ -2414,7 +2466,7 @@ const handleConfirmReveal = async () => {
                                             setShowRevealDialog(true);
                                           }
                                         }}
-                                        aria-label={`View ${candidate.full_name}'s resume`}
+                                        aria-label={`View ${candidate.candidate.full_name}'s resume`}
                                       >
                                         <svg
                                           width="26"
@@ -2439,10 +2491,10 @@ const handleConfirmReveal = async () => {
                                       </button>
                                     );
                                   })()}
-                                {candidate.premium_data_availability?.portfolio_url &&
+                                {candidate.candidate.premium_data_availability?.portfolio_url &&
                                   (() => {
-                                    const url = candidate.premium_data_unlocked
-                                      ? candidate.premium_data?.portfolio_url
+                                    const url = candidate.candidate.premium_data_unlocked
+                                      ? candidate.candidate.premium_data?.portfolio_url
                                       : null;
                                     return (
                                       <button
@@ -2453,10 +2505,10 @@ const handleConfirmReveal = async () => {
                                             window.open(url, "_blank");
                                           } else {
                                             setPendingReveal({
-                                              candidateId: candidate.id,
+                                              candidateId: candidate.candidate.id,
                                               onSuccess: (prem) => {
                                                 const finalUrl =
-                                                  prem.premium_data?.portfolio_url;
+                                                  prem.candidate.premium_data?.portfolio_url;
                                                 if (finalUrl)
                                                   window.open(finalUrl, "_blank");
                                               },
@@ -2464,7 +2516,7 @@ const handleConfirmReveal = async () => {
                                             setShowRevealDialog(true);
                                           }
                                         }}
-                                        aria-label={`View ${candidate.full_name}'s portfolio`}
+                                        aria-label={`View ${candidate.candidate.full_name}'s portfolio`}
                                       >
                                         <svg
                                           width="24"
