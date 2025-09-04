@@ -44,7 +44,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     shareExternally: false,
     title: "",
     skills: [] as string[],
-    location: "",
+    location: [] as string[],
     workApproach: "Hybrid" as "Onsite" | "Remote" | "Hybrid",
     hybrid: true,
     seniority: "",
@@ -62,9 +62,9 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
   });
 
   const [skillInput, setSkillInput] = useState("");
-  const [locationInput, setLocationInput] = useState("");
+  const [locationInput, setLocationInput] = useState<string[]>([]);
   const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
-  const [competencyInput, setCompetencyInput] = useState("");
+  const [competencyInput, setCompetencyInput] = useState<string>("");
   const [refinementInput, setRefinementInput] = useState("");
   const [validationError, setValidationError] = useState("");
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
@@ -191,8 +191,8 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
   };
 
   const handleLocationAdd = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && locationInput.trim()) {
-      if (!isValidTextInput(locationInput)) {
+    if (e.key === "Enter" && locationInput) {
+      if (!isValidTextInput(locationInput[0] || "")) {
         showToast.error(
           "Location can only contain letters, numbers, commas, and spaces."
         );
@@ -200,19 +200,19 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
       }
       setFormData((prev) => ({
         ...prev,
-        location: locationInput.trim(),
+        location: locationInput,
       }));
-      setLocationInput("");
+      setLocationInput([]);
       setLocationSuggestions([]);
     }
   };
 
-  const handleLocationSelect = (location: string) => {
+  const handleLocationSelect = (location: string[]) => {
     setFormData((prev) => ({
       ...prev,
       location,
     }));
-    setLocationInput("");
+    setLocationInput([]);
     setLocationSuggestions([]);
   };
 
@@ -220,12 +220,12 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const query = e.target.value;
-    setLocationInput(query);
+    setLocationInput([query]);
     if (query.length > 2) {
       try {
         const suggestions = await jobPostService.getLocationSuggestions(query);
         const uniqueSuggestions = [...new Set(suggestions)].filter(
-          (s) => s !== formData.location
+          (s) => !formData.location.includes(s)
         );
         setLocationSuggestions(uniqueSuggestions);
       } catch (error) {
@@ -265,7 +265,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     const requiredFields = {
       title: formData.title.trim(),
       skills: formData.skills.length > 0,
-      location: formData.location.trim(),
+      location: formData.location,
       seniority: formData.seniority.trim(),
       department:
         formData.department.trim() && departmentNameToId[formData.department],
@@ -290,7 +290,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
       errors.push("Job title contains invalid characters.");
     if (!requiredFields.skills) errors.push("At least one skill is required.");
     if (!requiredFields.location) errors.push("Location is required.");
-    if (!isValidTextInput(formData.location))
+    if (!isValidTextInput(formData.location[0] || ""))
       errors.push("Location contains invalid characters.");
     if (!requiredFields.seniority) errors.push("Seniority is required.");
     if (!requiredFields.department)
@@ -370,14 +370,9 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
   };
 
   const addCompetency = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && competencyInput.trim()) {
-      const newCompetencies = [...competencies, competencyInput.trim()];
-      setCompetencies(newCompetencies);
-      setAiJdResponse((prev: any) => ({
-        ...prev,
-        technical_competencies: newCompetencies,
-      }));
-      setCompetencyInput("");
+    if (e.key === "Enter" && competencyInput) {
+      setCompetencies((prev) => [...prev, competencyInput]);
+      setCompetencyInput(""); // Reset to empty string, not empty array
     }
   };
 
@@ -633,8 +628,8 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
       keepPrivate: false,
       shareExternally: false,
       title: "",
-      skills: [],
-      location: "",
+      skills: [] as string[],
+      location: [] as string[],
       workApproach: "Hybrid",
       hybrid: false,
       seniority: "",
@@ -651,7 +646,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
       codingRound: false,
     });
     setSkillInput("");
-    setLocationInput("");
+    setLocationInput([]);
     setLocationSuggestions([]);
     setCompetencyInput("");
     setFile(null);
@@ -862,18 +857,19 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
                     disabled={isLoading}
                   />
                   <div className="flex flex-wrap gap-2">
-                    {formData.skills.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center"
-                      >
-                        <X
-                          className="w-3 h-3 mr-1 cursor-pointer"
-                          onClick={() => removeSkill(index)}
-                        />
-                        {skill}
-                      </span>
-                    ))}
+                    {Array.isArray(formData.skills) &&
+                      formData.skills.map((skill, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center"
+                        >
+                          <X
+                            className="w-3 h-3 mr-1 cursor-pointer"
+                            onClick={() => removeSkill(index)}
+                          />
+                          {skill}
+                        </span>
+                      ))}
                   </div>
                 </div>
               </div>
@@ -900,7 +896,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
                         <div
                           key={index}
                           className="px-4 py-3 text-md text-gray-700 hover:bg-blue-100 cursor-pointer"
-                          onClick={() => handleLocationSelect(suggestion)}
+                          onClick={() => handleLocationSelect([suggestion])}
                         >
                           {suggestion}
                         </div>
@@ -913,7 +909,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
                         <X
                           className="w-3 h-3 mr-1 cursor-pointer"
                           onClick={() =>
-                            setFormData((prev) => ({ ...prev, location: "" }))
+                            setFormData((prev) => ({ ...prev, location: [] }))
                           }
                         />
                         {formData.location}
@@ -1416,18 +1412,19 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
                     disabled={isLoading}
                   />
                   <div className="flex flex-wrap gap-2">
-                    {competencies.map((competency, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center"
-                      >
-                        <X
-                          className="w-3 h-3 mr-1 cursor-pointer"
-                          onClick={() => removeCompetency(index)}
-                        />
-                        {competency}
-                      </span>
-                    ))}
+                    {Array.isArray(competencies) &&
+                      competencies.map((competency, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center"
+                        >
+                          <X
+                            className="w-3 h-3 mr-1 cursor-pointer"
+                            onClick={() => removeCompetency(index)}
+                          />
+                          {competency}
+                        </span>
+                      ))}
                   </div>
                 </div>
               </div>
