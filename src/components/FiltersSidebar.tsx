@@ -203,6 +203,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   });
 
   const [currentKeyword, setCurrentKeyword] = useState<string>("");
+  const [currentLocation, setCurrentLocation] = useState<string>("");
   const [countriesList, setCountriesList] = useState<string[]>([]);
   const [citiesList, setCitiesList] = useState<string[]>([]);
   const [cityToCountryMap, setCityToCountryMap] = useState<
@@ -330,32 +331,28 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       let newLocations = [...tempFilters.locations];
 
       if (key === "city" && value) {
-        if (!newLocations.includes(value)) {
-          newLocations = [...newLocations, value]; // Add city to locations
-        }
-        newCity = ""; // Clear city
-        newCountry = ""; // Clear country
-        setCitiesList([]); // Clear city dropdown options
+        setCurrentLocation(value); // Set city to input field
+        newCity = value; // Keep city selected in dropdown
+        newCountry = cityToCountryMap[value] || newCountry; // Update country if available
       }
-      // Construct locations array
-      const locations = [];
-      if (newCity && !newLocations.includes(newCity)) {
-        locations.push(newCity);
-      }
-      if (key === "location" && value) {
-        const manualLocations = value
-          .split(",")
-          .map((loc: string) => loc.trim())
-          .filter((loc: string) => loc && !newLocations.includes(loc));
-        locations.push(...manualLocations);
-      }
-      newLocations = [...new Set([...newLocations, ...locations])]; // Remove duplicates
 
+      if (key === "location" && value) {
+        newLocations = [
+          ...new Set([
+            ...newLocations,
+            ...value
+              .split(",")
+              .map((loc: string) => loc.trim())
+              .filter((loc: string) => loc),
+          ]),
+        ];
+      }
+      
       newFilters = {
         ...newFilters,
         city: newCity,
         country: newCountry,
-        locations: locations,
+        locations: newLocations,
       };
     }
 
@@ -435,6 +432,33 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     setShowSuggestions(false);
   };
 
+  const addLocation = (location: string) => {
+    const trimmed = location.trim();
+    if (trimmed) {
+      const lower = trimmed.toLowerCase();
+      if (tempFilters.locations.some((loc) => loc.toLowerCase() === lower)) {
+        showToast.error("This location is already added.");
+        return;
+      }
+      updateTempFilters("locations", [...tempFilters.locations, trimmed]);
+      setCurrentLocation(""); // Clear input
+      setTempFilters((prev) => ({
+        ...prev,
+        city: "", // Clear city dropdown
+        country: "", // Clear country dropdown
+      }));
+      setCitiesList([]); // Clear city dropdown options
+    }
+  };
+
+
+  const handleLocationInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setCurrentLocation(value);
+    setIsLocationManuallyEdited(true);
+    updateTempFilters("location", value);
+  };
+  
   const handleKeywordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -452,15 +476,20 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     updateTempFilters("keywords", updatedKeywords);
   };
 
+  const handleLocationKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      addLocation(currentLocation);
+    }
+  };
+
   const removeLocationTag = (locationToRemove: string) => {
     const updatedLocations = tempFilters.locations.filter(
       (loc) => loc !== locationToRemove
     );
-    if (locationToRemove === tempFilters.city) {
-      updateTempFilters("city", "");
-    }
     updateTempFilters("locations", updatedLocations);
   };
+
 
   const resetFilters = () => {
     setIsLocationManuallyEdited(false);
@@ -764,8 +793,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               <input
                 type="text"
                 placeholder="Enter Location like Ahmedabad"
-                value={isLocationManuallyEdited ? tempFilters.locations.join(", ") : ""}
-                onChange={(e) => updateTempFilters("location", e.target.value)}
+                value={currentLocation}
+                onChange={handleLocationInputChange} 
+                onKeyDown={handleLocationKeyDown}             
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
 
