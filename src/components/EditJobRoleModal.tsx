@@ -676,8 +676,13 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
           let workApproach: "Onsite" | "Remote" | "Hybrid" = "Onsite";
           if (job.is_hybrid) {
             workApproach = "Hybrid";
-          } else if (job.location.toLowerCase() === "remote") {
+          } else if (
+            job.location.includes("Remote") ||
+            job.location.includes("remote")
+          ) {
             workApproach = "Remote";
+          } else {
+            workApproach = "Onsite";
           }
 
           setFormData({
