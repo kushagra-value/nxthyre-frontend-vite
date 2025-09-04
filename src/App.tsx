@@ -547,6 +547,8 @@ function MainApp() {
     }
   }, [isAuthenticated, userStatus, firebaseUser]);
 
+  console.log("Current Userrrrrrrrrrrrrrrrrrrrrrrrrrrrr :", currentUser);
+
   useEffect(() => {
     const path = window.location.pathname;
     const pipelineMatch = path.match(/^\/pipelines\/(.+)$/);
