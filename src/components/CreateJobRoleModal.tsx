@@ -482,6 +482,11 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
           : { description_file: file! }),
       };
 
+      console.log(
+        "Job data to be senttttttttttttttttttttttttttttttttttttttttttttt:",
+        jobData
+      );
+
       await jobPostService.createJob(jobData);
       showToast.success(
         formData.shareExternally
