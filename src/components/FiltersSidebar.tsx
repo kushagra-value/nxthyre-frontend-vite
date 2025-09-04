@@ -323,26 +323,24 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const updateTempFilters = (key: string, value: any) => {
     let newFilters = { ...tempFilters, [key]: value };
 
-    if (key === "city" || key === "country") {
-    setIsLocationManuallyEdited(false);
-    let newCity = key === "city" ? value : tempFilters.city;
-    let newCountry = key === "country" ? value : tempFilters.country;
-
-    if (key === "city" && value) {
-      setCurrentLocation(value); // Set city to input field for preview
-      newCity = value; // Keep city selected in dropdown
-      newCountry = cityToCountryMap[value] || newCountry; // Update country if available
+    if (key === "city") {
+    if (value) {
+      addLocation(value); // Add the selected city to the locations list
     }
-
     newFilters = {
       ...newFilters,
-      city: newCity,
-      country: newCountry,
+      city: value,
+      country: cityToCountryMap[value] || tempFilters.country, // Update country if available
     };
-  }
-
-  if (key === "location" && value) {
-    setIsLocationManuallyEdited(true);
+  } else if (key === "country") {
+    setIsLocationManuallyEdited(false);
+    let newCountry = value;
+    newFilters = {
+      ...newFilters,
+      country: newCountry,
+      city: "", // Reset city when country changes
+    };
+    setCitiesList(value ? citiesList : []); // Update cities list based on country
   }
 
     // Validate experience inputs
@@ -779,7 +777,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               </div>
               <input
                 type="text"
-                placeholder="Enter Location like Ahmedabad"
+                placeholder="Enter Location like Ahmedabad and press enter"
                 value={currentLocation}
                 onChange={handleLocationInputChange}
                 onKeyDown={handleLocationKeyDown}
