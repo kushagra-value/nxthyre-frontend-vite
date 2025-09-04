@@ -733,12 +733,12 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           </div>
           {expandedSections.location && (
             <div className="space-y-2">
-              <div className="flex space-x-2">
+              <div className="w-full flex space-x-2">
                 
                 <select
                   value={tempFilters.country}
                   onChange={(e) => updateTempFilters("country", e.target.value)}
-                  className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
+                  className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
                 >
                   <option value="">Country</option>
                   {countriesList.map((country) => (
@@ -750,7 +750,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 <select
                   value={tempFilters.city}
                   onChange={(e) => updateTempFilters("city", e.target.value)}
-                  className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
+                  className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
                   disabled={!tempFilters.country && !citiesList.length}
                 >
                   <option value="">City</option>
