@@ -325,11 +325,8 @@ function MainApp() {
 
           const isValidNumber = (value: string) => /^\d+$/.test(value);
 
-          if (appliedFilters.keywords) {
-            filterParams.q = appliedFilters.keywords
-              .split(",")
-              .map((k: string) => k.trim())
-              .filter((k: string) => k);
+          if (appliedFilters.keywords && appliedFilters.keywords.length > 0) {
+            filterParams.q = appliedFilters.keywords; // Pass array directly
           }
           if (
             appliedFilters.minTotalExp &&
