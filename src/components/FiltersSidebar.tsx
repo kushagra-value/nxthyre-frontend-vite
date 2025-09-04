@@ -323,38 +323,27 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const updateTempFilters = (key: string, value: any) => {
     let newFilters = { ...tempFilters, [key]: value };
 
-    // Handle location and city/country
-    if (key === "city" || key === "country" || key === "location") {
-      setIsLocationManuallyEdited(key === "location");
-      let newCity = key === "city" ? value : tempFilters.city;
-      let newCountry = key === "country" ? value : tempFilters.country;
-      let newLocations = [...tempFilters.locations];
+    if (key === "city" || key === "country") {
+    setIsLocationManuallyEdited(false);
+    let newCity = key === "city" ? value : tempFilters.city;
+    let newCountry = key === "country" ? value : tempFilters.country;
 
-      if (key === "city" && value) {
-        setCurrentLocation(value); // Set city to input field
-        newCity = value; // Keep city selected in dropdown
-        newCountry = cityToCountryMap[value] || newCountry; // Update country if available
-      }
-
-      if (key === "location" && value) {
-        newLocations = [
-          ...new Set([
-            ...newLocations,
-            ...value
-              .split(",")
-              .map((loc: string) => loc.trim())
-              .filter((loc: string) => loc),
-          ]),
-        ];
-      }
-      
-      newFilters = {
-        ...newFilters,
-        city: newCity,
-        country: newCountry,
-        locations: newLocations,
-      };
+    if (key === "city" && value) {
+      setCurrentLocation(value); // Set city to input field for preview
+      newCity = value; // Keep city selected in dropdown
+      newCountry = cityToCountryMap[value] || newCountry; // Update country if available
     }
+
+    newFilters = {
+      ...newFilters,
+      city: newCity,
+      country: newCountry,
+    };
+  }
+
+  if (key === "location" && value) {
+    setIsLocationManuallyEdited(true);
+  }
 
     // Validate experience inputs
     if (["minTotalExp", "maxTotalExp", "minExperience"].includes(key)) {
@@ -455,8 +444,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const handleLocationInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setCurrentLocation(value);
-    setIsLocationManuallyEdited(true);
-    updateTempFilters("location", value);
   };
   
   const handleKeywordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -794,8 +781,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 type="text"
                 placeholder="Enter Location like Ahmedabad"
                 value={currentLocation}
-                onChange={handleLocationInputChange} 
-                onKeyDown={handleLocationKeyDown}             
+                onChange={handleLocationInputChange}
+                onKeyDown={handleLocationKeyDown}
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
 
