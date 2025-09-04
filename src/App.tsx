@@ -1299,8 +1299,8 @@ function MainApp() {
                         setEditingJobId(null);
                       }}
                       workspaceId={
-                        currentUser?.organizationId
-                          ? parseInt(currentUser.organizationId)
+                        currentUser?.workspaceIds
+                          ? parseInt(currentUser.workspaceIds[0])
                           : 1
                       }
                       jobId={editingJobId || 0}
