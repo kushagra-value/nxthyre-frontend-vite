@@ -327,29 +327,29 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       setIsLocationManuallyEdited(key === "location");
       let newCity = key === "city" ? value : tempFilters.city;
       let newCountry = key === "country" ? value : tempFilters.country;
-      const newLocation =
-        key === "location" ? value : tempFilters.locations.join(", ");
+      let newLocations = [...tempFilters.locations];
 
-      if (key === "city" && value && cityToCountryMap[value] && !newCountry) {
-        newCountry = cityToCountryMap[value];
+      if (key === "city" && value) {
+        if (!newLocations.includes(value)) {
+          newLocations = [...newLocations, value]; // Add city to locations
+        }
+        newCity = ""; // Clear city
+        newCountry = ""; // Clear country
+        setCitiesList([]); // Clear city dropdown options
       }
       // Construct locations array
       const locations = [];
-      if (newCity) {
-        locations.push(newCity); // City from dropdown as first element
+      if (newCity && !newLocations.includes(newCity)) {
+        locations.push(newCity);
       }
-      if (newLocation) {
-        const manualLocations = newLocation
+      if (key === "location" && value) {
+        const manualLocations = value
           .split(",")
           .map((loc: string) => loc.trim())
-          .filter((loc: string) => loc && loc !== newCity); // Avoid duplicating city
-
-        if (manualLocations.length === 0 && key === "location") {
-          locations.push(newLocation); // Handle single location without comma
-        }
-
+          .filter((loc: string) => loc && !newLocations.includes(loc));
         locations.push(...manualLocations);
       }
+      newLocations = [...new Set([...newLocations, ...locations])]; // Remove duplicates
 
       newFilters = {
         ...newFilters,
@@ -764,17 +764,12 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               <input
                 type="text"
                 placeholder="Enter Location like Ahmedabad"
-                value={
-                  Array.isArray(tempFilters.locations)
-                    ? tempFilters.locations.join(", ")
-                    : ""
-                }
+                value={isLocationManuallyEdited ? tempFilters.locations.join(", ") : ""}
                 onChange={(e) => updateTempFilters("location", e.target.value)}
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
 
-              {Array.isArray(tempFilters.locations) &&
-                tempFilters.locations.length > 0 && (
+              {tempFilters.locations.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {tempFilters.locations.map((location, index) => (
                       <div
