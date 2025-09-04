@@ -213,7 +213,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     // Ensure keywords is always an array when filters change
     setTempFilters({
       ...filters,
-      keywords: Array.isArray(filters.keywords) ? filters.keywords : [],
+      keywords: filters.keywords || [],
     });
   }, [filters]);
 
@@ -512,7 +512,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       // Apply the filters by calling the parent component's callback
       const filtersForBackend = {
         ...tempFilters,
-        keywords: tempFilters.keywords.join(", "), // Convert array to string for backend
+        // keywords: tempFilters.keywords.join(", "), // Convert array to string for backend
       };
       await onApplyFilters(filtersForBackend);
 
