@@ -52,8 +52,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     seniority: "",
     department: "",
     aiInterviews: false,
-    minExp: "",
-    maxExp: "",
+    minExp: 0,
+    maxExp: 0,
     minSalary: "",
     maxSalary: "",
     confidential: false,
@@ -173,8 +173,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       seniority: formData.seniority.trim(),
       department:
         formData.department.trim() && departmentNameToId[formData.department],
-      minExp: formData.minExp.trim() && isValidNumberInput(formData.minExp),
-      maxExp: formData.maxExp.trim() && isValidNumberInput(formData.maxExp),
+      minExp: formData.minExp,
+      maxExp: formData.maxExp,
       minSalary: formData.confidential
         ? true
         : formData.minSalary.trim() && isValidNumberInput(formData.minSalary),
@@ -226,8 +226,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
 
     // Validate experience range
     if (requiredFields.minExp && requiredFields.maxExp) {
-      const minExp = parseInt(formData.minExp);
-      const maxExp = parseInt(formData.maxExp);
+      const minExp = formData.minExp;
+      const maxExp = formData.maxExp;
       if (isNaN(minExp) || isNaN(maxExp)) {
         errors.push("Experience fields must be valid numbers.");
       } else if (minExp > maxExp) {
@@ -461,8 +461,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
         is_hybrid: isHybrid,
         seniority: formData.seniority,
         department: departmentNameToId[formData.department] || 8,
-        experience_min_years: parseInt(formData.minExp) || 0,
-        experience_max_years: parseInt(formData.maxExp) || 0,
+        experience_min_years: formData.minExp || 0,
+        experience_max_years: formData.maxExp || 0,
         salary_min: formData.minSalary,
         salary_max: formData.maxSalary,
         is_salary_confidential: formData.confidential,
@@ -540,8 +540,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
         is_hybrid: isHybrid,
         seniority: formData.seniority,
         department: departmentNameToId[formData.department] || 8,
-        experience_min_years: parseInt(formData.minExp) || 0,
-        experience_max_years: parseInt(formData.maxExp) || 0,
+        experience_min_years: formData.minExp || 0,
+        experience_max_years: formData.maxExp || 0,
         salary_min: formData.minSalary,
         salary_max: formData.maxSalary,
         is_salary_confidential: formData.confidential,
@@ -644,8 +644,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       seniority: "",
       department: "",
       aiInterviews: false,
-      minExp: "",
-      maxExp: "",
+      minExp: 0,
+      maxExp: 0,
       minSalary: "",
       maxSalary: "",
       confidential: false,
@@ -696,8 +696,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
             seniority: job.seniority,
             department: departmentMap[Number(job.department_name)] || "Others",
             aiInterviews: job.has_ai_interview_stage || false,
-            minExp: job.experience_min_years.toString(),
-            maxExp: job.experience_max_years.toString(),
+            minExp: job.experience_min_years,
+            maxExp: job.experience_max_years,
             minSalary: String(job.salary_min),
             maxSalary: String(job.salary_max),
             confidential: job.is_salary_confidential,
@@ -1127,7 +1127,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                         if (isValidNumberInput(e.target.value)) {
                           setFormData((prev) => ({
                             ...prev,
-                            minExp: e.target.value,
+                            minExp: Number(e.target.value),
                           }));
                         }
                       }}
@@ -1142,7 +1142,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                         if (isValidNumberInput(e.target.value)) {
                           setFormData((prev) => ({
                             ...prev,
-                            maxExp: e.target.value,
+                            maxExp: Number(e.target.value),
                           }));
                         }
                       }}
