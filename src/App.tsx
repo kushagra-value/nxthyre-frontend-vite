@@ -57,7 +57,7 @@ interface Category {
 }
 
 interface Filters {
-  keywords: string;
+  keywords: string[];
   booleanSearch: boolean;
   semanticSearch: boolean;
   selectedCategories: string[];
@@ -159,7 +159,7 @@ function MainApp() {
   const [isSearchMode, setIsSearchMode] = useState(false);
 
   const [filters, setFilters] = useState<Filters>({
-    keywords: "",
+    keywords: [],
     booleanSearch: false,
     semanticSearch: false,
     selectedCategories: [],
@@ -238,7 +238,7 @@ function MainApp() {
       const newFilters = {
         ...filters,
         jobId: job.id.toString(),
-        keywords: job.skills ? job.skills.join(", ") : "",
+        keywords: job.skills ? job.skills : [],
         minTotalExp: job.experience_min_years
           ? job.experience_min_years.toString()
           : "",
@@ -279,7 +279,7 @@ function MainApp() {
             setSelectedCandidate(candidates[0]);
           }
           setFilters({
-            keywords: "",
+            keywords: [],
             booleanSearch: false,
             semanticSearch: false,
             selectedCategories: [],
@@ -325,11 +325,8 @@ function MainApp() {
 
           const isValidNumber = (value: string) => /^\d+$/.test(value);
 
-          if (appliedFilters.keywords) {
-            filterParams.q = appliedFilters.keywords
-              .split(",")
-              .map((k: string) => k.trim())
-              .filter((k: string) => k);
+          if (appliedFilters.keywords && appliedFilters.keywords.length > 0) {
+            filterParams.q = appliedFilters.keywords; // Pass array directly
           }
           if (
             appliedFilters.minTotalExp &&
@@ -612,7 +609,7 @@ function MainApp() {
       setSearchTerm("");
       setSortBy("");
       setFilters({
-        keywords: "",
+        keywords: [],
         booleanSearch: false,
         semanticSearch: false,
         selectedCategories: [],

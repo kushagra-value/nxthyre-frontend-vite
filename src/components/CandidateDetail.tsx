@@ -110,7 +110,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     detailedCandidate?.candidate?.premium_data_availability?.phone_number &&
     detailedCandidate?.candidate?.premium_data?.phone
       ? detailedCandidate.candidate.premium_data.phone
-      : `${random70to99()}********${random70to99()}`;
+      : `95********89`;
 
   const tabs = [
     { name: "Profile" },

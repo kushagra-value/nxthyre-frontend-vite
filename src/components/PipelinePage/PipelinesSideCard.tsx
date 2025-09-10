@@ -111,7 +111,7 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
     selectedCandidate?.premium_data_availability?.phone_number &&
     selectedCandidate?.premium_data?.phone
       ? selectedCandidate.premium_data.phone
-      : `${random70to99()}********${random70to99()}`;
+      : `95********89`;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 space-y-4 min-h-[81vh]">

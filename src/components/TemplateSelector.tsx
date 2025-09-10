@@ -368,7 +368,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     detailedCandidate?.candidate?.premium_data_availability?.phone_number &&
     detailedCandidate?.candidate?.premium_data?.phone
       ? detailedCandidate.candidate.premium_data.phone
-      : `${random70to99()}********${random70to99()}`;
+      : `95********89`;
 
   return (
     <>
