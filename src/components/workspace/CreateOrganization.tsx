@@ -29,6 +29,8 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const [userOnboarded, setUserOnboarded] = useState(false);
+
   const industries = [
     "Technology",
     "Healthcare",
@@ -123,6 +125,7 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
     try {
       // Get user status from backend
       const userStatus = await authService.getUserStatus();
+      setUserOnboarded(userStatus.is_onboarded);
       if (userStatus.is_onboarded) {
         console.log("User is already onboarded, redirecting to dashboard");
         toast.error("You are already onboarded.");
@@ -171,13 +174,15 @@ const CreateOrganization: React.FC<CreateOrganizationProps> = ({
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16">
-            <button
-              onClick={handleGoToDashboard}
-              className="flex items-center text-gray-600 hover:text-gray-800 mr-4"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Dashboard
-            </button>
+            {userOnboarded && (
+              <button
+                onClick={handleGoToDashboard}
+                className="flex items-center text-gray-600 hover:text-gray-800 mr-4"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Dashboard
+              </button>
+            )}
             <h1 className="text-xl font-semibold text-gray-900">
               Create Organization
             </h1>
