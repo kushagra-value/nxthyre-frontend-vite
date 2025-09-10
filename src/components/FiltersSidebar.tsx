@@ -321,6 +321,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   };
 
   const updateTempFilters = (key: string, value: any) => {
+    
     let newFilters = { ...tempFilters, [key]: value };
 
     if (key === "city") {
@@ -747,7 +748,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           </div>
           {expandedSections.location && (
             <div className="space-y-2">
-              <div className="w-full flex space-x-2">
+              {/* <div className="w-full flex space-x-2">
                 
                 <select
                   value={tempFilters.country}
@@ -774,7 +775,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                     </option>
                   ))}
                 </select>
-              </div>
+              </div> */}
               <input
                 type="text"
                 placeholder="Enter Location like Ahmedabad and press enter"
