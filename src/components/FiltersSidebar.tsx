@@ -436,17 +436,10 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   };
 
   const isFilterSelected = () => {
-    return Object.keys(tempFilters).some((key) => {
-      if (["jobId", "application_type", "is_prevetted", "is_active", "sort_by"].includes(key)) {
-        return false;
-      }
-      const value = tempFilters[key as keyof typeof tempFilters];
-      if (Array.isArray(value)) return value.length > 0;
-      if (typeof value === "boolean") return value;
-      if (typeof value === "string") return value.trim() !== "";
-      return false;
-    });
-  };
+  // Always allow applying filters based on tab selection (jobId, application_type, is_prevetted, is_active, sort_by)
+  // Check other filters only for validation when they are provided
+  return true; // Since tab selection is enough, we return true to allow filter application
+};
 
   const validateFilters = () => {
     const isValidNumber = (value: string) => /^\d+$/.test(value);
@@ -534,22 +527,20 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   };
 
   const applyFilters = async () => {
-    if (!validateFilters()) {
-      return;
-    }
+  if (!validateFilters()) {
+    return;
+  }
 
-    if (!isFilterSelected()) {
-      showToast.error("No filter selected");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      await onApplyFilters(tempFilters);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  setIsLoading(true);
+  try {
+    await onApplyFilters(tempFilters);
+  } catch (error) {
+    showToast.error("Failed to apply filters. Please try again.");
+    console.error("Error applying filters:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const noticePeriodOptions = [
     "Immediate",
