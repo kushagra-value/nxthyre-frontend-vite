@@ -42,6 +42,23 @@ interface DraggedCandidate {
   fromStage: any;
 }
 
+interface Candidate {
+  id: string;
+  name: string;
+  company: string;
+  role: string;
+  location: string;
+  avatar: string;
+  notes: string;
+  lastUpdated: Date;
+  socials: {
+    github: boolean;
+    linkedin: boolean;
+    resume: boolean;
+    twitter: boolean;
+  };
+}
+
 interface PipelineSharePageProps {
   pipelineName: string;
   onBack?: () => void;
@@ -67,7 +84,6 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [accessEmail, setAccessEmail] = useState("");
   const [accessLevel, setAccessLevel] = useState<"view" | "edit">("view");
   const [isSharing, setIsSharing] = useState(false); // Added for loading state
-  const [stageCandidates, setStageCandidates] = useState({});
   const [stageIdMap, setStageIdMap] = useState<{ [key: string]: number }>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [candidateDetails, setCandidateDetails] = useState<any>(null);
@@ -92,6 +108,36 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const jobId = pipelineId;
 
   const [isExpanded, setIsExpanded] = useState(false);
+const [stageCandidates, setStageCandidates] = useState<{ [key: string]: Candidate[] }>({});
+const [highlightedCandidateId, setHighlightedCandidateId] = useState<string | null>(null);
+
+const handleSearch = () => {
+  if (!searchQuery.trim()) return;
+  let found: Candidate | null = null;
+  Object.keys(stageCandidates).forEach((stage) => {
+    const cand = stageCandidates[stage].find(
+      (c: Candidate) => c.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    if (cand) found = cand;
+  });
+  if (found) {
+    setHighlightedCandidateId(found.id);
+    setTimeout(() => {
+      const el = document.getElementById(`candidate-${found!.id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+      }
+    }, 100);
+  } else {
+    showToast.error("No candidate found");
+    setHighlightedCandidateId(null);
+  }
+};
+
+const handleCopyLink = () => {
+  navigator.clipboard.writeText(`https://app.nxthyre.com/pipelines/${pipelineId}`);
+  showToast.success("Pipeline link copied to clipboard");
+};
   
   const getDifficultyLevel = (diff: any) => {
     const num = parseInt(diff);
@@ -465,10 +511,13 @@ const ArchiveIcon = () => (
 
   const renderCandidateCard = (candidate: any, stage: string) => (
   <div
+    id={`candidate-${candidate.id}`}
     key={candidate.id}
     draggable
     onDragStart={() => handleDragStart(candidate, stage)}
-    className="bg-white rounded-2xl p-4 mb-2 cursor-move hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-gray-300"
+    className={`bg-white rounded-2xl p-4 mb-2 cursor-move hover:shadow-lg transition-all duration-200 border ${
+      highlightedCandidateId === candidate.id ? "border-blue-500 border-2" : "border-gray-200"
+    } hover:border-gray-300`}
   >
     {/* Main Grid Container - 12 columns */}
     <div className="grid grid-cols-12 gap-3 items-start">
@@ -1161,9 +1210,15 @@ const ArchiveIcon = () => (
                   <input
                     type="text"
                     placeholder="Search Candidate"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                     className="text-sm bg-blue-50 text-gray-700 placeholder-gray-400 w-88"
                   />
-                  <div className="w-8 h-7 flex items-center justify-center bg-blue-500 rounded-lg ml-2">
+                  <div
+                    onClick={handleSearch}
+                    className="w-8 h-7 flex items-center justify-center bg-blue-500 rounded-lg ml-2 cursor-pointer"
+                  >
                     <Search className="w-4 h-4 text-white" />
                   </div>
                 </div>
@@ -1175,6 +1230,7 @@ const ArchiveIcon = () => (
                   <Mail className="w-4 h-4" />
                 </button>
                 <button
+                  onClick={handleCopyLink}
                   className="p-1 border border-gray-300 text-gray-300 text-sm font-medium rounded-full hover:bg-blue-500 hover:text-white transition-colors flex items-center space-x-2"
                 >
                   <Link className="w-4 h-4" />
