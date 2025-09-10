@@ -344,47 +344,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     setCitiesList(value ? citiesList : []); // Update cities list based on country
   }
 
-    // Validate experience inputs
-    if (["minTotalExp", "maxTotalExp", "minExperience"].includes(key)) {
-      const isValidNumber = (val: string) => /^\d*$/.test(val);
-      if (!isValidNumber(value)) {
-        return; // Ignore invalid input
-      }
-    }
-
-    if (
-      key === "minTotalExp" &&
-      newFilters.maxTotalExp &&
-      Number(value) > Number(newFilters.maxTotalExp)
-    ) {
-      showToast.error("Min experience cannot be greater than max experience");
-      return;
-    }
-    if (
-      key === "maxTotalExp" &&
-      newFilters.minTotalExp &&
-      Number(value) < Number(newFilters.minTotalExp)
-    ) {
-      showToast.error("Max experience cannot be less than min experience");
-      return;
-    }
-    if (
-      key === "minSalary" &&
-      newFilters.maxSalary &&
-      Number(value) > Number(newFilters.maxSalary)
-    ) {
-      showToast.error("Min salary cannot be greater than max salary");
-      return;
-    }
-    if (
-      key === "maxSalary" &&
-      newFilters.minSalary &&
-      Number(value) < Number(newFilters.minSalary)
-    ) {
-      showToast.error("Max salary cannot be less than min salary");
-      return;
-    }
-
     setTempFilters(newFilters);
     if (key === "keywords") {
       fetchKeywordSuggestions(currentKeyword);
@@ -476,13 +435,63 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     updateTempFilters("locations", updatedLocations);
   };
 
+  const isFilterSelected = () => {
+    return Object.keys(tempFilters).some((key) => {
+      if (["jobId", "application_type", "is_prevetted", "is_active", "sort_by"].includes(key)) {
+        return false;
+      }
+      const value = tempFilters[key as keyof typeof tempFilters];
+      if (Array.isArray(value)) return value.length > 0;
+      if (typeof value === "boolean") return value;
+      if (typeof value === "string") return value.trim() !== "";
+      return false;
+    });
+  };
+
+  const validateFilters = () => {
+    const isValidNumber = (value: string) => /^\d+$/.test(value);
+
+    if (
+      (tempFilters.minTotalExp && !isValidNumber(tempFilters.minTotalExp)) ||
+      (tempFilters.maxTotalExp && !isValidNumber(tempFilters.maxTotalExp)) ||
+      (tempFilters.minExperience && !isValidNumber(tempFilters.minExperience)) ||
+      (tempFilters.minSalary && !isValidNumber(tempFilters.minSalary)) ||
+      (tempFilters.maxSalary && !isValidNumber(tempFilters.maxSalary))
+    ) {
+      showToast.error("Invalid input in experience or salary fields. Please enter numbers only.");
+      return false;
+    }
+
+    if (
+      tempFilters.minTotalExp &&
+      tempFilters.maxTotalExp &&
+      Number(tempFilters.minTotalExp) > Number(tempFilters.maxTotalExp)
+    ) {
+      showToast.error("Minimum total experience cannot be greater than maximum.");
+      return false;
+    }
+
+    if (
+      tempFilters.minSalary &&
+      tempFilters.maxSalary &&
+      Number(tempFilters.minSalary) > Number(tempFilters.maxSalary)
+    ) {
+      showToast.error("Minimum salary cannot be greater than maximum.");
+      return false;
+    }
+
+    // Add similar checks for other ranges if needed
+
+    return true;
+  };
+
 
   const resetFilters = () => {
     setIsLocationManuallyEdited(false);
     setKeywordSuggestions([]);
     setShowSuggestions(false);
     setCurrentKeyword("");
-    setTempFilters({
+    const resetTemp = {
       keywords: [],
       booleanSearch: false,
       semanticSearch: false,
@@ -517,29 +526,28 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       is_prevetted: activeTab === "prevetted",
       is_active: activeTab === "active",
       sort_by: "",
-    });
+    };
+    setTempFilters(resetTemp);
     setCandidates([]);
     setShowSuggestions(false);
+    onApplyFilters(resetTemp);
   };
 
   const applyFilters = async () => {
-    try {
-      // Apply the filters by calling the parent component's callback
-      const filtersForBackend = {
-        ...tempFilters,
-        // keywords: tempFilters.keywords.join(", "), // Convert array to string for backend
-      };
-      await onApplyFilters(filtersForBackend);
+    if (!validateFilters()) {
+      return;
+    }
 
-      // Refetch recent searches to update the JobTitlesSlider
-      // const searches = await candidateService.getRecentSearches();
-      // setRecentSearches(searches);
-    } catch (error) {
-      console.error(
-        "Error applying filters or fetching recent searches:",
-        error
-      );
-      showToast.error("Failed to apply filters or update recent searches");
+    if (!isFilterSelected()) {
+      showToast.error("No filter selected");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await onApplyFilters(tempFilters);
+    } finally {
+      setIsLoading(false);
     }
   };
 
