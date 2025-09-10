@@ -1685,7 +1685,7 @@ const handleConfirmReveal = async () => {
                           {showSettingsPopup && (
                             <div
                               ref={settingsPopupRef}
-                              className="absolute top-full right-0 mt-2 p-4 w-96 bg-white border border-gray-200 rounded-md shadow-lg"
+                              className="absolute top-full right-0 mt-2 p-4 w-96 bg-white border border-gray-200 rounded-md shadow-lg z-20"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <div className="border-b border-gray-400">
