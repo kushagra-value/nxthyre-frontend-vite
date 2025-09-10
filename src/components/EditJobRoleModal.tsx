@@ -46,7 +46,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     keepPrivate: false,
     title: "",
     skills: [] as string[],
-    location: "",
+    location: [] as string[],
     workApproach: "Hybrid" as "Onsite" | "Remote" | "Hybrid",
     hybrid: true,
     seniority: "",
@@ -63,7 +63,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
   });
 
   const [skillInput, setSkillInput] = useState("");
-  const [locationInput, setLocationInput] = useState("");
+  const [locationInput, setLocationInput] = useState<string[]>([]);
   const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
   const [competencyInput, setCompetencyInput] = useState("");
   const [refinementInput, setRefinementInput] = useState("");
@@ -169,7 +169,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     const requiredFields = {
       title: formData.title.trim(),
       skills: formData.skills.length > 0,
-      location: formData.location.trim(),
+      location: formData.location,
       seniority: formData.seniority.trim(),
       department:
         formData.department.trim() && departmentNameToId[formData.department],
@@ -194,7 +194,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       errors.push("Job title contains invalid characters.");
     if (!requiredFields.skills) errors.push("At least one skill is required.");
     if (!requiredFields.location) errors.push("Location is required.");
-    if (!isValidTextInput(formData.location))
+    if (!isValidTextInput(formData.location[0] || ""))
       errors.push("Location contains invalid characters.");
     if (!requiredFields.seniority) errors.push("Seniority is required.");
     if (!requiredFields.department)
@@ -297,8 +297,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
   };
 
   const handleLocationAdd = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && locationInput.trim()) {
-      if (!isValidTextInput(locationInput)) {
+    if (e.key === "Enter" && locationInput) {
+      if (!isValidTextInput(locationInput[0] || "")) {
         showToast.error(
           "Location can only contain letters, numbers, commas, and spaces."
         );
@@ -306,19 +306,19 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       }
       setFormData((prev) => ({
         ...prev,
-        location: locationInput.trim(),
+        location: locationInput,
       }));
-      setLocationInput("");
+      setLocationInput([]);
       setLocationSuggestions([]);
     }
   };
 
-  const handleLocationSelect = (location: string) => {
+  const handleLocationSelect = (location: string[]) => {
     setFormData((prev) => ({
       ...prev,
       location,
     }));
-    setLocationInput("");
+    setLocationInput([]);
     setLocationSuggestions([]);
   };
 
@@ -326,12 +326,12 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const query = e.target.value;
-    setLocationInput(query);
+    setLocationInput([query]);
     if (query.length > 2) {
       try {
         const suggestions = await jobPostService.getLocationSuggestions(query);
         const uniqueSuggestions = [...new Set(suggestions)].filter(
-          (s) => s !== formData.location
+          (s) => !formData.location.includes(s)
         );
         setLocationSuggestions(uniqueSuggestions);
       } catch (error) {
@@ -449,7 +449,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     let location = formData.location;
     let isHybrid = formData.workApproach === "Hybrid";
     if (formData.workApproach === "Remote") {
-      location = "Remote";
+      location = ["Remote"];
       isHybrid = false;
     }
 
@@ -528,7 +528,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     let location = formData.location;
     let isHybrid = formData.workApproach === "Hybrid";
     if (formData.workApproach === "Remote") {
-      location = "Remote";
+      location = ["Remote"];
       isHybrid = false;
     }
 
@@ -638,7 +638,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       keepPrivate: false,
       title: "",
       skills: [],
-      location: "",
+      location: [],
       workApproach: "Hybrid",
       hybrid: false,
       seniority: "",
@@ -654,7 +654,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       codingRound: false,
     });
     setSkillInput("");
-    setLocationInput("");
+    setLocationInput([]);
     setLocationSuggestions([]);
     setCompetencyInput("");
     setFile(null);
@@ -676,8 +676,13 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
           let workApproach: "Onsite" | "Remote" | "Hybrid" = "Onsite";
           if (job.is_hybrid) {
             workApproach = "Hybrid";
-          } else if (job.location.toLowerCase() === "remote") {
+          } else if (
+            job.location.includes("Remote") ||
+            job.location.includes("remote")
+          ) {
             workApproach = "Remote";
+          } else {
+            workApproach = "Onsite";
           }
 
           setFormData({
@@ -957,7 +962,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                         <div
                           key={index}
                           className="px-4 py-3 text-md text-gray-700 hover:bg-blue-100 cursor-pointer"
-                          onClick={() => handleLocationSelect(suggestion)}
+                          onClick={() => handleLocationSelect([suggestion])}
                         >
                           {suggestion}
                         </div>
@@ -970,7 +975,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                         <X
                           className="w-3 h-3 mr-1 cursor-pointer"
                           onClick={() =>
-                            setFormData((prev) => ({ ...prev, location: "" }))
+                            setFormData((prev) => ({ ...prev, location: [] }))
                           }
                         />
                         {formData.location}

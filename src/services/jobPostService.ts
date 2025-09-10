@@ -87,7 +87,7 @@ export interface SearchedCandidateItem {
 
 export interface CreateJobData {
   title: string;
-  location: string;
+  location: string[];
   is_hybrid: boolean;
   seniority: string;
   department: number;
@@ -164,7 +164,12 @@ class JobPostService {
     try {
       const formData = new FormData();
       formData.append("title", data.title);
-      formData.append("location", data.location);
+      // Append each location individually
+      if (data.location) {
+        data.location.forEach((loc) => {
+          formData.append("location", loc);
+        });
+      }
       formData.append("is_hybrid", String(data.is_hybrid));
       formData.append("seniority", data.seniority);
       formData.append("department", String(data.department));
@@ -227,7 +232,12 @@ class JobPostService {
     try {
       const formData = new FormData();
       if (data.title) formData.append("title", data.title);
-      if (data.location) formData.append("location", data.location);
+      // Append each location individually
+      if (data.location) {
+        data.location.forEach((loc) => {
+          formData.append("location", loc);
+        });
+      }
       if (data.is_hybrid !== undefined)
         formData.append("is_hybrid", String(data.is_hybrid));
       if (data.seniority) formData.append("seniority", data.seniority);
