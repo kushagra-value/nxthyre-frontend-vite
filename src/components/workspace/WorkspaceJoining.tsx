@@ -30,10 +30,7 @@ const WorkspaceJoining: React.FC<WorkspaceJoiningProps> = ({ onNavigate }) => {
         const userPendingRequests: any[] = [];
         await Promise.all(
           discoverWorkspaces.map(async (workspace: any) => {
-            const requests = await organizationService.getPendingJoinRequests(
-              workspace.organization,
-              workspace.id
-            );
+            const requests = await organizationService.getPendingJoinRequests();
             // Filter requests to find those belonging to the current user
             const userRequest = requests.find(
               (req: any) => req.userId === user.id
