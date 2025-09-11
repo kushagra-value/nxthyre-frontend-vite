@@ -535,7 +535,7 @@ function MainApp() {
             (role) =>
               role.workspace_id !== null && role.workspace_id !== undefined
           )
-          .map((role) => role.workspace_id!.toString()),
+          .map((role) => Number(role.workspace_id)),
         isVerified: firebaseUser?.emailVerified ?? true,
         createdAt:
           firebaseUser?.metadata.creationTime || new Date().toISOString(),
@@ -1290,8 +1290,8 @@ function MainApp() {
                     <CreateJobRoleModal
                       isOpen={showCreateJobRole}
                       workspaceId={
-                        currentUser?.workspaceIds
-                          ? parseInt(currentUser.workspaceIds[0])
+                        currentUser?.workspaceIds?.length
+                          ? currentUser.workspaceIds[0]
                           : 1
                       }
                       handlePipelinesClick={handlePipelinesClick}
@@ -1305,8 +1305,8 @@ function MainApp() {
                         setEditingJobId(null);
                       }}
                       workspaceId={
-                        currentUser?.workspaceIds
-                          ? parseInt(currentUser.workspaceIds[0])
+                        currentUser?.workspaceIds?.length
+                          ? currentUser.workspaceIds[0]
                           : 1
                       }
                       jobId={editingJobId || 0}

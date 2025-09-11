@@ -4,7 +4,7 @@ export interface User {
   email: string;
   role: string;
   organizationId?: string | undefined;
-  workspaceIds: string[];
+  workspaceIds: number[];
   isVerified: boolean;
   createdAt: string;
 }
@@ -30,7 +30,7 @@ export interface Workspace {
 export interface JoinRequest {
   id: string;
   userId: string;
-  workspaceId: string;
+  workspaceId: number;
   status: "pending" | "approved" | "rejected";
   createdAt: string;
 }

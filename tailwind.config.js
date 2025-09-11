@@ -42,7 +42,7 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["Gellix", "Inter", "system-ui", "sans-serif"],
+        sans: ["Gellix"],
       },
       spacing: {
         18: "4.5rem",
