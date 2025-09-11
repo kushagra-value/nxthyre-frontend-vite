@@ -469,14 +469,14 @@ function MainApp() {
     setTotalCount(count);
     if (newCandidates.length > 0 && !selectedCandidate) {
     setSelectedCandidate(newCandidates[0]);
-    } else if (newCandidates.length === 0) {
-      setSelectedCandidate(null);
-    } else {
-      const updatedSelected = newCandidates.find(c => c.id === selectedCandidate?.id);
-      if (updatedSelected) {
-        setSelectedCandidate(updatedSelected);
-      }
+  } else if (newCandidates.length === 0) {
+    setSelectedCandidate(null);
+  } else {
+    const updatedSelected = newCandidates.find(c => c.id === selectedCandidate?.id);
+    if (updatedSelected) {
+      setSelectedCandidate(updatedSelected);
     }
+  }
   };
 
   const handleJobCreatedOrUpdated = () => {
