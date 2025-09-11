@@ -327,18 +327,17 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     if (key === "city") {
     if (value) {
       addLocation(value); // Add the selected city to the locations list
+      newFilters = {
+        ...newFilters,
+        city: "", // Clear the city dropdown after adding to locations
+        country: cityToCountryMap[value] || tempFilters.country, // Update country if available
+      };
     }
-    newFilters = {
-      ...newFilters,
-      city: value,
-      country: cityToCountryMap[value] || tempFilters.country, // Update country if available
-    };
   } else if (key === "country") {
     setIsLocationManuallyEdited(false);
-    let newCountry = value;
     newFilters = {
       ...newFilters,
-      country: newCountry,
+      country: value,
       city: "", // Reset city when country changes
     };
     setCitiesList(value ? citiesList : []); // Update cities list based on country
@@ -747,14 +746,13 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           </div>
           {expandedSections.location && (
             <div className="space-y-2">
-              {/* <div className="w-full flex space-x-2">
+              <div className="w-full flex space-x-2">
                 
                 <select
                   value={tempFilters.country}
                   onChange={(e) => updateTempFilters("country", e.target.value)}
                   className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
                 >
-                  <option value="">Country</option>
                   {countriesList.map((country) => (
                     <option key={country} value={country}>
                       {country}
@@ -767,14 +765,17 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                   className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
                   disabled={!tempFilters.country && !citiesList.length}
                 >
-                  <option value="">City</option>
                   {citiesList.map((city) => (
                     <option key={city} value={city}>
                       {city}
                     </option>
                   ))}
                 </select>
-              </div> */}
+              </div>
+              <div className="w-full flex space-x-2">
+              <label className="w-full flex-1 px-2 py-1.5 text-sm  text-gray-400"> Country</label> 
+              <label className="w-full flex-1 px-2 py-1.5 text-sm  text-gray-400"> City</label> 
+              </div>
               <input
                 type="text"
                 placeholder="Enter Location like Ahmedabad and press enter"
