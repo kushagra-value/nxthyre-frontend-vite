@@ -786,6 +786,36 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                             <h3 className="text-xs lg:text-base font-[600] text-gray-900">
                               {candidate.full_name}
                             </h3>
+                            {activeTab === "active" &&
+                              candidate.last_active_at && (
+                                <div className="flex items-center space-x-1">
+                                  {(() => {
+                                    const lastActiveDate: Date = new Date(
+                                      candidate.last_active_at as string
+                                    );
+                                    const today: Date = new Date();
+
+                                    // Compare only date part (ignore time)
+                                    const diffTime: number =
+                                      today.setHours(0, 0, 0, 0) -
+                                      lastActiveDate.setHours(0, 0, 0, 0);
+                                    const diffDays: number = Math.floor(
+                                      diffTime / (1000 * 60 * 60 * 24)
+                                    );
+
+                                    if (diffDays === 0) {
+                                      return "Active today";
+                                    } else if (diffDays > 0) {
+                                      return `Active ${diffDays} day${
+                                        diffDays > 1 ? "s" : ""
+                                      } ago`;
+                                    } else {
+                                      return "N/A"; // fallback if backend sends future dates
+                                    }
+                                  })()}
+                                </div>
+                              )}
+
                             {candidate.is_background_verified && (
                               <div
                                 className="relative flex space-x-1"
