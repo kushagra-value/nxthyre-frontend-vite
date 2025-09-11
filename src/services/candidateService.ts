@@ -3,6 +3,7 @@ import apiClient from "./api";
 export interface CandidateListItem {
   id: string;
   full_name: string;
+  last_active_at: string;
   current_salary_lpa: string;
   avatar: string;
   headline: string;
@@ -371,9 +372,7 @@ export type Note = {
 };
 
 class CandidateService {
-  async getCandidates(
-    filters: any
-  ): Promise<CandidateSearchResponse> {
+  async getCandidates(filters: any): Promise<CandidateSearchResponse> {
     try {
       const response = await apiClient.post("/candidates/search/", { filters });
       return response.data;
@@ -384,9 +383,7 @@ class CandidateService {
     }
   }
 
-  async searchCandidates(
-    params: any
-  ): Promise<CandidateSearchResponse> {
+  async searchCandidates(params: any): Promise<CandidateSearchResponse> {
     try {
       const { page, ...body } = params;
       const response = await apiClient.post(
@@ -401,7 +398,10 @@ class CandidateService {
     }
   }
 
-  async universalSearch(query: string, signal?: AbortSignal): Promise<CandidateSearchResponse> {
+  async universalSearch(
+    query: string,
+    signal?: AbortSignal
+  ): Promise<CandidateSearchResponse> {
     try {
       let normalizedQuery = query;
       // Check if the query is a LinkedIn URL
