@@ -1317,6 +1317,7 @@ function MainApp() {
                         setShowEditJobRole(false);
                         setEditingJobId(null);
                       }}
+                      handlePipelinesClick={handlePipelinesClick}
                       workspaceId={
                         currentUser?.workspaceIds?.length
                           ? currentUser.workspaceIds[0]
