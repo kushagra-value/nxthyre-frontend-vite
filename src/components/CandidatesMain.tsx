@@ -186,6 +186,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
           selectedCandidates
         );
       showToast.success(response.message);
+      const updatedCandidates = candidates.filter((c) => !selectedCandidates.includes(c.id));
+      onCandidatesUpdate(updatedCandidates, totalCount - selectedCandidates.length);
+      if (selectedCandidates.includes(selectedCandidate?.id || '')) {
+        setSelectedCandidate(updatedCandidates[0] || null);
+      }
       setSelectedCandidates([]);
       setSelectAll(false);
     } catch (error: any) {
@@ -249,6 +254,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
           stageId ? ` (${stageName})` : ""
         }`
       );
+      const updatedCandidates = candidates.filter((c) => c.id !== candidateId);
+      onCandidatesUpdate(updatedCandidates, totalCount - 1);
+      if (selectedCandidate?.id === candidateId) {
+        setSelectedCandidate(updatedCandidates[0] || null);
+      }
       setShowDropdown(null);
     } catch (error: any) {
       console.error("Save to Pipeline Error:", error.message);
@@ -480,7 +490,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 {tab.label}
                 {tab.count > 0 && (
                   <span className="ml-2 px-2 py-1 text-xs bg-blue-50 text-gray-600 rounded-full">
-                    {tab.count}
+                    {activeTab === tab.id && loadingCandidates ? '...' : tab.count}
                   </span>
                 )}
               </button>
