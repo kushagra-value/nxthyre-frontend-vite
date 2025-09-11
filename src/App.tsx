@@ -851,48 +851,57 @@ function MainApp() {
   };
 
   const handleApplyFilters = (newFilters: any) => {
-    const isFilterSelected = Object.keys(newFilters).some((key) => {
-      if (
-        key === "jobId" ||
-        key === "application_type" ||
-        key === "is_prevetted" ||
-        key === "is_active" ||
-        key === "sort_by"
-      )
-        return false;
-      const value = newFilters[key as keyof Filters];
-      if (Array.isArray(value)) return value.length > 0;
-      if (typeof value === "boolean") return value;
-      if (typeof value === "string") return value.trim() !== "";
-      return false;
-    });
+  // Validate numeric inputs if provided
+  const isValidNumber = (value: string) => /^\d+$/.test(value);
 
-    if (!isFilterSelected) {
-      showToast.error(
-        "Please select at least one filter in the filter section."
-      );
-      return;
-    }
+  if (
+    (newFilters.minTotalExp && !isValidNumber(newFilters.minTotalExp)) ||
+    (newFilters.maxTotalExp && !isValidNumber(newFilters.maxTotalExp)) ||
+    (newFilters.minExperience && !isValidNumber(newFilters.minExperience)) ||
+    (newFilters.minSalary && !isValidNumber(newFilters.minSalary)) ||
+    (newFilters.maxSalary && !isValidNumber(newFilters.maxSalary))
+  ) {
+    showToast.error(
+      "Invalid input in experience or salary fields. Please enter numbers only."
+    );
+    setCandidates([]);
+    setTotalCount(0);
+    setCurrentPage(1);
+    setSelectedCandidate(null);
+    return;
+  }
 
-    const isValidNumber = (value: string) => /^\d+$/.test(value);
-    if (
-      (newFilters.minTotalExp && !isValidNumber(newFilters.minTotalExp)) ||
-      (newFilters.maxTotalExp && !isValidNumber(newFilters.maxTotalExp)) ||
-      (newFilters.minExperience && !isValidNumber(newFilters.minExperience))
-    ) {
-      showToast.error(
-        "No results found due to invalid input in experience fields."
-      );
-      setCandidates([]);
-      setTotalCount(0);
-      setCurrentPage(1);
-      setSelectedCandidate(null);
-      return;
-    }
+  // Validate range logic if provided
+  if (
+    newFilters.minTotalExp &&
+    newFilters.maxTotalExp &&
+    Number(newFilters.minTotalExp) > Number(newFilters.maxTotalExp)
+  ) {
+    showToast.error("Minimum total experience cannot be greater than maximum.");
+    setCandidates([]);
+    setTotalCount(0);
+    setCurrentPage(1);
+    setSelectedCandidate(null);
+    return;
+  }
 
-    setFilters(newFilters);
-    fetchCandidates(1, newFilters);
-  };
+  if (
+    newFilters.minSalary &&
+    newFilters.maxSalary &&
+    Number(newFilters.minSalary) > Number(newFilters.maxSalary)
+  ) {
+    showToast.error("Minimum salary cannot be greater than maximum.");
+    setCandidates([]);
+    setTotalCount(0);
+    setCurrentPage(1);
+    setSelectedCandidate(null);
+    return;
+  }
+
+  // Update filters and fetch candidates
+  setFilters(newFilters);
+  fetchCandidates(1, newFilters);
+};
 
   if (authLoading) {
     return (

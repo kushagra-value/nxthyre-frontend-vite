@@ -42,6 +42,23 @@ interface DraggedCandidate {
   fromStage: any;
 }
 
+interface Candidate {
+  id: string;
+  name: string;
+  company: string;
+  role: string;
+  location: string;
+  avatar: string;
+  notes: string;
+  lastUpdated: Date;
+  socials: {
+    github: boolean;
+    linkedin: boolean;
+    resume: boolean;
+    twitter: boolean;
+  };
+}
+
 interface PipelineSharePageProps {
   pipelineName: string;
   onBack?: () => void;
@@ -67,9 +84,10 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [accessEmail, setAccessEmail] = useState("");
   const [accessLevel, setAccessLevel] = useState<"view" | "edit">("view");
   const [isSharing, setIsSharing] = useState(false); // Added for loading state
-  const [stageCandidates, setStageCandidates] = useState({});
   const [stageIdMap, setStageIdMap] = useState<{ [key: string]: number }>({});
   const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<Candidate[]>([]);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const [candidateDetails, setCandidateDetails] = useState<any>(null);
   const [assessmentResults, setAssessmentResults] = useState<any>(null);
   const [loadingCandidateDetails, setLoadingCandidateDetails] = useState(false);
@@ -92,6 +110,79 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const jobId = pipelineId;
 
   const [isExpanded, setIsExpanded] = useState(false);
+const [stageCandidates, setStageCandidates] = useState<{ [key: string]: Candidate[] }>({});
+const [highlightedCandidateId, setHighlightedCandidateId] = useState<string | null>(null);
+
+const handleSearch = () => {
+  if (!searchQuery.trim()) return;
+  let found: Candidate | null = null;
+  Object.keys(stageCandidates).forEach((stage) => {
+    const cand = stageCandidates[stage].find(
+      (c: Candidate) => c.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    if (cand) found = cand;
+  });
+  if (found) {
+    setHighlightedCandidateId(found.id);
+    setTimeout(() => {
+      const el = document.getElementById(`candidate-${found!.id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+      }
+    }, 100);
+  } else {
+    showToast.error("No candidate found");
+    setHighlightedCandidateId(null);
+  }
+};
+
+const handleSelectSuggestion = (candidate: Candidate) => {
+  setHighlightedCandidateId(candidate.id);
+  setTimeout(() => {
+    const el = document.getElementById(`candidate-${candidate.id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+    }
+  }, 100);
+  setSuggestions([]);
+  setSearchQuery(candidate.name);
+  setSelectedSuggestionIndex(-1);
+};
+
+
+const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    if (suggestions.length > 0 && selectedSuggestionIndex >= 0) {
+      handleSelectSuggestion(suggestions[selectedSuggestionIndex]);
+    } else {
+      handleSearch();
+    }
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    setSelectedSuggestionIndex(prev => 
+      prev < suggestions.length - 1 ? prev + 1 : 0
+    );
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    setSelectedSuggestionIndex(prev => 
+      prev > 0 ? prev - 1 : suggestions.length - 1
+    );
+  } else if (e.key === 'Escape') {
+    setSuggestions([]);
+    setSelectedSuggestionIndex(-1);
+    setSearchQuery('');
+  } else if (e.key === 'Tab') {
+    if (suggestions.length > 0 && selectedSuggestionIndex === -1) {
+      setSelectedSuggestionIndex(0);
+    }
+  }
+};
+
+const handleCopyLink = () => {
+  navigator.clipboard.writeText(`https://app.nxthyre.com/pipelines/${pipelineId}`);
+  showToast.success("Pipeline link copied to clipboard");
+};
   
   const getDifficultyLevel = (diff: any) => {
     const num = parseInt(diff);
@@ -465,10 +556,13 @@ const ArchiveIcon = () => (
 
   const renderCandidateCard = (candidate: any, stage: string) => (
   <div
+    id={`candidate-${candidate.id}`}
     key={candidate.id}
     draggable
     onDragStart={() => handleDragStart(candidate, stage)}
-    className="bg-white rounded-2xl p-4 mb-2 cursor-move hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-gray-300"
+    className={`bg-white rounded-2xl p-4 mb-2 cursor-move hover:shadow-lg transition-all duration-200 border ${
+      highlightedCandidateId === candidate.id ? "border-blue-500 border-2" : "border-gray-200"
+    } hover:border-gray-300`}
   >
     {/* Main Grid Container - 12 columns */}
     <div className="grid grid-cols-12 gap-3 items-start">
@@ -1161,11 +1255,51 @@ const ArchiveIcon = () => (
                   <input
                     type="text"
                     placeholder="Search Candidate"
-                    className="text-sm bg-blue-50 text-gray-700 placeholder-gray-400 w-88"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      const query = e.target.value;
+                      setSearchQuery(query);
+                      if (query.trim()) {
+                        const allCandidates = Object.values(stageCandidates).flat();
+                        const filtered = allCandidates.filter((c: Candidate) =>
+                          c.name.toLowerCase().includes(query.toLowerCase())
+                        );
+                        setSuggestions(filtered.slice(0, 5));
+                        setSelectedSuggestionIndex(-1);
+                      } else {
+                        setSuggestions([]);
+                      }
+                    }}
+                    onKeyDown={handleInputKeyDown}
+                    className="text-sm bg-blue-50 text-gray-700 placeholder-gray-400 w-full outline-none"
                   />
-                  <div className="w-8 h-7 flex items-center justify-center bg-blue-500 rounded-lg ml-2">
+                  <div
+                    onClick={handleSearch}
+                    className="w-8 h-7 flex items-center justify-center bg-blue-500 rounded-lg ml-2 cursor-pointer"
+                  >
                     <Search className="w-4 h-4 text-white" />
                   </div>
+                  {suggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-10 max-h-60 overflow-y-auto">
+                      {suggestions.map((suggestion, index) => (
+                        <div
+                          key={suggestion.id}
+                          onClick={() => handleSelectSuggestion(suggestion)}
+                          className={`p-3 cursor-pointer hover:bg-gray-100 flex items-center gap-3 border-b border-gray-100 last:border-b-0 ${
+                            index === selectedSuggestionIndex ? 'bg-blue-50' : ''
+                          }`}
+                        >
+                          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-bold">
+                            {suggestion.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-900">{suggestion.name}</div>
+                            <div className="text-sm text-gray-500">{suggestion.role} at {suggestion.company}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <p className="text-sm text-gray-500">Share:</p>
                 <button
@@ -1175,6 +1309,7 @@ const ArchiveIcon = () => (
                   <Mail className="w-4 h-4" />
                 </button>
                 <button
+                  onClick={handleCopyLink}
                   className="p-1 border border-gray-300 text-gray-300 text-sm font-medium rounded-full hover:bg-blue-500 hover:text-white transition-colors flex items-center space-x-2"
                 >
                   <Link className="w-4 h-4" />
