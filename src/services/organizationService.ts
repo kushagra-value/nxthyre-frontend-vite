@@ -163,6 +163,10 @@ class OrganizationService {
           name,
         }
       );
+
+      // ✅ reload the page and stay on the same route
+      window.location.reload();
+
       return response.data;
     } catch (error: any) {
       throw new Error(
