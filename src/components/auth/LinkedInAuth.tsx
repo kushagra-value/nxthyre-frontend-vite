@@ -108,7 +108,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
         setIsLoading(false);
         // Redirect to initial login page
         setTimeout(() => {
-          window.location.href = "https://nxthyre-frontend-vite.vercel.app";
+          window.location.href = "https://app.nxthyre.com";
         }, 3000);
       } finally {
         setIsLoading(false);
