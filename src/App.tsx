@@ -467,11 +467,16 @@ function MainApp() {
   ) => {
     setCandidates(newCandidates);
     setTotalCount(count);
-    if (newCandidates.length > 0) {
-      setSelectedCandidate(newCandidates[0]);
-    } else {
-      setSelectedCandidate(null);
+    if (newCandidates.length > 0 && !selectedCandidate) {
+    setSelectedCandidate(newCandidates[0]);
+  } else if (newCandidates.length === 0) {
+    setSelectedCandidate(null);
+  } else {
+    const updatedSelected = newCandidates.find(c => c.id === selectedCandidate?.id);
+    if (updatedSelected) {
+      setSelectedCandidate(updatedSelected);
     }
+  }
   };
 
   const handleJobCreatedOrUpdated = () => {
@@ -851,6 +856,13 @@ function MainApp() {
     setShowShareableProfile(false);
     window.history.pushState({}, "", "/");
   };
+
+  const handleUpdateCandidate = (updated: CandidateListItem) => {
+  setCandidates(prev => prev.map(c => c.id === updated.id ? updated : c));
+  if (selectedCandidate?.id === updated.id) {
+    setSelectedCandidate(updated);
+  }
+};
 
   const handleApplyFilters = (newFilters: any) => {
     // Validate numeric inputs if provided
@@ -1268,6 +1280,7 @@ function MainApp() {
                             onSendInvite={handleSendInvite}
                             updateCandidateEmail={updateCandidateEmail}
                             deductCredits={deductCredits}
+                            onUpdateCandidate={handleUpdateCandidate}
                           />
                         </div>
 
@@ -1308,6 +1321,7 @@ function MainApp() {
                         setShowEditJobRole(false);
                         setEditingJobId(null);
                       }}
+                      handlePipelinesClick={handlePipelinesClick}
                       workspaceId={
                         currentUser?.workspaceIds?.length
                           ? currentUser.workspaceIds[0]
