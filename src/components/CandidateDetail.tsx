@@ -74,6 +74,7 @@ interface CandidateDetailProps {
     candidate_phone: string
   ) => void;
   deductCredits: () => Promise<void>;
+  onUpdateCandidate: (updated: CandidateListItem) => void;
 }
 
 const CandidateDetail: React.FC<CandidateDetailProps> = ({
@@ -81,6 +82,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   candidates = [],
   onSendInvite,
   updateCandidateEmail,
+  onUpdateCandidate,
   deductCredits,
 }) => {
   const [newComment, setNewComment] = useState("");
@@ -224,15 +226,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       const premResponse = await candidateService.revealPremiumData(
         candidateId
       );
-      const updated = candidates.map((c) =>
-        c.id === candidateId
-          ? {
-              ...c,
-              premium_data_unlocked: true,
-              premium_data: premResponse.premium_data,
-            }
-          : c
-      );
+      const updated = {
+        ...candidate!,
+        premium_data_unlocked: true,
+        premium_data: premResponse.premium_data,
+      };
+      onUpdateCandidate(updated);
       return premResponse;
     } catch (e) {
       showToast.error("Failed to reveal premium data");
@@ -244,7 +243,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     setShowConfirm(false);
     try {
       await handleReveal(detailedCandidate.candidate.id);
-      deductCredits();
+      await deductCredits();
+      const updatedDetails = await candidateService.getCandidateDetails(detailedCandidate.candidate.id);
+      setDetailedCandidate(updatedDetails);
       onSendInvite();
     } catch {
       showToast.error("Failed to deduct credits");

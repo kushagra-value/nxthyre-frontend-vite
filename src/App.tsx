@@ -855,6 +855,13 @@ function MainApp() {
     window.history.pushState({}, "", "/");
   };
 
+  const handleUpdateCandidate = (updated: CandidateListItem) => {
+  setCandidates(prev => prev.map(c => c.id === updated.id ? updated : c));
+  if (selectedCandidate?.id === updated.id) {
+    setSelectedCandidate(updated);
+  }
+};
+
   const handleApplyFilters = (newFilters: any) => {
   // Validate numeric inputs if provided
   const isValidNumber = (value: string) => /^\d+$/.test(value);
@@ -1269,6 +1276,7 @@ function MainApp() {
                             onSendInvite={handleSendInvite}
                             updateCandidateEmail={updateCandidateEmail}
                             deductCredits={deductCredits}
+                            onUpdateCandidate={handleUpdateCandidate}
                           />
                         </div>
 
