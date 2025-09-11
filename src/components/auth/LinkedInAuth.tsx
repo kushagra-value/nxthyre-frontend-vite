@@ -108,7 +108,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
         setIsLoading(false);
         // Redirect to initial login page
         setTimeout(() => {
-          window.location.href = "https://nxthyre-frontend-vite.vercel.app";
+          window.location.href = "https://app.nxthyre.com";
         }, 3000);
       } finally {
         setIsLoading(false);
@@ -235,10 +235,7 @@ const LinkedInAuth: React.FC<LinkedInAuthProps> = ({ onNavigate, onLogin }) => {
           {/* Right Side - Form */}
           <div className="bg-white rounded-2xl p-8 shadow-2xl">
             <button
-              onClick={() =>
-                (window.location.href =
-                  "https://nxthyre-frontend-vite.vercel.app")
-              }
+              onClick={() => (window.location.href = "https://app.nxthyre.com")}
               className="flex items-center text-gray-600 hover:text-gray-800 mb-6 transition-colors"
             >
               <svg
