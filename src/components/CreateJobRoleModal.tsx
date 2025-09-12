@@ -221,8 +221,10 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
           const response = await fetch(
             `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(
               query
-            )}&apiKey=YOUR_GEOAPIFY_API_KEY`
+            )}&apiKey=1f207465a3a44d98a9c7fb42bb6de005`
           );
+
+          
           const data = await response.json();
           const suggestions = data.features.map(
             (feature: any) => feature.properties.formatted
