@@ -774,8 +774,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 </select>
               </div>
               <div className="w-full flex space-x-2">
-              <label className="w-full flex-1 px-2 py-1.5 text-sm  text-gray-400"> Country</label> 
-              <label className="w-full flex-1 px-2 py-1.5 text-sm  text-gray-400"> City</label> 
+              <label className="w-full flex-1 px-2 pb-1 text-xs text-gray-500 "> Country</label> 
+              <label className="w-full flex-1 px-2 pb-1 text-xs text-gray-500 "> City</label> 
               </div>
               <input
                 type="text"
