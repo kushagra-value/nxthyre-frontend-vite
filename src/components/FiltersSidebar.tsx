@@ -200,7 +200,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const [tempFilters, setTempFilters] = useState({
     ...filters,
     keywords: Array.isArray(filters.keywords) ? filters.keywords : [],
-    locations: Array.isArray(filters.locations) ? filters.locations : [],
   });
 
   const [currentKeyword, setCurrentKeyword] = useState<string>("");
@@ -212,10 +211,10 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   >({}); 
 
   useEffect(() => {
+    // Ensure keywords is always an array when filters change
     setTempFilters({
       ...filters,
-      keywords: Array.isArray(filters.keywords) ? filters.keywords : [],
-      locations: Array.isArray(filters.locations) ? filters.locations : [],
+      keywords: filters.keywords || [],
     });
   }, [filters]);
 
@@ -326,19 +325,22 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     let newFilters = { ...tempFilters, [key]: value };
 
     if (key === "city" && value) {
-      addLocation(value); // Add the selected city to locations
-      newFilters = {
-        ...newFilters,
-        city: "", // Clear city dropdown after selection
-      };
-    } else if (key === "country") {
-      setIsLocationManuallyEdited(false);
-      newFilters = {
-        ...newFilters,
-        country: value,
-        city: "", // Reset city when country changes
-      };
-    }
+    // When a city is selected, add it to locations and clear the city dropdown
+    addLocation(value);
+    newFilters = {
+      ...newFilters,
+      city: "", // Clear the city dropdown after adding to locations
+      // Keep the country selected so cities list remains available
+      country: cityToCountryMap[value] || tempFilters.country,
+    };
+   } else if (key === "country") {
+    setIsLocationManuallyEdited(false);
+    newFilters = {
+      ...newFilters,
+      country: value,
+      city: "", // Reset city when country changes
+    };
+  }
 
     setTempFilters(newFilters);
     if (key === "keywords") {
@@ -385,12 +387,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       }
       updateTempFilters("locations", [...tempFilters.locations, trimmed]);
       setCurrentLocation(""); // Clear input
-      setTempFilters((prev) => ({
-        ...prev,
-        city: "", // Clear city dropdown
-        country: "", // Clear country dropdown
-      }));
-      setCitiesList([]); // Clear city dropdown options
     }
   };
 
@@ -418,7 +414,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   };
 
   const handleLocationKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" ) {
+    if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
       addLocation(currentLocation);
     }
@@ -760,7 +756,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                   value={tempFilters.city}
                   onChange={(e) => updateTempFilters("city", e.target.value)}
                   className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
-                  disabled={!tempFilters.country && !citiesList.length}
+                  disabled={!tempFilters.country}
                 >
                   {citiesList.map((city) => (
                     <option key={city} value={city}>
