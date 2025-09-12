@@ -326,10 +326,17 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
     if (key === "city" && value) {
     // When a city is selected, add it to locations and clear the city dropdown
-    addLocation(value);
+     const trimmed = value.trim();
+    const lower = trimmed.toLowerCase();
+    
+    if (tempFilters.locations.some((loc) => loc.toLowerCase() === lower)) {
+      showToast.error("This location is already added.");
+      return;
+    }
     newFilters = {
       ...newFilters,
-      city: "", // Clear the city dropdown after adding to locations
+      city: "",
+      locations: [...tempFilters.locations, trimmed], // Clear the city dropdown after adding to locations
       // Keep the country selected so cities list remains available
       country: cityToCountryMap[value] || tempFilters.country,
     };
@@ -343,6 +350,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   }
 
     setTempFilters(newFilters);
+    
     if (key === "keywords") {
       fetchKeywordSuggestions(currentKeyword);
     }
