@@ -200,6 +200,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const [tempFilters, setTempFilters] = useState({
     ...filters,
     keywords: Array.isArray(filters.keywords) ? filters.keywords : [],
+    locations: Array.isArray(filters.locations) ? filters.locations : [],
   });
 
   const [currentKeyword, setCurrentKeyword] = useState<string>("");
@@ -211,10 +212,10 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   >({}); 
 
   useEffect(() => {
-    // Ensure keywords is always an array when filters change
     setTempFilters({
       ...filters,
-      keywords: filters.keywords || [],
+      keywords: Array.isArray(filters.keywords) ? filters.keywords : [],
+      locations: Array.isArray(filters.locations) ? filters.locations : [],
     });
   }, [filters]);
 
@@ -324,24 +325,20 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     
     let newFilters = { ...tempFilters, [key]: value };
 
-    if (key === "city") {
-    if (value) {
-      addLocation(value); // Add the selected city to the locations list
+    if (key === "city" && value) {
+      addLocation(value); // Add the selected city to locations
       newFilters = {
         ...newFilters,
-        city: "", // Clear the city dropdown after adding to locations
-        country: cityToCountryMap[value] || tempFilters.country, // Update country if available
+        city: "", // Clear city dropdown after selection
+      };
+    } else if (key === "country") {
+      setIsLocationManuallyEdited(false);
+      newFilters = {
+        ...newFilters,
+        country: value,
+        city: "", // Reset city when country changes
       };
     }
-  } else if (key === "country") {
-    setIsLocationManuallyEdited(false);
-    newFilters = {
-      ...newFilters,
-      country: value,
-      city: "", // Reset city when country changes
-    };
-    setCitiesList(value ? citiesList : []); // Update cities list based on country
-  }
 
     setTempFilters(newFilters);
     if (key === "keywords") {
@@ -421,7 +418,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   };
 
   const handleLocationKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === ",") {
+    if (e.key === "Enter" ) {
       e.preventDefault();
       addLocation(currentLocation);
     }
