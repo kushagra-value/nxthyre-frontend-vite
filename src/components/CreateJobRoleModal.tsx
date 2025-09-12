@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   X,
   Upload,
@@ -17,8 +17,10 @@ import {
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import { jobPostService, CreateJobData } from "../services/jobPostService";
+import {candidateService} from "../services/candidateService"
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { debounce } from "lodash";
 
 interface CreateJobRoleModalProps {
   isOpen: boolean;
@@ -62,6 +64,9 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
   });
 
   const [skillInput, setSkillInput] = useState("");
+  const [skillSuggestions, setSkillSuggestions] = useState<string[]>([]);
+  const [showSkillSuggestions, setShowSkillSuggestions] = useState(false);
+  const skillSuggestionsRef = useRef<HTMLDivElement>(null);
   const [locationInput, setLocationInput] = useState<string[]>([]);
   const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
   const [competencyInput, setCompetencyInput] = useState<string>("");
@@ -167,6 +172,99 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     </button>
   );
 
+  const fetchSkillSuggestions = useCallback(
+    debounce(async (query: string) => {
+      if (query.length >= 2) {
+        try {
+          const suggestions = await candidateService.getKeywordSuggestions(query);
+          const currentSkills = formData.skills.map((s) => s.toLowerCase());
+          const filteredSuggestions = suggestions.filter(
+            (suggestion: string) =>
+              !currentSkills.includes(suggestion.toLowerCase())
+          );
+          setSkillSuggestions(filteredSuggestions);
+          setShowSkillSuggestions(filteredSuggestions.length > 0);
+        } catch (error) {
+          console.error("Error fetching skill suggestions:", error);
+          setSkillSuggestions([]);
+          setShowSkillSuggestions(false);
+          showToast.error("Failed to fetch skill suggestions");
+        }
+      } else {
+        setSkillSuggestions([]);
+        setShowSkillSuggestions(false);
+      }
+    }, 300),
+    [formData.skills]
+  );
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        skillSuggestionsRef.current &&
+        !skillSuggestionsRef.current.contains(event.target as Node)
+      ) {
+        setShowSkillSuggestions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const fetchLocationSuggestions = useCallback(
+    debounce(async (query: string) => {
+      if (query.length >= 2) {
+        try {
+          const response = await fetch(
+            `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(
+              query
+            )}&apiKey=YOUR_GEOAPIFY_API_KEY`
+          );
+          const data = await response.json();
+          const suggestions = data.features.map(
+            (feature: any) => feature.properties.formatted
+          );
+          const uniqueSuggestions = [...new Set(suggestions)].filter(
+            (s: string) => !formData.location.includes(s)
+          );
+          setLocationSuggestions(uniqueSuggestions);
+        } catch (error) {
+          console.error("Error fetching location suggestions:", error);
+          setLocationSuggestions([]);
+          showToast.error("Failed to fetch location suggestions");
+        }
+      } else {
+        setLocationSuggestions([]);
+      }
+    }, 300),
+    [formData.location]
+  );
+
+  const handleSkillInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^a-zA-Z0-9\s]/g, "");
+    setSkillInput(value);
+    fetchSkillSuggestions(value);
+  };
+
+  const handleSkillSelect = (suggestion: string) => {
+    if (!isValidTextInput(suggestion)) {
+      showToast.error(
+        "Skills can only contain letters, numbers, commas, and spaces."
+      );
+      return;
+    }
+    setFormData((prev) => ({
+      ...prev,
+      skills: [...prev.skills, suggestion.trim()],
+    }));
+    setSkillInput("");
+    setSkillSuggestions([]);
+    setShowSkillSuggestions(false);
+  };
+
   const handleSkillAdd = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && skillInput.trim()) {
       if (!isValidTextInput(skillInput)) {
@@ -180,8 +278,11 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
         skills: [...prev.skills, skillInput.trim()],
       }));
       setSkillInput("");
+      setSkillSuggestions([]);
+      setShowSkillSuggestions(false);
     }
   };
+
 
   const removeSkill = (index: number) => {
     setFormData((prev) => ({
@@ -191,8 +292,8 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
   };
 
   const handleLocationAdd = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && locationInput) {
-      if (!isValidTextInput(locationInput[0] || "")) {
+    if (e.key === "Enter" && locationInput[0]?.trim()) {
+      if (!isValidTextInput(locationInput[0])) {
         showToast.error(
           "Location can only contain letters, numbers, commas, and spaces."
         );
@@ -200,40 +301,32 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
       }
       setFormData((prev) => ({
         ...prev,
-        location: locationInput,
+        location: [locationInput[0].trim()],
       }));
       setLocationInput([]);
       setLocationSuggestions([]);
     }
   };
 
-  const handleLocationSelect = (location: string[]) => {
+  const handleLocationSelect = (location: string) => {
+    if (!isValidTextInput(location)) {
+      showToast.error(
+        "Location can only contain letters, numbers, commas, and spaces."
+      );
+      return;
+    }
     setFormData((prev) => ({
       ...prev,
-      location,
+      location: [location], // Only one location allowed as per original code
     }));
     setLocationInput([]);
     setLocationSuggestions([]);
   };
 
-  const handleLocationChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setLocationInput([query]);
-    if (query.length > 2) {
-      try {
-        const suggestions = await jobPostService.getLocationSuggestions(query);
-        const uniqueSuggestions = [...new Set(suggestions)].filter(
-          (s) => !formData.location.includes(s)
-        );
-        setLocationSuggestions(uniqueSuggestions);
-      } catch (error) {
-        showToast.error("Failed to fetch location suggestions");
-      }
-    } else {
-      setLocationSuggestions([]);
-    }
+    fetchLocationSuggestions(query);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -851,11 +944,27 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
                     type="text"
                     placeholder="Type skill and Press Enter"
                     value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
+                    onChange={handleSkillInputChange}
                     onKeyPress={handleSkillAdd}
                     className="w-full border-none outline-none text-sm text-blue-600 placeholder-gray-400 mb-3"
                     disabled={isLoading}
                   />
+                  {showSkillSuggestions && skillSuggestions.length > 0 && (
+                    <div
+                      ref={skillSuggestionsRef}
+                      className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto"
+                    >
+                      {skillSuggestions.map((suggestion, index) => (
+                        <div
+                          key={index}
+                          onClick={() => handleSkillSelect(suggestion)}
+                          className="px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 cursor-pointer"
+                        >
+                          {suggestion}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-2">
                     {Array.isArray(formData.skills) &&
                       formData.skills.map((skill, index) => (
@@ -884,7 +993,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
                     type="text"
                     ref={locationInputRef}
                     placeholder="Type location and Press Enter"
-                    value={locationInput}
+                    value={locationInput[0] || ""}
                     onChange={handleLocationChange}
                     onKeyPress={handleLocationAdd}
                     className=" w-full border-none outline-none text-sm text-blue-600 placeholder-gray-400 mb-3"
@@ -896,7 +1005,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
                         <div
                           key={index}
                           className="px-4 py-3 text-md text-gray-700 hover:bg-blue-100 cursor-pointer"
-                          onClick={() => handleLocationSelect([suggestion])}
+                          onClick={() => handleLocationSelect(suggestion)}
                         >
                           {suggestion}
                         </div>
@@ -904,7 +1013,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
                     </div>
                   )}
                   <div className="flex flex-wrap gap-2">
-                    {formData.location && (
+                    {formData.location.length > 0 && (
                       <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center">
                         <X
                           className="w-3 h-3 mr-1 cursor-pointer"
@@ -912,7 +1021,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
                             setFormData((prev) => ({ ...prev, location: [] }))
                           }
                         />
-                        {formData.location}
+                        {formData.location[0]}
                       </span>
                     )}
                   </div>
