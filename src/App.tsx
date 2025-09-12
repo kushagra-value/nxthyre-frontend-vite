@@ -352,8 +352,6 @@ function MainApp() {
               appliedFilters.topTierUniversities;
           if (appliedFilters.hasCertification)
             filterParams.has_certification = appliedFilters.hasCertification;
-          if (appliedFilters.country)
-            filterParams.country = appliedFilters.country;
           if (appliedFilters.locations && appliedFilters.locations.length > 0)
             filterParams.locations = appliedFilters.locations;
           if (appliedFilters.companies)
