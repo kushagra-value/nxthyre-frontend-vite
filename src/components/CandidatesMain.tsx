@@ -929,7 +929,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         </div>
 
                         {activeTab === "active" && candidate.last_active_at && (
-                          <div className="flex items-center space-x-1 text-xs lg:text-base font-[400] text-[#4B5563] ml-1">
+                          <div className="flex items-center space-x-1 text-xs mt-1 font-[400] text-gray-700">
                             {(() => {
                               const lastActiveDate: Date = new Date(
                                 candidate.last_active_at as string
