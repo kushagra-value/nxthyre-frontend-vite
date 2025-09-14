@@ -29,7 +29,7 @@ import {
   Template,
   candidateService,
 } from "../services/candidateService";
-import  CKEditor  from "@ckeditor/ckeditor5-react";
+import  {CKEditor}  from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";

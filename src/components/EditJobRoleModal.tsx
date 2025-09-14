@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import { jobPostService, Job, CreateJobData } from "../services/jobPostService";
-import  CKEditor  from "@ckeditor/ckeditor5-react";
+import  {CKEditor}  from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
 interface EditJobRoleModalProps {
