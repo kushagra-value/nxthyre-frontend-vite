@@ -71,6 +71,15 @@ export interface CandidateSearchResponse {
   };
 }
 
+export interface TestEmailResponse {
+  success: string;
+  results: {
+    email: string;
+    whatsapp: string;
+    call: string;
+  };
+}
+
 export interface CandidateDetailData {
   recruiter_id: string;
   credit_balance: number;
@@ -379,6 +388,27 @@ class CandidateService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error || "Failed to fetch candidates"
+      );
+    }
+  }
+
+  async sendTestEmail(data: {
+    job_id: string;
+    candidate_id: string;
+    email: string;
+    phone: string;
+    subject: string;
+    message_body: string;
+    send_via_email: boolean;
+    send_via_phone: boolean;
+    send_via_whatsapp: boolean;
+  }): Promise<TestEmailResponse> {
+    try {
+      const response = await apiClient.post("/jobs/invites/test/", data);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to send test email"
       );
     }
   }
