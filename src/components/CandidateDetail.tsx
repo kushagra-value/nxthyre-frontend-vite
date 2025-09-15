@@ -150,7 +150,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     try {
       const response = await fetch(`https://api.logo.dev/search?q=${encodeURIComponent(query)}`, {
         headers: {
-          Authorization: `Bearer ${import.meta.env.REACT_APP_LOGO_DEV_API_KEY}`,
+          Authorization: `Bearer ${import.meta.env.VITE_LOGO_DEV_API_KEY}`,
         },
       });
       const data = await response.json();
