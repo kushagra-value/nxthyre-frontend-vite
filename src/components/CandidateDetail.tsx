@@ -160,7 +160,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             result.name.toLowerCase() === query.toLowerCase() ||
             result.domain.toLowerCase().startsWith(query.toLowerCase())
         )?.logo_url || data?.results?.[0]?.logo_url || null;
+      console.log(logoUrl);
       setLogos((prev) => ({ ...prev, [query]: logoUrl }));
+      console.log(logos);
     } catch (error) {
       console.error(`Error fetching logo for ${query}:`, error);
       setLogos((prev) => ({ ...prev, [query]: undefined }));
