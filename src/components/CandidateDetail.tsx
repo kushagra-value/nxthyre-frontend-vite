@@ -437,22 +437,18 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
               >
                 <div className="absolute rounded-full -left-[5px] top-1.5">
-                  {edu?.institution && (
-                    <div className="flex items-center space-x-2">
-                      {logos[edu.institution] ? (
-                        <img
-                          src={logos[edu.institution]}
-                          alt={`${edu.institution} logo`}
-                          className="w-4 h-4 object-contain rounded-full"
-                        />
-                        ) : (
-                          <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
-                            {getInitials(edu.institution)}
-                          </div>
-                        )}
-                      <p className="text-sm text-[#4B5563]">{edu?.institution}</p>
-                    </div>
+                  {logos[edu.institution] ? (
+                    <img
+                      src={logos[edu.institution]}
+                      alt={`${edu.institution} logo`}
+                      className="w-4 h-4 object-contain rounded-full"
+                    />
+                    ) : (
+                      <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
+                        {getInitials(edu.institution)}
+                      </div>
                   )}
+                  <p className="text-sm text-[#4B5563]">{edu?.institution}</p>
                   </div>
                 <h4 className="font-medium text-[#111827] text-sm">
                   {edu?.degree}
