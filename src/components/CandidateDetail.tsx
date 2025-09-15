@@ -154,80 +154,52 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   }, []);
 
    const fetchLogo = useCallback(async (query: string) => {
-    if (!query || logos[query] !== undefined || !isMountedRef.current) return;
-    
-    // Set loading state to prevent duplicate requests
+  if (!query || logos[query] !== undefined || !isMountedRef.current) return;
+
+  if (isMountedRef.current) {
+    setLogos(prev => ({ ...prev, [query]: undefined }));
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    const response = await fetch(`https://api.logo.dev/search?q=${encodeURIComponent(query)}`, {
+      headers: {
+        Authorization: `Bearer ${import.meta.env.VITE_LOGO_DEV_API_KEY}`,
+      },
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(`Logo API response for ${query}:`, data);
+
+    if (!isMountedRef.current) return;
+
+    let logoUrl = null;
+    if (data?.results && Array.isArray(data.results) && data.results.length > 0) {
+      logoUrl = data.results[0].logo_url;
+      console.log(`Selected logo URL for ${query}: ${logoUrl}`);
+    } else {
+      console.log(`No logo results found for ${query}`);
+    }
+
     if (isMountedRef.current) {
-      setLogos(prev => ({ ...prev, [query]: null })); // null indicates loading
+      setLogos(prev => ({ ...prev, [query]: logoUrl }));
     }
-
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
-      const response = await fetch(`https://api.logo.dev/search?q=${encodeURIComponent(query)}`, {
-        headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_LOGO_DEV_API_KEY}`,
-        },
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      if (!isMountedRef.current) return; // Component unmounted, don't update state
-
-      // Improved matching logic
-      let logoUrl = null;
-      
-      if (data?.results && Array.isArray(data.results) && data.results.length > 0) {
-        // First, try to find exact name match (case-insensitive)
-        const exactMatch = data.results.find((result: any) =>
-          result.name?.toLowerCase() === query.toLowerCase()
-        );
-        
-        if (exactMatch) {
-          logoUrl = exactMatch.logo_url;
-        } else {
-          // Second, try to find partial name match
-          const partialMatch = data.results.find((result: any) =>
-            result.name?.toLowerCase().includes(query.toLowerCase()) ||
-            query.toLowerCase().includes(result.name?.toLowerCase())
-          );
-          
-          if (partialMatch) {
-            logoUrl = partialMatch.logo_url;
-          } else {
-            // Third, try domain-based matching
-            const domainMatch = data.results.find((result: any) =>
-              result.domain?.toLowerCase().includes(query.toLowerCase().replace(/\s+/g, ''))
-            );
-            
-            if (domainMatch) {
-              logoUrl = domainMatch.logo_url;
-            } else {
-              // Finally, fall back to first result
-              logoUrl = data.results[0].logo_url;
-            }
-          }
-        }
-      }
-
-      if (isMountedRef.current) {
-        setLogos(prev => ({ ...prev, [query]: logoUrl }));
-      }
-    } catch (error) {
-      console.error(`Error fetching logo for ${query}:`, error);
-      if (isMountedRef.current) {
-        setLogos(prev => ({ ...prev, [query]: undefined }));
-      }
+  } catch (error) {
+    console.error(`Error fetching logo for ${query}:`, error);
+    if (isMountedRef.current) {
+      setLogos(prev => ({ ...prev, [query]: undefined }));
     }
-  }, [logos]);
+  }
+}, [logos]);
 
   // Main useEffect for fetching candidate details with proper cleanup
   useEffect(() => {
@@ -485,7 +457,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     key={index}
                     className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
                   >
-                    <div className="absolute rounded-full -left-[5px] top-1.5 ">
+                  <div className="absolute rounded-full -left-[5px] top-1.5">
                       {logos[exp?.company] === null ? (
                         // Loading state
                         <div className="w-4 h-4 bg-gray-300 rounded-full animate-pulse" />
@@ -496,7 +468,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                           alt={`${exp?.company} logo`}
                           className="w-4 h-4 object-contain rounded-full"
                           onError={(e) => {
-                            // Fallback to initials if logo fails to load
+                            console.error(`Failed to load logo for ${exp?.company}: ${logos[exp?.company]}`); // Debug log
                             const target = e.target as HTMLImageElement;
                             target.style.display = 'none';
                             target.nextElementSibling?.classList.remove('hidden');
@@ -580,6 +552,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                       alt={`${edu?.institution} logo`}
                       className="w-4 h-4 object-contain rounded-full"
                       onError={(e) => {
+                        console.error(`Failed to load logo for ${edu?.institution}: ${logos[edu?.institution]}`); // Debug log
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
                         target.nextElementSibling?.classList.remove('hidden');
@@ -589,7 +562,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                   <div className={`w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs ${logos[edu?.institution] ? 'hidden' : ''}`}>
                     {getInitials(edu?.institution || "")}
                   </div>
-                  </div>
+                </div>
                 <h4 className="font-medium text-[#111827] text-sm">
                   {edu?.degree}
                 </h4>
