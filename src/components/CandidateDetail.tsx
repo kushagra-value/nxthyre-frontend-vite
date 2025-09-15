@@ -93,6 +93,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const [activeTab, setActiveTab] = useState("Profile");
   const [notesView, setNotesView] = useState("my");
   const [showConfirm, setShowConfirm] = useState(false);
+  const [logos, setLogos] = useState<{[key:string]:string | undefined}>({});
 
   const random70to99 = () => Math.floor(Math.random() * 30 + 70);
 
@@ -281,6 +282,37 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       .slice(0, 2);
   };
 
+  const fetchLogo = async (query: string) => {
+    if (!query || logos[query] !== undefined) return; // Skip if empty or already fetched
+    try {
+      const response = await fetch(`https://api.logo.dev/search?q=${encodeURIComponent(query)}`, {
+        headers: {
+          Authorization: `Bearer ${process.env.REACT_APP_LOGO_DEV_API_KEY}`,
+        },
+      });
+      const data = await response.json();
+      // Assuming the API returns an array of results with a logo URL in the first result
+      const logoUrl = data?.results?.[0]?.logo_url || null;
+      setLogos((prev) => ({ ...prev, [query]: logoUrl }));
+    } catch (error) {
+      console.error(`Error fetching logo for ${query}:`, error);
+      setLogos((prev) => ({ ...prev, [query]: undefined }));
+    }
+  };
+
+  useEffect(() => {
+    if (detailedCandidate?.candidate) {
+      // Fetch logos for education institutions
+      detailedCandidate.candidate.education?.forEach((edu) => {
+        if (edu?.institution) fetchLogo(edu.institution);
+      });
+      // Fetch logos for experience companies
+      detailedCandidate.candidate.experience?.forEach((exp) => {
+        if (exp?.company) fetchLogo(exp.company);
+      });
+    }
+  }, [detailedCandidate]);
+
   const ProfileTab = () => {
     const [showMore, setShowMore] = useState(false);
     const experiences = detailedCandidate?.candidate?.experience || [];
@@ -329,7 +361,19 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     key={index}
                     className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
                   >
-                    <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5 bg-gray-200"></div>
+                    <div className="absolute rounded-full -left-[5px] top-1.5 ">
+                      {logos[exp?.company] ? (
+                        <img
+                          src={logos[exp?.company]}
+                          alt={`${exp?.company} logo`}
+                          className="w-4 h-4 object-contain rounded-full"
+                        />
+                      ) : (
+                        <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
+                          {getInitials(exp?.company || "")}
+                        </div>
+                      )}
+                    </div>
                     <h4 className="font-medium text-[#111827] text-sm">
                       {exp?.job_title}
                     </h4>
@@ -392,7 +436,24 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 key={index}
                 className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
               >
-                <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
+                <div className="absolute rounded-full -left-[5px] top-1.5">
+                  {edu?.institution && (
+                    <div className="flex items-center space-x-2">
+                      {logos[edu.institution] ? (
+                        <img
+                          src={logos[edu.institution]}
+                          alt={`${edu.institution} logo`}
+                          className="w-4 h-4 object-contain rounded-full"
+                        />
+                        ) : (
+                          <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
+                            {getInitials(edu.institution)}
+                          </div>
+                        )}
+                      <p className="text-sm text-[#4B5563]">{edu?.institution}</p>
+                    </div>
+                  )}
+                  </div>
                 <h4 className="font-medium text-[#111827] text-sm">
                   {edu?.degree}
                 </h4>
