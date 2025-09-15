@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Mail,
   Phone,
@@ -93,8 +93,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const [activeTab, setActiveTab] = useState("Profile");
   const [notesView, setNotesView] = useState("my");
   const [showConfirm, setShowConfirm] = useState(false);
-  const [logos, setLogos] = useState<{[key:string]:string | undefined}>({});
-
+  const [logos, setLogos] = useState<{ [key: string]: string | undefined }>({});
   const random70to99 = () => Math.floor(Math.random() * 30 + 70);
 
   // In ProfileTab or where email/phone shown, update display
@@ -145,6 +144,39 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       fetchCandidateDetails();
     }
   }, [candidate?.id]);
+
+  const fetchLogo = async (query: string) => {
+    if (!query || logos[query] !== undefined) return;
+    try {
+      const response = await fetch(`https://api.logo.dev/search?q=${encodeURIComponent(query)}`, {
+        headers: {
+          Authorization: `Bearer ${process.env.REACT_APP_LOGO_DEV_API_KEY}`,
+        },
+      });
+      const data = await response.json();
+      const logoUrl =
+        data?.results?.find(
+          (result: any) =>
+            result.name.toLowerCase() === query.toLowerCase() ||
+            result.domain.toLowerCase().startsWith(query.toLowerCase())
+        )?.logo_url || data?.results?.[0]?.logo_url || null;
+      setLogos((prev) => ({ ...prev, [query]: logoUrl }));
+    } catch (error) {
+      console.error(`Error fetching logo for ${query}:`, error);
+      setLogos((prev) => ({ ...prev, [query]: undefined }));
+    }
+  };
+
+  useEffect(() => {
+    if (detailedCandidate?.candidate) {
+      detailedCandidate.candidate.education?.forEach((edu) => {
+        if (edu?.institution) fetchLogo(edu.institution);
+      });
+      detailedCandidate.candidate.experience?.forEach((exp) => {
+        if (exp?.company) fetchLogo(exp.company);
+      });
+    }
+  }, [detailedCandidate]);
 
   if (loading) {
     return (
@@ -281,69 +313,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       .join("")
       .slice(0, 2);
   };
-
-  const fetchLogo = useCallback(async (query: string) => {
-    if (!query || logos[query] !== undefined) return; // Skip if empty or already fetched
-    try {
-      const response = await fetch(`https://api.logo.dev/search?q=${encodeURIComponent(query)}`, {
-        headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_LOGO_DEV_API_KEY}`,
-        },
-      });
-      const data = await response.json();
-      const logoUrl = data?.results?.[0]?.logo_url || null;
-
-      setLogos((prev) => ({ ...prev, [query]: logoUrl }));
-    } catch (error) {
-      console.error(`Error fetching logo for ${query}:`, error);
-      setLogos((prev) => ({ ...prev, [query]: undefined }));
-    }
-  }, [logos]); 
-
-  useEffect(() => {
-    let isMounted = true;
-    
-    if (candidate?.id) {
-      const fetchCandidateDetails = async () => {
-        setLoading(true);
-        try {
-          const data = await candidateService.getCandidateDetails(candidate.id);
-          if (isMounted) {
-            setDetailedCandidate({
-              ...data,
-            });
-          }
-        } catch (error) {
-          console.error("Error fetching candidate details:", error);
-          if (isMounted) {
-            setError("Failed to load candidate details");
-          }
-        } finally {
-          if (isMounted) {
-            setLoading(false);
-          }
-        }
-      };
-      fetchCandidateDetails();
-    }
-
-    return () => {
-      isMounted = false;
-    };
-  }, [candidate?.id]);
-
-  useEffect(() => {
-    if (detailedCandidate?.candidate) {
-      // Fetch logos for education institutions
-      detailedCandidate.candidate.education?.forEach((edu) => {
-        if (edu?.institution) fetchLogo(edu.institution);
-      });
-      // Fetch logos for experience companies
-      detailedCandidate.candidate.experience?.forEach((exp) => {
-        if (exp?.company) fetchLogo(exp.company);
-      });
-    }
-  }, [detailedCandidate, fetchLogo]); 
 
   const ProfileTab = () => {
     const [showMore, setShowMore] = useState(false);
