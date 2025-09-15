@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Mail,
   Phone,
@@ -96,6 +96,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const [logos, setLogos] = useState<{ [key: string]: string | undefined }>({});
   const random70to99 = () => Math.floor(Math.random() * 30 + 70);
 
+  const isMountedRef = useRef(true);
+
   // In ProfileTab or where email/phone shown, update display
   const displayEmail =
     detailedCandidate?.candidate?.premium_data_unlocked &&
@@ -145,38 +147,159 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     }
   }, [candidate?.id]);
 
-  const fetchLogo = async (query: string) => {
-    if (!query || logos[query] !== undefined) return;
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+   const fetchLogo = useCallback(async (query: string) => {
+    if (!query || logos[query] !== undefined || !isMountedRef.current) return;
+    
+    // Set loading state to prevent duplicate requests
+    if (isMountedRef.current) {
+      setLogos(prev => ({ ...prev, [query]: null })); // null indicates loading
+    }
+
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       const response = await fetch(`https://api.logo.dev/search?q=${encodeURIComponent(query)}`, {
         headers: {
           Authorization: `Bearer ${import.meta.env.VITE_LOGO_DEV_API_KEY}`,
         },
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
-      const logoUrl =
-        data?.results?.find(
-          (result: any) =>
-            result.name.toLowerCase() === query.toLowerCase() ||
-            result.domain.toLowerCase().startsWith(query.toLowerCase())
-        )?.logo_url || data?.results?.[0]?.logo_url || null;
-      setLogos((prev) => ({ ...prev, [query]: logoUrl }));
+      
+      if (!isMountedRef.current) return; // Component unmounted, don't update state
+
+      // Improved matching logic
+      let logoUrl = null;
+      
+      if (data?.results && Array.isArray(data.results) && data.results.length > 0) {
+        // First, try to find exact name match (case-insensitive)
+        const exactMatch = data.results.find((result: any) =>
+          result.name?.toLowerCase() === query.toLowerCase()
+        );
+        
+        if (exactMatch) {
+          logoUrl = exactMatch.logo_url;
+        } else {
+          // Second, try to find partial name match
+          const partialMatch = data.results.find((result: any) =>
+            result.name?.toLowerCase().includes(query.toLowerCase()) ||
+            query.toLowerCase().includes(result.name?.toLowerCase())
+          );
+          
+          if (partialMatch) {
+            logoUrl = partialMatch.logo_url;
+          } else {
+            // Third, try domain-based matching
+            const domainMatch = data.results.find((result: any) =>
+              result.domain?.toLowerCase().includes(query.toLowerCase().replace(/\s+/g, ''))
+            );
+            
+            if (domainMatch) {
+              logoUrl = domainMatch.logo_url;
+            } else {
+              // Finally, fall back to first result
+              logoUrl = data.results[0].logo_url;
+            }
+          }
+        }
+      }
+
+      if (isMountedRef.current) {
+        setLogos(prev => ({ ...prev, [query]: logoUrl }));
+      }
     } catch (error) {
       console.error(`Error fetching logo for ${query}:`, error);
-      setLogos((prev) => ({ ...prev, [query]: undefined }));
+      if (isMountedRef.current) {
+        setLogos(prev => ({ ...prev, [query]: undefined }));
+      }
     }
-  };
+  }, [logos]);
 
+  // Main useEffect for fetching candidate details with proper cleanup
   useEffect(() => {
-    if (detailedCandidate?.candidate) {
+    if (!candidate?.id) return;
+
+    let isCancelled = false;
+    
+    const fetchCandidateDetails = async () => {
+      if (isCancelled) return;
+      
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const data = await candidateService.getCandidateDetails(candidate.id);
+        
+        if (!isCancelled && isMountedRef.current) {
+          setDetailedCandidate({ ...data });
+        }
+      } catch (error) {
+        console.error("Error fetching candidate details:", error);
+        if (!isCancelled && isMountedRef.current) {
+          setError("Failed to load candidate details");
+        }
+      } finally {
+        if (!isCancelled && isMountedRef.current) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchCandidateDetails();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [candidate?.id]);
+
+  // Logo fetching effect with proper dependency management
+  useEffect(() => {
+    if (!detailedCandidate?.candidate || !isMountedRef.current) return;
+
+    const fetchLogosForCandidate = async () => {
+      // Collect all company/institution names
+      const logoQueries: string[] = [];
+      
+      // Add education institutions
       detailedCandidate.candidate.education?.forEach((edu) => {
-        if (edu?.institution) fetchLogo(edu.institution);
+        if (edu?.institution && !logoQueries.includes(edu.institution)) {
+          logoQueries.push(edu.institution);
+        }
       });
+      
+      // Add experience companies
       detailedCandidate.candidate.experience?.forEach((exp) => {
-        if (exp?.company) fetchLogo(exp.company);
+        if (exp?.company && !logoQueries.includes(exp.company)) {
+          logoQueries.push(exp.company);
+        }
       });
-    }
-  }, [detailedCandidate]);
+
+      // Fetch logos with a small delay between requests to avoid rate limiting
+      for (const query of logoQueries) {
+        if (isMountedRef.current) {
+          await fetchLogo(query);
+          // Small delay to avoid overwhelming the API
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
+    };
+
+    fetchLogosForCandidate();
+  }, [detailedCandidate, fetchLogo]);
 
   if (loading) {
     return (
@@ -363,17 +486,26 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
                   >
                     <div className="absolute rounded-full -left-[5px] top-1.5 ">
-                      {logos[exp?.company] ? (
+                      {logos[exp?.company] === null ? (
+                        // Loading state
+                        <div className="w-4 h-4 bg-gray-300 rounded-full animate-pulse" />
+                      ) : logos[exp?.company] ? (
+                        // Logo found
                         <img
                           src={logos[exp?.company]}
                           alt={`${exp?.company} logo`}
                           className="w-4 h-4 object-contain rounded-full"
+                          onError={(e) => {
+                            // Fallback to initials if logo fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.nextElementSibling?.classList.remove('hidden');
+                          }}
                         />
-                      ) : (
-                        <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
-                          {getInitials(exp?.company || "")}
-                        </div>
-                      )}
+                      ) : null}
+                      <div className={`w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs ${logos[exp?.company] ? 'hidden' : ''}`}>
+                        {getInitials(exp?.company || "")}
+                      </div>
                     </div>
                     <h4 className="font-medium text-[#111827] text-sm">
                       {exp?.job_title}
@@ -438,21 +570,25 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
               >
                 <div className="absolute rounded-full -left-[5px] top-1.5">
-                  {edu?.institution && logos[edu.institution] ? (
+                  {logos[edu?.institution] === null ? (
+                    // Loading state
+                    <div className="w-4 h-4 bg-gray-300 rounded-full animate-pulse" />
+                  ) : logos[edu?.institution] ? (
+                    // Logo found
                     <img
-                      src={logos[edu.institution]}
-                      alt={`${edu.institution} logo`}
+                      src={logos[edu?.institution]}
+                      alt={`${edu?.institution} logo`}
                       className="w-4 h-4 object-contain rounded-full"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.nextElementSibling?.classList.remove('hidden');
+                      }}
                     />
-
-                  ) : (
-                    <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
-                      {getInitials(edu?.institution || "")}
-                    </div>
-                  )}
-                  {edu?.institution && (
-                    <p className="text-sm text-[#4B5563]">{edu.institution}</p>
-                  )}
+                  ) : null}
+                  <div className={`w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs ${logos[edu?.institution] ? 'hidden' : ''}`}>
+                    {getInitials(edu?.institution || "")}
+                  </div>
                   </div>
                 <h4 className="font-medium text-[#111827] text-sm">
                   {edu?.degree}
