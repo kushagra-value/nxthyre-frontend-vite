@@ -150,7 +150,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     try {
       const response = await fetch(`https://api.logo.dev/search?q=${encodeURIComponent(query)}`, {
         headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_LOGO_DEV_API_KEY}`,
+          Authorization: `Bearer ${import.meta.env.REACT_APP_LOGO_DEV_API_KEY}`,
         },
       });
       const data = await response.json();
@@ -444,7 +444,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                       alt={`${edu.institution} logo`}
                       className="w-4 h-4 object-contain rounded-full"
                     />
-                    
+
                   ) : (
                     <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
                       {getInitials(edu?.institution || "")}
