@@ -439,11 +439,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     <img
                       src={logos[edu.institution]}
                       alt={`${edu.institution} logo`}
-                      className="w-6 h-6 object-contain rounded-full"
+                      className="w-5 h-5 object-contain rounded-full"
                     />
 
                   ) : (
-                    <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
+                    <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
                       {getInitials(edu?.institution || "")}
                     </div>
                   )}
