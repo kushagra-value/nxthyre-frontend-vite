@@ -154,13 +154,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         },
       });
       const data = await response.json();
-      console.log(data[0].logo_url);
-      const logoUrl =
-        data?.results?.find(
-          (result: any) =>
-            result.name.toLowerCase() === query.toLowerCase() ||
-            result.domain.toLowerCase().startsWith(query.toLowerCase())
-        )?.logo_url || data?.results?.[0]?.logo_url || null;
+      const logoUrl = data.length > 0 ? data[0].logo_url : null;
       
       setLogos((prev) => ({ ...prev, [query]: logoUrl }));
       
