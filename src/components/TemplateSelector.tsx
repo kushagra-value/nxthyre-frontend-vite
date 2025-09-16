@@ -61,9 +61,13 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   const [showTestEmail, setShowTestEmail] = useState(false);
   const [showAdvanceOptions, setShowAdvanceOptions] = useState(false);
   const [testEmail, setTestEmail] = useState("");
+  const [testNumber, setTestNumber] = useState("");
   const [sendViaEmail, setSendViaEmail] = useState(true);
   const [sendViaWhatsApp, setSendViaWhatsApp] = useState(false);
   const [sendViaPhone, setSendViaPhone] = useState(false);
+  const [sendTestViaEmail, setSendTestViaEmail] = useState(true);
+  const [sendTestViaWhatsApp, setSendTestViaWhatsApp] = useState(false);
+  const [sendTestViaPhone, setSendTestViaPhone] = useState(false);
   const [followUpTemplates, setFollowUpTemplates] = useState<
     {
       send_after_hours: number;
@@ -156,6 +160,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     showToast.error("Please enter a test email address");
     return;
   }
+  if (!testNumber) {
+    showToast.error("Please enter a test phone number");
+    return;
+  }
   if (!jobId || !candidate.id) {
     showToast.error("Job ID and Candidate ID are required");
     return;
@@ -166,12 +174,12 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
       job_id: jobId,
       candidate_id: candidate.id,
       email: testEmail,
-      phone: detailedCandidate?.candidate?.premium_data?.phone || "8839919484",
+      phone: testNumber,
       subject: subject || "Test Invitation: Software Engineer Role",
       message_body: body || "Hello, this is a test from Acme Corp regarding the Software Engineer position.",
-      send_via_email: sendViaEmail,
-      send_via_phone: sendViaPhone,
-      send_via_whatsapp: sendViaWhatsApp,
+      send_via_email: sendTestViaEmail,
+      send_via_phone: sendTestViaPhone,
+      send_via_whatsapp: sendTestViaWhatsApp,
     });
     showToast.success(response.success);
     if (response.results.email) showToast.success(response.results.email);
@@ -1611,6 +1619,123 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   disabled={loading}
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-2">
+                  Test Phone Number
+                </label>
+                <input
+                  type="text"
+                  value={testNumber}
+                  onChange={(e) => setTestNumber(e.target.value)}
+                  placeholder="Enter Phone number"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+            <div>
+              <p className="block text-sm font-medium text-gray-600 mb-2">
+                Reachout Channels
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setSendTestViaEmail(!sendTestViaEmail)}
+                  className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    sendTestViaEmail
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                  disabled={loading}
+                >
+                  Email{" "}
+                  {sendTestViaEmail ? (
+                    <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-blue-800 rounded-full ml-1">
+                      <Check className="w-3 h-3 text-semibold pt-[1px]" />
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-gray-600 rounded-full ml-1">
+                      <Plus className="w-3 h-3 text-semibold pl-[1px]" />
+                    </div>
+                  )}
+                </button>
+                <button
+                  onClick={() => setSendTestViaWhatsApp(!sendTestViaWhatsApp)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    sendTestViaWhatsApp
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                  disabled={loading}
+                >
+                  WhatsApp{" "}
+                  {sendTestViaWhatsApp ? (
+                    <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-blue-800 rounded-full ml-1">
+                      <Check className="w-3 h-3 text-semibold pt-[1px]" />
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-gray-600 rounded-full ml-1">
+                      <Plus className="w-3 h-3 text-semibold pr-[1px]" />
+                    </div>
+                  )}
+                </button>
+                <button
+                  onClick={() => setSendTestViaPhone(!sendTestViaPhone)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    sendTestViaPhone
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                  disabled={loading}
+                >
+                  Phone{" "}
+                  {sendTestViaPhone ? (
+                    <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-blue-800 rounded-full ml-1">
+                      <Check className="w-3 h-3 text-semibold pt-[1px]" />
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-gray-600 rounded-full ml-1">
+                      <Plus className="w-3 h-3 text-semibold pl-[1px]" />
+                    </div>
+                  )}
+                </button>
+              </div>
+              <div className="p-3 bg-blue-50 text-sm font-medium text-blue-500 rounded-lg mt-3">
+                {sendTestViaEmail && sendTestViaWhatsApp && sendTestViaPhone ? (
+                  <div>
+                    Note: Email will be sent to candidate’s inbox, with WhatsApp
+                    message and bot phone alert to check mail.
+                  </div>
+                ) : sendTestViaEmail && sendTestViaWhatsApp ? (
+                  <div>
+                    Note: Email will be sent to candidate’s inbox, with WhatsApp
+                    message to check mail.
+                  </div>
+                ) : sendTestViaEmail && sendTestViaPhone ? (
+                  <div>
+                    Note: Email will be sent to candidate’s inbox, with AI phone
+                    alert to check mail.
+                  </div>
+                ) : sendTestViaWhatsApp && sendTestViaPhone ? (
+                  <div>
+                    Note: WhatsApp message and AI-generated call will be sent to the
+                    candidate.
+                  </div>
+                ) : sendTestViaEmail ? (
+                  <div>Note: Email will be sent to candidate's inbox.</div>
+                ) : sendTestViaWhatsApp ? (
+                  <div>
+                    Note: WhatsApp message will be sent to the candidate's WhatsApp
+                    number.
+                  </div>
+                ) : sendTestViaPhone ? (
+                  <div>
+                    Note: An AI-generated call will be made to the candidate's phone
+                    number.
+                  </div>
+                ) : (
+                  <div className="text-sm font-medium text-gray-400 mb-2"> </div>
+                )}
               </div>
             </div>
             <div className="flex justify-between mt-6">
