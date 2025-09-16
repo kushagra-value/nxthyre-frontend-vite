@@ -443,7 +443,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     />
 
                   ) : (
-                    <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
+                    <div className="w-5 h-5 bg-gray-500 rounded-full flex items-center justify-center text-white text-xs">
                       {getInitials(edu?.institution || "")}
                     </div>
                   )}
