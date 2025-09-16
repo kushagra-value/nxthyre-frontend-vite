@@ -357,7 +357,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 ).map((exp, index) => (
                   <div
                     key={index}
-                    className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
+                    className="border-l-2 border-gray-200 ml-3 pl-4 relative pb-2 space-y-1"
                   >
                     <div className="absolute rounded-full -left-[3px] top-0 ">
                       {logos[exp?.company] ? (
