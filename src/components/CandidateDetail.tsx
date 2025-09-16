@@ -427,14 +427,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <GraduationCap className="w-4 h-4 mr-2 text-[#4B5563]" />
           Education
         </h3>
-        <div className="ml-2">
+        <div className="relative">
           {detailedCandidate?.candidate?.education?.length > 0 ? (
             detailedCandidate?.candidate?.education.map((edu, index) => (
               <div
                 key={index}
-                className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
+                className="border-l-2 border-gray-200 ml-2 pl-4 relative pb-2 space-y-1"
               >
-                <div className="absolute rounded-full -left-[5px] top-1.5">
+                <div className="absolute rounded-full -left-[10px] top-1 ">
                   {edu?.institution && logos[edu.institution] ? (
                     <img
                       src={logos[edu.institution]}
