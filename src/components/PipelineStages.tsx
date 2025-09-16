@@ -409,10 +409,12 @@ const handleConfirmReveal = async () => {
   };
 
   const fetchCandidates = async (jobId: number, stageSlug: string) => {
+    let url = `/jobs/applications/?job_id=${jobId}&stage_slug=${stageSlug}`;
+    if (viewMode === "prospect" && activeStageTab === "inbox") {
+      url = `/jobs/applications/replied-candidates/?job_id=${jobId}`;
+    }
     try {
-      const response = await apiClient.get(
-        `/jobs/applications/?job_id=${jobId}&stage_slug=${stageSlug}`
-      );
+      const response = await apiClient.get(url);
       const data: CandidateListItem[] = response.data;
       setCandidates(data);
     } catch (error) {
@@ -1157,7 +1159,7 @@ const handleConfirmReveal = async () => {
     {
       id: "inbox",
       label: "Inbox",
-      count: stages.find((s) => s.name === "Applied")?.candidate_count || 0,
+      count: stages.find((s) => s.name === "Inbox")?.candidate_count || 0,
     },
   ];
 
