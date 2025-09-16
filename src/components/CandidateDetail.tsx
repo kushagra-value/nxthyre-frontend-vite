@@ -334,7 +334,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             <Briefcase className="w-4 h-4 mr-2 text-[#4B5563]" />
             Experience
           </h3>
-          <div className="ml-2 relative">
+          <div className="relative">
             <div
               className={`relative ${
                 !showMore && experiences.length > 1 ? "overflow-hidden" : ""
@@ -364,10 +364,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                         <img
                           src={logos[exp?.company]}
                           alt={`${exp?.company} logo`}
-                          className="w-6 h-6 object-contain rounded-full"
+                          className="w-5 h-5 object-contain rounded-full"
                         />
                       ) : (
-                        <div className="w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center text-white text-xs">
+                        <div className="w-5 h-5 bg-gray-400 rounded-full flex items-center justify-center text-white text-xs">
                           {getInitials(exp?.company || "")}
                         </div>
                       )}
