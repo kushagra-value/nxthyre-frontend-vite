@@ -154,7 +154,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         },
       });
       const data = await response.json();
-      console.log(data);
+      console.log(data[0].logo_url);
       const logoUrl =
         data?.results?.find(
           (result: any) =>
