@@ -383,6 +383,16 @@ const handleConfirmReveal = async () => {
     }
   }, [searchQuery, currentView, activeJobId]);
 
+  useEffect(() => {
+      if (currentView === "search" && searchQuery === "" && activeJobId !== null && selectedStage) {
+        fetchCandidates(
+          activeJobId,
+          selectedStage.toLowerCase().replace(" ", "-")
+        );
+        setSelectedCandidate(null);
+      }
+    }, [searchQuery, currentView, activeJobId, selectedStage]);
+
   // API functions
   const fetchStages = async (jobId: number) => {
     try {
