@@ -359,7 +359,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     key={index}
                     className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
                   >
-                    <div className="absolute rounded-full left-0 top-0 ">
+                    <div className="absolute rounded-full -left-[3px] top-0 ">
                       {logos[exp?.company] ? (
                         <img
                           src={logos[exp?.company]}
