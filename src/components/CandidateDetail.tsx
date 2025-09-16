@@ -308,7 +308,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       .split(" ")
       .map((word) => word[0]?.toUpperCase())
       .join("")
-      .slice(0, 2);
+      .slice(0, 1);
   };
 
   const ProfileTab = () => {
@@ -359,15 +359,15 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     key={index}
                     className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
                   >
-                    <div className="absolute rounded-full -left-[5px] top-1.5 ">
+                    <div className="absolute rounded-full -left-[7px] top-1.5 ">
                       {logos[exp?.company] ? (
                         <img
                           src={logos[exp?.company]}
                           alt={`${exp?.company} logo`}
-                          className="w-4 h-4 object-contain rounded-full"
+                          className="w-6 h-6 object-contain rounded-full"
                         />
                       ) : (
-                        <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
+                        <div className="w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center text-white text-xs">
                           {getInitials(exp?.company || "")}
                         </div>
                       )}
@@ -439,16 +439,13 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     <img
                       src={logos[edu.institution]}
                       alt={`${edu.institution} logo`}
-                      className="w-4 h-4 object-contain rounded-full"
+                      className="w-6 h-6 object-contain rounded-full"
                     />
 
                   ) : (
-                    <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
+                    <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
                       {getInitials(edu?.institution || "")}
                     </div>
-                  )}
-                  {edu?.institution && (
-                    <p className="text-sm text-[#4B5563]">{edu.institution}</p>
                   )}
                   </div>
                 <h4 className="font-medium text-[#111827] text-sm">
