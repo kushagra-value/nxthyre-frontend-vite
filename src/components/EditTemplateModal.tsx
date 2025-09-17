@@ -257,7 +257,7 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
       <div
         className={`bg-white w-[40%] h-full transform transition-transform overflow-y-auto duration-300 ease-out p-10 space-y-4 ${
           isOpen ? "translate-x-0" : "translate-x-full"
