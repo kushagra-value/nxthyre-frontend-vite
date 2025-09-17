@@ -1,4 +1,4 @@
-import React, { useState, useEffect , useCallback} from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChevronDown,
   ArrowLeft,
@@ -135,28 +135,24 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    console.log("Current formData:", formData);
-  }, [formData]);
-
-  const handleTemplateSelect = useCallback((templateId: string) => {
+  const handleTemplateSelect = (templateId: string) => {
     console.log("Selected template ID:", templateId);
     setSelectedTemplate(templateId);
     const template = templates.find((t) => t.id === Number(templateId));
     if (template) {
       console.log("Template found:", template);
       setFormData({
-        templateName: template.name || "",
-        subject: template.initial_subject || "",
-        body: template.initial_body || "",
-        sendViaEmail: template.can_be_sent_via_email|| true,
-        sendViaWhatsApp: template.can_be_sent_via_whatsapp || false,
-        sendViaPhone: template.can_be_sent_via_call || false,
+        templateName: template.name,
+        subject: template.initial_subject,
+        body: template.initial_body,
+        sendViaEmail: template.can_be_sent_via_email,
+        sendViaWhatsApp: template.can_be_sent_via_whatsapp,
+        sendViaPhone: template.can_be_sent_via_call,
         followUpTemplates: template.follow_up_steps.map((step: any) => ({
-          send_after_hours: Number(step.send_after_hours) || 24,
+          send_after_hours: Number(step.send_after_hours),
           followup_mode: step.mode as "EMAIL" | "WHATSAPP" | "CALL",
-          followup_body: step.body || "",
-          order_no: step.order || 0,
+          followup_body: step.body,
+          order_no: step.order,
         })),
       });
     } else {
@@ -171,12 +167,7 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
         followUpTemplates: [],
       });
     }
-  }, [templates]);
-
-  const handleEditorChange = useCallback((event: any, editor: any) => {
-    const data = editor.getData();
-    setFormData((prev) => ({ ...prev, body: data }));
-  }, []);
+  };
 
   const handleSave = async () => {
     if (!formData.templateName.trim()) {
