@@ -385,6 +385,7 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
             Candidate Name and Signature are already prefilled. Editable access only for body
           </p>
           <CKEditor
+            key={formData.body}
             editor={ClassicEditor}
             data={formData.body}
             onChange={(event: any, editor: any) =>
