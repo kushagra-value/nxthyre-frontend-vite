@@ -20,12 +20,14 @@ import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
 interface EditTemplateModalProps {
+  jobId: string;
   isOpen: boolean;
   onClose: () => void;
   templateName?: string;
 }
 
 const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
+  jobId,
   isOpen,
   onClose,
   templateName = "Head of Finance Template",
@@ -85,6 +87,13 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
     followup_body: "",
   });
 
+  // Strip HTML tags from subject
+  const stripHtml = (htmlString: string) => {
+    const div = document.createElement("div");
+    div.innerHTML = htmlString;
+    return div.textContent || div.innerText || "";
+  };
+
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     isOpen: boolean;
     index: number | null;
@@ -103,6 +112,17 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
           const firstTemplateId = data[0].id.toString();
           setSelectedTemplate(firstTemplateId);
           handleTemplateSelect(firstTemplateId);
+        } else {
+          console.log("No templates available");
+          setFormData({
+            templateName: "",
+            subject: "",
+            body: "",
+            sendViaEmail: true,
+            sendViaWhatsApp: false,
+            sendViaPhone: false,
+            followUpTemplates: [],
+          });
         }
       } catch (error) {
         showToast.error("Failed to fetch templates");
@@ -116,9 +136,11 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
   }, [isOpen]);
 
   const handleTemplateSelect = (templateId: string) => {
+    console.log("Selected template ID:", templateId);
     setSelectedTemplate(templateId);
     const template = templates.find((t) => t.id === Number(templateId));
     if (template) {
+      console.log("Template found:", template);
       setFormData({
         templateName: template.name,
         subject: template.initial_subject,
@@ -134,6 +156,7 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
         })),
       });
     } else {
+      console.log("Template not found, resetting form");
       setFormData({
         templateName: "",
         subject: "",
@@ -204,8 +227,8 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
     setLoading(true);
     try {
       const response = await candidateService.sendTestEmail({
-        job_id: "test_job_id", // Replace with actual job_id if available
-        candidate_id: "test_candidate_id", // Replace with actual candidate_id if available
+        job_id: jobId,
+        candidate_id: "ed51c22f-517c-4f71-884b-55b56c9bea1a",
         email: testEmail,
         phone: testNumber,
         subject: formData.subject || "Test Invitation",
@@ -253,6 +276,28 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
     setIsAddingFollowUp(true);
   };
 
+  const handleClose = () => {
+    setSelectedTemplate("");
+    setFormData({
+      templateName: "",
+      subject: "",
+      body: "",
+      sendViaEmail: true,
+      sendViaWhatsApp: false,
+      sendViaPhone: false,
+      followUpTemplates: [],
+    });
+    setIsAddingFollowUp(false);
+    setIsEditingFollowUp(false);
+    setEditingIndex(null);
+    setNewFollowUp({
+      send_after_hours: 24,
+      followup_mode: "EMAIL",
+      followup_body: "",
+    });
+    onClose();
+  };
+
 
   if (!isOpen) return null;
 
@@ -266,7 +311,7 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-7 h-7 text-gray-700" />
@@ -283,6 +328,7 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
           </label>
           <div className="relative">
             <select
+              key={selectedTemplate}
               value={selectedTemplate}
               onChange={(e) => handleTemplateSelect(e.target.value)}
               className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
@@ -321,7 +367,7 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
           </label>
           <input
             type="text"
-            value={formData.subject}
+            value={stripHtml(formData.subject)}
             onChange={(e) =>
               setFormData({ ...formData, subject: e.target.value })
             }
@@ -339,6 +385,7 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
             Candidate Name and Signature are already prefilled. Editable access only for body
           </p>
           <CKEditor
+            key={formData.body}
             editor={ClassicEditor}
             data={formData.body}
             onChange={(event: any, editor: any) =>

@@ -1329,6 +1329,7 @@ function MainApp() {
                       onJobUpdated={handleJobCreatedOrUpdated}
                     />
                     <EditTemplateModal
+                      jobId={String(activeCategoryId)}
                       isOpen={showEditTemplate}
                       onClose={() => setShowEditTemplate(false)}
                       templateName={editingTemplate}
