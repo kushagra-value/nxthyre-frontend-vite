@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuthContext} from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./hooks/useAuth";
 import useDebounce from "./hooks/useDebounce";
@@ -100,10 +100,10 @@ function MainApp() {
     userStatus,
     isAuthenticated,
     signOut,
-    isOnboarded,
     loading: authLoading,
   } = useAuth();
 
+  const {selectedWorkspaceId} = useAuthContext();
   const [credits, setCredits] = useState<number>(0);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showAuthApp, setShowAuthApp] = useState(false);
@@ -1303,11 +1303,7 @@ function MainApp() {
 
                     <CreateJobRoleModal
                       isOpen={showCreateJobRole}
-                      workspaceId={
-                        currentUser?.workspaceIds?.length
-                          ? currentUser.workspaceIds[0]
-                          : 1
-                      }
+                      workspaceId={ selectedWorkspaceId || 1}
                       handlePipelinesClick={handlePipelinesClick}
                       onClose={() => setShowCreateJobRole(false)}
                       onJobCreated={handleJobCreatedOrUpdated}
@@ -1319,11 +1315,7 @@ function MainApp() {
                         setEditingJobId(null);
                       }}
                       handlePipelinesClick={handlePipelinesClick}
-                      workspaceId={
-                        currentUser?.workspaceIds?.length
-                          ? currentUser.workspaceIds[0]
-                          : 1
-                      }
+                      workspaceId={selectedWorkspaceId || 1}
                       jobId={editingJobId || 0}
                       onJobUpdated={handleJobCreatedOrUpdated}
                     />

@@ -17,6 +17,7 @@ import { useAuthContext } from "../../context/AuthContext";
 import { organizationService } from "../../services/organizationService";
 import { showToast } from "../../utils/toast";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 interface Organization {
   id: number;
@@ -74,6 +75,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   const [loading, setLoading] = useState(true);
   const [pendingRequests, setPendingRequests] = useState<JoinRequest[]>([]);
   const [showManageModal, setShowManageModal] = useState(false);
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<number | null>(null); 
   const navigate = useNavigate();
 
   const searchTerm =
@@ -105,6 +107,15 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
         // Fetch workspaces the user is a member of
         const myWorkspaces = await organizationService.getMyWorkspaces();
         setWorkspaces(myWorkspaces);
+        const savedWorkspaceId = Cookies.get("selectedWorkspaceId");
+        if (savedWorkspaceId && myWorkspaces.some((ws: Workspace) => ws.id === parseInt(savedWorkspaceId))) {
+          setSelectedWorkspaceId(parseInt(savedWorkspaceId));
+        } else if (myWorkspaces.length > 0) {
+          // If no valid workspace in cookie and workspaces exist, select the first one
+          const firstWorkspaceId = myWorkspaces[0].id;
+          setSelectedWorkspaceId(firstWorkspaceId);
+          Cookies.set("selectedWorkspaceId", firstWorkspaceId.toString(), { expires: 7 }); // Store in cookie for 7 days
+        }
       } catch (error: any) {
         showToast.error("Failed to load data. Please try refreshing.");
       } finally {
@@ -113,6 +124,14 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
     };
     fetchData();
   }, [isAuthenticated, userStatus]);
+
+
+  const handleSelectWorkspace = (workspaceId: number) => {
+    setSelectedWorkspaceId(workspaceId);
+    Cookies.set("selectedWorkspaceId", workspaceId.toString(), { expires: 7 }); // Update cookie
+    navigate("/"); // Navigate to dashboard
+  };
+
 
   const handleCreateWorkspace = () => {
     if (organization) {
@@ -150,6 +169,16 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
       } else {
         // Implement delete workspace if API supports it
         showToast.success(`Workspace "${name}" deleted successfully`);
+        if (selectedWorkspaceId === parseInt(id)) {
+          const remainingWorkspaces = workspaces.filter((ws) => ws.id !== parseInt(id));
+          if (remainingWorkspaces.length > 0) {
+            setSelectedWorkspaceId(remainingWorkspaces[0].id);
+            Cookies.set("selectedWorkspaceId", remainingWorkspaces[0].id.toString(), { expires: 7 });
+          } else {
+            setSelectedWorkspaceId(null);
+            Cookies.remove("selectedWorkspaceId");
+          }
+        }
       }
       if (type === "org") setOrganization(null);
       else setWorkspaces((prev) => prev.filter((ws) => ws.id !== parseInt(id)));
@@ -403,7 +432,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                       {workspaces.map((workspace) => (
                         <div
                           key={workspace.id}
-                          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                          className={`bg-white rounded-lg shadow-sm  ${selectedWorkspaceId==workspace.id?"border-2 border-blue-500": "border border-gray-200"} p-6 hover:shadow-md transition-shadow`}
                         >
                           <div className="flex items-start justify-between mb-4">
                             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -455,7 +484,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                             </div>
                             <button
                               className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                              onClick={handleGoToDashboard}
+                              onClick={() => handleSelectWorkspace(workspace.id)}
                             >
                               Open
                             </button>

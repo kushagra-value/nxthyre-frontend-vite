@@ -1,6 +1,7 @@
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext,useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth"; // Adjust path
 import { User } from "../types/auth"; // Adjust path
+import Cookies from "js-cookie";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -8,6 +9,8 @@ interface AuthContextType {
   userStatus: any;
   loading: boolean;
   signOut: () => Promise<void>;
+  selectedWorkspaceId: number | null;
+  setSelectedWorkspaceId: (id: number | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,10 +25,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     userStatus,
     isAuthenticated,
     loading,
-    signOut,
+    signOut: authSignOut,
   } = useAuth();
 
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<number | null>(null);
 
   React.useEffect(() => {
     if (isAuthenticated && userStatus) {
@@ -38,16 +42,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             ? userStatus.roles[0].name.toLowerCase()
             : "team",
         organizationId: userStatus.organization?.id?.toString(),
-        workspaceIds: [],
+        workspaceIds: userStatus.roles
+          .filter(
+            (role: any) =>
+              role.workspace_id !== null && role.workspace_id !== undefined
+          )
+          .map((role: any) => Number(role.workspace_id)),
         isVerified: firebaseUser?.emailVerified ?? true,
         createdAt:
           firebaseUser?.metadata.creationTime || new Date().toISOString(),
       };
       setCurrentUser(user);
+      const savedWorkspaceId = Cookies.get("selectedWorkspaceId");
+      if (savedWorkspaceId && user.workspaceIds.includes(parseInt(savedWorkspaceId))) {
+        setSelectedWorkspaceId(parseInt(savedWorkspaceId));
+      } else if (user.workspaceIds.length > 0) {
+        // If no valid workspace in cookie, select the first one
+        setSelectedWorkspaceId(user.workspaceIds[0]);
+        Cookies.set("selectedWorkspaceId", user.workspaceIds[0].toString(), { expires: 7 });
+      } else {
+        setSelectedWorkspaceId(null);
+        Cookies.remove("selectedWorkspaceId");
+      }
+      
     } else {
       setCurrentUser(null);
+      setSelectedWorkspaceId(null);
+      Cookies.remove("selectedWorkspaceId");
     }
   }, [isAuthenticated, userStatus, firebaseUser]);
+
+  const signOut = async () => {
+    try {
+      await authSignOut();
+      setCurrentUser(null);
+      setSelectedWorkspaceId(null);
+      Cookies.remove("selectedWorkspaceId");
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
+  };
 
   const value = {
     isAuthenticated,
@@ -55,6 +89,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     userStatus,
     loading,
     signOut,
+    selectedWorkspaceId,
+    setSelectedWorkspaceId,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
