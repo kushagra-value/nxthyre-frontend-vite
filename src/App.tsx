@@ -543,9 +543,8 @@ function MainApp() {
         createdAt:
           firebaseUser?.metadata.creationTime || new Date().toISOString(),
       };
+      console.log("current user he ye:", user);
       setCurrentUser(user);
-
-      console.log("Current user he ye : ", currentUser);
     }
   }, [isAuthenticated, userStatus, firebaseUser]);
 
