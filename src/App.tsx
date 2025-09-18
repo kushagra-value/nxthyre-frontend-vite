@@ -29,6 +29,7 @@ import SharePipelinesLoader from "./components/SharePipelinesLoader";
 import SharePipelinesModal from "./components/SharePipelinesModal";
 import ShareableProfile from "./components/ShareableProfile";
 import PipelineSharePage from "./components/PipelineSharePage";
+import { organizationService, MyWorkspace } from "./services/organizationService";
 import { User } from "./types/auth";
 import {
   ChevronDown,
@@ -91,6 +92,11 @@ interface Filters {
   is_prevetted: boolean;
   is_active: boolean;
   sort_by: string;
+}
+
+interface Workspace {
+  id: number;
+  name: string;
 }
 
 function MainApp() {
@@ -157,6 +163,27 @@ function MainApp() {
   const [sortBy, setSortBy] = useState<string>("");
 
   const [isSearchMode, setIsSearchMode] = useState(false);
+
+   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+
+   useEffect(() => {
+    const fetchWorkspaces = async () => {
+      try {
+        const workspaceData = await organizationService.getMyWorkspaces();
+        const mappedWorkspaces: Workspace[] = workspaceData.map((ws: MyWorkspace) => ({
+          id: ws.id,
+          name: ws.name,
+        }));
+        setWorkspaces(mappedWorkspaces);
+      } catch (error) {
+        showToast.error("Failed to fetch workspaces");
+        console.error("Error fetching workspaces:", error);
+      }
+    };
+    if (isAuthenticated) {
+      fetchWorkspaces();
+    }
+  }, [isAuthenticated]);
 
   const [filters, setFilters] = useState<Filters>({
     keywords: [],
@@ -1304,6 +1331,7 @@ function MainApp() {
                     <CreateJobRoleModal
                       isOpen={showCreateJobRole}
                       workspaceId={ selectedWorkspaceId || 1}
+                      workspaces={workspaces}
                       handlePipelinesClick={handlePipelinesClick}
                       onClose={() => setShowCreateJobRole(false)}
                       onJobCreated={handleJobCreatedOrUpdated}

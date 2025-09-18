@@ -22,9 +22,15 @@ import  {CKEditor} from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { debounce } from "lodash";
 
+interface Workspace {
+  id: number;
+  name: string;
+}
+
 interface CreateJobRoleModalProps {
   isOpen: boolean;
   workspaceId: number;
+  workspaces: Workspace[];
   handlePipelinesClick?: () => void; // Optional callback for pipeline click
   onClose: () => void;
   onJobCreated?: () => void; // Callback to refresh categories
@@ -33,6 +39,7 @@ interface CreateJobRoleModalProps {
 const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
   isOpen,
   workspaceId,
+  workspaces,
   handlePipelinesClick,
   onClose,
   onJobCreated,
@@ -47,8 +54,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     title: "",
     skills: [] as string[],
     location: [] as string[],
-    workApproach: "Hybrid" as "Onsite" | "Remote" | "Hybrid",
-    hybrid: true,
+    workApproach: "Onsite" as "Onsite" | "Remote" | "Hybrid",
     seniority: "",
     department: "",
     aiInterviews: false,
@@ -61,6 +67,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     uploadType: "paste" as "paste" | "upload",
     shareThirdParty: false,
     codingRound: false,
+    workspace: workspaceId.toString(),
   });
 
   const [skillInput, setSkillInput] = useState("");
@@ -376,6 +383,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
         formData.uploadType === "paste"
           ? formData.jobDescription.trim()
           : !!file,
+       workspace: formData.workspace.trim(),
     };
 
     const errors: string[] = [];
@@ -406,6 +414,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
       errors.push(
         "Job description is required when pasting text or uploading a file."
       );
+    if (!requiredFields.workspace) errors.push("Workspace is required.");
     if (
       formData.uploadType === "paste" &&
       formData.jobDescription.trim().length < MIN_DESCRIPTION_LENGTH
@@ -552,7 +561,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
       const jobData: CreateJobData = {
         title: formData.title,
         location: formData.location,
-        is_hybrid: formData.workApproach === "Hybrid",
+        work_approach: formData.workApproach.toUpperCase() as "ONSITE" | "REMOTE" | "HYBRID",
         seniority: formData.seniority,
         department: departmentNameToId[formData.department] || 8,
         experience_min_years: parseInt(formData.minExp) || 0,
@@ -565,7 +574,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
         has_ai_interview_stage: formData.aiInterviews,
         skills: formData.skills,
         status: formData.keepPrivate ? "DRAFT" : "PUBLISHED",
-        workspace: workspaceId,
+        workspace: parseInt(formData.workspace),
         ai_jd_object: aiJdResponse,
         ...(formData.uploadType === "paste"
           ? { description_text: formData.jobDescription }
@@ -623,7 +632,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
       const jobData: CreateJobData = {
         title: formData.title,
         location: formData.location,
-        is_hybrid: formData.workApproach === "Hybrid",
+        work_approach: formData.workApproach.toUpperCase() as "ONSITE" | "REMOTE" | "HYBRID",
         seniority: formData.seniority,
         department: parseInt(formData.department) || 1, // Assuming department ID 1 as default
         experience_min_years: parseInt(formData.minExp) || 0,
@@ -636,7 +645,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
         has_ai_interview_stage: formData.aiInterviews,
         skills: formData.skills,
         status: formData.keepPrivate ? "DRAFT" : "PUBLISHED",
-        workspace: workspaceId, // Assuming default workspace ID
+        workspace: parseInt(formData.workspace),
         ai_jd_object: aiJdResponse,
         ...(formData.uploadType === "paste"
           ? { description_text: formData.jobDescription }
@@ -725,8 +734,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
       title: "",
       skills: [] as string[],
       location: [] as string[],
-      workApproach: "Hybrid",
-      hybrid: false,
+      workApproach: "Onsite",
       seniority: "",
       department: "",
       aiInterviews: false,
@@ -739,6 +747,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
       uploadType: "paste",
       shareThirdParty: false,
       codingRound: false,
+      workspace: workspaceId.toString(),
     });
     setSkillInput("");
     setLocationInput([]);
@@ -915,6 +924,33 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
         <div className="flex-1 overflow-y-auto px-72">
           {currentStep === 1 ? (
             <div className="space-y-6 mt-6">
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Workspace <span className="text-red-500">*</span>
+                  <p className="text-xs text-gray-500 mt-1">Job role will be created in this workspace</p>
+                </label>
+                <select
+                  value={formData.workspace}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      workspace: e.target.value,
+                    }))
+                  }
+                  className="w-full px-3 py-2 text-blue-600 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isLoading}
+                >
+                  <option value="">Select workspace</option>
+                  {workspaces.map((workspace) => (
+                    <option key={workspace.id} value={workspace.id}>
+                      {workspace.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+
               {/* Job Title */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

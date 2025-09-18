@@ -5,7 +5,7 @@ export interface Job {
   id: number;
   title: string;
   location: string[];
-  is_hybrid?: boolean;
+  work_approach: "ONSITE" | "REMOTE" | "HYBRID";
   seniority: string;
   department_name: string;
   experience_min_years: number;
@@ -88,7 +88,7 @@ export interface SearchedCandidateItem {
 export interface CreateJobData {
   title: string;
   location: string[];
-  is_hybrid: boolean;
+  work_approach: "ONSITE" | "REMOTE" | "HYBRID";
   seniority: string;
   department: number;
   experience_min_years: number;
@@ -170,7 +170,7 @@ class JobPostService {
           formData.append("location", loc);
         });
       }
-      formData.append("is_hybrid", String(data.is_hybrid));
+      formData.append("work_approach", data.work_approach);
       formData.append("seniority", data.seniority);
       formData.append("department", String(data.department));
       formData.append(
@@ -238,8 +238,8 @@ class JobPostService {
           formData.append("location", loc);
         });
       }
-      if (data.is_hybrid !== undefined)
-        formData.append("is_hybrid", String(data.is_hybrid));
+      if (data.work_approach !== undefined)
+        formData.append("work_approach", data.work_approach);
       if (data.seniority) formData.append("seniority", data.seniority);
       if (data.department)
         formData.append("department", String(data.department));
