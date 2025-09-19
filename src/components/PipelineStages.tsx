@@ -173,6 +173,17 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     null
   );
 
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
+
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [sortBy, setSortBy] = useState("Relevance");
+
+  const [showSettingsPopup, setShowSettingsPopup] = useState(false);
+  const settingsPopupRef = useRef<HTMLDivElement>(null);
+
+  const [cutoffScore, setCutoffScore] = useState("75");
+  const [sendAfter, setSendAfter] = useState("24");
+  const [sendVia, setSendVia] = useState("email");
   const [suggestions, setSuggestions] = useState<
     { id: string; name: string }[]
   >([]);
@@ -326,7 +337,7 @@ const handleConfirmReveal = async () => {
         selectedStage.toLowerCase().replace(" ", "-")
       );
     }
-  }, [activeJobId, selectedStage]);
+  }, [activeJobId, selectedStage, sortBy]);
 
   useEffect(() => {
     const fetchCutoff = async () => {
@@ -410,9 +421,9 @@ const handleConfirmReveal = async () => {
   };
 
   const fetchCandidates = async (jobId: number, stageSlug: string) => {
-    let url = `/jobs/applications/?job_id=${jobId}&stage_slug=${stageSlug}`;
+    let url = `/jobs/applications/?job_id=${jobId}&stage_slug=${stageSlug}${sortBy ? `&sort_by=${sortBy}` : ''}`;
     if (viewMode === "prospect" && activeStageTab === "inbox") {
-      url = `/jobs/applications/replied-candidates/?job_id=${jobId}`;
+      url = `/jobs/applications/replied-candidates/?job_id=${jobId}${sortBy ? `&sort_by=${sortBy}` : ''}`;
     }
     try {
       const response = await apiClient.get(url);
@@ -493,17 +504,7 @@ const handleConfirmReveal = async () => {
     }
   };
 
-  const sortDropdownRef = useRef<HTMLDivElement>(null);
-
-  const [showSortDropdown, setShowSortDropdown] = useState(false);
-  const [sortBy, setSortBy] = useState("Relevance");
-
-  const [showSettingsPopup, setShowSettingsPopup] = useState(false);
-  const settingsPopupRef = useRef<HTMLDivElement>(null);
-
-  const [cutoffScore, setCutoffScore] = useState("75");
-  const [sendAfter, setSendAfter] = useState("24");
-  const [sendVia, setSendVia] = useState("email");
+  
 
   const handleSortSelect = (sortValue: string) => {
     setSortBy(sortValue);
