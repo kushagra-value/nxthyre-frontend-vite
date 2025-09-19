@@ -927,8 +927,8 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Workspace <span className="text-red-500">*</span>
-                  <p className="text-xs text-gray-500 mt-1">Job role will be created in this workspace</p>
+                  Add to Workspace <span className="text-red-500">*</span>
+                  <p className="text-xs text-gray-500 mt-1">Default workspace selected. Choose another to switch.</p>
                 </label>
                 <select
                   value={formData.workspace}
