@@ -1054,7 +1054,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Add Skills <span className="text-red-500">*</span>
                 </label>
-                <div className="border border-gray-300 rounded-lg px-4 pt-2 pb-2">
+                <div className="relative border border-gray-300 rounded-lg px-4 pt-2 pb-2">
                   <input
                     type="text"
                     placeholder="Type skill and Press Enter"
@@ -1067,7 +1067,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                   {showSkillSuggestions && skillSuggestions.length > 0 && ( // Added
                     <div
                       ref={skillSuggestionsRef}
-                      className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto"
+                      className="absolute left-0 z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto"
                     >
                       {skillSuggestions.map((suggestion, index) => (
                         <div
@@ -1190,7 +1190,6 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                 </div>
               </div>
 
-              // Add Work Approach section after department grid, like create
               {/* Work Approach as Radio Buttons */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
