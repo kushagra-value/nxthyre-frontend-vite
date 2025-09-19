@@ -292,6 +292,7 @@ const handleConfirmReveal = async () => {
       setUploadFiles(null);
       // Refresh candidates for Uncontacted stage
       fetchCandidates(activeJobId, "uncontacted");
+      fetchStages(activeJobId);
     } catch (error) {
       showToast.error("Failed to upload candidates");
     }
@@ -447,6 +448,7 @@ const handleConfirmReveal = async () => {
           activeJobId,
           selectedStage.toLowerCase().replace(" ", "-")
         );
+        fetchStages(activeJobId);
       }
     } catch (error) {
       console.error("Error moving candidate:", error);
@@ -467,6 +469,7 @@ const handleConfirmReveal = async () => {
           activeJobId,
           selectedStage.toLowerCase().replace(" ", "-")
         );
+        fetchStages(activeJobId);
       }
     } catch (error) {
       console.error("Error archiving candidate:", error);
@@ -483,6 +486,7 @@ const handleConfirmReveal = async () => {
           activeJobId,
           selectedStage.toLowerCase().replace(" ", "-")
         );
+        fetchStages(activeJobId);
       }
     } catch (error) {
       console.error("Error bulk moving candidates:", error);
