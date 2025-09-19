@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   X,
   Upload,
@@ -18,13 +18,21 @@ import {
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import { jobPostService, Job, CreateJobData } from "../services/jobPostService";
+import {candidateService} from "../services/candidateService"
 import  {CKEditor}  from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { debounce } from "lodash";
+
+interface Workspace {
+  id: number;
+  name: string;
+}
 
 interface EditJobRoleModalProps {
   isOpen: boolean;
   jobId: number;
   workspaceId: number;
+  workspaces: Workspace[];
   handlePipelinesClick?: () => void;
   onClose: () => void;
   onJobUpdated?: () => void;
@@ -34,6 +42,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
   isOpen,
   onClose,
   workspaceId,
+  workspaces,
   jobId,
   onJobUpdated,
   handlePipelinesClick,
@@ -44,25 +53,29 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
   const [formData, setFormData] = useState({
     allowInbound: true,
     keepPrivate: false,
+    shareExternally: false,
     title: "",
     skills: [] as string[],
     location: [] as string[],
-    workApproach: "Hybrid" as "Onsite" | "Remote" | "Hybrid",
-    hybrid: true,
+    workApproach: "Onsite" as "Onsite" | "Remote" | "Hybrid",
     seniority: "",
     department: "",
     aiInterviews: false,
-    minExp: 0,
-    maxExp: 0,
+    minExp: "",
+    maxExp: "",
     minSalary: "",
     maxSalary: "",
     confidential: false,
     jobDescription: "",
     uploadType: "paste" as "paste" | "upload",
     codingRound: false,
+    workspace: workspaceId.toString(),
   });
 
   const [skillInput, setSkillInput] = useState("");
+  const [skillSuggestions, setSkillSuggestions] = useState<string[]>([]); // Added
+  const [showSkillSuggestions, setShowSkillSuggestions] = useState(false); // Added
+  const skillSuggestionsRef = useRef<HTMLDivElement>(null);
   const [locationInput, setLocationInput] = useState<string[]>([]);
   const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
   const [competencyInput, setCompetencyInput] = useState("");
@@ -165,6 +178,106 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     </button>
   );
 
+  // Updated fetchSkillSuggestions (add useCallback and debounce, like create)
+  const fetchSkillSuggestions = useCallback(
+    debounce(async (query: string) => {
+      if (query.length >= 2) {
+        try {
+          const suggestions = await candidateService.getKeywordSuggestions(query);
+          const currentSkills = formData.skills.map((s) => s.toLowerCase());
+          const filteredSuggestions = suggestions.filter(
+            (suggestion: string) =>
+              !currentSkills.includes(suggestion.toLowerCase())
+          );
+          setSkillSuggestions(filteredSuggestions);
+          setShowSkillSuggestions(filteredSuggestions.length > 0);
+        } catch (error) {
+          console.error("Error fetching skill suggestions:", error);
+          setSkillSuggestions([]);
+          setShowSkillSuggestions(false);
+          showToast.error("Failed to fetch skill suggestions");
+        }
+      } else {
+        setSkillSuggestions([]);
+        setShowSkillSuggestions(false);
+      }
+    }, 300),
+    [formData.skills]
+  );
+
+  // Updated useEffect for click outside skills (add)
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        skillSuggestionsRef.current &&
+        !skillSuggestionsRef.current.contains(event.target as Node)
+      ) {
+        setShowSkillSuggestions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Updated fetchLocationSuggestions (change to Geoapify like create, add useCallback)
+  const fetchLocationSuggestions = useCallback(
+    debounce(async (query: string) => {
+      if (query.length >= 2) {
+        try {
+          const response = await fetch(
+            `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(
+              query
+            )}&apiKey=1f207465a3a44d98a9c7fb42bb6de005`
+          );
+
+          const data = await response.json();
+          const suggestions = data.features.map(
+            (feature: any) => feature.properties.formatted
+          );
+          const uniqueSuggestions = [...new Set(suggestions)].filter(
+            (s: string) => !formData.location.includes(s)
+          );
+          setLocationSuggestions(uniqueSuggestions);
+        } catch (error) {
+          console.error("Error fetching location suggestions:", error);
+          setLocationSuggestions([]);
+          showToast.error("Failed to fetch location suggestions");
+        }
+      } else {
+        setLocationSuggestions([]);
+      }
+    }, 300),
+    [formData.location]
+  );
+
+  // Updated handleSkillInputChange (add replace and fetch, like create)
+  const handleSkillInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^a-zA-Z0-9\s]/g, "");
+    setSkillInput(value);
+    fetchSkillSuggestions(value);
+  };
+
+  // Updated handleSkillSelect (add, like create)
+  const handleSkillSelect = (suggestion: string) => {
+    if (!isValidTextInput(suggestion)) {
+      showToast.error(
+        "Skills can only contain letters, numbers, commas, and spaces."
+      );
+      return;
+    }
+    setFormData((prev) => ({
+      ...prev,
+      skills: [...prev.skills, suggestion.trim()],
+    }));
+    setSkillInput("");
+    setSkillSuggestions([]);
+    setShowSkillSuggestions(false);
+  };
+
+
   const validateStep1 = () => {
     const requiredFields = {
       title: formData.title.trim(),
@@ -173,8 +286,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       seniority: formData.seniority.trim(),
       department:
         formData.department.trim() && departmentNameToId[formData.department],
-      minExp: formData.minExp,
-      maxExp: formData.maxExp,
+      minExp: formData.minExp.trim() && isValidNumberInput(formData.minExp), // String
+      maxExp: formData.maxExp.trim() && isValidNumberInput(formData.maxExp),
       minSalary: formData.confidential
         ? true
         : formData.minSalary.trim() && isValidNumberInput(formData.minSalary),
@@ -185,6 +298,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
         formData.uploadType === "paste"
           ? formData.jobDescription.trim()
           : !!file,
+      workspace: formData.workspace.trim(),
     };
 
     const errors: string[] = [];
@@ -199,6 +313,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     if (!requiredFields.seniority) errors.push("Seniority is required.");
     if (!requiredFields.department)
       errors.push("Please select a valid department.");
+    if (!requiredFields.workspace) errors.push("Workspace is required.");
     if (!requiredFields.minExp)
       errors.push("Minimum experience is required and must be a valid number.");
     if (!requiredFields.maxExp)
@@ -226,8 +341,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
 
     // Validate experience range
     if (requiredFields.minExp && requiredFields.maxExp) {
-      const minExp = formData.minExp;
-      const maxExp = formData.maxExp;
+      const minExp = parseInt(formData.minExp);
+      const maxExp = parseInt(formData.maxExp);
       if (isNaN(minExp) || isNaN(maxExp)) {
         errors.push("Experience fields must be valid numbers.");
       } else if (minExp > maxExp) {
@@ -273,6 +388,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     return errors;
   };
 
+  // Updated handleSkillAdd (add validation like create)
   const handleSkillAdd = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && skillInput.trim()) {
       if (!isValidTextInput(skillInput)) {
@@ -286,6 +402,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
         skills: [...prev.skills, skillInput.trim()],
       }));
       setSkillInput("");
+      setSkillSuggestions([]);
+      setShowSkillSuggestions(false);
     }
   };
 
@@ -296,9 +414,10 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     }));
   };
 
+  // Updated handleLocationAdd (use [0]?.trim(), set single array)
   const handleLocationAdd = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && locationInput) {
-      if (!isValidTextInput(locationInput[0] || "")) {
+    if (e.key === "Enter" && locationInput[0]?.trim()) {
+      if (!isValidTextInput(locationInput[0])) {
         showToast.error(
           "Location can only contain letters, numbers, commas, and spaces."
         );
@@ -306,40 +425,34 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       }
       setFormData((prev) => ({
         ...prev,
-        location: locationInput,
+        location: [locationInput[0].trim()],
       }));
       setLocationInput([]);
       setLocationSuggestions([]);
     }
   };
 
-  const handleLocationSelect = (location: string[]) => {
+  // Updated handleLocationSelect (single string, set [location])
+  const handleLocationSelect = (location: string) => { // Changed param to string
+    if (!isValidTextInput(location)) {
+      showToast.error(
+        "Location can only contain letters, numbers, commas, and spaces."
+      );
+      return;
+    }
     setFormData((prev) => ({
       ...prev,
-      location,
+      location: [location], // Single
     }));
     setLocationInput([]);
     setLocationSuggestions([]);
   };
 
-  const handleLocationChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  // Updated handleLocationChange (use [query], fetch Geoapify)
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setLocationInput([query]);
-    if (query.length > 2) {
-      try {
-        const suggestions = await jobPostService.getLocationSuggestions(query);
-        const uniqueSuggestions = [...new Set(suggestions)].filter(
-          (s) => !formData.location.includes(s)
-        );
-        setLocationSuggestions(uniqueSuggestions);
-      } catch (error) {
-        showToast.error("Failed to fetch location suggestions");
-      }
-    } else {
-      setLocationSuggestions([]);
-    }
+    fetchLocationSuggestions(query);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -458,11 +571,11 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       const jobData: Partial<CreateJobData> = {
         title: formData.title,
         location: location,
-        is_hybrid: isHybrid,
+        work_approach: formData.workApproach.toUpperCase() as "ONSITE" | "REMOTE" | "HYBRID",
         seniority: formData.seniority,
         department: departmentNameToId[formData.department] || 8,
-        experience_min_years: formData.minExp || 0,
-        experience_max_years: formData.maxExp || 0,
+        experience_min_years: parseInt(formData.minExp) || 0, // String parse
+        experience_max_years: parseInt(formData.maxExp) || 0,
         salary_min: formData.minSalary,
         salary_max: formData.maxSalary,
         is_salary_confidential: formData.confidential,
@@ -471,7 +584,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
         has_ai_interview_stage: formData.aiInterviews,
         skills: formData.skills,
         status: formData.keepPrivate ? "DRAFT" : "PUBLISHED",
-        workspace: workspaceId,
+        workspace: parseInt(formData.workspace),
         ai_jd: editableJD,
         technical_competencies: competencies,
         ...(formData.uploadType === "paste"
@@ -537,20 +650,20 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       const jobData: Partial<CreateJobData> = {
         title: formData.title,
         location: location,
-        is_hybrid: isHybrid,
         seniority: formData.seniority,
         department: departmentNameToId[formData.department] || 8,
-        experience_min_years: formData.minExp || 0,
-        experience_max_years: formData.maxExp || 0,
+        experience_min_years: parseInt(formData.minExp) || 0,
+        experience_max_years: parseInt(formData.maxExp) || 0,
         salary_min: formData.minSalary,
         salary_max: formData.maxSalary,
+        work_approach: formData.workApproach.toUpperCase() as "ONSITE" | "REMOTE" | "HYBRID", // Added
         is_salary_confidential: formData.confidential,
         visibility: formData.keepPrivate ? "PRIVATE" : "PUBLIC",
         has_coding_contest_stage: formData.codingRound,
         has_ai_interview_stage: formData.aiInterviews,
         skills: formData.skills,
         status: formData.keepPrivate ? "DRAFT" : "PUBLISHED",
-        workspace: workspaceId,
+        workspace: parseInt(formData.workspace),
         ai_jd: editableJD,
         technical_competencies: competencies,
         ...(formData.uploadType === "paste"
@@ -639,19 +752,20 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       title: "",
       skills: [],
       location: [],
-      workApproach: "Hybrid",
-      hybrid: false,
+      workApproach: "Onsite",
       seniority: "",
       department: "",
       aiInterviews: false,
-      minExp: 0,
-      maxExp: 0,
+      minExp: "",
+      maxExp: "",
       minSalary: "",
       maxSalary: "",
       confidential: false,
       jobDescription: "",
       uploadType: "paste",
       codingRound: false,
+      shareExternally:false,
+      workspace: workspaceId.toString(),
     });
     setSkillInput("");
     setLocationInput([]);
@@ -674,36 +788,36 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
         .getJob(jobId)
         .then(async (job: Job) => {
           let workApproach: "Onsite" | "Remote" | "Hybrid" = "Onsite";
-          if (job.is_hybrid) {
+          if (job.work_approach === "HYBRID") {
             workApproach = "Hybrid";
-          } else if (
-            job.location.includes("Remote") ||
-            job.location.includes("remote")
-          ) {
+          } else if (job.work_approach === "REMOTE") {
             workApproach = "Remote";
           } else {
             workApproach = "Onsite";
           }
+
+          const locationFirst = job.location.length > 0 ? [job.location[0]] : []; 
 
           setFormData({
             allowInbound: job.visibility === "PUBLIC",
             keepPrivate: job.visibility === "PRIVATE",
             title: job.title,
             skills: job.skills || [],
-            location: job.location,
+            location: locationFirst,
             workApproach,
-            hybrid: job.is_hybrid ?? false,
             seniority: job.seniority,
             department: departmentMap[Number(job.department_name)] || "Others",
             aiInterviews: job.has_ai_interview_stage || false,
-            minExp: job.experience_min_years,
-            maxExp: job.experience_max_years,
-            minSalary: String(job.salary_min),
-            maxSalary: String(job.salary_max),
+            minExp: job.experience_min_years?.toString() || "",
+            maxExp: job.experience_max_years?.toString() || "",
+            minSalary: job.salary_min ? job.salary_min.toString() : "",
+            maxSalary: job.salary_max ? job.salary_max.toString() : "",
             confidential: job.is_salary_confidential,
             jobDescription: job.description || "",
             uploadType: job.description ? "paste" : "upload",
             codingRound: job.has_coding_contest_stage || false,
+            workspace: job.workspace_details.id.toString(),
+            shareExternally:false,
           });
           setOriginalDescription(job.description || "");
           setOriginalUploadType("paste");
@@ -711,15 +825,17 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
           setCompetencies(job.technical_competencies || []);
           setAiJdResponse(job.ai_jd || null);
           setIsLoading(false);
+          setIsFetching(false);
         })
         .catch((error) => {
           showToast.error(error.message || "Failed to fetch job details");
         })
         .finally(() => {
           setIsLoading(false);
+          setIsFetching(false);
         });
     }
-  }, [isOpen, jobId]);
+  }, [isOpen, jobId, workspaces]);
 
   if (showSuccessModal) {
     return (
@@ -891,6 +1007,30 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
             <div className="space-y-6 mt-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Workspace <span className="text-red-500">*</span>
+                  <p className="text-xs text-gray-500 mt-1">Job role will be created in this workspace</p>
+                </label>
+                <select
+                  value={formData.workspace}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      workspace: e.target.value,
+                    }))
+                  }
+                  className="w-full px-3 py-2 text-blue-600 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isLoading}
+                >
+                  <option value="">Select workspace</option>
+                  {workspaces.map((workspace) => (
+                    <option key={workspace.id} value={workspace.id}>
+                      {workspace.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Job Title <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -919,11 +1059,27 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                     type="text"
                     placeholder="Type skill and Press Enter"
                     value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onKeyPress={handleSkillAdd}
-                    className="w-full border-none outline-none text-sm text-blue-500 placeholder-gray-400 mb-3"
+                    onChange={handleSkillInputChange} // Updated
+                    onKeyPress={handleSkillAdd} // Updated
+                    className="w-full border-none outline-none text-sm text-blue-600 placeholder-gray-400 mb-3"
                     disabled={isLoading}
                   />
+                  {showSkillSuggestions && skillSuggestions.length > 0 && ( // Added
+                    <div
+                      ref={skillSuggestionsRef}
+                      className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto"
+                    >
+                      {skillSuggestions.map((suggestion, index) => (
+                        <div
+                          key={index}
+                          onClick={() => handleSkillSelect(suggestion)}
+                          className="px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 cursor-pointer"
+                        >
+                          {suggestion}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-2">
                     {formData.skills.map((skill, index) => (
                       <span
@@ -950,19 +1106,19 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                     type="text"
                     ref={locationInputRef}
                     placeholder="Type location and Press Enter"
-                    value={locationInput}
-                    onChange={handleLocationChange}
-                    onKeyPress={handleLocationAdd}
-                    className=" w-full border-none outline-none text-sm text-blue-500 placeholder-gray-400 mb-3"
+                    value={locationInput[0] || ""} // Updated
+                    onChange={handleLocationChange} // Updated
+                    onKeyPress={handleLocationAdd} // Updated
+                    className=" w-full border-none outline-none text-sm text-blue-600 placeholder-gray-400 mb-3"
                     disabled={isLoading}
                   />
-                  {locationSuggestions.length > 0 && (
+                  {locationSuggestions.length > 0 && ( // Updated
                     <div className="absolute left-0 z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-40 overflow-y-auto shadow-lg">
                       {locationSuggestions.map((suggestion, index) => (
                         <div
                           key={index}
                           className="px-4 py-3 text-md text-gray-700 hover:bg-blue-100 cursor-pointer"
-                          onClick={() => handleLocationSelect([suggestion])}
+                          onClick={() => handleLocationSelect(suggestion)} // Updated param
                         >
                           {suggestion}
                         </div>
@@ -970,7 +1126,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                     </div>
                   )}
                   <div className="flex flex-wrap gap-2">
-                    {formData.location && (
+                    {formData.location.length > 0 && ( // Updated to length
                       <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center">
                         <X
                           className="w-3 h-3 mr-1 cursor-pointer"
@@ -978,10 +1134,102 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                             setFormData((prev) => ({ ...prev, location: [] }))
                           }
                         />
-                        {formData.location}
+                        {formData.location[0]} {/* First only */}
                       </span>
                     )}
                   </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Seniority <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.seniority}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        seniority: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 text-blue-600 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mr-3"
+                    disabled={isLoading}
+                  >
+                    <option value="">Select seniority</option>
+                    {seniorityOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Department <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.department}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        department: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 text-blue-600 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={isLoading}
+                  >
+                    <option value="">Select department</option>
+                    {departmentOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              // Add Work Approach section after department grid, like create
+              {/* Work Approach as Radio Buttons */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Work Approach <span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  <RadioToggle
+                    label="Onsite"
+                    isSelected={formData.workApproach === "Onsite"}
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        workApproach: "Onsite",
+                      }))
+                    }
+                    disabled={isLoading}
+                  />
+                  <RadioToggle
+                    label="Remote"
+                    isSelected={formData.workApproach === "Remote"}
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        workApproach: "Remote",
+                      }))
+                    }
+                    disabled={isLoading}
+                  />
+                  <RadioToggle
+                    label="Hybrid"
+                    isSelected={formData.workApproach === "Hybrid"}
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        workApproach: "Hybrid",
+                      }))
+                    }
+                    disabled={isLoading}
+                  />
                 </div>
               </div>
 
@@ -1122,12 +1370,12 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                     <input
                       type="text"
                       placeholder="Min exp"
-                      value={formData.minExp}
+                      value={formData.minExp} // String
                       onChange={(e) => {
                         if (isValidNumberInput(e.target.value)) {
                           setFormData((prev) => ({
                             ...prev,
-                            minExp: Number(e.target.value),
+                            minExp: e.target.value, // String
                           }));
                         }
                       }}
@@ -1137,12 +1385,12 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                     <input
                       type="text"
                       placeholder="Max exp"
-                      value={formData.maxExp}
+                      value={formData.maxExp} // String
                       onChange={(e) => {
                         if (isValidNumberInput(e.target.value)) {
                           setFormData((prev) => ({
                             ...prev,
-                            maxExp: Number(e.target.value),
+                            maxExp: e.target.value, // String
                           }));
                         }
                       }}
@@ -1317,7 +1565,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
           ) : (
             <div className="space-y-6">
               <div className="text-center mb-8">
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                <h2 className="text-md font-[400] text-gray-900 mb-2">
                   Summary of JD
                 </h2>
                 <p className="text-gray-500 text-sm">
@@ -1413,7 +1661,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                 className="w-1/2 px-6 py-2 bg-blue-600 text-white text-lg font-medium rounded-lg hover:bg-blue-700 transition-colors flex justify-center items-center"
                 disabled={isLoading}
               >
-                {isLoading ? "Loading..." : "Next"}
+                {isLoading ? "Loading..." : "Next Step"}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </button>
             </div>

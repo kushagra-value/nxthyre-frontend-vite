@@ -1343,6 +1343,7 @@ function MainApp() {
                         setEditingJobId(null);
                       }}
                       handlePipelinesClick={handlePipelinesClick}
+                      workspaces={workspaces}
                       workspaceId={selectedWorkspaceId || 1}
                       jobId={editingJobId || 0}
                       onJobUpdated={handleJobCreatedOrUpdated}
