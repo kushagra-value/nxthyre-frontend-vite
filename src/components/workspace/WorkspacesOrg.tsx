@@ -55,7 +55,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   setSearchTerm: propSetSearchTerm,
   onCreateRole: propOnCreateRole,
 }) => {
-  const { user, userStatus, isAuthenticated, signOut } = useAuthContext();
+  const { user, userStatus, isAuthenticated, signOut , selectedWorkspaceId: contextSelectedWorkspaceId, setSelectedWorkspaceId: contextSetSelectedWorkspaceId} = useAuthContext();
   const [activeTab, setActiveTab] = useState("workspaces");
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -75,7 +75,6 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
   const [loading, setLoading] = useState(true);
   const [pendingRequests, setPendingRequests] = useState<JoinRequest[]>([]);
   const [showManageModal, setShowManageModal] = useState(false);
-  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<number | null>(null); 
   const navigate = useNavigate();
 
   const searchTerm =
@@ -109,11 +108,11 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
         setWorkspaces(myWorkspaces);
         const savedWorkspaceId = Cookies.get("selectedWorkspaceId");
         if (savedWorkspaceId && myWorkspaces.some((ws: Workspace) => ws.id === parseInt(savedWorkspaceId))) {
-          setSelectedWorkspaceId(parseInt(savedWorkspaceId));
+          contextSetSelectedWorkspaceId(parseInt(savedWorkspaceId));
         } else if (myWorkspaces.length > 0) {
           // If no valid workspace in cookie and workspaces exist, select the first one
           const firstWorkspaceId = myWorkspaces[0].id;
-          setSelectedWorkspaceId(firstWorkspaceId);
+          contextSetSelectedWorkspaceId(firstWorkspaceId);
           Cookies.set("selectedWorkspaceId", firstWorkspaceId.toString(), { expires: 7 }); // Store in cookie for 7 days
         }
       } catch (error: any) {
@@ -127,7 +126,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
 
 
   const handleSelectWorkspace = (workspaceId: number) => {
-    setSelectedWorkspaceId(workspaceId);
+    contextSetSelectedWorkspaceId(workspaceId);
     Cookies.set("selectedWorkspaceId", workspaceId.toString(), { expires: 7 }); // Update cookie
     navigate("/"); // Navigate to dashboard
   };
@@ -169,13 +168,13 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
       } else {
         // Implement delete workspace if API supports it
         showToast.success(`Workspace "${name}" deleted successfully`);
-        if (selectedWorkspaceId === parseInt(id)) {
+        if (contextSelectedWorkspaceId === parseInt(id)) {
           const remainingWorkspaces = workspaces.filter((ws) => ws.id !== parseInt(id));
           if (remainingWorkspaces.length > 0) {
-            setSelectedWorkspaceId(remainingWorkspaces[0].id);
+            contextSetSelectedWorkspaceId(remainingWorkspaces[0].id);
             Cookies.set("selectedWorkspaceId", remainingWorkspaces[0].id.toString(), { expires: 7 });
           } else {
-            setSelectedWorkspaceId(null);
+            contextSetSelectedWorkspaceId(null);
             Cookies.remove("selectedWorkspaceId");
           }
         }
@@ -432,7 +431,7 @@ const WorkspacesOrg: React.FC<WorkspacesOrgProps> = ({
                       {workspaces.map((workspace) => (
                         <div
                           key={workspace.id}
-                          className={`bg-white rounded-lg shadow-sm  ${selectedWorkspaceId==workspace.id?"border-2 border-blue-500": "border border-gray-200"} p-6 hover:shadow-md transition-shadow`}
+                          className={`bg-white rounded-lg shadow-sm  ${contextSelectedWorkspaceId==workspace.id?"border-2 border-blue-500": "border border-gray-200"} p-6 hover:shadow-md transition-shadow`}
                         >
                           <div className="flex items-start justify-between mb-4">
                             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
