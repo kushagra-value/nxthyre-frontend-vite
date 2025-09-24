@@ -718,6 +718,13 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
           <p className="text-gray-400 text-xs lg:text-base font-[400]">
             No candidates found.
           </p>
+          {activeTab === "inbound" && totalCount < activeCategoryTotalCount && (
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
+                <p className="text-yellow-700 text-sm">
+                  There might be fewer candidates in the Inbound tab due to applied filters. You can click on the "Clear All Filters" button in the sidebar to view all candidates.
+                  </p>
+              </div>
+            )}
         </div>
       ) : (
         <>
@@ -1615,7 +1622,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         <div className="p-3 lg:p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div className="text-xs text-gray-400 text-xs lg:text-base font-[400]">
-              Showing {startIndex + 1} to{" "}
+              Showing {startIndex} to{" "}
               {Math.min(endIndex, totalCount) + startIndex} of {totalCount}{" "}
               candidates
             </div>
