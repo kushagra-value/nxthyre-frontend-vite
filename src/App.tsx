@@ -1248,6 +1248,11 @@ function MainApp() {
                                       onSharePipelines={handleSharePipelines}
                                       onSelectCategory={(jobId) => {
                                         setActiveCategoryId(jobId);
+                                        setActiveCategoryTotalCount(
+                                          categories.find(
+                                            (cat) => cat.id === jobId
+                                          )?.count || 0
+                                        );
                                         fetchJobDetailsAndSetFilters(jobId);
                                       }}
                                       activeCategoryId={activeCategoryId}
