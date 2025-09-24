@@ -1071,7 +1071,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
       {/* Create Template Slide Panel */}
       {showCreateTemplate && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-100 flex justify-end">
           <div
             className={`bg-white w-[40%] h-full transform transition-transform overflow-y-auto duration-300 ease-out p-10 space-y-4 ${
               showCreateTemplate ? "translate-x-0" : "translate-x-full"
@@ -1589,7 +1589,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
       {/* Test Email Slide Panel */}
       {showTestEmail && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-100 flex justify-end">
           <div
             className={`bg-white w-[40%] h-full transform transition-transform duration-300 ease-out p-10 space-y-4 ${
               showTestEmail ? "translate-x-0" : "translate-x-full"
@@ -1760,7 +1760,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmation.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-100 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">
