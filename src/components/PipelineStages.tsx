@@ -87,6 +87,104 @@ interface CandidateListItem {
     };
     resume_url: string;
     current_salary_lpa: string;
+    profile_summary?: string;
+    gender?: string;
+    is_recently_promoted?: boolean;
+    is_active?: boolean;
+    is_prevetted?: boolean;
+    notice_period_days?: number;
+    current_salary?: string;
+    application_type?: string;
+    total_experience?: number;
+    email?: string;  // From premium_data
+    phone?: string;  // From premium_data
+    premium_data_unlocked: boolean;
+    premium_data_availability: {
+      email: boolean;
+      phone_number: boolean;
+      resume_url: boolean;
+      resume_text: boolean;
+      linkedin_url: boolean;
+      portfolio_url: boolean;
+      dribble_username: boolean;
+      behance_username: boolean;
+      instagram_username: boolean;
+      pinterest_username: boolean;
+      twitter_username: boolean;
+      github_username: boolean;
+      all_emails: boolean;
+      all_phone_numbers: boolean;
+    };
+    premium_data?: {
+      email?: string;
+      phone?: string;
+      linkedin_url?: string | null;
+      github_url?: string | null;
+      twitter_url?: string | null;
+      resume_url?: string;
+      resume_text?: string;
+      portfolio_url?: string | null;
+      dribble_username?: string;
+      behance_username?: string;
+      instagram_username?: string;
+      pinterest_username?: string;
+      all_emails?: string[];
+      all_phone_numbers?: string[];
+    };
+    // Add other nested arrays if needed (positions, educations, etc.)
+    positions?: Array<{
+      title: string;
+      companyName: string;
+      companyUrn: string;
+      startDate: { month: number; year: number };
+      endDate?: { month: number; year: number };
+      isCurrent: boolean;
+      location: string;
+      description: string;
+    }>;
+    educations?: Array<{
+      schoolName: string;
+      degreeName: string;
+      fieldOfStudy: string;
+      startDate: { year: number };
+      endDate: { year: number };
+      activities: string;
+      description: string;
+      is_top_tier: boolean;
+    }>;
+    certifications?: Array<{
+      name: string;
+      authority: string;
+      licenseNumber: string;
+      startDate: { month: number; year: number };
+      endDate?: { month: number; year: number };
+      url: string;
+    }>;
+    skills?: Array<{
+      name: string;
+      endorsementCount: number;
+    }>;
+    endorsements?: Array<{
+      endorser_name: string;
+      endorser_title: string;
+      endorser_profile_pic_url: string;
+      skill_endorsed: string;
+      endorser_company: string;
+      message: string;
+    }>;
+    recommendations?: {
+      received: Array<any>;  // Expand as needed
+      given: Array<any>;
+    };
+    notes?: Array<any>;  // Expand as needed
+    profilePicture?: {
+      displayImageUrl: string;
+      artifacts: Array<{
+        width: number;
+        height: number;
+        url: string;
+      }>;
+    };
   };
   stage_slug: string;
   job: {
@@ -2690,7 +2788,7 @@ candidate: {
           {/* TemplateSelector with 40% width */}
           <div className="relative w-[40%] h-full bg-white rounded-tl-xl rounded-bl-xl shadow-lg overflow-y-auto">
             <TemplateSelector
-              candidate={selectedCandidate}
+              candidate={selectedCandidate.candidate}
               onBack={handleBackFromTemplate}
               updateCandidateEmail={() => {}} // Pass a no-op or actual handler if needed
               jobId={activeJobId?.toString() || ''}
