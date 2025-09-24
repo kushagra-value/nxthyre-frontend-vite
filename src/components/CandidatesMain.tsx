@@ -714,17 +714,18 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
           </p>
         </div>
       ) : candidates.length === 0 ? (
-        <div className="text-center py-8">
+        <div className="text-center py-8 space-y-2">
+          {activeTab === "inbound" && totalCount < activeCategoryTotalCount && (
+            <div className="m-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
+              <p className="text-yellow-700 text-sm">
+                There might be fewer candidates in the Inbound tab due to applied filters. You can click on the "Clear All Filters" button in the sidebar to view all candidates.
+                </p>
+            </div>
+          )}
           <p className="text-gray-400 text-xs lg:text-base font-[400]">
             No candidates found.
           </p>
-          {activeTab === "inbound" && totalCount < activeCategoryTotalCount && (
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
-                <p className="text-yellow-700 text-sm">
-                  There might be fewer candidates in the Inbound tab due to applied filters. You can click on the "Clear All Filters" button in the sidebar to view all candidates.
-                  </p>
-              </div>
-            )}
+          
         </div>
       ) : (
         <>
