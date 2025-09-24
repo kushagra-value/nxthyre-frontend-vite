@@ -25,8 +25,6 @@ import PipelineStages from "./components/PipelineStages";
 import AuthApp from "./components/AuthApp";
 import LinkedInAuth from "./components/auth/LinkedInAuth";
 import Settings from "./components/Settings";
-import SharePipelinesLoader from "./components/SharePipelinesLoader";
-import SharePipelinesModal from "./components/SharePipelinesModal";
 import ShareableProfile from "./components/ShareableProfile";
 import PipelineSharePage from "./components/PipelineSharePage";
 import { organizationService, MyWorkspace } from "./services/organizationService";
@@ -1364,18 +1362,8 @@ function MainApp() {
                       onClose={() => setShowEditTemplate(false)}
                       templateName={editingTemplate}
                     />
-                    <SharePipelinesLoader
-                      isOpen={showShareLoader}
-                      onComplete={handleShareLoaderComplete}
-                    />
-                    <SharePipelinesModal
-                      isOpen={showShareModal}
-                      onClose={() => setShowShareModal(false)}
-                      jobRole={
-                        categories.find((cat) => cat.id === activeCategoryId)
-                          ?.name || ""
-                      }
-                    />
+                    
+                    
                     {showLogoutModal && (
                       <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
                         <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">

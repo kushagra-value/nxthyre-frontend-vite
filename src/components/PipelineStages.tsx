@@ -221,7 +221,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         : c
     );
     setCandidates(updated);
-    if (selectedCandidate?.candidateId === candidateId) {
+    if (selectedCandidate?.candidate.id === candidateId) {
       fetchCandidateDetails(updated.find((c) => c.candidate.id === candidateId)?.id || 0);
     }
     return premResponse.premium_data;
@@ -605,12 +605,23 @@ const handleConfirmReveal = async () => {
     const premiumData = candidateData.premium_data || {};
 
     return {
-      id: data.id.toString(),
-      candidateId: candidateData.id,
-      fullName: candidateData.full_name,
+      id: data.id,
+candidate: {
+      id: candidateData.id,
+      full_name: candidateData.full_name,
+      avatar: candidateData.avatar,
       headline: candidateData.headline,
-      profile_summary: candidateData.profile_summary,
       location: candidateData.location,
+      linkedin_url: candidateData.linkedin_url,
+      experience_years: candidateData.experience_years,
+      experience_summary: candidateData.experience_summary,
+      education_summary: candidateData.education_summary,
+      notice_period_summary: candidateData.notice_period_summary,
+      skills_list: candidateData.skills_list,
+      social_links: candidateData.social_links,
+      resume_url: candidateData.resume_url,
+      current_salary_lpa: candidateData.current_salary_lpa,
+      profile_summary: candidateData.profile_summary,
       profilePicture: {
         displayImageUrl: candidateData.profile_picture_url || "",
         artifacts: [],
@@ -624,6 +635,8 @@ const handleConfirmReveal = async () => {
       current_salary: candidateData.current_salary,
       application_type: candidateData.application_type,
       total_experience: candidateData.total_experience,
+      email: premiumData.email || "",
+      phone: premiumData.phone || "",
       positions: candidateData.experience.map((exp: any) => ({
         title: exp.job_title,
         companyName: exp.company,
@@ -656,6 +669,7 @@ const handleConfirmReveal = async () => {
           : { year: 0 },
         activities: "",
         description: "",
+        is_top_tier: edu.is_top_tier || false,
       })),
       certifications: candidateData.certifications.map((cert: any) => ({
         name: cert.name,
@@ -680,20 +694,18 @@ const handleConfirmReveal = async () => {
         endorsementCount: skill.number_of_endorsements,
       })),
       endorsements: candidateData.skills_data.endorsements.map((end: any) => ({
-        endorser: {
-          id: "",
-          name: end.endorser_name,
-          headline: end.endorser_title,
-          profileImageUrl: end.endorser_profile_pic_url,
-        },
-        skill: end.skill_endorsed,
-        message: "",
+        endorser_name: end.endorser_name,
+        endorser_title: end.endorser_title,
+        endorser_profile_pic_url: end.endorser_profile_pic_url,
+        skill_endorsed: end.skill_endorsed,
+        endorser_company: end.endorser_company,
+        message: end.message,
       })),
-      recommendations: { received: candidateData.recommendations, given: [] },
-
+      recommendations: {
+        received: candidateData.recommendations,
+        given: [],
+      },
       notes: candidateData.notes,
-      email: premiumData.email || "",
-      phone: premiumData.phone || "",
       premium_data_unlocked: candidateData.premium_data_unlocked,
       premium_data_availability: candidateData.premium_data_availability,
       premium_data: {
@@ -703,18 +715,19 @@ const handleConfirmReveal = async () => {
         github_url: premiumData.github_url,
         twitter_url: premiumData.twitter_url,
         resume_url: premiumData.resume_url,
+        resume_text: premiumData.resume_text,
         portfolio_url: premiumData.portfolio_url,
+        dribble_username: premiumData.dribble_username,
         behance_username: premiumData.behance_username,
-        dribble_username: premiumData.dribbble_username,
         instagram_username: premiumData.instagram_username,
         pinterest_username: premiumData.pinterest_username,
-        resume_text: premiumData.resume_text,
-        all_phone_numbers: premiumData.all_phone_numbers || [],
         all_emails: premiumData.all_emails || [],
+        all_phone_numbers: premiumData.all_phone_numbers || [],
       },
       stageData: {
         [stageProperty]: mappedStageData,
       },
+    },
     };
   };
 
@@ -2618,7 +2631,7 @@ const handleConfirmReveal = async () => {
               stages={stages}
               moveCandidate={moveCandidate}
               archiveCandidate={archiveCandidate}
-              stageData={selectedCandidate?.stageData}
+              stageData={selectedCandidate?.candidate.stageData}
               jobId={activeJobId ?? 0}
               onSendInvite={handleSendInvite}
               deductCredits={deductCredits}

@@ -49,7 +49,7 @@ interface PipelinesSideCardProps {
   stages: Stage[];
   moveCandidate: (applicationId: number, stageId: number) => Promise<void>;
   archiveCandidate: (applicationId: number) => Promise<void>;
-  stageData?: PipelineCandidate["stageData"];
+  stageData?: PipelineCandidate["candidate"]["stageData"];
   jobId: number; // jobId prop for sharing profile
   onSendInvite: (applicationId: number) => Promise<void>;
   deductCredits: () => Promise<void>;
@@ -75,7 +75,7 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
 
 
   const handleShareProfile = () => {
-    window.open(`/candidate-profiles/${selectedCandidate?.candidateId}`, "_blank");
+    window.open(`/candidate-profiles/${selectedCandidate?.candidate.id}`, "_blank");
   };
 
   const handleCopy = (text: string) => {
@@ -97,20 +97,20 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
   const random70to99 = () => Math.floor(Math.random() * 30 + 70);
 
   const displayEmail =
-    selectedCandidate?.premium_data_unlocked &&
-    selectedCandidate?.premium_data_availability?.email &&
-    selectedCandidate?.premium_data?.email
-      ? selectedCandidate.premium_data.email
-      : `${(selectedCandidate?.fullName || "")
+    selectedCandidate?.candidate.premium_data_unlocked &&
+    selectedCandidate?.candidate.premium_data_availability?.email &&
+    selectedCandidate?.candidate.premium_data?.email
+      ? selectedCandidate.candidate.premium_data.email
+      : `${(selectedCandidate?.candidate.full_name || "")
           .slice(0, 3)
           .toLowerCase()}***********@gmail.com`;
 
   // Updated display logic for phone
   const displayPhone =
-    selectedCandidate?.premium_data_unlocked &&
-    selectedCandidate?.premium_data_availability?.phone_number &&
-    selectedCandidate?.premium_data?.phone
-      ? selectedCandidate.premium_data.phone
+    selectedCandidate?.candidate.premium_data_unlocked &&
+    selectedCandidate?.candidate.premium_data_availability?.phone_number &&
+    selectedCandidate?.candidate.premium_data?.phone
+      ? selectedCandidate.candidate.premium_data.phone
       : `95********89`;
 
   return (
@@ -120,20 +120,20 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
               {/* show the initials from full name */}
-              {selectedCandidate?.fullName?.split(" ")?.map((n) => n[0]).join("").toUpperCase()?.slice(0, 2)}
+              {selectedCandidate?.candidate.full_name?.split(" ")?.map((n) => n[0]).join("").toUpperCase()?.slice(0, 2)}
             </div>
             <div>
               <h2 className="text-base lg:text-[16px] font-bold text-gray-900">
-                {selectedCandidate.fullName}
+                {selectedCandidate.candidate.full_name}
               </h2>
               <div className="flex">
                 <p className="text-sm text-gray-500 max-w-[32ch] truncate">
-                  {selectedCandidate.headline}
+                  {selectedCandidate.candidate.headline}
                 </p>
               </div>
               <div className="flex">
                 <p className="text-sm text-gray-500">
-                  {selectedCandidate.location}
+                  {selectedCandidate.candidate.location}
                 </p>
               </div>
             </div>

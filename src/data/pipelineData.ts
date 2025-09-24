@@ -1,45 +1,48 @@
 export interface PipelineCandidate {
-  id: string; // application ID
-  candidateId: string; // candidate UUID from API
-  fullName: string;
-  full_name:string;
-  profile_picture_url: string;
-  last_active_at: string;
-  avatar: string;
-  current_salary_lpa: string;
-  experience_years: string;
-  experience_summary: {
-    title: string;
-    date_range: string;
-    duration_years: number;
-  }; 
-  education_summary: {
-    title: string;
-    date_range: string;
-  }; 
-  notice_period_summary: string;
-  skills_list: string[];
-  headline: string;
-  profile_summary: string;
-  location: string;
-  profilePicture: {
-    displayImageUrl: string;
-    artifacts: Array<{
-      width: number;
-      height: number;
-      url: string;
-    }>;
-  };
-  gender: string;
-  is_recently_promoted: boolean;
-  is_background_verified: boolean;
-  is_active: boolean;
-  is_prevetted: boolean;
-  notice_period_days: number;
-  current_salary: string;
-  application_type: string;
-  total_experience: number;
-  email: string;
+  id: number;
+  candidate: {
+    id: string;
+    full_name: string;
+    avatar: string;
+    headline: string;
+    location: string;
+    linkedin_url: string;
+    experience_years: string;
+    experience_summary: {
+      title: string;
+      date_range: string;
+      duration_years: number;
+    };
+    education_summary: { title: string; date_range: string };
+    notice_period_summary: string;
+    skills_list: string[];
+    social_links: {
+      linkedin: string;
+      github: string;
+      portfolio: string;
+      resume: string;
+    };
+    resume_url: string;
+    current_salary_lpa: string;
+    profile_summary: string;
+    profilePicture: {
+      displayImageUrl: string;
+      artifacts: Array<{
+        width: number;
+        height: number;
+        url: string;
+      }>;
+    };
+    gender: string;
+    is_recently_promoted: boolean;
+    is_background_verified: boolean;
+    is_active: boolean;
+    is_prevetted: boolean;
+    notice_period_days: number;
+    current_salary: string;
+    application_type: string;
+    total_experience: number;
+    email: string;
   phone: string;
   positions: Array<{
     title: string;
@@ -263,6 +266,12 @@ export interface PipelineCandidate {
       notes: string[];
     };
   };
+  
+  };
+  
+  
+  
+  
 }
 
 export const pipelineStages = [

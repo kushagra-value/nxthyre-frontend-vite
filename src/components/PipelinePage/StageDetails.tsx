@@ -98,7 +98,7 @@ interface StageDetailsProps {
   stages: Stage[];
   moveCandidate: (applicationId: number, stageId: number) => Promise<void>;
   archiveCandidate: (applicationId: number) => Promise<void>;
-  transferredStageData?: PipelineCandidate["stageData"];
+  transferredStageData?: PipelineCandidate["candidate"]["stageData"];
   jobId: number;
   deductCredits: () => Promise<void>;
   onSendInvite: (applicationId: number) => Promise<void>;
@@ -144,7 +144,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   const [showConfirm, setShowConfirm] = useState(false);
 
   const handleSendInviteClick = () => {
-    if (selectedCandidate?.premium_data_unlocked) {
+    if (selectedCandidate?.candidate.premium_data_unlocked) {
       onSendInvite(Number(selectedCandidate.id));
     } else {
       setShowConfirm(true);
@@ -177,13 +177,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
     const fetchData = async () => {
       console.log(
         "Fetching assessment results for candidate:",
-        selectedCandidate?.candidateId + " and jobId: " + jobId
+        selectedCandidate?.candidate.id + " and jobId: " + jobId
       );
-      if (selectedCandidate?.candidateId && jobId) {
+      if (selectedCandidate?.candidate.id && jobId) {
         try {
           const data = await candidateService.getAssessmentResults(
             jobId,
-            selectedCandidate?.candidateId
+            selectedCandidate?.candidate.id
           );
 
           // console.log("Assessment results data:", data);
@@ -207,14 +207,14 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       }
     };
     fetchData();
-  }, [selectedCandidate?.candidateId, jobId]);
+  }, [selectedCandidate?.candidate.id, jobId]);
 
   useEffect(() => {
     const fetchActivity = async () => {
       if (selectedCandidate?.id) {
         try {
           const apiActivities = await candidateService.getCandidateActivity(
-            selectedCandidate?.candidateId
+            selectedCandidate?.candidate.id
           );
 
           const mappedActivities: Activity[] = apiActivities.map(
@@ -233,13 +233,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
               if (item.type === "stage_move") {
                 const d = item.data;
-                description = `${selectedCandidate.fullName} has been moved from ${d.from_stage_name} to ${d.to_stage_name}`;
+                description = `${selectedCandidate.candidate.full_name} has been moved from ${d.from_stage_name} to ${d.to_stage_name}`;
                 via = "system";
               }
 
               if (item.type === "communication_sent") {
                 const d = item.data;
-                description = `${selectedCandidate.fullName} sent you a message `;
+                description = `${selectedCandidate.candidate.full_name} sent you a message `;
                 via = d.mode.toLowerCase();
                 if (d.replies?.length > 0) {
                   note = d.replies
@@ -283,7 +283,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       }
     };
     fetchActivity();
-  }, [selectedCandidate?.candidateId]);
+  }, [selectedCandidate?.candidate.id]);
 
   const [isExpanded, setIsExpanded] = React.useState(false);
 
@@ -336,7 +336,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         console.log(
           `Unarchiving and moving candidate ${selectedCandidate.id} to stage ${selectedStageId}`
         );
-        await moveCandidate(parseInt(selectedCandidate.id), selectedStageId);
+        await moveCandidate(parseInt(selectedCandidate.id.toString()), selectedStageId);
         alert("Candidate unarchived and moved successfully");
       } catch (error) {
         console.error("Error unarchiving and moving candidate:", error);
@@ -363,7 +363,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       try {
         setIsLoading(true);
         const fetchedNotes = await candidateService.getCandidateNotes(
-          selectedCandidate?.candidateId
+          selectedCandidate?.candidate.id
         );
         setNotes(fetchedNotes);
       } catch (error) {
@@ -375,7 +375,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       }
     };
     fetchNotes();
-  }, [selectedCandidate?.candidateId]);
+  }, [selectedCandidate?.candidate.id]);
 
   // Handle adding a new note
   const handleAddComment = async () => {
@@ -389,14 +389,14 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           : { communityNotes: newComment, is_community_note: true };
 
       await candidateService.postCandidateNote(
-        selectedCandidate?.candidateId,
+        selectedCandidate?.candidate.id,
         payload
       );
       setNewComment("");
 
       // Refetch notes to update the UI
       const updatedNotes = await candidateService.getCandidateNotes(
-        selectedCandidate?.candidateId
+        selectedCandidate?.candidate.id
       );
       setNotes(updatedNotes);
     } catch (error) {
@@ -415,24 +415,24 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   const renderTabContent = () => {
     switch (activeTab) {
       case "Profile":
-        const positions = selectedCandidate.positions || [];
-        const educations = selectedCandidate.educations || [];
-        const certifications = selectedCandidate.certifications || [];
-        const skills = selectedCandidate.skills || [];
-        const endorsements = selectedCandidate.endorsements || [];
+        const positions = selectedCandidate.candidate.positions || [];
+        const educations = selectedCandidate.candidate.educations || [];
+        const certifications = selectedCandidate.candidate.certifications || [];
+        const skills = selectedCandidate.candidate.skills || [];
+        const endorsements = selectedCandidate.candidate.endorsements || [];
         const recommendations =
-          selectedCandidate.recommendations.received || [];
+          selectedCandidate.candidate.recommendations.received || [];
         return (
           <div className="bg-[#F5F9FB] py-4 px-2 rounded-xl space-y-6">
-            {selectedCandidate.profile_summary && (
+            {selectedCandidate.candidate.profile_summary && (
               <div>
                 <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
                   <User className="w-4 h-4 mr-2 text-[#4B5563]" />
                   Profile Summary
                 </h3>
                 <p className="text-sm pl-6 text-[#818283]">
-                  {selectedCandidate.profile_summary ||
-                    selectedCandidate.headline ||
+                  {selectedCandidate.candidate.profile_summary ||
+                    selectedCandidate.candidate.headline ||
                     "No summary available"}
                 </p>
               </div>
@@ -1302,7 +1302,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 );
                 const nextStage = stages[currentIndex + 1];
                 if (nextStage)
-                  moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
+                  moveCandidate(selectedCandidate.id, nextStage.id);
               }}
               className="flex justify-center items-center w-[50%] lg:w-[60%] px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
@@ -1366,14 +1366,14 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 );
                 const nextStage = stages[currentIndex + 1];
                 if (nextStage)
-                  moveCandidate(parseInt(selectedCandidate.id), nextStage.id);
+                  moveCandidate(selectedCandidate.id, nextStage.id);
               }}
               className="flex-1 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               Move to Next Stage
             </button>
             <button
-              onClick={() => archiveCandidate(parseInt(selectedCandidate.id))}
+              onClick={() => archiveCandidate(selectedCandidate.id)}
               className="flex-1 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               Archive
@@ -1415,7 +1415,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 {tab}
                 {tab === "Notes" && (
                   <span className="ml-1">
-                    ({selectedCandidate?.notes?.length || 0})
+                    ({selectedCandidate?.candidate.notes?.length || 0})
                   </span>
                 )}
               </button>
