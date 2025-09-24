@@ -151,6 +151,7 @@ function MainApp() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
+  const [activeCategoryTotalCount, setActiveCategoryTotalCount] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
   const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
   const [loadingCandidates, setLoadingCandidates] = useState(true);
@@ -1077,6 +1078,9 @@ function MainApp() {
                                   <button
                                     onClick={() => {
                                       setActiveCategoryId(category.id);
+                                      setActiveCategoryTotalCount(
+                                        category.count
+                                      )
                                       fetchJobDetailsAndSetFilters(category.id);
                                     }}
                                     className={`py-1.5 text-xs lg:text-base transition-all duration-200 ${
@@ -1294,6 +1298,7 @@ function MainApp() {
                             setSortBy={setSortBy}
                             loadingCandidates={loadingCandidates}
                             sourcingCounts={sourcingCounts}
+                            activeCategoryTotalCount={activeCategoryTotalCount}
                           />
                         </div>
                         {/* CandidateDetail remains in its original div with 30% width */}

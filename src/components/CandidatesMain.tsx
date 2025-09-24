@@ -54,6 +54,7 @@ interface CandidatesMainProps {
     active: number;
     prevetted: number;
   };
+  activeCategoryTotalCount: number;
 }
 
 const CandidatesMain: React.FC<CandidatesMainProps> = ({
@@ -75,6 +76,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   setSortBy,
   loadingCandidates,
   sourcingCounts,
+  activeCategoryTotalCount,
 }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
@@ -720,11 +722,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       ) : (
         <>
           <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
-            {activeTab === "inbound" && totalCount < sourcingCounts.inbound && searchTerm.trim() === "" && (
+            {activeTab === "inbound" && totalCount < activeCategoryTotalCount && (
               <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
                 <p className="text-yellow-700 text-sm">
-                  There might be few candidates in inbound tab due to applied filters. You can click on clear all filter button in the side bar to get all the candidates.
-                </p>
+                  There might be fewer candidates in the Inbound tab due to applied filters. You can click on the "Clear All Filters" button in the sidebar to view all candidates.
+                  </p>
               </div>
             )}
             {candidates.map((candidate) => {
