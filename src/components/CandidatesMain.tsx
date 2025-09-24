@@ -720,6 +720,13 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       ) : (
         <>
           <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
+            {activeTab === "inbound" && totalCount < sourcingCounts.inbound && searchTerm.trim() === "" && (
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
+                <p className="text-yellow-700 text-sm">
+                  There might be few candidates in inbound tab due to applied filters. You can click on clear all filter button in the side bar to get all the candidates.
+                </p>
+              </div>
+            )}
             {candidates.map((candidate) => {
               // Extract college name from education_summary.title
               let collegeName = candidate?.education_summary?.title
@@ -890,7 +897,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         </div>
                         <div className="flex items-center space-x-2">
                           <div className="relative group">
-                            <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                            <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[48ch] truncate">
                               {candidate.headline}
                               {collegeName && (
                                 <span>
