@@ -48,6 +48,7 @@ import { jobPostService } from "../services/jobPostService"; // Import jobPostSe
 import { showToast } from "../utils/toast";
 import PipelinesSideCard from "./PipelinePage/PipelinesSideCard";
 import { candidateService } from "../services/candidateService";
+import TemplateSelector from "./TemplateSelector"; 
 
 // Define interfaces for API responses
 interface Stage {
@@ -126,14 +127,12 @@ interface Note {
 interface PipelineStagesProps {
   onBack: () => void;
   onOpenLogoutModal: () => void;
-  onSendInvite: (applicationId: number) => Promise<void>;
   deductCredits: () => Promise<void>;
 }
 
 const PipelineStages: React.FC<PipelineStagesProps> = ({
   onBack,
   onOpenLogoutModal,
-  onSendInvite,
   deductCredits,
 }) => {
   const { user } = useAuthContext();
@@ -154,6 +153,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     onSuccess: (prem: any) => void;
   } | null>(null);
   const [revealLoading, setRevealLoading] = useState(false);
+  // New state for TemplateSelector
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
   // States for API data
   const [stages, setStages] = useState<Stage[]>([]);
   const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
@@ -187,6 +188,16 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const [suggestions, setSuggestions] = useState<
     { id: string; name: string }[]
   >([]);
+
+  const handleSendInvite = async (applicationId: number) => {
+    // Optionally deduct credits or handle other logic here
+    // For now, just open TemplateSelector
+    setShowTemplateSelector(true);
+  };
+
+  const handleBackFromTemplate = () => {
+    setShowTemplateSelector(false);
+  };
 
   const handleReveal = async (candidateId: string) => {
   try {
@@ -2609,12 +2620,14 @@ const handleConfirmReveal = async () => {
               archiveCandidate={archiveCandidate}
               stageData={selectedCandidate?.stageData}
               jobId={activeJobId ?? 0}
-              onSendInvite={onSendInvite}
+              onSendInvite={handleSendInvite}
               deductCredits={deductCredits}
             />
           </div>
         </div>
       </div>
+
+
       {showRevealDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
@@ -2655,6 +2668,24 @@ const handleConfirmReveal = async () => {
           </div>
         </div>
       )}
+
+      {showTemplateSelector && selectedCandidate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-end">
+          {/* Backdrop with blur effect */}
+          <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-md"></div>
+
+          {/* TemplateSelector with 40% width */}
+          <div className="relative w-[40%] h-full bg-white rounded-tl-xl rounded-bl-xl shadow-lg overflow-y-auto">
+            <TemplateSelector
+              candidate={selectedCandidate}
+              onBack={handleBackFromTemplate}
+              updateCandidateEmail={() => {}} // Pass a no-op or actual handler if needed
+              jobId={activeJobId?.toString() || ''}
+            />
+          </div>
+        </div>
+      )}
+      
       {showUploadModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">

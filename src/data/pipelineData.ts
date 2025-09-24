@@ -2,6 +2,23 @@ export interface PipelineCandidate {
   id: string; // application ID
   candidateId: string; // candidate UUID from API
   fullName: string;
+  full_name:string;
+  profile_picture_url: string;
+  last_active_at: string;
+  avatar: string;
+  current_salary_lpa: string;
+  experience_years: string;
+  experience_summary: {
+    title: string;
+    date_range: string;
+    duration_years: number;
+  }; 
+  education_summary: {
+    title: string;
+    date_range: string;
+  }; 
+  notice_period_summary: string;
+  skills_list: string[];
   headline: string;
   profile_summary: string;
   location: string;
