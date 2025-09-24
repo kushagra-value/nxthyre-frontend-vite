@@ -1320,7 +1320,7 @@ function MainApp() {
 
                         {/* TemplateSelector rendered as an overlay with 40% width when active */}
                         {showTemplateSelector && selectedCandidate && (
-                          <div className="fixed inset-0 z-100 flex items-center justify-end">
+                          <div className="fixed inset-0 z-50 flex items-center justify-end">
                             {/* Backdrop with blur effect */}
                             <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-md"></div>
 
