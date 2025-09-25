@@ -631,6 +631,26 @@ class CandidateService {
     }
   }
 
+  async scheduleCodingAssessmentEmail(
+    candidateId: string,
+    jobId: number
+  ): Promise<any> {
+    try {
+      const response = await apiClient.post(
+        `/api/assessment/create-and-send/`,
+        {
+          candidate_id: candidateId,
+          job_id: jobId,
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to send assessment email"
+      );
+    }
+  }
+
   async getKeywordSuggestions(query: string): Promise<string[]> {
     try {
       const response = await apiClient.get(

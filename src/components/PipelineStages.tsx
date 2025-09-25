@@ -48,7 +48,7 @@ import { jobPostService } from "../services/jobPostService"; // Import jobPostSe
 import { showToast } from "../utils/toast";
 import PipelinesSideCard from "./PipelinePage/PipelinesSideCard";
 import { candidateService } from "../services/candidateService";
-import TemplateSelector from "./TemplateSelector"; 
+import TemplateSelector from "./TemplateSelector";
 
 // Define interfaces for API responses
 interface Stage {
@@ -96,8 +96,8 @@ interface CandidateListItem {
     current_salary?: string;
     application_type?: string;
     total_experience?: number;
-    email?: string;  // From premium_data
-    phone?: string;  // From premium_data
+    email?: string; // From premium_data
+    phone?: string; // From premium_data
     premium_data_unlocked: boolean;
     premium_data_availability: {
       email: boolean;
@@ -173,10 +173,10 @@ interface CandidateListItem {
       message: string;
     }>;
     recommendations?: {
-      received: Array<any>;  // Expand as needed
+      received: Array<any>; // Expand as needed
       given: Array<any>;
     };
-    notes?: Array<any>;  // Expand as needed
+    notes?: Array<any>; // Expand as needed
     profilePicture?: {
       displayImageUrl: string;
       artifacts: Array<{
@@ -298,53 +298,57 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   };
 
   const handleReveal = async (candidateId: string) => {
-  try {
-    const premResponse = await candidateService.revealPremiumData(candidateId);
-    const updated = candidates.map((c) =>
-      c.candidate.id === candidateId
-        ? {
-            ...c,
-            candidate: {
-              ...c.candidate,
-              premium_data_unlocked: true,
-              premium_data: premResponse.premium_data,
-              social_links: {
-                linkedin: premResponse.premium_data.linkedin_url,
-                github: premResponse.premium_data.github_url,
-                portfolio: premResponse.premium_data.portfolio_url,
-                resume: premResponse.premium_data.resume_url,
+    try {
+      const premResponse = await candidateService.revealPremiumData(
+        candidateId
+      );
+      const updated = candidates.map((c) =>
+        c.candidate.id === candidateId
+          ? {
+              ...c,
+              candidate: {
+                ...c.candidate,
+                premium_data_unlocked: true,
+                premium_data: premResponse.premium_data,
+                social_links: {
+                  linkedin: premResponse.premium_data.linkedin_url,
+                  github: premResponse.premium_data.github_url,
+                  portfolio: premResponse.premium_data.portfolio_url,
+                  resume: premResponse.premium_data.resume_url,
+                },
               },
-            },
-          }
-        : c
-    );
-    setCandidates(updated);
-    if (selectedCandidate?.candidate.id === candidateId) {
-      fetchCandidateDetails(updated.find((c) => c.candidate.id === candidateId)?.id || 0);
+            }
+          : c
+      );
+      setCandidates(updated);
+      if (selectedCandidate?.candidateId === candidateId) {
+        fetchCandidateDetails(
+          updated.find((c) => c.candidate.id === candidateId)?.id || 0
+        );
+      }
+      return premResponse.premium_data;
+    } catch (error) {
+      console.error("Error revealing premium data:", error);
+      showToast.error("Failed to reveal premium data");
+      throw error;
     }
-    return premResponse.premium_data;
-  } catch (error) {
-    console.error("Error revealing premium data:", error);
-    showToast.error("Failed to reveal premium data");
-    throw error;
-  }
-};
+  };
 
-const handleConfirmReveal = async () => {
-  if (!pendingReveal) return;
-  setRevealLoading(true);
-  try {
-    const prem = await handleReveal(pendingReveal.candidateId);
-    await deductCredits();
-    pendingReveal.onSuccess(prem);
-  } catch (e) {
-    // Error already handled in handleReveal
-  } finally {
-    setShowRevealDialog(false);
-    setPendingReveal(null);
-    setRevealLoading(false);
-  }
-};
+  const handleConfirmReveal = async () => {
+    if (!pendingReveal) return;
+    setRevealLoading(true);
+    try {
+      const prem = await handleReveal(pendingReveal.candidateId);
+      await deductCredits();
+      pendingReveal.onSuccess(prem);
+    } catch (e) {
+      // Error already handled in handleReveal
+    } finally {
+      setShowRevealDialog(false);
+      setPendingReveal(null);
+      setRevealLoading(false);
+    }
+  };
 
   // Fetch categories when component mounts
   useEffect(() => {
@@ -505,14 +509,19 @@ const handleConfirmReveal = async () => {
   }, [searchQuery, currentView, activeJobId]);
 
   useEffect(() => {
-      if (currentView === "search" && searchQuery === "" && activeJobId !== null && selectedStage) {
-        fetchCandidates(
-          activeJobId,
-          selectedStage.toLowerCase().replace(" ", "-")
-        );
-        setSelectedCandidate(null);
-      }
-    }, [searchQuery, currentView, activeJobId, selectedStage]);
+    if (
+      currentView === "search" &&
+      searchQuery === "" &&
+      activeJobId !== null &&
+      selectedStage
+    ) {
+      fetchCandidates(
+        activeJobId,
+        selectedStage.toLowerCase().replace(" ", "-")
+      );
+      setSelectedCandidate(null);
+    }
+  }, [searchQuery, currentView, activeJobId, selectedStage]);
 
   // API functions
   const fetchStages = async (jobId: number) => {
@@ -530,9 +539,13 @@ const handleConfirmReveal = async () => {
   };
 
   const fetchCandidates = async (jobId: number, stageSlug: string) => {
-    let url = `/jobs/applications/?job_id=${jobId}&stage_slug=${stageSlug}${sortBy ? `&sort_by=${sortBy}` : ''}`;
+    let url = `/jobs/applications/?job_id=${jobId}&stage_slug=${stageSlug}${
+      sortBy ? `&sort_by=${sortBy}` : ""
+    }`;
     if (viewMode === "prospect" && activeStageTab === "inbox") {
-      url = `/jobs/applications/replied-candidates/?job_id=${jobId}${sortBy ? `&sort_by=${sortBy}` : ''}`;
+      url = `/jobs/applications/replied-candidates/?job_id=${jobId}${
+        sortBy ? `&sort_by=${sortBy}` : ""
+      }`;
     }
     try {
       const response = await apiClient.get(url);
@@ -563,6 +576,18 @@ const handleConfirmReveal = async () => {
       await apiClient.patch(`/jobs/applications/${applicationId}/`, {
         current_stage: stageId,
       });
+
+      const targetStage = stages.find((stage) => stage.id === stageId);
+      if (targetStage?.slug === "coding-contest") {
+        const cand = candidates.find((c) => c.id === applicationId);
+        if (cand && activeJobId !== null) {
+          await candidateService.scheduleCodingAssessmentEmail(
+            cand.candidate.id,
+            activeJobId
+          );
+        }
+      }
+
       if (activeJobId !== null) {
         fetchCandidates(
           activeJobId,
@@ -596,11 +621,31 @@ const handleConfirmReveal = async () => {
     }
   };
 
-  const bulkMoveCandidates = async (applicationIds: number[]) => {
+  const bulkMoveCandidates = async (
+    applicationIds: number[],
+    stageId: number
+  ) => {
     try {
       await apiClient.post("/jobs/bulk-move-stage/", {
         application_ids: applicationIds,
+        current_stage: stageId,
       });
+
+      const targetStage = stages.find((stage) => stage.id === stageId);
+      if (targetStage?.slug === "coding-contest") {
+        await Promise.all(
+          applicationIds.map(async (appId) => {
+            const cand = candidates.find((c) => c.id === appId);
+            if (cand && activeJobId !== null) {
+              await candidateService.scheduleCodingAssessmentEmail(
+                cand.candidate.id,
+                activeJobId
+              );
+            }
+          })
+        );
+      }
+
       if (activeJobId !== null) {
         fetchCandidates(
           activeJobId,
@@ -612,8 +657,6 @@ const handleConfirmReveal = async () => {
       console.error("Error bulk moving candidates:", error);
     }
   };
-
-  
 
   const handleSortSelect = (sortValue: string) => {
     setSortBy(sortValue);
@@ -704,128 +747,132 @@ const handleConfirmReveal = async () => {
 
     return {
       id: data.id,
-candidate: {
-      id: candidateData.id,
-      full_name: candidateData.full_name,
-      avatar: candidateData.avatar,
-      headline: candidateData.headline,
-      location: candidateData.location,
-      linkedin_url: candidateData.linkedin_url,
-      experience_years: candidateData.experience_years,
-      experience_summary: candidateData.experience_summary,
-      education_summary: candidateData.education_summary,
-      notice_period_summary: candidateData.notice_period_summary,
-      skills_list: candidateData.skills_list,
-      social_links: candidateData.social_links,
-      resume_url: candidateData.resume_url,
-      current_salary_lpa: candidateData.current_salary_lpa,
-      profile_summary: candidateData.profile_summary,
-      profilePicture: {
-        displayImageUrl: candidateData.profile_picture_url || "",
-        artifacts: [],
+      candidate: {
+        id: candidateData.id,
+        full_name: candidateData.full_name,
+        avatar: candidateData.avatar,
+        headline: candidateData.headline,
+        location: candidateData.location,
+        linkedin_url: candidateData.linkedin_url,
+        experience_years: candidateData.experience_years,
+        experience_summary: candidateData.experience_summary,
+        education_summary: candidateData.education_summary,
+        notice_period_summary: candidateData.notice_period_summary,
+        skills_list: candidateData.skills_list,
+        social_links: candidateData.social_links,
+        resume_url: candidateData.resume_url,
+        current_salary_lpa: candidateData.current_salary_lpa,
+        profile_summary: candidateData.profile_summary,
+        profilePicture: {
+          displayImageUrl: candidateData.profile_picture_url || "",
+          artifacts: [],
+        },
+        gender: candidateData.gender,
+        is_recently_promoted: candidateData.is_recently_promoted,
+        is_background_verified: candidateData.is_background_verified,
+        is_active: candidateData.is_active,
+        is_prevetted: candidateData.is_prevetted,
+        notice_period_days: candidateData.notice_period_days,
+        current_salary: candidateData.current_salary,
+        application_type: candidateData.application_type,
+        total_experience: candidateData.total_experience,
+        email: premiumData.email || "",
+        phone: premiumData.phone || "",
+        positions: candidateData.experience.map((exp: any) => ({
+          title: exp.job_title,
+          companyName: exp.company,
+          companyUrn: "",
+          startDate: exp.start_date
+            ? {
+                month: new Date(exp.start_date).getMonth() + 1,
+                year: new Date(exp.start_date).getFullYear(),
+              }
+            : { month: 0, year: 0 },
+          endDate: exp.end_date
+            ? {
+                month: new Date(exp.end_date).getMonth() + 1,
+                year: new Date(exp.end_date).getFullYear(),
+              }
+            : undefined,
+          isCurrent: exp.is_current,
+          location: exp.location,
+          description: exp.description,
+        })),
+        educations: candidateData.education.map((edu: any) => ({
+          schoolName: edu.institution,
+          degreeName: edu.degree,
+          fieldOfStudy: edu.specialization,
+          startDate: edu.start_date
+            ? { year: new Date(edu.start_date).getFullYear() }
+            : { year: 0 },
+          endDate: edu.end_date
+            ? { year: new Date(edu.end_date).getFullYear() }
+            : { year: 0 },
+          activities: "",
+          description: "",
+          is_top_tier: edu.is_top_tier || false,
+        })),
+        certifications: candidateData.certifications.map((cert: any) => ({
+          name: cert.name,
+          authority: cert.authority,
+          licenseNumber: cert.licenseNumber,
+          startDate: cert.issued_date
+            ? {
+                month: new Date(cert.issued_date).getMonth() + 1,
+                year: new Date(cert.issued_date).getFullYear(),
+              }
+            : { month: 0, year: 0 },
+          endDate: cert.valid_until
+            ? {
+                month: new Date(cert.valid_until).getMonth() + 1,
+                year: new Date(cert.valid_until).getFullYear(),
+              }
+            : undefined,
+          url: cert.url,
+        })),
+        skills: candidateData.skills_data.skills_mentioned.map(
+          (skill: any) => ({
+            name: skill.skill,
+            endorsementCount: skill.number_of_endorsements,
+          })
+        ),
+        endorsements: candidateData.skills_data.endorsements.map(
+          (end: any) => ({
+            endorser_name: end.endorser_name,
+            endorser_title: end.endorser_title,
+            endorser_profile_pic_url: end.endorser_profile_pic_url,
+            skill_endorsed: end.skill_endorsed,
+            endorser_company: end.endorser_company,
+            message: end.message,
+          })
+        ),
+        recommendations: {
+          received: candidateData.recommendations,
+          given: [],
+        },
+        notes: candidateData.notes,
+        premium_data_unlocked: candidateData.premium_data_unlocked,
+        premium_data_availability: candidateData.premium_data_availability,
+        premium_data: {
+          email: premiumData.email,
+          phone: premiumData.phone,
+          linkedin_url: premiumData.linkedin_url,
+          github_url: premiumData.github_url,
+          twitter_url: premiumData.twitter_url,
+          resume_url: premiumData.resume_url,
+          resume_text: premiumData.resume_text,
+          portfolio_url: premiumData.portfolio_url,
+          dribble_username: premiumData.dribble_username,
+          behance_username: premiumData.behance_username,
+          instagram_username: premiumData.instagram_username,
+          pinterest_username: premiumData.pinterest_username,
+          all_emails: premiumData.all_emails || [],
+          all_phone_numbers: premiumData.all_phone_numbers || [],
+        },
+        stageData: {
+          [stageProperty]: mappedStageData,
+        },
       },
-      gender: candidateData.gender,
-      is_recently_promoted: candidateData.is_recently_promoted,
-      is_background_verified: candidateData.is_background_verified,
-      is_active: candidateData.is_active,
-      is_prevetted: candidateData.is_prevetted,
-      notice_period_days: candidateData.notice_period_days,
-      current_salary: candidateData.current_salary,
-      application_type: candidateData.application_type,
-      total_experience: candidateData.total_experience,
-      email: premiumData.email || "",
-      phone: premiumData.phone || "",
-      positions: candidateData.experience.map((exp: any) => ({
-        title: exp.job_title,
-        companyName: exp.company,
-        companyUrn: "",
-        startDate: exp.start_date
-          ? {
-              month: new Date(exp.start_date).getMonth() + 1,
-              year: new Date(exp.start_date).getFullYear(),
-            }
-          : { month: 0, year: 0 },
-        endDate: exp.end_date
-          ? {
-              month: new Date(exp.end_date).getMonth() + 1,
-              year: new Date(exp.end_date).getFullYear(),
-            }
-          : undefined,
-        isCurrent: exp.is_current,
-        location: exp.location,
-        description: exp.description,
-      })),
-      educations: candidateData.education.map((edu: any) => ({
-        schoolName: edu.institution,
-        degreeName: edu.degree,
-        fieldOfStudy: edu.specialization,
-        startDate: edu.start_date
-          ? { year: new Date(edu.start_date).getFullYear() }
-          : { year: 0 },
-        endDate: edu.end_date
-          ? { year: new Date(edu.end_date).getFullYear() }
-          : { year: 0 },
-        activities: "",
-        description: "",
-        is_top_tier: edu.is_top_tier || false,
-      })),
-      certifications: candidateData.certifications.map((cert: any) => ({
-        name: cert.name,
-        authority: cert.authority,
-        licenseNumber: cert.licenseNumber,
-        startDate: cert.issued_date
-          ? {
-              month: new Date(cert.issued_date).getMonth() + 1,
-              year: new Date(cert.issued_date).getFullYear(),
-            }
-          : { month: 0, year: 0 },
-        endDate: cert.valid_until
-          ? {
-              month: new Date(cert.valid_until).getMonth() + 1,
-              year: new Date(cert.valid_until).getFullYear(),
-            }
-          : undefined,
-        url: cert.url,
-      })),
-      skills: candidateData.skills_data.skills_mentioned.map((skill: any) => ({
-        name: skill.skill,
-        endorsementCount: skill.number_of_endorsements,
-      })),
-      endorsements: candidateData.skills_data.endorsements.map((end: any) => ({
-        endorser_name: end.endorser_name,
-        endorser_title: end.endorser_title,
-        endorser_profile_pic_url: end.endorser_profile_pic_url,
-        skill_endorsed: end.skill_endorsed,
-        endorser_company: end.endorser_company,
-        message: end.message,
-      })),
-      recommendations: {
-        received: candidateData.recommendations,
-        given: [],
-      },
-      notes: candidateData.notes,
-      premium_data_unlocked: candidateData.premium_data_unlocked,
-      premium_data_availability: candidateData.premium_data_availability,
-      premium_data: {
-        email: premiumData.email,
-        phone: premiumData.phone,
-        linkedin_url: premiumData.linkedin_url,
-        github_url: premiumData.github_url,
-        twitter_url: premiumData.twitter_url,
-        resume_url: premiumData.resume_url,
-        resume_text: premiumData.resume_text,
-        portfolio_url: premiumData.portfolio_url,
-        dribble_username: premiumData.dribble_username,
-        behance_username: premiumData.behance_username,
-        instagram_username: premiumData.instagram_username,
-        pinterest_username: premiumData.pinterest_username,
-        all_emails: premiumData.all_emails || [],
-        all_phone_numbers: premiumData.all_phone_numbers || [],
-      },
-      stageData: {
-        [stageProperty]: mappedStageData,
-      },
-    },
     };
   };
 
@@ -1721,7 +1768,9 @@ candidate: {
                       <button
                         onClick={() =>
                           bulkMoveCandidates(
-                            selectedCandidates.map((id) => parseInt(id))
+                            selectedCandidates.map((id) => parseInt(id)),
+                            stages.find((s) => s.name === selectedStage)?.id ??
+                              0
                           )
                         }
                         className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2217,9 +2266,14 @@ candidate: {
                             </div>
                             <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
                               <div className="flex items-center space-x-1">
-                                {candidate.candidate.premium_data_availability?.pinterest_username && (
+                                {candidate.candidate.premium_data_availability
+                                  ?.pinterest_username &&
                                   (() => {
-                                    const url = candidate.candidate.premium_data_unlocked ? candidate.candidate.premium_data?.pinterest_username: null;
+                                    const url = candidate.candidate
+                                      .premium_data_unlocked
+                                      ? candidate.candidate.premium_data
+                                          ?.pinterest_username
+                                      : null;
                                     return (
                                       <button
                                         className="text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2229,49 +2283,62 @@ candidate: {
                                             window.open(url, "_blank");
                                           } else {
                                             setPendingReveal({
-                                              candidateId: candidate.candidate.id,
+                                              candidateId:
+                                                candidate.candidate.id,
                                               onSuccess: (prem) => {
                                                 const finalUrl =
-                                                  prem.candidate.premium_data.pinterest_username;
+                                                  prem.candidate.premium_data
+                                                    .pinterest_username;
                                                 if (finalUrl)
-                                                  window.open(finalUrl, "_blank");
-                                            },
-                                          });
-                                          setShowRevealDialog(true);
+                                                  window.open(
+                                                    finalUrl,
+                                                    "_blank"
+                                                  );
+                                              },
+                                            });
+                                            setShowRevealDialog(true);
                                           }
                                         }}
                                         aria-label={`View ${candidate.candidate.full_name}'s Pinterest profile`}
                                       >
                                         <svg
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                      >
-                                        <g clip-path="url(#clip0_3112_1059)">
-                                          <path
-                                            d="M15.0039 11.8779C14.6007 11.8076 14.1789 11.8169 13.7664 11.8404C12.8289 11.8919 11.8914 11.981 10.9539 11.8966C10.5086 11.8544 10.0586 11.8123 9.60856 11.8216C8.79293 11.8357 8.10856 12.1029 7.70543 12.881C7.50387 13.2654 7.45699 13.6779 7.47106 14.1044C7.50387 15.3044 8.02418 15.9888 9.16793 16.331C10.0867 16.6029 11.0289 16.6404 11.9757 16.6216C12.3273 16.6216 12.6789 16.6404 13.0304 16.6169C13.757 16.5748 14.4695 16.4669 15.1586 16.2138C15.8711 15.9513 16.2976 15.4498 16.4523 14.7232C16.5132 14.4419 16.5414 14.1466 16.5367 13.8607C16.5273 12.8904 15.8711 12.0232 15.0039 11.8779ZM10.3914 15.0513C10.0867 15.3841 9.64606 15.3888 9.33199 15.0654C9.10231 14.831 8.97106 14.4701 8.97106 14.0201C8.98043 13.7154 9.06949 13.3826 9.33199 13.1154C9.64606 12.7919 10.0867 12.7966 10.3914 13.1248C10.8507 13.6216 10.8507 14.5544 10.3914 15.0513ZM14.6523 15.0748C14.3664 15.3701 13.9539 15.3794 13.6492 15.1076C13.1242 14.6294 13.1242 13.5654 13.6492 13.0826C13.9492 12.806 14.3617 12.8154 14.6523 13.1107C14.9195 13.3826 15.0086 13.7248 15.0226 14.0904C15.0086 14.4607 14.9148 14.7982 14.6523 15.0748Z"
-                                            fill="#4B5563"
-                                          />
-                                          <path
-                                            d="M12 0C5.37188 0 0 5.37188 0 12C0 18.6281 5.37188 24 12 24C18.6281 24 24 18.6281 24 12C24 5.37188 18.6281 0 12 0ZM18.15 13.05C18.0844 13.5844 17.9719 14.1328 17.7797 14.6344C17.2172 16.0734 16.0922 16.8656 14.6016 17.1047C13.7484 17.2406 12.8719 17.2453 11.925 17.3156C11.0766 17.2406 10.1438 17.2313 9.23906 17.0719C7.48594 16.7625 6.29531 15.5344 5.94844 13.7766C5.77031 12.8812 5.71875 11.9813 5.99531 11.0906C6.14062 10.6313 6.37969 10.2234 6.68906 9.85313C6.73125 9.80625 6.76875 9.73594 6.76406 9.675C6.7125 8.86875 6.80625 8.07187 7.04531 7.30312C7.24219 6.66094 7.09688 6.69844 7.80938 6.88594C8.66719 7.11094 9.41719 7.575 10.1531 8.05781C10.2375 8.11406 10.3687 8.1375 10.4719 8.11875C11.5125 7.95938 12.5484 7.95 13.5891 8.13281C13.6641 8.14688 13.7625 8.11875 13.8328 8.07656C14.4656 7.66406 15.1172 7.29375 15.8297 7.03594C16.0875 6.94219 16.3594 6.88125 16.6219 6.80156C16.7391 6.76875 16.7906 6.81094 16.8328 6.92344C17.1516 7.81406 17.2828 8.72812 17.2359 9.67031C17.2313 9.72187 17.2594 9.79219 17.2922 9.83437C18.0938 10.7625 18.2953 11.8687 18.15 13.05Z"
-                                            fill="#4B5563"
-                                          />
-                                        </g>
-                                        <defs>
-                                          <clipPath id="clip0_3112_1059">
-                                            <rect width="24" height="24" fill="white" />
-                                          </clipPath>
-                                        </defs>
-                                      </svg>
+                                          width="24"
+                                          height="24"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <g clip-path="url(#clip0_3112_1059)">
+                                            <path
+                                              d="M15.0039 11.8779C14.6007 11.8076 14.1789 11.8169 13.7664 11.8404C12.8289 11.8919 11.8914 11.981 10.9539 11.8966C10.5086 11.8544 10.0586 11.8123 9.60856 11.8216C8.79293 11.8357 8.10856 12.1029 7.70543 12.881C7.50387 13.2654 7.45699 13.6779 7.47106 14.1044C7.50387 15.3044 8.02418 15.9888 9.16793 16.331C10.0867 16.6029 11.0289 16.6404 11.9757 16.6216C12.3273 16.6216 12.6789 16.6404 13.0304 16.6169C13.757 16.5748 14.4695 16.4669 15.1586 16.2138C15.8711 15.9513 16.2976 15.4498 16.4523 14.7232C16.5132 14.4419 16.5414 14.1466 16.5367 13.8607C16.5273 12.8904 15.8711 12.0232 15.0039 11.8779ZM10.3914 15.0513C10.0867 15.3841 9.64606 15.3888 9.33199 15.0654C9.10231 14.831 8.97106 14.4701 8.97106 14.0201C8.98043 13.7154 9.06949 13.3826 9.33199 13.1154C9.64606 12.7919 10.0867 12.7966 10.3914 13.1248C10.8507 13.6216 10.8507 14.5544 10.3914 15.0513ZM14.6523 15.0748C14.3664 15.3701 13.9539 15.3794 13.6492 15.1076C13.1242 14.6294 13.1242 13.5654 13.6492 13.0826C13.9492 12.806 14.3617 12.8154 14.6523 13.1107C14.9195 13.3826 15.0086 13.7248 15.0226 14.0904C15.0086 14.4607 14.9148 14.7982 14.6523 15.0748Z"
+                                              fill="#4B5563"
+                                            />
+                                            <path
+                                              d="M12 0C5.37188 0 0 5.37188 0 12C0 18.6281 5.37188 24 12 24C18.6281 24 24 18.6281 24 12C24 5.37188 18.6281 0 12 0ZM18.15 13.05C18.0844 13.5844 17.9719 14.1328 17.7797 14.6344C17.2172 16.0734 16.0922 16.8656 14.6016 17.1047C13.7484 17.2406 12.8719 17.2453 11.925 17.3156C11.0766 17.2406 10.1438 17.2313 9.23906 17.0719C7.48594 16.7625 6.29531 15.5344 5.94844 13.7766C5.77031 12.8812 5.71875 11.9813 5.99531 11.0906C6.14062 10.6313 6.37969 10.2234 6.68906 9.85313C6.73125 9.80625 6.76875 9.73594 6.76406 9.675C6.7125 8.86875 6.80625 8.07187 7.04531 7.30312C7.24219 6.66094 7.09688 6.69844 7.80938 6.88594C8.66719 7.11094 9.41719 7.575 10.1531 8.05781C10.2375 8.11406 10.3687 8.1375 10.4719 8.11875C11.5125 7.95938 12.5484 7.95 13.5891 8.13281C13.6641 8.14688 13.7625 8.11875 13.8328 8.07656C14.4656 7.66406 15.1172 7.29375 15.8297 7.03594C16.0875 6.94219 16.3594 6.88125 16.6219 6.80156C16.7391 6.76875 16.7906 6.81094 16.8328 6.92344C17.1516 7.81406 17.2828 8.72812 17.2359 9.67031C17.2313 9.72187 17.2594 9.79219 17.2922 9.83437C18.0938 10.7625 18.2953 11.8687 18.15 13.05Z"
+                                              fill="#4B5563"
+                                            />
+                                          </g>
+                                          <defs>
+                                            <clipPath id="clip0_3112_1059">
+                                              <rect
+                                                width="24"
+                                                height="24"
+                                                fill="white"
+                                              />
+                                            </clipPath>
+                                          </defs>
+                                        </svg>
                                       </button>
                                     );
-                                  })()
-                                )}
-                                {candidate.candidate.premium_data_availability?.github_username && (
+                                  })()}
+                                {candidate.candidate.premium_data_availability
+                                  ?.github_username &&
                                   (() => {
-                                    const url = candidate.candidate.premium_data_unlocked ? candidate.candidate.premium_data?.github_url: null;
+                                    const url = candidate.candidate
+                                      .premium_data_unlocked
+                                      ? candidate.candidate.premium_data
+                                          ?.github_url
+                                      : null;
                                     return (
                                       <button
                                         className="text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2281,49 +2348,62 @@ candidate: {
                                             window.open(url, "_blank");
                                           } else {
                                             setPendingReveal({
-                                              candidateId: candidate.candidate.id,
+                                              candidateId:
+                                                candidate.candidate.id,
                                               onSuccess: (prem) => {
                                                 const finalUrl =
-                                                  prem.candidate.premium_data.github_url;
+                                                  prem.candidate.premium_data
+                                                    .github_url;
                                                 if (finalUrl)
-                                                  window.open(finalUrl, "_blank");
-                                            },
-                                          });
-                                          setShowRevealDialog(true);
+                                                  window.open(
+                                                    finalUrl,
+                                                    "_blank"
+                                                  );
+                                              },
+                                            });
+                                            setShowRevealDialog(true);
                                           }
                                         }}
                                         aria-label={`View ${candidate.candidate.full_name}'s GitHub profile`}
                                       >
                                         <svg
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                      >
-                                        <g clip-path="url(#clip0_3112_1059)">
-                                          <path
-                                            d="M15.0039 11.8779C14.6007 11.8076 14.1789 11.8169 13.7664 11.8404C12.8289 11.8919 11.8914 11.981 10.9539 11.8966C10.5086 11.8544 10.0586 11.8123 9.60856 11.8216C8.79293 11.8357 8.10856 12.1029 7.70543 12.881C7.50387 13.2654 7.45699 13.6779 7.47106 14.1044C7.50387 15.3044 8.02418 15.9888 9.16793 16.331C10.0867 16.6029 11.0289 16.6404 11.9757 16.6216C12.3273 16.6216 12.6789 16.6404 13.0304 16.6169C13.757 16.5748 14.4695 16.4669 15.1586 16.2138C15.8711 15.9513 16.2976 15.4498 16.4523 14.7232C16.5132 14.4419 16.5414 14.1466 16.5367 13.8607C16.5273 12.8904 15.8711 12.0232 15.0039 11.8779ZM10.3914 15.0513C10.0867 15.3841 9.64606 15.3888 9.33199 15.0654C9.10231 14.831 8.97106 14.4701 8.97106 14.0201C8.98043 13.7154 9.06949 13.3826 9.33199 13.1154C9.64606 12.7919 10.0867 12.7966 10.3914 13.1248C10.8507 13.6216 10.8507 14.5544 10.3914 15.0513ZM14.6523 15.0748C14.3664 15.3701 13.9539 15.3794 13.6492 15.1076C13.1242 14.6294 13.1242 13.5654 13.6492 13.0826C13.9492 12.806 14.3617 12.8154 14.6523 13.1107C14.9195 13.3826 15.0086 13.7248 15.0226 14.0904C15.0086 14.4607 14.9148 14.7982 14.6523 15.0748Z"
-                                            fill="#4B5563"
-                                          />
-                                          <path
-                                            d="M12 0C5.37188 0 0 5.37188 0 12C0 18.6281 5.37188 24 12 24C18.6281 24 24 18.6281 24 12C24 5.37188 18.6281 0 12 0ZM18.15 13.05C18.0844 13.5844 17.9719 14.1328 17.7797 14.6344C17.2172 16.0734 16.0922 16.8656 14.6016 17.1047C13.7484 17.2406 12.8719 17.2453 11.925 17.3156C11.0766 17.2406 10.1438 17.2313 9.23906 17.0719C7.48594 16.7625 6.29531 15.5344 5.94844 13.7766C5.77031 12.8812 5.71875 11.9813 5.99531 11.0906C6.14062 10.6313 6.37969 10.2234 6.68906 9.85313C6.73125 9.80625 6.76875 9.73594 6.76406 9.675C6.7125 8.86875 6.80625 8.07187 7.04531 7.30312C7.24219 6.66094 7.09688 6.69844 7.80938 6.88594C8.66719 7.11094 9.41719 7.575 10.1531 8.05781C10.2375 8.11406 10.3687 8.1375 10.4719 8.11875C11.5125 7.95938 12.5484 7.95 13.5891 8.13281C13.6641 8.14688 13.7625 8.11875 13.8328 8.07656C14.4656 7.66406 15.1172 7.29375 15.8297 7.03594C16.0875 6.94219 16.3594 6.88125 16.6219 6.80156C16.7391 6.76875 16.7906 6.81094 16.8328 6.92344C17.1516 7.81406 17.2828 8.72812 17.2359 9.67031C17.2313 9.72187 17.2594 9.79219 17.2922 9.83437C18.0938 10.7625 18.2953 11.8687 18.15 13.05Z"
-                                            fill="#4B5563"
-                                          />
-                                        </g>
-                                        <defs>
-                                          <clipPath id="clip0_3112_1059">
-                                            <rect width="24" height="24" fill="white" />
-                                          </clipPath>
-                                        </defs>
-                                      </svg>
+                                          width="24"
+                                          height="24"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <g clip-path="url(#clip0_3112_1059)">
+                                            <path
+                                              d="M15.0039 11.8779C14.6007 11.8076 14.1789 11.8169 13.7664 11.8404C12.8289 11.8919 11.8914 11.981 10.9539 11.8966C10.5086 11.8544 10.0586 11.8123 9.60856 11.8216C8.79293 11.8357 8.10856 12.1029 7.70543 12.881C7.50387 13.2654 7.45699 13.6779 7.47106 14.1044C7.50387 15.3044 8.02418 15.9888 9.16793 16.331C10.0867 16.6029 11.0289 16.6404 11.9757 16.6216C12.3273 16.6216 12.6789 16.6404 13.0304 16.6169C13.757 16.5748 14.4695 16.4669 15.1586 16.2138C15.8711 15.9513 16.2976 15.4498 16.4523 14.7232C16.5132 14.4419 16.5414 14.1466 16.5367 13.8607C16.5273 12.8904 15.8711 12.0232 15.0039 11.8779ZM10.3914 15.0513C10.0867 15.3841 9.64606 15.3888 9.33199 15.0654C9.10231 14.831 8.97106 14.4701 8.97106 14.0201C8.98043 13.7154 9.06949 13.3826 9.33199 13.1154C9.64606 12.7919 10.0867 12.7966 10.3914 13.1248C10.8507 13.6216 10.8507 14.5544 10.3914 15.0513ZM14.6523 15.0748C14.3664 15.3701 13.9539 15.3794 13.6492 15.1076C13.1242 14.6294 13.1242 13.5654 13.6492 13.0826C13.9492 12.806 14.3617 12.8154 14.6523 13.1107C14.9195 13.3826 15.0086 13.7248 15.0226 14.0904C15.0086 14.4607 14.9148 14.7982 14.6523 15.0748Z"
+                                              fill="#4B5563"
+                                            />
+                                            <path
+                                              d="M12 0C5.37188 0 0 5.37188 0 12C0 18.6281 5.37188 24 12 24C18.6281 24 24 18.6281 24 12C24 5.37188 18.6281 0 12 0ZM18.15 13.05C18.0844 13.5844 17.9719 14.1328 17.7797 14.6344C17.2172 16.0734 16.0922 16.8656 14.6016 17.1047C13.7484 17.2406 12.8719 17.2453 11.925 17.3156C11.0766 17.2406 10.1438 17.2313 9.23906 17.0719C7.48594 16.7625 6.29531 15.5344 5.94844 13.7766C5.77031 12.8812 5.71875 11.9813 5.99531 11.0906C6.14062 10.6313 6.37969 10.2234 6.68906 9.85313C6.73125 9.80625 6.76875 9.73594 6.76406 9.675C6.7125 8.86875 6.80625 8.07187 7.04531 7.30312C7.24219 6.66094 7.09688 6.69844 7.80938 6.88594C8.66719 7.11094 9.41719 7.575 10.1531 8.05781C10.2375 8.11406 10.3687 8.1375 10.4719 8.11875C11.5125 7.95938 12.5484 7.95 13.5891 8.13281C13.6641 8.14688 13.7625 8.11875 13.8328 8.07656C14.4656 7.66406 15.1172 7.29375 15.8297 7.03594C16.0875 6.94219 16.3594 6.88125 16.6219 6.80156C16.7391 6.76875 16.7906 6.81094 16.8328 6.92344C17.1516 7.81406 17.2828 8.72812 17.2359 9.67031C17.2313 9.72187 17.2594 9.79219 17.2922 9.83437C18.0938 10.7625 18.2953 11.8687 18.15 13.05Z"
+                                              fill="#4B5563"
+                                            />
+                                          </g>
+                                          <defs>
+                                            <clipPath id="clip0_3112_1059">
+                                              <rect
+                                                width="24"
+                                                height="24"
+                                                fill="white"
+                                              />
+                                            </clipPath>
+                                          </defs>
+                                        </svg>
                                       </button>
                                     );
-                                  })()
-                                )}
-                                {candidate.candidate.premium_data_availability?.linkedin_url && (
+                                  })()}
+                                {candidate.candidate.premium_data_availability
+                                  ?.linkedin_url &&
                                   (() => {
-                                    const url = candidate.candidate.premium_data_unlocked ? candidate.candidate.premium_data?.linkedin_url : null;
+                                    const url = candidate.candidate
+                                      .premium_data_unlocked
+                                      ? candidate.candidate.premium_data
+                                          ?.linkedin_url
+                                      : null;
                                     return (
                                       <button
                                         className="text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2333,10 +2413,17 @@ candidate: {
                                             window.open(url, "_blank");
                                           } else {
                                             setPendingReveal({
-                                              candidateId: candidate.candidate.id,
+                                              candidateId:
+                                                candidate.candidate.id,
                                               onSuccess: (prem) => {
-                                                const finalUrl = prem.candidate.premium_data.linkedin_ur;
-                                                if (finalUrl) window.open(finalUrl, "_blank");
+                                                const finalUrl =
+                                                  prem.candidate.premium_data
+                                                    .linkedin_ur;
+                                                if (finalUrl)
+                                                  window.open(
+                                                    finalUrl,
+                                                    "_blank"
+                                                  );
                                               },
                                             });
                                             setShowRevealDialog(true);
@@ -2344,7 +2431,7 @@ candidate: {
                                         }}
                                         aria-label={`View ${candidate.candidate.full_name}'s LinkedIn profile`}
                                       >
-                                         <svg
+                                        <svg
                                           width="24"
                                           height="24"
                                           viewBox="0 0 24 24"
@@ -2359,17 +2446,25 @@ candidate: {
                                           </g>
                                           <defs>
                                             <clipPath id="clip0_3112_1074">
-                                              <rect width="24" height="24" fill="white" />
+                                              <rect
+                                                width="24"
+                                                height="24"
+                                                fill="white"
+                                              />
                                             </clipPath>
                                           </defs>
                                         </svg>
                                       </button>
                                     );
-                                  })()
-                                )}
-                                {candidate.candidate.premium_data_availability?.behance_username && (
+                                  })()}
+                                {candidate.candidate.premium_data_availability
+                                  ?.behance_username &&
                                   (() => {
-                                    const url = candidate.candidate.premium_data_unlocked ? candidate.candidate.premium_data?.behance_username : null;
+                                    const url = candidate.candidate
+                                      .premium_data_unlocked
+                                      ? candidate.candidate.premium_data
+                                          ?.behance_username
+                                      : null;
                                     return (
                                       <button
                                         className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2379,10 +2474,17 @@ candidate: {
                                             window.open(url, "_blank");
                                           } else {
                                             setPendingReveal({
-                                              candidateId: candidate.candidate.id,
+                                              candidateId:
+                                                candidate.candidate.id,
                                               onSuccess: (prem) => {
-                                                const finalUrl = prem.candidate.premium_data.behance_username;
-                                                if (finalUrl) window.open(finalUrl, "_blank");
+                                                const finalUrl =
+                                                  prem.candidate.premium_data
+                                                    .behance_username;
+                                                if (finalUrl)
+                                                  window.open(
+                                                    finalUrl,
+                                                    "_blank"
+                                                  );
                                               },
                                             });
                                             setShowRevealDialog(true);
@@ -2417,17 +2519,25 @@ candidate: {
                                           </g>
                                           <defs>
                                             <clipPath id="clip0_3112_1068">
-                                              <rect width="24" height="24" fill="white" />
+                                              <rect
+                                                width="24"
+                                                height="24"
+                                                fill="white"
+                                              />
                                             </clipPath>
                                           </defs>
                                         </svg>
                                       </button>
                                     );
-                                  })()
-                                )}
-                                {candidate.candidate.premium_data_availability?.instagram_username && (
+                                  })()}
+                                {candidate.candidate.premium_data_availability
+                                  ?.instagram_username &&
                                   (() => {
-                                    const url = candidate.candidate.premium_data_unlocked ? candidate.candidate.premium_data?.instagram_username : null;
+                                    const url = candidate.candidate
+                                      .premium_data_unlocked
+                                      ? candidate.candidate.premium_data
+                                          ?.instagram_username
+                                      : null;
                                     return (
                                       <button
                                         className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2437,10 +2547,17 @@ candidate: {
                                             window.open(url, "_blank");
                                           } else {
                                             setPendingReveal({
-                                              candidateId: candidate.candidate.id,
+                                              candidateId:
+                                                candidate.candidate.id,
                                               onSuccess: (prem) => {
-                                                const finalUrl = prem.candidate.premium_data.instagram_username;
-                                                if (finalUrl) window.open(finalUrl, "_blank");
+                                                const finalUrl =
+                                                  prem.candidate.premium_data
+                                                    .instagram_username;
+                                                if (finalUrl)
+                                                  window.open(
+                                                    finalUrl,
+                                                    "_blank"
+                                                  );
                                               },
                                             });
                                             setShowRevealDialog(true);
@@ -2463,18 +2580,24 @@ candidate: {
                                           </g>
                                           <defs>
                                             <clipPath id="clip0_3112_1076">
-                                              <rect width="24" height="24" fill="white" />
+                                              <rect
+                                                width="24"
+                                                height="24"
+                                                fill="white"
+                                              />
                                             </clipPath>
                                           </defs>
                                         </svg>
                                       </button>
                                     );
-                                  })()
-                                )}
-                                {candidate.candidate.premium_data_availability?.twitter_username &&
+                                  })()}
+                                {candidate.candidate.premium_data_availability
+                                  ?.twitter_username &&
                                   (() => {
-                                    const url = candidate.candidate.premium_data_unlocked
-                                      ? candidate.candidate.premium_data?.twitter_url
+                                    const url = candidate.candidate
+                                      .premium_data_unlocked
+                                      ? candidate.candidate.premium_data
+                                          ?.twitter_url
                                       : null;
                                     return (
                                       <button
@@ -2488,9 +2611,13 @@ candidate: {
                                               candidateId: candidate.id,
                                               onSuccess: (prem) => {
                                                 const finalUrl =
-                                                  prem.candidate.premium_data.twitter_url;
+                                                  prem.candidate.premium_data
+                                                    .twitter_url;
                                                 if (finalUrl)
-                                                  window.open(finalUrl, "_blank");
+                                                  window.open(
+                                                    finalUrl,
+                                                    "_blank"
+                                                  );
                                               },
                                             });
                                             setShowRevealDialog(true);
@@ -2519,10 +2646,13 @@ candidate: {
                                       </button>
                                     );
                                   })()}
-                                {candidate.candidate.premium_data_availability?.dribble_username &&
+                                {candidate.candidate.premium_data_availability
+                                  ?.dribble_username &&
                                   (() => {
-                                    const url = candidate.candidate.premium_data_unlocked
-                                      ? candidate.candidate.premium_data?.dribble_username
+                                    const url = candidate.candidate
+                                      .premium_data_unlocked
+                                      ? candidate.candidate.premium_data
+                                          ?.dribble_username
                                       : null;
                                     return (
                                       <button
@@ -2533,12 +2663,17 @@ candidate: {
                                             window.open(url, "_blank");
                                           } else {
                                             setPendingReveal({
-                                              candidateId: candidate.candidate.id,
+                                              candidateId:
+                                                candidate.candidate.id,
                                               onSuccess: (prem) => {
                                                 const finalUrl =
-                                                  prem.candidate.premium_data.dribble_username;
+                                                  prem.candidate.premium_data
+                                                    .dribble_username;
                                                 if (finalUrl)
-                                                  window.open(finalUrl, "_blank");
+                                                  window.open(
+                                                    finalUrl,
+                                                    "_blank"
+                                                  );
                                               },
                                             });
                                             setShowRevealDialog(true);
@@ -2593,17 +2728,24 @@ candidate: {
                                           </g>
                                           <defs>
                                             <clipPath id="clip0_3112_1084">
-                                              <rect width="24" height="24" fill="white" />
+                                              <rect
+                                                width="24"
+                                                height="24"
+                                                fill="white"
+                                              />
                                             </clipPath>
                                           </defs>
                                         </svg>
                                       </button>
                                     );
                                   })()}
-                                {candidate.candidate.premium_data_availability?.resume_url &&
+                                {candidate.candidate.premium_data_availability
+                                  ?.resume_url &&
                                   (() => {
-                                    const url = candidate.candidate.premium_data_unlocked
-                                      ? candidate.candidate.premium_data?.resume_url
+                                    const url = candidate.candidate
+                                      .premium_data_unlocked
+                                      ? candidate.candidate.premium_data
+                                          ?.resume_url
                                       : null;
                                     return (
                                       <button
@@ -2614,12 +2756,17 @@ candidate: {
                                             window.open(url, "_blank");
                                           } else {
                                             setPendingReveal({
-                                              candidateId: candidate.candidate.id,
+                                              candidateId:
+                                                candidate.candidate.id,
                                               onSuccess: (prem) => {
                                                 const finalUrl =
-                                                  prem.candidate.premium_data.resume_url;
+                                                  prem.candidate.premium_data
+                                                    .resume_url;
                                                 if (finalUrl)
-                                                  window.open(finalUrl, "_blank");
+                                                  window.open(
+                                                    finalUrl,
+                                                    "_blank"
+                                                  );
                                               },
                                             });
                                             setShowRevealDialog(true);
@@ -2650,10 +2797,13 @@ candidate: {
                                       </button>
                                     );
                                   })()}
-                                {candidate.candidate.premium_data_availability?.portfolio_url &&
+                                {candidate.candidate.premium_data_availability
+                                  ?.portfolio_url &&
                                   (() => {
-                                    const url = candidate.candidate.premium_data_unlocked
-                                      ? candidate.candidate.premium_data?.portfolio_url
+                                    const url = candidate.candidate
+                                      .premium_data_unlocked
+                                      ? candidate.candidate.premium_data
+                                          ?.portfolio_url
                                       : null;
                                     return (
                                       <button
@@ -2664,12 +2814,17 @@ candidate: {
                                             window.open(url, "_blank");
                                           } else {
                                             setPendingReveal({
-                                              candidateId: candidate.candidate.id,
+                                              candidateId:
+                                                candidate.candidate.id,
                                               onSuccess: (prem) => {
                                                 const finalUrl =
-                                                  prem.candidate.premium_data?.portfolio_url;
+                                                  prem.candidate.premium_data
+                                                    ?.portfolio_url;
                                                 if (finalUrl)
-                                                  window.open(finalUrl, "_blank");
+                                                  window.open(
+                                                    finalUrl,
+                                                    "_blank"
+                                                  );
                                               },
                                             });
                                             setShowRevealDialog(true);
@@ -2692,14 +2847,18 @@ candidate: {
                                       </button>
                                     );
                                   })()}
-                                
-                                
                               </div>
                               <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
                                 <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400]">
                                   {candidate.status_tags.map(
-                                    (tag: { text: string; color: string }, idx: number) => (
-                                      <span key={idx} className={`text-${tag.color}-500`}>
+                                    (
+                                      tag: { text: string; color: string },
+                                      idx: number
+                                    ) => (
+                                      <span
+                                        key={idx}
+                                        className={`text-${tag.color}-500`}
+                                      >
                                         {tag.text}
                                       </span>
                                     )
@@ -2738,7 +2897,6 @@ candidate: {
           </div>
         </div>
       </div>
-
 
       {showRevealDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -2792,12 +2950,12 @@ candidate: {
               candidate={selectedCandidate.candidate}
               onBack={handleBackFromTemplate}
               updateCandidateEmail={() => {}} // Pass a no-op or actual handler if needed
-              jobId={activeJobId?.toString() || ''}
+              jobId={activeJobId?.toString() || ""}
             />
           </div>
         </div>
       )}
-      
+
       {showUploadModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
