@@ -1572,7 +1572,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
           </div>
         </>
       )}
-      {totalPages > 1 ? (
+      {totalPages >= 1 ? (
         <div className="p-3 lg:p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div className="text-xs text-gray-400 text-xs lg:text-base font-[400]">
