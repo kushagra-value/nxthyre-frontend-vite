@@ -165,13 +165,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           premium_data_unlocked: true,
           premium_data: premResponse.premium_data,
           social_links: {
-            linkedin: premResponse.premium_data.linkedin_url || selectedCandidate.candidate.social_links.linkedin,
-            github: premResponse.premium_data.github_url || selectedCandidate.candidate.social_links.github,
-            portfolio: premResponse.premium_data.portfolio_url || selectedCandidate.candidate.social_links.portfolio,
-            resume: premResponse.premium_data.resume_url || selectedCandidate.candidate.social_links.resume,
+            linkedin: premResponse.premium_data?.linkedin_url || selectedCandidate.candidate?.social_links?.linkedin,
+            github: premResponse.premium_data?.github_url || selectedCandidate.candidate?.social_links?.github,
+            portfolio: premResponse.premium_data?.portfolio_url || selectedCandidate.candidate?.social_links?.portfolio,
+            resume: premResponse.premium_data?.resume_url || selectedCandidate.candidate?.social_links?.resume,
           },
-          email: premResponse.premium_data.email || selectedCandidate.candidate.email,
-          phone: premResponse.premium_data.phone || selectedCandidate.candidate.phone,
+          email: premResponse.premium_data?.email || selectedCandidate.candidate?.email,
+          phone: premResponse.premium_data?.phone || selectedCandidate.candidate?.phone,
         },
       });
     }
