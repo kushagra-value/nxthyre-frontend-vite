@@ -632,25 +632,18 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       });
 
       const targetStage = stages.find((stage) => stage.id === stageId);
-      if (targetStage?.slug === "coding-contest") {
-        // Check if the candidate was moved from the "applied" stage
-        const isMovedFromAppliedStage = applicationIds.some(
-          (appId) =>
-            candidates.find((c) => c.id === appId)?.current_stage?.slug ===
-            "applied"
+      if (targetStage?.slug === "applied") {
+        await Promise.all(
+          applicationIds.map(async (appId) => {
+            const cand = candidates.find((c) => c.id === appId);
+            if (cand && activeJobId !== null) {
+              await candidateService.scheduleCodingAssessmentEmail(
+                cand.candidate.id,
+                activeJobId
+              );
+            }
+          })
         );
-
-        if (isMovedFromAppliedStage && activeJobId !== null) {
-          const candidateObj = candidates.find(
-            (c) => c.id === applicationIds[0]
-          );
-          if (candidateObj) {
-            await candidateService.scheduleCodingAssessmentEmail(
-              candidateObj.candidate.id,
-              activeJobId
-            );
-          }
-        }
       }
 
       if (activeJobId !== null) {
