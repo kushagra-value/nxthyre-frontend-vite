@@ -93,6 +93,7 @@ interface Activity {
 
 interface StageDetailsProps {
   selectedCandidate: PipelineCandidate | null;
+  setSelectedCandidate: (candidate: PipelineCandidate | null) => void;
   selectedStage: string;
   setShowComments: (show: boolean) => void;
   stages: Stage[];
@@ -106,6 +107,7 @@ interface StageDetailsProps {
 
 const StageDetails: React.FC<StageDetailsProps> = ({
   selectedCandidate,
+  setSelectedCandidate,
   selectedStage,
   setShowComments,
   stages,
@@ -151,19 +153,53 @@ const StageDetails: React.FC<StageDetailsProps> = ({
     }
   };
 
-  const confirmSpend = async () => {
-    setShowConfirm(false);
-    try {
-      await deductCredits();
-      if (selectedCandidate?.id) {
-        await onSendInvite(Number(selectedCandidate.id));
-      } else {
-        showToast.error("No candidate selected");
-      }
-    } catch {
-      showToast.error("Failed to deduct credits");
+  const handleRevealPremiumData = async (candidateId: string) => {
+  try {
+    const premResponse = await candidateService.revealPremiumData(candidateId);
+    // Update selectedCandidate with revealed data
+    if (selectedCandidate) {
+      setSelectedCandidate({
+        ...selectedCandidate,
+        candidate: {
+          ...selectedCandidate.candidate,
+          premium_data_unlocked: true,
+          premium_data: premResponse.premium_data,
+          social_links: {
+            linkedin: premResponse.premium_data.linkedin_url || selectedCandidate.candidate.social_links.linkedin,
+            github: premResponse.premium_data.github_url || selectedCandidate.candidate.social_links.github,
+            portfolio: premResponse.premium_data.portfolio_url || selectedCandidate.candidate.social_links.portfolio,
+            resume: premResponse.premium_data.resume_url || selectedCandidate.candidate.social_links.resume,
+          },
+          email: premResponse.premium_data.email || selectedCandidate.candidate.email,
+          phone: premResponse.premium_data.phone || selectedCandidate.candidate.phone,
+        },
+      });
     }
-  };
+    return premResponse.premium_data;
+  } catch (error) {
+    console.error("Error revealing premium data:", error);
+    showToast.error("Failed to reveal premium data");
+    throw error;
+  }
+};
+
+  const confirmSpend = async () => {
+  setShowConfirm(false);
+  try {
+    await deductCredits();
+    if (selectedCandidate?.id && !selectedCandidate.candidate.premium_data_unlocked) {
+      // Reveal premium data first
+      await handleRevealPremiumData(selectedCandidate.candidate.id);
+    }
+    if (selectedCandidate?.id) {
+      await onSendInvite(Number(selectedCandidate.id));
+    } else {
+      showToast.error("No candidate selected");
+    }
+  } catch (error) {
+    showToast.error("Failed to process invite");
+  }
+};
 
   const cancelSpend = () => {
     setShowConfirm(false);

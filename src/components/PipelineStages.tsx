@@ -2720,6 +2720,7 @@ candidate: {
           <div className="lg:w-[30%] order-3 relative">
             <PipelinesSideCard
               selectedCandidate={selectedCandidate}
+              setSelectedCandidate={setSelectedCandidate}
               showComments={showComments}
               setShowComments={setShowComments}
               newComment={newComment}

@@ -40,6 +40,7 @@ interface Comment {
 
 interface PipelinesSideCardProps {
   selectedCandidate: PipelineCandidate | null;
+  setSelectedCandidate: (candidate: PipelineCandidate | null) => void;
   showComments: boolean;
   setShowComments: (show: boolean) => void;
   newComment: string;
@@ -57,6 +58,7 @@ interface PipelinesSideCardProps {
 
 const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
   selectedCandidate,
+  setSelectedCandidate,
   showComments,
   setShowComments,
   newComment,
@@ -198,6 +200,7 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
           </div>
           <StageDetails
             selectedCandidate={selectedCandidate}
+            setSelectedCandidate={setSelectedCandidate} // You need to pass setSelectedCandidate as a prop to PipelinesSideCard
             selectedStage={selectedStage} // You need to pass selectedStage as a prop to PipelinesSideCard
             setShowComments={setShowComments}
             stages={stages} // You need to pass stages as a prop to PipelinesSideCard
