@@ -636,13 +636,10 @@ class CandidateService {
     jobId: number
   ): Promise<any> {
     try {
-      const response = await apiClient.post(
-        `/api/assessment/create-and-send/`,
-        {
-          candidate_id: candidateId,
-          job_id: jobId,
-        }
-      );
+      const response = await apiClient.post(`/assessment/create-and-send/`, {
+        candidate_id: candidateId,
+        job_id: jobId,
+      });
       return response.data;
     } catch (error: any) {
       throw new Error(
