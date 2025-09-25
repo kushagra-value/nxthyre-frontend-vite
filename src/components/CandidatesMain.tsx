@@ -253,6 +253,19 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         candidateId,
         stageId
       );
+
+      if (stageId) {
+        const targetStage = pipelineStages.find(
+          (stage) => stage.id === stageId
+        );
+        if (targetStage?.slug === "coding-contest") {
+          await candidateService.scheduleCodingAssessmentEmail(
+            candidateId,
+            parseInt(jobId)
+          );
+        }
+      }
+
       const stageName = stageId
         ? pipelineStages.find((stage) => stage.id === stageId)?.name
         : "default stage";
@@ -718,25 +731,29 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
           {activeTab === "inbound" && totalCount < activeCategoryTotalCount && (
             <div className="m-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
               <p className="text-yellow-700 text-sm">
-                There might be fewer candidates in the Inbound tab due to applied filters. You can click on the "Clear All Filters" button in the sidebar to view all candidates.
-                </p>
+                There might be fewer candidates in the Inbound tab due to
+                applied filters. You can click on the "Clear All Filters" button
+                in the sidebar to view all candidates.
+              </p>
             </div>
           )}
           <p className="text-gray-400 text-xs lg:text-base font-[400]">
             No candidates found.
           </p>
-          
         </div>
       ) : (
         <>
           <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
-            {activeTab === "inbound" && totalCount < activeCategoryTotalCount && (
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
-                <p className="text-yellow-700 text-sm">
-                  There might be fewer candidates in the Inbound tab due to applied filters. You can click on the "Clear All Filters" button in the sidebar to view all candidates.
+            {activeTab === "inbound" &&
+              totalCount < activeCategoryTotalCount && (
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
+                  <p className="text-yellow-700 text-sm">
+                    There might be fewer candidates in the Inbound tab due to
+                    applied filters. You can click on the "Clear All Filters"
+                    button in the sidebar to view all candidates.
                   </p>
-              </div>
-            )}
+                </div>
+              )}
             {candidates.map((candidate) => {
               // Extract college name from education_summary.title
               let collegeName = candidate?.education_summary?.title
