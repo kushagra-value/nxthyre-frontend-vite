@@ -1473,7 +1473,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             </h3>
             <p className="text-sm text-gray-600 mb-6">
               This will cost you{" "}
-              <span className="font-semibold">3 credits</span>. Do you want to
+              <span className="font-semibold">1 credits</span>. Do you want to
               proceed?
             </p>
             <div className="flex justify-end space-x-3">
