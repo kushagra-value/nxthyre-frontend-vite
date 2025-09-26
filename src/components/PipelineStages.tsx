@@ -428,7 +428,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       showToast.error("No job selected");
       return;
     }
-    const stageType = selectedStage === "Coding" ? "coding" : "ai-interview";
+    const stageType = selectedStage === "Coding" ? "coding-contest" : "ai-interview";
     const score = parseInt(cutoffScore);
     if (isNaN(score) || score < 0 || score > 100) {
       showToast.error("Cutoff score must be between 0 and 100");
@@ -456,10 +456,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     const fetchCutoff = async () => {
       if (
         activeJobId &&
-        ["AI Interview", "Coding Round"].includes(selectedStage)
+        ["AI Interview", "Coding Contest"].includes(selectedStage)
       ) {
         const stageType =
-          selectedStage === "Coding Round" ? "coding" : "ai-interview";
+          selectedStage === "Coding Contest" ? "coding-contest" : "ai-interview";
         try {
           const data = await jobPostService.getCutOff(activeJobId, stageType);
           setCutoffScore(data.cutoff_score.toString());
@@ -993,7 +993,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           />
         </svg>
       ),
-      "Coding Round": () => (
+      "Coding Contest": () => (
         <svg
           width="17"
           height="16"
@@ -1285,7 +1285,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         };
       case "Applied":
         return { color: "text-[#0F47F2]" };
-      case "Coding Round":
+      case "Coding Contest":
         return {
           color: "text-[#CD9B05]",
         };
@@ -1839,7 +1839,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         </button>
                       </div>
                     ) : (
-                      ["AI Interview", "Coding Round"].includes(
+                      ["AI Interview", "Coding Contest"].includes(
                         selectedStage
                       ) && (
                         <div className="relative">
