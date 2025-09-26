@@ -904,6 +904,22 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                   <option value="1000000">10 LPA</option>
                   <option value="1500000">15 LPA</option>
                   <option value="2000000">20 LPA</option>
+                  <option value="2500000">25 LPA</option>
+                  <option value="3000000">30 LPA</option>
+                  <option value="3500000">35 LPA</option>
+                  <option value="4000000">40 LPA</option>
+                  <option value="4500000">45 LPA</option>
+                  <option value="5000000">50 LPA</option>
+                  <option value="5500000">55 LPA</option>
+                  <option value="6000000">60 LPA</option>
+                  <option value="6500000">65 LPA</option> 
+                  <option value="7000000">70 LPA</option> 
+                  <option value="7500000">75 LPA</option> 
+                  <option value="8000000">80 LPA</option> 
+                  <option value="8500000">85 LPA</option> 
+                  <option value="9000000">90 LPA</option> 
+                  <option value="9500000">95 LPA</option> 
+                  <option value="10000000">100 LPA</option> 
                 </select>
                 <select
                   value={tempFilters.maxSalary}
@@ -916,7 +932,23 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                   <option value="1000000">10 LPA</option>
                   <option value="2000000">20 LPA</option>
                   <option value="3000000">30 LPA</option>
+                  <option value="4000000">40 LPA</option>
                   <option value="5000000">50 LPA</option>
+                  <option value="6000000">60 LPA</option>
+                  <option value="7000000">70 LPA</option>
+                  <option value="8000000">80 LPA</option>
+                  <option value="9000000">90 LPA</option>
+                  <option value="10000000">100 LPA</option>
+                  <option value="11000000">110 LPA</option>
+                  <option value="12000000">120 LPA</option>
+                  <option value="13000000">130 LPA</option>
+                  <option value="14000000">140 LPA</option>
+                  <option value="15000000">150 LPA</option>
+                  <option value="16000000">160 LPA</option>
+                  <option value="17000000">170 LPA</option>
+                  <option value="18000000">180 LPA</option>
+                  <option value="19000000">190 LPA</option>
+                  <option value="20000000">200 LPA</option>
                 </select>
               </div>
             </div>
