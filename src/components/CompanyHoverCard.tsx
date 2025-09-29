@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 interface CompanyHoverCardProps {
   children: React.ReactNode;
@@ -17,34 +17,54 @@ export const CompanyHoverCard: React.FC<CompanyHoverCardProps> = ({
   location,
   logoUrl,
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const show = () => {
+    setIsVisible(true);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  };
+
+  const hide = () => {
+    timeoutRef.current = setTimeout(() => {
+      setIsVisible(false);
+      setExpanded(false);
+      timeoutRef.current = null;
+    }, 150);
+  };
 
   return (
     <div className="relative inline-block">
       <div
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={show}
+        onMouseLeave={hide}
         className="cursor-pointer"
       >
         {children}
       </div>
       
-      {isHovered && (
-        <div className="absolute z-50 top-0 left-0 mt-2 w-[361px] h-[182px]">
+      {isVisible && (
+        <div
+          onMouseEnter={show}
+          onMouseLeave={hide}
+          className="absolute z-50 top-full left-0 mt-2 w-[361px] min-h-[182px]"
+        >
           {/* Main card container */}
-          <div className="flex flex-col w-full h-full bg-white rounded-lg shadow-[0px_4px_4px_rgba(0,0,0,0.1)]">
+          <div className="flex flex-col w-full min-h-full bg-white rounded-lg shadow-[0px_4px_4px_rgba(0,0,0,0.1)]">
             {/* Header: Logo and Company Name */}
             <div className="flex pl-6 pt-6">
-              
-              <img className={`w-6 h-6 rounded-full`} src={logoUrl}  alt=''/>
+              <img className="w-6 h-6 rounded-full flex-shrink-0" src={logoUrl} alt="" />
               <div className="ml-3 w-[200px] h-6 font-medium text-sm leading-6 text-gray-900 truncate">
                 {companyName}
               </div>
             </div>
             
             {/* Description */}
-            <div className={`ml-[60px] mt-[8px] w-[282px] font-medium text-sm leading-[22px] text-gray-400 ${expanded ? '' : 'h-[67px] overflow-hidden'}`}>
+            <div className={`ml-[60px] mt-[8px] w-[282px] font-medium text-sm leading-[22px] text-gray-400 ${expanded ? '' : 'h-[134px] overflow-hidden'}`}>
               {description}
             </div>
             
