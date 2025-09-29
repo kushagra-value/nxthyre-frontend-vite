@@ -63,6 +63,7 @@ import {
   CandidateListItem,
   Note,
 } from "../services/candidateService";
+import { CompanyHoverCard } from "./CompanyHoverCard";
 
 interface CandidateDetailProps {
   candidate: CandidateListItem | null;
@@ -375,7 +376,21 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     <h4 className="font-medium text-[#111827] text-sm">
                       {exp?.job_title}
                     </h4>
-                    <p className="text-sm text-gray-400">{`${exp?.company} | ${exp?.location}`}</p>
+                    {/* <p className="text-sm text-gray-400">{`${exp?.company} | ${exp?.location}`}</p> */}
+                    <p className="text-sm text-gray-400">
+                      <CompanyHoverCard
+                        companyName={exp?.company}
+                        description={exp?.description}
+                        employeeCount="1001+"
+                        location={exp?.location}
+                        logoUrl={logos[exp?.company]}
+                      >
+                        <span className="text-blue-600 hover:text-blue-800 underline cursor-pointer">
+                          {exp?.company}
+                        </span>
+                      </CompanyHoverCard>
+                    </p>
+                    
                     <p className="text-sm text-gray-400">
                       {exp?.start_date && (
                         <span>

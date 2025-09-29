@@ -43,6 +43,7 @@ import {
   Globe,
 } from "lucide-react";
 import { showToast } from "./utils/toast";
+import CandidateBackGroundCheck from "./components/CandidateBackGroundCheck";
 
 interface Category {
   id: number;
@@ -988,6 +989,13 @@ function MainApp() {
             />
           }
         />
+        <Route
+          path= "/background-verification/:candidateId"
+          element={
+            <CandidateBackGroundCheck/>
+          }
+        />
+        
         <Route
           path="/settings"
           element={
