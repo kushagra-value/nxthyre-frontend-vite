@@ -65,14 +65,10 @@ export const CompanyHoverCard: React.FC<CompanyHoverCardProps> = ({
             
             {/* Description */}
             <div className={`ml-[60px] mt-[8px] w-[282px] font-medium text-sm leading-[22px] text-gray-400 ${expanded ? '' : 'h-[134px] overflow-hidden'}`}>
-              {description}
-            </div>
-            
-            {/* Read More/Less Button */}
-            {!expanded && (
+              {description}{!expanded && (
               <button
                 onClick={() => setExpanded(true)}
-                className="text-left mt-1 text-sm text-blue-600 underline hover:text-blue-800"
+                className=" mt-1 text-sm text-blue-600 underline hover:text-blue-800"
               >
                 Read more
               </button>
@@ -81,11 +77,15 @@ export const CompanyHoverCard: React.FC<CompanyHoverCardProps> = ({
             {expanded && (
               <button
                 onClick={() => setExpanded(false)}
-                className="text-left mt-1 text-sm text-blue-600 underline hover:text-blue-800"
+                className=" mt-1 text-sm text-blue-600 underline hover:text-blue-800"
               >
                 Read less
               </button>
             )}
+            </div>
+            
+            {/* Read More/Less Button */}
+            
             
             {/* Bottom: Employee Count and Location */}
             <div className="ml-6 mt-[7px] flex flex-col">
