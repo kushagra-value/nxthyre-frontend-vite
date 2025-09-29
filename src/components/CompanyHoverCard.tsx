@@ -30,150 +30,47 @@ export const CompanyHoverCard: React.FC<CompanyHoverCardProps> = ({
       </div>
       
       {isHovered && (
-        <div
-          className="absolute z-50 top-full left-0 mt-2"
-          style={{
-            width: '361px',
-            height: '182px',
-          }}
-        >
+        <div className="absolute z-50 top-full left-0 mt-2 w-[361px] h-[182px]">
           {/* Main card container */}
-          <div
-            className="relative bg-white rounded-lg"
-            style={{
-              width: '361px',
-              height: '182px',
-              boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.1)',
-              borderRadius: '8px',
-            }}
-          >
-            {/* Company logo */}
-            <div
-              className="absolute"
-              style={{
-                width: '24px',
-                height: '24px',
-                left: '24px',
-                top: '24px',
-                borderRadius: '9999px',
-                backgroundImage: `url(${logoUrl})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
-            />
-            
-            {/* Company name */}
-            <div
-              className="absolute flex items-center"
-              style={{
-                width: '200px',
-                height: '24px',
-                left: '60px',
-                top: '24px',
-                fontFamily: 'Gellix, system-ui, -apple-system, sans-serif',
-                fontStyle: 'normal',
-                fontWeight: '500',
-                fontSize: '14px',
-                lineHeight: '24px',
-                color: '#111827',
-              }}
-            >
-              {companyName}
+          <div className="flex flex-col w-full h-full bg-white rounded-lg shadow-[0px_4px_4px_rgba(0,0,0,0.1)]">
+            {/* Header: Logo and Company Name */}
+            <div className="flex pl-6 pt-6">
+              <div
+                className={`w-6 h-6 rounded-full bg-cover bg-center bg-no-repeat flex-shrink-0 ${
+                  logoUrl ? `bg-[url(${logoUrl})]` : ''
+                }`}
+              />
+              <div className="ml-3 w-[200px] h-6 font-medium text-sm leading-6 text-gray-900 truncate">
+                {companyName}
+              </div>
             </div>
             
             {/* Description */}
-            <div
-              className="absolute"
-              style={{
-                width: '282px',
-                height: '67px',
-                left: '60px',
-                top: '56px',
-                fontFamily: 'Gellix, system-ui, -apple-system, sans-serif',
-                fontStyle: 'normal',
-                fontWeight: '500',
-                fontSize: '14px',
-                lineHeight: '22px',
-                color: '#818283',
-              }}
-            >
+            <div className="ml-[60px] mt-[8px] w-[282px] h-[67px] font-medium text-sm leading-[22px] text-gray-400 overflow-hidden">
               {description}
             </div>
             
-            {/* Employee Count Label */}
-            <div
-              className="absolute flex items-center"
-              style={{
-                width: '112px',
-                height: '44px',
-                left: '24px',
-                top: '130px',
-                fontFamily: 'Gellix, system-ui, -apple-system, sans-serif',
-                fontStyle: 'normal',
-                fontWeight: '500',
-                fontSize: '14px',
-                lineHeight: '22px',
-                color: '#4B5563',
-              }}
-            >
-              Employee Count:
-            </div>
-            
-            {/* Employee Count Value */}
-            <div
-              className="absolute flex items-center"
-              style={{
-                width: '66px',
-                height: '44px',
-                left: '148px',
-                top: '130px',
-                fontFamily: 'Gellix, system-ui, -apple-system, sans-serif',
-                fontStyle: 'normal',
-                fontWeight: '400',
-                fontSize: '14px',
-                lineHeight: '22px',
-                color: '#818283',
-              }}
-            >
-              {employeeCount}
-            </div>
-            
-            {/* Location Label */}
-            <div
-              className="absolute flex items-center"
-              style={{
-                width: '112px',
-                height: '44px',
-                left: '24px',
-                top: '152px',
-                fontFamily: 'Gellix, system-ui, -apple-system, sans-serif',
-                fontStyle: 'normal',
-                fontWeight: '500',
-                fontSize: '14px',
-                lineHeight: '22px',
-                color: '#4B5563',
-              }}
-            >
-              Location:
-            </div>
-            
-            {/* Location Value */}
-            <div
-              className="absolute flex items-center"
-              style={{
-                width: '66px',
-                height: '44px',
-                left: '148px',
-                top: '152px',
-                fontFamily: 'Gellix, system-ui, -apple-system, sans-serif',
-                fontStyle: 'normal',
-                fontWeight: '400',
-                fontSize: '14px',
-                lineHeight: '22px',
-                color: '#818283',
-              }}
-            >
-              {location}
+            {/* Bottom: Employee Count and Location */}
+            <div className="ml-6 mt-[7px] flex flex-col">
+              {/* Employee Count Row */}
+              <div className="grid grid-cols-[112px_66px] gap-3 items-center h-[44px]">
+                <div className="font-medium text-sm leading-[22px] text-gray-600 whitespace-nowrap">
+                  Employee Count:
+                </div>
+                <div className="font-normal text-sm leading-[22px] text-gray-400 whitespace-nowrap">
+                  {employeeCount}
+                </div>
+              </div>
+              
+              {/* Location Row */}
+              <div className="grid grid-cols-[112px_66px] gap-3 items-center h-[44px] mt-[-22px]">
+                <div className="font-medium text-sm leading-[22px] text-gray-600 whitespace-nowrap">
+                  Location:
+                </div>
+                <div className="font-normal text-sm leading-[22px] text-gray-400 whitespace-nowrap">
+                  {location}
+                </div>
+              </div>
             </div>
           </div>
         </div>

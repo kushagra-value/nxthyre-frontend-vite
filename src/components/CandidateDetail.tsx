@@ -388,7 +388,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                         <span className="text-blue-600 hover:text-blue-800 underline cursor-pointer">
                           {exp?.company}
                         </span>
-                      </CompanyHoverCard>
+                      </CompanyHoverCard> | {exp?.location}
                     </p>
                     
                     <p className="text-sm text-gray-400">
