@@ -35,11 +35,8 @@ export const CompanyHoverCard: React.FC<CompanyHoverCardProps> = ({
           <div className="flex flex-col w-full h-full bg-white rounded-lg shadow-[0px_4px_4px_rgba(0,0,0,0.1)]">
             {/* Header: Logo and Company Name */}
             <div className="flex pl-6 pt-6">
-              <div
-                className={`w-6 h-6 rounded-full bg-cover bg-center bg-no-repeat flex-shrink-0 ${
-                  logoUrl ? `bg-[url(${logoUrl})]` : ''
-                }`}
-              />
+              
+              <img className={`w-6 h-6 rounded-full`} src={logoUrl}  alt=''/>
               <div className="ml-3 w-[200px] h-6 font-medium text-sm leading-6 text-gray-900 truncate">
                 {companyName}
               </div>
