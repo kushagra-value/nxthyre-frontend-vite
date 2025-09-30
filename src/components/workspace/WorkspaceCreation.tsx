@@ -95,7 +95,12 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
         );
       }
 
-      // onNavigate("workspaces-org");
+    setStep(1);
+    setWorkspaceName("");
+    setInviteEmails([]);
+    setCurrentEmail("");
+    setError("");
+
     } catch (error: any) {
       console.error("Create workspace error:", error);
       showToast.error(error.message || "Failed to create workspace");
