@@ -2050,7 +2050,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           <div
                             key={candidate.id}
                             className={`relative pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
-                              selectedCandidate?.id === candidate.id.toString()
+                              selectedCandidate?.id === candidate.id
                                 ? "bg-blue-50 border-l-4 border-blue-500"
                                 : "border border-gray-200"
                             }`}
