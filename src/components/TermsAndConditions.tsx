@@ -1,6 +1,6 @@
 // src/pages/TermsAndConditions.jsx
 import React from 'react';
-import TermsContent from './TermsContent';
+import {TermsContent} from './TermsContent';
 
 const Logo = () => (
   <svg width="108" height="61" viewBox="0 0 158 61" fill="none" xmlns="http://www.w3.org/2000/svg">
