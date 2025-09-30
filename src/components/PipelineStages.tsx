@@ -321,7 +321,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           : c
       );
       setCandidates(updated);
-      if (selectedCandidate?.candidateId === candidateId) {
+      if (selectedCandidate?.candidate.id === candidateId) {
         fetchCandidateDetails(
           updated.find((c) => c.candidate.id === candidateId)?.id || 0
         );

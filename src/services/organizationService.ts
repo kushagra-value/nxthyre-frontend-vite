@@ -175,6 +175,23 @@ class OrganizationService {
     }
   }
 
+  async sendWorkspaceInvites(
+  workspaceId: number,
+  emails: string[]
+): Promise<any> {
+  try {
+    const response = await apiClient.post(
+      `/organization/workspaces/${workspaceId}/invites/`,
+      { emails }
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.error || "Failed to send workspace invites"
+    );
+  }
+}
+
   async getMyWorkspaces(): Promise<MyWorkspace[]> {
     try {
       const response = await apiClient.get("/organization/my-workspaces/");

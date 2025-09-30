@@ -83,10 +83,11 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
     setIsLoading(true);
     try {
       const organizationId = userStatus.organization.id;
-      await organizationService.createWorkspace(organizationId, workspaceName);
+      const createResponse = await organizationService.createWorkspace(organizationId, workspaceName);
       showToast.success("Workspace created successfully!");
 
       if (inviteEmails.length > 0) {
+        await organizationService.sendWorkspaceInvites(createResponse.id, inviteEmails);
         showToast.info(
           `Invites sent to ${inviteEmails.length} email${
             inviteEmails.length > 1 ? "s" : ""
