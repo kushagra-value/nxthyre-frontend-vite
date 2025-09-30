@@ -2040,6 +2040,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           candidate.candidate.notice_period_summary;
                         const currentSalary =
                           candidate.candidate.current_salary_lpa;
+                        
+                          console.group("candidate Info");
+                          console.log("candidate ID",candidate.id);
+                          console.log("Candidate Selected", selectedCandidate?.id);
+                          console.groupEnd()
 
                         return (
                           <div
