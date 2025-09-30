@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Eye,
   EyeOff,
@@ -29,7 +30,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isPasswordLimitReached, setIsPasswordLimitReached] = useState(false);
-
+  const navigate = useNavigate();
   // Keep the confirmPassword error in sync in real time:
   useEffect(() => {
     // if nothing typed yet, clear any stale error
@@ -529,11 +530,17 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                 <div className="text-center mt-6">
                   <p className="text-xs text-gray-500">
                     By creating an account you agree to our{" "}
-                    <button className="text-blue-600 hover:underline">
+                    <button 
+                      onClick={() => navigate('/terms-and-policies?tab=terms')}  // UPDATED: Add onClick to navigate to terms tab
+                      className="text-blue-600 hover:underline"
+                    >
                       Terms and Conditions
                     </button>{" "}
                     and{" "}
-                    <button className="text-blue-600 hover:underline">
+                    <button 
+                      onClick={() => navigate('/terms-and-policies?tab=privacy')}  // UPDATED: Add onClick to navigate to privacy tab
+                      className="text-blue-600 hover:underline"
+                    >
                       Privacy Policy
                     </button>
                   </p>

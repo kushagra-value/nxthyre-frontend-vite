@@ -1,6 +1,7 @@
-// src/pages/TermsAndConditions.jsx
-import React from 'react';
-import {TermsContent} from './TermsContent';
+import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { TermsContent } from "./TermsContent";
+import { PrivacyContent } from "./PrivacyContent";
 
 const Logo = () => (
   <svg width="108" height="61" viewBox="0 0 158 61" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -32,42 +33,76 @@ const Logo = () => (
     <path d="M107.561 39.1215C108.89 40.6685 110.697 41.7279 112.697 42.1319C114.696 42.5358 116.773 42.2612 118.598 41.3517C120.424 40.4421 121.894 38.9495 122.775 37.1102C123.657 35.2709 123.9 33.1901 123.465 31.1973L120.803 31.7777C121.109 33.178 120.938 34.6402 120.319 35.9327C119.699 37.2252 118.666 38.2741 117.383 38.9133C116.1 39.5524 114.641 39.7454 113.236 39.4615C111.831 39.1777 110.561 38.4332 109.627 37.3461L107.561 39.1215Z" fill="#0F47F2"/>
   </svg>
 );
-const TermsAndConditions = () => {
+
+export default function TermsAndConditions() {
+  const [searchParams] = useSearchParams();
+  const initialTab = (searchParams.get('tab') as "terms" | "privacy") || "terms";  // UPDATED: Extract initial tab from query, default to "terms"
+  const [activeTab, setActiveTab] = useState<"terms" | "privacy">(initialTab);
+
   return (
-    <div className="w-[100vw] h-[100vh] bg-white relative overflow-hidden">
+    <div className="min-h-screen bg-gray-50 text-gray-900">
       {/* Header */}
-      <div className="absolute w-[100vw] h-[90px] left-0 top-0 bg-[#ECF1FF]">
-        <div className="absolute w-[108px] h-[60px] left-[60px] top-[15px]">
-          <Logo />
+      <header className="border-b bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <Logo />
+            </div>
+            <div className="text-sm text-gray-400">
+              Last updated: September 30, 2025
+            </div>
+          </div>
         </div>
-        <div className="absolute w-[400px] h-[40px] left-[210px] top-[28px] font-medium text-[24px] leading-[32px] text-[#4B5563] font-['Afacad']">
-          Terms and Conditions
+      </header>
+
+      {/* Navigation */}
+      <div className="max-w-7xl mx-auto  py-6">
+        <div className="flex gap-3 mb-8">
+          <button
+            onClick={() => setActiveTab("terms")}
+            className={`flex-1 max-w-[200px] py-2 px-4 rounded-lg text-sm font-medium transition ${
+              activeTab === "terms"
+                ? "bg-blue-600 text-white shadow"
+                : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            Terms & Conditions
+          </button>
+          <button
+            onClick={() => setActiveTab("privacy")}
+            className={`flex-1 max-w-[200px] py-2 px-4 rounded-lg text-sm font-medium transition ${
+              activeTab === "privacy"
+                ? "bg-blue-600 text-white shadow"
+                : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            Privacy Policy
+          </button>
         </div>
-        <div className="absolute w-0 h-[50px] left-[188px] top-[20px] border border-[#4B5563]"></div>
+
+        {/* Content */}
+        <div className="bg-white rounded-2xl shadow p-8 border border-gray-200">
+          {activeTab === "terms" ? <TermsContent /> : <PrivacyContent />}
+        </div>
+
+        {/* Footer */}
+        <footer className="mt-12 pt-8 border-t border-gray-200">
+          <div className="text-center space-y-4">
+            <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
+              <span>© 2025 NxtHyre</span>
+              <span className="w-px h-4 bg-gray-300" />
+              <span>nxthyre.com</span>
+              <span className="w-px h-4 bg-gray-300" />
+              <span>AI/ML Hiring Solutions</span>
+            </div>
+            <p className="text-xs text-gray-400 max-w-2xl mx-auto">
+              For questions regarding these terms or our privacy practices,
+              please contact our legal team. We are committed to transparency
+              and protecting your rights under applicable privacy laws.
+            </p>
+          </div>
+        </footer>
       </div>
-
-      {/* Left Section - Scrollable Card */}
-      <div className="absolute w-[902px] h-[742px] left-[10px] top-[140px] bg-gray-200  rounded-[50px] overflow-y-auto p-10 shadow-lg">
-        
-        <TermsContent />
-        
-      </div>
-
-      {/* Right Section - Mask Group */}
-      <div className="absolute w-[902px] h-[742px] right-0 bottom-0 opacity-50">
-      <img 
-        src="/assets/NxtHyreImage.png" 
-        alt="NxtHyre" 
-        className=" w-[902px] h-[742px] " 
-        
-      /></div>
-
-      
-
-      {/* Right Bottom Image */}
-      
     </div>
   );
-};
-
-export default TermsAndConditions;
+}

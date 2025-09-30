@@ -13,7 +13,6 @@ import {
 } from "./services/candidateService";
 import Header from "./components/Header";
 import TermsAndConditions from './components/TermsAndConditions';
-import PrivacyPolicy from './components/PrivacyPolicy';
 import FiltersSidebar from "./components/FiltersSidebar";
 import JobApplicationForm from "./components/JobApplicationForm";
 import CandidatesMain from "./components/CandidatesMain";
@@ -998,9 +997,8 @@ function MainApp() {
           }
         />
 
-        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        
+        <Route path="/terms-and-policies" element={<TermsAndConditions  />} />
+ 
         <Route
           path="/settings"
           element={

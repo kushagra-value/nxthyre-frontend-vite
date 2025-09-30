@@ -446,11 +446,17 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                 <div className="text-center mt-6">
                   <p className="text-xs text-gray-500">
                     By logging in you agree to our{" "}
-                    <button className="text-blue-600 hover:underline">
+                    <button 
+                      onClick={() => navigate('/terms-and-policies?tab=terms')}  // UPDATED: Add onClick to navigate to terms tab
+                      className="text-blue-600 hover:underline"
+                    >
                       Terms and Conditions
                     </button>{" "}
                     and{" "}
-                    <button className="text-blue-600 hover:underline">
+                    <button 
+                      onClick={() => navigate('/terms-and-policies?tab=privacy')}  // UPDATED: Add onClick to navigate to privacy tab
+                      className="text-blue-600 hover:underline"
+                    >
                       Privacy Policy
                     </button>
                   </p>
