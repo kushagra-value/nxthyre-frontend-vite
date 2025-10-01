@@ -316,7 +316,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const [showMore, setShowMore] = useState(false);
     const experiences = detailedCandidate?.candidate?.experience || [];
     const [showMoreSummary, setShowMoreSummary] = useState(false);
-
+    const [expandedExperiences, setExpandedExperiences] = useState(new Set());
     const summary = detailedCandidate?.candidate?.profile_summary || "";
     const maxLength = 350; // character limit before truncation
 
@@ -326,6 +326,18 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       !showMoreSummary && summary.length > maxLength
         ? summary.slice(0, maxLength) + "..."
         : summary;
+
+    const toggleExperience = (index:number) => {
+      setExpandedExperiences((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(index)) {
+          newSet.delete(index);
+        } else {
+          newSet.add(index);
+        }
+        return newSet;
+      });
+    };
 
     return (
       <div className="bg-[#F0F0F0] p-3 rounded-lg relative">
@@ -375,7 +387,15 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 (showMore || experiences.length <= 1
                   ? experiences
                   : experiences.slice(0, 1)
-                ).map((exp, index) => (
+                ).map((exp, index) => {
+                  const expDescription = exp?.description || "";
+                const isExpanded = expandedExperiences.has(index);
+                const displayExpText =
+                  !isExpanded && expDescription.length > maxLength
+                    ? expDescription.slice(0, maxLength) + "..."
+                    : expDescription;
+                    
+                  return (
                   <div
                     key={index}
                     className="border-l-2 border-gray-200 ml-2 pl-4 relative pb-2 space-y-1"
@@ -418,17 +438,19 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                         </span>
                       )}
                     </p>
-                    <p
-                      className={`text-sm text-[#4B5563] mt-1 ${
-                        !showMore && experiences.length > 1
-                          ? "relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-12 after:bg-gradient-to-t after:from-[#F0F0F0] after:to-transparent"
-                          : ""
-                      }`}
-                    >
-                      {exp?.description}
+                    <p className="text-sm text-[#4B5563] mt-1">
+                      {displayExpText}
+                      {expDescription.length > maxLength && (
+                        <button
+                          onClick={() => toggleExperience(index)}
+                          className="ml-4 text-blue-500 text-xs mt-1"
+                        >
+                          {isExpanded ? "View Less" : "View More"}
+                        </button>
+                      )}
                     </p>
                   </div>
-                ))
+                )})
               ) : (
                 <p className="text-sm text-gray-500">
                   No experience details available
