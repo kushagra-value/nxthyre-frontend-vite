@@ -1074,7 +1074,7 @@ function MainApp() {
                       {categories.length > 0 && (
                         <div className="sticky top-[68px] z-20 will-change-transform bg-gray-50 border-b-2 border-gray-200 mb-4 pb-1">
                           <div className="max-w-full flex items-center justify-between px-3 lg:px-4">
-                            <div className="pb-2 flex items-center space-x-12">
+                            <div className="pb-0 flex items-center space-x-12">
                               {categories.slice(0, 4).map((category) => (
                                 <div
                                   key={category.id}
