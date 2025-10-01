@@ -1487,20 +1487,20 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       <Users />
                     </button>
                     {isDropdownOpen && (
-                      <div className="absolute top-10 z-10 w-[90%] bg-white shadow-lg mt-1 rounded-lg max-h-90 overflow-y-auto border border-gray-200 p-4">
+                      <div className="absolute top-10 z-10 w-[90%] bg-white shadow-lg mt-1 rounded-lg max-h-80 overflow-y-auto border border-gray-200 py-2 px-4">
                         {categories.map((category) => (
                           <div
                             key={category.id}
-                            className="px-2 py-4 hover:bg-gray-100 cursor-pointer flex justify-between items-center"
+                            className="p-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center"
                             onClick={() => {
                               setActiveJobId(category.id);
                               setIsDropdownOpen(false);
                             }}
                           >
                             <span>{category.name}</span>
-                            <span className="text-gray-600 bg-gray-100 px-2 py-1 rounded text-sm">
+                            {/* <span className="text-gray-600 bg-gray-100 px-2 py-1 rounded text-sm">
                               {category.count}
-                            </span>
+                            </span> */}
                           </div>
                         ))}
                       </div>
