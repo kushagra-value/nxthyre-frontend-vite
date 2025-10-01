@@ -352,7 +352,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                {summary.length > maxLength && (
                 <button
                   onClick={toggleExpanded}
-                  className="text-blue-500 text-xs mt-2"
+                  className="text-blue-500 text-xs mt-1"
                 >
                   {showMoreSummary ? "View Less" : "View More"}
                 </button>
