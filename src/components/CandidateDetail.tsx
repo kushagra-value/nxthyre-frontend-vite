@@ -178,7 +178,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-4">
+      <div className="bg-white rounded-xl p-3 lg:p-4">
         <div className="text-center text-gray-500 mt-6">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-base font-medium">Loading candidate details...</p>
@@ -189,14 +189,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   if (!candidate) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-4">
+      <div className="bg-white rounded-xl p-3 lg:p-4">
         <div className="text-center text-gray-500 mt-6">
           <div className="w-12 h-12 bg-gray-100 rounded-full mx-auto mb-3 flex items-center justify-center">
             <Briefcase className="w-6 h-6 text-gray-400" />
           </div>
           <p className="text-base font-medium">No candidates Selected</p>
           <p className="text-sm mt-1">
-            Click and view the candidates information
+            Click on candidate card to view the more information
           </p>
         </div>
       </div>
@@ -205,7 +205,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   if (error || !detailedCandidate) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-4">
+      <div className="bg-white rounded-xl p-3 lg:p-4">
         <div className="text-center text-gray-500 mt-6">
           <div className="w-12 h-12 bg-gray-100 rounded-full mx-auto mb-3 flex items-center justify-center">
             <Briefcase className="w-6 h-6 text-gray-400" />
@@ -214,7 +214,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             Unable to Load candidate details
           </p>
           <p className="text-sm mt-1">
-            {error || "Please select a candidate to view details"}
+            {error || "Please select another candidate to view details"}
           </p>
         </div>
       </div>

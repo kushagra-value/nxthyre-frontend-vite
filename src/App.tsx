@@ -1092,12 +1092,13 @@ function MainApp() {
                                       )
                                       fetchJobDetailsAndSetFilters(category.id);
                                     }}
-                                    className={`py-1.5 text-xs lg:text-base transition-all duration-200 ${
+                                    className={`flex-row py-1.5 text-xs lg:text-base transition-all duration-200 ${
                                       activeCategoryId === category.id
-                                        ? "border-b-2 border-blue-700 text-blue-700 shadow-sm"
-                                        : "text-gray-600 hover:border-b-2 border-gray-200"
+                                        ? "text-blue-700 shadow-sm"
+                                        : "text-gray-600"
                                     }`}
                                   >
+                                    <div>
                                     {category.name}
                                     <span
                                       className={`ml-3 px-[8px] pb-[2.8px] pt-[1.3px] rounded-full text-xs ${
@@ -1108,6 +1109,14 @@ function MainApp() {
                                     >
                                       {category.count}
                                     </span>
+                                    </div>
+                                    <div className={`${
+                                      activeCategoryId === category.id
+                                        ? "bg-blue-700 w-full h-2 rounded-tl-lg rounded-tr-lg mt-1"
+                                        : "hover:bg-gray-200 hover:h-2 hover:rounded-tl-lg hover:rounded-tr-lg hover:mt-1"
+                                    }`}>
+
+                                    </div>
                                   </button>
                                   {hoveredCategory === category.id && (
                                     <div className="absolute top-full left-0 mt-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
