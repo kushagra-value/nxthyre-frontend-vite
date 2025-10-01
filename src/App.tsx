@@ -1094,7 +1094,7 @@ function MainApp() {
                                     }}
                                     className={` flex-row text-xs lg:text-base transition-all duration-200 ${
                                       activeCategoryId === category.id
-                                        ? "text-blue-700 shadow-sm"
+                                        ? "text-blue-700"
                                         : "text-gray-600"
                                     }`}
                                   >
