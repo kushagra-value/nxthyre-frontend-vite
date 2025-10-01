@@ -318,7 +318,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const [showMoreSummary, setShowMoreSummary] = useState(false);
     const [expandedExperiences, setExpandedExperiences] = useState(new Set());
     const summary = detailedCandidate?.candidate?.profile_summary || "";
-    const maxLength = 350; // character limit before truncation
+    const maxLength = 320; // character limit before truncation
 
     const toggleExpanded = () => setShowMoreSummary(!showMoreSummary);
 
