@@ -352,7 +352,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                {summary.length > maxLength && (
                 <button
                   onClick={toggleExpanded}
-                  className="text-blue-500 text-xs mt-1"
+                  className="ml-1 text-blue-500 text-xs mt-1"
                 >
                   {showMoreSummary ? "View Less" : "View More"}
                 </button>
@@ -449,7 +449,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                       {expDescription.length > maxLength && (
                         <button
                           onClick={() => toggleExperience(index)}
-                          className="ml-4 text-blue-500 text-xs mt-1"
+                          className="ml-1 text-blue-500 text-xs mt-1"
                         >
                           {isExpanded ? "View Less" : "View More"}
                         </button>
