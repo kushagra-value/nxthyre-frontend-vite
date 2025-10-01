@@ -271,7 +271,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const [hoveredCandidateId, setHoveredCandidateId] = useState<string | null>(
     null
   );
-
+  const [dropdownSearch, setDropdownSearch] = useState("");
   const sortDropdownRef = useRef<HTMLDivElement>(null);
 
   const [showSortDropdown, setShowSortDropdown] = useState(false);
@@ -1487,8 +1487,30 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       <Users />
                     </button>
                     {isDropdownOpen && (
-                      <div className="absolute top-10 z-10 w-[90%] bg-white shadow-lg mt-1 rounded-lg max-h-80 overflow-y-auto border border-gray-200 py-2 px-4">
-                        {categories.map((category) => (
+                      <div className="absolute top-10 z-10 w-[90%] bg-white shadow-lg mt-1 rounded-[10px] max-h-80 overflow-y-auto border border-[#0F47F2] py-2 px-4">
+                        <div className="relative mb-3 p-2">
+                          <input
+                            type="text"
+                            placeholder="Type a Role"
+                            value={dropdownSearch}
+                            onChange={(e) => setDropdownSearch(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 text-sm border border-[#0F47F2] rounded-[2px] focus:outline-none focus:ring-2 focus:ring-[#0F47F2]/20 bg-white text-[#4B5563] placeholder-[#BCBCBC]"
+                          />
+                          <svg
+                            className="absolute left-4 top-1/2 transform -translate-y-1/2 w-[21px] h-[21px] text-[#0F47F2]"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle cx="11" cy="11" r="8" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-4.35-4.35" />
+                          </svg>
+                        </div>
+                        {categories
+                          .filter((category) =>
+                            category.name.toLowerCase().includes(dropdownSearch.toLowerCase())
+                          )
+                          .map((category) => (
                           <div
                             key={category.id}
                             className="p-2 hover:bg-gray-100 rounded-md cursor-pointer flex justify-between items-center"
@@ -1497,8 +1519,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               setIsDropdownOpen(false);
                             }}
                           >
-                            <span>{category.name}</span>
-                            <span className="text-gray-600 bg-gray-100 px-2 py-1 rounded text-sm">
+                            <span className="text-[#4B5563] px-2 py-1 rounded text-sm">{category.name}</span> {/* UPDATED: Exact gray for names */}
+                            <span className="text-[#818283] bg-gray-100 px-2 py-1 rounded text-sm"> {/* UPDATED: Exact gray for counts */}
                               {category.count}
                             </span>
                           </div>
