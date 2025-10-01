@@ -335,17 +335,18 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               <User className="w-4 h-4 mr-2 text-[#4B5563]" />
               Profile Summary
             </h3>
-            <p className="text-sm text-[#818283] leading-normal pt-2 pb-4 pl-6 pr-2 rounded-lg">
+            <p className="text-sm flex gap-2 text-[#818283] leading-normal pt-2 pb-4 pl-6 pr-2 rounded-lg">
                {displayText}
+               {summary.length > maxLength && (
+                <button
+                  onClick={toggleExpanded}
+                  className="text-blue-500 text-xs mt-1"
+                >
+                  {showMoreSummary ? "View Less" : "View More"}
+                </button>
+              )}
             </p>
-            {summary.length > maxLength && (
-            <button
-              onClick={toggleExpanded}
-              className="text-blue-500 text-xs mt-1"
-            >
-              {showMoreSummary ? "View Less" : "View More"}
-            </button>
-          )}
+            
           </div>
         )}
 
