@@ -1092,7 +1092,7 @@ function MainApp() {
                                       )
                                       fetchJobDetailsAndSetFilters(category.id);
                                     }}
-                                    className={`flex-row py-1.5 text-xs lg:text-base transition-all duration-200 ${
+                                    className={`flex-row text-xs lg:text-base transition-all duration-200 ${
                                       activeCategoryId === category.id
                                         ? "text-blue-700 shadow-sm"
                                         : "text-gray-600"
@@ -1112,8 +1112,8 @@ function MainApp() {
                                     </div>
                                     <div className={`${
                                       activeCategoryId === category.id
-                                        ? "bg-blue-700 w-full h-2 rounded-tl-lg rounded-tr-lg mt-1"
-                                        : "hover:bg-gray-200 hover:h-2 hover:rounded-tl-lg hover:rounded-tr-lg hover:mt-1"
+                                        ? "bg-blue-700 w-full h-2 rounded-tl-lg rounded-tr-lg mt-4"
+                                        : "hover:bg-gray-200 hover:h-2 hover:rounded-tl-lg hover:rounded-tr-lg mt-5"
                                     }`}>
 
                                     </div>
