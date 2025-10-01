@@ -1119,9 +1119,9 @@ function MainApp() {
                                               category.id
                                             )
                                           }
-                                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                          className="w-full px-4 py-2 text-left text-md text-gray-700 hover:bg-gray-50 flex items-center"
                                         >
-                                          <Edit className="w-4 h-4 mr-2" />
+                                          <Edit className="w-4 h-4 mr-4" />
                                           Edit Job Role
                                         </button>
                                         <button
@@ -1131,9 +1131,9 @@ function MainApp() {
                                               category.id
                                             )
                                           }
-                                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                          className="w-full px-4 py-2 text-left text-md text-gray-700 hover:bg-gray-50 flex items-center"
                                         >
-                                          <Copy className="w-4 h-4 mr-2" />
+                                          <Copy className="w-4 h-4 mr-4" />
                                           Copy Job Link
                                         </button>
                                         <button
@@ -1143,9 +1143,9 @@ function MainApp() {
                                               category.id
                                             )
                                           }
-                                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                          className="w-full px-4 py-2 text-left text-md text-gray-700 hover:bg-gray-50 flex items-center"
                                         >
-                                          <Mail className="w-4 h-4 mr-2" />
+                                          <Mail className="w-4 h-4 mr-4" />
                                           Edit Email Template
                                         </button>
                                         <button
@@ -1155,9 +1155,9 @@ function MainApp() {
                                               category.id
                                             )
                                           }
-                                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                          className="w-full px-4 py-2 text-left text-md text-gray-700 hover:bg-gray-50 flex items-center"
                                         >
-                                          <Share2 className="w-4 h-4 mr-2" />
+                                          <Share2 className="w-4 h-4 mr-4" />
                                           Share Pipelines
                                         </button>
 
@@ -1170,9 +1170,9 @@ function MainApp() {
                                                   category.id
                                                 )
                                               }
-                                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                              className="w-full px-4 py-2 text-left text-md text-gray-700 hover:bg-gray-50 flex items-center"
                                             >
-                                              <Globe className="w-4 h-4 mr-2" />
+                                              <Globe className="w-4 h-4 mr-4" />
                                               Publish Job
                                             </button>
                                           )}
@@ -1186,9 +1186,9 @@ function MainApp() {
                                                   category.id
                                                 )
                                               }
-                                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                              className="w-full px-4 py-2 text-left text-md text-gray-700 hover:bg-gray-50 flex items-center"
                                             >
-                                              <Pause className="w-4 h-4 mr-2" />
+                                              <Pause className="w-4 h-4 mr-4" />
                                               Unpublish Job
                                             </button>
                                           )}
@@ -1199,9 +1199,9 @@ function MainApp() {
                                               category.id
                                             )
                                           }
-                                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                          className="w-full px-4 py-2 text-left text-md text-gray-700 hover:bg-gray-50 flex items-center"
                                         >
-                                          <Archive className="w-4 h-4 mr-2" />
+                                          <Archive className="w-4 h-4 mr-4" />
                                           Archive
                                         </button>
                                         <button
@@ -1211,9 +1211,9 @@ function MainApp() {
                                               category.id
                                             )
                                           }
-                                          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                                          className="w-full px-4 py-2 text-left text-md text-red-600 hover:bg-red-50 flex items-center"
                                         >
-                                          <Trash2 className="w-4 h-4 mr-2" />
+                                          <Trash2 className="w-4 h-4 mr-4" />
                                           Delete Job
                                         </button>
                                       </div>

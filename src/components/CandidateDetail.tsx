@@ -582,7 +582,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           detailedCandidate?.candidate?.is_prevetted && (
             // {/* Vetted Skills Subsection */}
             <div>
-              <h4 className="text-lg font-semibold text-gray-700 flex items-center">
+              <h4 className="text-lg font-medium text-gray-700 flex items-center">
                 <Star className="w-4 h-4 mr-2" />
                 <span className="mr-2">Vetted Skills</span>
                 <div className="relative group mr-2">
@@ -647,7 +647,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           )}
         {/* Resume Skills Subsection */}
         <div>
-          <h4 className="text-lg font-semibold text-gray-700 flex items-center">
+          <h4 className="text-lg font-medium  text-gray-700 flex items-center">
             <IdCard className="w-4 h-4 mr-2" />
             Resume
           </h4>

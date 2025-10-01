@@ -165,9 +165,9 @@ const Header: React.FC<HeaderProps> = ({
               )}
               {isAuthenticated && user && (
                 <div className="flex items-center gap-1 bg-gray-100 px-4 py-[9px] rounded-lg">
-                  <span className="text-xs">🪙</span>
-                  <p className="text-xs text-gray-500">
-                    <span className="font-semibold">{credits}</span>
+                  <span className="text-sm font-medium">🪙</span>
+                  <p className="text-sm font-medium text-gray-500">
+                    <span className=" font-medium">{credits}</span>
                   </p>
                 </div>
               )}
