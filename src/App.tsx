@@ -1092,7 +1092,7 @@ function MainApp() {
                                       )
                                       fetchJobDetailsAndSetFilters(category.id);
                                     }}
-                                    className={`flex-row text-xs lg:text-base transition-all duration-200 ${
+                                    className={`relative flex-row text-xs lg:text-base transition-all duration-200 ${
                                       activeCategoryId === category.id
                                         ? "text-blue-700 shadow-sm"
                                         : "text-gray-600"
@@ -1110,10 +1110,10 @@ function MainApp() {
                                       {category.count}
                                     </span>
                                     </div>
-                                    <div className={`${
+                                    <div className={`absolute top-6 left-0 ${
                                       activeCategoryId === category.id
-                                        ? "bg-blue-700 w-full h-1 rounded-tl-lg rounded-tr-lg mt-4"
-                                        : "hover:bg-gray-200 hover:h-1 hover:rounded-tl-lg hover:rounded-tr-lg mt-5"
+                                        ? "bg-blue-700 w-full h-1"
+                                        : "hover:bg-gray-200 hover:h-1 "
                                     }`}>
 
                                     </div>
