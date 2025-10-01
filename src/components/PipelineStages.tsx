@@ -1491,7 +1491,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         {categories.map((category) => (
                           <div
                             key={category.id}
-                            className="p-2 hover:bg-gray-100 rounded-lg cursor-pointer flex justify-between items-center"
+                            className="p-2 hover:bg-gray-100 rounded-md cursor-pointer flex justify-between items-center"
                             onClick={() => {
                               setActiveJobId(category.id);
                               setIsDropdownOpen(false);
