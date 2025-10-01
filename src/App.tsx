@@ -1072,9 +1072,9 @@ function MainApp() {
 
                     <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3 ">
                       {categories.length > 0 && (
-                        <div className="sticky top-[68px] z-20 will-change-transform bg-gray-50 border-b-2 border-gray-200 mb-4">
+                        <div className="sticky top-[68px] z-20 will-change-transform bg-gray-50 border-b-2 border-gray-200 mb-4 pb-1">
                           <div className="max-w-full flex items-center justify-between px-3 lg:px-4">
-                            <div className="pb-1 flex items-center space-x-12">
+                            <div className="pb-2 flex items-center space-x-12">
                               {categories.slice(0, 4).map((category) => (
                                 <div
                                   key={category.id}
@@ -1231,7 +1231,7 @@ function MainApp() {
                                 </div>
                               ))}
                             </div>
-                            <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-3 pb-2">
                               <div>
                                 {categories.length > 0 && (
                                   <div className="relative">
