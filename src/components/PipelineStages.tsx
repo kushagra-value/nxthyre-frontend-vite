@@ -1487,14 +1487,14 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       <Users />
                     </button>
                     {isDropdownOpen && (
-                      <div className="absolute top-10 z-10 w-[90%] bg-white shadow-lg mt-1 rounded-[10px] max-h-80 overflow-y-auto border border-[#0F47F2] py-2 px-4">
+                      <div className="absolute top-10 z-10 w-[90%] bg-white shadow-lg mt-1 rounded-[10px] max-h-80 overflow-y-auto border border-gray-200 py-2 px-4">
                         <div className="relative mb-3 p-2">
                           <input
                             type="text"
                             placeholder="Type a Role"
                             value={dropdownSearch}
                             onChange={(e) => setDropdownSearch(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 text-sm border border-[#0F47F2] rounded-[2px] focus:outline-none focus:ring-2 focus:ring-[#0F47F2]/20 bg-white text-[#4B5563] placeholder-[#BCBCBC]"
+                            className="w-full pl-10 pr-4 py-2 text-sm border border-[#0F47F2] rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#0F47F2]/20 bg-white text-[#4B5563] placeholder-[#BCBCBC]"
                           />
                           <svg
                             className="absolute left-4 top-1/2 transform -translate-y-1/2 w-[21px] h-[21px] text-[#0F47F2]"

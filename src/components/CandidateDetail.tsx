@@ -315,6 +315,17 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const ProfileTab = () => {
     const [showMore, setShowMore] = useState(false);
     const experiences = detailedCandidate?.candidate?.experience || [];
+    const [showMoreSummary, setShowMoreSummary] = useState(false);
+
+    const summary = detailedCandidate?.candidate?.profile_summary || "";
+    const maxLength = 250; // character limit before truncation
+
+    const toggleExpanded = () => setShowMoreSummary(!showMoreSummary);
+
+    const displayText =
+      !showMoreSummary && summary.length > maxLength
+        ? summary.slice(0, maxLength) + "..."
+        : summary;
 
     return (
       <div className="bg-[#F0F0F0] p-3 rounded-lg relative">
@@ -325,8 +336,16 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               Profile Summary
             </h3>
             <p className="text-sm text-[#818283] leading-normal pt-2 pb-4 pl-6 pr-2 rounded-lg">
-              {detailedCandidate?.candidate?.profile_summary}
+               {displayText}
             </p>
+            {summary.length > maxLength && (
+            <button
+              onClick={toggleExpanded}
+              className="text-blue-500 text-xs mt-1"
+            >
+              {showMoreSummary ? "View Less" : "View More"}
+            </button>
+          )}
           </div>
         )}
 
