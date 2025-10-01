@@ -89,7 +89,7 @@ export const CompanyHoverCard: React.FC<CompanyHoverCardProps> = ({
             
             
             {/* Bottom: Employee Count and Location */}
-            <div className="ml-6 mt-[7px] flex flex-col">
+            <div className="ml-[60px] mt-[7px] flex flex-col">
               {/* Employee Count Row */}
               <div className="grid grid-cols-[112px_66px] gap-3 items-center h-[44px]">
                 <div className="font-medium text-sm leading-[22px] text-gray-600 whitespace-nowrap">
