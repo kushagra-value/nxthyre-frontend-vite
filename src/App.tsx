@@ -1073,12 +1073,12 @@ function MainApp() {
                     <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3 ">
                       {categories.length > 0 && (
                         <div className="sticky top-[68px] z-20 will-change-transform bg-gray-50 border-b-2 border-gray-200 mb-4">
-                          <div className="max-w-full flex justify-between px-3 lg:px-4">
-                            <div className="hidden md:flex items-center space-x-12">
+                          <div className="max-w-full flex items-center justify-between px-3 lg:px-4">
+                            <div className="pb-1 flex items-center space-x-12">
                               {categories.slice(0, 4).map((category) => (
                                 <div
                                   key={category.id}
-                                  className="relative"
+                                  className="h-full relative"
                                   onMouseEnter={() =>
                                     setHoveredCategory(category.id)
                                   }
@@ -1092,7 +1092,7 @@ function MainApp() {
                                       )
                                       fetchJobDetailsAndSetFilters(category.id);
                                     }}
-                                    className={`relative flex-row text-xs lg:text-base transition-all duration-200 ${
+                                    className={` flex-row text-xs lg:text-base transition-all duration-200 ${
                                       activeCategoryId === category.id
                                         ? "text-blue-700 shadow-sm"
                                         : "text-gray-600"
@@ -1110,10 +1110,10 @@ function MainApp() {
                                       {category.count}
                                     </span>
                                     </div>
-                                    <div className={`absolute top-6 left-0 ${
+                                    <div className={`absolute top-10 left-0 ${
                                       activeCategoryId === category.id
-                                        ? "bg-blue-700 w-full h-1"
-                                        : "hover:bg-gray-200 hover:h-1 "
+                                        ? "bg-blue-700 w-full h-0.5"
+                                        : "hover:bg-gray-200 hover:h-0.5 "
                                     }`}>
 
                                     </div>
@@ -1231,7 +1231,7 @@ function MainApp() {
                                 </div>
                               ))}
                             </div>
-                            <div className="flex items-center space-x-3 pb-3">
+                            <div className="flex items-center space-x-3">
                               <div>
                                 {categories.length > 0 && (
                                   <div className="relative">
