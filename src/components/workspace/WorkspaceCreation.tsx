@@ -299,39 +299,6 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Or share invite link
-                </label>
-                <div className="flex space-x-2">
-                  <input
-                    type="text"
-                    value={inviteLink}
-                    readOnly
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
-                  />
-                  <button
-                    onClick={handleCopyLink}
-                    className={`px-4 py-2 rounded-lg transition-colors flex items-center ${
-                      copiedLink
-                        ? "bg-blue-100 text-blue-600"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
-                  >
-                    {copiedLink ? (
-                      <>
-                        <Check className="w-4 h-4 mr-1" />
-                        Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-4 h-4 mr-1" />
-                        Copy
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
 
               <div className="flex space-x-4 pt-4">
                 <button
