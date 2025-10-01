@@ -1231,7 +1231,7 @@ function MainApp() {
                                 </div>
                               ))}
                             </div>
-                            <div className="flex items-center space-x-3 mb-4">
+                            <div className="flex items-center space-x-3 pb-2">
                               <div>
                                 {categories.length > 0 && (
                                   <div className="relative">
