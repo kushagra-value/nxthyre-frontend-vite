@@ -438,7 +438,13 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                         </span>
                       )}
                     </p>
-                    <p className="text-sm text-[#4B5563] mt-1">
+                    <p
+                      className={`text-sm text-[#4B5563] mt-1 ${
+                        !showMore && experiences.length > 1
+                          ? "relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-12 after:bg-gradient-to-t after:from-[#F0F0F0] after:to-transparent"
+                          : ""
+                      }`}
+                    >
                       {displayExpText}
                       {expDescription.length > maxLength && (
                         <button
