@@ -1137,7 +1137,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   return (
     <div
-      className={`bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-3 ${
+      className={`bg-white rounded-xl p-3 lg:p-3 ${
         showConfirm ? "space-y-0" : "space-y-6"
       } min-h-[81vh] relative`}
     >

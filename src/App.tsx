@@ -1282,7 +1282,7 @@ function MainApp() {
                       )}
 
                       <div className="flex w-full gap-3 h-full">
-                        <div className="lg:w-[25%] sticky order-2 lg:order-1 top-16 self-start will-change-transform z-10">
+                        <div className="lg:w-[25%] sticky order-1 lg:order-1 top-16 self-start will-change-transform z-10">
                           <FiltersSidebar
                             filters={filters}
                             onApplyFilters={handleApplyFilters}
@@ -1292,7 +1292,7 @@ function MainApp() {
                             isSearchMode={isSearchMode}
                           />
                         </div>
-                        <div className="lg:w-[45%] order-1 lg:order-2 ">
+                        <div className="lg:w-[45%] order-2 lg:order-2 ">
                           <CandidatesMain
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
