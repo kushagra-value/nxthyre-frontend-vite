@@ -1112,8 +1112,8 @@ function MainApp() {
                                     </div>
                                     <div className={`${
                                       activeCategoryId === category.id
-                                        ? "bg-blue-700 w-full h-2 rounded-tl-lg rounded-tr-lg mt-4"
-                                        : "hover:bg-gray-200 hover:h-2 hover:rounded-tl-lg hover:rounded-tr-lg mt-5"
+                                        ? "bg-blue-700 w-full h-1 rounded-tl-lg rounded-tr-lg mt-4"
+                                        : "hover:bg-gray-200 hover:h-1 hover:rounded-tl-lg hover:rounded-tr-lg mt-5"
                                     }`}>
 
                                     </div>
