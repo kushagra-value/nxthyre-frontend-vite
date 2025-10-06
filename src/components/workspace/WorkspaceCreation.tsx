@@ -20,7 +20,7 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [inviteLink] = useState("https://nxthyre.com/invite/abc123def456");
   const [copiedLink, setCopiedLink] = useState(false);
-
+  const [success, setSuccess] = useState(true);
   const handleNext = () => {
     if (!workspaceName.trim()) {
       setError("Workspace title required");
@@ -95,12 +95,8 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
         );
       }
 
-    setStep(1);
-    setWorkspaceName("");
-    setInviteEmails([]);
-    setCurrentEmail("");
-    setError("");
-
+    setSuccess(true);
+    setStep(3);
     } catch (error: any) {
       console.error("Create workspace error:", error);
       showToast.error(error.message || "Failed to create workspace");
@@ -165,10 +161,27 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
             >
               2
             </div>
+            {/* UPDATED: Add third connector and dot for completion step */}
+            <div
+              className={`flex-1 h-1 mx-4 ${
+                step >= 3 ? "bg-blue-600" : "bg-gray-200"
+              }`}
+            ></div>
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                step >= 3
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-600"
+              }`}
+            >
+              3
+            </div>
           </div>
           <div className="flex justify-between mt-2">
             <span className="text-sm text-gray-600">Workspace Details</span>
             <span className="text-sm text-gray-600">Invite Members</span>
+            {/* UPDATED: Add label for third step */}
+            <span className="text-sm text-gray-600">Complete</span>
           </div>
         </div>
 
@@ -322,6 +335,44 @@ const WorkspaceCreation: React.FC<WorkspaceCreationProps> = ({
                   )}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                {success ? (
+                  <Check className="w-8 h-8 text-green-600" />
+                ) : (
+                  <X className="w-8 h-8 text-red-600" />
+                )}
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                {success ? `Workspace "${workspaceName}" Created Successfully!` : "Failed to Create Workspace"}
+              </h2>
+              <p className="text-gray-600">
+                {success
+                  ? `Your workspace "${workspaceName}" has been created. You can now manage it from the organization settings.`
+                  : "There was an issue creating your workspace. Please try again or contact support."}
+              </p>
+            </div>
+
+            <div className="flex space-x-4 pt-4">
+              {/* UPDATED: Buttons to navigate to org or dashboard */}
+              <button
+                onClick={() => onNavigate("workspaces-org")}
+                className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Go to Organization
+              </button>
+              <button
+                onClick={() => onNavigate("dashboard")}
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Go to Dashboard
+              </button>
             </div>
           </div>
         )}
