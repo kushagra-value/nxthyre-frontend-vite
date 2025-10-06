@@ -7,6 +7,7 @@ import useDebounce from "./hooks/useDebounce";
 import { authService } from "./services/authService";
 import { creditService } from "./services/creditService";
 import { jobPostService } from "./services/jobPostService";
+import Cookies from "js-cookie";
 import {
   candidateService,
   CandidateListItem,
@@ -982,6 +983,7 @@ function InvitePage() {
       console.log("Claim response:", data);
       showToast.success("Successfully joined the workspace!");
       contextSetSelectedWorkspaceId(data.workspace.id);
+      Cookies.set("selectedWorkspaceId", data.workspace.id.toString(), { expires: 7 });
       const refreshedWorkspaces = await organizationService.getMyWorkspaces();
       console.log("Refreshed workspaces after join:", refreshedWorkspaces);
       setSuccessData(data.workspace);
