@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, useSearchParams } from "react-router-dom";
 import { AuthProvider, useAuthContext} from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./hooks/useAuth";
@@ -944,6 +944,116 @@ function MainApp() {
     fetchCandidates(1, newFilters);
   };
 
+  function InvitePage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const inviteToken = searchParams.get('invite_token');
+  const {
+    user: firebaseUser,
+    userStatus,
+    isAuthenticated,
+    signOut,
+  } = useAuth();
+  const [claiming, setClaiming] = useState(false);
+  const [showLogin, setShowLogin] = useState(!isAuthenticated);
+
+  useEffect(() => {
+    if (!inviteToken) {
+      showToast.error("Invalid invite link.");
+      navigate("/");
+      return;
+    }
+    if (isAuthenticated) {
+      handleClaimInvite();
+    }
+  }, [isAuthenticated, inviteToken]);
+
+  const getIdToken = useCallback(async () => {
+    if (!firebaseUser) return null;
+    try {
+      return await firebaseUser.getIdToken();
+    } catch (error) {
+      console.error("Failed to get ID token:", error);
+      return null;
+    }
+  }, [firebaseUser]);
+
+  const handleClaimInvite = async () => {
+    if (!inviteToken || claiming) return;
+    setClaiming(true);
+    try {
+      const idToken = await getIdToken();
+      if (!idToken) {
+        throw new Error("Authentication failed");
+      }
+
+      const response = await fetch('/api/organization/workspaces/invites/claim/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${idToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token: inviteToken }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        let errorMsg = "Failed to join workspace.";
+        if (response.status === 400 && errorData.detail?.includes('expired')) {
+          errorMsg = "Invitation expired.";
+        } else if (response.status === 403 && errorData.detail?.includes('different email')) {
+          errorMsg = "You are logged in with a different email than the invited recipient. Please sign out and sign in with the invited email.";
+          // Optionally auto-sign out and show login
+          await signOut();
+          setShowLogin(true);
+        } else if (response.status === 403 && errorData.detail?.includes('different organization')) {
+          errorMsg = "User belongs to a different organization.";
+        }
+        showToast.error(errorMsg);
+        return;
+      }
+
+      const data = await response.json();
+      showToast.success("Successfully joined the workspace!");
+      // Optionally set selectedWorkspaceId in context if needed, e.g., via dispatch
+      // For now, just redirect to dashboard
+      navigate("/");
+    } catch (error) {
+      showToast.error("Failed to claim invite. Please try again.");
+      console.error("Claim invite error:", error);
+    } finally {
+      setClaiming(false);
+    }
+  };
+
+  const handleAuthSuccess = () => {
+    setShowLogin(false);
+    handleClaimInvite();
+  };
+
+  if (showLogin) {
+    return (
+      <AuthApp
+        initialFlow="login"
+        onAuthSuccess={handleAuthSuccess}
+      />
+    );
+  }
+
+  if (claiming) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Joining workspace...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return null; // Redirect handled in useEffect
+}
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -996,7 +1106,7 @@ function MainApp() {
             <CandidateBackGroundCheck/>
           }
         />
-
+        <Route path="/invite" element={<InvitePage />} />
         <Route path="/terms-and-policies" element={<TermsAndConditions  />} />
  
         <Route
