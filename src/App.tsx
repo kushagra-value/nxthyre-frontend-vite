@@ -949,12 +949,13 @@ function InvitePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get('invite_token');
-  const workspaceName = searchParams.get('workspace_name') || "workspace"; // UPDATED: Extract for display
+  const workspaceName = searchParams.get('workspace_name') || "the workspace";
   const {
     user: firebaseUser,
     userStatus,
     isAuthenticated,
     signOut,
+    loading: authLoading, // UPDATED: Add authLoading
   } = useAuth();
   const {setSelectedWorkspaceId: contextSetSelectedWorkspaceId} = useAuthContext();
   const [claiming, setClaiming] = useState(false);
@@ -966,11 +967,11 @@ function InvitePage() {
       navigate("/");
       return;
     }
-    if (isAuthenticated && !claiming && !successData) {
+    // UPDATED: Trigger claim only after auth fully resolves and user is authenticated
+    if (!authLoading && isAuthenticated && !claiming && !successData) {
       handleClaimInvite();
     }
-    // UPDATED: Removed else if (!isAuthenticated) toast; fallback render handles it
-  }, [isAuthenticated, inviteToken]);
+  }, [authLoading, isAuthenticated, inviteToken]); // UPDATED: Add authLoading to deps
 
   const handleClaimInvite = async () => {
     if (!inviteToken || claiming) return;
@@ -995,7 +996,7 @@ function InvitePage() {
         showToast.error("User belongs to a different organization.");
       } else if (errorMsg.includes('authentication')) {
         showToast.error("Authentication required. Please sign in.");
-        navigate("/"); // Or to login route if separate
+        navigate("/");
       } else {
         showToast.error("Failed to join workspace.");
       }
@@ -1005,12 +1006,24 @@ function InvitePage() {
     }
   };
 
+  // UPDATED: Show loading if authLoading (prevents flash of fallback)
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (claiming) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Joining {workspaceName}...</p> {/* UPDATED: Show workspace in joining message */}
+          <p className="text-gray-600">Joining {workspaceName}...</p>
         </div>
       </div>
     );
@@ -1038,13 +1051,13 @@ function InvitePage() {
     );
   }
 
-  // UPDATED: Fallback only if !isAuthenticated or no token; include workspace name in message
+  // UPDATED: Fallback only after authLoading resolves and !isAuthenticated
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 text-center">
         <p className="text-gray-600 mb-4">To accept this invite and join {workspaceName}, please sign in first.</p>
         <button
-          onClick={() => navigate("/")} // Assumes login at root; adjust if separate /login route
+          onClick={() => navigate("/")}
           className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
         >
           Sign In
