@@ -955,10 +955,9 @@ function InvitePage() {
     isAuthenticated,
     signOut,
   } = useAuth();
-  const { setSelectedWorkspaceId } = useAuthContext(); // UPDATED: For setting joined workspace
+  const { setSelectedWorkspaceId } = useAuthContext();
   const [claiming, setClaiming] = useState(false);
-  const [showLogin, setShowLogin] = useState(!isAuthenticated);
-  const [successData, setSuccessData] = useState<any>(null); // UPDATED: For success screen
+  const [successData, setSuccessData] = useState<any>(null);
 
   useEffect(() => {
     if (!inviteToken) {
@@ -966,8 +965,12 @@ function InvitePage() {
       navigate("/");
       return;
     }
-    if (isAuthenticated && !claiming && !successData) { // UPDATED: Add !successData to avoid re-claim
+    if (isAuthenticated && !claiming && !successData) {
       handleClaimInvite();
+    } else if (!isAuthenticated) {
+      // UPDATED: No login screen; prompt to sign in manually
+      showToast.error("Please sign in to accept this invite.");
+      // Optionally auto-navigate to login, but keep here for visibility
     }
   }, [isAuthenticated, inviteToken]);
 
@@ -975,16 +978,14 @@ function InvitePage() {
     if (!inviteToken || claiming) return;
     setClaiming(true);
     try {
-      console.log("Claiming invite with token:", inviteToken); // UPDATED: Debug log
+      console.log("Claiming invite with token:", inviteToken);
       const data = await organizationService.claimWorkspaceInvite(inviteToken);
-      console.log("Claim response:", data); // UPDATED: Debug log
+      console.log("Claim response:", data);
       showToast.success("Successfully joined the workspace!");
-      setSelectedWorkspaceId(data.workspace.id); // UPDATED: Set current workspace from response
-      // UPDATED: Refresh workspaces for consistency (e.g., if navigating later)
+      setSelectedWorkspaceId(data.workspace.id);
       const refreshedWorkspaces = await organizationService.getMyWorkspaces();
-      // Optionally update global state if exposed, but for now just log
       console.log("Refreshed workspaces after join:", refreshedWorkspaces);
-      setSuccessData(data.workspace); // UPDATED: For success screen
+      setSuccessData(data.workspace);
     } catch (error: any) {
       const errorMsg = error.message;
       if (errorMsg.includes('expired')) {
@@ -992,36 +993,21 @@ function InvitePage() {
       } else if (errorMsg.includes('different email')) {
         showToast.error("You are logged in with a different email than the invited recipient. Please sign out and sign in with the invited email.");
         await signOut();
-        setShowLogin(true);
       } else if (errorMsg.includes('different organization')) {
         showToast.error("User belongs to a different organization.");
+      } else if (errorMsg.includes('authentication')) { // UPDATED: Handle auth failure explicitly
+        showToast.error("Authentication required. Please sign in.");
+        navigate("/"); // Or to login route if separate
       } else {
         showToast.error("Failed to join workspace.");
       }
-      console.error("Claim invite error:", error); // UPDATED: Ensure error logged
+      console.error("Claim invite error:", error);
     } finally {
       setClaiming(false);
     }
   };
 
-  // UPDATED: Add delay to ensure auth state fully updates before claiming (fixes no API call post-login)
-  const handleAuthSuccess = () => {
-    setShowLogin(false);
-    setTimeout(() => {
-      if (isAuthenticated) {
-        handleClaimInvite();
-      }
-    }, 500); // Short delay for state propagation
-  };
-
-  if (showLogin) {
-    return (
-      <AuthApp
-        initialFlow="login"
-        onAuthSuccess={handleAuthSuccess}
-      />
-    );
-  }
+  // UPDATED: Remove handleAuthSuccess (no longer needed)
 
   if (claiming) {
     return (
@@ -1034,20 +1020,19 @@ function InvitePage() {
     );
   }
 
-  // UPDATED: Success screen (no auto-redirect); shows joined workspace and manual dashboard button
   if (successData) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 text-center">
           <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Users className="w-6 h-6 text-green-600" /> {/* Assuming Users icon for workspace */}
+            <Users className="w-6 h-6 text-green-600" />
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Welcome to {successData.name}!</h3>
           <p className="text-gray-600 mb-6">
             You've successfully joined the "{successData.name}" workspace in {successData.organization_name}.
           </p>
           <button
-            onClick={() => navigate("/")} // Manual redirect to dashboard (now with workspace set)
+            onClick={() => navigate("/")}
             className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
             Go to Dashboard
@@ -1057,7 +1042,20 @@ function InvitePage() {
     );
   }
 
-  return null; // Fallback; should not reach here
+  // UPDATED: Fallback screen if not authenticated or no token (prompts sign in without showing login)
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 text-center">
+        <p className="text-gray-600 mb-4">To accept this invite, please sign in first.</p>
+        <button
+          onClick={() => navigate("/")} // Assumes login at root; adjust if separate /login route
+          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Sign In
+        </button>
+      </div>
+    </div>
+  );
 }
 
   if (authLoading) {
