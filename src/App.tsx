@@ -949,13 +949,14 @@ function InvitePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get('invite_token');
+  const workspaceName = searchParams.get('workspace_name') || "workspace"; // UPDATED: Extract for display
   const {
     user: firebaseUser,
     userStatus,
     isAuthenticated,
     signOut,
   } = useAuth();
-  const { setSelectedWorkspaceId } = useAuthContext();
+  const {setSelectedWorkspaceId: contextSetSelectedWorkspaceId} = useAuthContext();
   const [claiming, setClaiming] = useState(false);
   const [successData, setSuccessData] = useState<any>(null);
 
@@ -967,11 +968,8 @@ function InvitePage() {
     }
     if (isAuthenticated && !claiming && !successData) {
       handleClaimInvite();
-    } else if (!isAuthenticated) {
-      // UPDATED: No login screen; prompt to sign in manually
-      showToast.error("Please sign in to accept this invite.");
-      // Optionally auto-navigate to login, but keep here for visibility
     }
+    // UPDATED: Removed else if (!isAuthenticated) toast; fallback render handles it
   }, [isAuthenticated, inviteToken]);
 
   const handleClaimInvite = async () => {
@@ -982,7 +980,7 @@ function InvitePage() {
       const data = await organizationService.claimWorkspaceInvite(inviteToken);
       console.log("Claim response:", data);
       showToast.success("Successfully joined the workspace!");
-      setSelectedWorkspaceId(data.workspace.id);
+      contextSetSelectedWorkspaceId(data.workspace.id);
       const refreshedWorkspaces = await organizationService.getMyWorkspaces();
       console.log("Refreshed workspaces after join:", refreshedWorkspaces);
       setSuccessData(data.workspace);
@@ -995,7 +993,7 @@ function InvitePage() {
         await signOut();
       } else if (errorMsg.includes('different organization')) {
         showToast.error("User belongs to a different organization.");
-      } else if (errorMsg.includes('authentication')) { // UPDATED: Handle auth failure explicitly
+      } else if (errorMsg.includes('authentication')) {
         showToast.error("Authentication required. Please sign in.");
         navigate("/"); // Or to login route if separate
       } else {
@@ -1007,14 +1005,12 @@ function InvitePage() {
     }
   };
 
-  // UPDATED: Remove handleAuthSuccess (no longer needed)
-
   if (claiming) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Joining workspace...</p>
+          <p className="text-gray-600">Joining {workspaceName}...</p> {/* UPDATED: Show workspace in joining message */}
         </div>
       </div>
     );
@@ -1042,11 +1038,11 @@ function InvitePage() {
     );
   }
 
-  // UPDATED: Fallback screen if not authenticated or no token (prompts sign in without showing login)
+  // UPDATED: Fallback only if !isAuthenticated or no token; include workspace name in message
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 text-center">
-        <p className="text-gray-600 mb-4">To accept this invite, please sign in first.</p>
+        <p className="text-gray-600 mb-4">To accept this invite and join {workspaceName}, please sign in first.</p>
         <button
           onClick={() => navigate("/")} // Assumes login at root; adjust if separate /login route
           className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
