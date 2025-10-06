@@ -188,6 +188,15 @@ class OrganizationService {
   }
 }
 
+  async claimWorkspaceInvite(token: string): Promise<any> {
+    try {
+      const response = await apiClient.post("/organization/workspaces/invites/claim/", { token });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || error.response?.data?.detail || "Failed to claim workspace invite");
+    }
+  }
+  
   async getMyWorkspaces(): Promise<MyWorkspace[]> {
     try {
       const response = await apiClient.get("/organization/my-workspaces/");

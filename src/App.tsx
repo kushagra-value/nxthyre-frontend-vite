@@ -944,7 +944,7 @@ function MainApp() {
     fetchCandidates(1, newFilters);
   };
 
-  function InvitePage() {
+function InvitePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get('invite_token');
@@ -968,67 +968,41 @@ function MainApp() {
     }
   }, [isAuthenticated, inviteToken]);
 
-  const getIdToken = useCallback(async () => {
-    if (!firebaseUser) return null;
-    try {
-      return await firebaseUser.getIdToken();
-    } catch (error) {
-      console.error("Failed to get ID token:", error);
-      return null;
-    }
-  }, [firebaseUser]);
+  // UPDATED: Remove getIdToken (no longer needed with apiClient)
 
   const handleClaimInvite = async () => {
     if (!inviteToken || claiming) return;
     setClaiming(true);
     try {
-      const idToken = await getIdToken();
-      if (!idToken) {
-        throw new Error("Authentication failed");
-      }
-
-      const response = await fetch('/api/organization/workspaces/invites/claim/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${idToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token: inviteToken }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        let errorMsg = "Failed to join workspace.";
-        if (response.status === 400 && errorData.detail?.includes('expired')) {
-          errorMsg = "Invitation expired.";
-        } else if (response.status === 403 && errorData.detail?.includes('different email')) {
-          errorMsg = "You are logged in with a different email than the invited recipient. Please sign out and sign in with the invited email.";
-          // Optionally auto-sign out and show login
-          await signOut();
-          setShowLogin(true);
-        } else if (response.status === 403 && errorData.detail?.includes('different organization')) {
-          errorMsg = "User belongs to a different organization.";
-        }
-        showToast.error(errorMsg);
-        return;
-      }
-
-      const data = await response.json();
+      // UPDATED: Use service instead of manual fetch; apiClient handles auth token
+      const data = await organizationService.claimWorkspaceInvite(inviteToken);
       showToast.success("Successfully joined the workspace!");
       // Optionally set selectedWorkspaceId in context if needed, e.g., via dispatch
       // For now, just redirect to dashboard
       navigate("/");
-    } catch (error) {
-      showToast.error("Failed to claim invite. Please try again.");
+    } catch (error: any) {
+      // UPDATED: Parse error.message for specific backend errors (from data.error/detail)
+      const errorMsg = error.message;
+      if (errorMsg.includes('expired')) {
+        showToast.error("Invitation expired.");
+      } else if (errorMsg.includes('different email')) {
+        showToast.error("You are logged in with a different email than the invited recipient. Please sign out and sign in with the invited email.");
+        await signOut();
+        setShowLogin(true);
+      } else if (errorMsg.includes('different organization')) {
+        showToast.error("User belongs to a different organization.");
+      } else {
+        showToast.error("Failed to join workspace.");
+      }
       console.error("Claim invite error:", error);
     } finally {
       setClaiming(false);
     }
   };
 
+  // UPDATED: Remove handleClaimInvite() call; just close login to let useEffect trigger on isAuthenticated change
   const handleAuthSuccess = () => {
     setShowLogin(false);
-    handleClaimInvite();
   };
 
   if (showLogin) {
