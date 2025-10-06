@@ -42,6 +42,7 @@ import {
   Pause,
   Copy,
   Globe,
+  Users,
 } from "lucide-react";
 import { showToast } from "./utils/toast";
 import CandidateBackGroundCheck from "./components/CandidateBackGroundCheck";
@@ -954,8 +955,10 @@ function InvitePage() {
     isAuthenticated,
     signOut,
   } = useAuth();
+  const { setSelectedWorkspaceId } = useAuthContext(); // UPDATED: For setting joined workspace
   const [claiming, setClaiming] = useState(false);
   const [showLogin, setShowLogin] = useState(!isAuthenticated);
+  const [successData, setSuccessData] = useState<any>(null); // UPDATED: For success screen
 
   useEffect(() => {
     if (!inviteToken) {
@@ -963,25 +966,26 @@ function InvitePage() {
       navigate("/");
       return;
     }
-    if (isAuthenticated) {
+    if (isAuthenticated && !claiming && !successData) { // UPDATED: Add !successData to avoid re-claim
       handleClaimInvite();
     }
   }, [isAuthenticated, inviteToken]);
-
-  // UPDATED: Remove getIdToken (no longer needed with apiClient)
 
   const handleClaimInvite = async () => {
     if (!inviteToken || claiming) return;
     setClaiming(true);
     try {
-      // UPDATED: Use service instead of manual fetch; apiClient handles auth token
+      console.log("Claiming invite with token:", inviteToken); // UPDATED: Debug log
       const data = await organizationService.claimWorkspaceInvite(inviteToken);
+      console.log("Claim response:", data); // UPDATED: Debug log
       showToast.success("Successfully joined the workspace!");
-      // Optionally set selectedWorkspaceId in context if needed, e.g., via dispatch
-      // For now, just redirect to dashboard
-      navigate("/");
+      setSelectedWorkspaceId(data.workspace.id); // UPDATED: Set current workspace from response
+      // UPDATED: Refresh workspaces for consistency (e.g., if navigating later)
+      const refreshedWorkspaces = await organizationService.getMyWorkspaces();
+      // Optionally update global state if exposed, but for now just log
+      console.log("Refreshed workspaces after join:", refreshedWorkspaces);
+      setSuccessData(data.workspace); // UPDATED: For success screen
     } catch (error: any) {
-      // UPDATED: Parse error.message for specific backend errors (from data.error/detail)
       const errorMsg = error.message;
       if (errorMsg.includes('expired')) {
         showToast.error("Invitation expired.");
@@ -994,15 +998,20 @@ function InvitePage() {
       } else {
         showToast.error("Failed to join workspace.");
       }
-      console.error("Claim invite error:", error);
+      console.error("Claim invite error:", error); // UPDATED: Ensure error logged
     } finally {
       setClaiming(false);
     }
   };
 
-  // UPDATED: Remove handleClaimInvite() call; just close login to let useEffect trigger on isAuthenticated change
+  // UPDATED: Add delay to ensure auth state fully updates before claiming (fixes no API call post-login)
   const handleAuthSuccess = () => {
     setShowLogin(false);
+    setTimeout(() => {
+      if (isAuthenticated) {
+        handleClaimInvite();
+      }
+    }, 500); // Short delay for state propagation
   };
 
   if (showLogin) {
@@ -1025,7 +1034,30 @@ function InvitePage() {
     );
   }
 
-  return null; // Redirect handled in useEffect
+  // UPDATED: Success screen (no auto-redirect); shows joined workspace and manual dashboard button
+  if (successData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 text-center">
+          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Users className="w-6 h-6 text-green-600" /> {/* Assuming Users icon for workspace */}
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Welcome to {successData.name}!</h3>
+          <p className="text-gray-600 mb-6">
+            You've successfully joined the "{successData.name}" workspace in {successData.organization_name}.
+          </p>
+          <button
+            onClick={() => navigate("/")} // Manual redirect to dashboard (now with workspace set)
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Go to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return null; // Fallback; should not reach here
 }
 
   if (authLoading) {
