@@ -204,7 +204,7 @@ const Header: React.FC<HeaderProps> = ({
                 <>
                 {pendingInvites.length > 0 && (
                   <div className="relative cursor-pointer" >
-                    <div onClick={() => setShowPopup(true)}>
+                    <div onClick={() => setShowPopup(!showPopup)}>
                       <Bell className="w-5 h-5 text-gray-600" />
                     </div>
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
@@ -212,8 +212,8 @@ const Header: React.FC<HeaderProps> = ({
                     </span>
                     {showPopup && (
                       <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                      <div className="py-1">
-                          <h3 className="text-lg font-semibold mb-4">Workspace Invitations</h3>
+                      <div className="p-4">
+                          <h3 className="px-4 text-lg font-semibold py-3">Workspace Invitations</h3>
                           <div className="space-y-4">
                             {pendingInvites.map((invite) => (
                               <div key={invite.id} className="border p-4 rounded-md">
@@ -237,12 +237,7 @@ const Header: React.FC<HeaderProps> = ({
                               </div>
                             ))}
                           </div>
-                          <button
-                            onClick={() => setShowPopup(false)}
-                            className="mt-4 w-full py-2 text-sm text-gray-500 hover:text-gray-700"
-                          >
-                            Close
-                          </button>
+                          
                         </div>
                       </div>
                     )}
