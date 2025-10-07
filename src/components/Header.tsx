@@ -212,7 +212,7 @@ const Header: React.FC<HeaderProps> = ({
                       {pendingInvites.length}
                     </span>
                     {showPopup && (
-                      <div className="absolute right-0 mt-5 w-[500px] bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                      <div className="absolute right-0 mt-6 w-[500px] bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                       <div className="p-4">
                           <h3 className="text-lg font-semibold pb-4">Workspace Invitations</h3>
                           <div className="space-y-4">
