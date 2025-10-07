@@ -8,6 +8,7 @@ import {
   Settings,
   LogOut,
   Building2,
+  Check,
 } from "lucide-react";
 import { useAuthContext } from "../context/AuthContext"; // Adjust path
 import { useNavigate } from "react-router-dom";
@@ -218,21 +219,19 @@ const Header: React.FC<HeaderProps> = ({
                             {pendingInvites.map((invite) => (
                               <div key={invite.id} className="border p-4 rounded-md">
                                 <p className="text-sm text-gray-700">
-                                  Join <strong>"{invite.workspace.name}"</strong> in <strong>"{invite.organization.name}"</strong>.
+                                  <strong>{invite.invited_by.full_name}</strong> has invited you to join <strong>{invite.workspace.name}</strong> workspace in <strong>{invite.organization.name}</strong> organization.
                                 </p>
-                                <p className="text-sm text-gray-500 mt-1">
-                                  By <strong>{invite.invited_by.full_name}</strong> on {new Date(invite.created_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })}.
-                                </p>
-                                <p className="text-xs text-gray-400 mt-1">
-                                  Expires {new Date(invite.expires_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })}.
+                                
+                                <p className="text-xs text-gray-400">
+                                  this invite will expire on {new Date(invite.expires_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })}.
                                 </p>
                                 <a
                                   href={invite.accept_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="mt-3 inline-block px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
+                                  className="mt-2 inline-block p-4 border border-gray-500 text-green-600 text-sm font-medium rounded-full hover:bg-green-700"
                                 >
-                                  Accept
+                                  <Check className="w-4 h-4 inline-block mr-2" />
                                 </a>
                               </div>
                             ))}
