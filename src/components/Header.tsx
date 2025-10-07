@@ -305,7 +305,7 @@ const Header: React.FC<HeaderProps> = ({
                 </div>
               )}
               {showPopup && pendingInvites.length > 0 && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowPopup(false)}>
+                <div className="absolute right-0 mt-2 w-full inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowPopup(false)}>
                   <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                     <h3 className="text-lg font-semibold mb-4">Workspace Invitations</h3>
                     <div className="space-y-4">
