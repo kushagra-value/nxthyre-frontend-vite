@@ -201,18 +201,55 @@ const Header: React.FC<HeaderProps> = ({
                 </div>
               )}
               {isAuthenticated && !isLoadingInvites && (
-              <div className="relative cursor-pointer" onClick={() => {
-                console.log('Notification clicked, opening popup'); // UPDATED: Debug log to confirm event firing
-                setShowPopup(true);
-              }}>
-                <Bell className="w-5 h-5 text-gray-600" />
+                <>
                 {pendingInvites.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                    {pendingInvites.length}
-                  </span>
-                )}
-              </div>
-            )}
+                  <div className="relative cursor-pointer" >
+                    <div onClick={() => setShowPopup(true)}>
+                      <Bell className="w-5 h-5 text-gray-600" />
+                    </div>
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-2 h-2 flex items-center justify-center">
+                      {pendingInvites.length}
+                    </span>
+                    {showPopup && (
+                      <div className="absolute right-0 mt-2 w-full max-w-md bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                      <div className="py-1">
+                          <h3 className="text-lg font-semibold mb-4">Workspace Invitations</h3>
+                          <div className="space-y-4">
+                            {pendingInvites.map((invite) => (
+                              <div key={invite.id} className="border p-4 rounded-md">
+                                <p className="text-sm text-gray-700">
+                                  Invitation to join workspace <strong>"{invite.workspace.name}"</strong> in organization <strong>"{invite.organization.name}"</strong>.
+                                </p>
+                                <p className="text-sm text-gray-500 mt-1">
+                                  Invited by <strong>{invite.invited_by.full_name}</strong> on {new Date(invite.created_at).toLocaleDateString()}.
+                                </p>
+                                <p className="text-xs text-gray-400 mt-1">
+                                  Expires on {new Date(invite.expires_at).toLocaleDateString()}.
+                                </p>
+                                <a
+                                  href={invite.accept_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="mt-3 inline-block px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
+                                >
+                                  Accept Invitation
+                                </a>
+                              </div>
+                            ))}
+                          </div>
+                          <button
+                            onClick={() => setShowPopup(false)}
+                            className="mt-4 w-full py-2 text-sm text-gray-500 hover:text-gray-700"
+                          >
+                            Close
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  )}
+                </>
+              )}
 
               {/* Authentication Section */}
               {isAuthenticated && user ? (
@@ -311,48 +348,7 @@ const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </header>
-     {showPopup && (
-  <div 
-    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"  // UPDATED: Higher z-index for visibility
-    onClick={() => setShowPopup(false)}
-  >
-    <div 
-      className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto" 
-      onClick={(e) => e.stopPropagation()}
-    >
-      <h3 className="text-lg font-semibold mb-4">Workspace Invitations</h3>
-      <div className="space-y-4">
-        {pendingInvites.map((invite) => (
-          <div key={invite.id} className="border p-4 rounded-md">
-            <p className="text-sm text-gray-700">
-              Invitation to join workspace <strong>"{invite.workspace.name}"</strong> in organization <strong>"{invite.organization.name}"</strong>.
-            </p>
-            <p className="text-sm text-gray-500 mt-1">
-              Invited by <strong>{invite.invited_by.full_name}</strong> on {new Date(invite.created_at).toLocaleDateString()}.
-            </p>
-            <p className="text-xs text-gray-400 mt-1">
-              Expires on {new Date(invite.expires_at).toLocaleDateString()}.
-            </p>
-            <a
-              href={invite.accept_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-block px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
-            >
-              Accept Invitation
-            </a>
-          </div>
-        ))}
-      </div>
-      <button
-        onClick={() => setShowPopup(false)}
-        className="mt-4 w-full py-2 text-sm text-gray-500 hover:text-gray-700"
-      >
-        Close
-      </button>
-    </div>
-  </div>
-)}
+      
     </>
   );
 };
