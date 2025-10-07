@@ -212,26 +212,28 @@ const Header: React.FC<HeaderProps> = ({
                       {pendingInvites.length}
                     </span>
                     {showPopup && (
-                      <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                      <div className="absolute right-0 mt-5 w-[400px] bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                       <div className="p-4">
                           <h3 className="px-4 text-lg font-semibold py-3">Workspace Invitations</h3>
                           <div className="space-y-4">
                             {pendingInvites.map((invite) => (
-                              <div key={invite.id} className="border p-4 rounded-md">
-                                <p className="text-sm text-gray-700">
-                                  <strong>{invite.invited_by.full_name}</strong> has invited you to join <strong>{invite.workspace.name}</strong> workspace in <strong>{invite.organization.name}</strong> organization.
-                                </p>
-                                
-                                <p className="text-xs text-gray-400">
-                                  this invite will expire on {new Date(invite.expires_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })}.
-                                </p>
+                              <div key={invite.id} className="flex justify-between items-center border p-4 rounded-md">
+                                <div>
+                                  <p className="text-sm text-gray-700">
+                                    <strong>{invite.invited_by.full_name}</strong> has invited you in <strong>{invite.workspace.name}</strong> workspace.
+                                  </p>
+                                  
+                                  <p className="text-xs text-gray-400">
+                                    this invite will expire on {new Date(invite.expires_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })}.
+                                  </p>
+                                </div>
                                 <a
                                   href={invite.accept_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="mt-2 inline-block p-4 border border-gray-500 text-green-600 text-sm font-medium rounded-full hover:bg-green-700"
+                                  className="inline-block p-2 border border-green-400 text-green-400 text-sm font-medium rounded-full hover:border-green-600 hover:text-green-600"
                                 >
-                                  <Check className="w-4 h-4 inline-block mr-2" />
+                                  <Check className="w-4 h-4 inline-block" />
                                 </a>
                               </div>
                             ))}
