@@ -214,10 +214,10 @@ const Header: React.FC<HeaderProps> = ({
                     {showPopup && (
                       <div className="absolute right-0 mt-5 w-[500px] bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                       <div className="p-4">
-                          <h3 className="text-lg font-semibold pb-3">Workspace Invitations</h3>
+                          <h3 className="text-lg font-semibold pb-4">Workspace Invitations</h3>
                           <div className="space-y-4">
                             {pendingInvites.map((invite) => (
-                              <div key={invite.id} className="flex justify-between gap-4 items-center border p-4 rounded-md">
+                              <div key={invite.id} className="flex justify-between gap-4 items-center border p-4 rounded-lg">
                                 <div>
                                   <p className="text-sm text-gray-700">
                                     <strong>{invite.invited_by.full_name}</strong> has invited you in <strong>{invite.workspace.name}</strong> workspace.
@@ -229,9 +229,8 @@ const Header: React.FC<HeaderProps> = ({
                                 </div>
                                 <a
                                   href={invite.accept_url}
-                                  target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-block p-2 border border-green-400 text-green-400 text-sm font-medium rounded-full hover:border-green-600 hover:text-green-600"
+                                  className="inline-block px-2 py-1 border border-green-400 text-green-400 text-sm font-medium rounded-full hover:border-green-600 hover:text-green-600"
                                 >
                                   <Check className="w-4 h-4 inline-block" />
                                 </a>
