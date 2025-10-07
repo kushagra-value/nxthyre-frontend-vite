@@ -207,11 +207,11 @@ const Header: React.FC<HeaderProps> = ({
                     <div onClick={() => setShowPopup(true)}>
                       <Bell className="w-5 h-5 text-gray-600" />
                     </div>
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-2 h-2 flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                       {pendingInvites.length}
                     </span>
                     {showPopup && (
-                      <div className="absolute right-0 mt-2 w-full max-w-md bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                      <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                       <div className="py-1">
                           <h3 className="text-lg font-semibold mb-4">Workspace Invitations</h3>
                           <div className="space-y-4">
