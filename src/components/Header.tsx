@@ -232,7 +232,7 @@ const Header: React.FC<HeaderProps> = ({
                                   rel="noopener noreferrer"
                                   className="inline-block px-2 py-1 border border-green-400 text-green-400 text-sm font-medium rounded-full hover:border-green-600 hover:text-green-600"
                                 >
-                                  <Check className="w-4 h-4 inline-block" />
+                                  <Check className="w-4 h-4 pb-[10px] inline-block" />
                                 </a>
                               </div>
                             ))}
