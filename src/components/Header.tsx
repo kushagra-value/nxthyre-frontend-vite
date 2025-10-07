@@ -218,13 +218,13 @@ const Header: React.FC<HeaderProps> = ({
                             {pendingInvites.map((invite) => (
                               <div key={invite.id} className="border p-4 rounded-md">
                                 <p className="text-sm text-gray-700">
-                                  Invitation to join workspace <strong>"{invite.workspace.name}"</strong> in organization <strong>"{invite.organization.name}"</strong>.
+                                  Join <strong>"{invite.workspace.name}"</strong> in <strong>"{invite.organization.name}"</strong>.
                                 </p>
                                 <p className="text-sm text-gray-500 mt-1">
-                                  Invited by <strong>{invite.invited_by.full_name}</strong> on {new Date(invite.created_at).toLocaleDateString()}.
+                                  By <strong>{invite.invited_by.full_name}</strong> on {new Date(invite.created_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })}.
                                 </p>
                                 <p className="text-xs text-gray-400 mt-1">
-                                  Expires on {new Date(invite.expires_at).toLocaleDateString()}.
+                                  Expires {new Date(invite.expires_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })}.
                                 </p>
                                 <a
                                   href={invite.accept_url}
@@ -232,7 +232,7 @@ const Header: React.FC<HeaderProps> = ({
                                   rel="noopener noreferrer"
                                   className="mt-3 inline-block px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
                                 >
-                                  Accept Invitation
+                                  Accept
                                 </a>
                               </div>
                             ))}
