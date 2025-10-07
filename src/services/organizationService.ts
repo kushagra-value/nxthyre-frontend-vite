@@ -15,6 +15,28 @@ export interface OnboardingStatusResponse {
   }>;
 }
 
+export interface Invitation {
+  id: string;
+  email: string;
+  status: "PENDING" | "ACCEPTED"; // Only relevant statuses
+  created_at: string;
+  expires_at: string;
+  accept_url: string;
+  workspace: {
+    id: number;
+    name: string;
+  };
+  organization: {
+    id: number;
+    name: string;
+  };
+  invited_by: {
+    id: string;
+    email: string;
+    full_name: string;
+  };
+}
+
 export interface CreateOrganizationResponse {
   status: string;
   message: string;
@@ -194,6 +216,17 @@ class OrganizationService {
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || error.response?.data?.detail || "Failed to claim workspace invite");
+    }
+  }
+
+  async getInvitations(): Promise<Invitation[]> {
+    try {
+      const response = await apiClient.get("/organization/workspaces/invites/");
+      return response.data.invitations || [];
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch invitations"
+      );
     }
   }
   

@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useMemo , useEffect} from "react";
 import {
   Search,
   Home,
   User,
+  Bell,
   ChevronDown,
   Settings,
   LogOut,
@@ -11,8 +12,9 @@ import {
 import { useAuthContext } from "../context/AuthContext"; // Adjust path
 import { useNavigate } from "react-router-dom";
 import { showToast } from "../utils/toast";
-
+import organizationService from "../services/organizationService";
 import { CandidateListItem } from "../services/candidateService";
+import { Invitation } from "../services/organizationService";
 
 interface HeaderProps {
   onCreateRole: () => void;
@@ -45,6 +47,9 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const { isAuthenticated, user, signOut } = useAuthContext();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [showPopup, setShowPopup] = useState(false);
+  const [isLoadingInvites, setIsLoadingInvites] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = () => {
@@ -79,6 +84,30 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   const [isFocused, setIsFocused] = useState(false);
+  useEffect(() => {
+  if (isAuthenticated) {
+    const fetchInvites = async () => {
+      setIsLoadingInvites(true);
+      try {
+        const data = await organizationService.getInvitations();
+        setInvitations(data);
+      } catch (error) {
+        console.error("Failed to fetch invitations:", error);
+        // Optionally: showToast.error("Failed to load notifications");
+      } finally {
+        setIsLoadingInvites(false);
+      }
+    };
+    fetchInvites();
+  } else {
+    setInvitations([]);
+  }
+}, [isAuthenticated]);
+
+  const pendingInvites = useMemo(() => 
+    invitations.filter(invite => invite.status === "PENDING"), 
+    [invitations]
+  );
 
   return (
     <>
@@ -171,6 +200,17 @@ const Header: React.FC<HeaderProps> = ({
                   </p>
                 </div>
               )}
+              {isAuthenticated && !isLoadingInvites && (
+                <div className="relative cursor-pointer" onClick={() => setShowPopup(true)}>
+                  <Bell className="w-5 h-5 text-gray-600" />
+                  {pendingInvites.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                      {pendingInvites.length}
+                    </span>
+                  )}
+                </div>
+              )}
+
               {/* Authentication Section */}
               {isAuthenticated && user ? (
                 /* User Profile Menu */
@@ -268,6 +308,42 @@ const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </header>
+      {showPopup && pendingInvites.length > 0 && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowPopup(false)}>
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-4">Workspace Invitations</h3>
+            <div className="space-y-4">
+              {pendingInvites.map((invite) => (
+                <div key={invite.id} className="border p-4 rounded-md">
+                  <p className="text-sm text-gray-700">
+                    Invitation to join workspace <strong>"{invite.workspace.name}"</strong> in organization <strong>"{invite.organization.name}"</strong>.
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Invited by <strong>{invite.invited_by.full_name}</strong> on {new Date(invite.created_at).toLocaleDateString()}.
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Expires on {new Date(invite.expires_at).toLocaleDateString()}.
+                  </p>
+                  <a
+                    href={invite.accept_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-block px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
+                  >
+                    Accept Invitation
+                  </a>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowPopup(false)}
+              className="mt-4 w-full py-2 text-sm text-gray-500 hover:text-gray-700"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 };
