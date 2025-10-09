@@ -79,7 +79,7 @@ const JobApplicationForm = () => {
 
   const triggerFileInput = () => {
     if (fileInputRef.current) {
-      fileInputRef.current.value = ''; // Clear the file input value
+      fileInputRef.current.value = ""; // Clear the file input value
       fileInputRef.current.click(); // Trigger file input click
     }
   };
@@ -470,15 +470,19 @@ const JobApplicationForm = () => {
               </h3>
               <ul className="space-y-2 text-[#4B5563] text-[20px] text-[400]">
                 {job.ai_jd ? (
-                  job.ai_jd
-                    .split("\n")
-                    .filter((line) => line.trim().startsWith("*"))
-                    .map((line, index) => (
+                  (() => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(job.ai_jd, "text/html");
+                    const listItems = doc.querySelectorAll(
+                      "ul:first-of-type li"
+                    ); // Targets the first <ul>'s <li> items (Key Responsibilities)
+                    return Array.from(listItems).map((li, index) => (
                       <li key={index} className="flex items-start gap-2">
                         <span>•</span>
-                        <span>{line.replace("*", "").trim()}</span>
+                        <span>{li.textContent.trim()}</span>
                       </li>
-                    ))
+                    ));
+                  })()
                 ) : (
                   <li className="text-[18px] text-[#818283] font-[400]">
                     No requirements listed
