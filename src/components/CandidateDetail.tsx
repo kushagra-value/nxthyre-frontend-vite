@@ -149,16 +149,18 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const fetchLogo = async (query: string) => {
     if (!query || logos[query] !== undefined) return;
     try {
-      const response = await fetch(`https://api.logo.dev/search?q=${encodeURIComponent(query)}`, {
-        headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_LOGO_DEV_API_KEY}`,
-        },
-      });
+      const response = await fetch(
+        `https://api.logo.dev/search?q=${encodeURIComponent(query)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${import.meta.env.VITE_LOGO_DEV_API_KEY}`,
+          },
+        }
+      );
       const data = await response.json();
       const logoUrl = data.length > 0 ? data[0].logo_url : null;
-      
+
       setLogos((prev) => ({ ...prev, [query]: logoUrl }));
-      
     } catch (error) {
       console.error(`Error fetching logo for ${query}:`, error);
       setLogos((prev) => ({ ...prev, [query]: undefined }));
@@ -275,7 +277,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     try {
       await handleReveal(detailedCandidate.candidate.id);
       await deductCredits();
-      const updatedDetails = await candidateService.getCandidateDetails(detailedCandidate.candidate.id);
+      const updatedDetails = await candidateService.getCandidateDetails(
+        detailedCandidate.candidate.id
+      );
       setDetailedCandidate(updatedDetails);
       onSendInvite();
     } catch {
@@ -327,7 +331,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         ? summary.slice(0, maxLength) + "..."
         : summary;
 
-    const toggleExperience = (index:number) => {
+    const toggleExperience = (index: number) => {
       setExpandedExperiences((prev) => {
         const newSet = new Set(prev);
         if (newSet.has(index)) {
@@ -348,8 +352,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               Profile Summary
             </h3>
             <p className="text-sm text-[#818283] leading-normal pt-2 pb-4 pl-6 pr-2 rounded-lg">
-               {displayText}
-               {summary.length > maxLength && (
+              {displayText}
+              {summary.length > maxLength && (
                 <button
                   onClick={toggleExpanded}
                   className="ml-1 text-blue-500 text-xs mt-1"
@@ -358,7 +362,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 </button>
               )}
             </p>
-            
           </div>
         )}
 
@@ -389,74 +392,76 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                   : experiences.slice(0, 1)
                 ).map((exp, index) => {
                   const expDescription = exp?.description || "";
-                const isExpanded = expandedExperiences.has(index);
-                const displayExpText =
-                  !isExpanded && expDescription.length > maxLength
-                    ? expDescription.slice(0, maxLength) + "..."
-                    : expDescription;
-                    
+                  const isExpanded = expandedExperiences.has(index);
+                  const displayExpText =
+                    !isExpanded && expDescription.length > maxLength
+                      ? expDescription.slice(0, maxLength) + "..."
+                      : expDescription;
+
                   return (
-                  <div
-                    key={index}
-                    className="border-l-2 border-gray-200 ml-2 pl-4 relative pb-2 space-y-1"
-                  >
-                    <div className="absolute rounded-full -left-[10px] top-1 ">
-                      {logos[exp?.company] ? (
-                        <img
-                          src={logos[exp?.company]}
-                          alt={`${exp?.company} logo`}
-                          className="w-5 h-5 object-contain rounded-full"
-                        />
-                      ) : (
-                        <div className="w-5 h-5 bg-gray-400 rounded-full flex items-center justify-center text-white text-xs">
-                          {getInitials(exp?.company || "")}
-                        </div>
-                      )}
-                    </div>
-                    <h4 className="font-medium text-[#111827] text-sm">
-                      {exp?.job_title}
-                    </h4>
-                    {/* <p className="text-sm text-gray-400">{`${exp?.company} | ${exp?.location}`}</p> */}
-                    <p className="text-sm text-gray-400">
-                      <CompanyHoverCard
-                        companyName={exp?.company}
-                        description={exp?.description}
-                        employeeCount="1001+"
-                        location={exp?.location}
-                        logoUrl={logos[exp?.company]}
-                      >
-                        <span className="text-blue-600 hover:text-blue-800 underline cursor-pointer">
-                          {exp?.company}
-                        </span>
-                      </CompanyHoverCard> | {exp?.location}
-                    </p>
-                    
-                    <p className="text-sm text-gray-400">
-                      {exp?.start_date && (
-                        <span>
-                          {exp?.start_date} - {exp?.end_date || "Present"}
-                        </span>
-                      )}
-                    </p>
-                    <p
-                      className={`text-sm text-[#4B5563] mt-1 ${
-                        !showMore && experiences.length > 1
-                          ? "relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-12 after:bg-gradient-to-t after:from-[#F0F0F0] after:to-transparent"
-                          : ""
-                      }`}
+                    <div
+                      key={index}
+                      className="border-l-2 border-gray-200 ml-2 pl-4 relative pb-2 space-y-1"
                     >
-                      {displayExpText}
-                      {expDescription.length > maxLength && (
-                        <button
-                          onClick={() => toggleExperience(index)}
-                          className="ml-1 text-blue-500 text-xs mt-1"
+                      <div className="absolute rounded-full -left-[10px] top-1 ">
+                        {logos[exp?.company] ? (
+                          <img
+                            src={logos[exp?.company]}
+                            alt={`${exp?.company} logo`}
+                            className="w-5 h-5 object-contain rounded-full"
+                          />
+                        ) : (
+                          <div className="w-5 h-5 bg-gray-400 rounded-full flex items-center justify-center text-white text-xs">
+                            {getInitials(exp?.company || "")}
+                          </div>
+                        )}
+                      </div>
+                      <h4 className="font-medium text-[#111827] text-sm">
+                        {exp?.job_title}
+                      </h4>
+                      {/* <p className="text-sm text-gray-400">{`${exp?.company} | ${exp?.location}`}</p> */}
+                      <p className="text-sm text-gray-400">
+                        <CompanyHoverCard
+                          companyName={exp?.company}
+                          description={exp?.description}
+                          employeeCount="1001+"
+                          location={exp?.location}
+                          logoUrl={logos[exp?.company]}
                         >
-                          {isExpanded ? "View Less" : "View More"}
-                        </button>
-                      )}
-                    </p>
-                  </div>
-                )})
+                          <span className="text-blue-600 hover:text-blue-800 underline cursor-pointer">
+                            {exp?.company}
+                          </span>
+                        </CompanyHoverCard>{" "}
+                        | {exp?.location}
+                      </p>
+
+                      <p className="text-sm text-gray-400">
+                        {exp?.start_date && (
+                          <span>
+                            {exp?.start_date} - {exp?.end_date || "Present"}
+                          </span>
+                        )}
+                      </p>
+                      <p
+                        className={`text-sm text-[#4B5563] mt-1 ${
+                          !showMore && experiences.length > 1
+                            ? "relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-12 after:bg-gradient-to-t after:from-[#F0F0F0] after:to-transparent"
+                            : ""
+                        }`}
+                      >
+                        {displayExpText}
+                        {expDescription.length > maxLength && (
+                          <button
+                            onClick={() => toggleExperience(index)}
+                            className="ml-1 text-blue-500 text-xs mt-1"
+                          >
+                            {isExpanded ? "View Less" : "View More"}
+                          </button>
+                        )}
+                      </p>
+                    </div>
+                  );
+                })
               ) : (
                 <p className="text-sm text-gray-500">
                   No experience details available
@@ -504,13 +509,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                       alt={`${edu.institution} logo`}
                       className="w-5 h-5 object-contain rounded-full"
                     />
-
                   ) : (
                     <div className="w-5 h-5 bg-gray-500 rounded-full flex items-center justify-center text-white text-xs">
                       {getInitials(edu?.institution || "")}
                     </div>
                   )}
-                  </div>
+                </div>
                 <h4 className="font-medium text-[#111827] text-sm">
                   {edu?.degree}
                 </h4>
@@ -627,7 +631,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     return (
       <div className="bg-blue-50 p-4 rounded-lg shadow-sm space-y-4">
         {detailedCandidate?.candidate?.application_type === "prevetted" &&
-          detailedCandidate?.candidate?.is_prevetted && (
+          detailedCandidate?.candidate?.ai_interview_report
+            ?.technicalSkills && (
             // {/* Vetted Skills Subsection */}
             <div>
               <h4 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
