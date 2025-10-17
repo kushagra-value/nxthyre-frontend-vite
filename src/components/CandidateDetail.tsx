@@ -630,74 +630,70 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
     return (
       <div className="bg-blue-50 p-4 rounded-lg shadow-sm space-y-4">
-        {detailedCandidate?.candidate?.application_type === "prevetted" &&
-          detailedCandidate?.candidate?.ai_interview_report
-            ?.technicalSkills && (
-            // {/* Vetted Skills Subsection */}
-            <div>
-              <h4 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
-                <Star className="w-4 h-4 mr-2" />
-                <span className="mr-2">Vetted Skills</span>
-                <div className="relative group mr-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    stroke="text-gray-700"
-                    strokeWidth="1"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-circle-alert-icon lucide-circle-alert text-gray-700 items-center"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="12" x2="12" y1="8" y2="12" />
-                    <line x1="12" x2="12.01" y1="16" y2="16" />
-                  </svg>
-                  <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs rounded-md px-2 py-1 -top-8 left-1/2 transform -translate-x-1/2 w-max max-w-xs z-10">
-                    Vetted skills: Abilities verified through assessments or
-                    reviews to ensure proficiency.
-                  </div>
-                </div>
-              </h4>
-              <div className="flex flex-wrap gap-3 mt-2">
-                {vettedSkills.map((skill, index) => (
-                  <div
-                    key={index}
-                    className="relative group bg-white rounded-md p-2 flex items-center justify-center space-x-2"
-                  >
-                    <span className="text-xs text-blue-500">{skill.skill}</span>
-                    <Star className="w-4 h-4 text-[#FFC107] fill-[#FFC107]" />
-                    <span className="text-xs text-[#4B5563]">
-                      {skill.rating}
-                    </span>
-                    {skill.reason && (
-                      <div className="absolute z-1000 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-white text-gray-600 text-xs rounded-md py-2 px-3 w-64 text-center">
-                        {skill.reason}
-                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent border-t-gray-600"></div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-              {!isVettedExpanded && vettedSkills.length > 6 && (
-                <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setIsVettedExpanded(true);
-                  }}
-                  className="text-blue-500 text-sm mt-2 flex items-center"
+        {detailedCandidate?.candidate?.ai_interview_report?.technicalSkills && (
+          // {/* Vetted Skills Subsection */}
+          <div>
+            <h4 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
+              <Star className="w-4 h-4 mr-2" />
+              <span className="mr-2">Vetted Skills</span>
+              <div className="relative group mr-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="text-gray-700"
+                  strokeWidth="1"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-circle-alert-icon lucide-circle-alert text-gray-700 items-center"
                 >
-                  View More
-                  <span className="ml-1">
-                    <ChevronDown className="text-blue-500" />
-                  </span>
-                </a>
-              )}
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" x2="12" y1="8" y2="12" />
+                  <line x1="12" x2="12.01" y1="16" y2="16" />
+                </svg>
+                <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs rounded-md px-2 py-1 -top-8 left-1/2 transform -translate-x-1/2 w-max max-w-xs z-10">
+                  Vetted skills: Abilities verified through assessments or
+                  reviews to ensure proficiency.
+                </div>
+              </div>
+            </h4>
+            <div className="flex flex-wrap gap-3 mt-2">
+              {vettedSkills.map((skill, index) => (
+                <div
+                  key={index}
+                  className="relative group bg-white rounded-md p-2 flex items-center justify-center space-x-2"
+                >
+                  <span className="text-xs text-blue-500">{skill.skill}</span>
+                  <Star className="w-4 h-4 text-[#FFC107] fill-[#FFC107]" />
+                  <span className="text-xs text-[#4B5563]">{skill.rating}</span>
+                  {skill.reason && (
+                    <div className="absolute z-1000 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-white text-gray-600 text-xs rounded-md py-2 px-3 w-64 text-center">
+                      {skill.reason}
+                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent border-t-gray-600"></div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-          )}
+            {!isVettedExpanded && vettedSkills.length > 6 && (
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsVettedExpanded(true);
+                }}
+                className="text-blue-500 text-sm mt-2 flex items-center"
+              >
+                View More
+                <span className="ml-1">
+                  <ChevronDown className="text-blue-500" />
+                </span>
+              </a>
+            )}
+          </div>
+        )}
         {/* Resume Skills Subsection */}
         <div>
           <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
