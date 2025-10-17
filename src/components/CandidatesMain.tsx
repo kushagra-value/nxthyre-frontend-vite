@@ -107,22 +107,22 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     {
       id: "outbound",
       label: "Outbound",
-      count: activeTab === "outbound" ? totalCount : sourcingCounts.outbound,
+      count: activeTab === "outbound" ? sourcingCounts.outbound : sourcingCounts.outbound,
     },
     {
       id: "active",
       label: "Active",
-      count: activeTab === "active" ? totalCount : sourcingCounts.active,
+      count: activeTab === "active" ? sourcingCounts.active : sourcingCounts.active,
     },
     {
       id: "inbound",
       label: "Inbound",
-      count: activeTab === "inbound" ? totalCount : sourcingCounts.inbound,
+      count: activeTab === "inbound" ? sourcingCounts.inbound : sourcingCounts.inbound,
     },
     {
       id: "prevetted",
       label: "Prevetted",
-      count: activeTab === "prevetted" ? totalCount : sourcingCounts.prevetted,
+      count: activeTab === "prevetted" ? sourcingCounts.prevetted : sourcingCounts.prevetted,
     },
   ];
 
