@@ -365,7 +365,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
         )}
 
-        <div className="overflow-hidden">
+        <div className="">
           <h3 className="text-sm lg:text-base font-semibold text-[#4B5563] mb-2 flex items-center">
             <Briefcase className="w-4 h-4 mr-2 text-[#4B5563]" />
             Experience
