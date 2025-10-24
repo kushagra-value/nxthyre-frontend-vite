@@ -75,9 +75,11 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
 }) => {
   const { user } = useAuthContext();
 
-
   const handleShareProfile = () => {
-    window.open(`/candidate-profiles/${selectedCandidate?.candidate.id}`, "_blank");
+    window.open(
+      `/candidate-profiles/${selectedCandidate?.candidate.id}`,
+      "_blank"
+    );
   };
 
   const handleCopy = (text: string) => {
@@ -95,7 +97,7 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
     const formattedPhone = phone.replace(/[^0-9+]/g, "");
     window.open(`https://wa.me/${formattedPhone}`, "_blank");
   };
-  
+
   const random70to99 = () => Math.floor(Math.random() * 30 + 70);
 
   const displayEmail =
@@ -122,7 +124,22 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
               {/* show the initials from full name */}
-              {selectedCandidate?.candidate.full_name?.split(" ")?.map((n) => n[0]).join("").toUpperCase()?.slice(0, 2)}
+              {selectedCandidate?.candidate.profilePicture.displayImageUrl ? (
+                <img
+                  src={
+                    selectedCandidate.candidate.profilePicture.displayImageUrl
+                  }
+                  alt={selectedCandidate.candidate.full_name}
+                  className="w-full h-full object-cover rounded-full"
+                />
+              ) : (
+                selectedCandidate?.candidate.full_name
+                  ?.split(" ")
+                  ?.map((n) => n[0])
+                  .join("")
+                  .toUpperCase()
+                  ?.slice(0, 2)
+              )}
             </div>
             <div>
               <h2 className="text-base lg:text-[16px] font-bold text-gray-900">
