@@ -428,7 +428,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       showToast.error("No job selected");
       return;
     }
-    const stageType = selectedStage === "Coding" ? "coding-contest" : "ai-interview";
+    const stageType =
+      selectedStage === "Coding" ? "coding-contest" : "ai-interview";
     const score = parseInt(cutoffScore);
     if (isNaN(score) || score < 0 || score > 100) {
       showToast.error("Cutoff score must be between 0 and 100");
@@ -459,7 +460,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         ["AI Interview", "Coding Contest"].includes(selectedStage)
       ) {
         const stageType =
-          selectedStage === "Coding Contest" ? "coding-contest" : "ai-interview";
+          selectedStage === "Coding Contest"
+            ? "coding-contest"
+            : "ai-interview";
         try {
           const data = await jobPostService.getCutOff(activeJobId, stageType);
           setCutoffScore(data.cutoff_score.toString());
@@ -654,6 +657,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         );
         fetchStages(activeJobId);
       }
+
+      handleConfirmReveal();
     } catch (error) {
       console.error("Error bulk moving candidates:", error);
     }
@@ -1503,28 +1508,40 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             viewBox="0 0 24 24"
                           >
                             <circle cx="11" cy="11" r="8" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-4.35-4.35" />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="m21 21-4.35-4.35"
+                            />
                           </svg>
                         </div>
                         {categories
                           .filter((category) =>
-                            category.name.toLowerCase().includes(dropdownSearch.toLowerCase())
+                            category.name
+                              .toLowerCase()
+                              .includes(dropdownSearch.toLowerCase())
                           )
                           .map((category) => (
-                          <div
-                            key={category.id}
-                            className="p-2 hover:bg-gray-100 rounded-md cursor-pointer flex justify-between items-center"
-                            onClick={() => {
-                              setActiveJobId(category.id);
-                              setIsDropdownOpen(false);
-                            }}
-                          >
-                            <span className="text-[#4B5563] px-2 py-1 rounded text-sm">{category.name}</span> {/* UPDATED: Exact gray for names */}
-                            <span className="text-[#818283] bg-gray-100 px-2 py-1 rounded text-sm"> {/* UPDATED: Exact gray for counts */}
-                              {category.count}
-                            </span>
-                          </div>
-                        ))}
+                            <div
+                              key={category.id}
+                              className="p-2 hover:bg-gray-100 rounded-md cursor-pointer flex justify-between items-center"
+                              onClick={() => {
+                                setActiveJobId(category.id);
+                                setIsDropdownOpen(false);
+                              }}
+                            >
+                              <span className="text-[#4B5563] px-2 py-1 rounded text-sm">
+                                {category.name}
+                              </span>{" "}
+                              {/* UPDATED: Exact gray for names */}
+                              <span className="text-[#818283] bg-gray-100 px-2 py-1 rounded text-sm">
+                                {" "}
+                                {/* UPDATED: Exact gray for counts */}
+                                {category.count}
+                              </span>
+                            </div>
+                          ))}
                       </div>
                     )}
                   </div>
