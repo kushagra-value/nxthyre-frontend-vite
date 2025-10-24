@@ -849,7 +849,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           transferredStageData?.shortlisted ||
           transferredStageData?.["first-interview"] ||
           transferredStageData?.["hr-round"] ||
-          transferredStageData?.["other-interviews"] ||
+          transferredStageData?.["other-interview"] ||
           transferredStageData?.["offer-sent"] ||
           transferredStageData?.["offer-accepted"];
         const vettedSkills = [
