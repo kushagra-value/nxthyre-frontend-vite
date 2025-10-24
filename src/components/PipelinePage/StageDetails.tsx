@@ -846,7 +846,12 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       case "Interview":
         const interviewData =
           transferredStageData?.["ai-interview"] ||
-          transferredStageData?.shortlisted;
+          transferredStageData?.shortlisted ||
+          transferredStageData?.["first-interview"] ||
+          transferredStageData?.["hr-round"] ||
+          transferredStageData?.["other-interviews"] ||
+          transferredStageData?.["offer-sent"] ||
+          transferredStageData?.["offer-accepted"];
         const vettedSkills = [
           ...(interviewData?.technicalSkills?.strongSkills || []),
           ...(interviewData?.technicalSkills?.weakSkills || []),
