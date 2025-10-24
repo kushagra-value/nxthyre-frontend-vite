@@ -2147,7 +2147,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       className="w-full h-full object-cover rounded-full"
                                     />
                                   ) : (
-                                    avatar?.slice(0, 3)
+                                    avatar?.slice(0, 1).toLowerCase()
                                   )}
                                 </div>
                                 <div className="flex-1 min-w-0">
