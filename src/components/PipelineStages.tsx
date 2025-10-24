@@ -2086,7 +2086,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         const currentSalary =
                           candidate.candidate.current_salary_lpa;
                         const profilePicture =
-                          candidate.candidate?.profilePicture?.displayImageUrl;
+                          candidate.candidate.profilePicture?.displayImageUrl;
 
                         return (
                           <div
