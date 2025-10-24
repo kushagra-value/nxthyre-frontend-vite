@@ -2085,6 +2085,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           candidate.candidate.notice_period_summary;
                         const currentSalary =
                           candidate.candidate.current_salary_lpa;
+                        const profilePicture =
+                          candidate.candidate.profilePicture.displayImageUrl;
 
                         return (
                           <div
@@ -2138,7 +2140,15 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 <div
                                   className={`w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600] `}
                                 >
-                                  {avatar?.slice(0, 2)}
+                                  {profilePicture ? (
+                                    <img
+                                      src={profilePicture}
+                                      alt={fullName}
+                                      className="w-full h-full object-cover rounded-full"
+                                    />
+                                  ) : (
+                                    avatar?.slice(0, 2)
+                                  )}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
