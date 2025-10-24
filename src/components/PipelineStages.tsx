@@ -96,6 +96,7 @@ interface CandidateListItem {
     current_salary?: string;
     application_type?: string;
     total_experience?: number;
+    profile_picture_url?: string;
     email?: string; // From premium_data
     phone?: string; // From premium_data
     premium_data_unlocked: boolean;
@@ -553,8 +554,18 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     try {
       const response = await apiClient.get(url);
       const data: CandidateListItem[] = response.data;
-      setCandidates(data);
-      handleCandidateSelect(data[0]);
+      const mappedData = data.map((item) => ({
+        ...item,
+        candidate: {
+          ...item.candidate,
+          profilePicture: {
+            displayImageUrl: item.candidate.profile_picture_url || "",
+            artifacts: [],
+          },
+        },
+      }));
+      setCandidates(mappedData);
+      handleCandidateSelect(mappedData[0]);
     } catch (error) {
       console.error("Error fetching candidates:", error);
       setCandidates([]);
@@ -2067,7 +2078,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 ) : (
                   <>
                     <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
-                      {currentCandidates.map((candidate) => {
+                      {currentCandidates.map((candidate: any) => {
                         const fullName = candidate.candidate.full_name;
                         const avatar = candidate.candidate.avatar;
                         const location = candidate.candidate.location;
