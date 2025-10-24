@@ -2098,6 +2098,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           candidate.candidate.current_salary_lpa;
                         const profilePicture =
                           candidate.candidate.profilePicture?.displayImageUrl;
+                        const candidate_headline = candidate.candidate.headline;
 
                         return (
                           <div
@@ -2258,15 +2259,26 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     </div>
                                   </div>
                                   <div className="flex space-x-2">
-                                    <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
-                                      {experienceSummaryTitle}
-                                    </p>
-                                    <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
-                                      |
-                                    </p>
-                                    <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
-                                      {educationSummaryTitle}
-                                    </p>
+                                    {experienceSummaryTitle && (
+                                      <div>
+                                        <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                                          {experienceSummaryTitle}
+                                        </p>
+                                        <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
+                                          |
+                                        </p>
+                                      </div>
+                                    )
+                                      ? educationSummaryTitle && (
+                                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                                            {educationSummaryTitle}
+                                          </p>
+                                        )
+                                      : candidate_headline && (
+                                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[48ch] truncate">
+                                            {candidate_headline}
+                                          </p>
+                                        )}
                                   </div>
                                 </div>
                               </div>
