@@ -2067,7 +2067,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 ) : (
                   <>
                     <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
-                      {currentCandidates.map((candidate: any) => {
+                      {currentCandidates.map((candidate) => {
                         const fullName = candidate.candidate.full_name;
                         const avatar = candidate.candidate.avatar;
                         const location = candidate.candidate.location;
@@ -2147,7 +2147,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       className="w-full h-full object-cover rounded-full"
                                     />
                                   ) : (
-                                    avatar?.slice(0, 1).toLowerCase()
+                                    avatar?.slice(0, 2)
                                   )}
                                 </div>
                                 <div className="flex-1 min-w-0">
