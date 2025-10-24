@@ -698,6 +698,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         };
       case "ai-interview":
       case "shortlisted":
+      case "first-interview":
+      case "hr-round":
+      case "other-interview":
+      case "offer-sent":
+      case "offer-accepted":
         const report =
           aiInterviewReport || contextualDetails.ai_interview_report || {};
         return {
