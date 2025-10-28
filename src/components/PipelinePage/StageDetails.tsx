@@ -1368,7 +1368,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 const nextStage = stages[currentIndex + 1];
                 if (nextStage)
                   moveCandidate(selectedCandidate.id, nextStage.id);
-                setShowConfirm(true);
+                // setShowConfirm(true);
               }}
               className="flex justify-center items-center w-[50%] lg:w-[60%] px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
@@ -1433,7 +1433,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 const nextStage = stages[currentIndex + 1];
                 if (nextStage)
                   moveCandidate(selectedCandidate.id, nextStage.id);
-                setShowConfirm(true);
+                // setShowConfirm(true);
               }}
               className="flex-1 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >

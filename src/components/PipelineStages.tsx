@@ -669,7 +669,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         fetchStages(activeJobId);
       }
 
-      handleConfirmReveal();
+      // handleConfirmReveal();
     } catch (error) {
       console.error("Error bulk moving candidates:", error);
     }
