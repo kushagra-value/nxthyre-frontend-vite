@@ -497,7 +497,7 @@ export default function UsersManagement() {
                   <div
                     className={`flex items-start gap-3 p-4 rounded-lg mb-4 ${
                       creditsMessage.type === "success"
-                        ? "bg-green-50 text-green-800 border border-green-200"
+                        ? "bg-blue-50 text-blue-800 border border-blue-200"
                         : "bg-red-50 text-red-800 border border-red-200"
                     }`}
                   >
@@ -507,26 +507,26 @@ export default function UsersManagement() {
                 )}
                 <form onSubmit={handleCreditsSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">
                       Operation Type
-                    </label>
+                    </label> */}
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
                         onClick={() => setCreditsOperationType("add")}
-                        className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-colors ${
+                        className={`hidden items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-colors ${
                           creditsOperationType === "add"
                             ? "bg-green-100 text-green-700 border-2 border-green-500"
                             : "bg-gray-50 text-gray-700 border-2 border-transparent hover:bg-gray-100"
                         }`}
                       >
                         <Plus size={20} />
-                        Add Credits
+                        Adjust Credits
                       </button>
                       <button
                         type="button"
                         onClick={() => setCreditsOperationType("subtract")}
-                        className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-colors ${
+                        className={`hidden items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-colors ${
                           creditsOperationType === "subtract"
                             ? "bg-red-100 text-red-700 border-2 border-red-500"
                             : "bg-gray-50 text-gray-700 border-2 border-transparent hover:bg-gray-100"
@@ -546,7 +546,7 @@ export default function UsersManagement() {
                       type="number"
                       value={creditsAmount}
                       onChange={(e) => setCreditsAmount(e.target.value)}
-                      placeholder="Enter amount"
+                      placeholder="Enter amount of credits to be allocated"
                       min="1"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
@@ -578,7 +578,7 @@ export default function UsersManagement() {
                       creditsLoading
                         ? "bg-gray-400 cursor-not-allowed"
                         : creditsOperationType === "add"
-                        ? "bg-green-600 hover:bg-green-700"
+                        ? "bg-blue-600 hover:bg-blue-700"
                         : "bg-red-600 hover:bg-red-700"
                     }`}
                   >

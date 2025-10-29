@@ -19,7 +19,7 @@ export default function DashboardLayout({
   const navigation = [
     { id: "users", name: "Users", icon: Users },
     { id: "organizations", name: "Organizations", icon: Building2 },
-    { id: "credits", name: "Credits", icon: CreditCard },
+    // { id: "credits", name: "Credits", icon: CreditCard },
   ];
 
   return (
