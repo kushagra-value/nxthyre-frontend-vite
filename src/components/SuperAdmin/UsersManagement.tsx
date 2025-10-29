@@ -211,8 +211,7 @@ export default function UsersManagement() {
   const filteredUsers = useMemo(() => {
     return (users || []).filter(
       (user) =>
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.full_name.toLowerCase().includes(searchTerm.toLowerCase())
+        user.email.includes(searchTerm) || user.full_name.includes(searchTerm)
     );
   }, [users, searchTerm]);
 
@@ -340,7 +339,7 @@ export default function UsersManagement() {
                         onClick={() => handleViewDetails(user)}
                         className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                       >
-                        Details
+                        Manage
                       </button>
                       <button
                         onClick={() =>
