@@ -641,7 +641,7 @@ const handleCopyProfile = async (applicationId: string) => {
       {/* Experience Info - starts from column 3 */}
       <div className="col-start-3 col-span-10">
         <div className="flex items-center gap-1 text-gray-500 text-xs mt-2">
-          <span>{candidate.total_experience}{candidate.total_experience && (" Y • ")} {candidate.notice_period_days} {candidate.notice_period_days && (" NP • ")}{candidate.current_salary} {candidate.current_salary && (" LPA • ")} {candidate.location}</span>
+          <span>{candidate.total_experience}{candidate.total_experience>=0 && (" Y • ")} {candidate.notice_period_days} {candidate.notice_period_days && (" NP • ")}{candidate.current_salary} {candidate.current_salary && (" LPA • ")} {candidate.location}</span>
         </div>
       </div>
       
