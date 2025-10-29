@@ -209,12 +209,11 @@ export default function UsersManagement() {
 
   // Improved: useMemo for filter (avoids re-compute on every render)
   const filteredUsers = useMemo(() => {
-    return (users || []).filter((user) => {
-      user.email &&
-        user.full_name &&
-        (user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.full_name.toLowerCase().includes(searchTerm.toLowerCase()));
-    });
+    return (users || []).filter(
+      (user) =>
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.full_name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   }, [users, searchTerm]);
 
   const formatDate = (date: string | null) => {
