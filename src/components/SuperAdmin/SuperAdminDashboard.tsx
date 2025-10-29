@@ -19,8 +19,8 @@ export default function SuperAdminDashboard({
         return <UsersManagement />;
       case "organizations":
         return <OrganizationsManagement />;
-      case "credits":
-        return <CreditsManagement />;
+      // case "credits":
+      //   return <CreditsManagement />;
       default:
         return <UsersManagement />;
     }

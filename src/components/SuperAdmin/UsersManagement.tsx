@@ -25,6 +25,18 @@ export default function UsersManagement() {
   const [userJobs, setUserJobs] = useState<Job[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(false);
 
+  // Credits Management state (integrated into modal)
+  const [creditsAmount, setCreditsAmount] = useState("");
+  const [creditsNotes, setCreditsNotes] = useState("");
+  const [creditsOperationType, setCreditsOperationType] = useState<
+    "add" | "subtract"
+  >("add");
+  const [creditsLoading, setCreditsLoading] = useState(false);
+  const [creditsMessage, setCreditsMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
   useEffect(() => {
     loadUsers();
   }, [currentPage]);
@@ -128,8 +140,67 @@ export default function UsersManagement() {
     }
   };
 
+  const handleCreditsSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUser) return;
+
+    if (!creditsAmount || !creditsNotes) {
+      setCreditsMessage({
+        type: "error",
+        text: "Amount and notes are required",
+      });
+      return;
+    }
+
+    const numAmount = parseInt(creditsAmount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      setCreditsMessage({
+        type: "error",
+        text: "Amount must be a positive number",
+      });
+      return;
+    }
+
+    setCreditsLoading(true);
+    setCreditsMessage(null);
+
+    const finalAmount =
+      creditsOperationType === "subtract" ? -numAmount : numAmount;
+
+    const { data, error } = await superAdminApi.credits.adjust(
+      selectedUser.id, // Use recruiter_id from selected user
+      finalAmount,
+      creditsNotes
+    );
+
+    if (error) {
+      setCreditsMessage({ type: "error", text: error });
+    } else if (data) {
+      setCreditsMessage({
+        type: "success",
+        text: `Successfully ${
+          creditsOperationType === "add" ? "added" : "subtracted"
+        } ${numAmount} credits. New balance: ${data.new_balance}`,
+      });
+
+      // Update selectedUser and table with new balance
+      const updatedUser = { ...selectedUser, credit_balance: data.new_balance };
+      setSelectedUser(updatedUser);
+      setUsers((prevUsers) =>
+        prevUsers.map((u) => (u.id === selectedUser.id ? updatedUser : u))
+      );
+
+      // Reset form
+      setCreditsAmount("");
+      setCreditsNotes("");
+    }
+
+    setCreditsLoading(false);
+  };
+
   const handleViewDetails = async (user: User) => {
     setSelectedUser(user);
+    setCreditsMessage(null); // Clear previous messages
     await loadUserJobs(user.email);
   };
 
@@ -412,6 +483,114 @@ export default function UsersManagement() {
                     ? "Remove Staff Access"
                     : "Grant Staff Access"}
                 </button>
+              </div>
+
+              {/* Integrated Credits Management Section */}
+              <div className="border-t border-gray-200 pt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Manage Credits
+                </h3>
+                {creditsMessage && (
+                  <div
+                    className={`flex items-start gap-3 p-4 rounded-lg mb-4 ${
+                      creditsMessage.type === "success"
+                        ? "bg-green-50 text-green-800 border border-green-200"
+                        : "bg-red-50 text-red-800 border border-red-200"
+                    }`}
+                  >
+                    <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />
+                    <p className="text-sm">{creditsMessage.text}</p>
+                  </div>
+                )}
+                <form onSubmit={handleCreditsSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Operation Type
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setCreditsOperationType("add")}
+                        className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-colors ${
+                          creditsOperationType === "add"
+                            ? "bg-green-100 text-green-700 border-2 border-green-500"
+                            : "bg-gray-50 text-gray-700 border-2 border-transparent hover:bg-gray-100"
+                        }`}
+                      >
+                        <Plus size={20} />
+                        Add Credits
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCreditsOperationType("subtract")}
+                        className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-colors ${
+                          creditsOperationType === "subtract"
+                            ? "bg-red-100 text-red-700 border-2 border-red-500"
+                            : "bg-gray-50 text-gray-700 border-2 border-transparent hover:bg-gray-100"
+                        }`}
+                      >
+                        <Minus size={20} />
+                        Subtract Credits
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Amount
+                    </label>
+                    <input
+                      type="number"
+                      value={creditsAmount}
+                      onChange={(e) => setCreditsAmount(e.target.value)}
+                      placeholder="Enter amount"
+                      min="1"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Notes
+                    </label>
+                    <textarea
+                      value={creditsNotes}
+                      onChange={(e) => setCreditsNotes(e.target.value)}
+                      placeholder="Reason for adjustment (max 500 characters)"
+                      maxLength={500}
+                      rows={3}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      required
+                    />
+                    <div className="text-sm text-gray-500 mt-1 text-right">
+                      {creditsNotes.length}/500 characters
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={creditsLoading}
+                    className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-colors ${
+                      creditsLoading
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : creditsOperationType === "add"
+                        ? "bg-green-600 hover:bg-green-700"
+                        : "bg-red-600 hover:bg-red-700"
+                    }`}
+                  >
+                    {creditsLoading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        Processing...
+                      </span>
+                    ) : (
+                      `${
+                        creditsOperationType === "add" ? "Add" : "Subtract"
+                      } Credits`
+                    )}
+                  </button>
+                </form>
               </div>
 
               <div className="border-t border-gray-200 pt-6">
