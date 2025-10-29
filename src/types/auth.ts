@@ -1,6 +1,7 @@
 export interface User {
   id: string | undefined;
   fullName: string;
+  isSuperAdmin?: boolean;
   email: string;
   role: string;
   organizationId?: string | undefined;

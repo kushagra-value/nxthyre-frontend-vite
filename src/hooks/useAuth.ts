@@ -22,6 +22,9 @@ export const useAuth = () => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         if (firebaseUser) {
+          const token = await firebaseUser.getIdToken(); // Get fresh token
+          localStorage.setItem("authToken", token); // Store for superAdminApi.ts
+
           // User is signed in, get their status from backend
           const userStatus = await authService.getUserStatus();
           setAuthState({
@@ -31,6 +34,7 @@ export const useAuth = () => {
             error: null,
           });
         } else {
+          localStorage.removeItem("authToken"); // Clean up on sign-out
           // User is signed out
           setAuthState({
             user: null,
@@ -47,6 +51,9 @@ export const useAuth = () => {
           loading: false,
           error: error.message,
         });
+        if (firebaseUser) {
+          localStorage.removeItem("authToken"); // Clean up on error too
+        }
       }
     });
 
@@ -56,6 +63,8 @@ export const useAuth = () => {
   const refreshUserStatus = async () => {
     if (authState.user) {
       try {
+        const token = await authState.user.getIdToken(true); // Force refresh
+        localStorage.setItem("authToken", token);
         const userStatus = await authService.getUserStatus();
         setAuthState((prev) => ({
           ...prev,
@@ -73,6 +82,7 @@ export const useAuth = () => {
 
   const signOut = async () => {
     try {
+      localStorage.removeItem("authToken"); // Add this
       await authService.signOut();
       setAuthState({
         user: null,

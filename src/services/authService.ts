@@ -39,6 +39,7 @@ export interface UserStatusResponse {
   recruiter_id: string;
   email: string;
   full_name: string;
+  isSuperAdmin: boolean;
   organization?: {
     id: number;
     name: string;

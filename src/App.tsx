@@ -56,6 +56,7 @@ import {
 } from "lucide-react";
 import { showToast } from "./utils/toast";
 import CandidateBackGroundCheck from "./components/CandidateBackGroundCheck";
+import SuperAdminDashboard from "./components/SuperAdmin/SuperAdminDashboard";
 interface Category {
   id: number;
   name: string;
@@ -536,6 +537,7 @@ function MainApp() {
       const user: User = {
         id: firebaseUser?.uid,
         fullName: userStatus.full_name || "Unknown User",
+        isSuperAdmin: userStatus.isSuperAdmin || false, // New: Add this
         email: userStatus.email || "Unknown@user.com",
         role:
           userStatus.roles?.length > 0
@@ -1033,10 +1035,54 @@ function MainApp() {
       </div>
     );
   }
+
+  // Guard component for super admin (adjusted for your role-based auth)
+  const SuperAdminRoute: React.FC<{ children: React.ReactNode }> = ({
+    children,
+  }) => {
+    const { user, loading, isAuthenticated } = useAuthContext(); // Uses your context
+
+    // Wait for BOTH loading AND user to be ready (prevents race/flash)
+    if (loading || !user) {
+      return (
+        <div className="flex justify-center items-center h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      );
+    }
+
+    // Adjusted check: Use your user.role instead of customClaims.is_staff
+    // Change 'admin' to your actual super admin role (e.g., 'super_admin')
+    if (!isAuthenticated || !user.isSuperAdmin) {
+      window.location.href = "/"; // Redirect to home/login
+    }
+
+    return <>{children}</>;
+  };
+
+  // Logout handler (ties into your context)
+  const handleLogout = async () => {
+    const { signOut } = useAuthContext();
+    await signOut(); // Uses your existing signOut
+    window.location.href = "/"; // Or use <Navigate> if in a component
+  };
+
   const job = categories.find((cat) => cat.id === Number(currentPipelineId));
   return (
     <>
       <Routes>
+        {/* New super admin route (guarded) */}
+        <Route
+          path="/super-admin"
+          element={
+            <SuperAdminRoute>
+              <SuperAdminDashboard onLogout={handleLogout} />
+            </SuperAdminRoute>
+          }
+        />
         <Route
           path="/linkedin-auth"
           element={

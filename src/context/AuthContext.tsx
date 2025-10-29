@@ -1,4 +1,4 @@
-import React, { createContext, useContext,useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth"; // Adjust path
 import { User } from "../types/auth"; // Adjust path
 import Cookies from "js-cookie";
@@ -29,13 +29,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   } = useAuth();
 
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
-  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<number | null>(null);
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<number | null>(
+    null
+  );
 
   React.useEffect(() => {
     if (isAuthenticated && userStatus) {
       const user: User = {
         id: firebaseUser?.uid,
         fullName: userStatus.full_name || "Unknown User",
+        isSuperAdmin: userStatus.isSuperAdmin || false,
         email: userStatus.email || "Unknown@user.com",
         role:
           userStatus.roles?.length > 0
@@ -54,17 +57,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       };
       setCurrentUser(user);
       const savedWorkspaceId = Cookies.get("selectedWorkspaceId");
-      if (savedWorkspaceId && user.workspaceIds.includes(parseInt(savedWorkspaceId))) {
+      if (
+        savedWorkspaceId &&
+        user.workspaceIds.includes(parseInt(savedWorkspaceId))
+      ) {
         setSelectedWorkspaceId(parseInt(savedWorkspaceId));
       } else if (user.workspaceIds.length > 0) {
         // If no valid workspace in cookie, select the first one
         setSelectedWorkspaceId(user.workspaceIds[0]);
-        Cookies.set("selectedWorkspaceId", user.workspaceIds[0].toString(), { expires: 7 });
+        Cookies.set("selectedWorkspaceId", user.workspaceIds[0].toString(), {
+          expires: 7,
+        });
       } else {
         setSelectedWorkspaceId(null);
         Cookies.remove("selectedWorkspaceId");
       }
-      
     } else {
       setCurrentUser(null);
       setSelectedWorkspaceId(null);
@@ -74,6 +81,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signOut = async () => {
     try {
+      localStorage.removeItem("authToken"); // Add this
       await authSignOut();
       setCurrentUser(null);
       setSelectedWorkspaceId(null);
