@@ -247,11 +247,12 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
   useEffect(() => {
     const fetchActivity = async () => {
-      if (selectedCandidate?.id) {
+      if (selectedCandidate?.id && selectedCandidate?.candidate?.id) {
         try {
           const apiActivities = await candidateService.getCandidateActivity(
-            selectedCandidate?.candidate.id
-          );
+          selectedCandidate.candidate.id,
+          selectedCandidate.id
+        );
 
           const mappedActivities: Activity[] = apiActivities.map(
             (item: any) => {
@@ -319,7 +320,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       }
     };
     fetchActivity();
-  }, [selectedCandidate?.candidate.id]);
+  }, [selectedCandidate?.candidate.id,selectedCandidate?.id]);
 
   const [isExpanded, setIsExpanded] = React.useState(false);
 
