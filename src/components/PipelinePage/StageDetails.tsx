@@ -270,11 +270,12 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
   useEffect(() => {
     const fetchActivity = async () => {
-      if (selectedCandidate?.id) {
+      if (selectedCandidate?.id && selectedCandidate?.candidate?.id) {
         try {
           const apiActivities = await candidateService.getCandidateActivity(
-            selectedCandidate?.candidate.id
-          );
+          selectedCandidate.candidate.id,
+          selectedCandidate.id
+        );
 
           const mappedActivities: Activity[] = apiActivities.map(
             (item: any) => {
@@ -296,7 +297,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 via = "system";
               }
 
-              if (item.type === "communication_sent") {
+              else if (item.type === "communication_sent") {
                 const d = item.data;
                 description = `${selectedCandidate.candidate.full_name} sent you a message `;
                 via = d.mode.toLowerCase();
@@ -323,6 +324,34 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 }
               }
 
+             else {
+              const d = item.data;
+              const subjectBody = (d.subject || "") + " " + (d.body || "");
+              description = subjectBody.trim() || "Activity recorded";
+              via = d.mode ? d.mode.toLowerCase() : "";
+              if (d.replies?.length > 0) {
+                note = d.replies
+                  .map((r: any) => {
+                    if (r.via === "call") {
+                      return `
+                        <div class="w-full flex justify-between">
+                          <span>The call was instantiated</span>
+                          <span class="text-gray-500">${r.via}</span>
+                        </div>
+                      `;
+                    } else {
+                      return `
+                        <div class="flex justify-between">
+                          <span>${r.body}</span>
+                          <span class="text-gray-500">${r.via}</span>
+                        </div>
+                      `;
+                    }
+                  })
+                  .join("");
+              }
+            } 
+
               return {
                 type: item.type,
                 date,
@@ -342,7 +371,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       }
     };
     fetchActivity();
-  }, [selectedCandidate?.candidate.id]);
+  }, [selectedCandidate?.candidate.id,selectedCandidate?.id]);
 
   const [isExpanded, setIsExpanded] = React.useState(false);
 
