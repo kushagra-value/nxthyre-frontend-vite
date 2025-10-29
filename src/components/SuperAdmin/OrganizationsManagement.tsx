@@ -81,8 +81,8 @@ export default function OrganizationsManagement() {
   const filteredOrganizations = useMemo(() => {
     return (organizations || []).filter(
       (org) =>
-        org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        org.domain.toLowerCase().includes(searchTerm.toLowerCase())
+        (org.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (org.domain || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [organizations, searchTerm]);
 
