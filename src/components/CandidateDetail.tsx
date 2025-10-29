@@ -97,6 +97,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const [logos, setLogos] = useState<{ [key: string]: string | undefined }>({});
   const random70to99 = () => Math.floor(Math.random() * 30 + 70);
 
+  // Reset activeTab to "Profile" when candidate changes
+  useEffect(() => {
+    setActiveTab("Profile");
+  }, [candidate?.id]);
+
   // In ProfileTab or where email/phone shown, update display
   const displayEmail =
     detailedCandidate?.candidate?.premium_data_unlocked &&

@@ -154,52 +154,75 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   };
 
   const handleRevealPremiumData = async (candidateId: string) => {
-  try {
-    const premResponse = await candidateService.revealPremiumData(candidateId);
-    // Update selectedCandidate with revealed data
-    if (selectedCandidate) {
-      setSelectedCandidate({
-        ...selectedCandidate,
-        candidate: {
-          ...selectedCandidate.candidate,
-          premium_data_unlocked: true,
-          premium_data: premResponse.premium_data,
-          social_links: {
-            linkedin: premResponse.premium_data.linkedin_url || selectedCandidate.candidate.social_links?.linkedin || '',
-            github: premResponse.premium_data.github_url || selectedCandidate.candidate.social_links?.github || '',
-            portfolio: premResponse.premium_data.portfolio_url || selectedCandidate.candidate.social_links?.portfolio || '',
-            resume: premResponse.premium_data.resume_url || selectedCandidate.candidate.social_links?.resume || '',
+    try {
+      const premResponse = await candidateService.revealPremiumData(
+        candidateId
+      );
+      // Update selectedCandidate with revealed data
+      if (selectedCandidate) {
+        setSelectedCandidate({
+          ...selectedCandidate,
+          candidate: {
+            ...selectedCandidate.candidate,
+            premium_data_unlocked: true,
+            premium_data: premResponse.premium_data,
+            social_links: {
+              linkedin:
+                premResponse.premium_data.linkedin_url ||
+                selectedCandidate.candidate.social_links?.linkedin ||
+                "",
+              github:
+                premResponse.premium_data.github_url ||
+                selectedCandidate.candidate.social_links?.github ||
+                "",
+              portfolio:
+                premResponse.premium_data.portfolio_url ||
+                selectedCandidate.candidate.social_links?.portfolio ||
+                "",
+              resume:
+                premResponse.premium_data.resume_url ||
+                selectedCandidate.candidate.social_links?.resume ||
+                "",
+            },
+            email:
+              premResponse.premium_data.email ||
+              selectedCandidate.candidate.email ||
+              "",
+            phone:
+              premResponse.premium_data.phone ||
+              selectedCandidate.candidate.phone ||
+              "",
           },
-          email: premResponse.premium_data.email || selectedCandidate.candidate.email || '',
-          phone: premResponse.premium_data.phone || selectedCandidate.candidate.phone || '',
-        },
-      });
+        });
+      }
+      return premResponse.premium_data;
+    } catch (error) {
+      console.error("Error revealing premium data:", error);
+      showToast.error("Failed to reveal premium data");
+      throw error;
     }
-    return premResponse.premium_data;
-  } catch (error) {
-    console.error("Error revealing premium data:", error);
-    showToast.error("Failed to reveal premium data");
-    throw error;
-  }
-};
+  };
 
   const confirmSpend = async () => {
-  setShowConfirm(false);
-  try {
-    await deductCredits();
-    if (selectedCandidate?.id && !selectedCandidate.candidate.premium_data_unlocked) {
-      // Reveal premium data first
-      await handleRevealPremiumData(selectedCandidate.candidate.id);
+    setShowConfirm(false);
+    try {
+      await deductCredits();
+      if (
+        selectedCandidate?.id &&
+        !selectedCandidate.candidate.premium_data_unlocked
+      ) {
+        // Reveal premium data first
+        await handleRevealPremiumData(selectedCandidate.candidate.id);
+      }
+      if (selectedCandidate?.id) {
+        await onSendInvite(Number(selectedCandidate.id));
+      } else {
+        showToast.error("No candidate selected");
+      }
+    } catch (error) {
+      showToast.error("Failed to process invite");
     }
-    if (selectedCandidate?.id) {
-      await onSendInvite(Number(selectedCandidate.id));
-    } else {
-      showToast.error("No candidate selected");
-    }
-  } catch (error) {
-    showToast.error("Failed to process invite");
-  }
-};
+  };
 
   const cancelSpend = () => {
     setShowConfirm(false);
@@ -373,7 +396,10 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         console.log(
           `Unarchiving and moving candidate ${selectedCandidate.id} to stage ${selectedStageId}`
         );
-        await moveCandidate(parseInt(selectedCandidate.id.toString()), selectedStageId);
+        await moveCandidate(
+          parseInt(selectedCandidate.id.toString()),
+          selectedStageId
+        );
         alert("Candidate unarchived and moved successfully");
       } catch (error) {
         console.error("Error unarchiving and moving candidate:", error);
@@ -673,8 +699,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 </div>
               </div>
             )}
-    
-            
           </div>
         );
       case "Coding":
@@ -823,7 +847,12 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       case "Interview":
         const interviewData =
           transferredStageData?.["ai-interview"] ||
-          transferredStageData?.shortlisted;
+          transferredStageData?.shortlisted ||
+          transferredStageData?.["first-interview"] ||
+          transferredStageData?.["hr-round"] ||
+          transferredStageData?.["other-interview"] ||
+          transferredStageData?.["offer-sent"] ||
+          transferredStageData?.["offer-accepted"];
         const vettedSkills = [
           ...(interviewData?.technicalSkills?.strongSkills || []),
           ...(interviewData?.technicalSkills?.weakSkills || []),
@@ -1340,6 +1369,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 const nextStage = stages[currentIndex + 1];
                 if (nextStage)
                   moveCandidate(selectedCandidate.id, nextStage.id);
+                // setShowConfirm(true);
               }}
               className="flex justify-center items-center w-[50%] lg:w-[60%] px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
@@ -1404,6 +1434,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 const nextStage = stages[currentIndex + 1];
                 if (nextStage)
                   moveCandidate(selectedCandidate.id, nextStage.id);
+                // setShowConfirm(true);
               }}
               className="flex-1 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >

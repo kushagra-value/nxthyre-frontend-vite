@@ -96,6 +96,7 @@ interface CandidateListItem {
     current_salary?: string;
     application_type?: string;
     total_experience?: number;
+    profile_picture_url?: string;
     email?: string; // From premium_data
     phone?: string; // From premium_data
     premium_data_unlocked: boolean;
@@ -428,7 +429,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       showToast.error("No job selected");
       return;
     }
-    const stageType = selectedStage === "Coding" ? "coding-contest" : "ai-interview";
+    const stageType =
+      selectedStage === "Coding" ? "coding-contest" : "ai-interview";
     const score = parseInt(cutoffScore);
     if (isNaN(score) || score < 0 || score > 100) {
       showToast.error("Cutoff score must be between 0 and 100");
@@ -459,7 +461,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         ["AI Interview", "Coding Contest"].includes(selectedStage)
       ) {
         const stageType =
-          selectedStage === "Coding Contest" ? "coding-contest" : "ai-interview";
+          selectedStage === "Coding Contest"
+            ? "coding-contest"
+            : "ai-interview";
         try {
           const data = await jobPostService.getCutOff(activeJobId, stageType);
           setCutoffScore(data.cutoff_score.toString());
@@ -550,8 +554,18 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     try {
       const response = await apiClient.get(url);
       const data: CandidateListItem[] = response.data;
-      setCandidates(data);
-      handleCandidateSelect(data[0]);
+      const mappedData = data.map((item) => ({
+        ...item,
+        candidate: {
+          ...item.candidate,
+          profilePicture: {
+            displayImageUrl: item.candidate.profile_picture_url || "",
+            artifacts: [],
+          },
+        },
+      }));
+      setCandidates(mappedData);
+      handleCandidateSelect(mappedData[0]);
     } catch (error) {
       console.error("Error fetching candidates:", error);
       setCandidates([]);
@@ -654,6 +668,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         );
         fetchStages(activeJobId);
       }
+
+      // handleConfirmReveal();
     } catch (error) {
       console.error("Error bulk moving candidates:", error);
     }
@@ -693,6 +709,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         };
       case "ai-interview":
       case "shortlisted":
+      case "first-interview":
+      case "hr-round":
+      case "other-interview":
+      case "offer-sent":
+      case "offer-accepted":
         const report =
           aiInterviewReport || contextualDetails.ai_interview_report || {};
         return {
@@ -1503,28 +1524,40 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             viewBox="0 0 24 24"
                           >
                             <circle cx="11" cy="11" r="8" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-4.35-4.35" />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="m21 21-4.35-4.35"
+                            />
                           </svg>
                         </div>
                         {categories
                           .filter((category) =>
-                            category.name.toLowerCase().includes(dropdownSearch.toLowerCase())
+                            category.name
+                              .toLowerCase()
+                              .includes(dropdownSearch.toLowerCase())
                           )
                           .map((category) => (
-                          <div
-                            key={category.id}
-                            className="p-2 hover:bg-gray-100 rounded-md cursor-pointer flex justify-between items-center"
-                            onClick={() => {
-                              setActiveJobId(category.id);
-                              setIsDropdownOpen(false);
-                            }}
-                          >
-                            <span className="text-[#4B5563] px-2 py-1 rounded text-sm">{category.name}</span> {/* UPDATED: Exact gray for names */}
-                            <span className="text-[#818283] bg-gray-100 px-2 py-1 rounded text-sm"> {/* UPDATED: Exact gray for counts */}
-                              {category.count}
-                            </span>
-                          </div>
-                        ))}
+                            <div
+                              key={category.id}
+                              className="p-2 hover:bg-gray-100 rounded-md cursor-pointer flex justify-between items-center"
+                              onClick={() => {
+                                setActiveJobId(category.id);
+                                setIsDropdownOpen(false);
+                              }}
+                            >
+                              <span className="text-[#4B5563] px-2 py-1 rounded text-sm">
+                                {category.name}
+                              </span>{" "}
+                              {/* UPDATED: Exact gray for names */}
+                              <span className="text-[#818283] bg-gray-100 px-2 py-1 rounded text-sm">
+                                {" "}
+                                {/* UPDATED: Exact gray for counts */}
+                                {category.count}
+                              </span>
+                            </div>
+                          ))}
                       </div>
                     )}
                   </div>
@@ -2063,6 +2096,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           candidate.candidate.notice_period_summary;
                         const currentSalary =
                           candidate.candidate.current_salary_lpa;
+                        const profilePicture =
+                          candidate.candidate.profilePicture?.displayImageUrl;
+                        const candidate_headline = candidate.candidate.headline;
 
                         return (
                           <div
@@ -2116,7 +2152,15 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 <div
                                   className={`w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600] `}
                                 >
-                                  {avatar?.slice(0, 2)}
+                                  {profilePicture ? (
+                                    <img
+                                      src={profilePicture}
+                                      alt={fullName}
+                                      className="w-full h-full object-cover rounded-full"
+                                    />
+                                  ) : (
+                                    avatar?.slice(0, 2)
+                                  )}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
@@ -2215,15 +2259,26 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     </div>
                                   </div>
                                   <div className="flex space-x-2">
-                                    <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
-                                      {experienceSummaryTitle}
-                                    </p>
-                                    <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
-                                      |
-                                    </p>
-                                    <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
-                                      {educationSummaryTitle}
-                                    </p>
+                                    {experienceSummaryTitle && (
+                                      <div>
+                                        <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                                          {experienceSummaryTitle}
+                                        </p>
+                                        <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
+                                          |
+                                        </p>
+                                      </div>
+                                    )
+                                      ? educationSummaryTitle && (
+                                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                                            {educationSummaryTitle}
+                                          </p>
+                                        )
+                                      : candidate_headline && (
+                                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[48ch] truncate">
+                                            {candidate_headline}
+                                          </p>
+                                        )}
                                   </div>
                                 </div>
                               </div>
