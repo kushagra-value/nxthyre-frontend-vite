@@ -324,6 +324,34 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 }
               }
 
+             else {
+              const d = item.data;
+              const subjectBody = (d.subject || "") + " " + (d.body || "");
+              description = subjectBody.trim() || "Activity recorded";
+              via = d.mode ? d.mode.toLowerCase() : "";
+              if (d.replies?.length > 0) {
+                note = d.replies
+                  .map((r: any) => {
+                    if (r.via === "call") {
+                      return `
+                        <div class="w-full flex justify-between">
+                          <span>The call was instantiated</span>
+                          <span class="text-gray-500">${r.via}</span>
+                        </div>
+                      `;
+                    } else {
+                      return `
+                        <div class="flex justify-between">
+                          <span>${r.body}</span>
+                          <span class="text-gray-500">${r.via}</span>
+                        </div>
+                      `;
+                    }
+                  })
+                  .join("");
+              }
+            } 
+
               return {
                 type: item.type,
                 date,
