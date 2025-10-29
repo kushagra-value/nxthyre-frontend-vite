@@ -112,20 +112,18 @@ export interface OrganizationJobsResponse {
 export const superAdminApi = {
   users: {
     list: (page: number = 1) =>
-      fetchWithAuth<PaginatedResponse<User>>(
-        `/api/superadmin/users/?page=${page}`
-      ),
+      fetchWithAuth<PaginatedResponse<User>>(`/superadmin/users/?page=${page}`),
 
-    get: (id: string) => fetchWithAuth<User>(`/api/superadmin/users/${id}/`),
+    get: (id: string) => fetchWithAuth<User>(`/superadmin/users/${id}/`),
 
     update: (id: string, data: Partial<Pick<User, "full_name" | "is_staff">>) =>
-      fetchWithAuth<User>(`/api/superadmin/users/${id}/`, {
+      fetchWithAuth<User>(`/superadmin/users/${id}/`, {
         method: "PATCH",
         body: JSON.stringify(data),
       }),
 
     updateStatus: (id: string, is_active: boolean) =>
-      fetchWithAuth<User>(`/api/superadmin/users/${id}/status/`, {
+      fetchWithAuth<User>(`/superadmin/users/${id}/status/`, {
         method: "PATCH",
         body: JSON.stringify({ is_active }),
       }),
@@ -137,7 +135,7 @@ export const superAdminApi = {
         message: string;
         recruiter_id: string;
         new_balance: number;
-      }>("/api/superadmin/credits/adjust/", {
+      }>("/superadmin/credits/adjust/", {
         method: "POST",
         body: JSON.stringify({ recruiter_id, amount, notes }),
       }),
@@ -146,18 +144,18 @@ export const superAdminApi = {
   organizations: {
     list: (page: number = 1) =>
       fetchWithAuth<PaginatedResponse<Organization>>(
-        `/api/superadmin/organizations/?page=${page}`
+        `/superadmin/organizations/?page=${page}`
       ),
 
     get: (id: number) =>
-      fetchWithAuth<Organization>(`/api/superadmin/organizations/${id}/`),
+      fetchWithAuth<Organization>(`/superadmin/organizations/${id}/`),
 
     getJobs: (params: { org_id?: number; email_id?: string }) => {
       const query = params.org_id
         ? `org_id=${params.org_id}`
         : `email_id=${params.email_id}`;
       return fetchWithAuth<OrganizationJobsResponse>(
-        `/api/superadmin/organization/jobs/?${query}`
+        `/superadmin/organization/jobs/?${query}`
       );
     },
   },
