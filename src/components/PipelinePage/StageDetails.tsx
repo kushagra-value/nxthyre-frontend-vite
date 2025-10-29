@@ -297,7 +297,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 via = "system";
               }
 
-              if (item.type === "communication_sent") {
+              else if (item.type === "communication_sent") {
                 const d = item.data;
                 description = `${selectedCandidate.candidate.full_name} sent you a message `;
                 via = d.mode.toLowerCase();
