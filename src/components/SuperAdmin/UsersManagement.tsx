@@ -31,39 +31,71 @@ export default function UsersManagement() {
 
   const loadUsers = async () => {
     setLoading(true);
-    const { data, error } = await superAdminApi.users.list(currentPage);
-    if (data) {
-      setUsers(data.results);
-      setTotalCount(data.count);
-      setHasNext(!!data.next);
-      setHasPrevious(!!data.previous);
+    try {
+      // Added: Wrap in try/catch for better error handling
+      const { data, error } = await superAdminApi.users.list(currentPage);
+      if (error) {
+        console.error("Error loading users:", error); // Log errors
+        // Optionally: toast.error(`Failed to load users: ${error}`);
+        return;
+      }
+      if (data) {
+        // Fixed: Always ensure array, even if data.results is undefined/null
+        setUsers(Array.isArray(data.results) ? data.results : []);
+        setTotalCount(data.count || 0);
+        setHasNext(!!data.next);
+        setHasPrevious(!!data.previous);
+      }
+    } catch (err) {
+      console.error("Unexpected error loading users:", err);
+      // Optionally: toast.error("Failed to load users");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const loadUserJobs = async (email: string) => {
     setLoadingJobs(true);
-    const { data, error } = await superAdminApi.organizations.getJobs({
-      email_id: email,
-    });
-    if (data) {
-      setUserJobs(data.jobs);
+    try {
+      const { data, error } = await superAdminApi.organizations.getJobs({
+        email_id: email,
+      });
+      if (error) {
+        console.error("Error loading user jobs:", error);
+        return;
+      }
+      // Fixed: Ensure array for jobs
+      setUserJobs(Array.isArray(data?.jobs) ? data.jobs : []);
+    } catch (err) {
+      console.error("Unexpected error loading user jobs:", err);
+      setUserJobs([]);
+    } finally {
+      setLoadingJobs(false);
     }
-    setLoadingJobs(false);
   };
 
   const handleStatusToggle = async (userId: string, currentStatus: boolean) => {
-    const { data, error } = await superAdminApi.users.updateStatus(
-      userId,
-      !currentStatus
-    );
-    if (data) {
-      setUsers(users.map((u) => (u.id === userId ? data : u)));
-      if (selectedUser?.id === userId) {
-        setSelectedUser(data);
+    try {
+      const { data, error } = await superAdminApi.users.updateStatus(
+        userId,
+        !currentStatus
+      );
+      if (error) {
+        console.error("Error toggling status:", error);
+        alert(`Error: ${error}`); // Or use toast
+        return;
       }
-    } else {
-      alert(`Error: ${error}`);
+      if (data) {
+        setUsers((prevUsers) =>
+          prevUsers.map((u) => (u.id === userId ? data : u))
+        ); // Use functional update for safety
+        if (selectedUser?.id === userId) {
+          setSelectedUser(data);
+        }
+      }
+    } catch (err) {
+      console.error("Unexpected error toggling status:", err);
+      alert("Failed to update status");
     }
   };
 
@@ -71,16 +103,26 @@ export default function UsersManagement() {
     userId: string,
     currentStaffStatus: boolean
   ) => {
-    const { data, error } = await superAdminApi.users.update(userId, {
-      is_staff: !currentStaffStatus,
-    });
-    if (data) {
-      setUsers(users.map((u) => (u.id === userId ? data : u)));
-      if (selectedUser?.id === userId) {
-        setSelectedUser(data);
+    try {
+      const { data, error } = await superAdminApi.users.update(userId, {
+        is_staff: !currentStaffStatus,
+      });
+      if (error) {
+        console.error("Error toggling staff:", error);
+        alert(`Error: ${error}`);
+        return;
       }
-    } else {
-      alert(`Error: ${error}`);
+      if (data) {
+        setUsers((prevUsers) =>
+          prevUsers.map((u) => (u.id === userId ? data : u))
+        );
+        if (selectedUser?.id === userId) {
+          setSelectedUser(data);
+        }
+      }
+    } catch (err) {
+      console.error("Unexpected error toggling staff:", err);
+      alert("Failed to update staff access");
     }
   };
 
@@ -89,7 +131,8 @@ export default function UsersManagement() {
     await loadUserJobs(user.email);
   };
 
-  const filteredUsers = users.filter(
+  // Fixed: Guard against undefined users with fallback
+  const filteredUsers = (users || []).filter(
     (user) =>
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.full_name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -105,7 +148,11 @@ export default function UsersManagement() {
   };
 
   const getTotalCandidates = (job: Job) => {
-    return job.stages.reduce((sum, stage) => sum + stage.candidate_count, 0);
+    // Fixed: Guard reduce if stages undefined
+    return (job.stages || []).reduce(
+      (sum, stage) => sum + (stage.candidate_count || 0),
+      0
+    );
   };
 
   if (loading) {

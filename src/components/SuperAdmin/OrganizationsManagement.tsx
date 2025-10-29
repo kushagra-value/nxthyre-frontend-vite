@@ -32,28 +32,51 @@ export default function OrganizationsManagement() {
 
   const loadOrganizations = async () => {
     setLoading(true);
-    const { data, error } = await superAdminApi.organizations.list(currentPage);
-    if (data) {
-      setOrganizations(data.results);
-      setTotalCount(data.count);
-      setHasNext(!!data.next);
-      setHasPrevious(!!data.previous);
+    try {
+      // Added: try/catch
+      const { data, error } = await superAdminApi.organizations.list(
+        currentPage
+      );
+      if (error) {
+        console.error("Error loading organizations:", error);
+        return;
+      }
+      if (data) {
+        // Fixed: Ensure array
+        setOrganizations(Array.isArray(data.results) ? data.results : []);
+        setTotalCount(data.count || 0);
+        setHasNext(!!data.next);
+        setHasPrevious(!!data.previous);
+      }
+    } catch (err) {
+      console.error("Unexpected error loading organizations:", err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleViewDetails = async (org: Organization) => {
     setLoadingJobs(true);
-    const { data, error } = await superAdminApi.organizations.getJobs({
-      org_id: org.id,
-    });
-    if (data) {
-      setSelectedOrg(data);
+    try {
+      const { data, error } = await superAdminApi.organizations.getJobs({
+        org_id: org.id,
+      });
+      if (error) {
+        console.error("Error loading org jobs:", error);
+        return;
+      }
+      if (data) {
+        setSelectedOrg(data);
+      }
+    } catch (err) {
+      console.error("Unexpected error loading org jobs:", err);
+    } finally {
+      setLoadingJobs(false);
     }
-    setLoadingJobs(false);
   };
 
-  const filteredOrganizations = organizations.filter(
+  // Fixed: Guard filter
+  const filteredOrganizations = (organizations || []).filter(
     (org) =>
       org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       org.domain.toLowerCase().includes(searchTerm.toLowerCase())
@@ -68,7 +91,11 @@ export default function OrganizationsManagement() {
   };
 
   const getTotalCandidates = (job: OrganizationJobsResponse["jobs"][0]) => {
-    return job.stages.reduce((sum, stage) => sum + stage.candidate_count, 0);
+    // Fixed: Guard reduce
+    return (job.stages || []).reduce(
+      (sum, stage) => sum + (stage.candidate_count || 0),
+      0
+    );
   };
 
   if (loading) {
