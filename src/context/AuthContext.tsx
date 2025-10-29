@@ -38,6 +38,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const user: User = {
         id: firebaseUser?.uid,
         fullName: userStatus.full_name || "Unknown User",
+        isSuperAdmin: userStatus.isSuperAdmin || false,
         email: userStatus.email || "Unknown@user.com",
         role:
           userStatus.roles?.length > 0

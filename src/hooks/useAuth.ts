@@ -63,8 +63,8 @@ export const useAuth = () => {
   const refreshUserStatus = async () => {
     if (authState.user) {
       try {
-        // const token = await authState.user.getIdToken(true); // Force refresh
-        // localStorage.setItem("authToken", token);
+        const token = await authState.user.getIdToken(true); // Force refresh
+        localStorage.setItem("authToken", token);
         const userStatus = await authService.getUserStatus();
         setAuthState((prev) => ({
           ...prev,
