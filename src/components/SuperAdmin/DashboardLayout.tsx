@@ -69,7 +69,7 @@ export default function DashboardLayout({
               })}
             </nav>
 
-            {onLogout && (
+            {/* {onLogout && (
               <div className="p-4 border-t border-gray-200">
                 <button
                   onClick={onLogout}
@@ -79,7 +79,7 @@ export default function DashboardLayout({
                   <span>Logout</span>
                 </button>
               </div>
-            )}
+            )} */}
           </div>
         </aside>
 
