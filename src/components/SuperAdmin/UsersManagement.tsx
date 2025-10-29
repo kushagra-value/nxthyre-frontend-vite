@@ -480,7 +480,7 @@ export default function UsersManagement() {
                   onClick={() =>
                     handleStaffToggle(selectedUser.id, selectedUser.is_staff)
                   }
-                  className="px-4 py-2 rounded-lg font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
+                  className="hidden px-4 py-2 rounded-lg font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
                 >
                   {selectedUser.is_staff
                     ? "Remove Staff Access"
