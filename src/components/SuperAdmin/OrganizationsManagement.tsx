@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Search,
   Building2,
@@ -42,11 +42,13 @@ export default function OrganizationsManagement() {
         return;
       }
       if (data) {
-        // Fixed: Ensure array
-        setOrganizations(Array.isArray(data.results) ? data.results : []);
-        setTotalCount(data.count || 0);
-        setHasNext(!!data.next);
-        setHasPrevious(!!data.previous);
+        // Fixed: Handle direct array OR {results: [...]}
+        const orgList = Array.isArray(data) ? data : data.results || [];
+        setOrganizations(orgList);
+        setTotalCount(data?.count || orgList.length);
+        setHasNext(!!data?.next);
+        setHasPrevious(!!data?.previous);
+        console.log("Loaded orgs:", orgList); // Debug
       }
     } catch (err) {
       console.error("Unexpected error loading organizations:", err);
@@ -75,12 +77,14 @@ export default function OrganizationsManagement() {
     }
   };
 
-  // Fixed: Guard filter
-  const filteredOrganizations = (organizations || []).filter(
-    (org) =>
-      org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      org.domain.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Add useMemo for filteredOrganizations
+  const filteredOrganizations = useMemo(() => {
+    return (organizations || []).filter(
+      (org) =>
+        org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        org.domain.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [organizations, searchTerm]);
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("en-US", {

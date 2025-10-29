@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Search,
   UserCheck,
@@ -40,15 +40,17 @@ export default function UsersManagement() {
         return;
       }
       if (data) {
-        // Fixed: Always ensure array, even if data.results is undefined/null
-        setUsers(Array.isArray(data.results) ? data.results : []);
-        setTotalCount(data.count || 0);
-        setHasNext(!!data.next);
-        setHasPrevious(!!data.previous);
+        // Fixed: Handle direct array OR paginated {results: [...]}
+        const userList = Array.isArray(data) ? data : data.results || [];
+        setUsers(userList); // Now always array
+        setTotalCount(data?.count || userList.length); // Derive count if missing
+        setHasNext(!!data?.next); // False if no pagination
+        setHasPrevious(!!data?.previous); // False if no pagination
+        console.log("Loaded users:", userList); // Debug: Remove after test
       }
     } catch (err) {
       console.error("Unexpected error loading users:", err);
-      // Optionally: toast.error("Failed to load users");
+      setUsers([]); // Fallback to empty
     } finally {
       setLoading(false);
     }
@@ -131,12 +133,14 @@ export default function UsersManagement() {
     await loadUserJobs(user.email);
   };
 
-  // Fixed: Guard against undefined users with fallback
-  const filteredUsers = (users || []).filter(
-    (user) =>
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.full_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Improved: useMemo for filter (avoids re-compute on every render)
+  const filteredUsers = useMemo(() => {
+    return (users || []).filter(
+      (user) =>
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.full_name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [users, searchTerm]);
 
   const formatDate = (date: string | null) => {
     if (!date) return "Never";
