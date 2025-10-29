@@ -559,17 +559,33 @@ const ArchiveIcon = () => (
   </svg>
 );
 
+// UPDATED: Add state to track which candidates are being copied (for per-button spinner)
+const [copyingCandidates, setCopyingCandidates] = useState(new Set<string>());
+
 const handleCopyProfile = async (applicationId: string) => {
+  // UPDATED: Set loading state for this candidate
+  setCopyingCandidates(prev => new Set([...prev, applicationId]));
+  
   try {
-    
     const details = await apiClient.get(`/jobs/applications/${applicationId}/kanban-detail/`);
-    const candidate_detailed_id = details?.candidate?.id;
+    // UPDATED: Fix undefined - access via .data, and add null check for safety
+    const candidate_detailed_id = details?.data?.candidate?.id;
+    if (!candidate_detailed_id) {
+      throw new Error("Candidate ID not found");
+    }
     const profileUrl = `https://app.nxthyre.com/candidate-profiles/${candidate_detailed_id}`;
-    navigator.clipboard.writeText(profileUrl);
+    await navigator.clipboard.writeText(profileUrl);
     showToast.success("Candidate profile URL copied to clipboard");
   } catch (error) {
     console.error("Error fetching candidate details:", error);
     showToast.error("Failed to copy profile URL");
+  } finally {
+    // UPDATED: Clear loading state for this candidate
+    setCopyingCandidates(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(applicationId);
+      return newSet;
+    });
   }
 };
 
@@ -625,7 +641,7 @@ const handleCopyProfile = async (applicationId: string) => {
       {/* Experience Info - starts from column 3 */}
       <div className="col-start-3 col-span-10">
         <div className="flex items-center gap-1 text-gray-500 text-xs mt-2">
-          <span>{candidate.total_experience}Y • {candidate.notice_period_days} NP • {candidate.current_salary} LPA • {candidate.city}</span>
+          <span>{candidate.total_experience}{candidate.total_experience && (" Y • ")} {candidate.notice_period_days} {candidate.notice_period_days && (" NP • ")}{candidate.current_salary} {candidate.current_salary && (" LPA • ")} {candidate.location}</span>
         </div>
       </div>
       
@@ -658,9 +674,16 @@ const handleCopyProfile = async (applicationId: string) => {
           )}
           <button 
             onClick={() => handleCopyProfile(candidate.id)}
-            className="w-6 h-6 rounded-full border border-blue-500 flex items-center justify-center hover:bg-blue-50 transition-colors"
+            // UPDATED: Disable during loading and add opacity for visual feedback
+            disabled={copyingCandidates.has(candidate.id)}
+            className="w-6 h-6 rounded-full border border-blue-500 flex items-center justify-center hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-waiting"
           >
-            <Copy className="w-3 h-3 text-blue-600" />
+            {/* UPDATED: Show spinner (simple CSS) during loading, else Copy icon */}
+            {copyingCandidates.has(candidate.id) ? (
+              <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <Copy className="w-3 h-3 text-blue-600" />
+            )}
           </button>
         </div>
       </div>
