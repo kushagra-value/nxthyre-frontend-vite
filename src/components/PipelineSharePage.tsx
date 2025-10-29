@@ -29,7 +29,8 @@ import {
    MailIcon,
    PhoneIcon,
    Link,
-   ChevronDown
+   ChevronDown,
+   File
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import apiClient from "../services/api"; // Adjust path as necessary
@@ -290,24 +291,28 @@ const handleCopyLink = () => {
           if (apiStage) {
             processedData[stage.name] = apiStage.applications.map(
               (app: any) => {
-                const [role, company] = app.candidate_headline.split(" at ");
+                const [role, company] = app.candidate_headline?.split(" at ");
+                const city = app.location?.split(",")[0];
                 return {
                   id: app.id,
                   name: app.candidate_name,
                   company: company || "",
                   role: role || "",
-                  location: "",
+                  location: city,
+                  notice_period_days: app.notice_period_days,
+                  current_salary: app.current_salary,
+                  total_experience: app.total_experience,
                   avatar: app.candidate_name
                     .split(" ")
                     .map((n: string) => n[0])
                     .join(""),
+                  profile_picture_url: app.profile_picture_url,
                   notes: "",
                   lastUpdated: new Date(app.last_updated),
                   socials: {
-                    github: false,
-                    linkedin: false,
-                    resume: false,
-                    twitter: false,
+                    github_url: app.premium_data.github_url,
+                    linkedin_url: app.premium_data.linkedin_url,
+                    resume_url: app.premium_data.resume_url,
                   },
                 };
               }
@@ -554,6 +559,20 @@ const ArchiveIcon = () => (
   </svg>
 );
 
+const handleCopyProfile = async (applicationId: string) => {
+  try {
+    
+    const details = await apiClient.get(`/jobs/applications/${applicationId}/kanban-detail/`);
+    const candidate_detailed_id = details?.candidate?.id;
+    const profileUrl = `https://app.nxthyre.com/candidate-profiles/${candidate_detailed_id}`;
+    navigator.clipboard.writeText(profileUrl);
+    showToast.success("Candidate profile URL copied to clipboard");
+  } catch (error) {
+    console.error("Error fetching candidate details:", error);
+    showToast.error("Failed to copy profile URL");
+  }
+};
+
   const renderCandidateCard = (candidate: any, stage: string) => (
   <div
     id={`candidate-${candidate.id}`}
@@ -571,7 +590,14 @@ const ArchiveIcon = () => (
       <div className="col-span-2">
         <div className="w-10 h-10 rounded-full bg-[#0F47F2] flex items-center justify-center">
           <span className="text-white font-bold text-sm">
-            {candidate.name.split(/\s+/).map((word: any) => word[0].toUpperCase()).join("").slice(0, 2)}
+            {candidate.profile_picture_url ? (
+              <img
+                src={candidate.profile_picture_url}
+                alt={candidate.name}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (candidate.name.split(/\s+/).map((word: any) => word[0].toUpperCase()).join("").slice(0, 2))
+            }
           </span>
         </div>
       </div>
@@ -599,20 +625,41 @@ const ArchiveIcon = () => (
       {/* Experience Info - starts from column 3 */}
       <div className="col-start-3 col-span-10">
         <div className="flex items-center gap-1 text-gray-500 text-xs mt-2">
-          <span>5Y • 15 NP • 20 LPA • Bangalore</span>
+          <span>{candidate.total_experience}Y • {candidate.notice_period_days} NP • {candidate.current_salary} LPA • {candidate.city}</span>
         </div>
       </div>
       
       {/* Social Icons - starts from column 3 */}
       <div className="col-start-3 col-span-7">
         <div className="flex gap-2 mt-2">
-          <button className="w-6 h-6 rounded-full border border-blue-500 flex items-center justify-center hover:bg-blue-50 transition-colors">
+          {candidate.socials.linkedin_url && (
+          <button 
+            onClick={() => window.open(candidate.socials.linkedin_url, '_blank')}
+            className="w-6 h-6 rounded-full border border-blue-500 flex items-center justify-center hover:bg-blue-50 transition-colors"
+          >
             <Linkedin className="w-3 h-3 text-blue-600" />
           </button>
-          <button className="w-6 h-6 rounded-full border border-blue-500 flex items-center justify-center hover:bg-blue-50 transition-colors">
+          )}
+          {candidate.socials.github_url && (
+          <button 
+            onClick={() => window.open(candidate.socials.github_url, '_blank')}
+            className="w-6 h-6 rounded-full border border-blue-500 flex items-center justify-center hover:bg-blue-50 transition-colors"
+          >
             <Github className="w-3 h-3 text-blue-600" />
           </button>
-          <button className="w-6 h-6 rounded-full border border-blue-500 flex items-center justify-center hover:bg-blue-50 transition-colors">
+          )}
+          {candidate.socials.resume_url && (
+          <button 
+            onClick={() => window.open(candidate.socials.resume_url, '_blank')}
+            className="w-6 h-6 rounded-full border border-blue-500 flex items-center justify-center hover:bg-blue-50 transition-colors"
+          >
+            <File className="w-3 h-3 text-blue-600" />
+          </button>
+          )}
+          <button 
+            onClick={() => handleCopyProfile(candidate.id)}
+            className="w-6 h-6 rounded-full border border-blue-500 flex items-center justify-center hover:bg-blue-50 transition-colors"
+          >
             <Copy className="w-3 h-3 text-blue-600" />
           </button>
         </div>
@@ -620,7 +667,18 @@ const ArchiveIcon = () => (
       
       {/* Custom File Icon - below percentage, right aligned */}
       <div className="mt-2 col-start-10 col-span-3 text-right">
-        <button className="w-6 h-6 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors ml-auto">
+        <button 
+          onClick={() => {
+            setFeedbackData({ 
+              candidate, 
+              fromStage: stage, 
+              toStage: "Archives", 
+              isMovingForward: true 
+            });
+            setShowFeedbackModal(true);
+          }}
+          className="w-6 h-6 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors ml-auto"
+        >
           <CustomFileIcon />
         </button>
       </div>
