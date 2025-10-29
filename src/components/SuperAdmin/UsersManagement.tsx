@@ -207,12 +207,12 @@ export default function UsersManagement() {
     await loadUserJobs(user.email);
   };
 
-  // Improved: useMemo for filter (avoids re-compute on every render)
+  // Fixed: Guard .toLowerCase() with fallbacks for undefined/null fields
   const filteredUsers = useMemo(() => {
     return (users || []).filter(
       (user) =>
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.full_name.toLowerCase().includes(searchTerm.toLowerCase())
+        (user.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.full_name || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [users, searchTerm]);
 
