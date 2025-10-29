@@ -56,6 +56,7 @@ import {
 } from "lucide-react";
 import { showToast } from "./utils/toast";
 import CandidateBackGroundCheck from "./components/CandidateBackGroundCheck";
+import SuperAdminDashboard from "./components/SuperAdmin/SuperAdminDashboard";
 interface Category {
   id: number;
   name: string;
@@ -1033,10 +1034,50 @@ function MainApp() {
       </div>
     );
   }
+
+  // Guard component for super admin (adjusted for your role-based auth)
+  const SuperAdminRoute: React.FC<{ children: React.ReactNode }> = ({
+    children,
+  }) => {
+    const { user, loading, isAuthenticated } = useAuthContext(); // Uses your context
+
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center h-screen">
+          Loading...
+        </div>
+      ); // Or your spinner
+    }
+
+    // Adjusted check: Use your user.role instead of customClaims.is_staff
+    // Change 'admin' to your actual super admin role (e.g., 'super_admin')
+    if (!isAuthenticated || !user || user.role !== "admin") {
+      window.location.href = "/"; // Redirect to home/login
+    }
+
+    return <>{children}</>;
+  };
+
+  // Logout handler (ties into your context)
+  const handleLogout = async () => {
+    const { signOut } = useAuthContext();
+    await signOut(); // Uses your existing signOut
+    window.location.href = "/"; // Or use <Navigate> if in a component
+  };
+
   const job = categories.find((cat) => cat.id === Number(currentPipelineId));
   return (
     <>
       <Routes>
+        {/* New super admin route (guarded) */}
+        <Route
+          path="/super-admin"
+          element={
+            <SuperAdminRoute>
+              <SuperAdminDashboard onLogout={handleLogout} />
+            </SuperAdminRoute>
+          }
+        />
         <Route
           path="/linkedin-auth"
           element={
