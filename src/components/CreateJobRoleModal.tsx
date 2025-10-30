@@ -221,36 +221,27 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     };
   }, []);
 
-  const fetchLocationSuggestions = useCallback(
-    debounce(async (query: string) => {
-      if (query.length >= 2) {
-        try {
-          const response = await fetch(
-            `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(
-              query
-            )}&apiKey=1f207465a3a44d98a9c7fb42bb6de005`
-          );
-
-          
-          const data = await response.json();
-          const suggestions = data.features.map(
-            (feature: any) => feature.properties.formatted
-          );
-          const uniqueSuggestions = [...new Set(suggestions)].filter(
-            (s: string) => !formData.location.includes(s)
-          );
-          setLocationSuggestions(uniqueSuggestions);
-        } catch (error) {
-          console.error("Error fetching location suggestions:", error);
-          setLocationSuggestions([]);
-          showToast.error("Failed to fetch location suggestions");
-        }
-      } else {
+  // UPDATED: Replace Geoapify fetch with jobPostService.getLocationSuggestions for consistency and to use backend API
+const fetchLocationSuggestions = useCallback(
+  debounce(async (query: string) => {
+    if (query.length >= 2) {
+      try {
+        const suggestions = await jobPostService.getLocationSuggestions(query);
+        const uniqueSuggestions = [...new Set(suggestions)].filter(
+          (s: string) => !formData.location.includes(s)
+        );
+        setLocationSuggestions(uniqueSuggestions);
+      } catch (error) {
+        console.error("Error fetching location suggestions:", error);
         setLocationSuggestions([]);
+        showToast.error("Failed to fetch location suggestions");
       }
-    }, 300),
-    [formData.location]
-  );
+    } else {
+      setLocationSuggestions([]);
+    }
+  }, 300),
+  [formData.location]
+);
 
   const handleSkillInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^a-zA-Z0-9\s]/g, "");
