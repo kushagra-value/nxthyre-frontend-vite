@@ -149,7 +149,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       };
       fetchCandidateDetails();
     }
-  }, [candidate?.id]);
+  }, [candidate]);
 
   const fetchLogo = async (query: string) => {
     if (!query || logos[query] !== undefined) return;
