@@ -110,7 +110,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
       // Set persistence based on "Remember me" checkbox
       const persistence = formData.rememberMe
         ? browserLocalPersistence
-        : browserSessionPersistence;
+        : browserLocalPersistence;
       await setPersistence(auth, persistence);
 
       // Sign in with Firebase
