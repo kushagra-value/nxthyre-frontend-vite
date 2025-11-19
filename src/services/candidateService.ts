@@ -774,7 +774,12 @@ class CandidateService {
       );
     }
   }
+
+  async getCandidateBooleanSearch(candidateId: string): Promise<string> {
+    // can we set dummy data here for now instead of api call ?
+    return "test";
+    
 }
 
 export const candidateService = new CandidateService();
-export default candidateService;
+

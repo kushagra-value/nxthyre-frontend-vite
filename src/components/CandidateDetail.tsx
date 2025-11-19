@@ -120,6 +120,19 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       ? detailedCandidate.candidate.premium_data.phone
       : `95********89`;
 
+  const [booleanData, setBooleanData] = useState<string>("");
+
+  useEffect(() => {
+    if (candidate?.id) {
+      try {
+        const data = candidateService.getCandidateBooleanSearch(candidate.id);
+        setBooleanData(data);
+      } catch (error) {
+        console.error("Error fetching boolean search:", error);
+      }
+    }
+  });
+
   const tabs = [
     { name: "Boolean-Search" },
     { name: "Profile" },
@@ -1277,7 +1290,13 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            {tab.name}
+            if(booleanData){tab.name}
+            else
+            {tab.name === "Boolean-Search" ? (
+              <div className="hidden"></div>
+            ) : (
+              tab.name
+            )}
             {tab.name === "Notes" && (
               <span className="ml-1">
                 ({detailedCandidate?.candidate?.notes?.length || 0})
