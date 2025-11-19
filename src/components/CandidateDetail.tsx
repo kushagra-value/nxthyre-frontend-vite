@@ -121,6 +121,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       : `95********89`;
 
   const tabs = [
+    { name: "Boolean-Search" },
     { name: "Profile" },
     { name: "Education" },
     { name: "Skills" },
@@ -321,6 +322,15 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       .slice(0, 1);
   };
 
+  const BooleanSearchTab = () => {
+    return (
+      <div className="bg-[#F0F0F0] p-3 rounded-lg">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold mb-2">Boolean Search</h2>
+        </div>
+      </div>
+    );
+  };
   const ProfileTab = () => {
     const [showMore, setShowMore] = useState(false);
     const experiences = detailedCandidate?.candidate?.experience || [];
@@ -1278,6 +1288,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       </div>
 
       <div className="mt-4">
+        {activeTab === "Boolean-Search" && <BooleanSearchTab />}
         {activeTab === "Profile" && <ProfileTab />}
         {activeTab === "Education" && <EducationTab />}
         {activeTab === "Skills" && <SkillsTab />}
