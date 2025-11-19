@@ -747,19 +747,22 @@ class CandidateService {
     }
   }
 
-  async getCandidateActivity(candidateId: string, applicationId?: number): Promise<any[]> {
-  try {
-    const params = applicationId ? `?application_id=${applicationId}` : '';
-    const response = await apiClient.get(
-      `/candidates/${candidateId}/activity/${params}`
-    );
-    return response.data;
-  } catch (error: any) {
-    throw new Error(
-      error.response?.data?.error || "Failed to fetch candidate activity"
-    );
+  async getCandidateActivity(
+    candidateId: string,
+    applicationId?: number
+  ): Promise<any[]> {
+    try {
+      const params = applicationId ? `?application_id=${applicationId}` : "";
+      const response = await apiClient.get(
+        `/candidates/${candidateId}/activity/${params}`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch candidate activity"
+      );
+    }
   }
-}
 
   async getBackgroundVerifications(candidateId: string): Promise<any[]> {
     try {
@@ -776,10 +779,9 @@ class CandidateService {
   }
 
   async getCandidateBooleanSearch(candidateId: string): Promise<string> {
-    // can we set dummy data here for now instead of api call ?
+    //dummy data to bypass api errors during demo
     return "test";
-    
+  }
 }
 
-export const candidateService = new CandidateService();
-export default candidateService;
+export default new CandidateService();

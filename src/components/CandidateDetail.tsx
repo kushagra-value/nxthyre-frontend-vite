@@ -57,8 +57,7 @@ const IdCard: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { showToast } from "../utils/toast";
-import {
-  candidateService,
+import candidateService, {
   CandidateDetailData,
   CandidateListItem,
   Note,
@@ -123,15 +122,20 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const [booleanData, setBooleanData] = useState<string>("");
 
   useEffect(() => {
-    if (candidate?.id) {
-      try {
-        const data = candidateService.getCandidateBooleanSearch(candidate.id);
-        setBooleanData(data);
-      } catch (error) {
-        console.error("Error fetching boolean search:", error);
+    const fetchBooleanSearch = async () => {
+      if (candidate?.id) {
+        try {
+          const data = await candidateService.getCandidateBooleanSearch(
+            candidate.id
+          );
+          setBooleanData(data);
+        } catch (error) {
+          console.error("Error fetching boolean search:", error);
+        }
       }
-    }
-  });
+    };
+    fetchBooleanSearch();
+  }, [candidate?.id]);
 
   const tabs = [
     { name: "Boolean-Search" },
