@@ -342,13 +342,125 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   const BooleanSearchTab = () => {
     return (
-      <div className="bg-[#F0F0F0] p-3 rounded-lg">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold mb-2">Boolean Search</h2>
+      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+        {/* Top Badge */}
+        <div className="flex items-center mb-4">
+          <div className="bg-green-100 border border-green-300 rounded-md px-3 py-1 mr-2">
+            <span className="text-green-800 font-semibold text-sm">
+              Profile is VERY Strong Match
+            </span>
+          </div>
+          <div className="text-2xl font-bold text-green-600">75%</div>
+        </div>
+
+        {/* Description */}
+        <p className="text-gray-600 mb-6 text-sm">
+          This is one of three resumes that truly aligns with your JD
+        </p>
+
+        {/* Quick Fit Summary */}
+        <div className="mb-6">
+          <h3 className="text-md font-semibold mb-3 text-gray-800">
+            Quick Fit Summary
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+              8+ Years
+            </span>
+            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+              UI / Frontend Development
+            </span>
+            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+              SEO & Performance
+            </span>
+            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+              Pixel-perfect / Design Collaboration
+            </span>
+            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+              Communication
+            </span>
+          </div>
+        </div>
+
+        {/* Builder.io Specific Fit */}
+        <div className="mb-6">
+          <div className="flex flex-wrap gap-2">
+            <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+              Builder.io Specific Fit
+            </span>
+            <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+              Builder.io Specific Fit
+            </span>
+          </div>
+        </div>
+
+        {/* Gaps / Risks */}
+        <div className="mb-6">
+          <h4 className="text-md font-semibold mb-3 text-gray-800">
+            Gaps / risks
+          </h4>
+          <ul className="space-y-2 text-sm text-gray-600">
+            <li>
+              • Builder.io experience appears experimental, not enterprise
+              production
+            </li>
+            <li>
+              • No direct mention of headless CMS platforms like Contentful /
+            </li>
+            <li>• Sanity / Shopify</li>
+            <li>• Resume could explicitly list performance optimization &</li>
+            <li>• SEO practices</li>
+          </ul>
+        </div>
+
+        {/* Recommended Message */}
+        <div className="mb-6">
+          <h4 className="text-md font-semibold mb-3 text-gray-800 flex items-center">
+            Recommended Message to Client
+            <span className="ml-2 text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded">
+              8+ years of experience in React
+            </span>
+          </h4>
+          <p className="text-sm text-gray-700">
+            Akash is a Senior UI Engineer with 8+ years of experience in React,
+            TypeScript, and modern front-end architectures. He has recently
+            worked with Builder.io to develop reusable UI components and
+            visually driven pages using component-based and hybrid code
+            workflows. He has strong experience using collaboration-based design
+            teams for pixel-perfect implementation and integrating UI with APIs
+            and backend systems in headless environments. He is immediately
+            available for a hybrid role in Pune.
+          </p>
+        </div>
+
+        {/* Callout */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-5 w-5 text-yellow-400 mt-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-800">
+                Needs to verbally highlight Builder.io commercial usage during
+                screening/intro call.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     );
   };
+
   const ProfileTab = () => {
     const [showMore, setShowMore] = useState(false);
     const experiences = detailedCandidate?.candidate?.experience || [];
