@@ -781,5 +781,4 @@ class CandidateService {
     
 }
 
-export const candidateService = new CandidateService();
-
+export candidateService = new CandidateService();
