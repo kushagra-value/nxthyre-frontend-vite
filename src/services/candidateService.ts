@@ -784,4 +784,4 @@ class CandidateService {
   }
 }
 
-export default new CandidateService();
+export const candidateService = new CandidateService();
