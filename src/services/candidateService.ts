@@ -785,3 +785,4 @@ class CandidateService {
 }
 
 export const candidateService = new CandidateService();
+export default candidateService;
