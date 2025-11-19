@@ -1295,9 +1295,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            if(booleanData){tab.name}
-            else
-            {tab.name === "Boolean-Search" ? (
+            {booleanData ? (
+              tab.name
+            ) : tab.name === "Boolean-Search" ? (
               <div className="hidden"></div>
             ) : (
               tab.name
