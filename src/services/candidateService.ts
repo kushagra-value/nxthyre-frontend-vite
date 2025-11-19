@@ -780,7 +780,7 @@ class CandidateService {
 
   async getCandidateBooleanSearch(candidateId: string): Promise<string> {
     //dummy data to bypass api errors during demo
-    return "";
+    return "yuvraj";
   }
 }
 
