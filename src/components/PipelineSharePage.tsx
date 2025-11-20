@@ -1454,7 +1454,7 @@ const handleCopyProfile = async (applicationId: string) => {
                     {tab.label}
                     {activeTab === tab.id && (
                       <div
-                        className="absolute bottom-0 left-0 right-0 h-1.3 bg-[#0F47F2] rounded-t-full"
+                        className="absolute bottom-0 left-0 right-0 h-1 bg-[#0F47F2] rounded-t-full"
                         style={{ borderRadius: "8px 8px 0 0" }}
                       />
                     )}
