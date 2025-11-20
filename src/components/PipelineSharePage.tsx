@@ -1439,7 +1439,7 @@ const handleCopyProfile = async (applicationId: string) => {
           </div>
 
           <div className="font-['Gellix',_sans-serif]">
-            <div className="relative px-8">
+            <div className="relative mx-8">
               <div className="flex items-center gap-12 pt-4 border-b border-[#818283]">
                 {tabs.map((tab) => (
                   <button
