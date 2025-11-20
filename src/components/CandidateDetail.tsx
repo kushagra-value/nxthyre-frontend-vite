@@ -346,14 +346,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         {/* Top Badge */}
         <div className="mb-4">
           <div className="flex items-center gap-4 bg-green-100 rounded-md px-3 py-1 mr-2">
-            <span className="text-2xl bg-green-600 text-white p-2 rounded-md">
+            <span className="text-xl bg-green-600 text-white p-2 rounded-md">
               75%
             </span>
-            <div className="flex-col">
+            <div className="flex flex-col">
               <span className="text-black text-sm">
                 Candidate is a VERY Strong Match
               </span>
-              <span className="text-gray-400 text-sm">
+              <span className="text-gray-600 text-sm">
                 This is one of those resumes that truly aligns with your JD
               </span>
             </div>
@@ -393,19 +393,19 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <h4 className="text-md mb-3 text-gray-400">Gaps / risks</h4>
           <ul className="space-y-2 text-sm text-gray-600">
             <li className="bg-gray-50 px-3 py-2 rounded-md">
-              • Builder.io experience appears experimental, not enterprise
+              Builder.io experience appears experimental, not enterprise
               production
             </li>
             <li className="bg-gray-50 px-3 py-2 rounded-md">
-              • No direct mention of headless CMS platforms like Contentful /
+              No direct mention of headless CMS platforms like Contentful /
             </li>
             <li className="bg-gray-50 px-3 py-2 rounded-md">
-              • Sanity / Shopify
+              Sanity / Shopify
             </li>
             <li className="bg-gray-50 px-3 py-2 rounded-md">
-              • Resume could explicitly list performance optimization &
+              Resume could explicitly list performance optimization &
             </li>
-            <li className="bg-gray-50 px-3 py-2 rounded-md">• SEO practices</li>
+            <li className="bg-gray-50 px-3 py-2 rounded-md">SEO practices</li>
           </ul>
         </div>
 
@@ -430,7 +430,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
 
         {/* Callout */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+        <div className="bg-yellow-100 border rounded-md p-4">
           <div className="flex items-start">
             <div className="flex-shrink-0">
               <svg
@@ -445,8 +445,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 />
               </svg>
             </div>
-            <div className="ml-3 bg-orange-300">
-              <h3 className="text-yellow-600">Suggested Questions for Call</h3>
+            <div className="ml-3">
+              <h3 className="text-yellow-600 mb-1">
+                Suggested Questions for Call
+              </h3>
               <p className="text-sm text-black">
                 Needs to verbally highlight Builder.io commercial usage during
                 screening/intro call.
