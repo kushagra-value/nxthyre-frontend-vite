@@ -1480,7 +1480,7 @@ const handleCopyProfile = async (applicationId: string) => {
                           onDragOver={handleDragOver}
                           onDrop={(e) => handleDrop(e, stage.name)}
                         >
-                          <div className={`bg-[#F5F9FB] rounded-lg p-3 space-y-3`}>
+                          <div className={`bg-[#F5F9FB] h-full rounded-lg p-3 space-y-3`}>
                             
                               <div className="w-full flex items-center justify-between gap-4 mb-4 bg-white border border-gray-200 py-2 pr-4 rounded-md">
                                 <div className="flex items-center gap-4">
