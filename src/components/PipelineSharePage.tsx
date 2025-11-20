@@ -1347,7 +1347,7 @@ const handleCopyProfile = async (applicationId: string) => {
           
           
           <div className="relative bg-white rounded-xl shadow-lg px-8 py-6 font-['Gellix',_sans-serif]">
-            <button className="absolute left-8 top-1/2 -translate-y-1/2">
+            <button className="absolute left-4 top-1/2 -translate-y-1/2">
               <ChevronLeft className="w-7 h-7 text-gray-600" />
             </button>
             <div className="flex items-center justify-between pl-8">
@@ -1440,7 +1440,7 @@ const handleCopyProfile = async (applicationId: string) => {
 
           <div className="font-['Gellix',_sans-serif]">
             <div className="relative border-b border-[#818283] ">
-              <div className="flex items-center gap-12 px-8 pt-12">
+              <div className="flex items-center gap-12 px-8 pt-8">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
@@ -1464,7 +1464,7 @@ const handleCopyProfile = async (applicationId: string) => {
               <div className="absolute bottom-0 left-0 right-0 h-px bg-[#818283]" />
             </div>
 
-          <div className="bg-gray-900 px-8 py-10 min-h-screen">
+          <div className=" px-8 py-10 min-h-screen">
             {activeTab === "pipeline" ? (
               <div className="">
 
