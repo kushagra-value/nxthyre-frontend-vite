@@ -1685,32 +1685,58 @@ function MainApp() {
                           {/* Header */}
                           <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center space-x-2">
-                              <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center text-white font-bold text-sm">J</div>
-                              <h1 className="text-xl font-bold text-gray-900">Requisition Info</h1>
+                              <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                J
+                              </div>
+                              <h1 className="text-xl font-bold text-gray-900">
+                                Requisition Info
+                              </h1>
                             </div>
-                            <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center text-white font-bold text-sm">J</div>
+                            <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                              J
+                            </div>
                           </div>
-                          <h2 className="text-2xl font-semibold text-gray-900 mb-1">Builder.io Developer</h2>
-                          <p className="text-sm text-gray-600 mb-6">Hybrid | 8+ years experience in Builder, which is a visual headless CMS with a drag-and-drop page builder that outputs clean code.</p>
+                          <h2 className="text-2xl font-semibold text-gray-900 mb-1">
+                            Builder.io Developer
+                          </h2>
+                          <p className="text-sm text-gray-600 mb-6">
+                            Hybrid | 8+ years experience in Builder, which is a
+                            visual headless CMS with a drag-and-drop page
+                            builder that outputs clean code.
+                          </p>
 
                           {/* Role Overview */}
                           <div className="mb-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-3">Role Overview</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                              Role Overview
+                            </h3>
                             <p className="text-gray-700 leading-relaxed">
-                              The core experience builder at Builder.io, which is a visual headless CMS with a drag-and-drop page builder that outputs clean code. Take the core > Build UI in Builder to > Ensure it is responsive, scalable, optimized, and integrated with APIs/CMs.
+                              The core experience builder at Builder.io, which
+                              is a visual headless CMS with a drag-and-drop page
+                              builder that outputs clean code. Take the core
+                              Build UI in Builder to Ensure it is responsive,
+                              scalable, optimized, and integrated with APIs/CMs.
                             </p>
                           </div>
 
                           {/* Key Responsibilities Explained */}
                           <div className="mb-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-3">Key Responsibilities Explained</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                              Key Responsibilities Explained
+                            </h3>
                             <div className="space-y-3">
                               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                                 <div className="flex items-start space-x-3">
                                   <div className="w-5 h-5 bg-blue-500 rounded-full flex-shrink-0 mt-0.5"></div>
                                   <div>
-                                    <h4 className="font-medium text-blue-900 mb-1">Develop reusable components</h4>
-                                    <p className="text-sm text-gray-700">Why? Maintains quality & consistency across the website pages built with Builder.</p>
+                                    <h4 className="font-medium text-blue-900 mb-1">
+                                      Develop reusable components
+                                    </h4>
+                                    <p className="text-sm text-gray-700">
+                                      Why? Maintains quality & consistency
+                                      across the website pages built with
+                                      Builder.
+                                    </p>
                                   </div>
                                 </div>
                               </div>
@@ -1718,8 +1744,13 @@ function MainApp() {
                                 <div className="flex items-start space-x-3">
                                   <div className="w-5 h-5 bg-blue-500 rounded-full flex-shrink-0 mt-0.5"></div>
                                   <div>
-                                    <h4 className="font-medium text-blue-900 mb-1">Integrate with CMS</h4>
-                                    <p className="text-sm text-gray-700">Handle content queries, dynamic data, etc. via APIs.</p>
+                                    <h4 className="font-medium text-blue-900 mb-1">
+                                      Integrate with CMS
+                                    </h4>
+                                    <p className="text-sm text-gray-700">
+                                      Handle content queries, dynamic data, etc.
+                                      via APIs.
+                                    </p>
                                   </div>
                                 </div>
                               </div>
@@ -1727,8 +1758,13 @@ function MainApp() {
                                 <div className="flex items-start space-x-3">
                                   <div className="w-5 h-5 bg-blue-500 rounded-full flex-shrink-0 mt-0.5"></div>
                                   <div>
-                                    <h4 className="font-medium text-blue-900 mb-1">Work with Design teams</h4>
-                                    <p className="text-sm text-gray-700">Translate Figma designs exactly into UI using Builder.</p>
+                                    <h4 className="font-medium text-blue-900 mb-1">
+                                      Work with Design teams
+                                    </h4>
+                                    <p className="text-sm text-gray-700">
+                                      Translate Figma designs exactly into UI
+                                      using Builder.
+                                    </p>
                                   </div>
                                 </div>
                               </div>
@@ -1736,8 +1772,13 @@ function MainApp() {
                                 <div className="flex items-start space-x-3">
                                   <div className="w-5 h-5 bg-blue-500 rounded-full flex-shrink-0 mt-0.5"></div>
                                   <div>
-                                    <h4 className="font-medium text-blue-900 mb-1">Troubleshoot integrations</h4>
-                                    <p className="text-sm text-gray-700">Fix data binding, CI/CD, integrations issues.</p>
+                                    <h4 className="font-medium text-blue-900 mb-1">
+                                      Troubleshoot integrations
+                                    </h4>
+                                    <p className="text-sm text-gray-700">
+                                      Fix data binding, CI/CD, integrations
+                                      issues.
+                                    </p>
                                   </div>
                                 </div>
                               </div>
@@ -1745,8 +1786,13 @@ function MainApp() {
                                 <div className="flex items-start space-x-3">
                                   <div className="w-5 h-5 bg-blue-500 rounded-full flex-shrink-0 mt-0.5"></div>
                                   <div>
-                                    <h4 className="font-medium text-blue-900 mb-1">Optimize performance</h4>
-                                    <p className="text-sm text-gray-700">Improve load speeds, responsive/lazy images, etc.</p>
+                                    <h4 className="font-medium text-blue-900 mb-1">
+                                      Optimize performance
+                                    </h4>
+                                    <p className="text-sm text-gray-700">
+                                      Improve load speeds, responsive/lazy
+                                      images, etc.
+                                    </p>
                                   </div>
                                 </div>
                               </div>
@@ -1755,43 +1801,82 @@ function MainApp() {
 
                           {/* Required Technical Skills & Purpose */}
                           <div className="mb-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-3">Required Technical Skills & Purpose</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                              Required Technical Skills & Purpose
+                            </h3>
                             <div className="space-y-3">
                               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <h4 className="font-medium text-blue-900 mb-1">Builder.io</h4>
-                                <p className="text-sm text-gray-700">Visual frontend code overlays</p>
+                                <h4 className="font-medium text-blue-900 mb-1">
+                                  Builder.io
+                                </h4>
+                                <p className="text-sm text-gray-700">
+                                  Visual frontend code overlays
+                                </p>
                               </div>
                               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <h4 className="font-medium text-blue-900 mb-1">Visual HTML/CSS</h4>
-                                <p className="text-sm text-gray-700">Of pages</p>
+                                <h4 className="font-medium text-blue-900 mb-1">
+                                  Visual HTML/CSS
+                                </h4>
+                                <p className="text-sm text-gray-700">
+                                  Of pages
+                                </p>
                               </div>
                               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <h4 className="font-medium text-blue-900 mb-1">CSS (including Flexbox, Grid)</h4>
-                                <p className="text-sm text-gray-700">Styling, responsiveness, animations</p>
+                                <h4 className="font-medium text-blue-900 mb-1">
+                                  CSS (including Flexbox, Grid)
+                                </h4>
+                                <p className="text-sm text-gray-700">
+                                  Styling, responsiveness, animations
+                                </p>
                               </div>
                               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <h4 className="font-medium text-blue-900 mb-1">JavaScript</h4>
-                                <p className="text-sm text-gray-700">Interactive components</p>
+                                <h4 className="font-medium text-blue-900 mb-1">
+                                  JavaScript
+                                </h4>
+                                <p className="text-sm text-gray-700">
+                                  Interactive components
+                                </p>
                               </div>
                               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <h4 className="font-medium text-blue-900 mb-1">React / component logic</h4>
-                                <p className="text-sm text-gray-700">Used via Builder integrations into frontend</p>
+                                <h4 className="font-medium text-blue-900 mb-1">
+                                  React / component logic
+                                </h4>
+                                <p className="text-sm text-gray-700">
+                                  Used via Builder integrations into frontend
+                                </p>
                               </div>
                               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <h4 className="font-medium text-blue-900 mb-1">API Integration</h4>
-                                <p className="text-sm text-gray-700">Fetch data dynamically (REST/GraphQL)</p>
+                                <h4 className="font-medium text-blue-900 mb-1">
+                                  API Integration
+                                </h4>
+                                <p className="text-sm text-gray-700">
+                                  Fetch data dynamically (REST/GraphQL)
+                                </p>
                               </div>
                               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <h4 className="font-medium text-blue-900 mb-1">SEO Best Practices</h4>
-                                <p className="text-sm text-gray-700">Optimize for search, alt texts, structured data</p>
+                                <h4 className="font-medium text-blue-900 mb-1">
+                                  SEO Best Practices
+                                </h4>
+                                <p className="text-sm text-gray-700">
+                                  Optimize for search, alt texts, structured
+                                  data
+                                </p>
                               </div>
                               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <h4 className="font-medium text-blue-900 mb-1">Performance Optimization</h4>
-                                <p className="text-sm text-gray-700">Lazy loading, minification, caching</p>
+                                <h4 className="font-medium text-blue-900 mb-1">
+                                  Performance Optimization
+                                </h4>
+                                <p className="text-sm text-gray-700">
+                                  Lazy loading, minification, caching
+                                </p>
                               </div>
                               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <h4 className="font-medium text-blue-900 mb-1">Communication / Collaboration</h4>
-                                <p className="text-sm text-gray-700">Working with design/product teams</p>
+                                <h4 className="font-medium text-blue-900 mb-1">
+                                  Communication / Collaboration
+                                </h4>
+                                <p className="text-sm text-gray-700">
+                                  Working with design/product teams
+                                </p>
                               </div>
                             </div>
                           </div>
