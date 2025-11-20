@@ -1687,11 +1687,16 @@ function MainApp() {
                       <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-end p-4 overflow-y-auto">
                         <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[100vh] overflow-y-auto p-6">
                           {/* Header */}
-                          <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-8 h-8 rounded-full flex items-center justify-center text-black font-bold">
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                              <button
+                                className="w-8 h-8 text-gray-800 font-semibold"
+                                onClick={() =>
+                                  setShowRequisitionInfoModal(false)
+                                }
+                              >
                                 <ArrowLeft className="w-8 h-8" />
-                              </div>
+                              </button>
                               <h1 className="text-lg font-semibold text-gray-800">
                                 Requisition Info
                               </h1>
@@ -1701,15 +1706,15 @@ function MainApp() {
                             Builder.io Developer
                           </h2>
                           <div className="flex space-x-8 mt-2 mb-6">
-                            <span className="flex text-gray-500">
+                            <span className="flex items-center text-gray-500">
                               {" "}
                               <Briefcase className="w-4 h-4 mr-1" /> 8+ years
                             </span>
-                            <span className="flex text-gray-500">
+                            <span className="flex items-center text-gray-500">
                               {" "}
                               <LocateIcon className="w-4 h-4 mr-1" /> Hybrid
                             </span>
-                            <span className="flex text-gray-500">
+                            <span className="flex items-center text-gray-500">
                               {" "}
                               <FileSearch className="w-4 h-4 mr-1" /> Immediate
                             </span>
