@@ -1439,13 +1439,13 @@ const handleCopyProfile = async (applicationId: string) => {
           </div>
 
           <div className="font-['Gellix',_sans-serif]">
-            <div className="relative border-b border-[#818283] ">
-              <div className="flex items-center gap-12 px-8 pt-8">
+            <div className="relative">
+              <div className="flex items-center gap-12 px-8 pt-8 border-b border-[#818283]">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`relative pb-7 text-xl font-semibold transition-colors duration-200 ${
+                    className={`relative pb-4 text-xl font-semibold transition-colors duration-200 ${
                       activeTab === tab.id
                         ? "text-[#0F47F2]"
                         : "text-[#818283] hover:text-gray-500"
@@ -1454,7 +1454,7 @@ const handleCopyProfile = async (applicationId: string) => {
                     {tab.label}
                     {activeTab === tab.id && (
                       <div
-                        className="absolute bottom-0 left-0 right-0 h-1.5 bg-[#0F47F2] rounded-t-full"
+                        className="absolute bottom-0 left-0 right-0 h-1.3 bg-[#0F47F2] rounded-t-full"
                         style={{ borderRadius: "8px 8px 0 0" }}
                       />
                     )}
@@ -1480,7 +1480,7 @@ const handleCopyProfile = async (applicationId: string) => {
                           onDragOver={handleDragOver}
                           onDrop={(e) => handleDrop(e, stage.name)}
                         >
-                          <div className={`bg-white rounded-lg p-3 space-y-3`}>
+                          <div className={`bg-[#F5F9FB] rounded-lg p-3 space-y-3`}>
                             
                               <div className="w-full flex items-center justify-between gap-4 mb-4 bg-white border border-gray-200 py-2 pr-4 rounded-md">
                                 <div className="flex items-center gap-4">
