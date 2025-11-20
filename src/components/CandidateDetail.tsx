@@ -344,51 +344,45 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     return (
       <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
         {/* Top Badge */}
-        <div className="flex items-center mb-4">
-          <div className="bg-green-100 border border-green-300 rounded-md px-3 py-1 mr-2">
-            <span className="text-green-800 font-semibold text-sm">
-              Profile is VERY Strong Match
+        <div className="mb-4">
+          <div className="flex items-center gap-4 bg-green-100 rounded-md px-3 py-1 mr-2">
+            <span className="text-2xl bg-green-600 text-white p-2 rounded-md">
+              75%
             </span>
+            <div className="flex-col">
+              <span className="text-black text-sm">
+                Candidate is a VERY Strong Match
+              </span>
+              <span className="text-gray-400 text-sm">
+                This is one of those resumes that truly aligns with your JD
+              </span>
+            </div>
           </div>
-          <div className="text-2xl font-bold text-green-600">75%</div>
         </div>
-
-        {/* Description */}
-        <p className="text-gray-600 mb-6 text-sm">
-          This is one of three resumes that truly aligns with your JD
-        </p>
 
         {/* Quick Fit Summary */}
         <div className="mb-6">
-          <h3 className="text-md font-semibold mb-3 text-gray-800">
-            Quick Fit Summary
-          </h3>
+          <h3 className="text-md mb-3 text-gray-600">Quick Fit Summary</h3>
           <div className="flex flex-wrap gap-2">
-            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+            <span className="bg-blue-50 text-green-600 px-3 py-1 rounded-full text-sm ">
               8+ Years
             </span>
-            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+            <span className="bg-blue-50 text-green-600 px-3 py-1 rounded-full text-sm ">
               UI / Frontend Development
             </span>
-            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+            <span className="bg-blue-50 text-green-600 px-3 py-1 rounded-full text-sm ">
               SEO & Performance
             </span>
-            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+            <span className="bg-blue-50 text-green-600 px-3 py-1 rounded-full text-sm ">
               Pixel-perfect / Design Collaboration
             </span>
-            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+            <span className="bg-blue-50 text-green-600 px-3 py-1 rounded-full text-sm ">
               Communication
             </span>
-          </div>
-        </div>
-
-        {/* Builder.io Specific Fit */}
-        <div className="mb-6">
-          <div className="flex flex-wrap gap-2">
-            <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+            <span className="bg-blue-50 text-yellow-600 px-3 py-1 rounded-full text-sm font-medium">
               Builder.io Specific Fit
             </span>
-            <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+            <span className="bg-blue-50 text-red-700 px-3 py-1 rounded-full text-sm font-medium">
               Builder.io Specific Fit
             </span>
           </div>
@@ -396,20 +390,22 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
         {/* Gaps / Risks */}
         <div className="mb-6">
-          <h4 className="text-md font-semibold mb-3 text-gray-800">
-            Gaps / risks
-          </h4>
+          <h4 className="text-md mb-3 text-gray-400">Gaps / risks</h4>
           <ul className="space-y-2 text-sm text-gray-600">
-            <li>
+            <li className="bg-gray-50 px-3 py-2 rounded-md">
               • Builder.io experience appears experimental, not enterprise
               production
             </li>
-            <li>
+            <li className="bg-gray-50 px-3 py-2 rounded-md">
               • No direct mention of headless CMS platforms like Contentful /
             </li>
-            <li>• Sanity / Shopify</li>
-            <li>• Resume could explicitly list performance optimization &</li>
-            <li>• SEO practices</li>
+            <li className="bg-gray-50 px-3 py-2 rounded-md">
+              • Sanity / Shopify
+            </li>
+            <li className="bg-gray-50 px-3 py-2 rounded-md">
+              • Resume could explicitly list performance optimization &
+            </li>
+            <li className="bg-gray-50 px-3 py-2 rounded-md">• SEO practices</li>
           </ul>
         </div>
 
@@ -449,8 +445,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 />
               </svg>
             </div>
-            <div className="ml-3">
-              <p className="text-sm text-yellow-800">
+            <div className="ml-3 bg-orange-300">
+              <h3 className="text-yellow-600">Suggested Questions for Call</h3>
+              <p className="text-sm text-black">
                 Needs to verbally highlight Builder.io commercial usage during
                 screening/intro call.
               </p>
