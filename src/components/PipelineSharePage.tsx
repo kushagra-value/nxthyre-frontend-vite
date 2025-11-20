@@ -1350,7 +1350,7 @@ const handleCopyProfile = async (applicationId: string) => {
             <button className="absolute left-8 top-1/2 -translate-y-1/2">
               <ChevronLeft className="w-7 h-7 text-gray-600" />
             </button>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between pl-8">
               <div className="flex items-center gap-12">
                 <div>
                   <h1 className="text-2xl font-medium text-[#181D25] mb-2">
@@ -1439,7 +1439,7 @@ const handleCopyProfile = async (applicationId: string) => {
           </div>
 
           <div className="font-['Gellix',_sans-serif]">
-            <div className="relative border-b border-[#818283] bg-gray-900">
+            <div className="relative border-b border-[#818283] ">
               <div className="flex items-center gap-12 px-8 pt-12">
                 {tabs.map((tab) => (
                   <button
