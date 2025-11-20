@@ -30,7 +30,8 @@ import {
    PhoneIcon,
    Link,
    ChevronDown,
-   File
+   File,
+   ChevronLeft
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import apiClient from "../services/api"; // Adjust path as necessary
@@ -105,6 +106,18 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
         score: number;
       }[]
     >([]);
+
+    const [activeTab, setActiveTab] = useState("pipeline");
+
+    const tabs = [
+      { id: "pipeline", label: "Pipeline" },
+      { id: "activity", label: "Activity" },
+      { id: "calendar", label: "Calendar" },
+      { id: "notifications", label: "Notifications" },
+      { id: "inbox", label: "Inbox" },
+      { id: "archive", label: "Archive" },
+    ];
+
     const [date, setDate] = useState("");
     const [totalQuestions, setTotalQuestions] = useState(0);
 
@@ -560,7 +573,7 @@ const ArchiveIcon = () => (
 );
 
 // UPDATED: Add state to track which candidates are being copied (for per-button spinner)
-const [copyingCandidates, setCopyingCandidates] = useState(new Set<string>());
+const [copyingCandidates, setCopyingCandidates] = useState<Set<string>>(new Set());
 
 const handleCopyProfile = async (applicationId: string) => {
   // UPDATED: Set loading state for this candidate
@@ -588,6 +601,7 @@ const handleCopyProfile = async (applicationId: string) => {
     });
   }
 };
+
 
   const renderCandidateCard = (candidate: any, stage: string) => (
   <div
@@ -1271,6 +1285,13 @@ const handleCopyProfile = async (applicationId: string) => {
   const getStageCount = (stageName: string) =>
     stageCandidates[stageName]?.length || 0;
 
+  const location = "Bangalore";
+  const experience = "4+ years";
+  const workMode = "Hybrid";
+  const notice = "Immediate (max 15 Days)";
+  
+
+
   if (authLoading) {
     return <div>Loading authentication...</div>;
   }
@@ -1287,7 +1308,7 @@ const handleCopyProfile = async (applicationId: string) => {
     <>
       <div className="bg-gradient-to-b from-[#F2F5FF] to-[#DAF0FF]">
         <div className="mb-4 bg-white shadow-sm border-b border-gray-200 flex items-center justify-between max-w-full mx-auto px-7 py-2">
-          {/* logo */}
+          
           <div className="flex items-center">
               <svg width="124" height="61" viewBox="0 0 158 61" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <mask id="path-1-inside-1_2895_678" fill="white">
@@ -1323,15 +1344,33 @@ const handleCopyProfile = async (applicationId: string) => {
           </div>
         </div>
         <div className="mx-auto max-w-[95vw] min-h-screen space-y-4">
-          <div className="bg-white rounded-lg px-8 py-4">
+          
+          
+          <div className="relative bg-white rounded-xl shadow-lg px-8 py-6 font-['Gellix',_sans-serif]">
+            <button className="absolute left-8 top-1/2 -translate-y-1/2">
+              <ChevronLeft className="w-7 h-7 text-gray-600" />
+            </button>
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
-      
-                <h1 className="text-xl font-semibold text-gray-900">
-                  {pipelineName}
-                </h1>
+              <div className="flex items-center gap-12">
+                <div>
+                  <h1 className="text-2xl font-medium text-[#181D25] mb-2">
+                    {pipelineName}
+                  </h1>
+                  <div className="flex items-center gap-4 text-gray-500 text-base">
+                    <span>{location}</span>
+                    <div className="w-px h-5 bg-gray-400" />
+                    <span>{experience}</span>
+                    <div className="w-px h-5 bg-gray-400" />
+                    <span>{workMode}</span>
+                    <div className="w-px h-5 bg-gray-400" />
+                    <span>{notice}</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex gap-2 items-center">
+
+
+
+              <div className="flex items-center gap-6">
                 <div className="relative hidden sm:flex items-center rounded-lg px-3 py-1 border border-blue-200 bg-blue-50 cursor-pointer w-88">
                   <input
                     type="text"
@@ -1398,58 +1437,106 @@ const handleCopyProfile = async (applicationId: string) => {
               </div>
             </div>
           </div>
-          <div className="">
-            <div className="overflow-x-auto hide-scrollbar">
-              <div className="flex space-x-4 min-w-max pb-2">
-                {shareableStages.map((stage) => {
-                  const candidates = stageCandidates[stage.name] || [];
-                  const stageCount = getStageCount(stage.name);
-                  return (
-                    <div
-                      key={stage.name}
-                      className="w-96 h-[80vh] min-h-max"
-                      onDragOver={handleDragOver}
-                      onDrop={(e) => handleDrop(e, stage.name)}
-                    >
-                      <div className={`bg-white rounded-lg p-3 space-y-3`}>
-                        
-                          <div className="w-full flex items-center justify-between gap-4 mb-4 bg-white border border-gray-200 py-2 pr-4 rounded-md">
-                            <div className="flex items-center gap-4">
-                            <div className={`${stage.bgColor} w-1 h-8 rounded-tr-xl rounded-br-xl` }> 
-                            </div>
-                            <h3 className="font-[400] text-gray-900 text-lg">
-                                {stage.name}
-                            </h3>
-                            </div>
-                            <p
-                              className={`text-lg font-[400] text-gray-500 bg-gray-100 px-1 rounded-md `}
-                            >
-                              {stageCount}
-                            </p>
-                          </div>
-                        
-                        <div className="overflow-y-auto max-h-[70vh] hide-scrollbar">
-                          <div className="space-y-3">
-                            {candidates.map((candidate: any) =>
-                              renderCandidateCard(candidate, stage.name)
-                            )}
-                            {candidates.length === 0 && (
-                              <div className="text-center py-8 text-gray-400">
-                                <User className="w-8 h-8 mx-auto mb-2" />
-                                <p className="text-sm">No candidates</p>
+
+          <div className="font-['Gellix',_sans-serif]">
+            <div className="relative border-b border-[#818283] bg-gray-900">
+              <div className="flex items-center gap-12 px-8 pt-12">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`relative pb-7 text-xl font-semibold transition-colors duration-200 ${
+                      activeTab === tab.id
+                        ? "text-[#0F47F2]"
+                        : "text-[#818283] hover:text-gray-500"
+                    }`}
+                  >
+                    {tab.label}
+                    {activeTab === tab.id && (
+                      <div
+                        className="absolute bottom-0 left-0 right-0 h-1.5 bg-[#0F47F2] rounded-t-full"
+                        style={{ borderRadius: "8px 8px 0 0" }}
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 h-px bg-[#818283]" />
+            </div>
+
+          <div className="bg-gray-900 px-8 py-10 min-h-screen">
+            {activeTab === "pipeline" ? (
+              <div className="">
+
+                <div className="overflow-x-auto hide-scrollbar">
+                  <div className="flex space-x-4 min-w-max pb-2">
+                    {shareableStages.map((stage) => {
+                      const candidates = stageCandidates[stage.name] || [];
+                      const stageCount = getStageCount(stage.name);
+                      return (
+                        <div
+                          key={stage.name}
+                          className="w-96 h-[80vh] min-h-max"
+                          onDragOver={handleDragOver}
+                          onDrop={(e) => handleDrop(e, stage.name)}
+                        >
+                          <div className={`bg-white rounded-lg p-3 space-y-3`}>
+                            
+                              <div className="w-full flex items-center justify-between gap-4 mb-4 bg-white border border-gray-200 py-2 pr-4 rounded-md">
+                                <div className="flex items-center gap-4">
+                                <div className={`${stage.bgColor} w-1 h-8 rounded-tr-xl rounded-br-xl` }> 
+                                </div>
+                                <h3 className="font-[400] text-gray-900 text-lg">
+                                    {stage.name}
+                                </h3>
+                                </div>
+                                <p
+                                  className={`text-lg font-[400] text-gray-500 bg-gray-100 px-1 rounded-md `}
+                                >
+                                  {stageCount}
+                                </p>
                               </div>
-                            )}
+                            
+                            <div className="overflow-y-auto max-h-[70vh] hide-scrollbar">
+                              <div className="space-y-3">
+                                {candidates.map((candidate: any) =>
+                                  renderCandidateCard(candidate, stage.name)
+                                )}
+                                {candidates.length === 0 && (
+                                  <div className="text-center py-8 text-gray-400">
+                                    <User className="w-8 h-8 mx-auto mb-2" />
+                                    <p className="text-sm">No candidates</p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
-            </div>
+            ):(
+              <div className="flex items-center justify-center min-h-screen -mt-20">
+                <div className="bg-gray-800 border-2 border-dashed border-gray-600 rounded-3xl p-24 text-center max-w-2xl">
+                  <h2 className="text-5xl font-bold text-gray-400 mb-6">
+                    Feature Coming Soon
+                  </h2>
+                  <p className="text-2xl text-gray-500">
+                    The <span className="text-[#0F47F2] font-semibold">
+                      {tabs.find(t => t.id === activeTab)?.label}
+                    </span> section is under active development.
+                  </p>
+                  <p className="text-lg text-gray-600 mt-6">
+                    Stay tuned — exciting updates are on the way!
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-        
+        </div>
       </div>
       {showAccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
