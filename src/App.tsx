@@ -1690,9 +1690,9 @@ function MainApp() {
                           <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center space-x-2">
                               <div className="w-8 h-8 rounded-full flex items-center justify-center text-black font-bold">
-                                <ArrowLeft className="w-4 h-4 mr-1" />
+                                <ArrowLeft className="w-8 h-8" />
                               </div>
-                              <h1 className="text-xl font-bold text-gray-900">
+                              <h1 className="text-lg font-semibold text-gray-800">
                                 Requisition Info
                               </h1>
                             </div>
@@ -1700,16 +1700,16 @@ function MainApp() {
                           <h2 className="text-2xl font-semibold text-gray-900 mb-1">
                             Builder.io Developer
                           </h2>
-                          <div className="flex space-x-8">
-                            <span className="text-gray-600">
+                          <div className="flex space-x-8 mt-2 mb-6">
+                            <span className="flex text-gray-500">
                               {" "}
                               <Briefcase className="w-4 h-4 mr-1" /> 8+ years
                             </span>
-                            <span className="mx-2 text-gray-400">
+                            <span className="flex text-gray-500">
                               {" "}
                               <LocateIcon className="w-4 h-4 mr-1" /> Hybrid
                             </span>
-                            <span className="text-gray-600">
+                            <span className="flex text-gray-500">
                               {" "}
                               <FileSearch className="w-4 h-4 mr-1" /> Immediate
                             </span>
@@ -1717,7 +1717,7 @@ function MainApp() {
 
                           {/* Role Overview */}
                           <div className="mb-6">
-                            <h3 className="text-lg font-semibold text-gray-700 mb-3">
+                            <h3 className="text-lg font-semibold text-gray-700 mb-2">
                               Role Overview
                             </h3>
                             <p className="text-gray-600 text-sm">
@@ -1731,7 +1731,7 @@ function MainApp() {
 
                           {/* The Core Expectation */}
                           <div className="mb-6">
-                            <h3 className="text-lg font-semibold text-gray-700 mb-3">
+                            <h3 className="text-lg font-semibold text-gray-700 mb-2">
                               The Core Expectation
                             </h3>
                             <p className="text-gray-600 text-sm">
