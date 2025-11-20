@@ -1684,13 +1684,13 @@ function MainApp() {
                       </div>
                     )}
                     {showRequisitionInfoModal && (
-                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-end p-4 overflow-y-auto">
-                        <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[100vh] overflow-y-auto p-6">
+                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-end overflow-y-auto">
+                        <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[100vh] overflow-y-auto p-6">
                           {/* Header */}
                           <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
                               <button
-                                className="w-8 h-8 text-gray-800 font-semibold"
+                                className="w-8 h-8 text-gray-800"
                                 onClick={() =>
                                   setShowRequisitionInfoModal(false)
                                 }
