@@ -1514,7 +1514,7 @@ const handleCopyProfile = async (applicationId: string) => {
                         </div>
                       );
                     })}
-                    <div className="w-96 h-full bg-[#F5F9FB] rounded-[10px] flex flex-col items-center justify-center">
+                    <div className="w-96 h-[80vh] min-h-max bg-[#F5F9FB] rounded-lg flex flex-col items-center justify-center">
                       
                       <div className="flex flex-col items-center gap-4">
                         
