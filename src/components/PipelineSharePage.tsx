@@ -1528,8 +1528,8 @@ const handleCopyProfile = async (applicationId: string) => {
                         >
                           <div className={`bg-[#F5F9FB] h-full rounded-lg p-3 space-y-3`}>
 
-                            <div className="flex items-center mb-2">
-                              <div className={`w-0.5 h-6 ${stage.bgColor} rounded-r mr-3`}></div>
+                            <div className="flex relative items-center mb-2">
+                              <div className={`absolute left-[-8px] w-0.5 h-6 ${stage.bgColor} rounded-r mr-3`}></div>
                               <h1 className="text-xl font-medium text-gray-700"> {stage.name}</h1>
                               <button className="ml-auto">
                                 <div className="flex flex-col gap-0.5">
@@ -1552,6 +1552,10 @@ const handleCopyProfile = async (applicationId: string) => {
                                 <span className="text-3xl font-medium text-gray-700">{stageCount}</span>
                                 <span className="text-lg text-gray-400 ml-2">Total</span>
                               </div>
+                            </div>
+
+                            <div className="mb-4 w-full bg-white h-2 rounded-full mt-4 ml-4 mr-4">
+                              <div className="bg-blue-500 h-2 rounded-full" style={{ width: '91%' }}></div>
                             </div>
                             
                             <div className="overflow-y-auto max-h-[70vh] hide-scrollbar">
