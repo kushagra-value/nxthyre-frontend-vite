@@ -609,14 +609,14 @@ const handleCopyProfile = async (applicationId: string) => {
     key={candidate.id}
     draggable
     onDragStart={() => handleDragStart(candidate, stage)}
-    className={`relative bg-white rounded-lg p-4 mb-2 cursor-move hover:shadow-lg transition-all duration-200 border ${
-      highlightedCandidateId === candidate.id ? "border-blue-500 border-2" : "border-gray-200"
+    className={`relative bg-white rounded-2xl p-4 mb-2 cursor-move hover:shadow-lg transition-all duration-200 border ${
+      highlightedCandidateId === candidate.id ? "border-blue-500 border-2" : ""
     } hover:border-gray-300`}
   >
     <div className="absolute top-4 right-4 w-3 h-3 border border-gray-300 rounded"></div>
     
     {/* Main Grid Container - 12 columns */}
-    <div className="grid grid-cols-12 gap-3 items-start">
+    <div className="grid grid-cols-12 gap-3 items-center">
       
       {/* Profile Initials */}
       <div className="col-span-2">
@@ -637,7 +637,7 @@ const handleCopyProfile = async (applicationId: string) => {
       {/* Name and Title */}
       <div className="flex items-center col-span-8">
 
-        <div className="flex gap-0.5 mr-2">
+        <div className="flex items-end gap-0.5 mr-2">
           <div className={`w-0.5 h-4 bg-green-600 rounded`}></div>
           <div className={`w-0.5 h-3 bg-green-600 rounded`}></div>
           <div className={`w-0.5 h-2 bg-green-600 rounded`}></div>
@@ -652,10 +652,8 @@ const handleCopyProfile = async (applicationId: string) => {
         
       </div>
       
-      {/* Percentage Badge */}
-      <div className="col-span-2 text-right">
-        
-      </div>
+      
+      
       
       {/* Experience Info - starts from column 3 */}
       <div className="col-start-3 col-span-10">
@@ -666,13 +664,13 @@ const handleCopyProfile = async (applicationId: string) => {
       
       {/* Social Icons - starts from column 3 */}
       <div className="col-start-3 col-span-7">
-        <div className="flex gap-2 mt-2">
+        <div className="flex gap-2 mt-1">
           {candidate.socials.linkedin_url && (
           <button 
             onClick={() => window.open(candidate.socials.linkedin_url, '_blank')}
             className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-blue-50 transition-colors"
           >
-            <Linkedin className="w-3 h-3 text-blue-600" />
+            <Linkedin className="w-3 h-3 text-gray-500" />
           </button>
           )}
           {candidate.socials.github_url && (
@@ -680,7 +678,7 @@ const handleCopyProfile = async (applicationId: string) => {
             onClick={() => window.open(candidate.socials.github_url, '_blank')}
             className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-blue-50 transition-colors"
           >
-            <Github className="w-3 h-3 text-blue-600" />
+            <Github className="w-3 h-3 text-gray-500" />
           </button>
           )}
           {candidate.socials.resume_url && (
@@ -688,7 +686,7 @@ const handleCopyProfile = async (applicationId: string) => {
             onClick={() => window.open(candidate.socials.resume_url, '_blank')}
             className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-blue-50 transition-colors"
           >
-            <File className="w-3 h-3 text-blue-600" />
+            <File className="w-3 h-3 text-gray-500" />
           </button>
           )}
           <button 
@@ -701,7 +699,7 @@ const handleCopyProfile = async (applicationId: string) => {
             {copyingCandidates.has(candidate.id) ? (
               <div className="w-3 h-3 border-2 border-gray-200 border-t-transparent rounded-full animate-spin"></div>
             ) : (
-              <Copy className="w-3 h-3 text-gray-200" />
+              <Copy className="w-3 h-3 text-gray-500" />
             )}
           </button>
           <button 
@@ -714,20 +712,16 @@ const handleCopyProfile = async (applicationId: string) => {
               });
               setShowFeedbackModal(true);
             }}
-            className="w-6 h-6 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors ml-auto"
+            className="w-6 h-6 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
           >
             <CustomFileIcon />
           </button>
         </div>
       </div>
       
-      {/* Custom File Icon - below percentage, right aligned */}
-      <div className="mt-2 col-start-10 col-span-3 text-right">
-        
-      </div>
       
     </div>
-    <div className="border-t border-gray-200 mb-3"></div>
+    <div className="border-t border-gray-200 my-3"></div>
     <div className="flex items-center justify-between">
       <div className="flex gap-6 text-gray-900">
         <div className="flex items-center gap-2">
@@ -769,7 +763,7 @@ const handleCopyProfile = async (applicationId: string) => {
           <span className="text-base">7</span>
         </div>
       </div>
-      <div className={`text-2xl font-medium bg-[#1CB977]`}>
+      <div className={`text-2xl font-medium text-[#1CB977]`}>
         75%
       </div>
     </div>
