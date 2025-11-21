@@ -609,14 +609,14 @@ const handleCopyProfile = async (applicationId: string) => {
     key={candidate.id}
     draggable
     onDragStart={() => handleDragStart(candidate, stage)}
-    className={`relative bg-white rounded-2xl p-4 mb-2 cursor-move hover:shadow-lg transition-all duration-200 border ${
+    className={`relative bg-white rounded-2xl mb-2 cursor-move hover:shadow-lg transition-all duration-200 border ${
       highlightedCandidateId === candidate.id ? "border-blue-500 border-2" : ""
     } hover:border-gray-300`}
   >
     <div className="absolute top-4 right-4 w-3 h-3 border border-gray-300 rounded"></div>
     
     {/* Main Grid Container - 12 columns */}
-    <div className="grid grid-cols-12 gap-3 items-center">
+    <div className="px-4 pt-4 grid grid-cols-12 items-center">
       
       {/* Profile Initials */}
       <div className="col-span-2">
@@ -664,7 +664,7 @@ const handleCopyProfile = async (applicationId: string) => {
       
       {/* Social Icons - starts from column 3 */}
       <div className="col-start-3 col-span-7">
-        <div className="flex gap-2 mt-1">
+        <div className="flex gap-2 mt-4">
           {candidate.socials.linkedin_url && (
           <button 
             onClick={() => window.open(candidate.socials.linkedin_url, '_blank')}
@@ -722,7 +722,7 @@ const handleCopyProfile = async (applicationId: string) => {
       
     </div>
     <div className="border-t border-gray-200 my-3"></div>
-    <div className="flex items-center justify-between">
+    <div className="px-4 pb-4 flex items-center justify-between">
       <div className="flex gap-6 text-gray-900">
         <div className="flex items-center gap-2">
           <div className="relative">
