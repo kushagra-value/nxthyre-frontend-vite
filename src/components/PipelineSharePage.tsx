@@ -1529,8 +1529,8 @@ const handleCopyProfile = async (applicationId: string) => {
                           <div className={`bg-[#F5F9FB] h-full rounded-lg p-3 space-y-3`}>
 
                             <div className="flex relative items-center mb-2">
-                              <div className={`absolute left-[-8px] w-0.5 h-6 ${stage.bgColor} rounded-r mr-3`}></div>
-                              <h1 className="text-xl font-medium text-gray-700"> {stage.name}</h1>
+                              <div className={`absolute left-[-10px] w-2 h-6 ${stage.bgColor} rounded-r mr-3`}></div>
+                              <h1 className="pl-3 text-xl font-medium text-gray-700"> {stage.name}</h1>
                               <button className="ml-auto">
                                 <div className="flex flex-col gap-0.5">
                                   <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
@@ -1558,7 +1558,7 @@ const handleCopyProfile = async (applicationId: string) => {
                               <div className="bg-blue-500 h-2 rounded-full" style={{ width: '91%' }}></div>
                             </div>
                             
-                            <div className="overflow-y-auto max-h-[70vh] hide-scrollbar">
+                            <div className="mt-4 overflow-y-auto max-h-[70vh] hide-scrollbar">
                               <div className="space-y-3">
                                 {candidates.map((candidate: any) =>
                                   renderCandidateCard(candidate, stage.name)
