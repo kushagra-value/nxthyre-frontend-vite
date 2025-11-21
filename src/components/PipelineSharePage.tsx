@@ -1554,7 +1554,7 @@ const handleCopyProfile = async (applicationId: string) => {
                               </div>
                             </div>
 
-                            <div className="mb-4 w-full bg-white h-2 rounded-full mt-4 ml-4 mr-4">
+                            <div className="mb-8 w-[90%] bg-white h-2 rounded-full mt-4 ml-4 mr-4">
                               <div className="bg-blue-500 h-2 rounded-full" style={{ width: '91%' }}></div>
                             </div>
                             
