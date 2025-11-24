@@ -31,7 +31,7 @@ export default function StageTypeDropdown({ value, onChange }: StageTypeDropdown
     <div className="relative w-[478px] font-['Gellix',_sans-serif]">
       {/* Label */}
       <p className="text-lg font-medium text-[#4B5563] mb-3">
-        Stage Type <span className="text-red-500">*</span>
+        Stage Type <span className="text-[#0F47F2]">*</span>
       </p>
 
       {/* Trigger */}

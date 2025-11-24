@@ -6,6 +6,8 @@ export default function AddNewStageForm() {
   const [stageName, setStageName] = useState('F2F 1');
   const [stageType, setStageType] = useState('face-to-face');
   const [calendarInvite, setCalendarInvite] = useState(false);
+  const isBackgroundVerification = stageType === 'background';
+  const isMockCall = stageType === 'mock';
   const [reminders, setReminders] = useState({
     panel24h: true,
     candidate48h: true,
@@ -24,7 +26,7 @@ export default function AddNewStageForm() {
         {/* Stage Name */}
         <div className="mb-8">
           <label className="block text-lg font-medium text-[#4B5563] mb-3">
-            Stage Name <span className="text-red-500">*</span>
+            Stage Name <span className="text-[#0F47F2]">*</span>
           </label>
 
           <input
@@ -41,11 +43,47 @@ export default function AddNewStageForm() {
           <StageTypeDropdown value={stageType} onChange={setStageType} />
         </div>
 
-        {/* Calendar Invite Toggle */}
+        {isBackgroundVerification && (
+        <>
+          <div className="mb-8">
+            <h4 className="text-lg font-medium text-[#4B5563] mb-5">
+              Documents Required
+            </h4>
+            <div className="space-y-4">
+              {['ID Proof', '10th /12th Marksheet', 'College Transcript', 'Experience Letters', 'Pan Card'].map((doc) => (
+                <label key={doc} className="flex items-center gap-4 cursor-pointer">
+                  <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-[#0F47F2] focus:ring-[#0F47F2]" />
+                  <span className="text-lg font-normal text-[#0F47F2]">{doc}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-10 flex items-center justify-between">
+            <div>
+              <label className="block text-lg font-medium text-[#4B5563]">
+                Enable Reminders
+              </label>
+              <p className="text-lg font-normal text-[#818283] mt-1">
+                Enable reminders for candidates for upload documents
+              </p>
+            </div>
+            <button
+              onClick={() => setCalendarInvite(!calendarInvite)}
+              className={`relative w-14 h-8 rounded-full transition-colors ${calendarInvite ? 'bg-[#0F47F2]' : 'bg-[#D9D9D9]'}`}
+            >
+              <span className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform ${calendarInvite ? 'translate-x-6' : ''}`} />
+            </button>
+          </div>
+        </>
+      )}
+
+      {!isBackgroundVerification && !isMockCall && (
+        <>
         <div className="mb-10 flex items-center justify-between">
           <div>
             <label className="block text-lg font-medium text-[#4B5563]">
-              Calendar Invite <span className="text-red-500">*</span>
+              Calendar Invite <span className="text-[#0F47F2]">*</span>
             </label>
             <p className="text-lg font-normal text-[#818283] mt-1">
               Enable Scheduling invite to candidate for this round stage
@@ -63,7 +101,8 @@ export default function AddNewStageForm() {
           </button>
         </div>
 
-        {/* Reminders & Notifications */}
+        
+        
         <div className="mb-10">
           <h4 className="text-lg font-medium text-[#4B5563] mb-6">
             Reminders & Notifications
@@ -81,8 +120,9 @@ export default function AddNewStageForm() {
               <div className="relative w-5 h-5 border-2 border-[#0F47F2] rounded">
                 {reminders.panel24h && (
                   <>
-                    <div className="absolute inset-1 border-2 border-[#0F47F2]" />
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 border-2 border-[#0F47F2] rotate-45 translate-x-px -translate-y-px" />
+                    <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                   </>
                 )}
               </div>
@@ -102,8 +142,9 @@ export default function AddNewStageForm() {
               <div className="relative w-5 h-5 border-2 border-[#0F47F2] rounded">
                 {reminders.candidate48h && (
                   <>
-                    <div className="absolute inset-1 border-2 border-[#0F47F2]" />
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 border-2 border-[#0F47F2] rotate-45 translate-x-px -translate-y-px" />
+                   <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                   </>
                 )}
               </div>
@@ -123,8 +164,10 @@ export default function AddNewStageForm() {
               <div className="relative w-5 h-5 border-2 border-[#0F47F2] rounded">
                 {reminders.hr30min && (
                   <>
-                    <div className="absolute inset-1 border-2 border-[#0F47F2]" />
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 border-2 border-[#0F47F2] rotate-45 translate-x-px -translate-y-px" />
+                    <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+
                   </>
                 )}
               </div>
@@ -134,9 +177,11 @@ export default function AddNewStageForm() {
             </label>
           </div>
         </div>
+        </>
+      )}
 
         {/* Action Buttons - Fixed Bottom */}
-        <div className="absolute bottom-0 left-0 right-0 bg-[#F5F9FB] px-8 py-6 border-t border-gray-200 flex justify-end gap-4">
+        <div className="absolute bottom-0 left-0 right-0 bg-[#F5F9FB] px-8 py-6 border-t border-gray-200 flex justify-left gap-4">
           <button className="px-6 py-3 text-lg font-medium text-[#0F47F2] bg-[#ECF1FF] border border-[#0F47F2] rounded-lg hover:bg-blue-50 transition">
             Cancel
           </button>
