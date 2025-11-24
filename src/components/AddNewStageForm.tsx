@@ -2,7 +2,11 @@
 import { useState } from 'react';
 import StageTypeDropdown from './StageTypeDropdown';
 
-export default function AddNewStageForm() {
+interface AddNewStageFormProps {
+  onClose: () => void;
+}
+
+export default function AddNewStageForm({ onClose }: AddNewStageFormProps) {
   const [stageName, setStageName] = useState('F2F 1');
   const [stageType, setStageType] = useState('face-to-face');
   const [calendarInvite, setCalendarInvite] = useState(false);
@@ -117,10 +121,10 @@ export default function AddNewStageForm() {
                 onChange={(e) => setReminders({ ...reminders, panel24h: e.target.checked })}
                 className="sr-only"
               />
-              <div className="relative w-5 h-5 border-2 border-[#0F47F2] rounded">
+              <div className="flex items-center justify-center w-5 h-5 border-2 border-[#0F47F2] rounded">
                 {reminders.panel24h && (
                   <>
-                    <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="10" height="10" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                   </>
@@ -139,10 +143,10 @@ export default function AddNewStageForm() {
                 onChange={(e) => setReminders({ ...reminders, candidate48h: e.target.checked })}
                 className="sr-only"
               />
-              <div className="relative w-5 h-5 border-2 border-[#0F47F2] rounded">
+              <div className="flex items-center justify-center w-5 h-5 border-2 border-[#0F47F2] rounded">
                 {reminders.candidate48h && (
                   <>
-                   <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                   <svg width="10" height="10" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                   </>
@@ -161,10 +165,10 @@ export default function AddNewStageForm() {
                 onChange={(e) => setReminders({ ...reminders, hr30min: e.target.checked })}
                 className="sr-only"
               />
-              <div className="relative w-5 h-5 border-2 border-[#0F47F2] rounded">
+              <div className="flex items-center justify-center w-5 h-5 border-2 border-[#0F47F2] rounded">
                 {reminders.hr30min && (
                   <>
-                    <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="10" height="10" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
 
@@ -182,7 +186,10 @@ export default function AddNewStageForm() {
 
         {/* Action Buttons - Fixed Bottom */}
         <div className="absolute bottom-0 left-0 right-0 bg-[#F5F9FB] px-8 py-6 border-t border-gray-200 flex justify-left gap-4">
-          <button className="px-6 py-3 text-lg font-medium text-[#0F47F2] bg-[#ECF1FF] border border-[#0F47F2] rounded-lg hover:bg-blue-50 transition">
+          <button
+            onClick={onClose}
+            className="px-6 py-3 text-lg font-medium text-[#0F47F2] bg-[#ECF1FF] border border-[#0F47F2] rounded-lg hover:bg-blue-50 transition"
+          >
             Cancel
           </button>
           <button className="px-8 py-3 text-lg font-medium text-[#F5F9FB] bg-[#0F47F2] rounded-lg hover:bg-blue-700 transition">

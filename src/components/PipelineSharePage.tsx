@@ -1837,15 +1837,10 @@ const handleCopyProfile = async (applicationId: string) => {
       {showAddStageForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
           <div className="ml-auto">
-            <AddNewStageForm />
+            <AddNewStageForm onClose={() => setShowAddStageForm(false)} />
           </div>
-          {/* Close button */}
-          <button
-            onClick={() => setShowAddStageForm(false)}
-            className="absolute top-8 left-8 bg-white rounded-full p-3 shadow-lg hover:bg-gray-100 transition"
-          >
-            <X className="w-6 h-6 text-gray-600" />
-          </button>
+          
+          
         </div>
       )}
       {showCandidateProfile && renderCandidateProfile()}
