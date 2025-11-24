@@ -46,13 +46,13 @@ export default function StageTypeDropdown({ value, onChange }: StageTypeDropdown
 
         {/* Custom Blue Arrow (flips on open) */}
         <div className="w-5 h-5 relative">
-          <div
-            className="absolute inset-0 bg-[#0F47F2] transition-transform duration-300"
-            style={{
-              clipPath: 'polygon(20% 30%, 50% 70%, 80% 30%)',
+          
+          <svg className='absolute inset-0 transition-transform duration-300' style={{
               transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-            }}
-          />
+            }}  width="16" height="8" viewBox="0 0 16 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M16 1.01101L14.8752 0L7.9896 6.00817L7.2552 5.36719L7.2592 5.37074L1.1416 0.0326705L0 1.02841C1.6904 2.50405 6.4112 6.62327 7.9896 8C9.1624 6.97745 8.0192 7.97464 16 1.01101Z" fill="#0F47F2"/>
+          </svg>
+
         </div>
       </button>
 

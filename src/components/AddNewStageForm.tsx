@@ -17,6 +17,13 @@ export default function AddNewStageForm({ onClose }: AddNewStageFormProps) {
     candidate48h: true,
     hr30min: true,
   });
+  const [documentRequired, setDocumentRequired] = useState({
+    idProof: true,
+    marksheets_10th_12th: true,
+    collegeTranscript: true,
+    experienceLetters: true,
+    panCard:true
+  });
 
   return (
     <div className="fixed inset-y-0 right-0 w-[563px] bg-[#F5F9FB] rounded-l-3xl shadow-2xl overflow-y-auto font-['Gellix',_sans-serif]">
@@ -54,12 +61,106 @@ export default function AddNewStageForm({ onClose }: AddNewStageFormProps) {
               Documents Required
             </h4>
             <div className="space-y-4">
-              {['ID Proof', '10th /12th Marksheet', 'College Transcript', 'Experience Letters', 'Pan Card'].map((doc) => (
-                <label key={doc} className="flex items-center gap-4 cursor-pointer">
-                  <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-[#0F47F2] focus:ring-[#0F47F2]" />
-                  <span className="text-lg font-normal text-[#0F47F2]">{doc}</span>
-                </label>
-              ))}
+              <label className="flex items-center gap-4 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={documentRequired.idProof}
+                  onChange={(e) => setDocumentRequired({ ...documentRequired, idProof: e.target.checked })}
+                  className="sr-only"
+                />
+                <div className="flex items-center justify-center w-5 h-5 border-2 border-[#0F47F2] rounded">
+                  {documentRequired.idProof && (
+                    <>
+                      <svg width="10" height="10" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </>
+                  )}
+                </div>
+                <span className="text-lg font-normal text-[#0F47F2]">
+                  ID Proof
+                </span>
+              </label>
+              <label className="flex items-center gap-4 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={documentRequired.marksheets_10th_12th}
+                  onChange={(e) => setDocumentRequired({ ...documentRequired, marksheets_10th_12th: e.target.checked })}
+                  className="sr-only"
+                />
+                <div className="flex items-center justify-center w-5 h-5 border-2 border-[#0F47F2] rounded">
+                  {documentRequired.marksheets_10th_12th && (
+                    <>
+                      <svg width="10" height="10" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </>
+                  )}
+                </div>
+                <span className="text-lg font-normal text-[#0F47F2]">
+                  10th/12th Marksheet
+                </span>
+              </label>
+              <label className="flex items-center gap-4 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={documentRequired.collegeTranscript}
+                  onChange={(e) => setDocumentRequired({ ...documentRequired, collegeTranscript: e.target.checked })}
+                  className="sr-only"
+                />
+                <div className="flex items-center justify-center w-5 h-5 border-2 border-[#0F47F2] rounded">
+                  {documentRequired.collegeTranscript && (
+                    <>
+                      <svg width="10" height="10" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </>
+                  )}
+                </div>
+                <span className="text-lg font-normal text-[#0F47F2]">
+                  College Transcript
+                </span>
+              </label>
+              <label className="flex items-center gap-4 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={documentRequired.experienceLetters}
+                  onChange={(e) => setDocumentRequired({ ...documentRequired, experienceLetters: e.target.checked })}
+                  className="sr-only"
+                />
+                <div className="flex items-center justify-center w-5 h-5 border-2 border-[#0F47F2] rounded">
+                  {documentRequired.experienceLetters && (
+                    <>
+                      <svg width="10" height="10" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </>
+                  )}
+                </div>
+                <span className="text-lg font-normal text-[#0F47F2]">
+                  Experience Letters
+                </span>
+              </label>
+              <label className="flex items-center gap-4 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={documentRequired.panCard}
+                  onChange={(e) => setDocumentRequired({ ...documentRequired, panCard: e.target.checked })}
+                  className="sr-only"
+                />
+                <div className="flex items-center justify-center w-5 h-5 border-2 border-[#0F47F2] rounded">
+                  {documentRequired.panCard && (
+                    <>
+                      <svg width="10" height="10" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </>
+                  )}
+                </div>
+                <span className="text-lg font-normal text-[#0F47F2]">
+                  Pan Card
+                </span>
+              </label>
             </div>
           </div>
 
