@@ -1582,7 +1582,7 @@ const handleCopyProfile = async (applicationId: string) => {
                     <button
                       onClick={() => setShowAddStageForm(true)}
                       className="absolute inset-0 w-full h-full cursor-pointer hover:bg-black/5 transition-colors rounded-lg"
-                    />
+                    >
 
                     <div className="flex flex-col items-center gap-4 z-10">
                       <div className="w-[62px] h-[62px]">
@@ -1596,6 +1596,7 @@ const handleCopyProfile = async (applicationId: string) => {
                         Add Custom Stage
                       </h3>
                     </div>
+                    </button>
                   </div>
                   </div>
                 </div>
