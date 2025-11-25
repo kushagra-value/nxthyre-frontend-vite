@@ -380,6 +380,35 @@ export type Note = {
   };
 };
 
+export interface CandidateMatchScore {
+  score: string;
+  label: string;
+  description: string;
+  note: string;
+}
+
+export interface QuickFitItem {
+  badge: string;
+  status: string;
+  color: string;
+}
+
+export interface AnalysisResult {
+  candidate_id: string;
+  candidate_name: string;
+  candidate_match_score: CandidateMatchScore;
+  quick_fit_summary: QuickFitItem[];
+  gaps_risks: string[];
+  recommended_message: string;
+  call_attention: string[];
+}
+
+export interface AnalyzeResponse {
+  analysis_results: AnalysisResult[];
+  total_candidates: number;
+  bool_query_used: string;
+}
+
 class CandidateService {
   async getCandidates(filters: any): Promise<CandidateSearchResponse> {
     try {
@@ -778,9 +807,27 @@ class CandidateService {
     }
   }
 
-  async getCandidateBooleanSearch(candidateId: string): Promise<string> {
-    //dummy data to bypass api errors during demo
-    return "yuvraj";
+  async getCandidateBooleanSearch(
+    candidateId: string
+  ): Promise<AnalysisResult> {
+    try {
+      const boolQuery =
+        "(Senior ML Engineer OR Lead ML Engineer)\nAND (Python)\nAND (PyTorch OR TensorFlow)\nAND (MLOps)\nAND (Kubernetes OR Docker)";
+      const response = await apiClient.post("/api/candidates/analyze/", {
+        candidate_ids: [candidateId],
+        bool_query: boolQuery,
+      });
+      const data: AnalyzeResponse = response.data;
+      if (data.analysis_results && data.analysis_results.length > 0) {
+        return data.analysis_results[0];
+      } else {
+        throw new Error("No analysis results");
+      }
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch boolean search"
+      );
+    }
   }
 }
 

@@ -1685,9 +1685,6 @@ function MainApp() {
                     )}
                     {showRequisitionInfoModal && (
                       <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-end overflow-y-auto">
-                        <button
-                          onClick={() => setShowRequisitionInfoModal(false)}
-                        ></button>
                         <div className="bg-white rounded-3xl shadow-xl max-w-2xl w-full max-h-[100vh] overflow-y-auto p-6">
                           {/* Header */}
                           <div className="flex items-center justify-between mb-4">
