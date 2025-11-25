@@ -123,6 +123,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       : `95********89`;
 
   const [booleanData, setBooleanData] = useState<AnalysisResult | null>(null);
+  const [hasBooleanAnalysis, setHasBooleanAnalysis] = useState(false);
 
   useEffect(() => {
     const fetchBooleanSearch = async () => {
@@ -132,8 +133,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             candidate.id
           );
           setBooleanData(data);
+          setHasBooleanAnalysis(true); // API returned valid data → show tab
         } catch (error) {
           console.error("Error fetching boolean search:", error);
+          setBooleanData(null);
+          setHasBooleanAnalysis(false); // No data or error → hide tab
         }
       }
     };
@@ -148,6 +152,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     { name: "References" },
     { name: "Notes" },
   ];
+
+  // Now filter the tabs dynamically
+  const visibleTabs = tabs.filter(
+    (tab) => tab.name !== "Boolean-Search" || hasBooleanAnalysis
+  );
 
   interface NotesTabProps {
     candidateId: string;
@@ -1393,7 +1402,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       </div>
 
       <div className="flex space-x-4 border-b border-gray-200">
-        {tabs.map((tab) => (
+        {visibleTabs.map((tab) => (
           <button
             key={tab.name}
             onClick={() => setActiveTab(tab.name)}
@@ -1403,13 +1412,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            {booleanData ? (
-              tab.name
-            ) : tab.name === "Boolean-Search" ? (
-              <div className="hidden"></div>
-            ) : (
-              tab.name
-            )}
+            {tab.name}
             {tab.name === "Notes" && (
               <span className="ml-1">
                 ({detailedCandidate?.candidate?.notes?.length || 0})
