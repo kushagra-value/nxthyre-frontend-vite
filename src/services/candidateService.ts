@@ -813,7 +813,7 @@ class CandidateService {
     try {
       const boolQuery =
         "(Senior ML Engineer OR Lead ML Engineer)\nAND (Python)\nAND (PyTorch OR TensorFlow)\nAND (MLOps)\nAND (Kubernetes OR Docker)";
-      const response = await apiClient.post("/api/candidates/analyze/", {
+      const response = await apiClient.post("/candidates/analyze/", {
         candidate_ids: [candidateId],
         bool_query: boolQuery,
       });
