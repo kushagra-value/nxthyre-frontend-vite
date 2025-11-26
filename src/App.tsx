@@ -17,6 +17,7 @@ import Cookies from "js-cookie";
 import {
   candidateService,
   CandidateListItem,
+  CandidateSearchResponse,
 } from "./services/candidateService";
 import Header from "./components/Header";
 import TermsAndConditions from "./components/TermsAndConditions";
@@ -177,6 +178,7 @@ function MainApp() {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [showRequisitionInfoModal, setShowRequisitionInfoModal] =
     useState(false);
+  const [defaultBoolQuery, setDefaultBoolQuery] = useState<string>("");
 
   useEffect(() => {
     const fetchWorkspaces = async () => {
@@ -295,9 +297,9 @@ function MainApp() {
     async (page: number = 1, appliedFilters: any) => {
       setLoadingCandidates(true);
       try {
-        let response;
+        let response: CandidateSearchResponse;
         if (debouncedSearchQuery.trim() !== "") {
-          const response = await candidateService.universalSearch(
+          response = await candidateService.universalSearch(
             debouncedSearchQuery,
             controller.signal
           );
@@ -348,127 +350,20 @@ function MainApp() {
             is_active: false,
             sort_by: sortBy || "",
           });
+          setDefaultBoolQuery(""); // Clear during search mode
         } else {
-          const filterParams: any = {
-            page,
-            page_size: 20,
-            job_id: appliedFilters.jobId,
-            tab: appliedFilters.application_type,
-            sort_by: sortBy,
-          };
-          const isValidNumber = (value: string) => /^\d+$/.test(value);
-          if (appliedFilters.keywords && appliedFilters.keywords.length > 0) {
-            filterParams.q = appliedFilters.keywords; // Pass array directly
+          response = await candidateService.getCandidates(appliedFilters, page);
+          setCandidates(response.results);
+          setTotalCount(response.count);
+          if (response.sourcing_counts) {
+            setSourcingCounts(response.sourcing_counts);
           }
-          if (
-            appliedFilters.minTotalExp &&
-            isValidNumber(appliedFilters.minTotalExp)
-          ) {
-            filterParams.experience_min = appliedFilters.minTotalExp;
-          }
-          if (
-            appliedFilters.maxTotalExp &&
-            isValidNumber(appliedFilters.maxTotalExp)
-          ) {
-            filterParams.experience_max = appliedFilters.maxTotalExp;
-          }
-          if (
-            appliedFilters.minExperience &&
-            isValidNumber(appliedFilters.minExperience)
-          ) {
-            filterParams.exp_in_current_company_min =
-              appliedFilters.minExperience;
-          }
-          if (appliedFilters.topTierUniversities)
-            filterParams.is_top_tier_college =
-              appliedFilters.topTierUniversities;
-          if (appliedFilters.hasCertification)
-            filterParams.has_certification = appliedFilters.hasCertification;
-          if (appliedFilters.locations && appliedFilters.locations.length > 0)
-            filterParams.locations = appliedFilters.locations;
-          if (appliedFilters.companies)
-            filterParams.companies = appliedFilters.companies
-              .split(",")
-              .map((c: string) => c.trim());
-          if (appliedFilters.industries)
-            filterParams.industries = appliedFilters.industries
-              .split(",")
-              .map((i: string) => i.trim());
-          if (
-            appliedFilters.minSalary &&
-            isValidNumber(appliedFilters.minSalary)
-          )
-            filterParams.salary_min = appliedFilters.minSalary;
-          if (
-            appliedFilters.maxSalary &&
-            isValidNumber(appliedFilters.maxSalary)
-          )
-            filterParams.salary_max = appliedFilters.maxSalary;
-          if (appliedFilters.colleges)
-            filterParams.colleges = appliedFilters.colleges
-              .split(",")
-              .map((c: string) => c.trim());
-          if (appliedFilters.showFemaleCandidates)
-            filterParams.is_female_only = true;
-          if (appliedFilters.recentlyPromoted)
-            filterParams.is_recently_promoted = true;
-          if (appliedFilters.backgroundVerified)
-            filterParams.is_background_verified = true;
-          if (appliedFilters.hasLinkedIn) filterParams.has_linkedin = true;
-          if (appliedFilters.hasTwitter) filterParams.has_twitter = true;
-          if (appliedFilters.hasPortfolio) filterParams.has_portfolio = true;
-          if (appliedFilters.computerScienceGraduates)
-            filterParams.is_cs_graduate = true;
-          if (appliedFilters.hasResearchPaper)
-            filterParams.has_research_paper = true;
-          if (appliedFilters.hasBehance) filterParams.has_behance = true;
-          if (appliedFilters.is_prevetted) filterParams.is_prevetted = true;
-          if (appliedFilters.is_active) filterParams.is_active = true;
-          if (appliedFilters.noticePeriod) {
-            const noticePeriodOptions = [
-              "Immediate",
-              "15 days",
-              "30 days",
-              "45 days",
-              "60 days",
-              "90 days",
-            ] as const;
-            type NoticePeriod = (typeof noticePeriodOptions)[number];
-            const days: Record<NoticePeriod, number> = {
-              Immediate: 0,
-              "15 days": 15,
-              "30 days": 30,
-              "45 days": 45,
-              "60 days": 60,
-              "90 days": 90,
-            };
-            if (
-              noticePeriodOptions.includes(
-                appliedFilters.noticePeriod as NoticePeriod
-              )
-            ) {
-              filterParams.notice_period_max_days =
-                days[appliedFilters.noticePeriod as NoticePeriod];
-            } else {
-              console.warn(
-                "Invalid notice period:",
-                appliedFilters.noticePeriod
-              );
-            }
-          }
-          if (isAuthenticated) {
-            response = await candidateService.searchCandidates(filterParams);
-            setCandidates(response.results);
-            setTotalCount(response.count);
-            if (response.sourcing_counts) {
-              setSourcingCounts(response.sourcing_counts);
-            }
-            if (response.results.length === 0) {
-              setSelectedCandidate(null);
-              showToast.error("No results found for the applied filters.");
-            } else if (response.results.length > 0) {
-              setSelectedCandidate(response.results[0]);
-            }
+          setDefaultBoolQuery(response.boolean_search_terms || "");
+          if (response.results.length === 0) {
+            setSelectedCandidate(null);
+            showToast.error("No results found for the applied filters.");
+          } else if (response.results.length > 0) {
+            setSelectedCandidate(response.results[0]);
           }
         }
       } catch (error) {
@@ -660,6 +555,7 @@ function MainApp() {
         is_active: false,
         sort_by: "",
       });
+      setDefaultBoolQuery("");
       showToast.success("Successfully logged out");
       navigate("/");
     } catch (error) {
@@ -1438,6 +1334,7 @@ function MainApp() {
                         <div className="lg:w-[25%] sticky order-1 lg:order-1 top-16 self-start will-change-transform z-10">
                           <FiltersSidebar
                             filters={filters}
+                            defaultBoolQuery={defaultBoolQuery}
                             onApplyFilters={handleApplyFilters}
                             setCandidates={setCandidates}
                             candidates={candidates}
