@@ -257,11 +257,16 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         tempFilters.jobId
       ) {
         try {
-          // Assuming candidateService has a method like this; implement if needed
-          const defaultQuery = await candidateService.getDefaultBoolQuery(
-            tempFilters.jobId
-          );
-          updateTempFilters("boolQuery", defaultQuery);
+          // Call getCandidates with empty boolQuery to get default from backend response
+          const response = await candidateService.getCandidates({
+            ...tempFilters,
+            boolQuery: "", // Empty to signal backend for default
+          });
+          if (response.boolean_search_terms) {
+            updateTempFilters("boolQuery", response.boolean_search_terms);
+          }
+          // Optionally update candidates with this initial search (since it fetches results too)
+          setCandidates(response.results || []);
         } catch (error) {
           console.error("Failed to fetch default boolean query:", error);
           showToast.error("Failed to load default boolean query.");
@@ -270,8 +275,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     };
 
     fetchDefaultBoolQuery();
-  }, [tempFilters.booleanSearch, tempFilters.jobId]); // Trigger when booleanSearch toggles on
-
+  }, [tempFilters.booleanSearch, tempFilters.jobId, tempFilters.boolQuery]);
   useEffect(() => {
     // Ensure keywords is always an array when filters change
     setTempFilters({

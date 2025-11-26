@@ -69,6 +69,7 @@ export interface CandidateSearchResponse {
     active: number;
     prevetted: number;
   };
+  boolean_search_terms?: string;
 }
 
 export interface TestEmailResponse {
@@ -421,16 +422,20 @@ class CandidateService {
   //   }
   // }
 
+  // Replace the existing getCandidates method with:
   async getCandidates(filters: any): Promise<CandidateSearchResponse> {
     try {
-      const requestBody = {
+      const requestBody: any = {
         job_id: filters.jobId,
-        ...(filters.booleanSearch && filters.boolQuery
-          ? { bool_q: filters.boolQuery }
-          : {}),
         tab: filters.application_type,
-        // Add other filters as needed
+        // ... add other filters as needed (e.g., locations, experience, etc.)
       };
+
+      // Include bool_q only if booleanSearch is true
+      if (filters.booleanSearch) {
+        requestBody.bool_q = filters.boolQuery || ""; // Empty triggers backend default (assumed)
+      }
+
       const response = await apiClient.post(
         "/candidates/search/?page=1",
         requestBody
