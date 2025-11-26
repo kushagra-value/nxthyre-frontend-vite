@@ -28,6 +28,7 @@ interface FiltersSidebarProps {
   filters: {
     keywords: string[];
     booleanSearch: boolean;
+    boolQuery?: string;
     semanticSearch: boolean;
     selectedCategories: string[];
     minExperience: string;
@@ -154,6 +155,42 @@ const FilterMenu: React.FC<FilterMenuProps> = ({
   );
 };
 
+const BooleanSearchComponent: React.FC<{
+  boolQuery: string;
+  onChange: (query: string) => void;
+  onClose: () => void;
+}> = ({ boolQuery, onChange, onClose }) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [boolQuery]);
+
+  return (
+    <div className="relative">
+      <textarea
+        ref={textareaRef}
+        value={boolQuery}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Enter your boolean search query here..."
+        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none min-h-[80px]"
+        rows={1}
+      />
+      <button
+        onClick={onClose}
+        className="absolute top-2 right-2 p-1 bg-yellow-200 rounded-full hover:bg-yellow-300 transition-colors"
+        title="Close Boolean Search"
+      >
+        <X className="w-3 h-3 text-yellow-600" />
+      </button>
+    </div>
+  );
+};
+
 type SectionKey =
   | "keywords"
   | "experience"
@@ -200,6 +237,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const [tempFilters, setTempFilters] = useState({
     ...filters,
     keywords: Array.isArray(filters.keywords) ? filters.keywords : [],
+    boolQuery: filters.boolQuery || "",
   });
 
   const [currentKeyword, setCurrentKeyword] = useState<string>("");
@@ -208,17 +246,42 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const [citiesList, setCitiesList] = useState<string[]>([]);
   const [cityToCountryMap, setCityToCountryMap] = useState<
     Record<string, string>
-  >({}); 
+  >({});
+
+  // New: Fetch default bool query when booleanSearch is enabled and query is empty
+  useEffect(() => {
+    const fetchDefaultBoolQuery = async () => {
+      if (
+        tempFilters.booleanSearch &&
+        !tempFilters.boolQuery &&
+        tempFilters.jobId
+      ) {
+        try {
+          // Assuming candidateService has a method like this; implement if needed
+          const defaultQuery = await candidateService.getDefaultBoolQuery(
+            tempFilters.jobId
+          );
+          updateTempFilters("boolQuery", defaultQuery);
+        } catch (error) {
+          console.error("Failed to fetch default boolean query:", error);
+          showToast.error("Failed to load default boolean query.");
+        }
+      }
+    };
+
+    fetchDefaultBoolQuery();
+  }, [tempFilters.booleanSearch, tempFilters.jobId]); // Trigger when booleanSearch toggles on
 
   useEffect(() => {
     // Ensure keywords is always an array when filters change
     setTempFilters({
       ...filters,
       keywords: filters.keywords || [],
+      boolQuery: filters.boolQuery || "",
     });
   }, [filters]);
 
-   useEffect(() => {
+  useEffect(() => {
     fetch("https://countriesnow.space/api/v0.1/countries")
       .then((res) => res.json())
       .then((data) => {
@@ -321,36 +384,46 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   };
 
   const updateTempFilters = (key: string, value: any) => {
-    
     let newFilters = { ...tempFilters, [key]: value };
 
-    if (key === "city" && value) {
-    // When a city is selected, add it to locations and clear the city dropdown
-     const trimmed = value.trim();
-    const lower = trimmed.toLowerCase();
-    
-    if (tempFilters.locations.some((loc) => loc.toLowerCase() === lower)) {
-      showToast.error("This location is already added.");
-      return;
+    // New: Handle booleanSearch toggle logic
+    if (key === "booleanSearch") {
+      if (value === true) {
+        // Clear keywords when enabling boolean search
+        newFilters.keywords = [];
+      } else {
+        // Optionally clear boolQuery when disabling, or keep it
+        newFilters.boolQuery = "";
+      }
     }
-    newFilters = {
-      ...newFilters,
-      city: "",
-      locations: [...tempFilters.locations, trimmed], // Clear the city dropdown after adding to locations
-      // Keep the country selected so cities list remains available
-      country: cityToCountryMap[value] || tempFilters.country,
-    };
-   } else if (key === "country") {
-    setIsLocationManuallyEdited(false);
-    newFilters = {
-      ...newFilters,
-      country: value,
-      city: "", // Reset city when country changes
-    };
-  }
+
+    if (key === "city" && value) {
+      // When a city is selected, add it to locations and clear the city dropdown
+      const trimmed = value.trim();
+      const lower = trimmed.toLowerCase();
+
+      if (tempFilters.locations.some((loc) => loc.toLowerCase() === lower)) {
+        showToast.error("This location is already added.");
+        return;
+      }
+      newFilters = {
+        ...newFilters,
+        city: "",
+        locations: [...tempFilters.locations, trimmed], // Clear the city dropdown after adding to locations
+        // Keep the country selected so cities list remains available
+        country: cityToCountryMap[value] || tempFilters.country,
+      };
+    } else if (key === "country") {
+      setIsLocationManuallyEdited(false);
+      newFilters = {
+        ...newFilters,
+        country: value,
+        city: "", // Reset city when country changes
+      };
+    }
 
     setTempFilters(newFilters);
-    
+
     if (key === "keywords") {
       fetchKeywordSuggestions(currentKeyword);
     }
@@ -398,12 +471,13 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     }
   };
 
-
-  const handleLocationInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLocationInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const value = e.target.value;
     setCurrentLocation(value);
   };
-  
+
   const handleKeywordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -435,11 +509,21 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     updateTempFilters("locations", updatedLocations);
   };
 
+  // New: Handle close boolean search
+  const handleCloseBooleanSearch = () => {
+    updateTempFilters("booleanSearch", false);
+  };
+
+  // New: Handle bool query change
+  const handleBoolQueryChange = (query: string) => {
+    updateTempFilters("boolQuery", query);
+  };
+
   const isFilterSelected = () => {
-  // Always allow applying filters based on tab selection (jobId, application_type, is_prevetted, is_active, sort_by)
-  // Check other filters only for validation when they are provided
-  return true; // Since tab selection is enough, we return true to allow filter application
-};
+    // Always allow applying filters based on tab selection (jobId, application_type, is_prevetted, is_active, sort_by)
+    // Check other filters only for validation when they are provided
+    return true; // Since tab selection is enough, we return true to allow filter application
+  };
 
   const validateFilters = () => {
     const isValidNumber = (value: string) => /^\d+$/.test(value);
@@ -447,11 +531,14 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     if (
       (tempFilters.minTotalExp && !isValidNumber(tempFilters.minTotalExp)) ||
       (tempFilters.maxTotalExp && !isValidNumber(tempFilters.maxTotalExp)) ||
-      (tempFilters.minExperience && !isValidNumber(tempFilters.minExperience)) ||
+      (tempFilters.minExperience &&
+        !isValidNumber(tempFilters.minExperience)) ||
       (tempFilters.minSalary && !isValidNumber(tempFilters.minSalary)) ||
       (tempFilters.maxSalary && !isValidNumber(tempFilters.maxSalary))
     ) {
-      showToast.error("Invalid input in experience or salary fields. Please enter numbers only.");
+      showToast.error(
+        "Invalid input in experience or salary fields. Please enter numbers only."
+      );
       return false;
     }
 
@@ -460,7 +547,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       tempFilters.maxTotalExp &&
       Number(tempFilters.minTotalExp) > Number(tempFilters.maxTotalExp)
     ) {
-      showToast.error("Minimum total experience cannot be greater than maximum.");
+      showToast.error(
+        "Minimum total experience cannot be greater than maximum."
+      );
       return false;
     }
 
@@ -478,7 +567,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     return true;
   };
 
-
   const resetFilters = () => {
     setIsLocationManuallyEdited(false);
     setKeywordSuggestions([]);
@@ -487,6 +575,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     const resetTemp = {
       keywords: [],
       booleanSearch: false,
+      boolQuery: "",
       semanticSearch: false,
       selectedCategories: [],
       minExperience: "",
@@ -527,20 +616,20 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   };
 
   const applyFilters = async () => {
-  if (!validateFilters()) {
-    return;
-  }
+    if (!validateFilters()) {
+      return;
+    }
 
-  setIsLoading(true);
-  try {
-    await onApplyFilters(tempFilters);
-  } catch (error) {
-    showToast.error("Failed to apply filters. Please try again.");
-    console.error("Error applying filters:", error);
-  } finally {
-    setIsLoading(false);
-  }
-};
+    setIsLoading(true);
+    try {
+      await onApplyFilters(tempFilters);
+    } catch (error) {
+      showToast.error("Failed to apply filters. Please try again.");
+      console.error("Error applying filters:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const noticePeriodOptions = [
     "Immediate",
@@ -553,12 +642,12 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
   return (
     <div className="bg-white rounded-xl p-3 lg:p-4 h-fit">
-      {/* Keywords */}
+      {/* Keywords / Boolean Search */}
       <div className="border-b border-gray-200 mb-4 pb-4 px-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
             <Search className="w-4 h-4 mr-2 text-gray-500" />
-            Keywords
+            {tempFilters.booleanSearch ? "Boolean Search" : "Keywords"}
           </h3>
           <div className="flex gap-2 cursor-pointer">
             <FilterMenu
@@ -579,47 +668,57 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         </div>
         {expandedSections.keywords && (
           <div className="space-y-2">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Type keyword and press comma or enter to add, e.g., Gen AI Specialist"
-                value={currentKeyword}
-                onChange={handleKeywordInputChange}
-                onKeyDown={handleKeywordKeyDown}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            {tempFilters.booleanSearch ? (
+              <BooleanSearchComponent
+                boolQuery={tempFilters.boolQuery || ""}
+                onChange={handleBoolQueryChange}
+                onClose={handleCloseBooleanSearch}
               />
-              {showSuggestions && keywordSuggestions.length > 0 && (
-                <div
-                  ref={suggestionsRef}
-                  className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto"
-                >
-                  {keywordSuggestions.map((suggestion, index) => (
+            ) : (
+              <>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Type keyword and press comma or enter to add, e.g., Gen AI Specialist"
+                    value={currentKeyword}
+                    onChange={handleKeywordInputChange}
+                    onKeyDown={handleKeywordKeyDown}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  />
+                  {showSuggestions && keywordSuggestions.length > 0 && (
                     <div
-                      key={index}
-                      onClick={() => handleSelectSuggestion(suggestion)}
-                      className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                      ref={suggestionsRef}
+                      className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto"
                     >
-                      {suggestion}
+                      {keywordSuggestions.map((suggestion, index) => (
+                        <div
+                          key={index}
+                          onClick={() => handleSelectSuggestion(suggestion)}
+                          className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                        >
+                          {suggestion}
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
-            </div>
-            {tempFilters.keywords.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {tempFilters.keywords.map((keyword, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200"
-                  >
-                    <X
-                      className="w-3 h-3 text-gray-400 mr-1 cursor-pointer hover:text-gray-600"
-                      onClick={() => removeKeywordTag(keyword)}
-                    />
-                    <span>{keyword}</span>
+                {tempFilters.keywords.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {tempFilters.keywords.map((keyword, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200"
+                      >
+                        <X
+                          className="w-3 h-3 text-gray-400 mr-1 cursor-pointer hover:text-gray-600"
+                          onClick={() => removeKeywordTag(keyword)}
+                        />
+                        <span>{keyword}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </div>
         )}
@@ -748,7 +847,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           {expandedSections.location && (
             <div className="space-y-2">
               <div className="w-full flex space-x-2">
-                
                 <select
                   value={tempFilters.country}
                   onChange={(e) => updateTempFilters("country", e.target.value)}
@@ -774,8 +872,14 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 </select>
               </div>
               <div className="w-full flex space-x-2">
-              <label className="w-full flex-1 px-2 pb-1 text-xs text-gray-500 "> Country</label> 
-              <label className="w-full flex-1 px-2 pb-1 text-xs text-gray-500 "> City</label> 
+                <label className="w-full flex-1 px-2 pb-1 text-xs text-gray-500 ">
+                  {" "}
+                  Country
+                </label>
+                <label className="w-full flex-1 px-2 pb-1 text-xs text-gray-500 ">
+                  {" "}
+                  City
+                </label>
               </div>
               <input
                 type="text"
@@ -787,21 +891,21 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               />
 
               {tempFilters.locations.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {tempFilters.locations.map((location, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200"
-                      >
-                        <X
-                          className="w-3 h-3 text-gray-400 mr-1 cursor-pointer hover:text-gray-600"
-                          onClick={() => removeLocationTag(location)}
-                        />
-                        <span>{location}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <div className="flex flex-wrap gap-2">
+                  {tempFilters.locations.map((location, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200"
+                    >
+                      <X
+                        className="w-3 h-3 text-gray-400 mr-1 cursor-pointer hover:text-gray-600"
+                        onClick={() => removeLocationTag(location)}
+                      />
+                      <span>{location}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -912,14 +1016,14 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                   <option value="5000000">50 LPA</option>
                   <option value="5500000">55 LPA</option>
                   <option value="6000000">60 LPA</option>
-                  <option value="6500000">65 LPA</option> 
-                  <option value="7000000">70 LPA</option> 
-                  <option value="7500000">75 LPA</option> 
-                  <option value="8000000">80 LPA</option> 
-                  <option value="8500000">85 LPA</option> 
-                  <option value="9000000">90 LPA</option> 
-                  <option value="9500000">95 LPA</option> 
-                  <option value="10000000">100 LPA</option> 
+                  <option value="6500000">65 LPA</option>
+                  <option value="7000000">70 LPA</option>
+                  <option value="7500000">75 LPA</option>
+                  <option value="8000000">80 LPA</option>
+                  <option value="8500000">85 LPA</option>
+                  <option value="9000000">90 LPA</option>
+                  <option value="9500000">95 LPA</option>
+                  <option value="10000000">100 LPA</option>
                 </select>
                 <select
                   value={tempFilters.maxSalary}

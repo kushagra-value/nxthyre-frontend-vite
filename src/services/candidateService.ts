@@ -410,9 +410,31 @@ export interface AnalyzeResponse {
 }
 
 class CandidateService {
+  // async getCandidates(filters: any): Promise<CandidateSearchResponse> {
+  //   try {
+  //     const response = await apiClient.post("/candidates/search/", { filters });
+  //     return response.data;
+  //   } catch (error: any) {
+  //     throw new Error(
+  //       error.response?.data?.error || "Failed to fetch candidates"
+  //     );
+  //   }
+  // }
+
   async getCandidates(filters: any): Promise<CandidateSearchResponse> {
     try {
-      const response = await apiClient.post("/candidates/search/", { filters });
+      const requestBody = {
+        job_id: filters.jobId,
+        ...(filters.booleanSearch && filters.boolQuery
+          ? { bool_q: filters.boolQuery }
+          : {}),
+        tab: filters.application_type,
+        // Add other filters as needed
+      };
+      const response = await apiClient.post(
+        "/candidates/search/?page=1",
+        requestBody
+      );
       return response.data;
     } catch (error: any) {
       throw new Error(
@@ -826,6 +848,17 @@ class CandidateService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error || "Failed to fetch boolean search"
+      );
+    }
+  }
+
+  async getDefaultBoolQuery(jobId: string): Promise<string> {
+    try {
+      const response = await apiClient.get(`/jobs/${jobId}/default-bool-query`); // Adjust endpoint
+      return response.data.bool_q || "";
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch default boolean query"
       );
     }
   }
