@@ -250,32 +250,54 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
   // New: Fetch default bool query when booleanSearch is enabled and query is empty
   useEffect(() => {
+    let isMounted = true;
+
     const fetchDefaultBoolQuery = async () => {
       if (
         tempFilters.booleanSearch &&
         !tempFilters.boolQuery &&
         tempFilters.jobId
       ) {
+        setIsLoading(true);
         try {
-          // Call getCandidates with empty boolQuery to get default from backend response
-          const response = await candidateService.getCandidates({
-            ...tempFilters,
-            boolQuery: "", // Empty to signal backend for default
-          });
-          if (response.boolean_search_terms) {
-            updateTempFilters("boolQuery", response.boolean_search_terms);
+          // Send request with bool_q: "" and ALL current other filters to get default terms
+          // Backend is assumed to return boolean_search_terms (job's default) in response
+          const response = await candidateService.getCandidates(tempFilters);
+          if (isMounted && response.boolean_search_terms) {
+            const newBoolQuery = response.boolean_search_terms;
+            const newFilters = { ...tempFilters, boolQuery: newBoolQuery };
+            setTempFilters(newFilters);
+            // Sync parent filters and trigger parent to fetch results with bool_q = default + all filters
+            await onApplyFilters(newFilters);
+          } else if (isMounted) {
+            // No default found, apply with empty bool_q (backend handles as normal/empty boolean)
+            await onApplyFilters(tempFilters);
           }
-          // Optionally update candidates with this initial search (since it fetches results too)
-          setCandidates(response.results || []);
         } catch (error) {
           console.error("Failed to fetch default boolean query:", error);
-          showToast.error("Failed to load default boolean query.");
+          if (isMounted) {
+            showToast.error("Failed to load default boolean query.");
+            // Optionally disable booleanSearch on failure
+            // updateTempFilters("booleanSearch", false);
+          }
+        } finally {
+          if (isMounted) setIsLoading(false);
         }
       }
     };
 
     fetchDefaultBoolQuery();
-  }, [tempFilters.booleanSearch, tempFilters.jobId, tempFilters.boolQuery]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [
+    tempFilters.booleanSearch,
+    tempFilters.jobId,
+    tempFilters.boolQuery,
+    onApplyFilters,
+  ]); // Added onApplyFilters to deps if needed
+
   useEffect(() => {
     // Ensure keywords is always an array when filters change
     setTempFilters({
