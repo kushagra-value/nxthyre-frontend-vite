@@ -62,6 +62,7 @@ interface FiltersSidebarProps {
     is_active: boolean;
     sort_by: string;
   };
+  defaultBoolQuery: string; // New: Default boolean query from initial API response
   onApplyFilters: (filters: any) => void;
   setCandidates: (candidates: CandidateListItem[]) => void;
   candidates: CandidateListItem[];
@@ -205,6 +206,7 @@ type SectionKey =
 
 const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   filters,
+  defaultBoolQuery,
   onApplyFilters,
   setCandidates,
   candidates,
@@ -248,34 +250,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     Record<string, string>
   >({});
 
-  // New: Fetch default bool query when booleanSearch is enabled and query is empty
-  useEffect(() => {
-    const fetchDefaultBoolQuery = async () => {
-      if (
-        tempFilters.booleanSearch &&
-        !tempFilters.boolQuery &&
-        tempFilters.jobId
-      ) {
-        try {
-          // Call getCandidates with empty boolQuery to get default from backend response
-          const response = await candidateService.getCandidates({
-            ...tempFilters,
-            boolQuery: "", // Empty to signal backend for default
-          });
-          if (response.boolean_search_terms) {
-            updateTempFilters("boolQuery", response.boolean_search_terms);
-          }
-          // Optionally update candidates with this initial search (since it fetches results too)
-          setCandidates(response.results || []);
-        } catch (error) {
-          console.error("Failed to fetch default boolean query:", error);
-          showToast.error("Failed to load default boolean query.");
-        }
-      }
-    };
-
-    fetchDefaultBoolQuery();
-  }, [tempFilters.booleanSearch, tempFilters.jobId, tempFilters.boolQuery]);
   useEffect(() => {
     // Ensure keywords is always an array when filters change
     setTempFilters({
@@ -390,13 +364,17 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const updateTempFilters = (key: string, value: any) => {
     let newFilters = { ...tempFilters, [key]: value };
 
-    // New: Handle booleanSearch toggle logic
+    // Handle booleanSearch toggle logic
     if (key === "booleanSearch") {
       if (value === true) {
         // Clear keywords when enabling boolean search
         newFilters.keywords = [];
+        // Prefill boolQuery with default if not already set
+        if (!newFilters.boolQuery && defaultBoolQuery) {
+          newFilters.boolQuery = defaultBoolQuery;
+        }
       } else {
-        // Optionally clear boolQuery when disabling, or keep it
+        // Clear boolQuery when disabling
         newFilters.boolQuery = "";
       }
     }
@@ -513,12 +491,12 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     updateTempFilters("locations", updatedLocations);
   };
 
-  // New: Handle close boolean search
+  // Handle close boolean search
   const handleCloseBooleanSearch = () => {
     updateTempFilters("booleanSearch", false);
   };
 
-  // New: Handle bool query change
+  // Handle bool query change
   const handleBoolQueryChange = (query: string) => {
     updateTempFilters("boolQuery", query);
   };
@@ -626,6 +604,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
     setIsLoading(true);
     try {
+      // When booleanSearch is true, keywords are replaced by boolQuery in the service
       await onApplyFilters(tempFilters);
     } catch (error) {
       showToast.error("Failed to apply filters. Please try again.");
