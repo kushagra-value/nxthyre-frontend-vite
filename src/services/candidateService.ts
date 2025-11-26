@@ -411,59 +411,30 @@ export interface AnalyzeResponse {
 }
 
 class CandidateService {
+  // async getCandidates(filters: any): Promise<CandidateSearchResponse> {
+  //   try {
+  //     const response = await apiClient.post("/candidates/search/", { filters });
+  //     return response.data;
+  //   } catch (error: any) {
+  //     throw new Error(
+  //       error.response?.data?.error || "Failed to fetch candidates"
+  //     );
+  //   }
+  // }
+
+  // Replace the existing getCandidates method with:
   async getCandidates(filters: any): Promise<CandidateSearchResponse> {
     try {
-      let requestBody: any = {
+      const requestBody: any = {
         job_id: filters.jobId,
         tab: filters.application_type,
+        // ... add other filters as needed (e.g., locations, experience, etc.)
       };
 
-      // Include ALL other filters from tempFilters (applied as is)
-      const ignoredKeys = [
-        "jobId",
-        "application_type",
-        "booleanSearch",
-        "boolQuery",
-        "semanticSearch",
-      ]; // Ignore internal flags
-      Object.keys(filters).forEach((key) => {
-        if (
-          !ignoredKeys.includes(key) &&
-          filters[key] !== undefined &&
-          filters[key] !== null
-        ) {
-          // For arrays/objects, send as is if non-empty
-          if (Array.isArray(filters[key]) || typeof filters[key] === "object") {
-            if (
-              filters[key].length > 0 ||
-              Object.keys(filters[key]).length > 0
-            ) {
-              requestBody[key] = filters[key];
-            }
-          } else if (filters[key] !== "") {
-            requestBody[key] = filters[key];
-          }
-        }
-      });
-
-      // Special handling for keywords (only if !booleanSearch; assume backend expects array or comma-joined string)
-      if (
-        !filters.booleanSearch &&
-        filters.keywords &&
-        filters.keywords.length > 0
-      ) {
-        requestBody.keywords = filters.keywords; // Or: filters.keywords.join(', ') if backend expects string
-      }
-
-      // Handle boolean search
+      // Include bool_q only if booleanSearch is true
       if (filters.booleanSearch) {
-        requestBody.bool_q = filters.boolQuery || ""; // "" triggers backend default terms in response
+        requestBody.bool_q = filters.boolQuery || ""; // Empty triggers backend default (assumed)
       }
-
-      // Handle semantic if needed (add if backend supports)
-      // if (filters.semanticSearch) {
-      //   requestBody.semantic_search = true; // or whatever backend expects
-      // }
 
       const response = await apiClient.post(
         "/candidates/search/?page=1",
@@ -476,32 +447,6 @@ class CandidateService {
       );
     }
   }
-
-  // Replace the existing getCandidates method with:
-  // async getCandidates(filters: any): Promise<CandidateSearchResponse> {
-  //   try {
-  //     const requestBody: any = {
-  //       job_id: filters.jobId,
-  //       tab: filters.application_type,
-  //       // ... add other filters as needed (e.g., locations, experience, etc.)
-  //     };
-
-  //     // Include bool_q only if booleanSearch is true
-  //     if (filters.booleanSearch) {
-  //       requestBody.bool_q = filters.boolQuery || ""; // Empty triggers backend default (assumed)
-  //     }
-
-  //     const response = await apiClient.post(
-  //       "/candidates/search/?page=1",
-  //       requestBody
-  //     );
-  //     return response.data;
-  //   } catch (error: any) {
-  //     throw new Error(
-  //       error.response?.data?.error || "Failed to fetch candidates"
-  //     );
-  //   }
-  // }
 
   async sendTestEmail(data: {
     job_id: string;
