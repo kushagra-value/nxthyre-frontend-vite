@@ -39,6 +39,7 @@ import AddNewStageForm from '../components/AddNewStageForm';
 import { useAuthContext } from "../context/AuthContext"; 
 import candidateService from "../services/candidateService";
 import { useParams } from "react-router-dom";
+import { Calender } from './Calender';
 
 interface DraggedCandidate {
   candidate: any;
@@ -1601,7 +1602,10 @@ const handleCopyProfile = async (applicationId: string) => {
                   </div>
                 </div>
               </div>
-            ):(
+            ): activeTab === "calendar" ?( 
+              <Calender />
+            ):
+            (
               <div className="flex items-center justify-center min-h-screen -mt-20">
                 <div className="border-2 border-dashed border-gray-600 rounded-3xl p-24 text-center max-w-2xl">
                   <h2 className="text-5xl font-bold text-gray-400 mb-6">
