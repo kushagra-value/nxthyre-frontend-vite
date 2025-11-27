@@ -29,11 +29,11 @@ export const EventCard = ({ event }: EventCardProps) => {
 
   return (
     <div
-      className="relative rounded-md overflow-hidden shadow-sm"
+      className="m-1 rounded-md overflow-hidden relative h-full shadow-sm"
       style={{ backgroundColor: colors.bg }}
     >
       <div
-        className="absolute left-0 top-0 bottom-0 w-2 rounded-l-md"
+        className="absolute left-0 top-0 bottom-0 w-2 h-full rounded-l-md"
         style={{ backgroundColor: colors.border }}
       />
       <div className="pl-10 pr-4 py-4 flex flex-col h-full">
@@ -55,7 +55,7 @@ export const EventCard = ({ event }: EventCardProps) => {
             </h3>
 
             {/* Round Type */}
-            <p className="text-base text-[#4B5563] mt-0.5">
+            <p className="text-base text-nowrap truncate leading-tight text-[#4B5563] mt-0.5">
               {event.type === 'first-round' && 'First Round'}
               {event.type === 'face-to-face' && 'Face to Face'}
               {event.type === 'hr-round' && 'HR Round'}
@@ -63,6 +63,8 @@ export const EventCard = ({ event }: EventCardProps) => {
             </p>
           </div>
         </div>
+
+        {/* Time + Thumbs Up */}
         <div className="flex items-center justify-between mt-6 text-base text-[#4B5563]">
           <span className="font-normal">
             {event.startTime} to {event.endTime}
