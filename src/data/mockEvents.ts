@@ -6,7 +6,7 @@ export interface CalendarEvent {
   endTime: string;
   date: string;
   attendee: string;
-  attendeeImage?: string;
+  avatarImageUrl?: string;
   confirmed?: boolean;
 }
 
@@ -19,7 +19,7 @@ export const mockEvents: CalendarEvent[] = [
     endTime: '11:00',
     date: '2025-11-26',
     attendee: 'Max Verstappen',
-    attendeeImage: '/avatar1.png',
+    avatarImageUrl: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?cs=srgb&dl=pexels-pixabay-220453.jpg&fm=jpg',
     confirmed: true,
   },
   {
@@ -30,7 +30,7 @@ export const mockEvents: CalendarEvent[] = [
     endTime: '13:00',
     date: '2025-11-26',
     attendee: 'Shruti Nair',
-    attendeeImage: '/avatar2.png',
+    avatarImageUrl: 'https://www.profilebakery.com/wp-content/uploads/2023/04/LINKEDIN-Profile-Picture-AI.jpg',
     confirmed: true,
   },
   {
@@ -41,7 +41,7 @@ export const mockEvents: CalendarEvent[] = [
     endTime: '13:30',
     date: '2025-11-26',
     attendee: 'Chaman Chacko',
-    attendeeImage: '/avatar3.png',
+    avatarImageUrl: 'https://cdn.pixabay.com/photo/2023/06/16/15/10/man-ai-8068201_960_720.jpg',
     confirmed: true,
   },
   {
@@ -52,7 +52,7 @@ export const mockEvents: CalendarEvent[] = [
     endTime: '13:30',
     date: '2025-11-27',
     attendee: 'Naveen Polishetty',
-    attendeeImage: '/avatar4.png',
+    avatarImageUrl: 'https://pics.craiyon.com/2023-07-01/aaae17e348474bc3843c3d40ca53c15f.webp',
     confirmed: true,
   },
   {
@@ -63,7 +63,7 @@ export const mockEvents: CalendarEvent[] = [
     endTime: '11:00',
     date: '2025-11-28',
     attendee: 'Sarah Johnson',
-    attendeeImage: '/avatar5.png',
+    avatarImageUrl: 'https://i.pinimg.com/originals/f4/d2/ba/f4d2ba04f9c8af5a60bbce025b454139.jpg',
     confirmed: true,
   },
   {
@@ -74,7 +74,7 @@ export const mockEvents: CalendarEvent[] = [
     endTime: '15:30',
     date: '2025-11-28',
     attendee: 'Michael Chen',
-    attendeeImage: '/avatar6.png',
+    avatarImageUrl: 'https://tse4.mm.bing.net/th/id/OIP.rqP30nn4mA4oDzm0T-wdRwHaHa?pid=Api&h=220&P=0',
     confirmed: false,
   },
   {
@@ -85,7 +85,7 @@ export const mockEvents: CalendarEvent[] = [
     endTime: '10:30',
     date: '2025-11-29',
     attendee: 'Emma Williams',
-    attendeeImage: '/avatar7.png',
+    avatarImageUrl: 'https://avatarfiles.alphacoders.com/375/375542.png',
     confirmed: true,
   },
   {
@@ -96,7 +96,7 @@ export const mockEvents: CalendarEvent[] = [
     endTime: '16:00',
     date: '2025-11-29',
     attendee: 'David Brown',
-    attendeeImage: '/avatar8.png',
+    avatarImageUrl: 'https://i.pinimg.com/736x/be/00/4e/be004e92b613e16a561ca7974f2ac8c5.jpg',
     confirmed: true,
   },
 ];

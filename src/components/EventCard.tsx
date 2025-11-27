@@ -29,28 +29,52 @@ export const EventCard = ({ event }: EventCardProps) => {
 
   return (
     <div
-      className="rounded-md overflow-hidden relative h-full flex flex-col"
+      className="relative rounded-md overflow-hidden shadow-sm"
       style={{ backgroundColor: colors.bg }}
     >
       <div
-        className="absolute left-0 top-0 w-1.5 h-full rounded-l-md"
+        className="absolute left-0 top-0 bottom-0 w-2 rounded-l-md"
         style={{ backgroundColor: colors.border }}
       />
-      <div className="pl-4 pr-3 py-1 flex-1 flex flex-col justify-center overflow-hidden">
-        <div className="flex items-center gap-2 mb-0.5">
-          <div className="w-6 h-6 rounded-full bg-gray-300 flex-shrink-0 mt-0.5" />
+      <div className="pl-10 pr-4 py-4 flex flex-col h-full">
+        <div className="flex items-start gap-3">
+          {/* Avatar */}
+          {event.avatarImageUrl ? (
+            <img
+                src={event.avatarImageUrl}
+                alt={event.title}
+                className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md flex-shrink-0 -ml-1"
+            />
+            ) : (
+            <div className="w-10 h-10 rounded-full bg-gray-300 border-2 border-white shadow-md flex-shrink-0 -ml-1" />
+            )}
           <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-normal text-gray-900 truncate">
+            {/* Candidate Name */}
+            <h3 className="text-lg font-normal text-[#181D25] truncate leading-tight">
               {event.title}
-            </h4>
+            </h3>
+
+            {/* Round Type */}
+            <p className="text-base text-[#4B5563] mt-0.5">
+              {event.type === 'first-round' && 'First Round'}
+              {event.type === 'face-to-face' && 'Face to Face'}
+              {event.type === 'hr-round' && 'HR Round'}
+              {event.type === 'f2f1' && 'F2F Round 1'}
+            </p>
           </div>
         </div>
-        <div className="flex items-center justify-between text-xs text-gray-600 pl-8 gap-1">
-          <span className="truncate">
-            {event.startTime} - {event.endTime}
+        <div className="flex items-center justify-between mt-6 text-base text-[#4B5563]">
+          <span className="font-normal">
+            {event.startTime} to {event.endTime}
           </span>
+
           {event.confirmed && (
-            <ThumbsUp className="w-3 h-3 text-[#1CB977] fill-[#1CB977] flex-shrink-0" />
+            <ThumbsUp
+              className="w-5 h-5"
+              strokeWidth={1.5}
+              fill="#1CB977"
+              color="#1CB977"
+            />
           )}
         </div>
       </div>
