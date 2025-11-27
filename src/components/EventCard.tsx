@@ -29,14 +29,14 @@ export const EventCard = ({ event }: EventCardProps) => {
 
   return (
     <div
-      className="m-1 rounded-md overflow-hidden relative h-full shadow-sm"
+      className="m-0.5 rounded-md overflow-hidden relative h-full shadow-sm"
       style={{ backgroundColor: colors.bg }}
     >
       <div
         className="absolute left-0 top-0 bottom-0 w-2 h-full rounded-l-md"
         style={{ backgroundColor: colors.border }}
       />
-      <div className="pl-10 pr-4 py-4 flex flex-col h-full">
+      <div className="pl-4 pr-4 flex flex-col  justify-between h-full">
         <div className="flex items-start gap-3">
           {/* Avatar */}
           {event.avatarImageUrl ? (
@@ -55,7 +55,7 @@ export const EventCard = ({ event }: EventCardProps) => {
             </h3>
 
             {/* Round Type */}
-            <p className="text-base text-nowrap truncate leading-tight text-[#4B5563] mt-0.5">
+            <p className="text-sm text-nowrap truncate leading-tight text-[#4B5563] mt-0.5">
               {event.type === 'first-round' && 'First Round'}
               {event.type === 'face-to-face' && 'Face to Face'}
               {event.type === 'hr-round' && 'HR Round'}

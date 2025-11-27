@@ -75,7 +75,7 @@ export const mockEvents: CalendarEvent[] = [
     date: '2025-11-28',
     attendee: 'Michael Chen',
     avatarImageUrl: 'https://tse4.mm.bing.net/th/id/OIP.rqP30nn4mA4oDzm0T-wdRwHaHa?pid=Api&h=220&P=0',
-    confirmed: false,
+    confirmed: true,
   },
   {
     id: '7',
