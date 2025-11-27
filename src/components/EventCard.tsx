@@ -37,7 +37,7 @@ export const EventCard = ({ event }: EventCardProps) => {
         style={{ backgroundColor: colors.border }}
       />
       <div className="pl-4 pr-3 py-1 flex-1 flex flex-col justify-center overflow-hidden">
-        <div className="flex items-start gap-2 mb-0.5">
+        <div className="flex items-center gap-2 mb-0.5">
           <div className="w-6 h-6 rounded-full bg-gray-300 flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <h4 className="text-sm font-normal text-gray-900 truncate">
