@@ -67,7 +67,7 @@ export const EventForm = ({
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 w-[563px] bg-[#F5F9FB] rounded-l-3xl shadow-2xl overflow-y-auto bg-opacity-40 font-['Gellix',_sans-serif]">
+    <div className="fixed inset-y-0 right-0 w-[563px] bg-[#F5F9FB] rounded-l-3xl shadow-2xl overflow-y-auto  font-['Gellix',_sans-serif]">
       <div className="p-8 pt-10 pb-32 relative min-h-full">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-semibold text-gray-600">Add Event</h2>
