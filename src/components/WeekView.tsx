@@ -4,7 +4,7 @@ import { EventCard } from './EventCard';
 interface WeekViewProps {
   events: CalendarEvent[];
   currentDate: Date;
-  onAddEvent: (date: string, time: string) => void;
+  onCellClick: (date: string, time?: string) => void;  // UPDATED
 }
 
 const timeSlots = [
@@ -32,7 +32,7 @@ const getWeekDates = (date: Date) => {
   return weekDates;
 };
 
-export const WeekView = ({ events, currentDate, onAddEvent }: WeekViewProps) => {
+export const WeekView = ({ events, currentDate, onCellClick }: WeekViewProps) => {
   const weekDates = getWeekDates(currentDate);
 
   const getEventPosition = (event: CalendarEvent) => {
@@ -110,7 +110,7 @@ export const WeekView = ({ events, currentDate, onAddEvent }: WeekViewProps) => 
                     return (
                       <div
                         key={index}
-                        onClick={() => onAddEvent(dateStr, displayTime)}
+                        onClick={() => onCellClick(dateStr, displayTime)}
                         className="h-20 border-b border-dashed border-gray-300 cursor-pointer hover:bg-blue-50 transition-colors"
                       />
                     );

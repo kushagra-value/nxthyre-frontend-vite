@@ -7,13 +7,15 @@ import { MonthView } from './MonthView';
 import { EventForm } from './EventForm';
 import { mockEvents as initialEvents, CalendarEvent } from '../data/mockEvents';
 
-export const Calender = () => {
+interface CalenderProps {
+  onCellClick: (date: string, time?: string) => void;
+}
+
+export const Calender: React.FC<CalenderProps> = ({onCellClick}) => {
   const [view, setView] = useState<'day' | 'week' | 'month'>('week');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedTime, setSelectedTime] = useState('');
+
 
   const handleNavigate = (direction: 'prev' | 'next' | 'today') => {
     if (direction === 'today') {
@@ -39,17 +41,6 @@ export const Calender = () => {
     year: 'numeric',
   }).toUpperCase();
 
-  const handleAddEvent = (date: string, time: string) => {
-    setSelectedDate(date);
-    setSelectedTime(time);
-    setIsFormOpen(true);
-  };
-
-  const handleEventSubmit = (newEvent: Omit<CalendarEvent, 'id'>) => {
-    const id = Date.now().toString();
-    setEvents([...events, { ...newEvent, id }]);
-    setIsFormOpen(false);
-  };
 
   return (
     <div className="min-h-screen bg-[#ECF1FF] p-8">
@@ -68,31 +59,23 @@ export const Calender = () => {
           <DayView
             events={events}
             currentDate={currentDate}
-            onAddEvent={handleAddEvent}
+            onCellClick={onCellClick}
           />
         )}
         {view === 'week' && (
           <WeekView
             events={events}
             currentDate={currentDate}
-            onAddEvent={handleAddEvent}
+            onCellClick={onCellClick}
           />
         )}
         {view === 'month' && (
           <MonthView
             events={events}
             currentDate={currentDate}
-            onAddEvent={handleAddEvent}
+            onCellClick={onCellClick}
           />
         )}
-
-        <EventForm
-          isOpen={isFormOpen}
-          onClose={() => setIsFormOpen(false)}
-          onSubmit={handleEventSubmit}
-          initialDate={selectedDate}
-          initialTime={selectedTime}
-        />
       </div>
     </div>
   );

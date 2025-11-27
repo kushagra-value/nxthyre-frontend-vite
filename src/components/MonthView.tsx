@@ -3,7 +3,7 @@ import { CalendarEvent } from '../data/mockEvents';
 interface MonthViewProps {
   events: CalendarEvent[];
   currentDate: Date;
-  onAddEvent: (date: string, time: string) => void;
+  onCellClick: (date: string, time?: string) => void;  // UPDATED
 }
 
 const typeColors = {
@@ -32,7 +32,7 @@ const getDaysInMonth = (date: Date) => {
   return days;
 };
 
-export const MonthView = ({ events, currentDate, onAddEvent }: MonthViewProps) => {
+export const MonthView = ({ events, currentDate, onCellClick }: MonthViewProps) => {
   const days = getDaysInMonth(currentDate);
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -72,7 +72,7 @@ export const MonthView = ({ events, currentDate, onAddEvent }: MonthViewProps) =
             return (
               <div
                 key={index}
-                onClick={() => day && onAddEvent(day.toISOString().split('T')[0], '09:00')}
+                onClick={() => day && onCellClick(day.toISOString().split('T')[0], '09:00')}
                 className="min-h-[120px] border-b border-r border-dashed border-gray-300 last:border-r-0 p-2 relative cursor-pointer hover:bg-blue-50 transition-colors"
               >
                 {day && (

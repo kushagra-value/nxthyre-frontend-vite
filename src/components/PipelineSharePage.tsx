@@ -40,6 +40,9 @@ import { useAuthContext } from "../context/AuthContext";
 import candidateService from "../services/candidateService";
 import { useParams } from "react-router-dom";
 import { Calender } from './Calender';
+import { EventForm } from './EventForm';
+import { CalendarEvent } from '../data/mockEvents';
+
 
 interface DraggedCandidate {
   candidate: any;
@@ -95,7 +98,9 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [candidateDetails, setCandidateDetails] = useState<any>(null);
   const [assessmentResults, setAssessmentResults] = useState<any>(null);
   const [loadingCandidateDetails, setLoadingCandidateDetails] = useState(false);
-
+  const [showAddEventForm, setShowAddEventForm] = useState(false);
+  const [selectedEventDate, setSelectedEventDate] = useState<string>('');
+  const [selectedEventTime, setSelectedEventTime] = useState<string>('');
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
 
   const [codingQuestions, setCodingQuestions] = useState<
@@ -1602,8 +1607,16 @@ const handleCopyProfile = async (applicationId: string) => {
                   </div>
                 </div>
               </div>
-            ): activeTab === "calendar" ?( 
-              <Calender />
+            ): activeTab === "calendar" ? (
+              <div className="relative">
+                <Calender
+                  onCellClick={(date: string, time?: string) => {
+                    setSelectedEventDate(date);
+                    setSelectedEventTime(time || "09:00");
+                    setShowAddEventForm(true);
+                  }}
+                />
+              </div>
             ):
             (
               <div className="flex items-center justify-center min-h-screen -mt-20">
@@ -1849,6 +1862,28 @@ const handleCopyProfile = async (applicationId: string) => {
         </div>
       )}
       {showCandidateProfile && renderCandidateProfile()}
+
+      {showAddEventForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
+          <div
+            className="flex-1"
+            onClick={() => setShowAddEventForm(false)}
+          />
+          <div className="w-full max-w-2xl bg-white h-screen overflow-y-auto shadow-2xl">
+            <EventForm
+              isOpen={showAddEventForm}
+              onClose={() => setShowAddEventForm(false)}
+              onSubmit={(event) => {
+                // Optional: emit event or save via API
+                console.log("New event created:", event);
+                setShowAddEventForm(false);
+              }}
+              initialDate={selectedEventDate}
+              initialTime={selectedEventTime}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 };
