@@ -36,7 +36,7 @@ export const EventCard = ({ event }: EventCardProps) => {
         className="absolute left-0 top-0 bottom-0 w-2 h-full rounded-l-md"
         style={{ backgroundColor: colors.border }}
       />
-      <div className="pl-4 pr-4 py-2 flex flex-col justify-around h-full">
+      <div className="pl-8 pr-4 py-2 flex flex-col justify-between h-full">
         <div className="flex items-start gap-3">
           {/* Avatar */}
           {event.avatarImageUrl ? (
