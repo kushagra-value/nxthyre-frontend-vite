@@ -1869,7 +1869,7 @@ const handleCopyProfile = async (applicationId: string) => {
             className="flex-1"
             onClick={() => setShowAddEventForm(false)}
           />
-          <div className="w-full max-w-2xl bg-white h-screen overflow-y-auto shadow-2xl">
+          
             <EventForm
               isOpen={showAddEventForm}
               onClose={() => setShowAddEventForm(false)}
@@ -1881,7 +1881,7 @@ const handleCopyProfile = async (applicationId: string) => {
               initialDate={selectedEventDate}
               initialTime={selectedEventTime}
             />
-          </div>
+          
         </div>
       )}
     </>

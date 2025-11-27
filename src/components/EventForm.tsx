@@ -67,8 +67,8 @@ export const EventForm = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-[670px] p-8">
+    <div className="fixed inset-y-0 right-0 w-[563px] bg-[#F5F9FB] rounded-l-3xl shadow-2xl overflow-y-auto bg-opacity-40 font-['Gellix',_sans-serif]">
+      <div className="p-8 pt-10 pb-32 relative min-h-full">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-semibold text-gray-600">Add Event</h2>
           <button
