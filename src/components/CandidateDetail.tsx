@@ -1609,13 +1609,20 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <button
             key={tab.name}
             onClick={() => setActiveTab(tab.name)}
+            title={tab.name}
             className={`py-2 px-2 text-sm font-medium flex items-center space-x-1 ${
               activeTab === tab.name
                 ? "text-blue-600 border-b-2 border-blue-600"
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            <tab.icon className="w-4 h-4 flex-shrink-0" />
+            <tab.icon
+              className={`w-4 h-4 flex-shrink-0 ${
+                activeTab === tab.name
+                  ? "text-blue-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            />
             {tab.name === "Notes" && (
               <span className="text-xs">
                 ({detailedCandidate?.candidate?.notes?.length || 0})
