@@ -296,7 +296,7 @@ const HighlightedText: React.FC<HighlightedTextProps> = ({
     parts.push(
       <mark
         key={`${keyword}-${index}`}
-        className="bg-yellow-200 px-1 rounded font-medium"
+        className="bg-blue-600 text-white px-1 rounded font-medium"
       >
         {highlighted}
       </mark>
@@ -1283,7 +1283,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     key={index}
                     className={`p-2 text-blue-500 text-xs rounded-lg ${
                       keywords.includes(skill)
-                        ? "bg-yellow-100 font-medium"
+                        ? "bg-blue-600 font-medium text-white"
                         : "bg-white"
                     }`}
                   >
