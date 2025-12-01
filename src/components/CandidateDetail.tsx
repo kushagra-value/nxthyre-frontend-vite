@@ -560,9 +560,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       case "green":
         return "text-green-600";
       case "yellow":
-        return "text-yellow-600 font-medium";
+        return "text-yellow-500 font-medium";
       case "red":
-        return "text-red-700 font-medium";
+        return "text-red-600 font-medium";
       default:
         return "text-gray-600";
     }
@@ -692,7 +692,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 key={index}
                 className={`bg-blue-50 ${getColorClass(
                   item.color
-                )} px-3 py-1 rounded-full text-sm gap-2`}
+                )} px-3 py-1 rounded-full text-sm flex gap-2`}
               >
                 {item.badge}
                 {getIcon(item.color)}
