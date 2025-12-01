@@ -109,7 +109,7 @@ const ProfileIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <rect width="34" height="34" rx="7" fill="#F0F0F0" />
+    <rect width="34" height="34" rx="7" fill="none" />
     <path
       d="M17.8314 17.174C17.7558 17.1635 17.6586 17.1635 17.5723 17.174C15.6719 17.1105 14.1602 15.5857 14.1602 13.7114C14.1602 11.7949 15.7367 10.2383 17.7018 10.2383C19.6562 10.2383 21.2435 11.7949 21.2435 13.7114C21.2327 15.5857 19.7318 17.1105 17.8314 17.174Z"
       stroke="#4B5563"
@@ -694,7 +694,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 key={index}
                 className={`bg-blue-50 ${getColorClass(
                   item.color
-                )} px-3 py-1 rounded-full text-sm flex gap-2 items-center`}
+                )} px-3 py-1 rounded-full text-sm flex gap-1 items-center`}
               >
                 {item.badge}
                 {getIcon(item.color)}
@@ -734,29 +734,27 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         <div className="mb-3 border-b border-gray-200"></div>
 
         {/* Callout */}
-        <div className="bg-yellow-50 border rounded-md p-4">
-          <div className="">
-            <div className="flex items-center">
-              <svg
-                className="h-5 w-5 text-yellow-600 mt-0.5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <h3 className="text-yellow-600 mb-1">Call Attention</h3>
-            </div>
-            <div className="">
-              <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
-                {booleanData.call_attention.map((attention, index) => (
-                  <li key={index}>{attention}</li>
-                ))}
-              </ul>
-            </div>
+        <div className="bg-yellow-50 border rounded-md">
+          <div className="flex items-center gap-2 px-3 py-4 mb-2">
+            <svg
+              className="h-5 w-5 text-yellow-600 mt-0.5"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <h3 className="text-yellow-600">Call Attention</h3>
+          </div>
+          <div className="p-4">
+            <ul className="text-sm text-gray-500 space-y-1 list-disc list-inside">
+              {booleanData.call_attention.map((attention, index) => (
+                <li key={index}>{attention}</li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
