@@ -694,7 +694,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 key={index}
                 className={`bg-blue-50 ${getColorClass(
                   item.color
-                )} px-3 py-1 rounded-full text-sm flex gap-2`}
+                )} px-3 py-1 rounded-full text-sm flex gap-2 items-center`}
               >
                 {item.badge}
                 {getIcon(item.color)}
