@@ -685,7 +685,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
         {/* Quick Fit Summary */}
         <div className="mb-4">
-          <h3 className="text-md mb-3 text-gray-600">Quick Fit Summary</h3>
+          <h3 className="text-md font-semibold mb-3 text-gray-600">
+            Quick Fit Summary
+          </h3>
           <div className="flex flex-wrap gap-2">
             {booleanData.quick_fit_summary.map((item, index) => (
               <span
@@ -705,10 +707,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
         {/* Gaps / Risks */}
         <div className="mb-4">
-          <h4 className="text-md mb-3 text-gray-600">Gaps / Risks</h4>
+          <h4 className="text-md font-semibold mb-3 text-gray-600">
+            Gaps / Risks
+          </h4>
           <ul className="space-y-2 text-sm text-gray-600">
             {booleanData.gaps_risks.map((gap, index) => (
-              <li key={index} className="bg-gray-50 px-3 py-2 rounded-md">
+              <li key={index} className="bg-gray-50 p-2 rounded-md">
                 {gap}
               </li>
             ))}
@@ -719,7 +723,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
         {/* Recommended Message */}
         <div className="mb-4">
-          <h4 className="text-md font-semibold mb-3 text-blue-700">
+          <h4 className="text-md font-semibold mb-3 text-blue-600">
             Recommended Message to Client
           </h4>
           <p className="text-sm text-gray-600">
