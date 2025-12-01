@@ -584,7 +584,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
         {/* Top Badge */}
         <div className="mb-4">
-          <div className="flex items-center gap-4 bg-green-100 rounded-md px-3 py-1 mr-2">
+          <div className="flex items-start gap-4 bg-green-100 rounded-md px-3 py-1 mr-2">
             <span className="text-xl bg-green-600 text-white p-2 rounded-md">
               {booleanData.candidate_match_score.score}
             </span>
@@ -618,7 +618,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
         {/* Gaps / Risks */}
         <div className="mb-6">
-          <h4 className="text-md mb-3 text-gray-400">Gaps / risks</h4>
+          <h4 className="text-md mb-3 text-gray-600">Gaps / Risks</h4>
           <ul className="space-y-2 text-sm text-gray-600">
             {booleanData.gaps_risks.map((gap, index) => (
               <li key={index} className="bg-gray-50 px-3 py-2 rounded-md">
@@ -630,20 +630,20 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
         {/* Recommended Message */}
         <div className="mb-6">
-          <h4 className="text-md font-semibold mb-3 text-gray-800">
+          <h4 className="text-md font-semibold mb-3 text-blue-700">
             Recommended Message to Client
           </h4>
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-gray-600">
             {booleanData.recommended_message}
           </p>
         </div>
 
         {/* Callout */}
-        <div className="bg-yellow-100 border rounded-md p-4">
+        <div className="bg-yellow-50 border rounded-md p-4">
           <div className="flex items-start">
             <div className="flex-shrink-0">
               <svg
-                className="h-5 w-5 text-yellow-400 mt-0.5"
+                className="h-5 w-5 text-yellow-600 mt-0.5"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -655,10 +655,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-yellow-600 mb-1">
-                Suggested Questions for Call
-              </h3>
-              <ul className="text-sm text-black space-y-1 list-disc list-inside">
+              <h3 className="text-yellow-600 mb-1">Call Attention</h3>
+              <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
                 {booleanData.call_attention.map((attention, index) => (
                   <li key={index}>{attention}</li>
                 ))}
