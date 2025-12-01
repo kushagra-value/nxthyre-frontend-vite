@@ -183,10 +183,10 @@ const BooleanSearchComponent: React.FC<{
       />
       <button
         onClick={onClose}
-        className="absolute top-2 right-2 p-1 bg-yellow-200 rounded-full hover:bg-yellow-300 transition-colors"
+        className="absolute top-2 right-2 p-1 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors"
         title="Close Boolean Search"
       >
-        <X className="w-3 h-3 text-yellow-600" />
+        <X className="w-3 h-3 text-gray-600" />
       </button>
     </div>
   );

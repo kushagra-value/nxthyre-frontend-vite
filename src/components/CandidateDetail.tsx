@@ -55,6 +55,173 @@ const IdCard: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <rect x="2" y="5" width="20" height="14" rx="2" />
   </svg>
 );
+
+const BooleanSearchIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    width="34"
+    height="34"
+    viewBox="0 0 34 34"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M26.9287 16.2847C26.9287 21.1752 22.9642 25.1397 18.0737 25.1397C13.1833 25.1397 9.21875 21.1752 9.21875 16.2847C9.21875 11.3942 13.1833 7.42969 18.0737 7.42969C22.9642 7.42969 26.9287 11.3942 26.9287 16.2847Z"
+      stroke="#0F47F2"
+      stroke-width="1.5"
+    />
+    <path
+      d="M21.6172 16.2842C21.6172 18.2404 20.0314 19.8262 18.0752 19.8262C16.119 19.8262 14.5332 18.2404 14.5332 16.2842C14.5332 14.3279 16.119 12.7422 18.0752 12.7422C20.0314 12.7422 21.6172 14.3279 21.6172 16.2842Z"
+      stroke="#0F47F2"
+      stroke-width="1.5"
+    />
+    <path
+      d="M5.66406 16.2969H9.20606"
+      stroke="#0F47F2"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+    <path
+      d="M26.916 16.2969H28.687"
+      stroke="#0F47F2"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+    <path
+      d="M18.0664 7.44287V5.67188"
+      stroke="#0F47F2"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+    <path
+      d="M18.0664 26.896V25.125"
+      stroke="#0F47F2"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+  </svg>
+);
+
+const ProfileIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    width="34"
+    height="34"
+    viewBox="0 0 34 34"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect width="34" height="34" rx="7" fill="#F0F0F0" />
+    <path
+      d="M17.8314 17.174C17.7558 17.1635 17.6586 17.1635 17.5723 17.174C15.6719 17.1105 14.1602 15.5857 14.1602 13.7114C14.1602 11.7949 15.7367 10.2383 17.7018 10.2383C19.6562 10.2383 21.2435 11.7949 21.2435 13.7114C21.2327 15.5857 19.7318 17.1105 17.8314 17.174Z"
+      stroke="#4B5563"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M24.9392 24.1326C23.0491 25.8547 20.543 26.9006 17.7821 26.9006C15.0212 26.9006 12.5152 25.8547 10.625 24.1326C10.7312 23.1396 11.3683 22.1676 12.5045 21.4069C15.4141 19.4841 20.1714 19.4841 23.0597 21.4069C24.1959 22.1676 24.8331 23.1396 24.9392 24.1326Z"
+      stroke="#4B5563"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M17.7148 26.9297C23.5828 26.9297 28.3398 22.1727 28.3398 16.3047C28.3398 10.4367 23.5828 5.67969 17.7148 5.67969C11.8468 5.67969 7.08984 10.4367 7.08984 16.3047C7.08984 22.1727 11.8468 26.9297 17.7148 26.9297Z"
+      stroke="#4B5563"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+);
+
+const EducationIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    width="34"
+    height="34"
+    viewBox="0 0 34 34"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M14.7159 6.27715C16.3693 5.48053 18.2222 5.48053 19.8757 6.27715L27.6613 10.0282C29.3549 10.8442 29.3549 13.6686 27.6613 14.4846L19.8758 18.2357C18.2224 19.0322 16.3694 19.0322 14.716 18.2357L6.9303 14.4846C5.23677 13.6686 5.23678 10.8441 6.9303 10.0282L14.7159 6.27715Z"
+      stroke="#4B5563"
+      stroke-width="1.5"
+    />
+    <path
+      d="M5.66016 12.75V18.8208"
+      stroke="#4B5563"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+    <path
+      d="M25.9017 15.793V21.7977C25.9017 22.9786 25.2831 24.0843 24.1997 24.6565C22.3956 25.6091 19.508 26.9227 17.3015 26.9227C15.0949 26.9227 12.2073 25.6091 10.4032 24.6565C9.31978 24.0843 8.70117 22.9786 8.70117 21.7977V15.793"
+      stroke="#4B5563"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+  </svg>
+);
+
+const SkillsIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={props.width || 24}
+    height={props.height || 24}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={`lucide ${props.className || ""}`}
+    {...props}
+  >
+    {/* Replace with your Skills SVG path/content */}
+    <polygon points="22,12 10,12 15.09,18.09 22,12" />
+    <path d="M10 18L2 12l8-6 8 6-8 6z" />
+  </svg>
+);
+
+const ReferencesIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={props.width || 24}
+    height={props.height || 24}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={`lucide ${props.className || ""}`}
+    {...props}
+  >
+    {/* Replace with your References SVG path/content */}
+    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="8.5" cy="7" r="4" />
+    <polyline points="17,11 19,13 23,9" />
+  </svg>
+);
+
+const NotesIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={props.width || 24}
+    height={props.height || 24}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={`lucide ${props.className || ""}`}
+    {...props}
+  >
+    {/* Replace with your Notes SVG path/content */}
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </svg>
+);
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { showToast } from "../utils/toast";
@@ -144,13 +311,17 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     fetchBooleanSearch();
   }, [candidate?.id]);
 
-  const tabs = [
-    { name: "Boolean-Search" },
-    { name: "Profile" },
-    { name: "Education" },
-    { name: "Skills" },
-    { name: "References" },
-    { name: "Notes" },
+  // Update the tabs array to include icons
+  const tabs: {
+    name: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }[] = [
+    { name: "Boolean-Search", icon: BooleanSearchIcon },
+    { name: "Profile", icon: ProfileIcon },
+    { name: "Education", icon: EducationIcon },
+    { name: "Skills", icon: SkillsIcon },
+    { name: "References", icon: ReferencesIcon },
+    { name: "Notes", icon: NotesIcon },
   ];
 
   // Now filter the tabs dynamically
@@ -1338,7 +1509,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </button>
         </div>
       </div>
-
       <div className="border-t border-gray-300 border-b p-3 space-y-2">
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
@@ -1388,7 +1558,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
         </div>
       </div>
-
       <div className="space-y-2">
         <div className="flex space-x-2">
           <button
@@ -1401,20 +1570,21 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
       </div>
 
+      {/* The tabs rendering JSX */}
       <div className="flex space-x-4 border-b border-gray-200">
         {visibleTabs.map((tab) => (
           <button
             key={tab.name}
             onClick={() => setActiveTab(tab.name)}
-            className={`py-2 px-2 text-sm font-medium ${
+            className={`py-2 px-2 text-sm font-medium flex items-center space-x-1 ${
               activeTab === tab.name
                 ? "text-blue-600 border-b-2 border-blue-600"
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            {tab.name}
+            <tab.icon className="w-4 h-4 flex-shrink-0" />
             {tab.name === "Notes" && (
-              <span className="ml-1">
+              <span className="text-xs">
                 ({detailedCandidate?.candidate?.notes?.length || 0})
               </span>
             )}
@@ -1430,7 +1600,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         {activeTab === "References" && <ReferencesTab />}
         {activeTab === "Notes" && <NotesTab candidateId={candidate.id} />}
       </div>
-
       {/* Confirmation Modal */}
       {showConfirm && (
         <div className="fixed inset-0 bg-gray-400 bg-opacity-50 flex items-center justify-center z-50">
