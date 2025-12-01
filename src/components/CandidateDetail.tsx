@@ -299,9 +299,29 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const [logos, setLogos] = useState<{ [key: string]: string | undefined }>({});
   const random70to99 = () => Math.floor(Math.random() * 30 + 70);
 
-  // Reset activeTab to "Profile" when candidate changes
+  // Update the fetchBooleanSearch useEffect to conditionally set the activeTab after fetching
   useEffect(() => {
-    setActiveTab("Profile");
+    const fetchBooleanSearch = async () => {
+      if (candidate?.id) {
+        try {
+          const data = await candidateService.getCandidateBooleanSearch(
+            candidate.id
+          );
+          setBooleanData(data);
+          setHasBooleanAnalysis(true);
+          setActiveTab("Boolean-Search"); // Set to Boolean-Search if available
+        } catch (error) {
+          console.error("Error fetching boolean search:", error);
+          setBooleanData(null);
+          setHasBooleanAnalysis(false);
+          setActiveTab("Profile"); // Default to Profile if not available
+        }
+      } else {
+        // If no candidate.id, default to Profile
+        setActiveTab("Profile");
+      }
+    };
+    fetchBooleanSearch();
   }, [candidate?.id]);
 
   // In ProfileTab or where email/phone shown, update display
@@ -735,7 +755,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
         {/* Callout */}
         <div className="bg-yellow-50 border rounded-md">
-          <div className="flex items-center gap-2 px-3 py-4 mb-2">
+          <div className="flex items-center gap-2 px-3 py-4 mb-1">
             <svg
               className="h-5 w-5 text-yellow-600 mt-0.5"
               fill="currentColor"
@@ -749,7 +769,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             </svg>
             <h3 className="text-yellow-600">Call Attention</h3>
           </div>
-          <div className="p-4">
+          <div className="px-4 pb-4">
             <ul className="text-sm text-gray-500 space-y-1 list-disc list-inside">
               {booleanData.call_attention.map((attention, index) => (
                 <li key={index}>{attention}</li>
