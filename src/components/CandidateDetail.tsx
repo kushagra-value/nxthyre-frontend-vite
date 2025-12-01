@@ -1490,12 +1490,41 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     );
   };
 
+  const tabStyles = `
+  .tab-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #f3f4f6; /* bg-gray-100 */
+    color: #4b5563; /* text-gray-600 */
+    text-align: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 10;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+    margin-bottom: 4px;
+  }
+  .tab-button:hover .tab-tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
+  .tab-button {
+    position: relative;
+  }
+`;
+
   return (
     <div
       className={`bg-white rounded-xl p-3 lg:p-3 ${
         showConfirm ? "space-y-0" : "space-y-6"
       } min-h-[81vh] relative`}
     >
+      <style>{tabStyles}</style>
       <div className="flex space-x-3 items-center mt-1">
         <div
           className={`w-12 h-12 ${getAvatarColor(
@@ -1606,29 +1635,32 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       {/* The tabs rendering JSX */}
       <div className="flex space-x-4 border-b border-gray-200">
         {visibleTabs.map((tab) => (
-          <button
-            key={tab.name}
-            onClick={() => setActiveTab(tab.name)}
-            title={tab.name}
-            className={`py-2 px-2 text-sm font-medium flex items-center space-x-1 ${
-              activeTab === tab.name
-                ? "text-blue-600 border-b-2 border-blue-600"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            <tab.icon
-              className={`w-4 h-4 flex-shrink-0 ${
+          <div key={tab.name} className="tab-button">
+            <button
+              onClick={() => setActiveTab(tab.name)}
+              className={`py-2 px-2 text-sm font-medium flex items-center space-x-1 relative ${
                 activeTab === tab.name
-                  ? "text-blue-600"
+                  ? "text-blue-600 border-b-2 border-blue-600"
                   : "text-gray-500 hover:text-gray-700"
               }`}
-            />
-            {tab.name === "Notes" && (
-              <span className="text-xs">
-                ({detailedCandidate?.candidate?.notes?.length || 0})
-              </span>
-            )}
-          </button>
+            >
+              <tab.icon
+                className={`w-4 h-4 flex-shrink-0 ${
+                  activeTab === tab.name ? "text-blue-600" : ""
+                }`}
+              />
+              {tab.name === "Notes" && (
+                <span
+                  className={`text-xs ${
+                    activeTab === tab.name ? "text-blue-600" : "text-gray-500"
+                  }`}
+                >
+                  ({detailedCandidate?.candidate?.notes?.length || 0})
+                </span>
+              )}
+            </button>
+            <div className="tab-tooltip">{tab.name}</div>
+          </div>
         ))}
       </div>
 
