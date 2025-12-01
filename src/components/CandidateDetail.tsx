@@ -735,8 +735,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
         {/* Callout */}
         <div className="bg-yellow-50 border rounded-md p-4">
-          <div className="flex items-start">
-            <div className="flex-shrink-0 ">
+          <div className="">
+            <div className="flex items-center">
               <svg
                 className="h-5 w-5 text-yellow-600 mt-0.5"
                 fill="currentColor"
