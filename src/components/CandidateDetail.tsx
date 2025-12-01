@@ -736,7 +736,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         {/* Callout */}
         <div className="bg-yellow-50 border rounded-md p-4">
           <div className="flex items-start">
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 ">
               <svg
                 className="h-5 w-5 text-yellow-600 mt-0.5"
                 fill="currentColor"
@@ -748,9 +748,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                   clipRule="evenodd"
                 />
               </svg>
-            </div>
-            <div className="ml-3">
               <h3 className="text-yellow-600 mb-1">Call Attention</h3>
+            </div>
+            <div className="">
               <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
                 {booleanData.call_attention.map((attention, index) => (
                   <li key={index}>{attention}</li>
