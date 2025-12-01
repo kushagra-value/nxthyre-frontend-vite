@@ -267,6 +267,51 @@ import {
 } from "../services/candidateService";
 import { CompanyHoverCard } from "./CompanyHoverCard";
 
+interface HighlightedTextProps {
+  text: string;
+  keywords: string[];
+}
+
+const HighlightedText: React.FC<HighlightedTextProps> = ({
+  text,
+  keywords,
+}) => {
+  if (!keywords.length || !text) {
+    return text;
+  }
+
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+
+  keywords.forEach((keyword) => {
+    const keywordLower = keyword.toLowerCase();
+    let index = text.toLowerCase().indexOf(keywordLower, lastIndex);
+    if (index === -1) return;
+
+    if (index > lastIndex) {
+      parts.push(text.slice(lastIndex, index));
+    }
+
+    const highlighted = text.slice(index, index + keyword.length);
+    parts.push(
+      <mark
+        key={`${keyword}-${index}`}
+        className="bg-yellow-200 px-1 rounded font-medium"
+      >
+        {highlighted}
+      </mark>
+    );
+
+    lastIndex = index + keyword.length;
+  });
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return <>{parts}</>;
+};
+
 interface CandidateDetailProps {
   candidate: CandidateListItem | null;
   candidates: CandidateListItem[];
@@ -344,6 +389,15 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   const [booleanData, setBooleanData] = useState<AnalysisResult | null>(null);
   const [hasBooleanAnalysis, setHasBooleanAnalysis] = useState(false);
+
+  // Inside the CandidateDetail component, add this useMemo after the existing state declarations
+  const keywords = useMemo(
+    () =>
+      hasBooleanAnalysis && booleanData?.quick_fit_summary
+        ? booleanData.quick_fit_summary.map((item) => item.badge)
+        : [],
+    [booleanData, hasBooleanAnalysis]
+  );
 
   useEffect(() => {
     const fetchBooleanSearch = async () => {
@@ -817,7 +871,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               Profile Summary
             </h3>
             <p className="text-sm text-[#818283] leading-normal pt-2 pb-4 pl-6 pr-2 rounded-lg">
-              {displayText}
+              {<HighlightedText text={displayText} keywords={keywords} />}
+
               {summary.length > maxLength && (
                 <button
                   onClick={toggleExpanded}
@@ -882,7 +937,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                         )}
                       </div>
                       <h4 className="font-medium text-[#111827] text-sm">
-                        {exp?.job_title}
+                        {
+                          <HighlightedText
+                            text={exp?.job_title || ""}
+                            keywords={keywords}
+                          />
+                        }
                       </h4>
                       {/* <p className="text-sm text-gray-400">{`${exp?.company} | ${exp?.location}`}</p> */}
                       <p className="text-sm text-gray-400">
@@ -894,7 +954,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                           logoUrl={logos[exp?.company]}
                         >
                           <span className="text-blue-600 hover:text-blue-800 underline cursor-pointer">
-                            {exp?.company}
+                            {
+                              <HighlightedText
+                                text={exp?.company || ""}
+                                keywords={keywords}
+                              />
+                            }
                           </span>
                         </CompanyHoverCard>{" "}
                         | {exp?.location}
@@ -914,7 +979,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                             : ""
                         }`}
                       >
-                        {displayExpText}
+                        {
+                          <HighlightedText
+                            text={displayExpText}
+                            keywords={keywords}
+                          />
+                        }
                         {expDescription.length > maxLength && (
                           <button
                             onClick={() => toggleExperience(index)}
@@ -981,9 +1051,21 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                   )}
                 </div>
                 <h4 className="font-medium text-[#111827] text-sm">
-                  {edu?.degree}
+                  {
+                    <HighlightedText
+                      text={edu?.degree || ""}
+                      keywords={keywords}
+                    />
+                  }
                 </h4>
-                <p className="text-sm text-[#4B5563]">{edu?.specialization}</p>
+                <p className="text-sm text-[#4B5563]">
+                  {
+                    <HighlightedText
+                      text={edu?.specialization || ""}
+                      keywords={keywords}
+                    />
+                  }
+                </p>
                 <p className="text-sm text-[#6B7280]">
                   {edu?.start_date && (
                     <span>
@@ -992,7 +1074,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                   )}
                 </p>
                 {edu?.institution && (
-                  <p className="text-sm text-[#4B5563]">{edu?.institution}</p>
+                  <p className="text-sm text-[#4B5563]">
+                    {
+                      <HighlightedText
+                        text={edu?.institution}
+                        keywords={keywords}
+                      />
+                    }
+                  </p>
                 )}
               </div>
             ))
@@ -1018,10 +1107,23 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     className="border-l-2 border-gray-200 pl-4 relative pb-2 space-y-1"
                   >
                     <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1.5"></div>
+                    {/* // In EducationTab, for certifications, update the name h4: */}
                     <h4 className="font-medium text-[#111827] text-sm">
-                      {cert?.name}
+                      {
+                        <HighlightedText
+                          text={cert?.name || ""}
+                          keywords={keywords}
+                        />
+                      }
                     </h4>
-                    <p className="text-sm text-[#4B5563]">{cert?.issuer}</p>
+                    <p className="text-sm text-[#4B5563]">
+                      {
+                        <HighlightedText
+                          text={cert?.issuer || ""}
+                          keywords={keywords}
+                        />
+                      }
+                    </p>
                     {cert.issued_date && (
                       <p className="text-sm text-[#6B7280]">
                         {cert?.issued_date}
@@ -1059,7 +1161,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                       {rec?.recommender_title}
                     </p>
                     <p className="text-sm text-[#4B5563] mt-1">
-                      "{rec?.feedback}"
+                      "
+                      {
+                        <HighlightedText
+                          text={rec?.feedback || ""}
+                          keywords={keywords}
+                        />
+                      }
+                      "
                     </p>
                     <p className="text-xs text-[#6B7280] mt-1">
                       {rec?.date_received}
@@ -1172,7 +1281,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 .map((skill, index) => (
                   <span
                     key={index}
-                    className="p-2 bg-white text-blue-500 text-xs rounded-lg"
+                    className={`p-2 text-blue-500 text-xs rounded-lg ${
+                      keywords.includes(skill)
+                        ? "bg-yellow-100 font-medium"
+                        : "bg-white"
+                    }`}
                   >
                     {skill}
                   </span>
