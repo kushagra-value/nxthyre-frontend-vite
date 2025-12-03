@@ -565,6 +565,13 @@ class CandidateService {
         "/candidates/search/?page=1",
         requestBody
       );
+      // Add: Save bool_query from response to localStorage if present (for job-specific boolean query)
+      if (response.data.bool_query) {
+        localStorage.setItem(
+          `bool_query_${filters.jobId}`,
+          response.data.bool_query
+        );
+      }
       return response.data;
     } catch (error: any) {
       throw new Error(
