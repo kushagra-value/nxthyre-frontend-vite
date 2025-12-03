@@ -69,6 +69,7 @@ export interface CandidateSearchResponse {
     active: number;
     prevetted: number;
   };
+  boolean_search_terms?: string;
 }
 
 export interface TestEmailResponse {
@@ -380,10 +381,132 @@ export type Note = {
   };
 };
 
+export interface CandidateMatchScore {
+  score: string;
+  label: string;
+  description: string;
+  note: string;
+}
+
+export interface QuickFitItem {
+  badge: string;
+  status: string;
+  color: string;
+}
+
+export interface AnalysisResult {
+  candidate_id: string;
+  candidate_name: string;
+  candidate_match_score: CandidateMatchScore;
+  quick_fit_summary: QuickFitItem[];
+  gaps_risks: string[];
+  recommended_message: string;
+  call_attention: string[];
+}
+
+export interface AnalyzeResponse {
+  analysis_results: AnalysisResult[];
+  total_candidates: number;
+  bool_query_used: string;
+}
+
 class CandidateService {
   async getCandidates(filters: any): Promise<CandidateSearchResponse> {
     try {
-      const response = await apiClient.post("/candidates/search/", { filters });
+      const requestBody: any = {
+        job_id: filters.jobId,
+        tab: filters.application_type,
+      };
+
+      const ignoredKeys = [
+        "jobId",
+        "application_type",
+        "booleanSearch",
+        "boolQuery",
+        "semanticSearch",
+        "sort_by",
+        "is_prevetted",
+        "is_active",
+      ];
+
+      // Snake case mapping for backend (adjust as per actual backend expectations)
+      const snakeCaseMap: Record<string, string> = {
+        minTotalExp: "min_total_exp",
+        maxTotalExp: "max_total_exp",
+        minExperience: "min_experience_in_current_company",
+        locations: "locations",
+        companies: "companies",
+        industries: "industries",
+        minSalary: "min_salary_lpa",
+        maxSalary: "max_salary_lpa",
+        colleges: "colleges",
+        noticePeriod: "notice_period",
+        topTierUniversities: "top_tier_universities_only",
+        computerScienceGraduates: "computer_science_graduates_only",
+        showFemaleCandidates: "show_female_candidates_only",
+        recentlyPromoted: "recently_promoted",
+        backgroundVerified: "background_verified",
+        hasCertification: "has_certification",
+        hasResearchPaper: "has_research_paper",
+        hasLinkedIn: "has_linkedin",
+        hasBehance: "has_behance",
+        hasTwitter: "has_twitter",
+        hasPortfolio: "has_portfolio",
+        // Add more mappings as needed
+      };
+
+      // Add all other filters
+      Object.keys(filters).forEach((key) => {
+        if (ignoredKeys.includes(key)) return;
+
+        const value = filters[key];
+        if (value === undefined || value === null || value === "") return;
+
+        let backendKey = key;
+        if (key in snakeCaseMap) {
+          backendKey = snakeCaseMap[key];
+        }
+
+        if (Array.isArray(value) && value.length > 0) {
+          requestBody[backendKey] = value;
+        } else if (typeof value === "object" && Object.keys(value).length > 0) {
+          requestBody[backendKey] = value;
+        } else if (typeof value === "boolean" && value) {
+          requestBody[backendKey] = value;
+        } else if (typeof value === "string" && value.trim() !== "") {
+          requestBody[backendKey] = value.trim();
+        } else if (typeof value === "number") {
+          requestBody[backendKey] = value;
+        }
+      });
+
+      // Handle keywords (only if not booleanSearch)
+      if (
+        !filters.booleanSearch &&
+        filters.keywords &&
+        filters.keywords.length > 0
+      ) {
+        requestBody.keywords = filters.keywords; // Assume array; change to filters.keywords.join(', ') if backend expects string
+      }
+
+      // Handle boolean search (replaces keywords)
+      if (
+        filters.booleanSearch &&
+        filters.boolQuery &&
+        filters.boolQuery.trim() !== ""
+      ) {
+        requestBody.bool_q = filters.boolQuery.trim();
+      }
+
+      // Handle semantic search if applicable (add logic if backend supports)
+      // if (filters.semanticSearch) {
+      //   requestBody.semantic_search = true;
+      // }
+
+      const response = await apiClient.post(
+        "/candidates/search/?page=1",
+        requestBody
+      );
       return response.data;
     } catch (error: any) {
       throw new Error(
@@ -747,19 +870,22 @@ class CandidateService {
     }
   }
 
-  async getCandidateActivity(candidateId: string, applicationId?: number): Promise<any[]> {
-  try {
-    const params = applicationId ? `?application_id=${applicationId}` : '';
-    const response = await apiClient.get(
-      `/candidates/${candidateId}/activity/${params}`
-    );
-    return response.data;
-  } catch (error: any) {
-    throw new Error(
-      error.response?.data?.error || "Failed to fetch candidate activity"
-    );
+  async getCandidateActivity(
+    candidateId: string,
+    applicationId?: number
+  ): Promise<any[]> {
+    try {
+      const params = applicationId ? `?application_id=${applicationId}` : "";
+      const response = await apiClient.get(
+        `/candidates/${candidateId}/activity/${params}`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch candidate activity"
+      );
+    }
   }
-}
 
   async getBackgroundVerifications(candidateId: string): Promise<any[]> {
     try {
@@ -774,6 +900,40 @@ class CandidateService {
       );
     }
   }
+
+  async getCandidateBooleanSearch(
+    candidateId: string
+  ): Promise<AnalysisResult> {
+    try {
+      const boolQuery =
+        "(Senior ML Engineer OR Lead ML Engineer)\nAND (Python)\nAND (PyTorch OR TensorFlow)\nAND (MLOps)\nAND (Kubernetes OR Docker)";
+      const response = await apiClient.post("/candidates/analyze/", {
+        candidate_ids: [candidateId],
+        bool_query: boolQuery,
+      });
+      const data: AnalyzeResponse = response.data;
+      if (data.analysis_results && data.analysis_results.length > 0) {
+        return data.analysis_results[0];
+      } else {
+        throw new Error("No analysis results");
+      }
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch boolean search"
+      );
+    }
+  }
+
+  // async getDefaultBoolQuery(jobId: string): Promise<string> {
+  //   try {
+  //     const response = await apiClient.get(`/jobs/${jobId}/default-bool-query`); // Adjust endpoint
+  //     return response.data.bool_q || "";
+  //   } catch (error: any) {
+  //     throw new Error(
+  //       error.response?.data?.error || "Failed to fetch default boolean query"
+  //     );
+  //   }
+  // }
 }
 
 export const candidateService = new CandidateService();

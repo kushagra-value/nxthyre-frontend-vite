@@ -17,6 +17,7 @@ import Cookies from "js-cookie";
 import {
   candidateService,
   CandidateListItem,
+  CandidateSearchResponse,
 } from "./services/candidateService";
 import Header from "./components/Header";
 import TermsAndConditions from "./components/TermsAndConditions";
@@ -53,6 +54,11 @@ import {
   Copy,
   Globe,
   Users,
+  Info,
+  ChevronLeft,
+  Briefcase,
+  LocateIcon,
+  FileSearch,
 } from "lucide-react";
 import { showToast } from "./utils/toast";
 import CandidateBackGroundCheck from "./components/CandidateBackGroundCheck";
@@ -170,6 +176,10 @@ function MainApp() {
   const [sortBy, setSortBy] = useState<string>("");
   const [isSearchMode, setIsSearchMode] = useState(false);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [showRequisitionInfoModal, setShowRequisitionInfoModal] =
+    useState(false);
+  const [defaultBoolQuery, setDefaultBoolQuery] = useState<string>("");
+
   useEffect(() => {
     const fetchWorkspaces = async () => {
       try {
@@ -287,9 +297,9 @@ function MainApp() {
     async (page: number = 1, appliedFilters: any) => {
       setLoadingCandidates(true);
       try {
-        let response;
+        let response: CandidateSearchResponse;
         if (debouncedSearchQuery.trim() !== "") {
-          const response = await candidateService.universalSearch(
+          response = await candidateService.universalSearch(
             debouncedSearchQuery,
             controller.signal
           );
@@ -340,127 +350,20 @@ function MainApp() {
             is_active: false,
             sort_by: sortBy || "",
           });
+          setDefaultBoolQuery(""); // Clear during search mode
         } else {
-          const filterParams: any = {
-            page,
-            page_size: 20,
-            job_id: appliedFilters.jobId,
-            tab: appliedFilters.application_type,
-            sort_by: sortBy,
-          };
-          const isValidNumber = (value: string) => /^\d+$/.test(value);
-          if (appliedFilters.keywords && appliedFilters.keywords.length > 0) {
-            filterParams.q = appliedFilters.keywords; // Pass array directly
+          response = await candidateService.getCandidates(appliedFilters, page);
+          setCandidates(response.results);
+          setTotalCount(response.count);
+          if (response.sourcing_counts) {
+            setSourcingCounts(response.sourcing_counts);
           }
-          if (
-            appliedFilters.minTotalExp &&
-            isValidNumber(appliedFilters.minTotalExp)
-          ) {
-            filterParams.experience_min = appliedFilters.minTotalExp;
-          }
-          if (
-            appliedFilters.maxTotalExp &&
-            isValidNumber(appliedFilters.maxTotalExp)
-          ) {
-            filterParams.experience_max = appliedFilters.maxTotalExp;
-          }
-          if (
-            appliedFilters.minExperience &&
-            isValidNumber(appliedFilters.minExperience)
-          ) {
-            filterParams.exp_in_current_company_min =
-              appliedFilters.minExperience;
-          }
-          if (appliedFilters.topTierUniversities)
-            filterParams.is_top_tier_college =
-              appliedFilters.topTierUniversities;
-          if (appliedFilters.hasCertification)
-            filterParams.has_certification = appliedFilters.hasCertification;
-          if (appliedFilters.locations && appliedFilters.locations.length > 0)
-            filterParams.locations = appliedFilters.locations;
-          if (appliedFilters.companies)
-            filterParams.companies = appliedFilters.companies
-              .split(",")
-              .map((c: string) => c.trim());
-          if (appliedFilters.industries)
-            filterParams.industries = appliedFilters.industries
-              .split(",")
-              .map((i: string) => i.trim());
-          if (
-            appliedFilters.minSalary &&
-            isValidNumber(appliedFilters.minSalary)
-          )
-            filterParams.salary_min = appliedFilters.minSalary;
-          if (
-            appliedFilters.maxSalary &&
-            isValidNumber(appliedFilters.maxSalary)
-          )
-            filterParams.salary_max = appliedFilters.maxSalary;
-          if (appliedFilters.colleges)
-            filterParams.colleges = appliedFilters.colleges
-              .split(",")
-              .map((c: string) => c.trim());
-          if (appliedFilters.showFemaleCandidates)
-            filterParams.is_female_only = true;
-          if (appliedFilters.recentlyPromoted)
-            filterParams.is_recently_promoted = true;
-          if (appliedFilters.backgroundVerified)
-            filterParams.is_background_verified = true;
-          if (appliedFilters.hasLinkedIn) filterParams.has_linkedin = true;
-          if (appliedFilters.hasTwitter) filterParams.has_twitter = true;
-          if (appliedFilters.hasPortfolio) filterParams.has_portfolio = true;
-          if (appliedFilters.computerScienceGraduates)
-            filterParams.is_cs_graduate = true;
-          if (appliedFilters.hasResearchPaper)
-            filterParams.has_research_paper = true;
-          if (appliedFilters.hasBehance) filterParams.has_behance = true;
-          if (appliedFilters.is_prevetted) filterParams.is_prevetted = true;
-          if (appliedFilters.is_active) filterParams.is_active = true;
-          if (appliedFilters.noticePeriod) {
-            const noticePeriodOptions = [
-              "Immediate",
-              "15 days",
-              "30 days",
-              "45 days",
-              "60 days",
-              "90 days",
-            ] as const;
-            type NoticePeriod = (typeof noticePeriodOptions)[number];
-            const days: Record<NoticePeriod, number> = {
-              Immediate: 0,
-              "15 days": 15,
-              "30 days": 30,
-              "45 days": 45,
-              "60 days": 60,
-              "90 days": 90,
-            };
-            if (
-              noticePeriodOptions.includes(
-                appliedFilters.noticePeriod as NoticePeriod
-              )
-            ) {
-              filterParams.notice_period_max_days =
-                days[appliedFilters.noticePeriod as NoticePeriod];
-            } else {
-              console.warn(
-                "Invalid notice period:",
-                appliedFilters.noticePeriod
-              );
-            }
-          }
-          if (isAuthenticated) {
-            response = await candidateService.searchCandidates(filterParams);
-            setCandidates(response.results);
-            setTotalCount(response.count);
-            if (response.sourcing_counts) {
-              setSourcingCounts(response.sourcing_counts);
-            }
-            if (response.results.length === 0) {
-              setSelectedCandidate(null);
-              showToast.error("No results found for the applied filters.");
-            } else if (response.results.length > 0) {
-              setSelectedCandidate(response.results[0]);
-            }
+          setDefaultBoolQuery(response.boolean_search_terms || "");
+          if (response.results.length === 0) {
+            setSelectedCandidate(null);
+            showToast.error("No results found for the applied filters.");
+          } else if (response.results.length > 0) {
+            setSelectedCandidate(response.results[0]);
           }
         }
       } catch (error) {
@@ -652,6 +555,7 @@ function MainApp() {
         is_active: false,
         sort_by: "",
       });
+      setDefaultBoolQuery("");
       showToast.success("Successfully logged out");
       navigate("/");
     } catch (error) {
@@ -683,6 +587,12 @@ function MainApp() {
   const handleCreateJobRole = () => {
     setShowCreateJobRole(true);
   };
+
+  const handleRequisitionInfo = async (jobId: number) => {
+    setShowRequisitionInfoModal(true);
+    // Here we will add api fetching backend logic once done
+  };
+
   const handleEditJobRole = async (jobId: number) => {
     try {
       const jobs = await jobPostService.getJobs();
@@ -797,6 +707,9 @@ function MainApp() {
   const handleCategoryAction = (action: string, jobId: number) => {
     setShowCategoryActions(null);
     switch (action) {
+      case "requisition-info":
+        handleRequisitionInfo(jobId);
+        break;
       case "edit-job":
         handleEditJobRole(jobId);
         break;
@@ -1243,6 +1156,18 @@ function MainApp() {
                                         <button
                                           onClick={() =>
                                             handleCategoryAction(
+                                              "requisition-info",
+                                              category.id
+                                            )
+                                          }
+                                          className="w-full px-4 py-2 text-left text-md text-gray-700 hover:bg-gray-50 flex items-center"
+                                        >
+                                          <Info className="w-4 h-4 mr-4" />
+                                          Requisition Info
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            handleCategoryAction(
                                               "edit-job",
                                               category.id
                                             )
@@ -1409,6 +1334,7 @@ function MainApp() {
                         <div className="lg:w-[25%] sticky order-1 lg:order-1 top-16 self-start will-change-transform z-10">
                           <FiltersSidebar
                             filters={filters}
+                            defaultBoolQuery={defaultBoolQuery}
                             onApplyFilters={handleApplyFilters}
                             setCandidates={setCandidates}
                             candidates={candidates}
@@ -1654,6 +1580,228 @@ function MainApp() {
                         </div>
                       </div>
                     )}
+                    {showRequisitionInfoModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-end overflow-y-auto">
+                        <div className="bg-white rounded-3xl shadow-xl max-w-2xl w-full max-h-[100vh] overflow-y-auto p-6">
+                          {/* Header */}
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                              <button
+                                className="w-8 h-8 text-gray-800"
+                                onClick={() =>
+                                  setShowRequisitionInfoModal(false)
+                                }
+                              >
+                                <ArrowLeft className="w-8 h-8" />
+                              </button>
+                              <h1 className="text-lg font-semibold text-gray-800">
+                                Requisition Info
+                              </h1>
+                            </div>
+                          </div>
+                          <h2 className="text-2xl font-semibold text-gray-900 mb-1">
+                            Builder.io Developer
+                          </h2>
+                          <div className="flex space-x-8 mt-2 mb-6">
+                            <span className="flex items-center text-gray-500">
+                              {" "}
+                              <Briefcase className="w-4 h-4 mr-1" /> 8+ years
+                            </span>
+                            <span className="flex items-center text-gray-500">
+                              {" "}
+                              <LocateIcon className="w-4 h-4 mr-1" /> Hybrid
+                            </span>
+                            <span className="flex items-center text-gray-500">
+                              {" "}
+                              <FileSearch className="w-4 h-4 mr-1" /> Immediate
+                            </span>
+                          </div>
+
+                          {/* Role Overview */}
+                          <div className="mb-6">
+                            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                              Role Overview
+                            </h3>
+                            <p className="text-gray-600 text-sm">
+                              The core experience builder at Builder.io, which
+                              is a visual headless CMS with a drag-and-drop page
+                              builder that outputs clean code. Take the core
+                              Build UI in Builder to Ensure it is responsive,
+                              scalable, optimized, and integrated with APIs/CMs.
+                            </p>
+                          </div>
+
+                          {/* The Core Expectation */}
+                          <div className="mb-6">
+                            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                              The Core Expectation
+                            </h3>
+                            <p className="text-gray-600 text-sm">
+                              Take the core Build UI in Builder to Ensure it is
+                              responsive, scalable, optimized, and integrated
+                              with APIs/CMs.
+                            </p>
+                          </div>
+
+                          {/* Key Responsibilities Explained */}
+                          <div className="mb-6">
+                            <h3 className="text-lg font-semibold text-gray-700 mb-3">
+                              Key Responsibilities Explained
+                            </h3>
+                            <div className="space-y-3">
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <div className="flex items-start space-x-3">
+                                  <div>
+                                    <h4 className="font-medium text-gray-600 mb-1">
+                                      Develop reusable components
+                                    </h4>
+                                    <p className="text-sm text-gray-400">
+                                      Why? Maintains quality & consistency
+                                      across the website pages built with
+                                      Builder.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <div className="flex items-start space-x-3">
+                                  <div>
+                                    <h4 className="font-medium text-gray-600 mb-1">
+                                      Integrate with CMS
+                                    </h4>
+                                    <p className="text-sm text-gray-400">
+                                      Handle content queries, dynamic data, etc.
+                                      via APIs.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <div className="flex items-start space-x-3">
+                                  <div>
+                                    <h4 className="font-medium text-gray-600 mb-1">
+                                      Work with Design teams
+                                    </h4>
+                                    <p className="text-sm text-gray-400">
+                                      Translate Figma designs exactly into UI
+                                      using Builder.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <div className="flex items-start space-x-3">
+                                  <div>
+                                    <h4 className="font-medium text-gray-600 mb-1">
+                                      Troubleshoot integrations
+                                    </h4>
+                                    <p className="text-sm text-gray-400">
+                                      Fix data binding, CI/CD, integrations
+                                      issues.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <div className="flex items-start space-x-3">
+                                  <div>
+                                    <h4 className="font-medium text-gray-600 mb-1">
+                                      Optimize performance
+                                    </h4>
+                                    <p className="text-sm text-gray-400">
+                                      Improve load speeds, responsive/lazy
+                                      images, etc.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Required Technical Skills & Purpose */}
+                          <div className="mb-6">
+                            <h3 className="text-lg font-semibold text-gray-700 mb-3">
+                              Required Technical Skills & Purpose
+                            </h3>
+                            <div className="space-y-3">
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <h4 className="font-medium text-gray-600 mb-1">
+                                  Builder.io
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Visual frontend code overlays
+                                </p>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <h4 className="font-medium text-gray-600 mb-1">
+                                  Visual HTML/CSS
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Of pages
+                                </p>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <h4 className="font-medium text-gray-600 mb-1">
+                                  CSS (including Flexbox, Grid)
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Styling, responsiveness, animations
+                                </p>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <h4 className="font-medium text-gray-600 mb-1">
+                                  JavaScript
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Interactive components
+                                </p>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <h4 className="font-medium text-gray-600 mb-1">
+                                  React / component logic
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Used via Builder integrations into frontend
+                                </p>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <h4 className="font-medium text-gray-600 mb-1">
+                                  API Integration
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Fetch data dynamically (REST/GraphQL)
+                                </p>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <h4 className="font-medium text-gray-600 mb-1">
+                                  SEO Best Practices
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Optimize for search, alt texts, structured
+                                  data
+                                </p>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <h4 className="font-medium text-gray-600 mb-1">
+                                  Performance Optimization
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Lazy loading, minification, caching
+                                </p>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <h4 className="font-medium text-gray-600 mb-1">
+                                  Communication / Collaboration
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Working with design/product teams
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </>
               )
@@ -1713,4 +1861,3 @@ export default function App() {
     </AuthProvider>
   );
 }
-
