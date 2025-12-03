@@ -324,6 +324,7 @@ interface CandidateDetailProps {
   deductCredits: () => Promise<void>;
   onUpdateCandidate: (updated: CandidateListItem) => void;
   enableBooleanAnalysis?: boolean;
+  jobId?: string;
 }
 
 const CandidateDetail: React.FC<CandidateDetailProps> = ({
@@ -334,6 +335,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   onUpdateCandidate,
   deductCredits,
   enableBooleanAnalysis,
+  jobId,
 }) => {
   const [newComment, setNewComment] = useState("");
   const [detailedCandidate, setDetailedCandidate] =
