@@ -19,7 +19,7 @@ export default function ProjectCard({ isActive = false , jobName= ""}: ProjectCa
     <div className={`relative col-span-1 w-full h-[220px] bg-white border-[0.5px] ${borderClass} rounded-[10px] p-6`}>
       <div className="flex items-start justify-between mb-2">
         <div>
-          <h3 className={`text-xl font-semibold leading-7 ${titleClass}`}>
+          <h3 className={`text-xl font-semibold leading-7 ${titleClass} truncate`}>
             {jobName}
           </h3>
           <p className={`text-md leading-7 mt-1 ${subtitleClass}`}>
