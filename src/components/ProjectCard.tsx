@@ -113,7 +113,7 @@ export default function ProjectCard({ isActive = false , jobName= ""}: ProjectCa
         </div>
       </div>
 
-      <div className="absolute bottom-5 left-0 right-0 px-5 flex items-center gap-3">
+      <div className="px-5 flex items-center gap-3 mb-2">
         {isActive ? (
           <>
             <button className={`w-[42px] h-[42px] rounded-full border-[0.5px] border-[#4B5563] flex items-center justify-center hover:bg-gray-50 transition-colors`}>
