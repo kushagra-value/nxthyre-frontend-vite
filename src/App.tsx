@@ -1123,8 +1123,8 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
 
 
 
-                  <div className="max-w-6xl mx-auto px-4 py-12">
-                    <div className="sticky top-0 bg-white z-40 shadow-sm flex h-[99px]">
+                  <div className="max-w-6xl mx-auto px-4 py-6">
+                    <div className=" bg-white shadow-sm flex h-[99px] mb-6">
                       <div className="w-[80vw] h-[99px] bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.1)] rounded-[10px] flex items-center justify-between px-[34px]">
                         <h1 className="text-2xl font-medium text-[#4B5563]">Welcome {currentUser?.fullName || "User"}</h1>
 
