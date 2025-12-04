@@ -59,10 +59,12 @@ import {
   Briefcase,
   LocateIcon,
   FileSearch,
+  Search,
 } from "lucide-react";
 import { showToast } from "./utils/toast";
 import CandidateBackGroundCheck from "./components/CandidateBackGroundCheck";
 import SuperAdminDashboard from "./components/SuperAdmin/SuperAdminDashboard";
+import ProjectCard from "./components/ProjectCard";
 interface Category {
   id: number;
   name: string;
@@ -1117,13 +1119,34 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                       showSearchBar={false}
                     />
                   </div>
+
+
+
+
                   <div className="max-w-6xl mx-auto px-4 py-12">
-                    <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                      Welcome, {currentUser?.fullName || "User"}!
-                    </h1>
-                    <p className="text-gray-600 mb-10">
-                      Select a job role to start sourcing candidates
-                    </p>
+                    <div className="w-[100vw] flex h-[99px] px-[60px]  pt-[30px]">
+                      <div className="w-[80vw] h-[99px] bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.1)] rounded-[10px] flex items-center justify-between px-[34px]">
+                        <h1 className="text-2xl font-medium text-[#4B5563]">Welcome {currentUser?.fullName || "User"}</h1>
+
+                        <div className="flex items-center gap-5">
+                          <div className="relative w-[544px] h-[59px]">
+                            <input
+                              type="text"
+                              placeholder="Search Projects"
+                              className="w-full h-full bg-[#ECF1FF] rounded-[5px] pl-5 pr-16 text-lg text-[#181D25] placeholder:text-[#AAC1FF] focus:outline-none focus:ring-2 focus:ring-[#0F47F2]/20"
+                            />
+                            <button className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-[31px] bg-[#0F47F2] rounded-md flex items-center justify-center hover:bg-[#0d3ec9] transition-colors">
+                              <Search className="w-[22px] h-[19px] text-white" strokeWidth={1.33}/>
+                            </button>
+                          </div>
+
+                        
+                        </div> 
+                      </div><div className=" w-[210px] h-[99px] rounded-[10px] flex flex-col items-start justify-center px-5 -mr-[34px]">
+                            <div className="text-[34px] font-medium text-[#0F47F2] leading-[41px]">4D 21Hr</div>
+                            <div className="text-xl font-medium text-[#4B5563] leading-6 mt-1">Total Time Saved</div>
+                          </div>
+                    </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                       {categories.map((job) => (
@@ -1132,43 +1155,11 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                           onClick={() => {
                             setActiveCategoryId(job.id);
                             setHasSelectedJob(true);
-                            // Optionally prefetch
                             fetchJobDetailsAndSetFilters(job.id);
                           }}
-                          className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-200 overflow-hidden"
+                          className=" shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
                         >
-                          <div className="p-6">
-                            <h3 className="font-semibold text-lg text-gray-800 truncate">
-                              {job.name}
-                            </h3>
-                            <div className="mt-4 flex flex-wrap gap-2 text-sm">
-                              <span className="flex items-center text-gray-600">
-                                8+ years
-                              </span>
-                              <span className="text-gray-400">•</span>
-                              <span className="text-gray-600">Hybrid</span>
-                              <span className="text-gray-400">•</span>
-                              <span className="text-gray-600">Immediate</span>
-                            </div>
-                            <div className="mt-5 flex items-center justify-between">
-                              <div className="flex -space-x-2">
-                                <div className="w-8 h-8 rounded-full bg-gray-300 border-2 border-white" />
-                                <div className="w-8 h-8 rounded-full bg-gray-300 border-2 border-white" />
-                                <div className="w-8 h-8 rounded-full bg-gray-300 border-2 border-white" />
-                                <div className="w-8 h-8 rounded-full bg-blue-600 border-2 border-white flex items-center justify-center text-white text-xs font-medium">
-                                  +{job.count}
-                                </div>
-                              </div>
-                              <span className="text-sm text-gray-500">
-                                {job.invites_sent || 0} sent
-                              </span>
-                            </div>
-                          </div>
-                          <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
-                            <span className="text-xs font-medium text-blue-700 bg-blue-100 px-3 py-1 rounded-full">
-                              {job.count} candidates
-                            </span>
-                          </div>
+                          <ProjectCard isActive={false} jobName={job.name} />
                         </div>
                       ))}
                     </div>
