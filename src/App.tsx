@@ -1183,7 +1183,7 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                     </div>
                   </div>
                 </div>
-              ):
+              ): (
                 <>
                   <Toaster />
                   <div className="bg-gray-50 min-h-screen">
