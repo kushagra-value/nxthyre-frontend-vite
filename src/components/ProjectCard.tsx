@@ -19,10 +19,10 @@ export default function ProjectCard({ isActive = false , jobName= ""}: ProjectCa
     <div className={`relative col-span-1 w-full h-[260px] bg-white border-[0.5px] ${borderClass} rounded-[10px] p-5`}>
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h3 className={`text-2xl font-semibold leading-7 ${titleClass}`}>
+          <h3 className={`text-xl font-semibold leading-7 ${titleClass}`}>
             {jobName}
           </h3>
-          <p className={`text-lg leading-7 mt-1 ${subtitleClass}`}>
+          <p className={`text-md leading-7 mt-1 ${subtitleClass}`}>
             Deloitte
           </p>
         </div>
@@ -55,7 +55,7 @@ export default function ProjectCard({ isActive = false , jobName= ""}: ProjectCa
 </svg>
 
 
-          <span className={`text-lg leading-7 ${textClass}`}>8+years</span>
+          <span className={`text-md leading-7 ${textClass}`}>8+years</span>
         </div>
 
         <div className="flex items-center gap-1">
@@ -65,7 +65,7 @@ export default function ProjectCard({ isActive = false , jobName= ""}: ProjectCa
 </svg>
 
 
-          <span className={`text-lg leading-7 ${textClass}`}>Hybrid</span>
+          <span className={`text-md leading-7 ${textClass}`}>Hybrid</span>
         </div>
 
         <div className="flex items-center gap-1">
@@ -74,7 +74,7 @@ export default function ProjectCard({ isActive = false , jobName= ""}: ProjectCa
 </svg>
 
 
-          <span className={`text-lg leading-7 ${textClass}`}>Immediate</span>
+          <span className={`text-md leading-7 ${textClass}`}>Immediate</span>
         </div>
       </div>
 
@@ -87,7 +87,7 @@ export default function ProjectCard({ isActive = false , jobName= ""}: ProjectCa
 <path d="M11.5879 8.97656C12.5069 9.22151 13.3499 9.71033 14.0353 10.3959C14.7209 11.0814 15.2256 11.9403 15.5009 12.8896" stroke="#4B5563" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 
-          <span className={`text-lg leading-6 ${textClass}`}>556</span>
+          <span className={`text-md leading-6 ${textClass}`}>556</span>
         </div>
 
         <div className="flex items-center gap-1">
@@ -98,7 +98,7 @@ export default function ProjectCard({ isActive = false , jobName= ""}: ProjectCa
 </svg>
 
 
-          <span className={`text-lg leading-6 ${textClass}`}>61</span>
+          <span className={`text-md leading-6 ${textClass}`}>61</span>
         </div>
 
         <div className="flex items-center gap-1">
@@ -109,7 +109,7 @@ export default function ProjectCard({ isActive = false , jobName= ""}: ProjectCa
 <div className="absolute top-0 right-0 ml-auto w-1 h-1 rounded-full bg-[#0F47F2]"></div>
           </div>
            
-          <span className={`text-lg leading-6 ${textClass}`}>21</span>
+          <span className={`text-md leading-6 ${textClass}`}>21</span>
         </div>
       </div>
 
