@@ -1142,7 +1142,7 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
 
                         
                         </div> 
-                      </div><div className=" w-[210px] h-[99px] rounded-[10px] flex flex-col items-start justify-center px-5 -mr-[34px]">
+                      </div><div className="bg-white w-[210px] h-[99px] flex flex-col items-start justify-center px-5 -mr-[34px]">
                             <div className="text-2xl font-medium text-[#0F47F2] leading-[41px]">4D 21Hr</div>
                             <div className="text-lg font-medium text-[#4B5563] leading-6 mt-1">Total Time Saved</div>
                           </div>
@@ -1164,14 +1164,7 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                       ))}
                     </div>
 
-                    <div className="mt-10 text-center">
-                      <button
-                        onClick={handleCreateJobRole}
-                        className="text-blue-600 hover:text-blue-800 font-medium"
-                      >
-                        + Create New Job Role
-                      </button>
-                    </div>
+                    
                   </div>
                 </div>
               ): (
