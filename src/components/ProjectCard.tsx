@@ -16,8 +16,8 @@ export default function ProjectCard({ isActive = false , jobName= ""}: ProjectCa
   const iconColor = isActive ? '#4B5563' : '#818283';
 
   return (
-    <div className={`relative col-span-1 w-full h-[260px] bg-white border-[0.5px] ${borderClass} rounded-[10px] p-5`}>
-      <div className="flex items-start justify-between mb-3">
+    <div className={`relative col-span-1 w-full h-[260px] bg-white border-[0.5px] ${borderClass} rounded-[10px] p-6`}>
+      <div className="flex items-start justify-between mb-2">
         <div>
           <h3 className={`text-xl font-semibold leading-7 ${titleClass}`}>
             {jobName}
@@ -39,7 +39,7 @@ export default function ProjectCard({ isActive = false , jobName= ""}: ProjectCa
         </button>
       </div>
 
-      <div className="flex items-center gap-4 mb-4">
+      <div className="flex items-center gap-3 mb-2">
         <div className="flex items-center gap-1">
           <svg width="14" height="14" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_2438_3982)">
@@ -78,7 +78,7 @@ export default function ProjectCard({ isActive = false , jobName= ""}: ProjectCa
         </div>
       </div>
 
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-3 mb-2">
         <div className="flex items-center gap-1">
           <svg width="14" height="14" viewBox="0 0 16 15" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M6.69632 7.67391C8.67733 7.67391 10.2833 6.06798 10.2833 4.08696C10.2833 2.10594 8.67733 0.5 6.69632 0.5C4.71531 0.5 3.10938 2.10594 3.10938 4.08696C3.10938 6.06798 4.71531 7.67391 6.69632 7.67391Z" stroke="#4B5563" stroke-linecap="round" stroke-linejoin="round"/>
