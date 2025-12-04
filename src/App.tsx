@@ -1124,7 +1124,7 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
 
 
                   <div className="max-w-6xl mx-auto px-4 py-12">
-                    <div className="sticky top-0 bg-white z-40 shadow-sm flex h-[99px] px-[60px]">
+                    <div className="sticky top-0 bg-white z-40 shadow-sm flex h-[99px]">
                       <div className="w-[80vw] h-[99px] bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.1)] rounded-[10px] flex items-center justify-between px-[34px]">
                         <h1 className="text-2xl font-medium text-[#4B5563]">Welcome {currentUser?.fullName || "User"}</h1>
 
@@ -1143,8 +1143,8 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                         
                         </div> 
                       </div><div className=" w-[210px] h-[99px] rounded-[10px] flex flex-col items-start justify-center px-5 -mr-[34px]">
-                            <div className="text-[34px] font-medium text-[#0F47F2] leading-[41px]">4D 21Hr</div>
-                            <div className="text-xl font-medium text-[#4B5563] leading-6 mt-1">Total Time Saved</div>
+                            <div className="text-2xl font-medium text-[#0F47F2] leading-[41px]">4D 21Hr</div>
+                            <div className="text-lg font-medium text-[#4B5563] leading-6 mt-1">Total Time Saved</div>
                           </div>
                     </div>
 
