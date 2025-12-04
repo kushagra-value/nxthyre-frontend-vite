@@ -179,6 +179,8 @@ function MainApp() {
   const [showRequisitionInfoModal, setShowRequisitionInfoModal] =
     useState(false);
   const [defaultBoolQuery, setDefaultBoolQuery] = useState<string>("");
+  // Add this state near your other useState declarations
+const [hasSelectedJob, setHasSelectedJob] = useState(false);
 
   useEffect(() => {
     const fetchWorkspaces = async () => {
@@ -260,7 +262,11 @@ function MainApp() {
       }));
       setCategories(mappedCategories);
       if (mappedCategories.length > 0) {
-        setActiveCategoryId(mappedCategories[0].id);
+        setHasSelectedJob(false);
+      }
+      else {
+        setActiveCategoryId(null);
+        setHasSelectedJob(true);
       }
     } catch (error) {
       showToast.error("Failed to fetch job categories");
@@ -1084,7 +1090,100 @@ function MainApp() {
                     deductCredits={deductCredits}
                   />
                 </>
-              ) : (
+              ) : categories.length === 0 ? (
+                  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                    <div className="text-center">
+                      <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+                        No job roles created yet
+                      </h2>
+                      <button
+                        onClick={handleCreateJobRole}
+                        className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                      >
+                        Create Your First Job Role
+                      </button>
+                    </div>
+                  </div>
+              ):  !hasSelectedJob ? (
+                <div className="min-h-screen bg-gray-50">
+                  <div className="sticky top-0 bg-white z-40 shadow-sm">
+                    <Header
+                      onCreateRole={handleCreateJobRole}
+                      onOpenLogoutModal={handleOpenLogoutModal}
+                      credits={credits}
+                      searchQuery={""}
+                      setSearchQuery={() => {}}
+                      showCreateRoleButton={true}
+                      showSearchBar={false}
+                    />
+                  </div>
+                  <div className="max-w-6xl mx-auto px-4 py-12">
+                    <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                      Welcome, {currentUser?.fullName || "User"}!
+                    </h1>
+                    <p className="text-gray-600 mb-10">
+                      Select a job role to start sourcing candidates
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                      {categories.map((job) => (
+                        <div
+                          key={job.id}
+                          onClick={() => {
+                            setActiveCategoryId(job.id);
+                            setHasSelectedJob(true);
+                            // Optionally prefetch
+                            fetchJobDetailsAndSetFilters(job.id);
+                          }}
+                          className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-200 overflow-hidden"
+                        >
+                          <div className="p-6">
+                            <h3 className="font-semibold text-lg text-gray-800 truncate">
+                              {job.name}
+                            </h3>
+                            <div className="mt-4 flex flex-wrap gap-2 text-sm">
+                              <span className="flex items-center text-gray-600">
+                                8+ years
+                              </span>
+                              <span className="text-gray-400">•</span>
+                              <span className="text-gray-600">Hybrid</span>
+                              <span className="text-gray-400">•</span>
+                              <span className="text-gray-600">Immediate</span>
+                            </div>
+                            <div className="mt-5 flex items-center justify-between">
+                              <div className="flex -space-x-2">
+                                <div className="w-8 h-8 rounded-full bg-gray-300 border-2 border-white" />
+                                <div className="w-8 h-8 rounded-full bg-gray-300 border-2 border-white" />
+                                <div className="w-8 h-8 rounded-full bg-gray-300 border-2 border-white" />
+                                <div className="w-8 h-8 rounded-full bg-blue-600 border-2 border-white flex items-center justify-center text-white text-xs font-medium">
+                                  +{job.count}
+                                </div>
+                              </div>
+                              <span className="text-sm text-gray-500">
+                                {job.invites_sent || 0} sent
+                              </span>
+                            </div>
+                          </div>
+                          <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
+                            <span className="text-xs font-medium text-blue-700 bg-blue-100 px-3 py-1 rounded-full">
+                              {job.count} candidates
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-10 text-center">
+                      <button
+                        onClick={handleCreateJobRole}
+                        className="text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        + Create New Job Role
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ):
                 <>
                   <Toaster />
                   <div className="bg-gray-50 min-h-screen">
