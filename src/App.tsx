@@ -1142,7 +1142,7 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
 
                         
                         </div> 
-                      </div><div className="bg-white w-[210px] h-[99px] flex flex-col items-start justify-center px-5 -mr-[34px]">
+                      </div><div className="bg-[#F9FAFB] w-[210px] h-[99px] flex flex-col items-start justify-center px-5 -mr-[34px]">
                             <div className="text-2xl font-medium text-[#0F47F2] leading-[41px]">4D 21Hr</div>
                             <div className="text-lg font-medium text-[#4B5563] leading-6 mt-1">Total Time Saved</div>
                           </div>
