@@ -16,7 +16,7 @@ export default function ProjectCard({ isActive = false , jobName= ""}: ProjectCa
   const iconColor = isActive ? '#4B5563' : '#818283';
 
   return (
-    <div className={`relative col-span-1 w-full h-[240px] bg-white border-[0.5px] ${borderClass} rounded-[10px] p-6`}>
+    <div className={`relative col-span-1 w-full h-[220px] bg-white border-[0.5px] ${borderClass} rounded-[10px] p-6`}>
       <div className="flex items-start justify-between mb-2">
         <div>
           <h3 className={`text-xl font-semibold leading-7 ${titleClass}`}>
