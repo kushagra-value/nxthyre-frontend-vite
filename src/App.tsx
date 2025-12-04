@@ -361,7 +361,7 @@ function MainApp() {
           })); // NEW: Disable analysis in search mode
           setDefaultBoolQuery(""); // NEW
         } else {
-          response = await candidateService.getCandidates(appliedFilters);
+          response = await candidateService.getCandidates(appliedFilters, page);
           if (response.boolean_search_terms) {
             // Assume API returns 'bool_query' field
             localStorage.setItem(
