@@ -1215,6 +1215,414 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
 
                     
                   </div>
+                  <CreateJobRoleModal
+                      isOpen={showCreateJobRole}
+                      workspaceId={selectedWorkspaceId || 1}
+                      workspaces={workspaces}
+                      handlePipelinesClick={handlePipelinesClick}
+                      onClose={() => setShowCreateJobRole(false)}
+                      onJobCreated={handleJobCreatedOrUpdated}
+                    />
+                    <EditJobRoleModal
+                      isOpen={showEditJobRole}
+                      onClose={() => {
+                        setShowEditJobRole(false);
+                        setEditingJobId(null);
+                      }}
+                      handlePipelinesClick={handlePipelinesClick}
+                      workspaces={workspaces}
+                      workspaceId={selectedWorkspaceId || 1}
+                      jobId={editingJobId || 0}
+                      onJobUpdated={handleJobCreatedOrUpdated}
+                    />
+                    <EditTemplateModal
+                      jobId={String(activeCategoryId)}
+                      isOpen={showEditTemplate}
+                      onClose={() => setShowEditTemplate(false)}
+                      templateName={editingTemplate}
+                    />
+
+                    {showLogoutModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                          <div className="text-center">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                              <LogOut className="w-6 h-6 text-red-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              Confirm Logout
+                            </h3>
+                            <p className="text-gray-600 mb-6">
+                              Are you sure you want to sign out? You'll need to
+                              log in again to access your account.
+                            </p>
+                            <div className="flex space-x-3">
+                              <button
+                                onClick={handleCloseLogoutModal}
+                                className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={handleLogoutConfirm}
+                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                              >
+                                Sign Out
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {showPublishModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                          <div className="text-center">
+                            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                              <Globe className="w-6 h-6 text-green-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              Confirm Publish Job
+                            </h3>
+                            <p className="text-gray-600 mb-6">
+                              Are you sure you want to publish{" "}
+                              {
+                                categories.find(
+                                  (cat) => cat.id === showPublishModal
+                                )?.name
+                              }
+                              ? This action will publish job on LinkedIn, Google
+                              Jobs,Times Ascent, Cutshort and others.
+                            </p>
+                            <span className="text-gray-400 text-sm mb-6">
+                              (Note: Once published, the job will be visible on
+                              both platforms within 24–48 hours.)
+                            </span>
+                            <div className="flex space-x-3">
+                              <button
+                                onClick={() => setShowPublishModal(null)}
+                                className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handlePublishJobRole(showPublishModal)
+                                }
+                                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                              >
+                                Publish
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {showUnpublishModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                          <div className="text-center">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                              <Pause className="w-6 h-6 text-red-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              Confirm Unpublish Job
+                            </h3>
+                            <p className="text-gray-600 mb-6">
+                              Are you sure you want to Unpublish
+                              {
+                                categories.find(
+                                  (cat) => cat.id === showUnpublishModal
+                                )?.name
+                              }
+                              ? This action cannot be undone.
+                            </p>
+                            <span className="text-gray-400 text-sm mb-6">
+                              (Note: this action will unpublish job on published
+                              over LinkedIn, Google Jobs,Times Ascent, Cutshort
+                              and others within 24–48 hours.)
+                            </span>
+                            <div className="flex space-x-3">
+                              <button
+                                onClick={() => setShowUnpublishModal(null)}
+                                className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleUnpublishJobRole(showUnpublishModal)
+                                }
+                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                              >
+                                Unpublish
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {showDeleteModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                          <div className="text-center">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                              <Trash2 className="w-6 h-6 text-red-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              Confirm Delete Job
+                            </h3>
+                            <p className="text-gray-600 mb-6">
+                              Are you sure you want to delete{" "}
+                              {
+                                categories.find(
+                                  (cat) => cat.id === showDeleteModal
+                                )?.name
+                              }
+                              ? This action cannot be undone.
+                            </p>
+                            <div className="flex space-x-3">
+                              <button
+                                onClick={() => setShowDeleteModal(null)}
+                                className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleDeleteJobRole(showDeleteModal)
+                                }
+                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {showRequisitionInfoModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-end overflow-y-auto">
+                        <div className="bg-white rounded-3xl shadow-xl max-w-2xl w-full max-h-[100vh] overflow-y-auto p-6">
+                          {/* Header */}
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                              <button
+                                className="w-8 h-8 text-gray-800"
+                                onClick={() =>
+                                  setShowRequisitionInfoModal(false)
+                                }
+                              >
+                                <ArrowLeft className="w-8 h-8" />
+                              </button>
+                              <h1 className="text-lg font-semibold text-gray-800">
+                                Requisition Info
+                              </h1>
+                            </div>
+                          </div>
+                          <h2 className="text-2xl font-semibold text-gray-900 mb-1">
+                            Builder.io Developer
+                          </h2>
+                          <div className="flex space-x-8 mt-2 mb-6">
+                            <span className="flex items-center text-gray-500">
+                              {" "}
+                              <Briefcase className="w-4 h-4 mr-1" /> 8+ years
+                            </span>
+                            <span className="flex items-center text-gray-500">
+                              {" "}
+                              <LocateIcon className="w-4 h-4 mr-1" /> Hybrid
+                            </span>
+                            <span className="flex items-center text-gray-500">
+                              {" "}
+                              <FileSearch className="w-4 h-4 mr-1" /> Immediate
+                            </span>
+                          </div>
+
+                          {/* Role Overview */}
+                          <div className="mb-6">
+                            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                              Role Overview
+                            </h3>
+                            <p className="text-gray-600 text-sm">
+                              The core experience builder at Builder.io, which
+                              is a visual headless CMS with a drag-and-drop page
+                              builder that outputs clean code. Take the core
+                              Build UI in Builder to Ensure it is responsive,
+                              scalable, optimized, and integrated with APIs/CMs.
+                            </p>
+                          </div>
+
+                          {/* The Core Expectation */}
+                          <div className="mb-6">
+                            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                              The Core Expectation
+                            </h3>
+                            <p className="text-gray-600 text-sm">
+                              Take the core Build UI in Builder to Ensure it is
+                              responsive, scalable, optimized, and integrated
+                              with APIs/CMs.
+                            </p>
+                          </div>
+
+                          {/* Key Responsibilities Explained */}
+                          <div className="mb-6">
+                            <h3 className="text-lg font-semibold text-gray-700 mb-3">
+                              Key Responsibilities Explained
+                            </h3>
+                            <div className="space-y-3">
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <div className="flex items-start space-x-3">
+                                  <div>
+                                    <h4 className="font-medium text-gray-600 mb-1">
+                                      Develop reusable components
+                                    </h4>
+                                    <p className="text-sm text-gray-400">
+                                      Why? Maintains quality & consistency
+                                      across the website pages built with
+                                      Builder.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <div className="flex items-start space-x-3">
+                                  <div>
+                                    <h4 className="font-medium text-gray-600 mb-1">
+                                      Integrate with CMS
+                                    </h4>
+                                    <p className="text-sm text-gray-400">
+                                      Handle content queries, dynamic data, etc.
+                                      via APIs.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <div className="flex items-start space-x-3">
+                                  <div>
+                                    <h4 className="font-medium text-gray-600 mb-1">
+                                      Work with Design teams
+                                    </h4>
+                                    <p className="text-sm text-gray-400">
+                                      Translate Figma designs exactly into UI
+                                      using Builder.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <div className="flex items-start space-x-3">
+                                  <div>
+                                    <h4 className="font-medium text-gray-600 mb-1">
+                                      Troubleshoot integrations
+                                    </h4>
+                                    <p className="text-sm text-gray-400">
+                                      Fix data binding, CI/CD, integrations
+                                      issues.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <div className="flex items-start space-x-3">
+                                  <div>
+                                    <h4 className="font-medium text-gray-600 mb-1">
+                                      Optimize performance
+                                    </h4>
+                                    <p className="text-sm text-gray-400">
+                                      Improve load speeds, responsive/lazy
+                                      images, etc.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Required Technical Skills & Purpose */}
+                          <div className="mb-6">
+                            <h3 className="text-lg font-semibold text-gray-700 mb-3">
+                              Required Technical Skills & Purpose
+                            </h3>
+                            <div className="space-y-3">
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <h4 className="font-medium text-gray-600 mb-1">
+                                  Builder.io
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Visual frontend code overlays
+                                </p>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <h4 className="font-medium text-gray-600 mb-1">
+                                  Visual HTML/CSS
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Of pages
+                                </p>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <h4 className="font-medium text-gray-600 mb-1">
+                                  CSS (including Flexbox, Grid)
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Styling, responsiveness, animations
+                                </p>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <h4 className="font-medium text-gray-600 mb-1">
+                                  JavaScript
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Interactive components
+                                </p>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <h4 className="font-medium text-gray-600 mb-1">
+                                  React / component logic
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Used via Builder integrations into frontend
+                                </p>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <h4 className="font-medium text-gray-600 mb-1">
+                                  API Integration
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Fetch data dynamically (REST/GraphQL)
+                                </p>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <h4 className="font-medium text-gray-600 mb-1">
+                                  SEO Best Practices
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Optimize for search, alt texts, structured
+                                  data
+                                </p>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <h4 className="font-medium text-gray-600 mb-1">
+                                  Performance Optimization
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Lazy loading, minification, caching
+                                </p>
+                              </div>
+                              <div className="bg-blue-50 rounded-lg p-4">
+                                <h4 className="font-medium text-gray-600 mb-1">
+                                  Communication / Collaboration
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Working with design/product teams
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                 </div>
               ): (
                 <>
@@ -1236,235 +1644,10 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                       />
                     </div>
                     <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3 ">
-                      {/* {categories.length > 0 && (
-                        <div className="sticky top-[68px] z-20 will-change-transform bg-gray-50 border-b-2 border-gray-200 mb-4 pb-1">
-                          <div className="max-w-full flex items-center justify-between px-3 lg:px-4">
-                            <div className="pb-0 flex items-center space-x-12">
-                              {categories.slice(0, 4).map((category) => (
-                                <div
-                                  key={category.id}
-                                  className="h-full relative"
-                                  onMouseEnter={() =>
-                                    setHoveredCategory(category.id)
-                                  }
-                                  onMouseLeave={() => setHoveredCategory(null)}
-                                >
-                                  <button
-                                    onClick={() => {
-                                      setActiveCategoryId(category.id);
-                                      setActiveCategoryTotalCount(
-                                        category.count
-                                      );
-                                    }}
-                                    className={` flex-row text-xs lg:text-base transition-all duration-200 ${
-                                      activeCategoryId === category.id
-                                        ? "text-blue-700"
-                                        : "text-gray-600"
-                                    }`}
-                                  >
-                                    <div>
-                                      {category.name}
-                                      <span
-                                        className={`ml-3 px-[8px] pb-[2.8px] pt-[1.3px] rounded-full text-xs ${
-                                          activeCategoryId === category.id
-                                            ? "bg-blue-200 text-blue-800"
-                                            : "bg-gray-200 text-gray-600"
-                                        }`}
-                                      >
-                                        {category.count}
-                                      </span>
-                                    </div>
-                                    <div
-                                      className={`absolute top-10 left-0 ${
-                                        activeCategoryId === category.id
-                                          ? "bg-blue-700 w-full h-0.5"
-                                          : "hover:bg-gray-200 hover:h-0.5 "
-                                      }`}
-                                    ></div>
-                                  </button>
-                                  {hoveredCategory === category.id && (
-                                    <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                                      <div className="py-1">
-                                        <button
-                                          onClick={() =>
-                                            handleCategoryAction(
-                                              "requisition-info",
-                                              category.id
-                                            )
-                                          }
-                                          className="w-full px-4 py-2 text-left text-md text-gray-700 hover:bg-gray-50 flex items-center"
-                                        >
-                                          <Info className="w-4 h-4 mr-4" />
-                                          Requisition Info
-                                        </button>
-                                        <button
-                                          onClick={() =>
-                                            handleCategoryAction(
-                                              "edit-job",
-                                              category.id
-                                            )
-                                          }
-                                          className="w-full px-4 py-2 text-left text-md text-gray-700 hover:bg-gray-50 flex items-center"
-                                        >
-                                          <Edit className="w-4 h-4 mr-4" />
-                                          Edit Job Role
-                                        </button>
-                                        <button
-                                          onClick={() =>
-                                            handleCategoryAction(
-                                              "copy-link",
-                                              category.id
-                                            )
-                                          }
-                                          className="w-full px-4 py-2 text-left text-md text-gray-700 hover:bg-gray-50 flex items-center"
-                                        >
-                                          <Copy className="w-4 h-4 mr-4" />
-                                          Copy Job Link
-                                        </button>
-                                        <button
-                                          onClick={() =>
-                                            handleCategoryAction(
-                                              "edit-template",
-                                              category.id
-                                            )
-                                          }
-                                          className="w-full px-4 py-2 text-left text-md text-gray-700 hover:bg-gray-50 flex items-center"
-                                        >
-                                          <Mail className="w-4 h-4 mr-4" />
-                                          Edit Email Template
-                                        </button>
-                                        <button
-                                          onClick={() =>
-                                            handleCategoryAction(
-                                              "share-pipelines",
-                                              category.id
-                                            )
-                                          }
-                                          className="w-full px-4 py-2 text-left text-md text-gray-700 hover:bg-gray-50 flex items-center"
-                                        >
-                                          <Share2 className="w-4 h-4 mr-4" />
-                                          Share Pipelines
-                                        </button>
-                                        {category.status === "DRAFT" &&
-                                          category.visibility === "PRIVATE" && (
-                                            <button
-                                              onClick={() =>
-                                                handleCategoryAction(
-                                                  "publish-job",
-                                                  category.id
-                                                )
-                                              }
-                                              className="w-full px-4 py-2 text-left text-md text-gray-700 hover:bg-gray-50 flex items-center"
-                                            >
-                                              <Globe className="w-4 h-4 mr-4" />
-                                              Publish Job
-                                            </button>
-                                          )}
-                                        {category.status === "PUBLISHED" &&
-                                          category.visibility === "PUBLIC" && (
-                                            <button
-                                              onClick={() =>
-                                                handleCategoryAction(
-                                                  "unpublish-job",
-                                                  category.id
-                                                )
-                                              }
-                                              className="w-full px-4 py-2 text-left text-md text-gray-700 hover:bg-gray-50 flex items-center"
-                                            >
-                                              <Pause className="w-4 h-4 mr-4" />
-                                              Unpublish Job
-                                            </button>
-                                          )}
-                                        <button
-                                          onClick={() =>
-                                            handleCategoryAction(
-                                              "archive",
-                                              category.id
-                                            )
-                                          }
-                                          className="w-full px-4 py-2 text-left text-md text-gray-700 hover:bg-gray-50 flex items-center"
-                                        >
-                                          <Archive className="w-4 h-4 mr-4" />
-                                          Archive
-                                        </button>
-                                        <button
-                                          onClick={() =>
-                                            handleCategoryAction(
-                                              "delete",
-                                              category.id
-                                            )
-                                          }
-                                          className="w-full px-4 py-2 text-left text-md text-red-600 hover:bg-red-50 flex items-center"
-                                        >
-                                          <Trash2 className="w-4 h-4 mr-4" />
-                                          Delete Job
-                                        </button>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                            <div className="flex items-center space-x-3 pb-2">
-                              <div>
-                                {categories.length > 0 && (
-                                  <div className="relative">
-                                    <button
-                                      onClick={() =>
-                                        setShowCategoryDropdown(
-                                          !showCategoryDropdown
-                                        )
-                                      }
-                                      className="px-3 py-1.5 text-xs lg:text-base font-[400] text-gray-600 bg-white hover:bg-gray-100 rounded-lg border border-gray-300 flex items-center"
-                                    >
-                                      {categories.length} Pipelines
-                                      <ChevronDown className="ml-18 w-4 h-4" />
-                                    </button>
-                                    <CategoryDropdown
-                                      isOpen={showCategoryDropdown}
-                                      onClose={() =>
-                                        setShowCategoryDropdown(false)
-                                      }
-                                      onEditJobRole={handleEditJobRole}
-                                      onEditTemplate={handleEditTemplate}
-                                      onDeleteJob={(jobId) =>
-                                        setShowDeleteModal(jobId)
-                                      }
-                                      onUnpublishJob={(jobId: any) =>
-                                        setShowUnpublishModal(jobId)
-                                      }
-                                      onPublishJob={(jobId: any) =>
-                                        setShowPublishModal(jobId)
-                                      }
-                                      onCopyJobLink={handleCopyJobLink}
-                                      onSharePipelines={handleSharePipelines}
-                                      onSelectCategory={(jobId) => {
-                                        setActiveCategoryId(jobId);
-                                        setActiveCategoryTotalCount(
-                                          categories.find(
-                                            (cat) => cat.id === jobId
-                                          )?.count || 0
-                                        );
-                                      }}
-                                      activeCategoryId={activeCategoryId}
-                                    />
-                                  </div>
-                                )}
-                              </div>
-                              <div className="border border-l-1 border-gray-400 min-h-10"></div>
-                              <button
-                                onClick={handlePipelinesClick}
-                                className="px-3 py-1.5 border border-blue-700 bg-blue-50 text-blue-700 text-xs lg:text-base font-[400] rounded-lg hover:bg-blue-100 transition-colors flex items-center"
-                              >
-                                Show Pipelines
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      )} */}
+                      
                       {/* NEW CLEAN HEADER – replaces old tabs + dropdown */}
                       {categories.length > 0 && activeCategoryId && (
-                        <div className="sticky top-[68px] z-20 will-change-transform bg-gray-50 border-b border-gray-200 py-4">
+                        <div className="sticky top-[68px] z-10 will-change-transform bg-gray-50 border-b border-gray-200 py-4">
                           <div className="max-w-full flex items-center justify-between px-4 lg:px-6">
                             {/* Left side – Job title + chips */}
                             <div className="flex items-center gap-8">
