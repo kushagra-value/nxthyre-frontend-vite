@@ -1189,14 +1189,26 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                       {categories.map((job) => (
                         <div
                           key={job.id}
-                          onClick={() => {
-                            setActiveCategoryId(job.id);
-                            setHasSelectedJob(true);
-                            fetchJobDetailsAndSetFilters(job.id);
-                          }}
-                          className="rounded-[10px] transition-all duration-300 cursor-pointer "
+                          className="rounded-[10px] transition-all duration-300"
                         >
-                          <ProjectCard isActive={false} jobName={job.name} />
+                          <ProjectCard
+                            jobId={job.id}
+                            jobName={job.name}
+                            status={job.status}
+                            visibility={job.visibility}
+                            isActive={activeCategoryId === job.id}
+                            onEditJobRole={handleEditJobRole}
+                            onArchiveJob={() => showToast.success("Archive coming soon")}
+                            onSharePipelines={handleSharePipelines}
+                            onPublishJob={handlePublishJobRole}
+                            onUnpublishJob={handleUnpublishJobRole}
+                            onSelectCard={() => {
+                              setActiveCategoryId(job.id);
+                              setHasSelectedJob(true);
+                              fetchJobDetailsAndSetFilters(job.id);
+                            }}
+                          />
+                        
                         </div>
                       ))}
                     </div>
@@ -1224,7 +1236,7 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                       />
                     </div>
                     <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3 ">
-                      {categories.length > 0 && (
+                      {/* {categories.length > 0 && (
                         <div className="sticky top-[68px] z-20 will-change-transform bg-gray-50 border-b-2 border-gray-200 mb-4 pb-1">
                           <div className="max-w-full flex items-center justify-between px-3 lg:px-4">
                             <div className="pb-0 flex items-center space-x-12">
@@ -1445,6 +1457,61 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                                 className="px-3 py-1.5 border border-blue-700 bg-blue-50 text-blue-700 text-xs lg:text-base font-[400] rounded-lg hover:bg-blue-100 transition-colors flex items-center"
                               >
                                 Show Pipelines
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )} */}
+                      {/* NEW CLEAN HEADER – replaces old tabs + dropdown */}
+                      {categories.length > 0 && activeCategoryId && (
+                        <div className="sticky top-[68px] z-20 will-change-transform bg-gray-50 border-b border-gray-200 py-4">
+                          <div className="max-w-full flex items-center justify-between px-4 lg:px-6">
+                            {/* Left side – Job title + chips */}
+                            <div className="flex items-center gap-8">
+                              <h1 className="text-2xl font-semibold text-[#181D25]">
+                                {categories.find(c => c.id === activeCategoryId)?.name || "Untitled Job"}
+                              </h1>
+
+                              <div className="flex items-center gap-6 text-sm text-[#4B5563]">
+                                {/* Experience */}
+                                <div className="flex items-center gap-2">
+                                  <Briefcase className="w-4 h-4" />
+                                  <span>8+ years</span>
+                                </div>
+
+                                {/* Location */}
+                                <div className="flex items-center gap-2">
+                                  <LocateIcon className="w-4 h-4" />
+                                  <span>Hybrid</span>
+                                </div>
+
+                                {/* Notice Period */}
+                                <div className="flex items-center gap-2">
+                                  <FileSearch className="w-4 h-4" />
+                                  <span>Immediate</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Right side – Action buttons */}
+                            <div className="flex items-center gap-4">
+                              <button
+                                onClick={handlePipelinesClick}
+                                className="px-5 py-2.5 bg-white border border-[#0F47F2] text-[#0F47F2] rounded-lg font-medium hover:bg-blue-50 transition-colors flex items-center gap-2"
+                              >
+                                Show Pipelines
+                              </button>
+
+                              <button
+                                onClick={() =>
+                                  handleCategoryAction(
+                                    "share-pipelines",
+                                    activeCategoryId
+                                  )
+                                }
+                                className="px-6 py-2.5 bg-[#0F47F2] text-white rounded-lg font-medium hover:bg-[#0d3ec9] transition-colors flex items-center gap-2 shadow-md"
+                              >
+                                Applicant Tracking
                               </button>
                             </div>
                           </div>
