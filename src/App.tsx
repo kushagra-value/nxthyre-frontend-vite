@@ -1194,7 +1194,7 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                             setHasSelectedJob(true);
                             fetchJobDetailsAndSetFilters(job.id);
                           }}
-                          className="rounded-[10px] shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
+                          className="rounded-[10px] transition-all duration-300 cursor-pointer "
                         >
                           <ProjectCard isActive={false} jobName={job.name} />
                         </div>
