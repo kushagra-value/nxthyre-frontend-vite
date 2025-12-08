@@ -110,6 +110,8 @@ interface Filters {
   is_prevetted: boolean;
   is_active: boolean;
   sort_by: string;
+  boolQuery?: string;
+  enableBooleanAnalysis?: boolean;
 }
 interface Workspace {
   id: number;
@@ -239,6 +241,8 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
     is_prevetted: false,
     is_active: false,
     sort_by: "",
+    boolQuery: "",
+    enableBooleanAnalysis: false,
   });
   useEffect(() => {
     setIsSearchMode(debouncedSearchQuery.trim() !== "");
@@ -358,9 +362,24 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
             is_active: false,
             sort_by: sortBy || "",
           });
-          setDefaultBoolQuery(""); // Clear during search mode
+          setFilters((prev) => ({
+            ...prev,
+            enableBooleanAnalysis: false,
+            boolQuery: "",
+          })); // NEW: Disable analysis in search mode
+          setDefaultBoolQuery(""); // NEW
         } else {
           response = await candidateService.getCandidates(appliedFilters, page);
+          if (response.boolean_search_terms) {
+            // Assume API returns 'bool_query' field
+            localStorage.setItem(
+              `bool_query_${appliedFilters.jobId}`,
+              response.boolean_search_terms
+            );
+            setDefaultBoolQuery(response.boolean_search_terms); // For FiltersSidebar
+          } else {
+            setDefaultBoolQuery(""); // Clear if none
+          }
           setCandidates(response.results);
           setTotalCount(response.count);
           if (response.sourcing_counts) {
@@ -562,6 +581,8 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
         is_prevetted: false,
         is_active: false,
         sort_by: "",
+        boolQuery: "", // NEW
+        enableBooleanAnalysis: false,
       });
       setDefaultBoolQuery("");
       showToast.success("Successfully logged out");
@@ -811,10 +832,15 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
       setTotalCount(0);
       setCurrentPage(1);
       setSelectedCandidate(null);
+      setFilters((prev) => ({
+        ...prev,
+        enableBooleanAnalysis: false,
+        boolQuery: "",
+      }));
       return;
     }
     // Update filters and fetch candidates
-    setFilters(newFilters);
+    setFilters({ ...newFilters });
     fetchCandidates(1, newFilters);
   };
   function InvitePage() {
@@ -1857,6 +1883,10 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                             updateCandidateEmail={updateCandidateEmail}
                             deductCredits={deductCredits}
                             onUpdateCandidate={handleUpdateCandidate}
+                            enableBooleanAnalysis={
+                              filters.enableBooleanAnalysis
+                            } // NEW: Pass flag from state
+                            jobId={filters.jobId} // NEW: For dynamic query in API
                           />
                         </div>
                         {/* TemplateSelector rendered as an overlay with 40% width when active */}

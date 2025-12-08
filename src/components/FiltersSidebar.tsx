@@ -62,7 +62,7 @@ interface FiltersSidebarProps {
     is_active: boolean;
     sort_by: string;
   };
-  defaultBoolQuery: string; // New: Default boolean query from initial API response
+  defaultBoolQuery: string; // Now sourced from localStorage based on jobId
   onApplyFilters: (filters: any) => void;
   setCandidates: (candidates: CandidateListItem[]) => void;
   candidates: CandidateListItem[];
@@ -379,6 +379,15 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       }
     }
 
+    if (key === "booleanSearch" && value === true) {
+      const storedQuery = localStorage.getItem(`bool_query_${filters.jobId}`);
+      if (storedQuery && !newFilters.boolQuery) {
+        newFilters.boolQuery = storedQuery;
+      } else if (defaultBoolQuery && !newFilters.boolQuery) {
+        newFilters.boolQuery = defaultBoolQuery;
+      }
+    }
+
     if (key === "city" && value) {
       // When a city is selected, add it to locations and clear the city dropdown
       const trimmed = value.trim();
@@ -605,7 +614,11 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     setIsLoading(true);
     try {
       // When booleanSearch is true, keywords are replaced by boolQuery in the service
-      await onApplyFilters(tempFilters);
+      await onApplyFilters({
+        ...tempFilters,
+        enableBooleanAnalysis:
+          tempFilters.booleanSearch && !!tempFilters.boolQuery?.trim(),
+      });
     } catch (error) {
       showToast.error("Failed to apply filters. Please try again.");
       console.error("Error applying filters:", error);

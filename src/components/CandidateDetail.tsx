@@ -323,6 +323,8 @@ interface CandidateDetailProps {
   ) => void;
   deductCredits: () => Promise<void>;
   onUpdateCandidate: (updated: CandidateListItem) => void;
+  enableBooleanAnalysis?: boolean;
+  jobId?: string;
 }
 
 const CandidateDetail: React.FC<CandidateDetailProps> = ({
@@ -332,6 +334,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   updateCandidateEmail,
   onUpdateCandidate,
   deductCredits,
+  enableBooleanAnalysis,
+  jobId,
 }) => {
   const [newComment, setNewComment] = useState("");
   const [detailedCandidate, setDetailedCandidate] =
@@ -347,27 +351,28 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   // Update the fetchBooleanSearch useEffect to conditionally set the activeTab after fetching
   useEffect(() => {
     const fetchBooleanSearch = async () => {
-      if (candidate?.id) {
+      if (candidate?.id && enableBooleanAnalysis) {
+        // Assume props.enableBooleanAnalysis
         try {
           const data = await candidateService.getCandidateBooleanSearch(
             candidate.id
           );
           setBooleanData(data);
           setHasBooleanAnalysis(true);
-          setActiveTab("Boolean-Search"); // Set to Boolean-Search if available
+          setActiveTab("Boolean-Search");
         } catch (error) {
           console.error("Error fetching boolean search:", error);
           setBooleanData(null);
           setHasBooleanAnalysis(false);
-          setActiveTab("Profile"); // Default to Profile if not available
+          setActiveTab("Profile");
         }
       } else {
-        // If no candidate.id, default to Profile
+        setHasBooleanAnalysis(false); // Initially hide tab
         setActiveTab("Profile");
       }
     };
     fetchBooleanSearch();
-  }, [candidate?.id]);
+  }, [candidate?.id, enableBooleanAnalysis]);
 
   // In ProfileTab or where email/phone shown, update display
   const displayEmail =
@@ -398,25 +403,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         : [],
     [booleanData, hasBooleanAnalysis]
   );
-
-  useEffect(() => {
-    const fetchBooleanSearch = async () => {
-      if (candidate?.id) {
-        try {
-          const data = await candidateService.getCandidateBooleanSearch(
-            candidate.id
-          );
-          setBooleanData(data);
-          setHasBooleanAnalysis(true); // API returned valid data → show tab
-        } catch (error) {
-          console.error("Error fetching boolean search:", error);
-          setBooleanData(null);
-          setHasBooleanAnalysis(false); // No data or error → hide tab
-        }
-      }
-    };
-    fetchBooleanSearch();
-  }, [candidate?.id]);
 
   // Update the tabs array to include icons
   const tabs: {

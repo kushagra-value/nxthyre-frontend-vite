@@ -411,7 +411,10 @@ export interface AnalyzeResponse {
 }
 
 class CandidateService {
-  async getCandidates(filters: any): Promise<CandidateSearchResponse> {
+  async getCandidates(
+    filters: any,
+    page: number = 1
+  ): Promise<CandidateSearchResponse> {
     try {
       const requestBody: any = {
         job_id: filters.jobId,
@@ -424,42 +427,57 @@ class CandidateService {
         "booleanSearch",
         "boolQuery",
         "semanticSearch",
-        "sort_by",
+        "city", // Handled via locations array
+        "funInCurrentCompany", // Unused
+        "maxExperience", // Unused
+        "selectedCategories", // Unused
+        "hasLinkedIn", // Not supported by backend
         "is_prevetted",
         "is_active",
       ];
 
-      // Snake case mapping for backend (adjust as per actual backend expectations)
+      // Updated snake case mapping to exactly match backend expectations
+      // Direct passthrough for already snake_case keys like country, sort_by
       const snakeCaseMap: Record<string, string> = {
-        minTotalExp: "min_total_exp",
-        maxTotalExp: "max_total_exp",
-        minExperience: "min_experience_in_current_company",
+        minTotalExp: "experience_min",
+        maxTotalExp: "experience_max",
+        minExperience: "exp_in_current_company_min",
         locations: "locations",
         companies: "companies",
         industries: "industries",
-        minSalary: "min_salary_lpa",
-        maxSalary: "max_salary_lpa",
+        minSalary: "salary_min",
+        maxSalary: "salary_max",
         colleges: "colleges",
-        noticePeriod: "notice_period",
-        topTierUniversities: "top_tier_universities_only",
-        computerScienceGraduates: "computer_science_graduates_only",
-        showFemaleCandidates: "show_female_candidates_only",
-        recentlyPromoted: "recently_promoted",
-        backgroundVerified: "background_verified",
+        noticePeriod: "notice_period_max_days",
+        topTierUniversities: "is_top_tier_college",
+        computerScienceGraduates: "is_cs_graduate",
+        showFemaleCandidates: "is_female_only",
+        recentlyPromoted: "is_recently_promoted",
+        backgroundVerified: "is_background_verified",
         hasCertification: "has_certification",
         hasResearchPaper: "has_research_paper",
-        hasLinkedIn: "has_linkedin",
         hasBehance: "has_behance",
         hasTwitter: "has_twitter",
         hasPortfolio: "has_portfolio",
-        // Add more mappings as needed
+        country: "country", // Direct
+        sort_by: "sort_by", // Direct (already snake_case)
+      };
+
+      // Notice period parsing map
+      const noticePeriodMap: Record<string, number> = {
+        Immediate: 0,
+        "15 days": 15,
+        "30 days": 30,
+        "45 days": 45,
+        "60 days": 60,
+        "90 days": 90,
       };
 
       // Add all other filters
       Object.keys(filters).forEach((key) => {
         if (ignoredKeys.includes(key)) return;
 
-        const value = filters[key];
+        let value = filters[key];
         if (value === undefined || value === null || value === "") return;
 
         let backendKey = key;
@@ -467,46 +485,96 @@ class CandidateService {
           backendKey = snakeCaseMap[key];
         }
 
+        // Special handling for arrays/strings that should be arrays (split by comma if string)
+        if (
+          backendKey === "companies" ||
+          backendKey === "industries" ||
+          backendKey === "colleges"
+        ) {
+          if (typeof value === "string" && value.trim() !== "") {
+            value = value
+              .split(",")
+              .map((s: string) => s.trim())
+              .filter(Boolean);
+          }
+          if (Array.isArray(value) && value.length > 0) {
+            requestBody[backendKey] = value;
+            return;
+          }
+        }
+
+        // Special handling for noticePeriod: parse to number
+        if (key === "noticePeriod" && typeof value === "string") {
+          value = noticePeriodMap[value] ?? 0; // Default to 0 if unknown
+        }
+
         if (Array.isArray(value) && value.length > 0) {
           requestBody[backendKey] = value;
-        } else if (typeof value === "object" && Object.keys(value).length > 0) {
+        } else if (
+          typeof value === "object" &&
+          Object.keys(value).length > 0 &&
+          !(value instanceof Date)
+        ) {
           requestBody[backendKey] = value;
         } else if (typeof value === "boolean" && value) {
           requestBody[backendKey] = value;
-        } else if (typeof value === "string" && value.trim() !== "") {
-          requestBody[backendKey] = value.trim();
-        } else if (typeof value === "number") {
+        } else if (typeof value === "string") {
+          const trimmed = value.trim();
+          if (trimmed !== "") {
+            // Parse numeric strings to numbers for experience/salary if applicable
+            if (
+              (backendKey.includes("exp") || backendKey.includes("salary")) &&
+              /^\d+(\.\d+)?$/.test(trimmed)
+            ) {
+              requestBody[backendKey] = parseFloat(trimmed);
+            } else {
+              requestBody[backendKey] = trimmed;
+            }
+          }
+        } else if (typeof value === "number" && !isNaN(value)) {
           requestBody[backendKey] = value;
         }
       });
 
-      // Handle keywords (only if not booleanSearch)
+      // Handle keywords/search terms (q) only if not booleanSearch
       if (
         !filters.booleanSearch &&
         filters.keywords &&
+        Array.isArray(filters.keywords) &&
         filters.keywords.length > 0
       ) {
-        requestBody.keywords = filters.keywords; // Assume array; change to filters.keywords.join(', ') if backend expects string
+        requestBody.q = filters.keywords;
       }
 
-      // Handle boolean search (replaces keywords)
+      // Handle boolean search (replaces keywords/q)
       if (
         filters.booleanSearch &&
         filters.boolQuery &&
+        typeof filters.boolQuery === "string" &&
         filters.boolQuery.trim() !== ""
       ) {
         requestBody.bool_q = filters.boolQuery.trim();
       }
 
-      // Handle semantic search if applicable (add logic if backend supports)
-      // if (filters.semanticSearch) {
-      //   requestBody.semantic_search = true;
-      // }
+      // Handle search_type based on semanticSearch (defaults to 'keyword' on backend)
+      // Only set explicitly if semanticSearch is true; otherwise, backend defaults
+      if (filters.semanticSearch) {
+        requestBody.search_type = "semantic";
+      } else if (filters.keywords?.length > 0 || filters.boolQuery?.trim()) {
+        requestBody.search_type = "keyword";
+      }
 
       const response = await apiClient.post(
-        "/candidates/search/?page=1",
+        `/candidates/search/?page=${page}`,
         requestBody
       );
+      // Add: Save bool_query from response to localStorage if present (for job-specific boolean query)
+      if (response.data.bool_query) {
+        localStorage.setItem(
+          `bool_query_${filters.jobId}`,
+          response.data.bool_query
+        );
+      }
       return response.data;
     } catch (error: any) {
       throw new Error(
