@@ -428,6 +428,13 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
       }
     }
   };
+
+  const handleBackToCategories = () => {
+  setActiveCategoryId(null);
+  setHasSelectedJob(false);           
+  setSelectedCandidate(null);          
+};
+
   const handleJobCreatedOrUpdated = () => {
     fetchCategories();
   };
@@ -1678,11 +1685,21 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                             {/* Left side – Job title + chips */}
                             <div className="flex items-center gap-8">
                               
-                              <button>
+                              {/* back button to the job list */}
+                              <button
+                                onClick={handleBackToCategories}
+                                className="group flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors"
+                                aria-label="Back to job list"
+                              >
                                 <svg width="37" height="37" viewBox="0 0 37 37" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path fill-rule="evenodd" clip-rule="evenodd" d="M16.2336 8.4324C16.6851 8.88394 16.6851 9.61605 16.2336 10.0676L8.95745 17.3437H30.8327C31.4712 17.3437 31.9889 17.8614 31.9889 18.5C31.9889 19.1386 31.4712 19.6562 30.8327 19.6562H8.95745L16.2336 26.9325C16.6851 27.384 16.6851 28.116 16.2336 28.5675C15.782 29.0191 15.05 29.0191 14.5984 28.5675L5.34842 19.3175C4.89688 18.866 4.89688 18.134 5.34842 17.6825L14.5984 8.4324C15.05 7.98087 15.782 7.98087 16.2336 8.4324Z" fill="#4B5563"/>
+                                  <path
+                                    fillRule="evenodd"
+                                    clipRule="evenodd"
+                                    d="M16.2336 8.4324C16.6851 8.88394 16.6851 9.61605 16.2336 10.0676L8.95745 17.3437H30.8327C31.4712 17.3437 31.9889 17.8614 31.9889 18.5C31.9889 19.1386 31.4712 19.6562 30.8327 19.6562H8.95745L16.2336 26.9325C16.6851 27.384 16.6851 28.116 16.2336 28.5675C15.782 29.0191 15.05 29.0191 14.5984 28.5675L5.34842 19.3175C4.89688 18.866 4.89688 18.134 5.34842 17.6825L14.5984 8.4324C15.05 7.98087 15.782 7.98087 16.2336 8.4324Z"
+                                    fill="#4B5563"
+                                  />
                                 </svg>
-                              </button> 
+                              </button>
 
                               <h1 className="text-2xl font-semibold text-[#181D25]">
                                 {categories.find(c => c.id === activeCategoryId)?.name || "Untitled Job"}
