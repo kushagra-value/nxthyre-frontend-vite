@@ -14,13 +14,15 @@ import {
   Info,
   Check,
   Plus,
+  Copy,
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import { jobPostService, CreateJobData } from "../services/jobPostService";
-import {candidateService} from "../services/candidateService"
-import  {CKEditor} from "@ckeditor/ckeditor5-react";
+import { candidateService } from "../services/candidateService";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { debounce } from "lodash";
+import toast from "react-hot-toast";
 
 interface Workspace {
   id: number;
@@ -127,7 +129,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
   const [originalUploadType, setOriginalUploadType] = useState<
     "paste" | "upload"
   >("paste");
-
+  const [booleanSearchTerm, setBooleanSearchTerm] = useState<string>("");
   // Validation for text inputs (allow only alphanumeric, comma, space)
   const isValidTextInput = (value: string): boolean =>
     /^[a-zA-Z0-9, ]*$/.test(value);
@@ -183,7 +185,9 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     debounce(async (query: string) => {
       if (query.length >= 2) {
         try {
-          const suggestions = await candidateService.getKeywordSuggestions(query);
+          const suggestions = await candidateService.getKeywordSuggestions(
+            query
+          );
           const currentSkills = formData.skills.map((s) => s.toLowerCase());
           const filteredSuggestions = suggestions.filter(
             (suggestion: string) =>
@@ -222,26 +226,28 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
   }, []);
 
   // UPDATED: Replace Geoapify fetch with jobPostService.getLocationSuggestions for consistency and to use backend API
-const fetchLocationSuggestions = useCallback(
-  debounce(async (query: string) => {
-    if (query.length >= 2) {
-      try {
-        const suggestions = await jobPostService.getLocationSuggestions(query);
-        const uniqueSuggestions = [...new Set(suggestions)].filter(
-          (s: string) => !formData.location.includes(s)
-        );
-        setLocationSuggestions(uniqueSuggestions);
-      } catch (error) {
-        console.error("Error fetching location suggestions:", error);
+  const fetchLocationSuggestions = useCallback(
+    debounce(async (query: string) => {
+      if (query.length >= 2) {
+        try {
+          const suggestions = await jobPostService.getLocationSuggestions(
+            query
+          );
+          const uniqueSuggestions = [...new Set(suggestions)].filter(
+            (s: string) => !formData.location.includes(s)
+          );
+          setLocationSuggestions(uniqueSuggestions);
+        } catch (error) {
+          console.error("Error fetching location suggestions:", error);
+          setLocationSuggestions([]);
+          showToast.error("Failed to fetch location suggestions");
+        }
+      } else {
         setLocationSuggestions([]);
-        showToast.error("Failed to fetch location suggestions");
       }
-    } else {
-      setLocationSuggestions([]);
-    }
-  }, 300),
-  [formData.location]
-);
+    }, 300),
+    [formData.location]
+  );
 
   const handleSkillInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^a-zA-Z0-9\s]/g, "");
@@ -282,7 +288,6 @@ const fetchLocationSuggestions = useCallback(
       setShowSkillSuggestions(false);
     }
   };
-
 
   const removeSkill = (index: number) => {
     setFormData((prev) => ({
@@ -374,7 +379,7 @@ const fetchLocationSuggestions = useCallback(
         formData.uploadType === "paste"
           ? formData.jobDescription.trim()
           : !!file,
-       workspace: formData.workspace.trim(),
+      workspace: formData.workspace.trim(),
     };
 
     const errors: string[] = [];
@@ -506,6 +511,10 @@ const fetchLocationSuggestions = useCallback(
         setEditableJD(aiResponse.job_description_markdown);
         setCompetencies(aiResponse.technical_competencies);
         setAiJdResponse(aiResponse);
+        setBooleanSearchTerm(
+          aiResponse.jd_competencies.search_criteria
+            .search_criteria_expression || ""
+        );
         // Update originals after regeneration
         if (formData.uploadType === "paste") {
           setOriginalDescription(formData.jobDescription);
@@ -552,7 +561,10 @@ const fetchLocationSuggestions = useCallback(
       const jobData: CreateJobData = {
         title: formData.title,
         location: formData.location,
-        work_approach: formData.workApproach.toUpperCase() as "ONSITE" | "REMOTE" | "HYBRID",
+        work_approach: formData.workApproach.toUpperCase() as
+          | "ONSITE"
+          | "REMOTE"
+          | "HYBRID",
         seniority: formData.seniority,
         department: departmentNameToId[formData.department] || 8,
         experience_min_years: parseInt(formData.minExp) || 0,
@@ -623,7 +635,10 @@ const fetchLocationSuggestions = useCallback(
       const jobData: CreateJobData = {
         title: formData.title,
         location: formData.location,
-        work_approach: formData.workApproach.toUpperCase() as "ONSITE" | "REMOTE" | "HYBRID",
+        work_approach: formData.workApproach.toUpperCase() as
+          | "ONSITE"
+          | "REMOTE"
+          | "HYBRID",
         seniority: formData.seniority,
         department: parseInt(formData.department) || 1, // Assuming department ID 1 as default
         experience_min_years: parseInt(formData.minExp) || 0,
@@ -677,6 +692,11 @@ const fetchLocationSuggestions = useCallback(
       setEditableJD(aiResponse.job_description_markdown);
       setCompetencies(aiResponse.technical_competencies);
       setAiJdResponse(aiResponse);
+      setBooleanSearchTerm(
+        aiResponse.jd_competencies.search_criteria.search_criteria_expression ||
+          ""
+      );
+
       // Update originals after regeneration
       if (formData.uploadType === "paste") {
         setOriginalDescription(formData.jobDescription);
@@ -688,6 +708,20 @@ const fetchLocationSuggestions = useCallback(
       showToast.error(error.message || "Failed to regenerate AI JD");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCopy = async () => {
+    if (booleanSearchTerm) {
+      try {
+        await navigator.clipboard.writeText(booleanSearchTerm);
+        toast.success("Copied to clipboard!");
+        // Optional: Add a toast notification for success here
+        console.log("Copied to clipboard");
+      } catch (err) {
+        console.error("Failed to copy: ", err);
+        toast.error("Failed to copy to clipboard.");
+      }
     }
   };
 
@@ -750,6 +784,7 @@ const fetchLocationSuggestions = useCallback(
     setCompetencies([]);
     setEditableJD("");
     setAiJdResponse(null);
+    setBooleanSearchTerm("");
   };
 
   useEffect(() => {
@@ -915,11 +950,12 @@ const fetchLocationSuggestions = useCallback(
         <div className="flex-1 overflow-y-auto px-72">
           {currentStep === 1 ? (
             <div className="space-y-6 mt-6">
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Add to Workspace <span className="text-red-500">*</span>
-                  <p className="text-xs text-gray-500 mt-1">Default workspace selected. Choose another to switch.</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Default workspace selected. Choose another to switch.
+                  </p>
                 </label>
                 <select
                   value={formData.workspace}
@@ -940,7 +976,6 @@ const fetchLocationSuggestions = useCallback(
                   ))}
                 </select>
               </div>
-
 
               {/* Job Title */}
               <div>
@@ -1531,6 +1566,33 @@ const fetchLocationSuggestions = useCallback(
                     className="rounded-lg"
                     disabled={isLoading}
                   />
+                </div>
+              </div>
+
+              {/* Boolean Search String */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Generated Boolean Search String
+                </h3>
+                <div className="border border-gray-300 rounded-lg p-4 relative">
+                  <textarea
+                    placeholder="Type boolean search string..."
+                    value={booleanSearchTerm}
+                    readOnly={true}
+                    rows={4}
+                    className="w-full border-none outline-none text-sm placeholder-gray-400 resize-none pr-8 bg-transparent"
+                    disabled={isLoading}
+                  />
+                  {!isLoading && (
+                    <button
+                      type="button"
+                      onClick={handleCopy}
+                      className="absolute top-3 right-3 p-1 hover:bg-gray-100 rounded"
+                      title="Copy to clipboard"
+                    >
+                      <Copy className="w-4 h-4 text-gray-400" />
+                    </button>
+                  )}
                 </div>
               </div>
 
