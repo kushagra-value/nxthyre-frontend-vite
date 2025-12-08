@@ -411,7 +411,10 @@ export interface AnalyzeResponse {
 }
 
 class CandidateService {
-  async getCandidates(filters: any): Promise<CandidateSearchResponse> {
+  async getCandidates(
+    filters: any,
+    page: number = 1
+  ): Promise<CandidateSearchResponse> {
     try {
       const requestBody: any = {
         job_id: filters.jobId,
@@ -562,7 +565,7 @@ class CandidateService {
       }
 
       const response = await apiClient.post(
-        "/candidates/search/?page=1",
+        `/candidates/search/?page=${page}`,
         requestBody
       );
       // Add: Save bool_query from response to localStorage if present (for job-specific boolean query)

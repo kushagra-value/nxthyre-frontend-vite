@@ -831,7 +831,7 @@ const fetchLocationSuggestions = useCallback(
 
   if (showSuccessModal) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-500" />
@@ -864,7 +864,7 @@ const fetchLocationSuggestions = useCallback(
   // Cancel Confirmation Modal
   if (showCancelModal) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center">
           <h2 className="text-xl font-bold text-gray-900 mb-3">
             Confirm Cancel
@@ -893,7 +893,7 @@ const fetchLocationSuggestions = useCallback(
 
   if (isFetching) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading job details...</p>
@@ -903,7 +903,7 @@ const fetchLocationSuggestions = useCallback(
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
       <div className="bg-white relative rounded-2xl shadow-xl w-full max-w-6xl max-h-[98vh]  flex flex-col overflow-hidden">
         <div className="p-10">
           <div className="flex items-center justify-between">
