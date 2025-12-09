@@ -1661,7 +1661,7 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                 <>
                   <Toaster />
                   <div className="bg-gray-50 min-h-screen">
-                    <div className="sticky top-0 bg-white will-change-transform z-40">
+                    <div className="sticky top-0 bg-white will-change-transform z-50">
                       <Header
                         onCreateRole={handleCreateJobRole}
                         onOpenLogoutModal={handleOpenLogoutModal}
