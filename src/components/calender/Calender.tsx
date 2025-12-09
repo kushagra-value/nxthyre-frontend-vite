@@ -5,7 +5,7 @@ import { DayView } from './DayView';
 import { WeekView } from './WeekView';
 import { MonthView } from './MonthView';
 import { EventForm } from './EventForm';
-import { mockEvents as initialEvents, CalendarEvent } from '../data/mockEvents';
+import { mockEvents as initialEvents, CalendarEvent } from '../../data/mockEvents';
 
 interface CalenderProps {
   onCellClick: (date: string, time?: string) => void;

@@ -33,15 +33,15 @@ import {
    File,
    ChevronLeft
 } from "lucide-react";
-import { showToast } from "../utils/toast";
-import apiClient from "../services/api"; 
-import AddNewStageForm from '../components/AddNewStageForm';
-import { useAuthContext } from "../context/AuthContext"; 
-import candidateService from "../services/candidateService";
+import { showToast } from "../../utils/toast";
+import apiClient from "../../services/api"; 
+import AddNewStageForm from './AddNewStageForm';
+import { useAuthContext } from "../../context/AuthContext"; 
+import candidateService from "../../services/candidateService";
 import { useParams } from "react-router-dom";
-import { Calender } from './Calender';
-import { EventForm } from './EventForm';
-import { CalendarEvent } from '../data/mockEvents';
+import { Calender } from '../calender/Calender';
+import { EventForm } from '../calender/EventForm';
+import { CalendarEvent } from '../../data/mockEvents';
 
 
 interface DraggedCandidate {

@@ -1,4 +1,4 @@
-import { CalendarEvent } from '../data/mockEvents';
+import { CalendarEvent } from '../../data/mockEvents';
 import { EventCard } from './EventCard';
 
 interface DayViewProps {

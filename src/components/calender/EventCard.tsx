@@ -1,5 +1,5 @@
 import { ThumbsUp } from 'lucide-react';
-import { CalendarEvent } from '../data/mockEvents';
+import { CalendarEvent } from '../../data/mockEvents';
 
 interface EventCardProps {
   event: CalendarEvent;

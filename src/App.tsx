@@ -34,8 +34,8 @@ import PipelineStages from "./components/PipelineStages";
 import AuthApp from "./components/AuthApp";
 import LinkedInAuth from "./components/auth/LinkedInAuth";
 import Settings from "./components/Settings";
-import ShareableProfile from "./components/ShareableProfile";
-import PipelineSharePage from "./components/PipelineSharePage";
+import ShareableProfile from "./components/profileShare/ShareableProfile";
+import PipelineSharePage from "./components/applicantTracking/PipelineSharePage";
 import {
   organizationService,
   MyWorkspace,
