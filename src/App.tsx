@@ -1661,7 +1661,7 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                 <>
                   <Toaster />
                   <div className="bg-gray-50 min-h-screen">
-                    <div className="sticky top-0 bg-white will-change-transform z-50">
+                    <div className="sticky top-0 bg-white will-change-transform z-40">
                       <Header
                         onCreateRole={handleCreateJobRole}
                         onOpenLogoutModal={handleOpenLogoutModal}
@@ -1680,7 +1680,7 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                       
                       {/* NEW CLEAN HEADER – replaces old tabs + dropdown */}
                       {categories.length > 0 && activeCategoryId && (
-                        <div className="sticky top-[68px] z-10 will-change-transform bg-gray-50 border-b border-gray-200 py-4">
+                        <div className="sticky top-[68px] z-40 will-change-transform bg-gray-50 border-b border-gray-200 py-4">
                           <div className="max-w-full flex items-center justify-between px-4 lg:px-6">
                             {/* Left side – Job title + chips */}
                             <div className="flex items-center gap-8">
