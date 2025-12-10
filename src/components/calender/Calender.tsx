@@ -74,6 +74,7 @@ export const Calender: React.FC<CalenderProps> = ({onCellClick}) => {
 
   useEffect(() => {
   const fetchEvents = async () => {
+    if (!pipelineId) return;
     setLoading(true);
     setError(null);
     try {
@@ -102,15 +103,12 @@ export const Calender: React.FC<CalenderProps> = ({onCellClick}) => {
         job_id: pipelineId,
       };
       const response = await apiClient.get('/jobs/interview-events/calendar-summary/', { params });
-
       const apiDays = response.data.days || [];
-      const mappedEvents: CalendarEvent[] = [];
-      
-      apiDays.forEach((day: any) => {
-        day.events.forEach((e: any) => {
-          mappedEvents.push(mapApiEvent(e, allStages)); // Pass stages here
-        });
-      });
+
+      // 4. Map events using the stages we already fetched
+      const mappedEvents: CalendarEvent[] = apiDays.flatMap((day: any) =>
+        day.events.map((e: any) => mapApiEvent(e, allStages))
+      );
 
       setEvents(mappedEvents);
     } catch (err: any) {
@@ -152,10 +150,10 @@ export const Calender: React.FC<CalenderProps> = ({onCellClick}) => {
           displayMonth={displayMonth}
         />
 
-        <EventLegend 
-          className="mb-6" 
+        <EventLegend
+          className="mb-6"
           stages={pipelineStages.filter(stage => {
-            const shortlistedOrder = pipelineStages.find(s => s.slug === 'shortlisted')?.sort_order || 5;
+            const shortlistedOrder = pipelineStages.find(s => s.slug === 'shortlisted')?.sort_order ?? 5;
             return stage.sort_order > shortlistedOrder;
           })}
         />
