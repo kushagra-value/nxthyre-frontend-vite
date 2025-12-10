@@ -16,6 +16,9 @@ const timeSlots = [
   '02 pm',
   '03 pm',
   '04 pm',
+  '05 pm',
+  '06 pm',
+  "07 pm",
 ];
 
 export const DayView = ({ events, currentDate, onCellClick }: DayViewProps) => {
