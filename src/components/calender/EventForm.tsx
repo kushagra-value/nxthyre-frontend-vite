@@ -27,6 +27,7 @@ export const EventForm = ({
     title: '',
     attendee: '',
     location: '',
+    stageId: '' as string | number,
     type: 'first-round' as CalendarEvent['type'],
     date: initialDate || new Date().toISOString().split('T')[0],
     startTime: initialTime || '09:00',
@@ -43,6 +44,10 @@ export const EventForm = ({
       alert("Application ID is required");
       return;
     }
+    if (!formData.stageId) {
+      alert("Please select an interview round");
+      return;
+    }
 
     const startDateTime = `${formData.date}T${formData.startTime}:00Z`;
     const endDateTime = `${formData.date}T${formData.endTime}:00Z`;
@@ -50,6 +55,7 @@ export const EventForm = ({
     const payload = {
       application: Number(formData.applicationId),
       title: formData.title || `${formData.attendee} - Interview`,
+      stage: Number(formData.stageId),
       start_at: startDateTime,
       end_at: endDateTime,
       location_type: "VIRTUAL", // You can make this dynamic later
@@ -92,6 +98,7 @@ export const EventForm = ({
       title: '',
       attendee: '',
       location: '',
+      stageId: '',
       type: 'first-round',
       date: initialDate || new Date().toISOString().split('T')[0],
       startTime: initialTime || '09:00',
@@ -205,12 +212,15 @@ export const EventForm = ({
                 <select
                   required
                   value={formData.type}
-                  onChange={(e) =>
+                  onChange={(e) =>{
+                    const selectedSlug = e.target.value;
+                    const selectedStage = pipelineStages?.find(stage => stage.slug === selectedSlug);
                     setFormData({
                       ...formData,
                       type: e.target.value as CalendarEvent['type'],
+                      stageId: selectedStage ? selectedStage.id : '',
                     })
-                  }
+                  }}
                   className="w-full bg-transparent text-gray-600 outline-none appearance-none text-lg"
                 >
                   <option value="">Choose round</option>
