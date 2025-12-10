@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { X, Calendar, Clock, MapPin, Briefcase, User } from 'lucide-react';
 import { CalendarEvent } from '../../data/mockEvents';
+import apiClient from '../../services/api';
 
 interface EventFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (event: Omit<CalendarEvent, 'id'>) => void;
+  onSubmit: (event: Omit<CalendarEvent, 'id'> & { applicationId: string }) => void;
   initialDate?: string;
   initialTime?: string;
 }
@@ -17,6 +18,8 @@ export const EventForm = ({
   initialDate,
   initialTime,
 }: EventFormProps) => {
+
+  const [selectedApplicationId, setSelectedApplicationId] = useState<string>('');
   const [formData, setFormData] = useState({
     title: '',
     attendee: '',
@@ -25,22 +28,65 @@ export const EventForm = ({
     date: initialDate || new Date().toISOString().split('T')[0],
     startTime: initialTime || '09:00',
     endTime: '10:00',
+    applicationId: '', // NEW
   });
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      title: formData.title || formData.attendee,
-      attendee: formData.attendee,
-      type: formData.type,
-      startTime: formData.startTime,
-      endTime: formData.endTime,
-      date: formData.date,
-      confirmed: true,
-    });
-    onClose();
+
+    if (!selectedApplicationId) {
+      alert("Application ID is required");
+      return;
+    }
+
+    const startDateTime = `${formData.date}T${formData.startTime}:00Z`;
+    const endDateTime = `${formData.date}T${formData.endTime}:00Z`;
+
+    const payload = {
+      application: Number(selectedApplicationId),
+      title: formData.title || `${formData.attendee} - Interview`,
+      start_at: startDateTime,
+      end_at: endDateTime,
+      location_type: "VIRTUAL", // You can make this dynamic later
+      virtual_conference_url: "https://meet.google.com/placeholder", // Replace later
+      status: "SCHEDULED",
+      timezone: "Asia/Kolkata", // Or detect from browser
+      participants: [
+        {
+          participant_type: "CANDIDATE",
+          // candidate ID will be resolved server-side from application
+        }
+      ],
+      reminder_preferences: {
+        candidate: [24], // 24 hours before
+        interviewers: [2] // 2 hours before
+      }
+    };
+
+    try {
+      const response = await apiClient.post('/jobs/interview-events/', payload);
+      
+      // Trigger parent refresh or toast
+      onSubmit({
+        title: formData.title || formData.attendee,
+        attendee: formData.attendee,
+        type: formData.type,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        date: formData.date,
+        confirmed: true,
+        applicationId: formData.applicationId, 
+      });
+
+      } catch (err: any) {
+      console.error("Failed to create interview event:", err);
+      const msg = err.response?.data?.detail || "Failed to schedule interview";
+      alert(msg);
+    } finally {
+      handleClose();
+    }
   };
 
   const handleClose = () => {
@@ -52,6 +98,7 @@ export const EventForm = ({
       date: initialDate || new Date().toISOString().split('T')[0],
       startTime: initialTime || '09:00',
       endTime: '10:00',
+      applicationId:''
     });
     onClose();
   };
@@ -110,17 +157,17 @@ export const EventForm = ({
               <User className="w-6 h-6 text-gray-600 flex-shrink-0" />
               <div className="flex-1">
                 <label className="block text-lg text-gray-400">
-                  Select Candidate
+                  Select Candidate <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="Candidate name"
-                  value={formData.attendee}
-                  onChange={(e) =>
-                    setFormData({ ...formData, attendee: e.target.value })
-                  }
-                  className="w-full bg-transparent text-gray-600 placeholder-gray-400 outline-none"
+                  required
+                  placeholder="e.g. 313"
+                  value={formData.applicationId || ''}
+                  onChange={(e) => setFormData({ ...formData, applicationId: e.target.value })}
+                  className="w-full bg-transparent text-gray-600 placeholder-gray-400 outline-none border-b border-gray-300 pb-1"
                 />
+    
               </div>
             </div>
           </div>
