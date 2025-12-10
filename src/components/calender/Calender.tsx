@@ -152,9 +152,10 @@ export const Calender: React.FC<CalenderProps> = ({onCellClick}) => {
 
         <EventLegend
           className="mb-6"
-          stages={pipelineStages.filter(stage => {
-            const shortlistedOrder = pipelineStages.find(s => s.slug === 'shortlisted')?.sort_order ?? 5;
-            return stage.sort_order > shortlistedOrder;
+          stages={pipelineStages.filter(s => {
+            const order = s.sort_order;
+            const shortlistedOrder = pipelineStages.find(st => st.slug === 'shortlisted')?.sort_order || 5;
+            return s.sort_order > shortlistedOrder && s.slug !== 'archives';
           })}
         />
 

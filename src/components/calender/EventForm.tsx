@@ -23,7 +23,6 @@ export const EventForm = ({
   stagesLoading,
 }: EventFormProps) => {
 
-  const [selectedApplicationId, setSelectedApplicationId] = useState<string>('');
   const [formData, setFormData] = useState({
     title: '',
     attendee: '',
