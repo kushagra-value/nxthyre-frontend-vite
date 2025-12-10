@@ -53,12 +53,7 @@ export const EventForm = ({
       virtual_conference_url: "https://meet.google.com/placeholder", // Replace later
       status: "SCHEDULED",
       timezone: "Asia/Kolkata", // Or detect from browser
-      participants: [
-        {
-          participant_type: "CANDIDATE",
-          // candidate ID will be resolved server-side from application
-        }
-      ],
+      participants: [],
       reminder_preferences: {
         candidate: [24], // 24 hours before
         interviewers: [2] // 2 hours before
