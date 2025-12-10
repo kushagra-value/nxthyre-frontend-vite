@@ -102,7 +102,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [selectedEventDate, setSelectedEventDate] = useState<string>('');
   const [selectedEventTime, setSelectedEventTime] = useState<string>('');
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
-
+  const [pipelineStages, setPipelineStages] = useState<any[]>([]); // NEW
+  const [stagesLoading, setStagesLoading] = useState(true);
   const [codingQuestions, setCodingQuestions] = useState<
       {
         name: string;
@@ -1361,6 +1362,23 @@ const handleCopyProfile = async (applicationId: string) => {
     return <div>Loading pipeline data...</div>;
   }
 
+  useEffect(() => {
+    const fetchStages = async () => {
+      try {
+        const res = await apiClient.get(`/jobs/applications/stages/?job_id=${jobId}`);
+        // Sort by sort_order just in case
+        const sorted = res.data.sort((a: any, b: any) => a.sort_order - b.sort_order);
+        setPipelineStages(sorted);
+      } catch (err) {
+        console.error("Failed to load pipeline stages", err);
+        showToast.error("Could not load interview rounds");
+      } finally {
+        setStagesLoading(false);
+      }
+    };
+    if (jobId) fetchStages();
+  }, [jobId]);
+
   return (
     <>
       <div className="bg-[#FFFFFF]">
@@ -1907,6 +1925,12 @@ const handleCopyProfile = async (applicationId: string) => {
             }}
             initialDate={selectedEventDate}
             initialTime={selectedEventTime}
+            pipelineStages={pipelineStages.filter(s => {
+              const order = s.sort_order;
+              const shortlistedOrder = pipelineStages.find(st => st.slug === 'shortlisted')?.sort_order || 5;
+              return order > shortlistedOrder;
+            })}
+            stagesLoading={stagesLoading}
           />
           
         </div>

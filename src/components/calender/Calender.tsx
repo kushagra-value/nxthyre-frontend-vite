@@ -20,29 +20,33 @@ export const Calender: React.FC<CalenderProps> = ({onCellClick}) => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const mapApiEvent = (apiEvent: any): CalendarEvent => {
+  const [pipelineStages, setPipelineStages] = useState<any[]>([]);
+  
+  const mapApiEvent = (apiEvent: any, allStages: any[]): CalendarEvent => {
     const start = new Date(apiEvent.start_at);
     const end = new Date(apiEvent.end_at);
 
-    let type: CalendarEvent['type'] = 'first-round';
-    if (apiEvent.round_name?.toLowerCase().includes('hr')) type = 'hr-round';
-    else if (apiEvent.round_name?.toLowerCase().includes('face') || apiEvent.round_name?.toLowerCase().includes('f2f')) type = 'face-to-face';
-    else if (apiEvent.round_name?.toLowerCase().includes('f2f1')) type = 'f2f1';
+    // Find the actual stage this event belongs to
+    const eventStageId = apiEvent.current_stage || apiEvent.stage;
+    const stage = allStages.find(s => s.id === eventStageId);
+
+    // Use real slug if found, fallback to round_name or generic
+    const typeSlug = stage?.slug 
+      ? stage.slug 
+      : (apiEvent.round_name?.toLowerCase().replace(/\s+/g, '-') || 'unknown-round');
 
     return {
-      id: apiEvent.id,
-      title: apiEvent.candidate_name || apiEvent.title,
-      type,
-      attendee: apiEvent.candidate_name || apiEvent.title,
-      startTime: start.toTimeString().slice(0, 5), // "09:00"
+      id: apiEvent.id.toString(),
+      title: apiEvent.candidate_name || apiEvent.title || 'Interview',
+      type: typeSlug, // This is now the real slug (e.g. "first-interview", "hr-round", etc.)
+      attendee: apiEvent.candidate_name || 'Candidate',
+      startTime: start.toTimeString().slice(0, 5),
       endTime: end.toTimeString().slice(0, 5),
       date: start.toISOString().split('T')[0],
-      confirmed: apiEvent.status === 'CONFIRMED' || apiEvent.status === 'COMPLETED',
+      confirmed: ['CONFIRMED', 'COMPLETED'].includes(apiEvent.status),
+      roundName: stage?.name || apiEvent.round_name, // optional human name
     };
   };
-
-
 
   const handleNavigate = (direction: 'prev' | 'next' | 'today') => {
     if (direction === 'today') {
@@ -69,14 +73,18 @@ export const Calender: React.FC<CalenderProps> = ({onCellClick}) => {
   }).toUpperCase();
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        let start = new Date(currentDate);
-        let end = new Date(currentDate);
-
-        if (view === 'day') {
+  const fetchEvents = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // First get stages
+      const stagesRes = await apiClient.get(`/jobs/applications/stages/?job_id=${pipelineId}`);
+      const allStages = stagesRes.data.sort((a: any, b: any) => a.sort_order - b.sort_order);
+      setPipelineStages(allStages);
+      // Then get events
+      let start = new Date(currentDate);
+      let end = new Date(currentDate);
+      if (view === 'day') {
           end = new Date(start);
         } else if (view === 'week') {
           const day = start.getDay();
@@ -88,32 +96,34 @@ export const Calender: React.FC<CalenderProps> = ({onCellClick}) => {
           end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
         }
 
-        const params: any = {
-          view,
-          start: start.toISOString().split('T')[0],
-          job_id: pipelineId,
-        };
+      const params: any = {
+        view,
+        start: start.toISOString().split('T')[0],
+        job_id: pipelineId,
+      };
+      const response = await apiClient.get('/jobs/interview-events/calendar-summary/', { params });
 
-        const response = await apiClient.get('/jobs/interview-events/calendar-summary/', { params });
-        const apiDays = response.data.days || [];
-
-        const mappedEvents: CalendarEvent[] = [];
-        apiDays.forEach((day: any) => {
-          day.events.forEach((e: any) => mappedEvents.push(mapApiEvent(e)));
+      const apiDays = response.data.days || [];
+      const mappedEvents: CalendarEvent[] = [];
+      
+      apiDays.forEach((day: any) => {
+        day.events.forEach((e: any) => {
+          mappedEvents.push(mapApiEvent(e, allStages)); // Pass stages here
         });
+      });
 
-        setEvents(mappedEvents.length > 0 ? mappedEvents : []);
-      } catch (err: any) {
-        console.error('Failed to load calendar events:', err);
-        setError('Failed to load events');
-        setEvents([]); 
-      } finally {
-        setLoading(false);
-      }
-    };
+      setEvents(mappedEvents);
+    } catch (err: any) {
+      console.error('Failed to load calendar events:', err);
+      setError('Failed to load events');
+      setEvents([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchEvents();
-  }, [view, currentDate, pipelineId]);
+  fetchEvents();
+}, [view, currentDate, pipelineId]);
 
   if (loading) {
       return (
@@ -142,7 +152,13 @@ export const Calender: React.FC<CalenderProps> = ({onCellClick}) => {
           displayMonth={displayMonth}
         />
 
-        <EventLegend className="mb-6" />
+        <EventLegend 
+          className="mb-6" 
+          stages={pipelineStages.filter(stage => {
+            const shortlistedOrder = pipelineStages.find(s => s.slug === 'shortlisted')?.sort_order || 5;
+            return stage.sort_order > shortlistedOrder;
+          })}
+        />
 
         {view === 'day' && (
           <DayView

@@ -1,28 +1,43 @@
+import { STAGE_COLORS, getColorFromString } from '../../utils/stageColors';
+
 interface EventLegendProps {
   className?: string;
+  stages: { id: number; name: string; slug: string; sort_order: number }[];
 }
 
-const legendItems = [
-  { label: 'First Round', color: 'bg-[#FFB800]' },
-  { label: 'Face to Face Round', color: 'bg-[#8535EB]' },
-  { label: 'HR Round', color: 'bg-[#2FD08D]' },
-  { label: 'F2F1', color: 'bg-[#348AEF]' },
-];
+export const EventLegend = ({ className = '', stages }: EventLegendProps) => {
+  // Filter only stages that appear after "Shortlisted"
+  const shortlistedOrder = stages.find(s => s.slug === 'shortlisted')?.sort_order || 5;
+  const relevantStages = stages.filter(s => s.sort_order > shortlistedOrder);
 
-export const EventLegend = ({ className = '' }: EventLegendProps) => {
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
-      {legendItems.map((item) => (
-        <div
-          key={item.label}
-          className="flex items-center gap-2 bg-white rounded-md px-3 py-2.5"
-        >
-          <div className={`w-0.5 h-6 ${item.color} rounded-full`} />
-          <span className="text-lg font-medium text-gray-600">
-            {item.label}
-          </span>
-        </div>
-      ))}
+    <div className={`flex flex-wrap items-center gap-3 ${className}`}>
+      {relevantStages.map((stage) => {
+        const config = STAGE_COLORS[stage.slug] || {
+          bg: getColorFromString(stage.slug),
+          label: stage.name,
+        };
+
+        return (
+          <div
+            key={stage.id}
+            className="flex items-center gap-2 bg-white rounded-lg px-4 py-2.5 shadow-sm border border-gray-100"
+          >
+            <div
+              className="w-1 h-7 rounded-full"
+              style={{ backgroundColor: config.bg }}
+            />
+            <span className="text-base font-medium text-gray-700">
+              {config.label}
+            </span>
+          </div>
+        );
+      })}
+
+      
+      {relevantStages.length === 0 && (
+        <span className="text-gray-500 text-base">No interview stages defined</span>
+      )}
     </div>
   );
 };

@@ -9,6 +9,8 @@ interface EventFormProps {
   onSubmit: (event: Omit<CalendarEvent, 'id'> & { applicationId: string }) => void;
   initialDate?: string;
   initialTime?: string;
+  pipelineStages?: { id: number; name: string; slug: string; sort_order: number }[];
+  stagesLoading?: boolean;
 }
 
 export const EventForm = ({
@@ -17,6 +19,8 @@ export const EventForm = ({
   onSubmit,
   initialDate,
   initialTime,
+  pipelineStages,
+  stagesLoading,
 }: EventFormProps) => {
 
   const [selectedApplicationId, setSelectedApplicationId] = useState<string>('');
@@ -192,9 +196,15 @@ export const EventForm = ({
               <Briefcase className="w-6 h-6 text-gray-600 flex-shrink-0" />
               <div className="flex-1">
                 <label className="block text-lg text-gray-400">
-                  Select Round
+                  Select Round <span className="text-red-500">*</span>
                 </label>
+                {stagesLoading ? (
+                <p className="text-gray-500">Loading rounds...</p>
+              ) : pipelineStages?.length === 0 ? (
+                <p className="text-gray-500">No rounds available</p>
+              ) : (
                 <select
+                  required
                   value={formData.type}
                   onChange={(e) =>
                     setFormData({
@@ -202,13 +212,16 @@ export const EventForm = ({
                       type: e.target.value as CalendarEvent['type'],
                     })
                   }
-                  className="w-full bg-transparent text-gray-600 outline-none appearance-none"
+                  className="w-full bg-transparent text-gray-600 outline-none appearance-none text-lg"
                 >
-                  <option value="first-round">First Round</option>
-                  <option value="face-to-face">Face to Face Round</option>
-                  <option value="hr-round">HR Round</option>
-                  <option value="f2f1">F2F1</option>
+                  <option value="">Choose round</option>
+                  {pipelineStages?.map((stage) => (
+                    <option key={stage.id} value={stage.slug}>
+                      {stage.name}
+                    </option>
+                  ))}
                 </select>
+              )}
               </div>
             </div>
           </div>
