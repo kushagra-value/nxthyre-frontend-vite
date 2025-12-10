@@ -1637,6 +1637,12 @@ const handleCopyProfile = async (applicationId: string) => {
                     setSelectedEventTime(time || "09:00");
                     setShowAddEventForm(true);
                   }}
+                  pipelineStages={pipelineStages.filter(s => {
+                    const order = s.sort_order;
+                    const shortlistedOrder = pipelineStages.find(st => st.slug === 'shortlisted')?.sort_order || 5;
+                    return s.sort_order > shortlistedOrder && s.slug !== 'archives';
+                  })}
+                  stagesLoading={stagesLoading}
                 />
               </div>
             ):

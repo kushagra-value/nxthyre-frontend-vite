@@ -2,21 +2,15 @@ import { STAGE_COLORS, getColorFromString } from '../../utils/stageColors';
 
 interface EventLegendProps {
   className?: string;
-  stages: { id: number; name: string; slug: string; sort_order: number }[];
-}
+    stages?: { id: number; name: string; slug: string; sort_order: number }[];
+  }
 
 export const EventLegend = ({ className = '', stages }: EventLegendProps) => {
-  // Filter only stages that appear after "Shortlisted"
-  const shortlistedOrder = stages.find(s => s.slug === 'shortlisted')?.sort_order || 5;
-  const relevantStages = stages.filter(stage => {
-    const isAfterShortlisted = stage.sort_order > shortlistedOrder;
-    const isNotArchives = stage.slug !== 'archives'; // Explicitly exclude Archives
-    return isAfterShortlisted && isNotArchives;
-  });
   
+
   return (
     <div className={`flex flex-wrap items-center gap-3 ${className}`}>
-      {relevantStages.map((stage) => {
+      {stages?.map((stage) => {
         const config = STAGE_COLORS[stage.slug] || {
           bg: getColorFromString(stage.slug),
           label: stage.name,
@@ -39,7 +33,7 @@ export const EventLegend = ({ className = '', stages }: EventLegendProps) => {
       })}
 
       
-      {relevantStages.length === 0 && (
+      {stages?.length === 0 && (
         <span className="text-gray-500 text-base">No interview stages defined</span>
       )}
     </div>

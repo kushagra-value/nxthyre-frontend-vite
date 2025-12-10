@@ -11,26 +11,26 @@ import { useParams } from 'react-router-dom';
 
 interface CalenderProps {
   onCellClick: (date: string, time?: string) => void;
+  pipelineStages?: { id: number; name: string; slug: string; sort_order: number }[];
+  stagesLoading?: boolean;
 }
 
-export const Calender: React.FC<CalenderProps> = ({onCellClick}) => {
+export const Calender: React.FC<CalenderProps> = ({onCellClick,pipelineStages,stagesLoading,}) => {
   const { pipelineId } = useParams<{ pipelineId: string }>();
   const [view, setView] = useState<'day' | 'week' | 'month'>('week');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [pipelineStages, setPipelineStages] = useState<any[]>([]);
   
-  const mapApiEvent = (apiEvent: any, allStages: any[]): CalendarEvent => {
+  const mapApiEvent = (apiEvent: any, pipelineStages?: { id: number; name: string; slug: string; sort_order: number }[]): CalendarEvent => {
     const start = new Date(apiEvent.start_at);
     const end = new Date(apiEvent.end_at);
 
-    // Find the actual stage this event belongs to
     const eventStageId = apiEvent.current_stage || apiEvent.stage;
-    const stage = allStages.find(s => s.id === eventStageId);
+    const stage = pipelineStages?.find(s => s.id === eventStageId);
 
-    // Use real slug if found, fallback to round_name or generic
+    
     const typeSlug = stage?.slug 
       ? stage.slug 
       : (apiEvent.round_name?.toLowerCase().replace(/\s+/g, '-') || 'unknown-round');
@@ -79,9 +79,7 @@ export const Calender: React.FC<CalenderProps> = ({onCellClick}) => {
     setError(null);
     try {
       // First get stages
-      const stagesRes = await apiClient.get(`/jobs/applications/stages/?job_id=${pipelineId}`);
-      const allStages = stagesRes.data.sort((a: any, b: any) => a.sort_order - b.sort_order);
-      setPipelineStages(allStages);
+      
       // Then get events
       let start = new Date(currentDate);
       let end = new Date(currentDate);
@@ -107,7 +105,7 @@ export const Calender: React.FC<CalenderProps> = ({onCellClick}) => {
 
       // 4. Map events using the stages we already fetched
       const mappedEvents: CalendarEvent[] = apiDays.flatMap((day: any) =>
-        day.events.map((e: any) => mapApiEvent(e, allStages))
+        day.events.map((e: any) => mapApiEvent(e, pipelineStages))
       );
 
       setEvents(mappedEvents);
@@ -152,11 +150,7 @@ export const Calender: React.FC<CalenderProps> = ({onCellClick}) => {
 
         <EventLegend
           className="mb-6"
-          stages={pipelineStages.filter(s => {
-            const order = s.sort_order;
-            const shortlistedOrder = pipelineStages.find(st => st.slug === 'shortlisted')?.sort_order || 5;
-            return s.sort_order > shortlistedOrder && s.slug !== 'archives';
-          })}
+          stages={pipelineStages}
         />
 
         {view === 'day' && (
