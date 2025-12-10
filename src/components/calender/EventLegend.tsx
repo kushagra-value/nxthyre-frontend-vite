@@ -8,8 +8,12 @@ interface EventLegendProps {
 export const EventLegend = ({ className = '', stages }: EventLegendProps) => {
   // Filter only stages that appear after "Shortlisted"
   const shortlistedOrder = stages.find(s => s.slug === 'shortlisted')?.sort_order || 5;
-  const relevantStages = stages.filter(s => s.sort_order > shortlistedOrder);
-
+  const relevantStages = stages.filter(stage => {
+    const isAfterShortlisted = stage.sort_order > shortlistedOrder;
+    const isNotArchives = stage.slug !== 'archives'; // Explicitly exclude Archives
+    return isAfterShortlisted && isNotArchives;
+  });
+  
   return (
     <div className={`flex flex-wrap items-center gap-3 ${className}`}>
       {relevantStages.map((stage) => {

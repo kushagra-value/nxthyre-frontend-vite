@@ -9,6 +9,7 @@ export const STAGE_COLORS: Record<string, { bg: string; border: string; label: s
   'hr-round': { bg: '#2FD08D', border: '#2FD08D', label: 'HR Round' },
   'final-round': { bg: '#8B5CF6', border: '#8B5CF6', label: 'Final Round' },
   'offer-sent': { bg: '#EC4899', border: '#EC4899', label: 'Offer Sent' },
+  'archives': { bg: '#6B7280', border: '#6B7280', label: 'Archives' }, 
 };
 
 // Fallback: generate consistent color from slug
