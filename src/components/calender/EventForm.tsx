@@ -36,7 +36,7 @@ export const EventForm = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!selectedApplicationId) {
+    if (!formData.applicationId?.trim()) {
       alert("Application ID is required");
       return;
     }
@@ -45,7 +45,7 @@ export const EventForm = ({
     const endDateTime = `${formData.date}T${formData.endTime}:00Z`;
 
     const payload = {
-      application: Number(selectedApplicationId),
+      application: Number(formData.applicationId),
       title: formData.title || `${formData.attendee} - Interview`,
       start_at: startDateTime,
       end_at: endDateTime,
