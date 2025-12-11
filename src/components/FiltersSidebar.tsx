@@ -651,7 +651,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               updateTempFilters={updateTempFilters}
             /> */}
             <div className="flex items-center gap-2 pl-4 py-2 text-sm text-gray-700">
-              <span className={`tempFilters.booleanSearch ? hidden : `}>
+              <span
+                className={`${tempFilters.booleanSearch ? "hidden" : "flex"}`}
+              >
                 Boolean Search
               </span>
               <button
@@ -676,9 +678,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               onClick={() => toggleSection("keywords")}
             >
               {expandedSections.keywords ? (
-                <ChevronUp className="w-4 h-4 pt-2 text-gray-500" />
+                <ChevronUp className="w-4 h-4 mt-2 text-gray-500" />
               ) : (
-                <ChevronDown className="w-4 h-4 pt-2 text-gray-500" />
+                <ChevronDown className="w-4 h-4 mt-2 text-gray-500" />
               )}
             </div>
           </div>
