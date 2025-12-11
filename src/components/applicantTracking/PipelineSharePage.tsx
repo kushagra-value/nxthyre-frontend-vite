@@ -169,21 +169,28 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
   const handleEventClick = async (eventId: string) => {
   try {
-    setLoadingCandidateDetails(true);  // Reuse existing loading state
+    setLoadingCandidateDetails(true);
+    setShowEventPreview(false);  
     // Fetch event details
     const eventRes = await apiClient.get(`/jobs/interview-events/${eventId}/`);
     const eventData = eventRes.data;
     setSelectedEvent(eventData);
 
     // Fetch candidate details via application
-    await fetchCandidateDetails(eventData.application.toString());
-    setEventCandidateDetails(candidateDetails);  // Reuse existing fetchCandidateDetails
+    const candidateResponse = await apiClient.get(
+      `/jobs/applications/${eventData.application}/kanban-detail/`
+    );
+    const candidateData = candidateResponse.data;
+    setCandidateDetails(candidateData);           // This updates your main candidate state
+    setEventCandidateDetails(candidateData);
+
+    setShowEventPreview(true);
+
   } catch (error) {
     console.error("Error fetching event details:", error);
     showToast.error("Failed to load event details");
   } finally {
     setLoadingCandidateDetails(false);
-    setShowEventPreview(true);
   }
 };
 
@@ -1916,11 +1923,15 @@ const handleCopyProfile = async (applicationId: string) => {
         </div>
       )}
       {showCandidateProfile && renderCandidateProfile()}
-      {showEventPreview && selectedEvent && eventCandidateDetails && (
+      {showEventPreview && selectedEvent && candidateDetails && (
         <EventPreview
           event={selectedEvent}
           candidate={eventCandidateDetails}
-          onClose={() => setShowEventPreview(false)}
+          onClose={() => {
+            setShowEventPreview(false);
+            setSelectedEvent(null);
+            setCandidateDetails(null);
+          }}
         />
       )}
       {showAddEventForm && (
