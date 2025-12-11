@@ -10,7 +10,7 @@ interface EventPreviewProps {
 }
 
 export default function EventPreview({ event, candidate, onClose, isOpen = true }: EventPreviewProps) {
-  if (!isOpen) return null;
+ if (!isOpen || !event || !candidate) return null;
   
   const title = event.title || "Interview Event";
   const description = event.description || "No description provided";

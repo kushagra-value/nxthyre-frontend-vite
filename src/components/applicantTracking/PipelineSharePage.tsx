@@ -172,6 +172,9 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const handleEventClick = async (eventId: string) => {
   try {
     setLoadingCandidateDetails(true);
+    setSelectedEvent(null);
+    setEventCandidateDetails(null);
+    setEventCandidateDetails(null);
 
     const eventRes = await apiClient.get(`/jobs/interview-events/${eventId}/`);
     const eventData = eventRes.data;
@@ -1944,6 +1947,7 @@ const handleCopyProfile = async (applicationId: string) => {
             setShowEventPreview(false);
             setSelectedEvent(null);
             setCandidateDetails(null);
+            setEventCandidateDetails(null);
           }}
         />
       )}
