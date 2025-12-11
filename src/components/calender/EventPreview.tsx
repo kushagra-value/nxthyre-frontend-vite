@@ -44,7 +44,7 @@ export default function EventPreview({ event, candidate, onClose, isOpen = true 
 
   
   return (
-    <div className="fixed inset-y-0 right-0 w-[563px] bg-[#F5F9FB] rounded-l-3xl shadow-2xl overflow-y-auto font-['Gellix',_sans-serif] flex items-center justify-center">
+    <div className="fixed inset-y-0 right-0 w-[700px] bg-[#F5F9FB] rounded-l-3xl shadow-2xl overflow-y-auto font-['Gellix',_sans-serif] flex items-center justify-center">
       <div className="p-8 pt-10 pb-32 relative min-h-full">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
