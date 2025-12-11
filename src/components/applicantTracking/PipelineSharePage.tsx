@@ -169,13 +169,12 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
   const handleEventClick = async (eventId: string) => {
   try {
-    setLoadingCandidateDetails(true);
-    setShowEventPreview(false);  
+    setLoadingCandidateDetails(true); 
     // Fetch event details
     const eventRes = await apiClient.get(`/jobs/interview-events/${eventId}/`);
     const eventData = eventRes.data;
     setSelectedEvent(eventData);
-
+    
     // Fetch candidate details via application
     const candidateResponse = await apiClient.get(
       `/jobs/applications/${eventData.application}/kanban-detail/`
@@ -183,8 +182,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     const candidateData = candidateResponse.data;
     setCandidateDetails(candidateData);           // This updates your main candidate state
     setEventCandidateDetails(candidateData);
-
     setShowEventPreview(true);
+
 
   } catch (error) {
     console.error("Error fetching event details:", error);
@@ -1923,7 +1922,7 @@ const handleCopyProfile = async (applicationId: string) => {
         </div>
       )}
       {showCandidateProfile && renderCandidateProfile()}
-      {showEventPreview && selectedEvent && candidateDetails && (
+      {showEventPreview && selectedEvent (
         <EventPreview
           event={selectedEvent}
           candidate={eventCandidateDetails}
