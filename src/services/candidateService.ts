@@ -562,8 +562,6 @@ class CandidateService {
         requestBody.search_type = "semantic";
       } else if (filters.keywords?.length > 0) {
         requestBody.search_type = "keyword";
-      } else if (filters.booleanSearch) {
-        requestBody.search_type = "boolean";
       }
 
       const response = await apiClient.post(
