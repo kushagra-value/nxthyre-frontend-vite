@@ -76,6 +76,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   pipelineName,
   onBack,
 }) => {
+
+  const [assessmentAppId, setAssessmentAppId] = useState<string | null>(null);
   const { pipelineId } = useParams<{ pipelineId: string }>();
   const { isAuthenticated, loading: authLoading } = useAuthContext();
   const [isFetching, setIsFetching] = useState(false);
@@ -169,22 +171,22 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
   const handleEventClick = async (eventId: string) => {
   try {
-    setLoadingCandidateDetails(true); 
-    // Fetch event details
+    setLoadingCandidateDetails(true);
+
     const eventRes = await apiClient.get(`/jobs/interview-events/${eventId}/`);
     const eventData = eventRes.data;
     setSelectedEvent(eventData);
-    
-    // Fetch candidate details via application
+
     const candidateResponse = await apiClient.get(
       `/jobs/applications/${eventData.application}/kanban-detail/`
     );
     const candidateData = candidateResponse.data;
-    setCandidateDetails(candidateData);           // This updates your main candidate state
+
+    // We only need candidateDetails for the preview → keep it separate
+    setCandidateDetails(candidateData);
     setEventCandidateDetails(candidateData);
+
     setShowEventPreview(true);
-
-
   } catch (error) {
     console.error("Error fetching event details:", error);
     showToast.error("Failed to load event details");
@@ -410,38 +412,40 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   };
 
   useEffect(() => {
-    if (candidateDetails) {
-      const fetchAssessmentResults = async () => {
-        try {
-          const res = await candidateService.getAssessmentResults(
-            Number(jobId),
-            candidateDetails.candidate.id
-          );
+    if (!assessmentAppId || !candidateDetails) return;const fetchAssessmentResults = async () => {
+    try {
+      const res = await candidateService.getAssessmentResults(
+        Number(jobId),
+        candidateDetails.candidate.id
+      );
 
-          const questions = res.problem_results.map((pr: any) => ({
-            name: pr.problem.name,
-            question: pr.problem.description,
-            language: pr.language || "N/A",
-            difficulty: getDifficultyLevel(pr.problem.difficulty),
-            status: mapStatus(pr.status),
-            score: pr.score,
-          }));
-          setCodingQuestions(questions);
-          const completedDate = new Date(res.completed_at);
-          setDate(completedDate.toLocaleDateString("en-GB"));
+      const questions = res.problem_results.map((pr: any) => ({
+        name: pr.problem.name,
+        question: pr.problem.description,
+        language: pr.language || "N/A",
+        difficulty: getDifficultyLevel(pr.problem.difficulty),
+        status: mapStatus(pr.status),
+        score: pr.score,
+      }));
 
-          const total_questions = res.problem_results.length;
-          setTotalQuestions(total_questions);
-
-          setAssessmentResults(res.data);
-        } catch (error) {
-          console.error("Error fetching assessment results:", error);
-          showToast.error("Failed to load assessment results");
-        }
-      };
-      fetchAssessmentResults();
+      setCodingQuestions(questions);
+      const completedDate = new Date(res.completed_at);
+      setDate(completedDate.toLocaleDateString("en-GB"));
+      setTotalQuestions(res.problem_results.length);
+      setAssessmentResults(res.data);
+    } catch (error) {
+      console.error("Error fetching assessment results:", error);
+      showToast.error("Failed to load assessment results");
     }
-  }, [candidateDetails, jobId]);
+  };
+
+  fetchAssessmentResults();
+
+  // Clean-up: when the profile is closed we clear the trigger
+  return () => {
+    setAssessmentAppId(null);
+  };
+}, [assessmentAppId, candidateDetails, jobId]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -567,6 +571,7 @@ const ArchiveIcon = () => (
     setSelectedCandidate(candidate);
     setShowCandidateProfile(true);
     setActiveProfileTab("profile");
+    setAssessmentAppId(candidate.id);
     fetchCandidateDetails(candidate.id);
   };
 
@@ -617,6 +622,15 @@ const ArchiveIcon = () => (
 
 // UPDATED: Add state to track which candidates are being copied (for per-button spinner)
 const [copyingCandidates, setCopyingCandidates] = useState<Set<string>>(new Set());
+
+const handleCloseProfile = () => {
+  setShowCandidateProfile(false);
+  setCandidateDetails(null);
+  setAssessmentAppId(null);          // ← prevents the effect from running again
+  setCodingQuestions([]);
+  setTotalQuestions(0);
+  setDate("");
+};
 
 const handleCopyProfile = async (applicationId: string) => {
   // UPDATED: Set loading state for this candidate
@@ -876,7 +890,7 @@ const handleCopyProfile = async (applicationId: string) => {
           {/* Header Section */}
           <div className="flex items-center justify-between mb-6">
             <button 
-              onClick={() => setShowCandidateProfile(false)}
+              onClick={() => handleCloseProfile()}
               className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
             >
               <BackArrowIcon />
@@ -1922,7 +1936,7 @@ const handleCopyProfile = async (applicationId: string) => {
         </div>
       )}
       {showCandidateProfile && renderCandidateProfile()}
-      {showEventPreview && selectedEvent (
+      {showEventPreview && selectedEvent && candidateDetails && (
         <EventPreview
           event={selectedEvent}
           candidate={eventCandidateDetails}
