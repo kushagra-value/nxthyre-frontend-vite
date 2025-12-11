@@ -560,8 +560,10 @@ class CandidateService {
       // Only set explicitly if semanticSearch is true; otherwise, backend defaults
       if (filters.semanticSearch) {
         requestBody.search_type = "semantic";
-      } else if (filters.keywords?.length > 0 || filters.boolQuery?.trim()) {
+      } else if (filters.keywords?.length > 0) {
         requestBody.search_type = "keyword";
+      } else if (filters.booleanSearch) {
+        requestBody.search_type = "boolean";
       }
 
       const response = await apiClient.post(
