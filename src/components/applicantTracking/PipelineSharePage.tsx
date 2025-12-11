@@ -172,23 +172,22 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const handleEventClick = async (eventId: string) => {
   try {
     setLoadingCandidateDetails(true);
-    setSelectedEvent(null);
-    setEventCandidateDetails(null);
 
     const eventRes = await apiClient.get(`/jobs/interview-events/${eventId}/`);
     const eventData = eventRes.data;
-    setSelectedEvent(eventData);
-    
-    const candidateResponse = await apiClient.get(
+
+    const candidateRes = await apiClient.get(
       `/jobs/applications/${eventData.application}/kanban-detail/`
     );
-    const candidateData = candidateResponse.data;
-    
-    // We only need candidateDetails for the preview → keep it separate
-    setCandidateDetails(candidateData);
-    setEventCandidateDetails(candidateData);
-    setShowEventPreview(true);
+    const candidateData = candidateRes.data;
 
+    // Set everything first
+    setSelectedEvent(eventData);
+    setEventCandidateDetails(candidateData);
+    setCandidateDetails(candidateData);
+
+    // Then open modal – now data is guaranteed to be there
+    setShowEventPreview(true);
   } catch (error) {
     console.error("Error fetching event details:", error);
     showToast.error("Failed to load event details");
