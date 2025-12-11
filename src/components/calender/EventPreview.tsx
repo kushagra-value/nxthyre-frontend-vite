@@ -9,7 +9,8 @@ interface EventPreviewProps {
 }
 
 export default function EventPreview({ event, candidate, onClose, isOpen = true }: EventPreviewProps) {
- if (!isOpen) return null;
+  console.log("EventPreview rendered", { isOpen, event, candidate }); // ← ADD THIS
+  if (!isOpen) return null;
 
   if (!event || !candidate) {
     console.warn("EventPreview rendered without data:", { event, candidate });
