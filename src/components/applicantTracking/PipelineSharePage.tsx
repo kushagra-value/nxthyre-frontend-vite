@@ -187,12 +187,12 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     setCandidateDetails(candidateData);
 
     // Then open modal – now data is guaranteed to be there
-    setShowEventPreview(true);
   } catch (error) {
     console.error("Error fetching event details:", error);
     showToast.error("Failed to load event details");
   } finally {
     setLoadingCandidateDetails(false);
+    setShowEventPreview(true);
   }
 };
 
