@@ -3,6 +3,7 @@ import { EventCard } from './EventCard';
 
 interface WeekViewProps {
   events: CalendarEvent[];
+  onEventClick?: (eventId: string) => void;
   currentDate: Date;
   onCellClick: (date: string, time?: string) => void;  // UPDATED
 }
@@ -35,7 +36,7 @@ const getWeekDates = (date: Date) => {
   return weekDates;
 };
 
-export const WeekView = ({ events, currentDate, onCellClick }: WeekViewProps) => {
+export const WeekView = ({ events, currentDate,onEventClick, onCellClick }: WeekViewProps) => {
   const weekDates = getWeekDates(currentDate);
 
   const getEventPosition = (event: CalendarEvent) => {
@@ -139,7 +140,7 @@ export const WeekView = ({ events, currentDate, onCellClick }: WeekViewProps) =>
                           height: `${height}px`,
                         }}
                       >
-                        <EventCard event={event} />
+                        <EventCard event={event} onClick={() => onEventClick?.(event.id)} />
                       </div>
                     );
                   })}

@@ -4,7 +4,8 @@ import { EventCard } from './EventCard';
 interface DayViewProps {
   events: CalendarEvent[];
   currentDate: Date;
-  onCellClick: (date: string, time?: string) => void;  // UPDATED
+  onCellClick: (date: string, time?: string) => void;  
+  onEventClick?: (eventId: string) => void;
 }
 
 const timeSlots = [
@@ -21,7 +22,7 @@ const timeSlots = [
   "07 pm",
 ];
 
-export const DayView = ({ events, currentDate, onCellClick }: DayViewProps) => {
+export const DayView = ({ events, currentDate, onEventClick,onCellClick }: DayViewProps) => {
   const dateString = currentDate.toISOString().split('T')[0];
   const dayEvents = events.filter((e) => e.date === dateString);
 
@@ -110,7 +111,7 @@ export const DayView = ({ events, currentDate, onCellClick }: DayViewProps) => {
                       height: `${height}px`,
                     }}
                   >
-                    <EventCard event={event} />
+                    <EventCard event={event} onClick={() => onEventClick?.(event.id)} />
                   </div>
                 );
               })}

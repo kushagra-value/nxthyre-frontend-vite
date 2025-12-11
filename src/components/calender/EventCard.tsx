@@ -4,9 +4,10 @@ import { STAGE_COLORS, getColorFromString } from '../../utils/stageColors';
 
 interface EventCardProps {
   event: CalendarEvent;
+  onClick?: () => void;
 }
 
-export const EventCard = ({ event }: EventCardProps) => {
+export const EventCard = ({ event, onClick }: EventCardProps) => {
   // Get config: predefined or auto-generated
   const config = STAGE_COLORS[event.type] || {
     bg: getColorFromString(event.type) + '20',        // e.g. #8B5CF620
@@ -17,7 +18,8 @@ export const EventCard = ({ event }: EventCardProps) => {
 
   return (
     <div
-      className="m-0.5 rounded-md overflow-hidden relative h-full shadow-sm hover:shadow transition-shadow"
+      onClick={onClick}
+      className="m-0.5 rounded-md overflow-hidden relative h-full shadow-sm hover:shadow transition-shadow cursor-pointer" 
       style={{ backgroundColor: config.bg }}
     >
       {/* Left color bar */}

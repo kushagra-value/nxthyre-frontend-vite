@@ -42,6 +42,7 @@ import { useParams } from "react-router-dom";
 import { Calender } from '../calender/Calender';
 import { EventForm } from '../calender/EventForm';
 import { CalendarEvent } from '../../data/mockEvents';
+import EventPreview from "../calender/EventPreview";
 
 
 interface DraggedCandidate {
@@ -104,6 +105,10 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
   const [pipelineStages, setPipelineStages] = useState<any[]>([]); // NEW
   const [stagesLoading, setStagesLoading] = useState(true);
+  const [showEventPreview, setShowEventPreview] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [eventCandidateDetails, setEventCandidateDetails] = useState<any>(null);
+
   const [codingQuestions, setCodingQuestions] = useState<
       {
         name: string;
@@ -161,6 +166,26 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       setHighlightedCandidateId(null);
     }
   };
+
+  const handleEventClick = async (eventId: string) => {
+  try {
+    setLoadingCandidateDetails(true);  // Reuse existing loading state
+    // Fetch event details
+    const eventRes = await apiClient.get(`/jobs/interview-events/${eventId}/`);
+    const eventData = eventRes.data;
+    setSelectedEvent(eventData);
+
+    // Fetch candidate details via application
+    await fetchCandidateDetails(eventData.application.toString());
+    setEventCandidateDetails(candidateDetails);  // Reuse existing fetchCandidateDetails
+  } catch (error) {
+    console.error("Error fetching event details:", error);
+    showToast.error("Failed to load event details");
+  } finally {
+    setLoadingCandidateDetails(false);
+    setShowEventPreview(true);
+  }
+};
 
   const handleSelectSuggestion = (candidate: Candidate) => {
     setHighlightedCandidateId(candidate.id);
@@ -1637,6 +1662,7 @@ const handleCopyProfile = async (applicationId: string) => {
                     setSelectedEventTime(time || "09:00");
                     setShowAddEventForm(true);
                   }}
+                  onEventClick={handleEventClick}
                   pipelineStages={pipelineStages.filter(s => {
                     const order = s.sort_order;
                     const shortlistedOrder = pipelineStages.find(st => st.slug === 'shortlisted')?.sort_order || 5;
@@ -1890,58 +1916,64 @@ const handleCopyProfile = async (applicationId: string) => {
         </div>
       )}
       {showCandidateProfile && renderCandidateProfile()}
-
+      {showEventPreview && selectedEvent && eventCandidateDetails && (
+        <EventPreview
+          event={selectedEvent}
+          candidate={eventCandidateDetails}
+          onClose={() => setShowEventPreview(false)}
+        />
+      )}
       {showAddEventForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
           <div
             className="flex-1"
             onClick={() => setShowAddEventForm(false)}
           />
-          
-            <EventForm
+          <EventForm
             isOpen={showAddEventForm}
             onClose={() => setShowAddEventForm(false)}
-           onSubmit={async (eventData) => {
-              try {
-                const payload = {
-                  application: Number(eventData.applicationId), // We'll add this field next
-                  title: eventData.title || `${eventData.attendee} - Interview`,
-                  start_at: `${eventData.date}T${eventData.startTime}:00Z`,
-                  end_at: `${eventData.date}T${eventData.endTime}:00Z`,
-                  location_type: "VIRTUAL",
-                  virtual_conference_url: "https://meet.google.com/placeholder-tbd",
-                  status: "SCHEDULED",
-                  timezone: "Asia/Kolkata",
-                  reminder_preferences: {
-                    candidate: [24],
-                    interviewers: [2],
-                  },
-                };
+            onSubmit={async (eventData) => {
+                try {
+                  const payload = {
+                    application: Number(eventData.applicationId), // We'll add this field next
+                    title: eventData.title || `${eventData.attendee} - Interview`,
+                    start_at: `${eventData.date}T${eventData.startTime}:00Z`,
+                    end_at: `${eventData.date}T${eventData.endTime}:00Z`,
+                    location_type: "VIRTUAL",
+                    virtual_conference_url: "https://meet.google.com/placeholder-tbd",
+                    status: "SCHEDULED",
+                    timezone: "Asia/Kolkata",
+                    reminder_preferences: {
+                      candidate: [24],
+                      interviewers: [2],
+                    },
+                  };
 
-                await apiClient.post('/jobs/interview-events/', payload);
-                showToast.success("Interview scheduled successfully!");
+                  await apiClient.post('/jobs/interview-events/', payload);
+                  showToast.success("Interview scheduled successfully!");
 
-                // Trigger calendar refresh
-                setCalendarRefreshTrigger(prev => prev + 1);
-              } catch (err: any) {
-                const msg = err.response?.data?.detail || "Failed to schedule interview";
-                showToast.error(msg);
-              } finally {
-                setShowAddEventForm(false);
-              }
-            }}
-            initialDate={selectedEventDate}
-            initialTime={selectedEventTime}
-            pipelineStages={pipelineStages.filter(s => {
-              const order = s.sort_order;
-              const shortlistedOrder = pipelineStages.find(st => st.slug === 'shortlisted')?.sort_order || 5;
-              return s.sort_order > shortlistedOrder && s.slug !== 'archives';
-            })}
-            stagesLoading={stagesLoading}
+                  // Trigger calendar refresh
+                  setCalendarRefreshTrigger(prev => prev + 1);
+                } catch (err: any) {
+                  const msg = err.response?.data?.detail || "Failed to schedule interview";
+                  showToast.error(msg);
+                } finally {
+                  setShowAddEventForm(false);
+                }
+              }}
+              initialDate={selectedEventDate}
+              initialTime={selectedEventTime}
+              pipelineStages={pipelineStages.filter(s => {
+                const order = s.sort_order;
+                const shortlistedOrder = pipelineStages.find(st => st.slug === 'shortlisted')?.sort_order || 5;
+                return s.sort_order > shortlistedOrder && s.slug !== 'archives';
+              })}
+              stagesLoading={stagesLoading}
           />
           
         </div>
       )}
+
     </>
   );
 };

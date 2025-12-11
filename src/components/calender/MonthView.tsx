@@ -4,7 +4,8 @@ import { getColorFromString } from '../../utils/stageColors';
 interface MonthViewProps {
   events: CalendarEvent[];
   currentDate: Date;
-  onCellClick: (date: string, time?: string) => void;  // UPDATED
+  onCellClick: (date: string, time?: string) => void;  
+  onEventClick?: (eventId: string) => void;
 }
 
 const getEventColor = (type: string): string => {
@@ -43,7 +44,7 @@ const getDaysInMonth = (date: Date) => {
 };
 
 
-export const MonthView = ({ events, currentDate, onCellClick }: MonthViewProps) => {
+export const MonthView = ({ events, currentDate,onEventClick, onCellClick }: MonthViewProps) => {
   const days = getDaysInMonth(currentDate);
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -106,6 +107,10 @@ export const MonthView = ({ events, currentDate, onCellClick }: MonthViewProps) 
                           <div
                             key={event.id}
                             className="text-xs p-1.5 rounded truncate border-l-4"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEventClick?.(event.id);
+                            }}
                             style={{
                               backgroundColor: bgColor,
                               borderLeftColor: color,

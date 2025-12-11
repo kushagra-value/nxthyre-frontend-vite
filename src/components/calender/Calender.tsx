@@ -11,11 +11,12 @@ import { useParams } from 'react-router-dom';
 
 interface CalenderProps {
   onCellClick: (date: string, time?: string) => void;
+  onEventClick?: (eventId: string) => void;
   pipelineStages?: { id: number; name: string; slug: string; sort_order: number }[];
   stagesLoading?: boolean;
 }
 
-export const Calender: React.FC<CalenderProps> = ({onCellClick,pipelineStages,stagesLoading,}) => {
+export const Calender: React.FC<CalenderProps> = ({onCellClick, onEventClick, pipelineStages,stagesLoading,}) => {
   const { pipelineId } = useParams<{ pipelineId: string }>();
   const [view, setView] = useState<'day' | 'week' | 'month'>('week');
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -158,6 +159,7 @@ export const Calender: React.FC<CalenderProps> = ({onCellClick,pipelineStages,st
             events={events}
             currentDate={currentDate}
             onCellClick={onCellClick}
+            onEventClick={onEventClick}
           />
         )}
         {view === 'week' && (
@@ -165,6 +167,7 @@ export const Calender: React.FC<CalenderProps> = ({onCellClick,pipelineStages,st
             events={events}
             currentDate={currentDate}
             onCellClick={onCellClick}
+            onEventClick={onEventClick}
           />
         )}
         {view === 'month' && (
@@ -172,6 +175,7 @@ export const Calender: React.FC<CalenderProps> = ({onCellClick,pipelineStages,st
             events={events}
             currentDate={currentDate}
             onCellClick={onCellClick}
+            onEventClick={onEventClick}
           />
         )}
       </div>
