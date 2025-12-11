@@ -1936,7 +1936,7 @@ const handleCopyProfile = async (applicationId: string) => {
         </div>
       )}
       {showCandidateProfile && renderCandidateProfile()}
-      {showEventPreview && selectedEvent && eventCandidateDetails && (
+      {showEventPreview && (
         <EventPreview
           event={selectedEvent}
           candidate={eventCandidateDetails}
