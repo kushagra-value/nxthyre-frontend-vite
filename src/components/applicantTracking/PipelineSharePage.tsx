@@ -174,8 +174,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     setLoadingCandidateDetails(true);
     setSelectedEvent(null);
     setEventCandidateDetails(null);
-    setEventCandidateDetails(null);
 
+    setShowEventPreview(true);
     const eventRes = await apiClient.get(`/jobs/interview-events/${eventId}/`);
     const eventData = eventRes.data;
     setSelectedEvent(eventData);
@@ -189,7 +189,6 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     setCandidateDetails(candidateData);
     setEventCandidateDetails(candidateData);
 
-    setShowEventPreview(true);
   } catch (error) {
     console.error("Error fetching event details:", error);
     showToast.error("Failed to load event details");

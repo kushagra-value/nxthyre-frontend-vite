@@ -10,8 +10,16 @@ interface EventPreviewProps {
 }
 
 export default function EventPreview({ event, candidate, onClose, isOpen = true }: EventPreviewProps) {
- if (!isOpen || !event || !candidate) return null;
-  
+ if (!isOpen) return null;
+
+ if (!event || !candidate) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
+        <div className="text-gray-600">Loading event details...</div>
+      </div>
+    );
+  }
+
   const title = event.title || "Interview Event";
   const description = event.description || "No description provided";
   const startDate = new Date(event.start_at).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
