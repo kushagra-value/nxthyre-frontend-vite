@@ -1939,7 +1939,9 @@ const handleCopyProfile = async (applicationId: string) => {
       )}
       {showCandidateProfile && renderCandidateProfile()}
       {showEventPreview && (
-        <EventPreview
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
+          <div className="ml-auto">
+            <EventPreview
           event={selectedEvent}
           candidate={eventCandidateDetails}
           onClose={() => {
@@ -1949,6 +1951,9 @@ const handleCopyProfile = async (applicationId: string) => {
             setEventCandidateDetails(null);
           }}
         />
+          </div>
+        </div>
+        
       )}
       {showAddEventForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">

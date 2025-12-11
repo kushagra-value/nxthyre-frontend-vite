@@ -1,4 +1,3 @@
-import React from 'react';
 import apiClient from '../../services/api';
 import { showToast } from '../../utils/toast';
 
@@ -45,8 +44,8 @@ export default function EventPreview({ event, candidate, onClose, isOpen = true 
 
   
   return (
-    <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
-      <div className="bg-white rounded-3xl shadow-lg w-full max-w-2xl">
+    <div className="fixed inset-y-0 right-0 w-[563px] bg-[#F5F9FB] rounded-l-3xl shadow-2xl overflow-y-auto font-['Gellix',_sans-serif] flex items-center justify-center">
+      <div className="p-8 pt-10 pb-32 relative min-h-full">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-start justify-between">
