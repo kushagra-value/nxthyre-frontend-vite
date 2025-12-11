@@ -175,19 +175,19 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     setSelectedEvent(null);
     setEventCandidateDetails(null);
 
-    setShowEventPreview(true);
     const eventRes = await apiClient.get(`/jobs/interview-events/${eventId}/`);
     const eventData = eventRes.data;
     setSelectedEvent(eventData);
-
+    
     const candidateResponse = await apiClient.get(
       `/jobs/applications/${eventData.application}/kanban-detail/`
     );
     const candidateData = candidateResponse.data;
-
+    
     // We only need candidateDetails for the preview → keep it separate
     setCandidateDetails(candidateData);
     setEventCandidateDetails(candidateData);
+    setShowEventPreview(true);
 
   } catch (error) {
     console.error("Error fetching event details:", error);
@@ -1470,7 +1470,7 @@ const handleCopyProfile = async (applicationId: string) => {
           
           
           <div className="relative bg-white rounded-xl shadow-lg px-8 py-6 font-['Gellix',_sans-serif]">
-            <button className="absolute left-4 top-1/2 -translate-y-1/2">
+            <button onClick={handleGoToDashboard} className="absolute left-4 top-1/2 -translate-y-1/2">
               <ChevronLeft className="w-7 h-7 text-gray-600" />
             </button>
             <div className="flex items-center justify-between pl-8">
