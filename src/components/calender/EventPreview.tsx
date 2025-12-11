@@ -26,7 +26,7 @@ export default function EventPreview({ event, candidate, onClose, isOpen = true 
   const startDate = new Date(event.start_at).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   const startTime = new Date(event.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   const endTime = new Date(event.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-  const location = event.location_type === 'VIRTUAL' ? event.virtual_conference_url : event.location_details || 'TBD';
+  const location = event.location_type === 'VIRTUAL' ? "Virtual "+ event.virtual_conference_url : "Hybrid" + event.location_details || 'TBD';
   const attachment = event.attachments_summary?.[0];
 
   const handleDelete = async () => {
@@ -72,10 +72,10 @@ export default function EventPreview({ event, candidate, onClose, isOpen = true 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-semibold">
-                {candidate.full_name?.split(' ').map((n: any[]) => n[0]).join('') || 'NP'}
+                {candidate.candidate.full_name?.split(' ').map((n: any[]) => n[0]).join('') || 'NP'}
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">{candidate.full_name || candidate.candidate_name}</h2>
+                <h2 className="text-xl font-semibold text-gray-800">{candidate.candidate.full_name}</h2>
                 <p className="text-gray-500">Candidate</p>
               </div>
             </div>
