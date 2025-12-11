@@ -33,15 +33,15 @@ import {
    File,
    ChevronLeft
 } from "lucide-react";
-import { showToast } from "../utils/toast";
-import apiClient from "../services/api"; 
-import AddNewStageForm from '../components/AddNewStageForm';
-import { useAuthContext } from "../context/AuthContext"; 
-import candidateService from "../services/candidateService";
+import { showToast } from "../../utils/toast";
+import apiClient from "../../services/api"; 
+import AddNewStageForm from './AddNewStageForm';
+import { useAuthContext } from "../../context/AuthContext"; 
+import candidateService from "../../services/candidateService";
 import { useParams } from "react-router-dom";
-import { Calender } from './Calender';
-import { EventForm } from './EventForm';
-import { CalendarEvent } from '../data/mockEvents';
+import { Calender } from '../calender/Calender';
+import { EventForm } from '../calender/EventForm';
+import { CalendarEvent } from '../../data/mockEvents';
 
 
 interface DraggedCandidate {
@@ -102,7 +102,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [selectedEventDate, setSelectedEventDate] = useState<string>('');
   const [selectedEventTime, setSelectedEventTime] = useState<string>('');
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
-
+  const [pipelineStages, setPipelineStages] = useState<any[]>([]); // NEW
+  const [stagesLoading, setStagesLoading] = useState(true);
   const [codingQuestions, setCodingQuestions] = useState<
       {
         name: string;
@@ -136,76 +137,78 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   
   const [showAddStageForm, setShowAddStageForm] = useState(false);
 
-const handleSearch = () => {
-  if (!searchQuery.trim()) return;
-  let found: Candidate | null = null;
-  Object.keys(stageCandidates).forEach((stage) => {
-    const cand = stageCandidates[stage].find(
-      (c: Candidate) => c.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    if (cand) found = cand;
-  });
-  if (found) {
-    setHighlightedCandidateId(found.id);
+  const [calendarRefreshTrigger, setCalendarRefreshTrigger] = useState(0);
+
+  const handleSearch = () => {
+    if (!searchQuery.trim()) return;
+    let found: Candidate | null = null;
+    Object.keys(stageCandidates).forEach((stage) => {
+      const cand = stageCandidates[stage].find(
+        (c: Candidate) => c.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      if (cand) found = cand;
+    });
+    if (found) {
+      setHighlightedCandidateId(found.id);
+      setTimeout(() => {
+        const el = document.getElementById(`candidate-${found!.id}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+        }
+      }, 100);
+    } else {
+      showToast.error("No candidate found");
+      setHighlightedCandidateId(null);
+    }
+  };
+
+  const handleSelectSuggestion = (candidate: Candidate) => {
+    setHighlightedCandidateId(candidate.id);
     setTimeout(() => {
-      const el = document.getElementById(`candidate-${found!.id}`);
+      const el = document.getElementById(`candidate-${candidate.id}`);
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
       }
     }, 100);
-  } else {
-    showToast.error("No candidate found");
-    setHighlightedCandidateId(null);
-  }
-};
-
-const handleSelectSuggestion = (candidate: Candidate) => {
-  setHighlightedCandidateId(candidate.id);
-  setTimeout(() => {
-    const el = document.getElementById(`candidate-${candidate.id}`);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
-    }
-  }, 100);
-  setSuggestions([]);
-  setSearchQuery(candidate.name);
-  setSelectedSuggestionIndex(-1);
-};
-
-
-const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    if (suggestions.length > 0 && selectedSuggestionIndex >= 0) {
-      handleSelectSuggestion(suggestions[selectedSuggestionIndex]);
-    } else {
-      handleSearch();
-    }
-  } else if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    setSelectedSuggestionIndex(prev => 
-      prev < suggestions.length - 1 ? prev + 1 : 0
-    );
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    setSelectedSuggestionIndex(prev => 
-      prev > 0 ? prev - 1 : suggestions.length - 1
-    );
-  } else if (e.key === 'Escape') {
     setSuggestions([]);
+    setSearchQuery(candidate.name);
     setSelectedSuggestionIndex(-1);
-    setSearchQuery('');
-  } else if (e.key === 'Tab') {
-    if (suggestions.length > 0 && selectedSuggestionIndex === -1) {
-      setSelectedSuggestionIndex(0);
-    }
-  }
-};
+  };
 
-const handleCopyLink = () => {
-  navigator.clipboard.writeText(`https://app.nxthyre.com/pipelines/${pipelineId}`);
-  showToast.success("Pipeline link copied to clipboard");
-};
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (suggestions.length > 0 && selectedSuggestionIndex >= 0) {
+        handleSelectSuggestion(suggestions[selectedSuggestionIndex]);
+      } else {
+        handleSearch();
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedSuggestionIndex(prev => 
+        prev < suggestions.length - 1 ? prev + 1 : 0
+      );
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedSuggestionIndex(prev => 
+        prev > 0 ? prev - 1 : suggestions.length - 1
+      );
+    } else if (e.key === 'Escape') {
+      setSuggestions([]);
+      setSelectedSuggestionIndex(-1);
+      setSearchQuery('');
+    } else if (e.key === 'Tab') {
+      if (suggestions.length > 0 && selectedSuggestionIndex === -1) {
+        setSelectedSuggestionIndex(0);
+      }
+    }
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(`https://app.nxthyre.com/pipelines/${pipelineId}`);
+    showToast.success("Pipeline link copied to clipboard");
+  };
   
   const getDifficultyLevel = (diff: any) => {
     const num = parseInt(diff);
@@ -610,6 +613,23 @@ const handleCopyProfile = async (applicationId: string) => {
     });
   }
 };
+
+  useEffect(() => {
+      const fetchStages = async () => {
+        try {
+          const res = await apiClient.get(`/jobs/applications/stages/?job_id=${jobId}`);
+          // Sort by sort_order just in case
+          const sorted = res.data.sort((a: any, b: any) => a.sort_order - b.sort_order);
+          setPipelineStages(sorted);
+        } catch (err) {
+          console.error("Failed to load pipeline stages", err);
+          showToast.error("Could not load interview rounds");
+        } finally {
+          setStagesLoading(false);
+        }
+      };
+      if (jobId) fetchStages();
+  }, [jobId]);
 
 
   const renderCandidateCard = (candidate: any, stage: string) => (
@@ -1359,6 +1379,7 @@ const handleCopyProfile = async (applicationId: string) => {
     return <div>Loading pipeline data...</div>;
   }
 
+  
   return (
     <>
       <div className="bg-[#FFFFFF]">
@@ -1610,11 +1631,18 @@ const handleCopyProfile = async (applicationId: string) => {
             ): activeTab === "calendar" ? (
               <div className="relative">
                 <Calender
+                  key={calendarRefreshTrigger}
                   onCellClick={(date: string, time?: string) => {
                     setSelectedEventDate(date);
                     setSelectedEventTime(time || "09:00");
                     setShowAddEventForm(true);
                   }}
+                  pipelineStages={pipelineStages.filter(s => {
+                    const order = s.sort_order;
+                    const shortlistedOrder = pipelineStages.find(st => st.slug === 'shortlisted')?.sort_order || 5;
+                    return s.sort_order > shortlistedOrder && s.slug !== 'archives';
+                  })}
+                  stagesLoading={stagesLoading}
                 />
               </div>
             ):
@@ -1871,16 +1899,46 @@ const handleCopyProfile = async (applicationId: string) => {
           />
           
             <EventForm
-              isOpen={showAddEventForm}
-              onClose={() => setShowAddEventForm(false)}
-              onSubmit={(event) => {
-                // Optional: emit event or save via API
-                console.log("New event created:", event);
+            isOpen={showAddEventForm}
+            onClose={() => setShowAddEventForm(false)}
+           onSubmit={async (eventData) => {
+              try {
+                const payload = {
+                  application: Number(eventData.applicationId), // We'll add this field next
+                  title: eventData.title || `${eventData.attendee} - Interview`,
+                  start_at: `${eventData.date}T${eventData.startTime}:00Z`,
+                  end_at: `${eventData.date}T${eventData.endTime}:00Z`,
+                  location_type: "VIRTUAL",
+                  virtual_conference_url: "https://meet.google.com/placeholder-tbd",
+                  status: "SCHEDULED",
+                  timezone: "Asia/Kolkata",
+                  reminder_preferences: {
+                    candidate: [24],
+                    interviewers: [2],
+                  },
+                };
+
+                await apiClient.post('/jobs/interview-events/', payload);
+                showToast.success("Interview scheduled successfully!");
+
+                // Trigger calendar refresh
+                setCalendarRefreshTrigger(prev => prev + 1);
+              } catch (err: any) {
+                const msg = err.response?.data?.detail || "Failed to schedule interview";
+                showToast.error(msg);
+              } finally {
                 setShowAddEventForm(false);
-              }}
-              initialDate={selectedEventDate}
-              initialTime={selectedEventTime}
-            />
+              }
+            }}
+            initialDate={selectedEventDate}
+            initialTime={selectedEventTime}
+            pipelineStages={pipelineStages.filter(s => {
+              const order = s.sort_order;
+              const shortlistedOrder = pipelineStages.find(st => st.slug === 'shortlisted')?.sort_order || 5;
+              return s.sort_order > shortlistedOrder && s.slug !== 'archives';
+            })}
+            stagesLoading={stagesLoading}
+          />
           
         </div>
       )}

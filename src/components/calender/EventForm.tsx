@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { X, Calendar, Clock, MapPin, Briefcase, User } from 'lucide-react';
-import { CalendarEvent } from '../data/mockEvents';
+import { CalendarEvent } from '../../data/mockEvents';
+import apiClient from '../../services/api';
 
 interface EventFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (event: Omit<CalendarEvent, 'id'>) => void;
+  onSubmit: (event: Omit<CalendarEvent, 'id'> & { applicationId: string }) => void;
   initialDate?: string;
   initialTime?: string;
+  pipelineStages?: { id: number; name: string; slug: string; sort_order: number }[];
+  stagesLoading?: boolean;
 }
 
 export const EventForm = ({
@@ -16,31 +19,78 @@ export const EventForm = ({
   onSubmit,
   initialDate,
   initialTime,
+  pipelineStages,
+  stagesLoading,
 }: EventFormProps) => {
+
   const [formData, setFormData] = useState({
     title: '',
     attendee: '',
     location: '',
+    stageId: '' as string | number,
     type: 'first-round' as CalendarEvent['type'],
     date: initialDate || new Date().toISOString().split('T')[0],
     startTime: initialTime || '09:00',
     endTime: '10:00',
+    applicationId: '', // NEW
   });
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      title: formData.title || formData.attendee,
-      attendee: formData.attendee,
-      type: formData.type,
-      startTime: formData.startTime,
-      endTime: formData.endTime,
-      date: formData.date,
-      confirmed: true,
-    });
-    onClose();
+
+    if (!formData.applicationId?.trim()) {
+      alert("Application ID is required");
+      return;
+    }
+    if (!formData.stageId) {
+      alert("Please select an interview round");
+      return;
+    }
+
+    const startDateTime = `${formData.date}T${formData.startTime}:00Z`;
+    const endDateTime = `${formData.date}T${formData.endTime}:00Z`;
+
+    const payload = {
+      application: Number(formData.applicationId),
+      title: formData.title || `${formData.attendee} - Interview`,
+      stage: Number(formData.stageId),
+      start_at: startDateTime,
+      end_at: endDateTime,
+      location_type: "VIRTUAL", // You can make this dynamic later
+      virtual_conference_url: "https://meet.google.com/placeholder", // Replace later
+      status: "SCHEDULED",
+      timezone: "Asia/Kolkata", // Or detect from browser
+      participants: [],
+      reminder_preferences: {
+        candidate: [24], // 24 hours before
+        interviewers: [2] // 2 hours before
+      }
+    };
+
+    try {
+      const response = await apiClient.post('/jobs/interview-events/', payload);
+      
+      // Trigger parent refresh or toast
+      onSubmit({
+        title: formData.title || formData.attendee,
+        attendee: formData.attendee,
+        type: formData.type,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        date: formData.date,
+        confirmed: true,
+        applicationId: formData.applicationId, 
+      });
+
+      } catch (err: any) {
+      console.error("Failed to create interview event:", err);
+      const msg = err.response?.data?.detail || "Failed to schedule interview";
+      alert(msg);
+    } finally {
+      handleClose();
+    }
   };
 
   const handleClose = () => {
@@ -48,10 +98,12 @@ export const EventForm = ({
       title: '',
       attendee: '',
       location: '',
+      stageId: '',
       type: 'first-round',
       date: initialDate || new Date().toISOString().split('T')[0],
       startTime: initialTime || '09:00',
       endTime: '10:00',
+      applicationId:''
     });
     onClose();
   };
@@ -110,17 +162,17 @@ export const EventForm = ({
               <User className="w-6 h-6 text-gray-600 flex-shrink-0" />
               <div className="flex-1">
                 <label className="block text-lg text-gray-400">
-                  Select Candidate
+                  Select Candidate <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="Candidate name"
-                  value={formData.attendee}
-                  onChange={(e) =>
-                    setFormData({ ...formData, attendee: e.target.value })
-                  }
-                  className="w-full bg-transparent text-gray-600 placeholder-gray-400 outline-none"
+                  required
+                  placeholder="e.g. 313"
+                  value={formData.applicationId || ''}
+                  onChange={(e) => setFormData({ ...formData, applicationId: e.target.value })}
+                  className="w-full bg-transparent text-gray-600 placeholder-gray-400 outline-none border-b border-gray-300 pb-1"
                 />
+    
               </div>
             </div>
           </div>
@@ -150,23 +202,35 @@ export const EventForm = ({
               <Briefcase className="w-6 h-6 text-gray-600 flex-shrink-0" />
               <div className="flex-1">
                 <label className="block text-lg text-gray-400">
-                  Select Round
+                  Select Round <span className="text-red-500">*</span>
                 </label>
+                {stagesLoading ? (
+                <p className="text-gray-500">Loading rounds...</p>
+              ) : pipelineStages?.length === 0 ? (
+                <p className="text-gray-500">No rounds available</p>
+              ) : (
                 <select
+                  required
                   value={formData.type}
-                  onChange={(e) =>
+                  onChange={(e) =>{
+                    const selectedSlug = e.target.value;
+                    const selectedStage = pipelineStages?.find(stage => stage.slug === selectedSlug);
                     setFormData({
                       ...formData,
                       type: e.target.value as CalendarEvent['type'],
+                      stageId: selectedStage ? selectedStage.id : '',
                     })
-                  }
-                  className="w-full bg-transparent text-gray-600 outline-none appearance-none"
+                  }}
+                  className="w-full bg-transparent text-gray-600 outline-none appearance-none text-lg"
                 >
-                  <option value="first-round">First Round</option>
-                  <option value="face-to-face">Face to Face Round</option>
-                  <option value="hr-round">HR Round</option>
-                  <option value="f2f1">F2F1</option>
+                  <option value="">Choose round</option>
+                  {pipelineStages?.map((stage) => (
+                    <option key={stage.id} value={stage.slug}>
+                      {stage.name}
+                    </option>
+                  ))}
                 </select>
+              )}
               </div>
             </div>
           </div>

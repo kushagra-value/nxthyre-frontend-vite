@@ -1,4 +1,4 @@
-import { CalendarEvent } from '../data/mockEvents';
+import { CalendarEvent } from '../../data/mockEvents';
 import { EventCard } from './EventCard';
 
 interface WeekViewProps {
@@ -16,6 +16,9 @@ const timeSlots = [
   '02 pm',
   '03 pm',
   '04 pm',
+  '05 pm',
+  '06 pm',
+  "07 pm",
 ];
 
 const getWeekDates = (date: Date) => {

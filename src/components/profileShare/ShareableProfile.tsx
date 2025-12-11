@@ -11,13 +11,13 @@ import {
   Phone,
   MapPin,
 } from "lucide-react";
-import { showToast } from "../utils/toast";
+import { showToast } from "../../utils/toast";
 import { useNavigate } from "react-router-dom";
 import {
   candidateService,
   ShareableProfileSensitiveCandidate,
   ReferenceData,
-} from "../services/candidateService";
+} from "../../services/candidateService";
 
 interface ShareableProfileProps {
   candidateId: string;

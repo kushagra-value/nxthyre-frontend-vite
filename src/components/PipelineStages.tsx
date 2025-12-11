@@ -226,13 +226,17 @@ interface Note {
 interface PipelineStagesProps {
   onBack: () => void;
   onOpenLogoutModal: () => void;
+  onSendInvite: ()=> void;
   deductCredits: () => Promise<void>;
+  initialJobId?: number | null;
 }
 
 const PipelineStages: React.FC<PipelineStagesProps> = ({
   onBack,
   onOpenLogoutModal,
+  onSendInvite,
   deductCredits,
+  initialJobId,
 }) => {
   const { user } = useAuthContext();
   const [selectedStage, setSelectedStage] = useState("Uncontacted");
@@ -364,8 +368,13 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         }));
         setCategories(mappedCategories);
         if (mappedCategories.length > 0) {
-          setActiveCategoryId(mappedCategories[0].id);
-          setActiveJobId(mappedCategories[0].id);
+          const jobToSelect =
+            initialJobId && mappedCategories.find((c) => c.id === initialJobId)
+              ? initialJobId
+              : mappedCategories[0].id;
+
+          setActiveCategoryId(jobToSelect);
+          setActiveJobId(jobToSelect);
         }
       } catch (error) {
         console.error("Error fetching categories:", error);
@@ -1474,7 +1483,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
       <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-2">
         <div className="flex w-full gap-3 h-full">
-          <div className="lg:w-[25%] order-2 lg:order-1">
+          <div className="lg:w-[25%] order-1 lg:order-1">
             <div className="bg-white rounded-xl shadow-xs px-3 py-6">
               <div
                 className="flex items-center space-x-2 cursor-pointer"
@@ -1761,7 +1770,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             </div>
           </div>
 
-          <div className="lg:w-[45%] order-1 lg:order-2">
+          <div className="lg:w-[45%] order-2 lg:order-2">
             <div className="bg-white rounded-xl shadow-sm h-fit">
               {viewMode === "prospect" && (
                 <div className="border-b border-gray-200">

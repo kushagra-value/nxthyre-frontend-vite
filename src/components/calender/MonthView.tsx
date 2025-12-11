@@ -1,4 +1,5 @@
-import { CalendarEvent } from '../data/mockEvents';
+import { CalendarEvent } from '../../data/mockEvents';
+import { getColorFromString } from '../../utils/stageColors';
 
 interface MonthViewProps {
   events: CalendarEvent[];
@@ -6,11 +7,20 @@ interface MonthViewProps {
   onCellClick: (date: string, time?: string) => void;  // UPDATED
 }
 
-const typeColors = {
-  'first-round': '#FFB800',
-  'face-to-face': '#8535EB',
-  'hr-round': '#2FD08D',
-  f2f1: '#348AEF',
+const getEventColor = (type: string): string => {
+  // Predefined colors (keep in sync with stageColors.ts)
+  const knownColors: Record<string, string> = {
+    'first-round': '#FFB800',
+    'first-interview': '#FFB800',
+    'technical-round': '#10B981',
+    'face-to-face': '#8535EB',
+    'f2f1': '#348AEF',
+    'hr-round': '#2FD08D',
+    'final-round': '#8B5CF6',
+    'offer-sent': '#EC4899',
+  };
+
+  return knownColors[type] || getColorFromString(type);
 };
 
 const getDaysInMonth = (date: Date) => {
@@ -31,6 +41,7 @@ const getDaysInMonth = (date: Date) => {
 
   return days;
 };
+
 
 export const MonthView = ({ events, currentDate, onCellClick }: MonthViewProps) => {
   const days = getDaysInMonth(currentDate);
@@ -87,23 +98,28 @@ export const MonthView = ({ events, currentDate, onCellClick }: MonthViewProps) 
                       {day.getDate()}
                     </div>
                     <div className="space-y-1">
-                      {dayEvents.slice(0, 3).map((event) => (
-                        <div
-                          key={event.id}
-                          className="text-xs p-1.5 rounded truncate"
-                          style={{
-                            backgroundColor: `${typeColors[event.type]}20`,
-                            borderLeft: `3px solid ${typeColors[event.type]}`,
-                          }}
-                        >
-                          <div className="font-medium text-gray-900 truncate">
-                            {event.title}
+                      {dayEvents.slice(0, 3).map((event) => {
+                        const color = getEventColor(event.type);
+                        const bgColor = color + '20'; // 12% opacity
+
+                        return (
+                          <div
+                            key={event.id}
+                            className="text-xs p-1.5 rounded truncate border-l-4"
+                            style={{
+                              backgroundColor: bgColor,
+                              borderLeftColor: color,
+                            }}
+                          >
+                            <div className="font-medium text-gray-900 truncate">
+                              {event.title}
+                            </div>
+                            <div className="text-gray-600 text-[10px] truncate">
+                              {event.startTime} ({event.roundName || event.type})
+                            </div>
                           </div>
-                          <div className="text-gray-600 text-[10px]">
-                            {event.startTime}
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                       {dayEvents.length > 3 && (
                         <div className="text-xs text-gray-500 pl-1.5">
                           +{dayEvents.length - 3} more
