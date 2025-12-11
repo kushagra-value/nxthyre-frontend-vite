@@ -1483,7 +1483,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
       <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-2">
         <div className="flex w-full gap-3 h-full">
-          <div className="lg:w-[25%] order-2 lg:order-1">
+          <div className="lg:w-[25%] order-1 lg:order-1">
             <div className="bg-white rounded-xl shadow-xs px-3 py-6">
               <div
                 className="flex items-center space-x-2 cursor-pointer"
@@ -1770,7 +1770,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             </div>
           </div>
 
-          <div className="lg:w-[45%] order-1 lg:order-2">
+          <div className="lg:w-[45%] order-2 lg:order-2">
             <div className="bg-white rounded-xl shadow-sm h-fit">
               {viewMode === "prospect" && (
                 <div className="border-b border-gray-200">
