@@ -650,13 +650,13 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               filters={tempFilters}
               updateTempFilters={updateTempFilters}
             /> */}
-            <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-700">
+            <div className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700">
               <span>Boolean Search</span>
               <button
                 onClick={() =>
                   updateTempFilters("booleanSearch", !tempFilters.booleanSearch)
                 }
-                className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
+                className={`relative inline-flex h-5 w-8 items-center rounded-full transition-colors ${
                   tempFilters.booleanSearch ? "bg-blue-500" : "bg-gray-300"
                 }`}
               >
