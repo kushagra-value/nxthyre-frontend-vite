@@ -226,13 +226,17 @@ interface Note {
 interface PipelineStagesProps {
   onBack: () => void;
   onOpenLogoutModal: () => void;
+  onSendInvite: ()=> void;
   deductCredits: () => Promise<void>;
+  initialJobId?: number | null;
 }
 
 const PipelineStages: React.FC<PipelineStagesProps> = ({
   onBack,
   onOpenLogoutModal,
+  onSendInvite,
   deductCredits,
+  initialJobId,
 }) => {
   const { user } = useAuthContext();
   const [selectedStage, setSelectedStage] = useState("Uncontacted");
@@ -364,8 +368,13 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         }));
         setCategories(mappedCategories);
         if (mappedCategories.length > 0) {
-          setActiveCategoryId(mappedCategories[0].id);
-          setActiveJobId(mappedCategories[0].id);
+          const jobToSelect =
+            initialJobId && mappedCategories.find((c) => c.id === initialJobId)
+              ? initialJobId
+              : mappedCategories[0].id;
+
+          setActiveCategoryId(jobToSelect);
+          setActiveJobId(jobToSelect);
         }
       } catch (error) {
         console.error("Error fetching categories:", error);

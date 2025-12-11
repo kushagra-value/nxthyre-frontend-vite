@@ -1123,6 +1123,7 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                     onOpenLogoutModal={handleOpenLogoutModal}
                     onSendInvite={handleSendInvite}
                     deductCredits={deductCredits}
+                    initialJobId={activeCategoryId}
                   />
                 </>
               ) : categories.length === 0 ? (
