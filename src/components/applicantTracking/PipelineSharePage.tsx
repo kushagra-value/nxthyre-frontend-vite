@@ -1937,22 +1937,20 @@ const handleCopyProfile = async (applicationId: string) => {
         </div>
       )}
       {showCandidateProfile && renderCandidateProfile()}
-      {showEventPreview && (
+      {showEventPreview && selectedEvent && eventCandidateDetails && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
           <div className="ml-auto">
             <EventPreview
-          event={selectedEvent}
-          candidate={eventCandidateDetails}
-          onClose={() => {
-            setShowEventPreview(false);
-            setSelectedEvent(null);
-            setCandidateDetails(null);
-            setEventCandidateDetails(null);
-          }}
-        />
+              event={selectedEvent}
+              candidate={eventCandidateDetails}
+              onClose={() => {
+                setShowEventPreview(false);
+                setSelectedEvent(null);
+                setEventCandidateDetails(null);
+              }}
+            />
           </div>
         </div>
-        
       )}
       {showAddEventForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
