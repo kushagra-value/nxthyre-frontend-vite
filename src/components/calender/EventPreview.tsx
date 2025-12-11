@@ -11,9 +11,14 @@ interface EventPreviewProps {
 export default function EventPreview({ event, candidate, onClose, isOpen = true }: EventPreviewProps) {
  if (!isOpen) return null;
 
- if (!event || !candidate) {
-  return <div>Loading event details...</div>;
-}
+  if (!event || !candidate) {
+    console.warn("EventPreview rendered without data:", { event, candidate });
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
+        <div className="text-gray-600">Loading event details...</div>
+      </div>
+    );
+  }
 
   const title = event.title || "Interview Event";
   const description = event.description || "No description provided";
