@@ -9,6 +9,7 @@ export interface CalendarEvent {
   avatarImageUrl?: string;
   confirmed?: boolean;
   roundName?: string;
+  description?:string
 }
 
 export const mockEvents: CalendarEvent[] = [];

@@ -32,7 +32,8 @@ export const EventForm = ({
     date: initialDate || new Date().toISOString().split('T')[0],
     startTime: initialTime || '09:00',
     endTime: '10:00',
-    applicationId: '', // NEW
+    applicationId: '', 
+    description: '',
   });
 
   if (!isOpen) return null;
@@ -55,6 +56,7 @@ export const EventForm = ({
     const payload = {
       application: Number(formData.applicationId),
       title: formData.title || `${formData.attendee} - Interview`,
+      description: formData.description,
       stage: Number(formData.stageId),
       start_at: startDateTime,
       end_at: endDateTime,
@@ -82,6 +84,7 @@ export const EventForm = ({
         date: formData.date,
         confirmed: true,
         applicationId: formData.applicationId, 
+        description: formData.description,
       });
 
       } catch (err: any) {
@@ -103,7 +106,8 @@ export const EventForm = ({
       date: initialDate || new Date().toISOString().split('T')[0],
       startTime: initialTime || '09:00',
       endTime: '10:00',
-      applicationId:''
+      applicationId:'',
+      description : ''
     });
     onClose();
   };
@@ -136,12 +140,9 @@ export const EventForm = ({
             <div className="flex items-start gap-4">
               <Calendar className="w-6 h-6 text-gray-600 mt-1 flex-shrink-0" />
               <div className="flex-1">
-                <label className="block text-lg text-gray-400 mb-2">
-                  Event Title
-                </label>
                 <input
                   type="text"
-                  placeholder="New Event"
+                  placeholder="Event Title"
                   value={formData.title}
                   onChange={(e) =>
                     setFormData({ ...formData, title: e.target.value })
@@ -151,6 +152,10 @@ export const EventForm = ({
                 <input
                   type="text"
                   placeholder="Add Description"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   className="w-full bg-transparent text-base text-gray-400 placeholder-gray-300 outline-none mt-2"
                 />
               </div>
@@ -161,13 +166,11 @@ export const EventForm = ({
             <div className="flex items-center gap-4">
               <User className="w-6 h-6 text-gray-600 flex-shrink-0" />
               <div className="flex-1">
-                <label className="block text-lg text-gray-400">
-                  Select Candidate <span className="text-red-500">*</span>
-                </label>
+                
                 <input
                   type="text"
                   required
-                  placeholder="e.g. 313"
+                  placeholder="Select Candidate"
                   value={formData.applicationId || ''}
                   onChange={(e) => setFormData({ ...formData, applicationId: e.target.value })}
                   className="w-full bg-transparent text-gray-600 placeholder-gray-400 outline-none border-b border-gray-300 pb-1"
@@ -181,12 +184,9 @@ export const EventForm = ({
             <div className="flex items-center gap-4">
               <MapPin className="w-6 h-6 text-gray-600 flex-shrink-0" />
               <div className="flex-1">
-                <label className="block text-lg text-gray-400">
-                  Add Location
-                </label>
                 <input
                   type="text"
-                  placeholder="Location"
+                  placeholder="Add Location"
                   value={formData.location}
                   onChange={(e) =>
                     setFormData({ ...formData, location: e.target.value })
@@ -201,9 +201,7 @@ export const EventForm = ({
             <div className="flex items-center gap-4">
               <Briefcase className="w-6 h-6 text-gray-600 flex-shrink-0" />
               <div className="flex-1">
-                <label className="block text-lg text-gray-400">
-                  Select Round <span className="text-red-500">*</span>
-                </label>
+                
                 {stagesLoading ? (
                 <p className="text-gray-500">Loading rounds...</p>
               ) : pipelineStages?.length === 0 ? (
@@ -223,7 +221,7 @@ export const EventForm = ({
                   }}
                   className="w-full bg-transparent text-gray-600 outline-none appearance-none text-lg"
                 >
-                  <option value="">Choose round</option>
+                  <option value="">Select Round</option>
                   {pipelineStages?.map((stage) => (
                     <option key={stage.id} value={stage.slug}>
                       {stage.name}
@@ -238,10 +236,8 @@ export const EventForm = ({
           <div className="pb-6 border-b border-gray-300">
             <div className="flex items-center gap-4">
               <Calendar className="w-6 h-6 text-gray-600 flex-shrink-0" />
-              <div className="flex-1">
-                <label className="block text-lg text-gray-400 mb-2">
-                  Date
-                </label>
+              <div className="flex items-center gap-2">
+                
                 <input
                   type="date"
                   value={formData.date}
