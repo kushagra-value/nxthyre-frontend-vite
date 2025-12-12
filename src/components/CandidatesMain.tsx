@@ -87,7 +87,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const sortDropdownRef = useRef<HTMLDivElement>(null);
-  const candidatesPerPage = 20;
+  const candidatesPerPage = 8;
   const maxVisiblePages = 5;
 
   const [showExportDialog, setShowExportDialog] = useState(false);
@@ -107,22 +107,32 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     {
       id: "outbound",
       label: "Outbound",
-      count: activeTab === "outbound" ? sourcingCounts.outbound : sourcingCounts.outbound,
+      count:
+        activeTab === "outbound"
+          ? sourcingCounts.outbound
+          : sourcingCounts.outbound,
     },
     {
       id: "active",
       label: "Active",
-      count: activeTab === "active" ? sourcingCounts.active : sourcingCounts.active,
+      count:
+        activeTab === "active" ? sourcingCounts.active : sourcingCounts.active,
     },
     {
       id: "inbound",
       label: "Inbound",
-      count: activeTab === "inbound" ? sourcingCounts.inbound : sourcingCounts.inbound,
+      count:
+        activeTab === "inbound"
+          ? sourcingCounts.inbound
+          : sourcingCounts.inbound,
     },
     {
       id: "prevetted",
       label: "Prevetted",
-      count: activeTab === "prevetted" ? sourcingCounts.prevetted : sourcingCounts.prevetted,
+      count:
+        activeTab === "prevetted"
+          ? sourcingCounts.prevetted
+          : sourcingCounts.prevetted,
     },
   ];
 
@@ -1592,7 +1602,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       {totalPages >= 1 ? (
         <div className="p-3 lg:p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="text-xs text-gray-400 text-xs lg:text-base font-[400]">
+            <div className="text-xs text-gray-400 lg:text-base font-[400]">
               Showing {startIndex + 1} to{" "}
               {Math.min(endIndex, totalCount) + startIndex} of {totalCount}{" "}
               candidates
@@ -1639,7 +1649,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       ) : (
         <div className="p-3 lg:p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="text-xs text-gray-400 text-xs lg:text-base font-[400]">
+            <div className="text-xs text-gray-400 lg:text-base font-[400]">
               Showing {startIndex} to{" "}
               {Math.min(endIndex, totalCount) + startIndex} of {totalCount}{" "}
               candidates

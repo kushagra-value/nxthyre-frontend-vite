@@ -70,91 +70,91 @@ interface FiltersSidebarProps {
   isSearchMode: boolean;
 }
 
-interface FilterMenuProps {
-  filters: FiltersSidebarProps["filters"];
-  updateTempFilters: (key: string, value: any) => void;
-}
+// interface FilterMenuProps {
+//   filters: FiltersSidebarProps["filters"];
+//   updateTempFilters: (key: string, value: any) => void;
+// }
 
-const FilterMenu: React.FC<FilterMenuProps> = ({
-  filters,
-  updateTempFilters,
-}) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+// const FilterMenu: React.FC<FilterMenuProps> = ({
+//   filters,
+//   updateTempFilters,
+// }) => {
+//   const [isMenuOpen, setIsMenuOpen] = useState(false);
+//   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+//   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsMenuOpen(false);
-      }
-    };
+//   useEffect(() => {
+//     const handleClickOutside = (event: MouseEvent) => {
+//       if (
+//         dropdownRef.current &&
+//         !dropdownRef.current.contains(event.target as Node)
+//       ) {
+//         setIsMenuOpen(false);
+//       }
+//     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+//     document.addEventListener("mousedown", handleClickOutside);
+//     return () => {
+//       document.removeEventListener("mousedown", handleClickOutside);
+//     };
+//   }, []);
 
-  return (
-    <div className="relative flex items-center justify-end px-2 pb-1">
-      <button onClick={toggleMenu}>
-        <CircleEllipsis className="h-5 w-5 text-gray-500" />
-      </button>
-      {isMenuOpen && (
-        <div
-          ref={dropdownRef}
-          className="absolute right-0 top-full mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out z-10"
-          style={{
-            opacity: isMenuOpen ? 1 : 0,
-            transform: `translateY(${isMenuOpen ? 0 : -10}px)`,
-          }}
-        >
-          <div className="py-1">
-            <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-700">
-              <span>Semantic Search</span>
-              <button
-                onClick={() =>
-                  updateTempFilters("semanticSearch", !filters.semanticSearch)
-                }
-                className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
-                  filters.semanticSearch ? "bg-blue-500" : "bg-gray-300"
-                }`}
-              >
-                <span
-                  className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${
-                    filters.semanticSearch ? "translate-x-4" : "translate-x-1"
-                  }`}
-                />
-              </button>
-            </div>
-            <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-700">
-              <span>Boolean Search</span>
-              <button
-                onClick={() =>
-                  updateTempFilters("booleanSearch", !filters.booleanSearch)
-                }
-                className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
-                  filters.booleanSearch ? "bg-blue-500" : "bg-gray-300"
-                }`}
-              >
-                <span
-                  className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${
-                    filters.booleanSearch ? "translate-x-4" : "translate-x-1"
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+//   return (
+//     <div className="relative flex items-center justify-end px-2 pb-1">
+//       <button onClick={toggleMenu}>
+//         <CircleEllipsis className="h-5 w-5 text-gray-500" />
+//       </button>
+//       {isMenuOpen && (
+//         <div
+//           ref={dropdownRef}
+//           className="absolute right-0 top-full mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out z-10"
+//           style={{
+//             opacity: isMenuOpen ? 1 : 0,
+//             transform: `translateY(${isMenuOpen ? 0 : -10}px)`,
+//           }}
+//         >
+//           <div className="py-1">
+//             {/* <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-700">
+//               <span>Semantic Search</span>
+//               <button
+//                 onClick={() =>
+//                   updateTempFilters("semanticSearch", !filters.semanticSearch)
+//                 }
+//                 className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
+//                   filters.semanticSearch ? "bg-blue-500" : "bg-gray-300"
+//                 }`}
+//               >
+//                 <span
+//                   className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${
+//                     filters.semanticSearch ? "translate-x-4" : "translate-x-1"
+//                   }`}
+//                 />
+//               </button>
+//             </div> */}
+//             {/* <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-700">
+//               <span>Boolean Search</span>
+//               <button
+//                 onClick={() =>
+//                   updateTempFilters("booleanSearch", !filters.booleanSearch)
+//                 }
+//                 className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
+//                   filters.booleanSearch ? "bg-blue-500" : "bg-gray-300"
+//                 }`}
+//               >
+//                 <span
+//                   className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${
+//                     filters.booleanSearch ? "translate-x-4" : "translate-x-1"
+//                   }`}
+//                 />
+//               </button>
+//             </div> */}
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
 
 const BooleanSearchComponent: React.FC<{
   boolQuery: string;
@@ -646,18 +646,41 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             {tempFilters.booleanSearch ? "Boolean Search" : "Keywords"}
           </h3>
           <div className="flex gap-2 cursor-pointer">
-            <FilterMenu
+            {/* <FilterMenu
               filters={tempFilters}
               updateTempFilters={updateTempFilters}
-            />
+            /> */}
+            <div className="flex items-center gap-2 pl-4 py-2 text-sm text-gray-700">
+              <span
+                className={`${tempFilters.booleanSearch ? "hidden" : "flex"}`}
+              >
+                Boolean Search
+              </span>
+              <button
+                onClick={() =>
+                  updateTempFilters("booleanSearch", !tempFilters.booleanSearch)
+                }
+                className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
+                  tempFilters.booleanSearch ? "bg-blue-500" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${
+                    tempFilters.booleanSearch
+                      ? "translate-x-4"
+                      : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
             <div
               className="cursor-pointer"
               onClick={() => toggleSection("keywords")}
             >
               {expandedSections.keywords ? (
-                <ChevronUp className="w-4 h-4 text-gray-500" />
+                <ChevronUp className="w-4 h-4 mt-2 text-gray-500" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-gray-500" />
+                <ChevronDown className="w-4 h-4 mt-2 text-gray-500" />
               )}
             </div>
           </div>
