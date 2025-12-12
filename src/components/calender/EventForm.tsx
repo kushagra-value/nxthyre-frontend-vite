@@ -173,7 +173,7 @@ export const EventForm = ({
                   placeholder="Select Candidate"
                   value={formData.applicationId || ''}
                   onChange={(e) => setFormData({ ...formData, applicationId: e.target.value })}
-                  className="w-full bg-transparent text-gray-600 placeholder-gray-400 outline-none border-b border-gray-300 pb-1"
+                  className="w-full bg-transparent text-gray-600 placeholder-gray-400 outline-none pb-1"
                 />
     
               </div>
@@ -219,7 +219,7 @@ export const EventForm = ({
                       stageId: selectedStage ? selectedStage.id : '',
                     })
                   }}
-                  className="w-full bg-transparent text-gray-600 outline-none appearance-none text-lg"
+                  className="w-full  bg-transparent text-gray-600 outline-none appearance-none text-lg"
                 >
                   <option value="">Select Round</option>
                   {pipelineStages?.map((stage) => (
@@ -247,7 +247,7 @@ export const EventForm = ({
                   className="w-full bg-transparent text-gray-600 outline-none"
                 />
                 <p className="text-gray-500 mt-2">
-                  {formatDateDisplay(formData.date)}
+                  ({formatDateDisplay(formData.date)})
                 </p>
               </div>
             </div>
@@ -267,7 +267,7 @@ export const EventForm = ({
                     onChange={(e) =>
                       setFormData({ ...formData, startTime: e.target.value })
                     }
-                    className="flex-1 bg-transparent text-gray-600 outline-none"
+                    className="w-1/2 flex-1 bg-[#ECF1FF] text-gray-600 outline-none"
                   />
                   <span className="text-gray-600">→</span>
                   <input
@@ -276,7 +276,7 @@ export const EventForm = ({
                     onChange={(e) =>
                       setFormData({ ...formData, endTime: e.target.value })
                     }
-                    className="flex-1 bg-transparent text-gray-600 outline-none"
+                    className="w-1/2 flex-1 bg-[#ECF1FF] text-gray-600 outline-none"
                   />
                 </div>
               </div>
