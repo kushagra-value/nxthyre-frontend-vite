@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   ArrowLeft,
   Mail,
@@ -139,26 +139,33 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const jobId = pipelineId;
 
   const [isExpanded, setIsExpanded] = useState(false);
-  const [stageCandidates, setStageCandidates] = useState<{ [key: string]: Candidate[] }>({});
+
+  const [stageCandidates, setStageCandidates] = useState<Record<string, Candidate[]>>({});
   const [highlightedCandidateId, setHighlightedCandidateId] = useState<string | null>(null);
   
   const [showAddStageForm, setShowAddStageForm] = useState(false);
 
   const [calendarRefreshTrigger, setCalendarRefreshTrigger] = useState(0);
 
+   // UPDATED: Fully type-safe handleSearch - resolves 'id' does not exist on type 'never'
   const handleSearch = () => {
     if (!searchQuery.trim()) return;
+
     let found: Candidate | null = null;
-    Object.keys(stageCandidates).forEach((stage) => {
-      const cand = stageCandidates[stage].find(
-        (c: Candidate) => c.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      if (cand) found = cand;
-    });
+
+    // Use Object.values to get all candidates across stages
+    const allCandidates = Object.values(stageCandidates).flat() as Candidate[];
+
+    found = allCandidates.find((candidate) =>
+      candidate.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    ) || null;
+
     if (found) {
+      // Now TypeScript knows found is Candidate (not null), so .id is safe
       setHighlightedCandidateId(found.id);
+
       setTimeout(() => {
-        const el = document.getElementById(`candidate-${found!.id}`);
+        const el = document.getElementById(`candidate-${found.id}`);
         if (el) {
           el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
         }
@@ -171,35 +178,35 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
   const handleEventClick = async (eventId: string) => {
     console.log("Event clicked – ID:", eventId);
-  try {
-    setLoadingCandidateDetails(true);
+    try {
+      setLoadingCandidateDetails(true);
 
-    const eventRes = await apiClient.get(`/jobs/interview-events/${eventId}/`);
-    const eventData = eventRes.data;
-    console.log("Fetched event data:", eventData);
-    
-    const candidateRes = await apiClient.get(
-      `/jobs/applications/${eventData.application}/kanban-detail/`
-    );
-    const candidateData = candidateRes.data;
-    console.log("Fetched candidate data for event:", candidateData);
+      const eventRes = await apiClient.get(`/jobs/interview-events/${eventId}/`);
+      const eventData = eventRes.data;
+      console.log("Fetched event data:", eventData);
+      
+      const candidateRes = await apiClient.get(
+        `/jobs/applications/${eventData.application}/kanban-detail/`
+      );
+      const candidateData = candidateRes.data;
+      console.log("Fetched candidate data for event:", candidateData);
 
-    // Set everything first
-    setSelectedEvent(eventData);
-    setEventCandidateDetails(candidateData);
-    setCandidateDetails(candidateData);
-    setShowEventPreview(true);
-    console.log("EventPreview modal should now open");
+      // Set everything first
+      setSelectedEvent(eventData);
+      setEventCandidateDetails(candidateData);
+      setCandidateDetails(candidateData);
+      setShowEventPreview(true);
+      console.log("EventPreview modal should now open");
 
-    // Then open modal – now data is guaranteed to be there
-  } catch (error) {
-    console.error("Error fetching event details:", error);
-    showToast.error("Failed to load event details");
-  } finally {
-    setLoadingCandidateDetails(false);
-  }
-};
-
+      // Then open modal – now data is guaranteed to be there
+    } catch (error) {
+      console.error("Error fetching event details:", error);
+      showToast.error("Failed to load event details");
+    } finally {
+      setLoadingCandidateDetails(false);
+    }
+  };
+  
   const handleSelectSuggestion = (candidate: Candidate) => {
     setHighlightedCandidateId(candidate.id);
     setTimeout(() => {
@@ -262,67 +269,46 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   };
 
 
-  const shareableStages = [
-    {
-      name: "Shortlisted",
-      color: "bg-blue-50",
-      borderColor: "border-blue-200",
-      bgColor: "bg-[#34C759]",
-      textColor: "text-blue-400",
-    },
-    {
-      name: "First Interview",
-      color: "bg-yellow-50",
-      borderColor: "border-yellow-200",
-      bgColor: "bg-[#FF8D28]",
-      textColor: "text-yellow-400",
-    },
-    {
-      name: "Other Interviews",
-      color: "bg-orange-50",
-      borderColor: "border-orange-200",
-      bgColor: "bg-[#00C8B3]",
-      textColor: "text-orange-400",
-    },
-    {
-      name: "HR Round",
-      color: "bg-red-50",
-      borderColor: "border-red-200",
-      bgColor: "bg-[#0088FF]",
-      textColor: "text-red-400",
-    },
-    {
-      name: "Salary Negotiation",
-      color: "bg-purple-50",
-      borderColor: "border-purple-200",
-      bgColor: "bg-[#CB30E0]",
-      textColor: "text-purple-400",
-    },
-    {
-      name: "Offer Sent",
-      color: "bg-green-50",
-      borderColor: "border-green-200",
-      bgColor: "bg-indigo-600",
-      textColor: "text-green-400",
-    },
-    {
-      name: "Archives",
-      color: "bg-gray-50",
-      borderColor: "border-gray-200",
-      bgColor: "bg-gray-500",
-      textColor: "text-gray-400",
-    },
-  ];
+    // UPDATED: Dynamically generate shareable stages starting from "Shortlisted"
+  const dynamicShareableStages = useMemo(() => {
+    if (pipelineStages.length === 0) return [];
 
-  const stageOrder = {
-    Shortlisted: 0,
-    "First Interview": 1,
-    "Other Interviews": 2,
-    "HR Round": 3,
-    "Salary Negotiation": 4,
-    "Offer Sent": 5,
-    Archives: 6,
-  };
+    const shortlistedIndex = pipelineStages.findIndex(
+      (stage: any) => stage.slug === "shortlisted"
+    );
+
+    if (shortlistedIndex === -1) return [];
+
+    // Take all stages from Shortlisted onwards, excluding Archives
+    const relevantStages = pipelineStages
+      .slice(shortlistedIndex)
+      .filter((stage: any) => stage.slug !== "archives");
+
+    // Predefined colors for known stages, fallback cycle for custom ones
+    const colorPalette = [
+      { bgColor: "bg-[#34C759]", textColor: "text-blue-400" },     // Shortlisted
+      { bgColor: "bg-[#FF8D28]", textColor: "text-yellow-400" },   // First Interview
+      { bgColor: "bg-[#00C8B3]", textColor: "text-orange-400" },   // Other
+      { bgColor: "bg-[#0088FF]", textColor: "text-red-400" },
+      { bgColor: "bg-[#CB30E0]", textColor: "text-purple-400" },
+      { bgColor: "bg-indigo-600", textColor: "text-green-400" },
+      // Fallback colors for additional custom stages
+      { bgColor: "bg-pink-500", textColor: "text-pink-400" },
+      { bgColor: "bg-teal-500", textColor: "text-teal-400" },
+      { bgColor: "bg-cyan-500", textColor: "text-cyan-400" },
+    ];
+
+    return relevantStages.map((stage: any, index: number) => {
+      const color = colorPalette[index % colorPalette.length];
+      return {
+        name: stage.name,
+        slug: stage.slug,
+        id: stage.id,
+        bgColor: color.bgColor,
+        textColor: color.textColor,
+      };
+    });
+  }, [pipelineStages]);
 
   const getDaysAgo = (date: Date) => {
     const today = new Date();
@@ -331,73 +317,85 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     return diffDays;
   };
 
-  useEffect(() => {
-    if (!isAuthenticated) return;
+useEffect(() => {
+  if (!isAuthenticated || !jobId) return;
 
-    const fetchData = async () => {
-      setIsFetching(true);
-      try {
-        const response = await apiClient.get(
-          `/jobs/applications/kanban-view/?job_id=${jobId}`
+  const fetchCandidates = async () => {
+    setIsFetching(true);
+    try {
+      // Build a map of stage name → slug and name → id
+      const stageIdMapTemp: { [key: string]: number } = {};
+      const stageSlugMap: { [key: string]: string } = {};
+      pipelineStages.forEach((stage: any) => {
+        stageIdMapTemp[stage.name] = stage.id;
+        stageSlugMap[stage.name] = stage.slug;
+      });
+      setStageIdMap(stageIdMapTemp);
+
+      // Fetch candidates for each shareable stage in parallel
+      const fetchPromises = dynamicShareableStages.map(async (stage) => {
+        const slug = stage.slug;
+        if (!slug) return { stageName: stage.name, candidates: [] };
+
+        const res = await apiClient.get(
+          `/jobs/applications/?job_id=${jobId}&stage_slug=${slug}&sort_by=Relevance`
         );
-        const data = response.data;
 
-        const stageIdMapTemp: { [key: string]: number } = {};
-        data.forEach((stage: any) => {
-          stageIdMapTemp[stage.name] = stage.id;
-        });
-        setStageIdMap(stageIdMapTemp);
+        return {
+          stageName: stage.name,
+          candidates: res.data.map((app: any) => {
+            const [role, company] = app.candidate.headline?.split(" at ") || ["", ""];
+            const city = app.candidate.location?.split(",")[0] || "";
 
-        const processedData: { [key: string]: any[] } = {};
-        shareableStages.forEach((stage) => {
-          const apiStage = data.find((s: any) => s.name === stage.name);
-          if (apiStage) {
-            processedData[stage.name] = apiStage.applications.map(
-              (app: any) => {
-                const [role, company] = app.candidate_headline?.split(" at ");
-                const city = app.location?.split(",")[0];
-                return {
-                  id: app.id,
-                  name: app.candidate_name,
-                  company: company || "",
-                  role: role || "",
-                  location: city,
-                  notice_period_days: app.notice_period_days,
-                  current_salary: app.current_salary,
-                  total_experience: app.total_experience,
-                  avatar: app.candidate_name
-                    .split(" ")
-                    .map((n: string) => n[0])
-                    .join(""),
-                  profile_picture_url: app.profile_picture_url,
-                  notes: "",
-                  lastUpdated: new Date(app.last_updated),
-                  socials: {
-                    github_url: app.premium_data.github_url,
-                    linkedin_url: app.premium_data.linkedin_url,
-                    resume_url: app.premium_data.resume_url,
-                  },
-                };
-              }
-            );
-          } else {
-            processedData[stage.name] = [];
-          }
-        });
-        setStageCandidates(processedData);
-      } catch (error: any) {
-        if (error.response?.status === 403) {
-          showToast.error("You don't have permission to view this pipeline.");
-        } else {
-          console.error("Error fetching data:", error);
-          showToast.error("Failed to load pipeline data");
-        }
-      } finally {
-        setIsFetching(false);
+            return {
+              id: app.id,
+              name: app.candidate.full_name,
+              company: company.trim() || "",
+              role: role.trim() || "",
+              location: city,
+              notice_period_days: app.candidate.notice_period_summary?.replace(" days", "") || "",
+              current_salary: app.candidate.current_salary_lpa || "",
+              total_experience: app.candidate.experience_years?.replace(/[^0-9+]/g, "") || "",
+              avatar: app.candidate.avatar || app.candidate.full_name.split(" ").map((n: string) => n[0]).join(""),
+              profile_picture_url: app.candidate.profile_picture_url || null,
+              notes: "", // notes are not returned in new API
+              lastUpdated: new Date(app.last_active_at || Date.now()),
+              socials: {
+                github_url: app.candidate.premium_data_availability.github_username ? "" : null,
+                linkedin_url: app.candidate.premium_data_availability.linkedin_url ? "" : null,
+                resume_url: app.candidate.premium_data_availability.resume_url ? "" : null,
+              },
+            };
+          }),
+        };
+      });
+
+      const results = await Promise.all(fetchPromises);
+
+      const processedData: { [key: string]: any[] } = {};
+      dynamicShareableStages.forEach((stage) => {
+        const result = results.find((r) => r.stageName === stage.name);
+        processedData[stage.name] = result?.candidates || [];
+      });
+
+      setStageCandidates(processedData);
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        showToast.error("You don't have permission to view this pipeline.");
+      } else {
+        console.error("Error fetching pipeline data:", error);
+        showToast.error("Failed to load pipeline data");
       }
-    };
-    fetchData();
-  }, [jobId, isAuthenticated]);
+    } finally {
+      setIsFetching(false);
+    }
+  };
+
+  // Only run if pipelineStages are already loaded
+  if (pipelineStages.length > 0) {
+    fetchCandidates();
+  }
+}, [jobId, isAuthenticated, pipelineStages]); 
 
   const handleDragStart = (candidate: any, fromStage: string) => {
     setDraggedCandidate({ candidate, fromStage });
@@ -466,8 +464,15 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       return;
     }
 
-    const fromOrder = stageOrder[fromStage];
-    const toOrder = stageOrder[toStage];
+    const stageNames = dynamicShareableStages.map(s => s.name);
+    const fromOrder = stageNames.indexOf(fromStage);
+    const toOrder = stageNames.indexOf(toStage);
+
+    if (toOrder === -1 || fromOrder === -1) {
+      showToast.error("Invalid stage");
+      setDraggedCandidate(null);
+      return;
+    }
 
     if (toOrder < fromOrder) {
       showToast.error("Cannot move candidate to a previous stage.");
@@ -853,23 +858,34 @@ const handleCopyProfile = async (applicationId: string) => {
     window.location.href = "/";
   };
 
+    // UPDATED: Dynamic "Move to Next Round" using dynamicShareableStages
   const handleMoveToNext = () => {
-      if (!selectedCandidate || !currentStage) return;
-      const currentOrder = stageOrder[currentStage];
-      const nextOrder = currentOrder + 1;
-      const nextStageName = Object.keys(stageOrder).find(key => stageOrder[key] === nextOrder);
-      if (!nextStageName) {
-        showToast.error("No next stage available.");
-        return;
-      }
-      setFeedbackData({ 
-        candidate: selectedCandidate, 
-        fromStage: currentStage, 
-        toStage: nextStageName, 
-        isMovingForward: true 
-      });
-      setShowFeedbackModal(true);
-    };
+    if (!selectedCandidate || !currentStage) return;
+
+    const stageNames = dynamicShareableStages.map((s: any) => s.name);
+    const currentIndex = stageNames.indexOf(currentStage);
+
+    if (currentIndex === -1) {
+      showToast.error("Current stage not found.");
+      return;
+    }
+
+    const nextIndex = currentIndex + 1;
+    if (nextIndex >= stageNames.length) {
+      showToast.error("No next stage available.");
+      return;
+    }
+
+    const nextStageName = stageNames[nextIndex];
+
+    setFeedbackData({ 
+      candidate: selectedCandidate, 
+      fromStage: currentStage, 
+      toStage: nextStageName, 
+      isMovingForward: true 
+    });
+    setShowFeedbackModal(true);
+  };
   
     const handleArchive = () => {
       if (!selectedCandidate || !currentStage) return;
@@ -1596,12 +1612,12 @@ const handleCopyProfile = async (applicationId: string) => {
 
                 <div className="overflow-x-auto hide-scrollbar">
                   <div className="flex space-x-4 min-w-max pb-2">
-                    {shareableStages.map((stage) => {
+                    {dynamicShareableStages.map((stage) => {
                       const candidates = stageCandidates[stage.name] || [];
                       const stageCount = getStageCount(stage.name);
                       return (
                         <div
-                          key={stage.name}
+                          key={stage.id}
                           className="w-96 h-[80vh] min-h-max"
                           onDragOver={handleDragOver}
                           onDrop={(e) => handleDrop(e, stage.name)}
