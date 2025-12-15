@@ -344,26 +344,37 @@ useEffect(() => {
         return {
           stageName: stage.name,
           candidates: res.data.map((app: any) => {
-            const [role, company] = app.candidate.headline?.split(" at ") || ["", ""];
+            const headline = app.candidate.headline || "";
+            const [role = "", company = ""] = headline.split(" at ");
             const city = app.candidate.location?.split(",")[0] || "";
 
             return {
               id: app.id,
-              name: app.candidate.full_name,
-              company: company.trim() || "",
-              role: role.trim() || "",
-              location: city,
-              notice_period_days: app.candidate.notice_period_summary?.replace(" days", "") || "",
+              name: app.candidate.full_name || "Unknown",
+              company: (company || "").trim(),
+              role: (role || "").trim(),
+              location: city || "",
+              notice_period_days: (app.candidate.notice_period_summary || "")
+                .toString()
+                .replace(" days", ""),
               current_salary: app.candidate.current_salary_lpa || "",
-              total_experience: app.candidate.experience_years?.replace(/[^0-9+]/g, "") || "",
-              avatar: app.candidate.avatar || app.candidate.full_name.split(" ").map((n: string) => n[0]).join(""),
+              total_experience: (app.candidate.experience_years || "")
+                .toString()
+                .replace(/[^0-9+]/g, ""),
+              avatar: app.candidate.avatar || 
+                (app.candidate.full_name || "")
+                  .split(" ")
+                  .map((n: string) => n[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase(),
               profile_picture_url: app.candidate.profile_picture_url || null,
-              notes: "", // notes are not returned in new API
+              notes: "",
               lastUpdated: new Date(app.last_active_at || Date.now()),
               socials: {
-                github_url: app.candidate.premium_data_availability.github_username ? "" : null,
-                linkedin_url: app.candidate.premium_data_availability.linkedin_url ? "" : null,
-                resume_url: app.candidate.premium_data_availability.resume_url ? "" : null,
+                github_url: app.candidate.premium_data_availability?.github_username ? "" : null,
+                linkedin_url: app.candidate.premium_data_availability?.linkedin_url ? "" : null,
+                resume_url: app.candidate.premium_data_availability?.resume_url ? "" : null,
               },
             };
           }),
