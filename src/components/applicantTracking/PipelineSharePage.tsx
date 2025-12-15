@@ -147,6 +147,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
   const [calendarRefreshTrigger, setCalendarRefreshTrigger] = useState(0);
 
+  const [stagesRefreshKey, setStagesRefreshKey] = useState(0);
    // UPDATED: Fully type-safe handleSearch - resolves 'id' does not exist on type 'never'
   const handleSearch = () => {
     if (!searchQuery.trim()) return;
@@ -695,7 +696,7 @@ const handleCopyProfile = async (applicationId: string) => {
         }
       };
       if (jobId) fetchStages();
-  }, [jobId]);
+  }, [jobId, stagesRefreshKey]);
 
 
   const renderCandidateCard = (candidate: any, stage: string) => (
@@ -1961,7 +1962,9 @@ const handleCopyProfile = async (applicationId: string) => {
       {showAddStageForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
           <div className="ml-auto">
-            <AddNewStageForm onClose={() => setShowAddStageForm(false)} />
+            <AddNewStageForm onClose={() => setShowAddStageForm(false)} 
+            onStageCreated={() => setStagesRefreshKey(prev => prev + 1)}
+              />
           </div>
           
           

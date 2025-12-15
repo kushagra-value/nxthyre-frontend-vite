@@ -1,22 +1,33 @@
 // components/AddNewStageForm.tsx
 import { useState } from 'react';
 import StageTypeDropdown from './StageTypeDropdown';
+import apiClient from '../../services/api';          
+import { showToast } from '../../utils/toast';        
+import { useParams } from 'react-router-dom';
 
 interface AddNewStageFormProps {
   onClose: () => void;
+  onStageCreated?: () => void;
 }
 
-export default function AddNewStageForm({ onClose }: AddNewStageFormProps) {
-  const [stageName, setStageName] = useState('F2F 1');
+export default function AddNewStageForm({ onClose, onStageCreated }: AddNewStageFormProps) {
+  const { pipelineId } = useParams<{ pipelineId: string }>();
+  const [stageName, setStageName] = useState('F2F1');
   const [stageType, setStageType] = useState('face-to-face');
   const [calendarInvite, setCalendarInvite] = useState(false);
   const isBackgroundVerification = stageType === 'background';
   const isMockCall = stageType === 'mock';
+  const [loading, setLoading] = useState(false);
+
+  
+
   const [reminders, setReminders] = useState({
     panel24h: true,
     candidate48h: true,
     hr30min: true,
   });
+
+
   const [documentRequired, setDocumentRequired] = useState({
     idProof: true,
     marksheets_10th_12th: true,
@@ -24,6 +35,35 @@ export default function AddNewStageForm({ onClose }: AddNewStageFormProps) {
     experienceLetters: true,
     panCard:true
   });
+
+    const handleCreateStage = async () => {
+    if (!stageName.trim()) {
+      showToast.error("Stage name is required");
+      return;
+    }
+
+    if (!pipelineId) {
+      showToast.error("Pipeline ID not found");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await apiClient.post(`/jobs/roles/${pipelineId}/custom-stages/`, {
+        name: stageName.trim(),
+      });
+
+      showToast.success(`Stage "${stageName}" created successfully`);
+      onStageCreated?.();        // Refresh stages in parent
+      onClose();                 // Close the form
+    } catch (error: any) {
+      const msg = error.response?.data?.detail || error.response?.data?.name?.[0] || "Failed to create stage";
+      showToast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="fixed inset-y-0 right-0 w-[563px] bg-[#F5F9FB] rounded-l-3xl shadow-2xl overflow-y-auto font-['Gellix',_sans-serif]">
@@ -293,8 +333,16 @@ export default function AddNewStageForm({ onClose }: AddNewStageFormProps) {
           >
             Cancel
           </button>
-          <button className="px-8 py-3 text-lg font-medium text-[#F5F9FB] bg-[#0F47F2] rounded-lg hover:bg-blue-700 transition">
-            Create Stage
+          <button
+            onClick={handleCreateStage}
+            disabled={loading || !stageName.trim()}
+            className={`px-8 py-3 text-lg font-medium text-white rounded-lg transition ${
+              loading || !stageName.trim()
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-[#0F47F2] hover:bg-blue-700'
+            }`}
+          >
+            {loading ? 'Creating...' : 'Create Stage'}
           </button>
         </div>
       </div>
