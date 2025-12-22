@@ -169,6 +169,8 @@ function MainApp() {
   const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
   const [showShareLoader, setShowShareLoader] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [projectSearchQuery, setProjectSearchQuery] = useState("");
+  const debouncedProjectSearch = useDebounce(projectSearchQuery, 500);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [activeCategoryTotalCount, setActiveCategoryTotalCount] = useState(0);
@@ -261,7 +263,23 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
     setLoadingCategories(true);
     try {
       const jobs = await jobPostService.getJobs();
-      const mappedCategories: Category[] = jobs.map((job:any) => {
+
+      let filteredJobs = jobs;
+
+    
+      if (debouncedProjectSearch.trim()) {
+        const query = debouncedProjectSearch.toLowerCase();
+        filteredJobs = jobs.filter((job: any) => {
+          const titleMatch = job.title?.toLowerCase().includes(query);
+          const companyMatch = job.organization_details?.name?.toLowerCase().includes(query);
+          const skillsMatch = job.skills?.some((skill: string) =>
+            skill.toLowerCase().includes(query)
+          );
+          return titleMatch || companyMatch || skillsMatch;
+        });
+      }
+
+      const mappedCategories: Category[] = filteredJobs.map((job:any) => {
        const minExp = job.experience_min_years ?? 0;
       const maxExp = job.experience_max_years;
       const experience = maxExp
@@ -474,6 +492,13 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
       fetchCategories();
     }
   }, [isAuthenticated]);
+
+useEffect(() => {
+  if (isAuthenticated && !hasSelectedJob) {
+    fetchCategories();
+  }
+}, [isAuthenticated, debouncedProjectSearch, hasSelectedJob]);
+  
   useEffect(() => {
     const newFilters = {
       ...filters,
@@ -500,6 +525,7 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
       fetchCreditBalance();
     }
   }, [isAuthenticated]);
+
   useEffect(() => {
     if (isAuthenticated && userStatus) {
       const user: User = {
@@ -526,6 +552,7 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
       setCurrentUser(user);
     }
   }, [isAuthenticated, userStatus, firebaseUser]);
+
   useEffect(() => {
     const path = window.location.pathname;
     const pipelineMatch = path.match(/^\/pipelines\/(.+)$/);
@@ -1182,10 +1209,12 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                             <input
                               type="text"
                               placeholder="Search Projects"
+                              value={projectSearchQuery}
+                              onChange={(e) => setProjectSearchQuery(e.target.value)}
                               className="w-full h-full bg-[#ECF1FF] rounded-[5px] pl-5 pr-16 text-lg text-[#181D25] placeholder:text-[#AAC1FF] focus:outline-none focus:ring-2 focus:ring-[#0F47F2]/20"
                             />
                             <button className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-[31px] bg-[#0F47F2] rounded-md flex items-center justify-center hover:bg-[#0d3ec9] transition-colors">
-                              <Search className="w-[22px] h-[19px] text-white" strokeWidth={1.33}/>
+                              <Search className="w-[22px] h-[19px] text-white" strokeWidth={1.33} />
                             </button>
                           </div>
 
@@ -1250,41 +1279,69 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                           </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                      {categories.map((job) => (
-                        <div
-                          key={job.id}
-                          className="rounded-[10px] transition-all duration-300"
-                        >
-                          <ProjectCard
-                            key={job.id}
-                            jobId={job.id}
-                            jobName={job.name}
-                            companyName={job.companyName}
-                            experience={job.experience}
-                            workApproach={job.workApproach}
-                            joiningTimeline={job.joiningTimeline}
-                            inboundCount={job.inboundCount}
-                            totalApplied={job.totalApplied}
-                            totalReplied={job.totalReplied}
-                            status={job.status}
-                            visibility={job.visibility}
-                            isActive={activeCategoryId === job.id}
-                            onEditJobRole={handleEditJobRole}
-                            onArchiveJob={() => showToast.success("Archive coming soon")}
-                            onSharePipelines={handleSharePipelines}
-                            onPublishJob={handlePublishJobRole}
-                            onUnpublishJob={handleUnpublishJobRole}
-                            onSelectCard={() => {
-                              setActiveCategoryId(job.id);
-                              setHasSelectedJob(true);
-                              fetchJobDetailsAndSetFilters(job.id);
-                            }}
-                          />
-                        
+                   {loadingCategories ? (
+                      <div className="col-span-full text-center py-10">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading projects...</p>
+                      </div>
+                    ) : categories.length === 0 ? (
+                      <div className="col-span-full text-center py-20">
+                        <div className="text-center">
+                          <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+                            {debouncedProjectSearch.trim()
+                              ? `No projects found for "${debouncedProjectSearch}"`
+                              : "No job roles created yet"}
+                          </h2>
+                          {!debouncedProjectSearch.trim() && (
+                            <button
+                              onClick={handleCreateJobRole}
+                              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                            >
+                              Create Your First Job Role
+                            </button>
+                          )}
+                          {debouncedProjectSearch.trim() && (
+                            <button
+                              onClick={() => setProjectSearchQuery("")}
+                              className="text-blue-600 underline"
+                            >
+                              Clear search
+                            </button>
+                          )}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {categories.map((job) => (
+                          <div key={job.id} className="rounded-[10px] transition-all duration-300">
+                            <ProjectCard
+                              jobId={job.id}
+                              jobName={job.name}
+                              companyName={job.companyName}
+                              experience={job.experience}
+                              workApproach={job.workApproach}
+                              joiningTimeline={job.joiningTimeline}
+                              inboundCount={job.inboundCount}
+                              totalApplied={job.totalApplied}
+                              totalReplied={job.totalReplied}
+                              status={job.status}
+                              visibility={job.visibility}
+                              isActive={activeCategoryId === job.id}
+                              onEditJobRole={handleEditJobRole}
+                              onArchiveJob={() => showToast.success("Archive coming soon")}
+                              onSharePipelines={handleSharePipelines}
+                              onPublishJob={handlePublishJobRole}
+                              onUnpublishJob={handleUnpublishJobRole}
+                              onSelectCard={() => {
+                                setActiveCategoryId(job.id);
+                                setHasSelectedJob(true);
+                                fetchJobDetailsAndSetFilters(job.id);
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                     
                   </div>
