@@ -126,11 +126,9 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
   const tabs = [
       { id: "pipeline", label: "Pipeline" },
-      { id: "activity", label: "Activity" },
+     
       { id: "calendar", label: "Calendar" },
-      { id: "notifications", label: "Notifications" },
-      { id: "inbox", label: "Inbox" },
-      { id: "archive", label: "Archive" },
+      
     ];
 
   const [date, setDate] = useState("");
@@ -427,7 +425,8 @@ useEffect(() => {
   };
 
   useEffect(() => {
-    if (!assessmentAppId || !candidateDetails) return;const fetchAssessmentResults = async () => {
+    if (!assessmentAppId || !candidateDetails) return;
+    const fetchAssessmentResults = async () => {
     try {
       const res = await candidateService.getAssessmentResults(
         Number(jobId),
