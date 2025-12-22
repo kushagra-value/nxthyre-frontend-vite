@@ -271,11 +271,7 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
         const query = debouncedProjectSearch.toLowerCase();
         filteredJobs = jobs.filter((job: any) => {
           const titleMatch = job.title?.toLowerCase().includes(query);
-          const companyMatch = job.organization_details?.name?.toLowerCase().includes(query);
-          const skillsMatch = job.skills?.some((skill: string) =>
-            skill.toLowerCase().includes(query)
-          );
-          return titleMatch || companyMatch || skillsMatch;
+          return titleMatch;
         });
       }
 
