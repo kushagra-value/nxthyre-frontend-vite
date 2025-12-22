@@ -67,13 +67,17 @@ import SuperAdminDashboard from "./components/SuperAdmin/SuperAdminDashboard";
 import ProjectCard from "./components/ProjectCard";
 interface Category {
   id: number;
-  name: string;
-  count: number;
+  name: string;                    // Job title
+  companyName: string;             // e.g., "Debitte"
+  experience: string;              // e.g., "8+ years"
+  workApproach: string;            // "Hybrid", "Remote", "Onsite"
+  joiningTimeline: string;          // "Immediate", "15 days", etc.
+  inboundCount: number;             // 556 in image
+  totalApplied: number;            // 61 in image
+  totalReplied: number;            // 21 in image
   status: "DRAFT" | "PUBLISHED";
   visibility: "PRIVATE" | "PUBLIC";
   invites_sent: number;
-  total_replied: number;
-  total_applied: number;
 }
 interface Filters {
   keywords: string[];
@@ -252,20 +256,47 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
       fetchJobDetailsAndSetFilters(activeCategoryId);
     }
   }, [activeCategoryId]);
+
   const fetchCategories = async () => {
     setLoadingCategories(true);
     try {
       const jobs = await jobPostService.getJobs();
-      const mappedCategories: Category[] = jobs.map((job) => ({
+      const mappedCategories: Category[] = jobs.map((job:any) => {
+       const minExp = job.experience_min_years ?? 0;
+      const maxExp = job.experience_max_years;
+      const experience = maxExp
+        ? `${minExp}+ years` 
+        : minExp === 1 
+          ? "1+ year"
+          : `${minExp}+ years`;
+
+      // Map work approach
+      let workApproach = "Hybrid";
+      if (job.work_approach === "ONSITE") workApproach = "Onsite";
+      else if (job.work_approach === "REMOTE") workApproach = "Remote";
+
+      // Joining timeline - you can customize this logic
+      // For now, assuming "Immediate" if not specified otherwise
+      const joiningTimeline = "Immediate"; // You can enhance this later
+
+      // Company name
+      const companyName = job.workspace_details?.name || "Confidential";
+
+      return {
         id: job.id,
         name: job.title,
-        count: job.inbound_count || 0,
+        companyName,
+        experience,
+        workApproach,
+        joiningTimeline,
+        inboundCount: job.inbound_count || 0,
+        totalApplied: job.total_applied || 0,
+        totalReplied: job.total_replied || 0,
         status: job.status,
         visibility: job.visibility,
         invites_sent: job.invites_sent || 0,
-        total_applied: job.total_applied || 0,
-        total_replied: job.total_replied || 0,
-      }));
+      };
+    });
       setCategories(mappedCategories);
       if (mappedCategories.length > 0) {
         setHasSelectedJob(false);
@@ -1226,8 +1257,16 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                           className="rounded-[10px] transition-all duration-300"
                         >
                           <ProjectCard
+                            key={job.id}
                             jobId={job.id}
                             jobName={job.name}
+                            companyName={job.companyName}
+                            experience={job.experience}
+                            workApproach={job.workApproach}
+                            joiningTimeline={job.joiningTimeline}
+                            inboundCount={job.inboundCount}
+                            totalApplied={job.totalApplied}
+                            totalReplied={job.totalReplied}
                             status={job.status}
                             visibility={job.visibility}
                             isActive={activeCategoryId === job.id}
@@ -1681,7 +1720,7 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                       
                       {/* NEW CLEAN HEADER – replaces old tabs + dropdown */}
                       {categories.length > 0 && activeCategoryId && (
-                        <div className="sticky top-[68px] z-40 will-change-transform bg-gray-50 border-b border-gray-200 py-4">
+                        <div className="sticky top-[68px] z-30 will-change-transform bg-gray-50 border-b border-gray-200 py-4">
                           <div className="max-w-full flex items-center justify-between px-4 lg:px-6">
                             {/* Left side – Job title + chips */}
                             <div className="flex items-center gap-8">
@@ -1724,7 +1763,7 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
 
 
 
-                                  <span>8+ years</span>
+                                  <span>{categories.find(c => c.id === activeCategoryId)?.name}</span>
                                 </div>
 
                                 {/* Location */}

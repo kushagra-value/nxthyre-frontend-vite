@@ -4,6 +4,13 @@ import { MoreVertical, Edit, Archive, Trash2, Share2, Globe } from 'lucide-react
 interface ProjectCardProps {
   isActive?: boolean;
   jobName?: string;
+  companyName: string;
+  experience: string;           // e.g., "8+ years"
+  workApproach: string;        // "Hybrid", "Onsite", "Remote"
+  joiningTimeline: string;     // e.g., "Immediate"
+  inboundCount: number;         // 556 in image
+  totalApplied: number;         // 61
+  totalReplied: number;         // 21
   jobId: number;                    
   status?: "DRAFT" | "PUBLISHED";   
   visibility?: "PRIVATE" | "PUBLIC"; 
@@ -19,6 +26,13 @@ export default function ProjectCard({
   isActive = false,
   jobName = "",
   jobId,
+  companyName,
+  experience,
+  workApproach,
+  joiningTimeline,
+  inboundCount = 0,
+  totalApplied = 0,
+  totalReplied = 0,
   status = "DRAFT",
   visibility = "PRIVATE",
   onEditJobRole,
@@ -60,7 +74,7 @@ export default function ProjectCard({
             {jobName}
           </h3>
           <p className={`text-md leading-7 mt-0.1 ${subtitleClass}`}>
-            Deloitte
+            {companyName}
           </p>
         </div>
       </div>
@@ -81,7 +95,7 @@ export default function ProjectCard({
             </svg>
 
 
-          <span className={`text-md leading-7 ${textClass}`}>8+years</span>
+          <span className={`text-md leading-7 ${textClass}`}>{experience}</span>
         </div>
 
         <div className="flex items-center gap-1">
@@ -91,7 +105,7 @@ export default function ProjectCard({
             </svg>
 
 
-          <span className={`text-md leading-7 ${textClass}`}>Hybrid</span>
+          <span className={`text-md leading-7 ${textClass}`}>{workApproach}</span>
         </div>
 
         <div className="flex items-center gap-1">
@@ -100,7 +114,7 @@ export default function ProjectCard({
             </svg>
 
 
-          <span className={`text-md leading-7 ${textClass}`}>Immediate</span>
+          <span className={`text-md leading-7 ${textClass}`}>{joiningTimeline}</span>
         </div>
       </div>
 
@@ -113,7 +127,7 @@ export default function ProjectCard({
             <path d="M11.5879 8.97656C12.5069 9.22151 13.3499 9.71033 14.0353 10.3959C14.7209 11.0814 15.2256 11.9403 15.5009 12.8896" stroke={iconColor} stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
 
-          <span className={`text-md leading-6 ${textClass}`}>556</span>
+          <span className={`text-md leading-6 ${textClass}`}>{inboundCount}</span>
         </div>
 
         <div className="flex items-center gap-1">
@@ -124,7 +138,7 @@ export default function ProjectCard({
             </svg>
 
 
-          <span className={`text-md leading-6 ${textClass}`}>61</span>
+          <span className={`text-md leading-6 ${textClass}`}>{totalApplied}</span>
         </div>
 
         <div className="flex items-center gap-1">
@@ -135,7 +149,7 @@ export default function ProjectCard({
             <div className="absolute top-0 right-0 ml-auto w-1 h-1 rounded-full bg-[#0F47F2]"></div>
           </div>
            
-          <span className={`text-md leading-6 ${textClass}`}>21</span>
+          <span className={`text-md leading-6 ${textClass}`}>{totalReplied}</span>
         </div>
       </div>
 
