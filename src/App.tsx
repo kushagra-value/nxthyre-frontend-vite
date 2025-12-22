@@ -268,12 +268,17 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
 
     
       if (debouncedProjectSearch.trim()) {
-        const query = debouncedProjectSearch.toLowerCase();
-        filteredJobs = jobs.filter((job: any) => {
-          const titleMatch = job.title?.toLowerCase().includes(query);
-          return titleMatch;
-        });
-      }
+      const query = debouncedProjectSearch.toLowerCase();
+      filteredJobs = jobs.filter((job: any) => {
+        const titleMatch = job.title?.toLowerCase().includes(query);
+        const companyMatch = job.organization_details?.name?.toLowerCase().includes(query) ||
+                             job.workspace_details?.name?.toLowerCase().includes(query);
+        const skillsMatch = job.skills?.some((skill: string) =>
+          skill.toLowerCase().includes(query)
+        );
+        return titleMatch || companyMatch || skillsMatch;
+      });
+    }
 
       const mappedCategories: Category[] = filteredJobs.map((job:any) => {
        const minExp = job.experience_min_years ?? 0;
@@ -312,13 +317,12 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
       };
     });
       setCategories(mappedCategories);
-      if (mappedCategories.length > 0) {
-        setHasSelectedJob(false);
-      }
-      else {
-        setActiveCategoryId(null);
-        setHasSelectedJob(true);
-      }
+      if (mappedCategories.length === 0) {
+      setActiveCategoryId(null);
+      setHasSelectedJob(false);
+    } else {
+      setHasSelectedJob(false);
+    }
     } catch (error) {
       showToast.error("Failed to fetch job categories");
       console.error("Error fetching categories:", error);
@@ -483,13 +487,8 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
   const handleJobCreatedOrUpdated = () => {
     fetchCategories();
   };
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchCategories();
-    }
-  }, [isAuthenticated]);
 
-useEffect(() => {
+  useEffect(() => {
   if (isAuthenticated && !hasSelectedJob) {
     fetchCategories();
   }
@@ -1200,40 +1199,35 @@ useEffect(() => {
                       <div className="w-[80vw] h-[99px] bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.1)] rounded-[10px] flex items-center justify-between px-[34px]">
                         <h1 className="text-2xl font-medium text-[#4B5563]">Welcome {currentUser?.fullName || "User"}</h1>
 
-                        <div className="flex items-center gap-5">
-                          <div className="relative w-[544px] h-[59px]">
-                            <input
-                              type="text"
-                              placeholder="Search Projects"
-                              value={projectSearchQuery}
-                              onChange={(e) => setProjectSearchQuery(e.target.value)}
-                              className="w-full h-full bg-[#ECF1FF] rounded-[5px] pl-5 pr-16 text-lg text-[#181D25] placeholder:text-[#AAC1FF] focus:outline-none focus:ring-2 focus:ring-[#0F47F2]/20"
-                            />
-                            <button className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-[31px] bg-[#0F47F2] rounded-md flex items-center justify-center hover:bg-[#0d3ec9] transition-colors">
-                              <Search className="w-[22px] h-[19px] text-white" strokeWidth={1.33} />
+                        <div className="relative w-[544px] h-[59px]">
+                          <input
+                            type="text"
+                            placeholder="Search Projects"
+                            value={projectSearchQuery}
+                            onChange={(e) => setProjectSearchQuery(e.target.value)}
+                            className="w-full h-full bg-[#ECF1FF] rounded-[5px] pl-5 pr-16 text-lg text-[#181D25] placeholder:text-[#AAC1FF] focus:outline-none focus:ring-2 focus:ring-[#0F47F2]/20"
+                          />
+                          <button className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-[31px] bg-[#0F47F2] rounded-md flex items-center justify-center hover:bg-[#0d3ec9] transition-colors">
+                            <Search className="w-[22px] h-[19px] text-white" strokeWidth={1.33} />
+                          </button>
+                          {/* Optional: Clear button when typing */}
+                          {projectSearchQuery && (
+                            <button
+                              onClick={() => setProjectSearchQuery("")}
+                              className="absolute right-14 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            >
+                              ✕
                             </button>
-                          </div>
+                          )}
+                        </div>
 
                         
-                        </div> 
                       </div><div className="bg-[#F9FAFB] w-[210px] h-[99px] flex flex-col items-start justify-center px-5 -mr-[34px]">
                             <div className="text-2xl font-medium text-[#0F47F2] leading-[41px]">4D 21Hr</div>
                             <div className="text-lg font-medium text-[#4B5563] leading-6 mt-1">Total Time Saved</div>
                           </div>
                     </div>
-                    <div className="flex justify-center items-center">
-                      <div className="text-center">
-                      <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-                        No job roles created yet
-                      </h2>
-                      <button
-                        onClick={handleCreateJobRole}
-                        className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                      >
-                        Create Your First Job Role
-                      </button>
-                    </div>
-                    </div>
+                    
                   </div>
                 </div>
               ):  !hasSelectedJob ? (
@@ -1260,11 +1254,22 @@ useEffect(() => {
                             <input
                               type="text"
                               placeholder="Search Projects"
+                              value={projectSearchQuery}
+                              onChange={(e) => setProjectSearchQuery(e.target.value)}
                               className="w-full h-full bg-[#ECF1FF] rounded-[5px] pl-5 pr-16 text-lg text-[#181D25] placeholder:text-[#AAC1FF] focus:outline-none focus:ring-2 focus:ring-[#0F47F2]/20"
                             />
                             <button className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-[31px] bg-[#0F47F2] rounded-md flex items-center justify-center hover:bg-[#0d3ec9] transition-colors">
-                              <Search className="w-[22px] h-[19px] text-white" strokeWidth={1.33}/>
+                              <Search className="w-[22px] h-[19px] text-white" strokeWidth={1.33} />
                             </button>
+                            {/* Optional: Clear button when typing */}
+                            {projectSearchQuery && (
+                              <button
+                                onClick={() => setProjectSearchQuery("")}
+                                className="absolute right-14 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                              >
+                                ✕
+                              </button>
+                            )}
                           </div>
 
                         
