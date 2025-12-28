@@ -2191,6 +2191,7 @@ function MainApp() {
                             enableBooleanAnalysis={
                               filters.enableBooleanAnalysis
                             } // NEW: Pass flag from state
+                            defaultBoolQuery={defaultBoolQuery}
                             jobId={filters.jobId} // NEW: For dynamic query in API
                           />
                         </div>

@@ -970,11 +970,11 @@ class CandidateService {
   }
 
   async getCandidateBooleanSearch(
-    candidateId: string
+    candidateId: string,
+    bool_query: string
   ): Promise<AnalysisResult> {
     try {
-      const boolQuery =
-        "(Senior ML Engineer OR Lead ML Engineer)\nAND (Python)\nAND (PyTorch OR TensorFlow)\nAND (MLOps)\nAND (Kubernetes OR Docker)";
+      const boolQuery = bool_query;
       const response = await apiClient.post("/candidates/analyze/", {
         candidate_ids: [candidateId],
         bool_query: boolQuery,
