@@ -1887,7 +1887,7 @@ const [hasSelectedJob, setHasSelectedJob] = useState(false);
                                     }
                                     className={`w-[32px] h-[32px] rounded-full border-[0.5px] border-[#818283] flex items-center justify-center hover:bg-gray-50 transition-colors`}>
                               
-                                    <Globe className="w-4 h-4 mr-4 text-[#818283]" />
+                                    <Globe className="w-4 h-4 text-[#818283]" />
                                     
                                   </button>
                                 )}
