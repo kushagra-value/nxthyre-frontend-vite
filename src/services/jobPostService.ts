@@ -415,6 +415,17 @@ class JobPostService {
     }
   }
 
+  async getJobCompetencies(id: number): Promise<any> {
+    try {
+      const response = await apiClient.get(`/jobs/roles/${id}/competencies/`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch job competencies"
+      );
+    }
+  }
+
   async applyToJob(
     jobId: number,
     applicationData: {

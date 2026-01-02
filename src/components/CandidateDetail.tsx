@@ -324,6 +324,7 @@ interface CandidateDetailProps {
   deductCredits: () => Promise<void>;
   onUpdateCandidate: (updated: CandidateListItem) => void;
   enableBooleanAnalysis?: boolean;
+  defaultBoolQuery: string;
   jobId?: string;
 }
 
@@ -335,6 +336,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   onUpdateCandidate,
   deductCredits,
   enableBooleanAnalysis,
+  defaultBoolQuery,
   jobId,
 }) => {
   const [newComment, setNewComment] = useState("");
@@ -355,7 +357,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         // Assume props.enableBooleanAnalysis
         try {
           const data = await candidateService.getCandidateBooleanSearch(
-            candidate.id
+            candidate.id,
+            defaultBoolQuery
           );
           setBooleanData(data);
           setHasBooleanAnalysis(true);
