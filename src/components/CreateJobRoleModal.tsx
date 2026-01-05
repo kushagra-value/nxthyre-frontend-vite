@@ -121,7 +121,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     Admin: 7,
     Others: 8,
   };
-
+const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [competencies, setCompetencies] = useState<string[]>([]);
   const [editableJD, setEditableJD] = useState("");
   const [aiJdResponse, setAiJdResponse] = useState<any>(null);
@@ -227,27 +227,27 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
 
   // UPDATED: Replace Geoapify fetch with jobPostService.getLocationSuggestions for consistency and to use backend API
   const fetchLocationSuggestions = useCallback(
-    debounce(async (query: string) => {
-      if (query.length >= 2) {
-        try {
-          const suggestions = await jobPostService.getLocationSuggestions(
-            query
-          );
-          const uniqueSuggestions = [...new Set(suggestions)].filter(
-            (s: string) => !formData.location.includes(s)
-          );
-          setLocationSuggestions(uniqueSuggestions);
-        } catch (error) {
-          console.error("Error fetching location suggestions:", error);
-          setLocationSuggestions([]);
-          showToast.error("Failed to fetch location suggestions");
-        }
-      } else {
-        setLocationSuggestions([]);
-      }
-    }, 300),
-    [formData.location]
-  );
+  debounce(async (query: string) => {
+    if (query.length < 2) {
+      setLocationSuggestions([]);
+      setIsLoadingLocation(false);
+      return;
+    }
+
+    setIsLoadingLocation(true);
+    try {
+      const suggestions = await candidateService.getCitySuggestions(query);
+      setLocationSuggestions(suggestions);
+    } catch (error) {
+      console.error("Error fetching location suggestions:", error);
+      setLocationSuggestions([]);
+      showToast.error("Failed to fetch location suggestions");
+    } finally {
+      setIsLoadingLocation(false);
+    }
+  }, 300),
+  []
+);
 
   const handleSkillInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^a-zA-Z0-9\s]/g, "");
@@ -1063,17 +1063,23 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
                     className=" w-full border-none outline-none text-sm text-blue-600 placeholder-gray-400 mb-3"
                     disabled={isLoading}
                   />
-                  {locationSuggestions.length > 0 && (
+                  {(locationInput[0]?.length >= 2 && (isLoadingLocation || locationSuggestions.length > 0)) && (
                     <div className="absolute left-0 z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-40 overflow-y-auto shadow-lg">
-                      {locationSuggestions.map((suggestion, index) => (
-                        <div
-                          key={index}
-                          className="px-4 py-3 text-md text-gray-700 hover:bg-blue-100 cursor-pointer"
-                          onClick={() => handleLocationSelect(suggestion)}
-                        >
-                          {suggestion}
+                      {isLoadingLocation ? (
+                        <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                          Loading locations...
                         </div>
-                      ))}
+                      ) : (
+                        locationSuggestions.map((suggestion, index) => (
+                          <div
+                            key={index}
+                            className="px-4 py-3 text-md text-gray-700 hover:bg-blue-100 cursor-pointer"
+                            onClick={() => handleLocationSelect(suggestion)}
+                          >
+                            {suggestion}
+                          </div>
+                        ))
+                      )}
                     </div>
                   )}
                   <div className="flex flex-wrap gap-2">
