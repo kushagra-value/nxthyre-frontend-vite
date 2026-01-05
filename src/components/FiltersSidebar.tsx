@@ -249,6 +249,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const [currentLocation, setCurrentLocation] = useState<string>("");
   const [isLoadingCountries, setIsLoadingCountries] = useState(false);
   const [isLoadingCities, setIsLoadingCities] = useState(false);
+ 
+  const [currentCountry, setCurrentCountry] = useState<string>("");
+  const [currentCity, setCurrentCity] = useState<string>("");
 
   useEffect(() => {
     // Ensure keywords is always an array when filters change
@@ -292,67 +295,59 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     }, 300),
     [tempFilters.keywords]
   );
-    // UPDATED: Handle 304 Not Modified gracefully for country suggestions
-    // UPDATED: Use candidateService methods instead of direct fetch/apiClient
-      // UPDATED: Exact same pattern as keyword suggestions (working)
-  const fetchCountrySuggestions = useCallback(
-    debounce(async (query: string) => {
-      console.log("[Country] Fetch triggered with query:", query);
+    const fetchCountrySuggestions = useCallback(
+  debounce(async (query: string) => {
+    console.log("[Country] Fetch triggered with query:", query);
 
-      if (query.length < 2) {
-        setCountrySuggestions([]);
-        setIsLoadingCountries(false);
-        return;
-      }
+    if (query.length < 2) {
+      setCountrySuggestions([]);
+      return;
+    }
 
-      setIsLoadingCountries(true);
-      try {
-        const suggestions = await candidateService.getCountrySuggestions(query);
-        console.log("[Country] Raw API response:", suggestions);
+    setIsLoadingCountries(true);
+    try {
+      const suggestions = await candidateService.getCountrySuggestions(query);
+      console.log("[Country] Raw API response:", suggestions);
+      
+      const safeSuggestions = Array.isArray(suggestions) ? suggestions : [];
+      setCountrySuggestions(safeSuggestions);
+      console.log("[Country] Final suggestions set:", safeSuggestions);
+    } catch (error) {
+      console.error("Error fetching countries:", error);
+      setCountrySuggestions([]);
+    } finally {
+      setIsLoadingCountries(false);
+    }
+  }, 300),
+  [] // ← No dependencies, just like keywords
+);
 
-        // Ensure it's always an array
-        const safeSuggestions = Array.isArray(suggestions) ? suggestions : [];
-        
-        setCountrySuggestions(safeSuggestions);
-        console.log("[Country] Final suggestions set:", safeSuggestions);
-      } catch (error) {
-        console.error("Error fetching countries:", error);
-        setCountrySuggestions([]);
-      } finally {
-        setIsLoadingCountries(false);
-      }
-    }, 300),
-    [] // no dependencies → stable reference
-  );
+const fetchCitySuggestions = useCallback(
+  debounce(async (query: string) => {
+    console.log("[City] Fetch triggered with query:", query);
 
-  const fetchCitySuggestions = useCallback(
-    debounce(async (query: string) => {
-      console.log("[City] Fetch triggered with query:", query);
+    if (query.length < 2) {
+      setCitySuggestions([]);
+      return;
+    }
 
-      if (query.length < 2 || !tempFilters.country) {
-        setCitySuggestions([]);
-        setIsLoadingCities(false);
-        return;
-      }
-
-      setIsLoadingCities(true);
-      try {
-        const suggestions = await candidateService.getCitySuggestions(query);
-        console.log("[City] Raw API response:", suggestions);
-
-        const safeSuggestions = Array.isArray(suggestions) ? suggestions : [];
-        
-        setCitySuggestions(safeSuggestions);
-        console.log("[City] Final suggestions set:", safeSuggestions);
-      } catch (error) {
-        console.error("Error fetching cities:", error);
-        setCitySuggestions([]);
-      } finally {
-        setIsLoadingCities(false);
-      }
-    }, 300),
-    [tempFilters.country]
-  );
+    setIsLoadingCities(true);
+    try {
+      const suggestions = await candidateService.getCitySuggestions(query);
+      console.log("[City] Raw API response:", suggestions);
+      
+      const safeSuggestions = Array.isArray(suggestions) ? suggestions : [];
+      setCitySuggestions(safeSuggestions);
+      console.log("[City] Final suggestions set:", safeSuggestions);
+    } catch (error) {
+      console.error("Error fetching cities:", error);
+      setCitySuggestions([]);
+    } finally {
+      setIsLoadingCities(false);
+    }
+  }, 300),
+  [] // ← No dependencies
+);
 
 
   // Handle click outside to close suggestions
@@ -857,24 +852,24 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           {expandedSections.location && (
             <>
             <div className="space-y-4 flex justify-between items-center gap-2">
-              {/* Country Searchable Input */}
-                           {/* Country Searchable Input */}
+              
               <div className="relative">
                 <input
                   type="text"
                   placeholder="Search country..."
-                  value={tempFilters.country}
+                  value={currentCountry}  // ← Use separate state
                   onChange={(e) => {
                     const value = e.target.value;
                     console.log("[Country Input] User typed:", value);
-                    updateTempFilters("country", value);
-                    fetchCountrySuggestions(value);
-
+                    setCurrentCountry(value);  // ← Update separate state
+                    fetchCountrySuggestions(value);  // ← Pass value directly
+                    
+                    // Clear city when country changes
                     if (tempFilters.locations.length > 0) {
                       updateTempFilters("locations", []);
+                      setCurrentCity("");
                     }
                   }}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 {(tempFilters.country.length >= 2 && (isLoadingCountries || countrySuggestions.length > 0)) && (
                   <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
@@ -887,9 +882,10 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                         <div
                           key={index}
                           onClick={() => {
-                            updateTempFilters("country", suggestion);
-                            setCountrySuggestions([]); // hide dropdown
-                          }}
+                          setCurrentCountry(suggestion);  // ← Update input state
+                          updateTempFilters("country", suggestion);  // ← Update filter
+                          setCountrySuggestions([]);
+                        }}
                           className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                         >
                           {suggestion}
@@ -903,22 +899,20 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
               {/* City Searchable Input */}
               <div className="relative">
-                <input
-                  type="text"
-                  placeholder={tempFilters.country ? "Search city..." : "Select country first"}
-                  value={tempFilters.locations[0] || ""}
-                  onChange={(e) => {
-                    if (!tempFilters.country) return;
-                    const value = e.target.value;
-                    console.log("[City Input] User typed:", value);
-                    updateTempFilters("locations", value ? [value] : []);
-                    fetchCitySuggestions(value);
-                  }}
-                  disabled={!tempFilters.country}
-                  className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    !tempFilters.country ? "bg-gray-50 cursor-not-allowed" : ""
-                  }`}
-                />
+                
+                  <input
+                    type="text"
+                    placeholder={tempFilters.country ? "Search city..." : "Select country first"}
+                    value={currentCity}  // ← Use separate state
+                    onChange={(e) => {
+                      if (!tempFilters.country) return;
+                      const value = e.target.value;
+                      console.log("[City Input] User typed:", value);
+                      setCurrentCity(value);  // ← Update separate state
+                      fetchCitySuggestions(value);  // ← Pass value directly
+                    }}
+                    disabled={!tempFilters.country}
+                  />
                 {tempFilters.country && tempFilters.locations[0]?.length >= 2 && (isLoadingCities || citySuggestions.length > 0) && (
                   <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
                     {isLoadingCities ? (
@@ -930,9 +924,10 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                         <div
                           key={index}
                           onClick={() => {
-                            updateTempFilters("locations", [suggestion]);
-                            setCitySuggestions([]); // hide dropdown
-                          }}
+                          setCurrentCity(suggestion);  // ← Update input state
+                          updateTempFilters("locations", [suggestion]);  // ← Update filter
+                          setCitySuggestions([]);
+                        }}
                           className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                         >
                           {suggestion}
