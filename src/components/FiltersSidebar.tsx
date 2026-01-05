@@ -338,19 +338,6 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     [tempFilters.country]
   );
 
-    // Trigger country suggestions on input change
-  useEffect(() => {
-    fetchCountrySuggestions(tempFilters.country);
-  }, [tempFilters.country]);
-
-  // Trigger city suggestions when typing in city field
-  useEffect(() => {
-    if (tempFilters.locations[0]) {
-      fetchCitySuggestions(tempFilters.locations[0]);
-    } else {
-      setCitySuggestions([]);
-    }
-  }, [tempFilters.locations]);
 
   // Handle click outside to close suggestions
   useEffect(() => {
@@ -861,7 +848,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                   placeholder="Search country..."
                   value={tempFilters.country}
                   onChange={(e) => {
-                    updateTempFilters("country", e.target.value);
+                    const value = e.target.value;
+                    updateTempFilters("country", value);
+                    fetchCountrySuggestions(value);
                     // Clear city when country changes
                     if (tempFilters.locations.length > 0) {
                       updateTempFilters("locations", []);
@@ -910,6 +899,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                     if (!tempFilters.country) return;
                     const value = e.target.value;
                     updateTempFilters("locations", value ? [value] : []);
+                    fetchCitySuggestions(value); // ← ADD THIS LINE
                   }}
                   disabled={!tempFilters.country}
                   className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
