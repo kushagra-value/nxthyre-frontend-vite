@@ -300,7 +300,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       }
       try {
         const response = await fetch(
-          `/candidates/location-suggestions/?q=${encodeURIComponent(query)}&country=true`
+          `/api/candidates/location-suggestions/?q=${encodeURIComponent(query)}&country=true`
         );
         const data = await response.json();
         // Assuming API returns { suggestions: string[] }
@@ -322,7 +322,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       }
       try {
         const response = await fetch(
-          `/candidates/location-suggestions/?q=${encodeURIComponent(query)}`
+          `/api/candidates/location-suggestions/?q=${encodeURIComponent(query)}`
         );
         const data = await response.json();
         setCitySuggestions(data.suggestions || []);
