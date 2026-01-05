@@ -295,48 +295,58 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     // UPDATED: Handle 304 Not Modified gracefully for country suggestions
     // UPDATED: Use candidateService methods instead of direct fetch/apiClient
     const fetchCountrySuggestions = useCallback(
-    debounce(async (query: string) => {
-      if (query.length < 2) {
-        setCountrySuggestions([]);
-        setIsLoadingCountries(false);
-        return;
-      }
+  debounce(async (query: string) => {
+    console.log("[Country] Fetch triggered with query:", query); // UPDATED: Debug log
 
-      setIsLoadingCountries(true); // UPDATED: Show loading while fetching
-      try {
-        const suggestions = await candidateService.getCountrySuggestions(query);
-        setCountrySuggestions(suggestions);
-      } catch (error) {
-        console.error("Error fetching country suggestions:", error);
-        setCountrySuggestions([]);
-      } finally {
-        setIsLoadingCountries(false);
-      }
-    }, 300),
-    []
-  );
+    if (query.length < 2) {
+      setCountrySuggestions([]);
+      setIsLoadingCountries(false);
+      return;
+    }
+
+    setIsLoadingCountries(true);
+    try {
+      console.log("[Country] Calling API for:", query); // UPDATED: Before API call
+      const suggestions = await candidateService.getCountrySuggestions(query);
+      console.log("[Country] API response:", suggestions); // UPDATED: Log actual response
+      setCountrySuggestions(suggestions);
+      console.log("[Country] Setting suggestions state to:", suggestions);
+    } catch (error) {
+      console.error("Error fetching country suggestions:", error);
+      setCountrySuggestions([]);
+    } finally {
+      setIsLoadingCountries(false);
+    }
+  }, 300),
+  []
+);
 
     const fetchCitySuggestions = useCallback(
-    debounce(async (query: string) => {
-      if (query.length < 2 || !tempFilters.country) {
-        setCitySuggestions([]);
-        setIsLoadingCities(false);
-        return;
-      }
+  debounce(async (query: string) => {
+    console.log("[City] Fetch triggered with query:", query, "| Country:", tempFilters.country); // UPDATED: Debug log
 
-      setIsLoadingCities(true); // UPDATED: Show loading while fetching
-      try {
-        const suggestions = await candidateService.getCitySuggestions(query);
-        setCitySuggestions(suggestions);
-      } catch (error) {
-        console.error("Error fetching city suggestions:", error);
-        setCitySuggestions([]);
-      } finally {
-        setIsLoadingCities(false);
-      }
-    }, 300),
-    [tempFilters.country]
-  );
+    if (query.length < 2 || !tempFilters.country) {
+      setCitySuggestions([]);
+      setIsLoadingCities(false);
+      return;
+    }
+
+    setIsLoadingCities(true);
+    try {
+      console.log("[City] Calling API for:", query); // UPDATED: Before API call
+      const suggestions = await candidateService.getCitySuggestions(query);
+      console.log("[City] API response:", suggestions); // UPDATED: Log actual response
+      setCitySuggestions(suggestions);
+      console.log("[City] Setting suggestions state to:", suggestions);
+    } catch (error) {
+      console.error("Error fetching city suggestions:", error);
+      setCitySuggestions([]);
+    } finally {
+      setIsLoadingCities(false);
+    }
+  }, 300),
+  [tempFilters.country]
+);
 
 
   // Handle click outside to close suggestions
@@ -849,9 +859,10 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                   value={tempFilters.country}
                   onChange={(e) => {
                     const value = e.target.value;
+                    console.log("[Country Input] User typed:", value); // UPDATED: Track typing
                     updateTempFilters("country", value);
-                    fetchCountrySuggestions(value);
-                    // Clear city when country changes
+                    fetchCountrySuggestions(value); // Now correctly called
+
                     if (tempFilters.locations.length > 0) {
                       updateTempFilters("locations", []);
                     }
@@ -889,23 +900,20 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
               {/* City Searchable Input */}
               <div className="relative">
-                <input
-                  type="text"
-                  placeholder={
-                    tempFilters.country ? "Search city..." : "Select country first"
-                  }
-                  value={tempFilters.locations[0] || ""}
-                  onChange={(e) => {
-                    if (!tempFilters.country) return;
-                    const value = e.target.value;
-                    updateTempFilters("locations", value ? [value] : []);
-                    fetchCitySuggestions(value); // ← ADD THIS LINE
-                  }}
-                  disabled={!tempFilters.country}
-                  className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    !tempFilters.country ? "bg-gray-50 cursor-not-allowed" : ""
-                  }`}
-                />
+               <input
+                type="text"
+                placeholder={tempFilters.country ? "Search city..." : "Select country first"}
+                value={tempFilters.locations[0] || ""}
+                onChange={(e) => {
+                  if (!tempFilters.country) return;
+                  const value = e.target.value;
+                  console.log("[City Input] User typed:", value); // UPDATED: Track typing
+                  updateTempFilters("locations", value ? [value] : []);
+                  fetchCitySuggestions(value);
+                }}
+                disabled={!tempFilters.country}
+                className={`w-full px-3 py-2 text-sm border ...`}
+              />
                 
                     {tempFilters.country && 
                       tempFilters.locations[0]?.length >= 2 && 
