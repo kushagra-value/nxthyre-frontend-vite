@@ -291,7 +291,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     }, 300),
     [tempFilters.keywords]
   );
-    // UPDATED: Debounced country suggestion fetch
+    // UPDATED: Handle 304 Not Modified gracefully for country suggestions
   const fetchCountrySuggestions = useCallback(
     debounce(async (query: string) => {
       if (query.length < 2) {
@@ -302,8 +302,17 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         const response = await fetch(
           `/api/candidates/location-suggestions/?q=${encodeURIComponent(query)}&country=true`
         );
+
+        if (response.status === 304) {
+          // Cache hit: keep current suggestions (don't clear)
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
-        // Assuming API returns { suggestions: string[] }
         setCountrySuggestions(data.suggestions || []);
       } catch (error) {
         console.error("Error fetching country suggestions:", error);
@@ -313,7 +322,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     []
   );
 
-  // UPDATED: Debounced city suggestion fetch
+  // UPDATED: Handle 304 Not Modified gracefully for city suggestions
   const fetchCitySuggestions = useCallback(
     debounce(async (query: string) => {
       if (query.length < 2 || !tempFilters.country) {
@@ -324,6 +333,16 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         const response = await fetch(
           `/api/candidates/location-suggestions/?q=${encodeURIComponent(query)}`
         );
+
+        if (response.status === 304) {
+          // Cache hit: keep current suggestions
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
         setCitySuggestions(data.suggestions || []);
       } catch (error) {
