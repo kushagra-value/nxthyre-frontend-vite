@@ -998,7 +998,7 @@ class CandidateService {
       const response = await apiClient.get("/candidates/location-suggestions/", {
         params: { q: query, country: true },
       });
-      return response.data.suggestions || [];
+      return response.data || [];
     } catch (error: any) {
       console.error("Error fetching country suggestions:", error);
       // Return empty array on error to avoid breaking UI
@@ -1012,7 +1012,7 @@ class CandidateService {
       const response = await apiClient.get("/candidates/location-suggestions/", {
         params: { q: query },
       });
-      return response.data.suggestions || [];
+      return response.data || [];
     } catch (error: any) {
       console.error("Error fetching city suggestions:", error);
       return [];
