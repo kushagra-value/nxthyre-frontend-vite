@@ -242,13 +242,12 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     boolQuery: filters.boolQuery || "",
   });
 
+    const [countrySuggestions, setCountrySuggestions] = useState<string[]>([]);
+  const [citySuggestions, setCitySuggestions] = useState<string[]>([]);
+
   const [currentKeyword, setCurrentKeyword] = useState<string>("");
   const [currentLocation, setCurrentLocation] = useState<string>("");
-  const [countriesList, setCountriesList] = useState<string[]>([]);
-  const [citiesList, setCitiesList] = useState<string[]>([]);
-  const [cityToCountryMap, setCityToCountryMap] = useState<
-    Record<string, string>
-  >({});
+  
 
   useEffect(() => {
     // Ensure keywords is always an array when filters change
@@ -259,52 +258,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     });
   }, [filters]);
 
-  useEffect(() => {
-    fetch("https://countriesnow.space/api/v0.1/countries")
-      .then((res) => res.json())
-      .then((data) => {
-        const countries = data.data
-          .map((c: any) => c.country)
-          .sort((a: string, b: string) => a.localeCompare(b));
-        setCountriesList(countries);
+  
 
-        // Create city-to-country mapping
-        const mapping: Record<string, string> = {};
-        data.data.forEach((c: any) => {
-          c.cities.forEach((city: string) => {
-            mapping[city] = c.country;
-          });
-        });
-        setCityToCountryMap(mapping);
-      })
-      .catch((error) => {
-        console.error("Error fetching countries and cities:", error);
-      });
-  }, []);
-
-  // Fetch cities when country changes
-  useEffect(() => {
-    if (tempFilters.country) {
-      fetch("https://countriesnow.space/api/v0.1/countries")
-        .then((res) => res.json())
-        .then((data) => {
-          const countryData = data.data.find(
-            (c: any) => c.country === tempFilters.country
-          );
-          if (countryData) {
-            setCitiesList(countryData.cities.sort());
-          } else {
-            setCitiesList([]);
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching cities:", error);
-          setCitiesList([]);
-        });
-    } else {
-      setCitiesList([]);
-    }
-  }, [tempFilters.country]);
 
   // Fetch keyword suggestions
   const fetchKeywordSuggestions = useCallback(
@@ -336,6 +291,62 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     }, 300),
     [tempFilters.keywords]
   );
+    // UPDATED: Debounced country suggestion fetch
+  const fetchCountrySuggestions = useCallback(
+    debounce(async (query: string) => {
+      if (query.length < 2) {
+        setCountrySuggestions([]);
+        return;
+      }
+      try {
+        const response = await fetch(
+          `/candidates/location-suggestions/?q=${encodeURIComponent(query)}&country=true`
+        );
+        const data = await response.json();
+        // Assuming API returns { suggestions: string[] }
+        setCountrySuggestions(data.suggestions || []);
+      } catch (error) {
+        console.error("Error fetching country suggestions:", error);
+        setCountrySuggestions([]);
+      }
+    }, 300),
+    []
+  );
+
+  // UPDATED: Debounced city suggestion fetch
+  const fetchCitySuggestions = useCallback(
+    debounce(async (query: string) => {
+      if (query.length < 2 || !tempFilters.country) {
+        setCitySuggestions([]);
+        return;
+      }
+      try {
+        const response = await fetch(
+          `/candidates/location-suggestions/?q=${encodeURIComponent(query)}`
+        );
+        const data = await response.json();
+        setCitySuggestions(data.suggestions || []);
+      } catch (error) {
+        console.error("Error fetching city suggestions:", error);
+        setCitySuggestions([]);
+      }
+    }, 300),
+    [tempFilters.country]
+  );
+
+    // Trigger country suggestions on input change
+  useEffect(() => {
+    fetchCountrySuggestions(tempFilters.country);
+  }, [tempFilters.country]);
+
+  // Trigger city suggestions when typing in city field
+  useEffect(() => {
+    if (tempFilters.locations[0]) {
+      fetchCitySuggestions(tempFilters.locations[0]);
+    } else {
+      setCitySuggestions([]);
+    }
+  }, [tempFilters.locations]);
 
   // Handle click outside to close suggestions
   useEffect(() => {
@@ -388,29 +399,18 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       }
     }
 
-    if (key === "city" && value) {
-      // When a city is selected, add it to locations and clear the city dropdown
-      const trimmed = value.trim();
-      const lower = trimmed.toLowerCase();
-
-      if (tempFilters.locations.some((loc) => loc.toLowerCase() === lower)) {
-        showToast.error("This location is already added.");
-        return;
+     if (key === "country") {
+      if (value !== tempFilters.country) {
+        newFilters.locations = []; // Clear selected city when country changes
       }
-      newFilters = {
-        ...newFilters,
-        city: "",
-        locations: [...tempFilters.locations, trimmed], // Clear the city dropdown after adding to locations
-        // Keep the country selected so cities list remains available
-        country: cityToCountryMap[value] || tempFilters.country,
-      };
-    } else if (key === "country") {
       setIsLocationManuallyEdited(false);
-      newFilters = {
-        ...newFilters,
-        country: value,
-        city: "", // Reset city when country changes
-      };
+    }
+
+    // Enforce single city: if user somehow tries to set locations as multiple, keep only the latest
+    if (key === "locations" && Array.isArray(value)) {
+      if (value.length > 1) {
+        newFilters.locations = [value[value.length - 1]]; // Keep only the most recent
+      }
     }
 
     setTempFilters(newFilters);
@@ -462,12 +462,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     }
   };
 
-  const handleLocationInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const value = e.target.value;
-    setCurrentLocation(value);
-  };
+ 
 
   const handleKeywordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -486,20 +481,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     updateTempFilters("keywords", updatedKeywords);
   };
 
-  const handleLocationKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      addLocation(currentLocation);
-    }
-  };
+  
 
-  const removeLocationTag = (locationToRemove: string) => {
-    const updatedLocations = tempFilters.locations.filter(
-      (loc) => loc !== locationToRemove
-    );
-    updateTempFilters("locations", updatedLocations);
-  };
-
+  
   // Handle close boolean search
   const handleCloseBooleanSearch = () => {
     updateTempFilters("booleanSearch", false);
@@ -864,65 +848,105 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             )}
           </div>
           {expandedSections.location && (
-            <div className="space-y-2">
-              <div className="w-full flex space-x-2">
-                <select
+            <div className="space-y-4">
+              {/* Country Searchable Input */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search country..."
                   value={tempFilters.country}
-                  onChange={(e) => updateTempFilters("country", e.target.value)}
-                  className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
-                >
-                  {countriesList.map((country) => (
-                    <option key={country} value={country}>
-                      {country}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={tempFilters.city}
-                  onChange={(e) => updateTempFilters("city", e.target.value)}
-                  className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
-                  disabled={!tempFilters.country}
-                >
-                  {citiesList.map((city) => (
-                    <option key={city} value={city}>
-                      {city}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(e) => {
+                    updateTempFilters("country", e.target.value);
+                    // Clear city when country changes
+                    if (tempFilters.locations.length > 0) {
+                      updateTempFilters("locations", []);
+                    }
+                  }}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                {tempFilters.country && countrySuggestions.length > 0 && (
+                  <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
+                    {countrySuggestions.map((suggestion, index) => (
+                      <div
+                        key={index}
+                        onClick={() => {
+                          updateTempFilters("country", suggestion);
+                          setCountrySuggestions([]);
+                        }}
+                        className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                      >
+                        {suggestion}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <label className="text-xs text-gray-500 mt-1 block">Country</label>
               </div>
-              <div className="w-full flex space-x-2">
-                <label className="w-full flex-1 px-2 pb-1 text-xs text-gray-500 ">
-                  {" "}
-                  Country
-                </label>
-                <label className="w-full flex-1 px-2 pb-1 text-xs text-gray-500 ">
-                  {" "}
-                  City
-                </label>
-              </div>
-              <input
-                type="text"
-                placeholder="Enter Location like Ahmedabad and press enter"
-                value={currentLocation}
-                onChange={handleLocationInputChange}
-                onKeyDown={handleLocationKeyDown}
-                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
 
+              {/* City Searchable Input */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder={
+                    tempFilters.country ? "Search city..." : "Select country first"
+                  }
+                  value={tempFilters.locations[0] || ""}
+                  onChange={(e) => {
+                    if (!tempFilters.country) return;
+                    const value = e.target.value;
+                    // Update displayed value (single city)
+                    if (value) {
+                      updateTempFilters("locations", [value]);
+                    } else {
+                      updateTempFilters("locations", []);
+                    }
+                  }}
+                  disabled={!tempFilters.country}
+                  className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                    !tempFilters.country ? "bg-gray-50 cursor-not-allowed" : ""
+                  }`}
+                />
+                {/* Hover message if country not selected */}
+                {!tempFilters.country && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <span className="text-xs text-gray-500">
+                      Please select a country first
+                    </span>
+                  </div>
+                )}
+                {tempFilters.country &&
+                  citySuggestions.length > 0 &&
+                  tempFilters.locations[0] && (
+                    <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
+                      {citySuggestions.map((suggestion, index) => (
+                        <div
+                          key={index}
+                          onClick={() => {
+                            updateTempFilters("locations", [suggestion]);
+                            setCitySuggestions([]);
+                          }}
+                          className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                        >
+                          {suggestion}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                <label className="text-xs text-gray-500 mt-1 block">City (One only)</label>
+              </div>
+
+              {/* Display selected location tag */}
               {tempFilters.locations.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {tempFilters.locations.map((location, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200"
-                    >
-                      <X
-                        className="w-3 h-3 text-gray-400 mr-1 cursor-pointer hover:text-gray-600"
-                        onClick={() => removeLocationTag(location)}
-                      />
-                      <span>{location}</span>
-                    </div>
-                  ))}
+                  <div className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200">
+                    <X
+                      className="w-3 h-3 text-gray-400 mr-1 cursor-pointer hover:text-gray-600"
+                      onClick={() => updateTempFilters("locations", [])}
+                    />
+                    <span>
+                      {tempFilters.locations[0]} {tempFilters.country && `, ${tempFilters.country}`}
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
