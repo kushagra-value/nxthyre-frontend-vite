@@ -46,13 +46,40 @@ export default function AddNewStageForm({ onClose, onStageCreated }: AddNewStage
       showToast.error("Pipeline ID not found");
       return;
     }
-
+    
     setLoading(true);
 
     try {
-      await apiClient.post(`/jobs/roles/${pipelineId}/custom-stages/`, {
+
+      let payload: any = {
         name: stageName.trim(),
-      });
+      };
+      if (isBackgroundVerification) {
+      // Background Verification stage
+      payload.stage_type = "BACKGROUND_VERIFICATION";
+      payload.enable_document_reminders = calendarInvite; // Reuse toggle as reminder enable
+      payload.required_documents = [];
+
+      if (documentRequired.idProof) payload.required_documents.push("ID_PROOF");
+      if (documentRequired.marksheets_10th_12th) payload.required_documents.push("MARKSHEETS_10TH_12TH");
+      if (documentRequired.collegeTranscript) payload.required_documents.push("COLLEGE_TRANSCRIPT");
+      if (documentRequired.experienceLetters) payload.required_documents.push("EXPERIENCE_LETTERS");
+      if (documentRequired.panCard) payload.required_documents.push("PAN_CARD");
+    } else if (!isMockCall) {
+      const stageTypeMapping: Record<string, string> = {
+        'face-to-face': 'FACE_TO_FACE_INTERVIEW',
+        'video': 'VIDEO_INTERVIEW',
+        'phone': 'PHONE_INTERVIEW',
+        'assessment': 'ASSESSMENT',
+      };
+
+      payload.stage_type = stageTypeMapping[stageType] || 'FACE_TO_FACE_INTERVIEW';
+      payload.enable_calendar_invite = calendarInvite;
+      payload.notify_panel_24h_before = reminders.panel24h;
+      payload.notify_candidate_48h_before = reminders.candidate48h;
+      payload.notify_hr_30min_before = reminders.hr30min;
+    }
+      await apiClient.post(`/jobs/roles/${pipelineId}/custom-stages/`, payload);
 
       showToast.success(`Stage "${stageName}" created successfully`);
       onStageCreated?.();        // Refresh stages in parent
