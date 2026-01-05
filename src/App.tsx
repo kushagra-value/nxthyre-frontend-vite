@@ -2002,6 +2002,7 @@ function MainApp() {
                                       activeCategoryId
                                     )
                                   }
+                                  title="Copy Link"
                                   className={`w-[32px] h-[32px] rounded-full border-[0.5px] border-[#818283] flex items-center justify-center hover:bg-gray-50 transition-colors`}
                                 >
                                   <svg
@@ -2028,6 +2029,7 @@ function MainApp() {
                                       activeCategoryId
                                     )
                                   }
+                                  title="Edit Template"
                                   className={`w-[32px] h-[32px] rounded-full border-[0.5px] border-[#818283] flex items-center justify-center hover:bg-gray-50 transition-colors`}
                                 >
                                   <svg
@@ -2059,6 +2061,7 @@ function MainApp() {
                                           activeCategoryId
                                         )
                                       }
+                                      title="Publish Job"
                                       className={`w-[32px] h-[32px] rounded-full border-[0.5px] border-[#818283] flex items-center justify-center hover:bg-gray-50 transition-colors`}
                                     >
                                       <Globe className="w-4 h-4 text-[#818283]" />
@@ -2077,6 +2080,7 @@ function MainApp() {
                                           activeCategoryId
                                         )
                                       }
+                                      title="Unpublish Job"
                                       className={`w-[32px] h-[32px] rounded-full border-[0.5px] border-[#818283] flex items-center justify-center hover:bg-gray-50 transition-colors`}
                                     >
                                       <svg
@@ -2102,6 +2106,7 @@ function MainApp() {
                                       activeCategoryId
                                     )
                                   }
+                                  title="Edit Job"
                                   className={`w-[32px] h-[32px] rounded-full border-[0.5px] border-[#818283] flex items-center justify-center hover:bg-gray-50 transition-colors`}
                                 >
                                   <svg
@@ -2126,6 +2131,7 @@ function MainApp() {
                                       activeCategoryId
                                     )
                                   }
+                                  title="Requisition Info"
                                   className={`w-[32px] h-[32px] rounded-full border-[0.5px] border-[#818283] flex items-center justify-center hover:bg-gray-50 transition-colors`}
                                 >
                                   <svg
@@ -2159,6 +2165,7 @@ function MainApp() {
                                       activeCategoryId
                                     )
                                   }
+                                  title="Archive"
                                   className={`w-[32px] h-[32px] rounded-full border-[0.5px] border-[#818283] flex items-center justify-center hover:bg-gray-50 transition-colors`}
                                 >
                                   <svg
