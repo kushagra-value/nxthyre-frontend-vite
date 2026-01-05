@@ -364,7 +364,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         const mappedCategories: Category[] = jobs.map((job) => ({
           id: job.id,
           name: job.title,
-          count: job.total_candidates || 0,
+          count: job.pipeline_candidate_count || 0,
         }));
         setCategories(mappedCategories);
         if (mappedCategories.length > 0) {

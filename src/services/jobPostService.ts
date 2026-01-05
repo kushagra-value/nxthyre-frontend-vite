@@ -30,7 +30,7 @@ export interface Job {
   };
   created_at: string;
   updated_at: string;
-  total_candidates: number;
+  pipeline_candidate_count: number;
   inbound_count: number;
   invites_sent: number;
   total_applied: number;
