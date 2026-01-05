@@ -831,7 +831,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             )}
           </div>
           {expandedSections.location && (
-            <div className="space-y-4">
+            <div className="space-y-4 flex justify-between items-center gap-2">
               {/* Country Searchable Input */}
               <div className="relative">
                 <input
@@ -847,20 +847,26 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                   }}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                {tempFilters.country && countrySuggestions.length > 0 && (
+                {(tempFilters.country.length > 0 || countrySuggestions.length > 0) && (
                   <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
-                    {countrySuggestions.map((suggestion, index) => (
-                      <div
-                        key={index}
-                        onClick={() => {
-                          updateTempFilters("country", suggestion);
-                          setCountrySuggestions([]);
-                        }}
-                        className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                      >
-                        {suggestion}
+                    {countrySuggestions.length > 0 ? (
+                      countrySuggestions.map((suggestion, index) => (
+                        <div
+                          key={index}
+                          onClick={() => {
+                            updateTempFilters("country", suggestion);
+                            setCountrySuggestions([]); // Hide after selection
+                          }}
+                          className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                        >
+                          {suggestion}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                        No countries found
                       </div>
-                    ))}
+                    )}
                   </div>
                 )}
                 <label className="text-xs text-gray-500 mt-1 block">Country</label>
@@ -877,49 +883,41 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                   onChange={(e) => {
                     if (!tempFilters.country) return;
                     const value = e.target.value;
-                    // Update displayed value (single city)
-                    if (value) {
-                      updateTempFilters("locations", [value]);
-                    } else {
-                      updateTempFilters("locations", []);
-                    }
+                    updateTempFilters("locations", value ? [value] : []);
                   }}
                   disabled={!tempFilters.country}
                   className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     !tempFilters.country ? "bg-gray-50 cursor-not-allowed" : ""
                   }`}
                 />
-                {/* Hover message if country not selected */}
-                {!tempFilters.country && (
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <span className="text-xs text-gray-500">
-                      Please select a country first
-                    </span>
-                  </div>
-                )}
-                {tempFilters.country &&
-                  citySuggestions.length > 0 &&
-                  tempFilters.locations[0] && (
-                    <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
-                      {citySuggestions.map((suggestion, index) => (
+                
+                {tempFilters.country && (tempFilters.locations[0]?.length > 0 || citySuggestions.length > 0) && (
+                  <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
+                    {citySuggestions.length > 0 ? (
+                      citySuggestions.map((suggestion, index) => (
                         <div
                           key={index}
                           onClick={() => {
                             updateTempFilters("locations", [suggestion]);
-                            setCitySuggestions([]);
+                            setCitySuggestions([]); // Hide after selection
                           }}
                           className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                         >
                           {suggestion}
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      ))
+                    ) : (
+                      <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                        No cities found
+                      </div>
+                    )}
+                  </div>
+                )}
                 <label className="text-xs text-gray-500 mt-1 block">City</label>
               </div>
 
               {/* Display selected location tag */}
-              {tempFilters.locations.length > 0 && (
+              {tempFilters.locations.length > 0 && tempFilters.country && (
                 <div className="flex flex-wrap gap-2">
                   <div className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200">
                     <X
@@ -927,7 +925,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                       onClick={() => updateTempFilters("locations", [])}
                     />
                     <span>
-                      {tempFilters.locations[0]} {tempFilters.country && `, ${tempFilters.country}`}
+                      {tempFilters.locations[0]}, {tempFilters.country}
                     </span>
                   </div>
                 </div>
