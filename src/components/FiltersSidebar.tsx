@@ -247,7 +247,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
   const [currentKeyword, setCurrentKeyword] = useState<string>("");
   const [currentLocation, setCurrentLocation] = useState<string>("");
-  
+  const [isLoadingCountries, setIsLoadingCountries] = useState(false);
+  const [isLoadingCities, setIsLoadingCities] = useState(false);
 
   useEffect(() => {
     // Ensure keywords is always an array when filters change
@@ -293,26 +294,46 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   );
     // UPDATED: Handle 304 Not Modified gracefully for country suggestions
     // UPDATED: Use candidateService methods instead of direct fetch/apiClient
-  const fetchCountrySuggestions = useCallback(
+    const fetchCountrySuggestions = useCallback(
     debounce(async (query: string) => {
       if (query.length < 2) {
         setCountrySuggestions([]);
+        setIsLoadingCountries(false);
         return;
       }
-      const suggestions = await candidateService.getCountrySuggestions(query);
-      setCountrySuggestions(suggestions);
+
+      setIsLoadingCountries(true); // UPDATED: Show loading while fetching
+      try {
+        const suggestions = await candidateService.getCountrySuggestions(query);
+        setCountrySuggestions(suggestions);
+      } catch (error) {
+        console.error("Error fetching country suggestions:", error);
+        setCountrySuggestions([]);
+      } finally {
+        setIsLoadingCountries(false);
+      }
     }, 300),
     []
   );
 
-  const fetchCitySuggestions = useCallback(
+    const fetchCitySuggestions = useCallback(
     debounce(async (query: string) => {
       if (query.length < 2 || !tempFilters.country) {
         setCitySuggestions([]);
+        setIsLoadingCities(false);
         return;
       }
-      const suggestions = await candidateService.getCitySuggestions(query);
-      setCitySuggestions(suggestions);
+
+      setIsLoadingCities(true); // UPDATED: Show loading while fetching
+      try {
+        const suggestions = await candidateService.getCitySuggestions(query);
+        setCitySuggestions(suggestions);
+      } catch (error) {
+        console.error("Error fetching city suggestions:", error);
+        setCitySuggestions([]);
+      } finally {
+        setIsLoadingCities(false);
+      }
     }, 300),
     [tempFilters.country]
   );
@@ -831,6 +852,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             )}
           </div>
           {expandedSections.location && (
+            <>
             <div className="space-y-4 flex justify-between items-center gap-2">
               {/* Country Searchable Input */}
               <div className="relative">
@@ -847,15 +869,19 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                   }}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                {(tempFilters.country.length > 0 || countrySuggestions.length > 0) && (
+                {(tempFilters.country.length >= 2 || isLoadingCountries || countrySuggestions.length > 0) && (
                   <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
-                    {countrySuggestions.length > 0 ? (
+                    {isLoadingCountries ? (
+                      <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                        Loading countries...
+                      </div>
+                    ) : countrySuggestions.length > 0 ? (
                       countrySuggestions.map((suggestion, index) => (
                         <div
                           key={index}
                           onClick={() => {
                             updateTempFilters("country", suggestion);
-                            setCountrySuggestions([]); // Hide after selection
+                            setCountrySuggestions([]);
                           }}
                           className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                         >
@@ -891,15 +917,19 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                   }`}
                 />
                 
-                {tempFilters.country && (tempFilters.locations[0]?.length > 0 || citySuggestions.length > 0) && (
+                                {tempFilters.country && (tempFilters.locations[0]?.length >= 2 || isLoadingCities || citySuggestions.length > 0) && (
                   <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
-                    {citySuggestions.length > 0 ? (
+                    {isLoadingCities ? (
+                      <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                        Loading cities...
+                      </div>
+                    ) : citySuggestions.length > 0 ? (
                       citySuggestions.map((suggestion, index) => (
                         <div
                           key={index}
                           onClick={() => {
                             updateTempFilters("locations", [suggestion]);
-                            setCitySuggestions([]); // Hide after selection
+                            setCitySuggestions([]);
                           }}
                           className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                         >
@@ -917,7 +947,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               </div>
 
               {/* Display selected location tag */}
-              {tempFilters.locations.length > 0 && tempFilters.country && (
+              
+            </div>
+            {tempFilters.locations.length > 0 && tempFilters.country && (
                 <div className="flex flex-wrap gap-2">
                   <div className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200">
                     <X
@@ -930,7 +962,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                   </div>
                 </div>
               )}
-            </div>
+            </>
           )}
         </div>
 
