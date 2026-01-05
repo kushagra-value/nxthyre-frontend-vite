@@ -992,6 +992,33 @@ class CandidateService {
     }
   }
 
+    // UPDATED: New method to fetch country suggestions
+  async getCountrySuggestions(query: string): Promise<string[]> {
+    try {
+      const response = await apiClient.get("/candidates/location-suggestions/", {
+        params: { q: query, country: true },
+      });
+      return response.data.suggestions || [];
+    } catch (error: any) {
+      console.error("Error fetching country suggestions:", error);
+      // Return empty array on error to avoid breaking UI
+      return [];
+    }
+  }
+
+  // UPDATED: New method to fetch city suggestions (requires country context on backend if needed)
+  async getCitySuggestions(query: string): Promise<string[]> {
+    try {
+      const response = await apiClient.get("/candidates/location-suggestions/", {
+        params: { q: query },
+      });
+      return response.data.suggestions || [];
+    } catch (error: any) {
+      console.error("Error fetching city suggestions:", error);
+      return [];
+    }
+  }
+
   // async getDefaultBoolQuery(jobId: string): Promise<string> {
   //   try {
   //     const response = await apiClient.get(`/jobs/${jobId}/default-bool-query`); // Adjust endpoint
