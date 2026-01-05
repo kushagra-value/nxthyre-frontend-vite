@@ -2686,8 +2686,14 @@ function MainApp() {
                                                   d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                                                 />
                                               </svg>
-                                              <div className="absolute z-20 hidden group-hover:block bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-gray-700 shadow-md whitespace-normal w-64 left-full ml-2 top-0">
-                                                {item.why_it_matters}
+                                              <div className="absolute z-20 hidden group-hover:block bg-white border border-blue-200 rounded-lg p-3 text-xs shadow-md whitespace-normal w-64 left-full ml-2 top-0">
+                                                <span className="font-semibold text-gray-800 mb-1">
+                                                  Why it matters
+                                                </span>{" "}
+                                                <br />
+                                                <span className="text-gray-500">
+                                                  {item.why_it_matters}
+                                                </span>
                                               </div>
                                             </div>
                                           )}
