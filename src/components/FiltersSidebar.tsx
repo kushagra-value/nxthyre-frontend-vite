@@ -253,14 +253,16 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const [currentCountry, setCurrentCountry] = useState<string>("");
   const [currentCity, setCurrentCity] = useState<string>("");
 
-  useEffect(() => {
-    // Ensure keywords is always an array when filters change
+ useEffect(() => {
+  // Only sync when parent filters actually change, not internal updates
+  if (JSON.stringify(filters) !== JSON.stringify(tempFilters)) {
     setTempFilters({
       ...filters,
-      keywords: filters.keywords || [],
+      keywords: Array.isArray(filters.keywords) ? filters.keywords : [],
       boolQuery: filters.boolQuery || "",
     });
-  }, [filters]);
+  }
+}, [filters]); 
 
   
 
