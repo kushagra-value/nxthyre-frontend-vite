@@ -300,7 +300,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       }
       try {
         const response = await fetch(
-          `/api/candidates/location-suggestions/?q=${encodeURIComponent(query)}&country=true`
+          `/candidates/location-suggestions/?q=${encodeURIComponent(query)}&country=true`
         );
 
         if (response.status === 304) {
@@ -331,7 +331,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       }
       try {
         const response = await fetch(
-          `/api/candidates/location-suggestions/?q=${encodeURIComponent(query)}`
+          `/candidates/location-suggestions/?q=${encodeURIComponent(query)}`
         );
 
         if (response.status === 304) {
