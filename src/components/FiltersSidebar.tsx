@@ -873,7 +873,7 @@ const fetchCitySuggestions = useCallback(
                     }
                   }}
                 />
-                {(tempFilters.country.length >= 2 && (isLoadingCountries || countrySuggestions.length > 0)) && (
+                {(currentCountry.length >= 2 && (isLoadingCountries || countrySuggestions.length > 0)) && (
                   <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
                     {isLoadingCountries ? (
                       <div className="px-3 py-2 text-sm text-gray-500 text-center">
@@ -915,7 +915,7 @@ const fetchCitySuggestions = useCallback(
                     }}
                     disabled={!tempFilters.country}
                   />
-                {tempFilters.country && tempFilters.locations[0]?.length >= 2 && (isLoadingCities || citySuggestions.length > 0) && (
+                {tempFilters.country && currentCity.length >= 2 && (isLoadingCities || citySuggestions.length > 0) && (
                   <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
                     {isLoadingCities ? (
                       <div className="px-3 py-2 text-sm text-gray-500 text-center">
