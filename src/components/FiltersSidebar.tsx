@@ -853,7 +853,7 @@ const fetchCitySuggestions = useCallback(
           </div>
           {expandedSections.location && (
             <>
-            <div className="space-y-4 flex justify-between items-center gap-2">
+            <div className=" flex justify-between items-center gap-2">
               
               <div className="relative">
                 <input
