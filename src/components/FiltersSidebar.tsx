@@ -915,7 +915,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                       ))}
                     </div>
                   )}
-                <label className="text-xs text-gray-500 mt-1 block">City (One only)</label>
+                <label className="text-xs text-gray-500 mt-1 block">City</label>
               </div>
 
               {/* Display selected location tag */}
