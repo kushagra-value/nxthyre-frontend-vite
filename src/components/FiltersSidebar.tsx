@@ -859,6 +859,7 @@ const fetchCitySuggestions = useCallback(
                 <input
                   type="text"
                   placeholder="Search country..."
+                  className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
                   value={currentCountry}  // ← Use separate state
                   onChange={(e) => {
                     const value = e.target.value;
@@ -905,6 +906,7 @@ const fetchCitySuggestions = useCallback(
                   <input
                     type="text"
                     placeholder={tempFilters.country ? "Search city..." : "Select country first"}
+                    className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
                     value={currentCity}  // ← Use separate state
                     onChange={(e) => {
                       if (!tempFilters.country) return;
@@ -944,7 +946,7 @@ const fetchCitySuggestions = useCallback(
               {/* Display selected location tag */}
               
             </div>
-            {tempFilters.locations.length > 0 && tempFilters.country && (
+            {tempFilters.locations.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   <div className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200">
                     <X
@@ -952,7 +954,7 @@ const fetchCitySuggestions = useCallback(
                       onClick={() => updateTempFilters("locations", [])}
                     />
                     <span>
-                      {tempFilters.locations[0]}, {tempFilters.country}
+                      {tempFilters.locations[0]}
                     </span>
                   </div>
                 </div>
