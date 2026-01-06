@@ -505,8 +505,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   );
 
   const desiredInboundSlugs = [
-  "ai-interview",
   "coding-contest",
+  "ai-interview",
   "shortlisted",
   "archives",
 ] as const;
