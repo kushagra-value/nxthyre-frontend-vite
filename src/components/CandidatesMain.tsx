@@ -309,24 +309,27 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     }
   };
 
-  const handleDropdownToggle = async (
-    candidateId: string,
-    e: React.MouseEvent
-  ) => {
-    e.stopPropagation();
-    if (showDropdown === candidateId) {
-      setShowDropdown(null);
-      return;
-    }
+  useEffect(() => {
+  if (jobId) {
+    candidateService
+      .getPipelineStages(parseInt(jobId))
+      .then((stages) => {
+        setPipelineStages(stages);
+      })
+      .catch((error) => {
+        showToast.error(error.message || "Failed to fetch pipeline stages");
+      });
+  }
+}, [jobId]);
 
-    try {
-      const stages = await candidateService.getPipelineStages(parseInt(jobId));
-      setPipelineStages(stages.slice(0, 5));
-      setShowDropdown(candidateId);
-    } catch (error: any) {
-      showToast.error(error.message || "Failed to fetch pipeline stages");
-    }
-  };
+  const handleDropdownToggle = (candidateId: string, e: React.MouseEvent) => {
+  e.stopPropagation();
+  if (showDropdown === candidateId) {
+    setShowDropdown(null);
+    return;
+  }
+  setShowDropdown(candidateId);
+};
 
   const handleSortSelect = (sortValue: string) => {
     setSortBy(sortValue);
@@ -500,6 +503,35 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const [hoveredCandidateId, setHoveredCandidateId] = useState<string | null>(
     null
   );
+
+  const desiredInboundSlugs = [
+  "ai-interview",
+  "coding-contest",
+  "shortlisted",
+  "archives",
+] as const;
+
+const inboundStages = pipelineStages
+  .filter((stage) => desiredInboundSlugs.includes(stage.slug as any))
+  .sort(
+    (a, b) =>
+      desiredInboundSlugs.indexOf(a.slug as any) -
+      desiredInboundSlugs.indexOf(b.slug as any)
+  );
+
+  const getStagesToShow = (isInbound: boolean) =>
+  isInbound ? inboundStages : pipelineStages.slice(0, 5);
+
+  const getStageDisplayName = (stage: PipelineStage): string => {
+  switch (stage.slug) {
+    case "coding-contest":
+      return "Coding Round";
+    case "archives":
+      return "Archived";
+    default:
+      return stage.name;
+  }
+};
 
   return (
     <div className="bg-white rounded-xl  h-fit">
@@ -1533,13 +1565,35 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         })()}
                     </div>
                     <div className="rounded-md flex space-x-1 border border-blue-400 hover:border-blue-600 transition-colors">
+                      {(() => {
+                        const isInbound = activeTab === "inbound";
+                        const codingRoundStage = pipelineStages.find(
+                          (stage) => stage.slug === "coding-contest"
+                        );
+
+                        // For inbound: default action is "Send Coding Round" (targets the coding-contest stage if it exists)
+                        // For other tabs: keep existing behavior (hardcoded stage 3882)
+                        const defaultStageId = isInbound
+                          ? codingRoundStage?.id ?? undefined
+                          : 3882;
+
+                        const buttonText = isInbound
+                          ? codingRoundStage
+                            ? "Send Coding Round"
+                            : "Add to Pipeline" // fallback text if coding stage missing
+                          : "Save to Pipeline";
+
+                        const stagesToShow = getStagesToShow(isInbound);
+
+                        return (
+                          <>
                       <button
                         className="pl-3 pr-2 py-1.5 text-blue-600 text-sm font-medium flex items-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleSaveToPipeline(candidate.id, 3882);
+                          handleSaveToPipeline(candidate.id, defaultStageId);
                         }}
-                        aria-label={`Save ${candidate.full_name} to pipeline`}
+                        aria-label={`${buttonText} for ${candidate.full_name}`}
                       >
                         <svg
                           width="16"
@@ -1559,7 +1613,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                       <div className="w-px bg-blue-500 my-1"></div>
                       <div className="relative">
                         <button
-                          className=" pl-1.5 pr-2 py-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                          className="pl-1.5 pr-2 py-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                           onClick={(e) => handleDropdownToggle(candidate.id, e)}
                           aria-label={`Add ${candidate.full_name} to pipeline stages`}
                         >
@@ -1571,26 +1625,26 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                             className="absolute mt-2 right-0 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
                           >
                             <div className="py-1">
-                              {pipelineStages.map((stage) => (
+                              {stagesToShow.map((stage) => (
                                 <button
                                   key={stage.id}
                                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleSaveToPipeline(
-                                      candidate.id,
-                                      stage.id
-                                    );
+                                    handleSaveToPipeline(candidate.id, stage.id);
                                   }}
-                                  aria-label={`Add ${candidate.full_name} to ${stage.name} stage`}
+                                  aria-label={`Add ${candidate.full_name} to ${getStageDisplayName(stage)} stage`}
                                 >
-                                  {stage.name}
+                                  {getStageDisplayName(stage)}
                                 </button>
                               ))}
                             </div>
                           </div>
                         )}
                       </div>
+                      </>
+                      );
+                    })()}
                     </div>
                   </div>
                 </div>
