@@ -609,16 +609,18 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   const renderTabContent = () => {
     switch (activeTab) {
       case "Match-Score":
-        // if (!selectedCandidate.contextual_details?.job_score_obj) {
-        //   return (
-        //     <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-        //       <div className="text-center text-gray-500 mt-6">
-        //         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        //         <p className="text-base font-medium">Loading analysis...</p>
-        //       </div>
-        //     </div>
-        //   );
-        // }
+        if (!selectedCandidate.contextual_details?.job_score_obj) {
+          return (
+            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+              <div className="text-center text-gray-500 mt-6">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-base font-medium">Loading analysis...</p>
+              </div>
+            </div>
+          );
+        }
+
+        console.log("selectedCandidate:", selectedCandidate);
 
         return (
           <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
