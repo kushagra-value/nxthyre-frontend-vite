@@ -230,22 +230,16 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isLocationManuallyEdited, setIsLocationManuallyEdited] =
     useState(false);
-  const [keywordSuggestions, setKeywordSuggestions] = useState<string[]>([]);
-  const [recentSearches, setRecentSearches] = useState<
-    { id: number; query: string }[]
-  >([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const suggestionsRef = useRef<HTMLDivElement>(null);
+  
+  const keywordTextareaRef = useRef<HTMLTextAreaElement>(null);
   const [tempFilters, setTempFilters] = useState({
     ...filters,
-    keywords: Array.isArray(filters.keywords) ? filters.keywords : [],
+    keywords: Array.isArray(filters.keywords) ? filters.keywords.join(', ') : '',
     boolQuery: filters.boolQuery || "",
   });
 
-    const [countrySuggestions, setCountrySuggestions] = useState<string[]>([]);
+  const [countrySuggestions, setCountrySuggestions] = useState<string[]>([]);
   const [citySuggestions, setCitySuggestions] = useState<string[]>([]);
-
-  const [currentKeyword, setCurrentKeyword] = useState<string>("");
   const [currentLocation, setCurrentLocation] = useState<string>("");
   const [isLoadingCountries, setIsLoadingCountries] = useState(false);
   const [isLoadingCities, setIsLoadingCities] = useState(false);
@@ -254,50 +248,25 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const [currentCity, setCurrentCity] = useState<string>("");
 
  useEffect(() => {
-  // Only sync when parent filters actually change, not internal updates
   if (JSON.stringify(filters) !== JSON.stringify(tempFilters)) {
     setTempFilters({
       ...filters,
-      keywords: Array.isArray(filters.keywords) ? filters.keywords : [],
+      keywords: Array.isArray(filters.keywords) ? filters.keywords.join(', ') : filters.keywords || '',
       boolQuery: filters.boolQuery || "",
     });
   }
 }, [filters]); 
 
+useEffect(() => {
+  if (!tempFilters.booleanSearch && keywordTextareaRef.current) {
+    keywordTextareaRef.current.style.height = "auto";
+    keywordTextareaRef.current.style.height = `${keywordTextareaRef.current.scrollHeight}px`;
+  }
+}, [tempFilters.keywords, tempFilters.booleanSearch]);
+
+
   
-
-
-  // Fetch keyword suggestions
-  const fetchKeywordSuggestions = useCallback(
-    debounce(async (query: string) => {
-      if (query.length >= 2) {
-        try {
-          const suggestions = await candidateService.getKeywordSuggestions(
-            query
-          );
-          const currentKeywords = tempFilters.keywords.map((k) =>
-            k.toLowerCase()
-          );
-          // Filter out suggestions that already exist in currentKeywords
-          const filteredSuggestions = suggestions.filter(
-            (suggestion: string) =>
-              !currentKeywords.includes(suggestion.toLowerCase())
-          );
-          setKeywordSuggestions(filteredSuggestions);
-          setShowSuggestions(filteredSuggestions.length > 0);
-        } catch (error) {
-          console.error("Error fetching keyword suggestions:", error);
-          setKeywordSuggestions([]);
-          setShowSuggestions(false);
-        }
-      } else {
-        setKeywordSuggestions([]);
-        setShowSuggestions(false);
-      }
-    }, 300),
-    [tempFilters.keywords]
-  );
-    const fetchCountrySuggestions = useCallback(
+  const fetchCountrySuggestions = useCallback(
   debounce(async (query: string) => {
     console.log("[Country] Fetch triggered with query:", query);
 
@@ -352,23 +321,6 @@ const fetchCitySuggestions = useCallback(
 );
 
 
-  // Handle click outside to close suggestions
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        suggestionsRef.current &&
-        !suggestionsRef.current.contains(event.target as Node)
-      ) {
-        setShowSuggestions(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
   const toggleSection = (section: SectionKey) => {
     setExpandedSections((prev) => ({
       ...prev,
@@ -379,17 +331,13 @@ const fetchCitySuggestions = useCallback(
   const updateTempFilters = (key: string, value: any) => {
     let newFilters = { ...tempFilters, [key]: value };
 
-    // Handle booleanSearch toggle logic
     if (key === "booleanSearch") {
       if (value === true) {
-        // Clear keywords when enabling boolean search
-        newFilters.keywords = [];
-        // Prefill boolQuery with default if not already set
+        newFilters.keywords = "";
         if (!newFilters.boolQuery && defaultBoolQuery) {
           newFilters.boolQuery = defaultBoolQuery;
         }
       } else {
-        // Clear boolQuery when disabling
         newFilters.boolQuery = "";
       }
     }
@@ -419,38 +367,6 @@ const fetchCitySuggestions = useCallback(
 
     setTempFilters(newFilters);
 
-    if (key === "keywords") {
-      fetchKeywordSuggestions(currentKeyword);
-    }
-  };
-
-  const handleKeywordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^a-zA-Z0-9\s]/g, "");
-    setCurrentKeyword(value);
-    fetchKeywordSuggestions(value);
-  };
-
-  const addKeyword = (keyword: string) => {
-    const trimmed = keyword.trim();
-    if (trimmed) {
-      const lower = trimmed.toLowerCase();
-      if (tempFilters.keywords.some((k) => k.toLowerCase() === lower)) {
-        showToast.error("This keyword is already added.");
-        return;
-      }
-      updateTempFilters("keywords", [...tempFilters.keywords, trimmed]);
-    }
-    setCurrentKeyword("");
-    setShowSuggestions(false);
-  };
-
-  const handleSelectSuggestion = (suggestion: string) => {
-    addKeyword(suggestion);
-  };
-
-  const handleSelectRecentSearch = (query: string) => {
-    updateTempFilters("keywords", query);
-    setShowSuggestions(false);
   };
 
   const addLocation = (location: string) => {
@@ -465,27 +381,6 @@ const fetchCitySuggestions = useCallback(
       setCurrentLocation(""); // Clear input
     }
   };
-
- 
-
-  const handleKeywordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addKeyword(currentKeyword);
-    } else if (e.key === ",") {
-      e.preventDefault();
-      addKeyword(currentKeyword);
-    }
-  };
-
-  const removeKeywordTag = (keywordToRemove: string) => {
-    const updatedKeywords = tempFilters.keywords.filter(
-      (k) => k !== keywordToRemove
-    );
-    updateTempFilters("keywords", updatedKeywords);
-  };
-
-  
 
   
   // Handle close boolean search
@@ -548,11 +443,8 @@ const fetchCitySuggestions = useCallback(
 
   const resetFilters = () => {
     setIsLocationManuallyEdited(false);
-    setKeywordSuggestions([]);
-    setShowSuggestions(false);
-    setCurrentKeyword("");
     const resetTemp = {
-      keywords: [],
+      keywords: "",
       booleanSearch: false,
       boolQuery: "",
       semanticSearch: false,
@@ -590,7 +482,6 @@ const fetchCitySuggestions = useCallback(
     };
     setTempFilters(resetTemp);
     setCandidates([]);
-    setShowSuggestions(false);
     onApplyFilters(resetTemp);
   };
 
@@ -684,47 +575,15 @@ const fetchCitySuggestions = useCallback(
             ) : (
               <>
                 <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Type keyword and press comma or enter to add, e.g., Gen AI Specialist"
-                    value={currentKeyword}
-                    onChange={handleKeywordInputChange}
-                    onKeyDown={handleKeywordKeyDown}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  <textarea
+                    ref={keywordTextareaRef}
+                    value={tempFilters.keywords || ""}
+                    onChange={(e) => updateTempFilters("keywords", e.target.value)}
+                    placeholder='Enter keywords separated by commas, e.g. "python*, react, css, llm*" (* marks compulsory/must-have terms)'
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none min-h-[80px] overflow-hidden"
+                    rows={1}
                   />
-                  {showSuggestions && keywordSuggestions.length > 0 && (
-                    <div
-                      ref={suggestionsRef}
-                      className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto"
-                    >
-                      {keywordSuggestions.map((suggestion, index) => (
-                        <div
-                          key={index}
-                          onClick={() => handleSelectSuggestion(suggestion)}
-                          className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                        >
-                          {suggestion}
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
-                {tempFilters.keywords.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {tempFilters.keywords.map((keyword, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200"
-                      >
-                        <X
-                          className="w-3 h-3 text-gray-400 mr-1 cursor-pointer hover:text-gray-600"
-                          onClick={() => removeKeywordTag(keyword)}
-                        />
-                        <span>{keyword}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </>
             )}
           </div>
