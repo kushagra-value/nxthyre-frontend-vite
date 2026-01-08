@@ -434,6 +434,7 @@ class CandidateService {
         "hasLinkedIn", // Not supported by backend
         "is_prevetted",
         "is_active",
+        "keywords",
       ];
 
       // Updated snake case mapping to exactly match backend expectations
