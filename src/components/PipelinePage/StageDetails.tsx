@@ -609,8 +609,16 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   const renderTabContent = () => {
     switch (activeTab) {
       case "Match-Score":
+        const currentStage = stages.find(
+          (stage) => stage.name === selectedStage
+        );
+        const slug = currentStage?.slug;
+        const jobScoreObj =
+          selectedCandidate.candidate.stageData?.[slug]?.job_score_obj;
+
         console.log("selectedCandidate:", selectedCandidate);
-        if (!selectedCandidate.contextual_details?.job_score_obj) {
+
+        if (!jobScoreObj) {
           return (
             <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
               <div className="text-center text-gray-500 mt-6">
@@ -627,23 +635,14 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             <div className="mb-4">
               <div className="flex items-start gap-4 bg-green-100 rounded-md px-2 py-3 mr-2">
                 <span className="text-xl bg-green-600 text-white p-2 rounded-md">
-                  {
-                    selectedCandidate.contextual_details?.job_score_obj
-                      .candidate_match_score.score
-                  }
+                  {jobScoreObj.candidate_match_score.score}
                 </span>
                 <div className="flex flex-col">
                   <span className="text-black text-sm">
-                    {
-                      selectedCandidate.contextual_details?.job_score_obj
-                        .candidate_match_score.label
-                    }
+                    {jobScoreObj.candidate_match_score.label}
                   </span>
                   <span className="text-gray-600 text-sm">
-                    {
-                      selectedCandidate.contextual_details?.job_score_obj
-                        .candidate_match_score.description
-                    }
+                    {jobScoreObj.candidate_match_score.description}
                   </span>
                 </div>
               </div>
@@ -655,8 +654,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 Quick Fit Summary
               </h3>
               <div className="flex flex-wrap gap-2">
-                {selectedCandidate.contextual_details?.job_score_obj.quick_fit_summary.map(
-                  (item, index) => (
+                {jobScoreObj.quick_fit_summary.map(
+                  (item: { badge: string; color: string }, index: number) => (
                     <span
                       key={index}
                       className={`bg-blue-50 ${getColorClass(
@@ -679,13 +678,11 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 Gaps / Risks
               </h4>
               <ul className="space-y-2 text-sm text-gray-600">
-                {selectedCandidate.contextual_details?.job_score_obj.gaps_risks.map(
-                  (gap, index) => (
-                    <li key={index} className="bg-gray-50 p-2 rounded-md">
-                      {gap}
-                    </li>
-                  )
-                )}
+                {jobScoreObj.gaps_risks.map((gap: string, index: number) => (
+                  <li key={index} className="bg-gray-50 p-2 rounded-md">
+                    {gap}
+                  </li>
+                ))}
               </ul>
             </div>
 
@@ -697,10 +694,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 Recommended Message to Client
               </h4>
               <p className="text-sm text-gray-600">
-                {
-                  selectedCandidate.contextual_details?.job_score_obj
-                    .recommended_message
-                }
+                {jobScoreObj.recommended_message}
               </p>
             </div>
 
@@ -724,8 +718,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
               </div>
               <div className="px-4 pb-4">
                 <ul className="text-sm text-gray-500 space-y-1 list-disc list-inside">
-                  {selectedCandidate.contextual_details?.job_score_obj.call_attention.map(
-                    (attention, index) => (
+                  {jobScoreObj.call_attention.map(
+                    (attention: string, index: number) => (
                       <li key={index}>{attention}</li>
                     )
                   )}
