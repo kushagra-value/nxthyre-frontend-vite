@@ -609,7 +609,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   const renderTabContent = () => {
     switch (activeTab) {
       case "Match-Score":
-        if (!selectedCandidate.contextual_details.job_score_obj) {
+        if (!selectedCandidate.contextual_details?.job_score_obj) {
           return (
             <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
               <div className="text-center text-gray-500 mt-6">
@@ -627,20 +627,20 @@ const StageDetails: React.FC<StageDetailsProps> = ({
               <div className="flex items-start gap-4 bg-green-100 rounded-md px-2 py-3 mr-2">
                 <span className="text-xl bg-green-600 text-white p-2 rounded-md">
                   {
-                    selectedCandidate.contextual_details.job_score_obj
+                    selectedCandidate.contextual_details?.job_score_obj
                       .candidate_match_score.score
                   }
                 </span>
                 <div className="flex flex-col">
                   <span className="text-black text-sm">
                     {
-                      selectedCandidate.contextual_details.job_score_obj
+                      selectedCandidate.contextual_details?.job_score_obj
                         .candidate_match_score.label
                     }
                   </span>
                   <span className="text-gray-600 text-sm">
                     {
-                      selectedCandidate.contextual_details.job_score_obj
+                      selectedCandidate.contextual_details?.job_score_obj
                         .candidate_match_score.description
                     }
                   </span>
@@ -654,7 +654,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 Quick Fit Summary
               </h3>
               <div className="flex flex-wrap gap-2">
-                {selectedCandidate.contextual_details.job_score_obj.quick_fit_summary.map(
+                {selectedCandidate.contextual_details?.job_score_obj.quick_fit_summary.map(
                   (item, index) => (
                     <span
                       key={index}
@@ -678,7 +678,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 Gaps / Risks
               </h4>
               <ul className="space-y-2 text-sm text-gray-600">
-                {selectedCandidate.contextual_details.job_score_obj.gaps_risks.map(
+                {selectedCandidate.contextual_details?.job_score_obj.gaps_risks.map(
                   (gap, index) => (
                     <li key={index} className="bg-gray-50 p-2 rounded-md">
                       {gap}
@@ -697,7 +697,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
               </h4>
               <p className="text-sm text-gray-600">
                 {
-                  selectedCandidate.contextual_details.job_score_obj
+                  selectedCandidate.contextual_details?.job_score_obj
                     .recommended_message
                 }
               </p>
@@ -723,7 +723,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
               </div>
               <div className="px-4 pb-4">
                 <ul className="text-sm text-gray-500 space-y-1 list-disc list-inside">
-                  {selectedCandidate.contextual_details.job_score_obj.call_attention.map(
+                  {selectedCandidate.contextual_details?.job_score_obj.call_attention.map(
                     (attention, index) => (
                       <li key={index}>{attention}</li>
                     )
