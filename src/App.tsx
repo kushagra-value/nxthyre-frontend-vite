@@ -81,7 +81,7 @@ interface Category {
   invites_sent: number;
 }
 interface Filters {
-  keywords: string[];
+  keywords: string;
   booleanSearch: boolean;
   semanticSearch: boolean;
   selectedCategories: string[];
@@ -116,7 +116,6 @@ interface Filters {
   is_active: boolean;
   sort_by: string;
   boolQuery?: string;
-  enableBooleanAnalysis?: boolean;
 }
 interface Workspace {
   id: number;
@@ -220,7 +219,7 @@ function MainApp() {
     }
   }, [isAuthenticated]);
   const [filters, setFilters] = useState<Filters>({
-    keywords: [],
+    keywords: "",
     booleanSearch: false,
     semanticSearch: false,
     selectedCategories: [],
@@ -255,7 +254,6 @@ function MainApp() {
     is_active: false,
     sort_by: "",
     boolQuery: "",
-    enableBooleanAnalysis: false,
   });
   useEffect(() => {
     setIsSearchMode(debouncedSearchQuery.trim() !== "");
@@ -343,7 +341,7 @@ function MainApp() {
       const newFilters = {
         ...filters,
         jobId: job.id.toString(),
-        keywords: job.skills ? job.skills : [],
+        keywords: job.skills ? job.skills.join(', ') : "",
         minTotalExp: job.experience_min_years
           ? job.experience_min_years.toString()
           : "",
@@ -383,7 +381,7 @@ function MainApp() {
             setSelectedCandidate(candidates[0]);
           }
           setFilters({
-            keywords: [],
+            keywords: "",
             booleanSearch: false,
             semanticSearch: false,
             selectedCategories: [],
@@ -417,12 +415,8 @@ function MainApp() {
             is_prevetted: false,
             is_active: false,
             sort_by: sortBy || "",
-          });
-          setFilters((prev) => ({
-            ...prev,
-            enableBooleanAnalysis: false,
             boolQuery: "",
-          })); // NEW: Disable analysis in search mode
+          });
           setDefaultBoolQuery(""); // NEW
         } else {
           response = await candidateService.getCandidates(appliedFilters, page);
@@ -614,7 +608,7 @@ function MainApp() {
       setSearchTerm("");
       setSortBy("");
       setFilters({
-        keywords: [],
+        keywords: "",
         booleanSearch: false,
         semanticSearch: false,
         selectedCategories: [],
@@ -649,7 +643,6 @@ function MainApp() {
         is_active: false,
         sort_by: "",
         boolQuery: "", // NEW
-        enableBooleanAnalysis: false,
       });
       setDefaultBoolQuery("");
       showToast.success("Successfully logged out");
@@ -2264,9 +2257,6 @@ function MainApp() {
                             updateCandidateEmail={updateCandidateEmail}
                             deductCredits={deductCredits}
                             onUpdateCandidate={handleUpdateCandidate}
-                            enableBooleanAnalysis={
-                              filters.enableBooleanAnalysis
-                            } // NEW: Pass flag from state
                             defaultBoolQuery={defaultBoolQuery}
                             jobId={filters.jobId} // NEW: For dynamic query in API
                           />

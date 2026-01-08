@@ -492,12 +492,7 @@ const fetchCitySuggestions = useCallback(
 
     setIsLoading(true);
     try {
-      // When booleanSearch is true, keywords are replaced by boolQuery in the service
-      await onApplyFilters({
-        ...tempFilters,
-        enableBooleanAnalysis:
-          tempFilters.booleanSearch && !!tempFilters.boolQuery?.trim(),
-      });
+     await onApplyFilters(tempFilters);
     } catch (error) {
       showToast.error("Failed to apply filters. Please try again.");
       console.error("Error applying filters:", error);

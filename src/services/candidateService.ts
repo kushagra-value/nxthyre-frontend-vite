@@ -536,43 +536,44 @@ class CandidateService {
         }
       });
 
-      // Handle keywords/search terms (q) only if not booleanSearch
       if (
         !filters.booleanSearch &&
-        filters.keywords &&
-        Array.isArray(filters.keywords) &&
-        filters.keywords.length > 0
+        typeof filters.keywords === "string" &&
+        filters.keywords.trim() !== ""
       ) {
-        requestBody.q = filters.keywords;
+        requestBody.text_query = filters.keywords.trim();
       }
 
-      // Handle boolean search (replaces keywords/q)
+      // UPDATED: Handle bool_query for boolean search (standardized key)
       if (
         filters.booleanSearch &&
-        filters.boolQuery &&
         typeof filters.boolQuery === "string" &&
         filters.boolQuery.trim() !== ""
       ) {
-        requestBody.bool_q = filters.boolQuery.trim();
+        requestBody.bool_query = filters.boolQuery.trim();
       }
 
-      // Handle search_type based on semanticSearch (defaults to 'keyword' on backend)
-      // Only set explicitly if semanticSearch is true; otherwise, backend defaults
+      // UPDATED: Adjust search_type logic to use the new text_query field
       if (filters.semanticSearch) {
         requestBody.search_type = "semantic";
-      } else if (filters.keywords?.length > 0) {
+      } else if (requestBody.text_query) {
         requestBody.search_type = "keyword";
+      }
+
+      if (filters.jobId && !filters.semanticSearch) {
+        requestBody.enable_boolean_analysis = true;
       }
 
       const response = await apiClient.post(
         `/candidates/search/?page=${page}`,
         requestBody
       );
-      // Add: Save bool_query from response to localStorage if present (for job-specific boolean query)
-      if (response.data.bool_query) {
+
+      // UPDATED: Save returned bool query (supports both field names for robustness)
+      if (response.data.bool_query || response.data.boolean_search_terms) {
         localStorage.setItem(
           `bool_query_${filters.jobId}`,
-          response.data.bool_query
+          response.data.bool_query || response.data.boolean_search_terms || ""
         );
       }
       return response.data;
