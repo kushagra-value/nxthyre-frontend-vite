@@ -326,6 +326,9 @@ interface CandidateDetailProps {
   enableBooleanAnalysis?: boolean;
   defaultBoolQuery: string;
   jobId?: string;
+  textQuery?: string;      // NEW: Current keyword string (text_query)
+  boolQuery?: string;      // NEW: Current boolean query
+  enableAnalysis?: boolean;
 }
 
 const CandidateDetail: React.FC<CandidateDetailProps> = ({
@@ -338,6 +341,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   enableBooleanAnalysis,
   defaultBoolQuery,
   jobId,
+  textQuery,
+  boolQuery,
+  enableAnalysis
 }) => {
   const [newComment, setNewComment] = useState("");
   const [detailedCandidate, setDetailedCandidate] =
@@ -353,16 +359,23 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   // Update the fetchBooleanSearch useEffect to conditionally set the activeTab after fetching
   useEffect(() => {
     const fetchBooleanSearch = async () => {
-      if (candidate?.id && enableBooleanAnalysis) {
+    const effectiveQuery = 
+      boolQuery?.trim() || 
+      textQuery?.trim() || 
+      defaultBoolQuery?.trim() || "";
+
+    if (candidate?.id && enableAnalysis && effectiveQuery) {
         // Assume props.enableBooleanAnalysis
         try {
           const data = await candidateService.getCandidateBooleanSearch(
             candidate.id,
-            defaultBoolQuery
+            effectiveQuery
           );
           setBooleanData(data);
           setHasBooleanAnalysis(true);
-          setActiveTab("Boolean-Search");
+          if (activeTab !== "Boolean-Search") {
+            setActiveTab("Boolean-Search"); // Optional: auto-switch to show analysis
+          }
         } catch (error) {
           console.error("Error fetching boolean search:", error);
           setBooleanData(null);
@@ -371,12 +384,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         }
       } else {
         setHasBooleanAnalysis(false); // Initially hide tab
-        setActiveTab("Profile");
+        setBooleanData(null);
+        if (activeTab === "Boolean-Search") {
+          setActiveTab("Profile");
+        }
       }
     };
     fetchBooleanSearch();
-  }, [candidate?.id, enableBooleanAnalysis]);
-
+    }, [candidate?.id, enableAnalysis, boolQuery, textQuery, defaultBoolQuery, activeTab]);
   // In ProfileTab or where email/phone shown, update display
   const displayEmail =
     detailedCandidate?.candidate?.premium_data_unlocked &&

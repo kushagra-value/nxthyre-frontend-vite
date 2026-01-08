@@ -2258,7 +2258,10 @@ function MainApp() {
                             deductCredits={deductCredits}
                             onUpdateCandidate={handleUpdateCandidate}
                             defaultBoolQuery={defaultBoolQuery}
-                            jobId={filters.jobId} // NEW: For dynamic query in API
+                            jobId={filters.jobId}
+                            textQuery={filters.keywords}           // ← Current text_query (keyword mode)
+                            boolQuery={filters.boolQuery || ""}    // ← Current bool_query (boolean mode)
+                            enableAnalysis={!!filters.jobId}       // ← Enable only when job selected
                           />
                         </div>
                         {/* TemplateSelector rendered as an overlay with 40% width when active */}
