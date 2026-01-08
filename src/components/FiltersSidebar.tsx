@@ -26,7 +26,7 @@ import { showToast } from "../utils/toast";
 
 interface FiltersSidebarProps {
   filters: {
-    keywords: string[];
+    keywords: string;
     booleanSearch: boolean;
     boolQuery?: string;
     semanticSearch: boolean;
