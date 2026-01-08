@@ -66,6 +66,7 @@ import { showToast } from "./utils/toast";
 import CandidateBackGroundCheck from "./components/CandidateBackGroundCheck";
 import SuperAdminDashboard from "./components/SuperAdmin/SuperAdminDashboard";
 import ProjectCard from "./components/ProjectCard";
+import { AnalysisResult } from "./services/candidateService";
 interface Category {
   id: number;
   name: string; // Job title
@@ -191,6 +192,7 @@ function MainApp() {
   const [jobDataForModal, setJobDataForModal] = useState<Job | null>(null);
   const [competenciesData, setCompetenciesData] = useState<any>(null);
   const [loadingCompetencies, setLoadingCompetencies] = useState(false);
+  const [currentAnalysis, setCurrentAnalysis] = useState<AnalysisResult | null>(null);
   const [currentJobIdForModal, setCurrentJobIdForModal] = useState<
     number | null
   >(null);
@@ -2246,6 +2248,7 @@ function MainApp() {
                             loadingCandidates={loadingCandidates}
                             sourcingCounts={sourcingCounts}
                             activeCategoryTotalCount={activeCategoryTotalCount}
+                            currentAnalysis={currentAnalysis}
                           />
                         </div>
                         {/* CandidateDetail remains in its original div with 30% width */}
@@ -2261,7 +2264,8 @@ function MainApp() {
                             jobId={filters.jobId}
                             textQuery={filters.keywords}           // ← Current text_query (keyword mode)
                             boolQuery={filters.boolQuery || ""}    // ← Current bool_query (boolean mode)
-                            enableAnalysis={!!filters.jobId}       // ← Enable only when job selected
+                            enableAnalysis={!!filters.jobId} 
+                            onAnalysisFetched={setCurrentAnalysis} 
                           />
                         </div>
                         {/* TemplateSelector rendered as an overlay with 40% width when active */}

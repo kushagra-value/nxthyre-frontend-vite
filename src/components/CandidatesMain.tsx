@@ -26,6 +26,7 @@ import {
   ExportCandidateResponse,
 } from "../services/candidateService";
 import { showToast } from "../utils/toast";
+import { AnalysisResult } from "../services/candidateService";
 
 interface CandidatesMainProps {
   activeTab: string;
@@ -55,6 +56,7 @@ interface CandidatesMainProps {
     prevetted: number;
   };
   activeCategoryTotalCount: number;
+  currentAnalysis?: AnalysisResult | null;
 }
 
 const CandidatesMain: React.FC<CandidatesMainProps> = ({
@@ -77,6 +79,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   loadingCandidates,
   sourcingCounts,
   activeCategoryTotalCount,
+  currentAnalysis
 }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
@@ -261,7 +264,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       const response: PipelineResponse = await candidateService.saveToPipeline(
         parseInt(jobId),
         candidateId,
-        stageId
+        stageId,
+        candidateId === selectedCandidate?.id ? currentAnalysis ?? undefined : undefined
       );
 
       if (stageId) {

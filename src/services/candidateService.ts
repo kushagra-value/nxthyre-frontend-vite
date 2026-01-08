@@ -764,19 +764,19 @@ class CandidateService {
   async saveToPipeline(
     jobId: number,
     candidateId: string,
-    stageId?: number
+    stageId?: number,
+    job_score_payload?: AnalysisResult
   ): Promise<PipelineResponse> {
     try {
-      const payload: {
-        job: number;
-        candidate: string;
-        current_stage?: number;
-      } = {
+      const payload: any = {
         job: jobId,
         candidate: candidateId,
       };
       if (stageId) {
         payload.current_stage = stageId;
+      }
+      if (job_score_payload) {
+        payload.job_score_payload = job_score_payload;  // ← NEW
       }
       const response = await apiClient.post("/jobs/applications/", payload);
       return response.data;
