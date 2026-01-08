@@ -385,14 +385,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
     return "Skip";
   };
 
-  const tabs = [
-    "Match-Score",
-    "Profile",
-    "Coding",
-    "Interview",
-    "Activity",
-    "Notes",
-  ];
+  const tabs = ["Score", "Profile", "Coding", "Interview", "Activity", "Notes"];
 
   if (!selectedCandidate) {
     return (
@@ -608,7 +601,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "Match-Score":
+      case "Score":
         const currentStage = stages.find(
           (stage) => stage.name === selectedStage
         );
