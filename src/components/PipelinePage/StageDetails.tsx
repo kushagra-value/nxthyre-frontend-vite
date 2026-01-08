@@ -609,6 +609,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   const renderTabContent = () => {
     switch (activeTab) {
       case "Match-Score":
+        console.log("selectedCandidate:", selectedCandidate);
         if (!selectedCandidate.contextual_details?.job_score_obj) {
           return (
             <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
@@ -619,8 +620,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             </div>
           );
         }
-
-        console.log("selectedCandidate:", selectedCandidate);
 
         return (
           <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
