@@ -541,7 +541,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       </div>
 
       {/* Tabs skeleton */}
-      <div className="flex space-x-4 border-b border-gray-200 mb-4 pb-2">
+      <div className="flex space-x-4 border-b border-gray-200 mb-4 pb-2 w-4/5">
         {Array.from({ length: 6 }, (_, i) => (
           <div key={i} className="flex items-center space-x-1">
             <div className="w-8 h-8 bg-gray-200 rounded" /> {/* Icon placeholder */}
