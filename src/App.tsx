@@ -122,6 +122,93 @@ interface Workspace {
   id: number;
   name: string;
 }
+
+const ProjectSkeletonCard = () => (
+    <div className="bg-white rounded-[10px] shadow-lg overflow-hidden animate-pulse">
+      <div className="p-8">
+        <div className="h-10 bg-gray-200 rounded-lg mb-6"></div>
+        <div className="h-6 bg-gray-200 rounded w-4/5 mb-8"></div>
+        <div className="flex flex-wrap gap-4 mb-8">
+          <div className="h-9 bg-gray-200 rounded-full w-32"></div>
+          <div className="h-9 bg-gray-200 rounded-full w-28"></div>
+          <div className="h-9 bg-gray-200 rounded-full w-36"></div>
+        </div>
+        <div className="grid grid-cols-3 gap-8 mb-10">
+          <div className="text-center">
+            <div className="h-20 bg-gray-200 rounded-xl mx-auto mb-3 w-20"></div>
+            <div className="h-5 bg-gray-200 rounded w-20 mx-auto"></div>
+          </div>
+          <div className="text-center">
+            <div className="h-20 bg-gray-200 rounded-xl mx-auto mb-3 w-20"></div>
+            <div className="h-5 bg-gray-200 rounded w-20 mx-auto"></div>
+          </div>
+          <div className="text-center">
+            <div className="h-20 bg-gray-200 rounded-xl mx-auto mb-3 w-20"></div>
+            <div className="h-5 bg-gray-200 rounded w-20 mx-auto"></div>
+          </div>
+        </div>
+        <div className="flex justify-between items-center">
+          <div className="h-10 bg-gray-200 rounded-lg w-32"></div>
+          <div className="flex gap-4">
+            <div className="h-10 bg-gray-200 rounded-lg w-10"></div>
+            <div className="h-10 bg-gray-200 rounded-lg w-40"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+
+  const RequisitionSkeleton = () => (
+    <div className="space-y-10 animate-pulse">
+      <div className="h-12 bg-gray-200 rounded-lg w-full max-w-xl mb-6"></div>
+      <div className="flex gap-12 mb-8">
+        <div className="h-8 bg-gray-200 rounded-lg w-48"></div>
+        <div className="h-8 bg-gray-200 rounded-lg w-48"></div>
+        <div className="h-8 bg-gray-200 rounded-lg w-48"></div>
+      </div>
+      <div>
+        <div className="h-8 bg-gray-200 rounded-lg w-64 mb-4"></div>
+        <div className="space-y-3">
+          <div className="h-5 bg-gray-200 rounded"></div>
+          <div className="h-5 bg-gray-200 rounded w-11/12"></div>
+          <div className="h-5 bg-gray-200 rounded w-10/12"></div>
+        </div>
+      </div>
+      <div>
+        <div className="h-8 bg-gray-200 rounded-lg w-80 mb-6"></div>
+        <div className="space-y-6">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-gray-100 rounded-xl p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-7 bg-gray-200 rounded w-96"></div>
+                <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
+              </div>
+              <div className="h-5 bg-gray-200 rounded w-full mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-4/5"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="h-8 bg-gray-200 rounded-lg w-96 mb-6"></div>
+        <div className="space-y-6">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="bg-gray-100 rounded-xl p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-7 bg-gray-200 rounded w-80"></div>
+                <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
+              </div>
+              <div className="h-5 bg-gray-200 rounded w-full mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  
 function MainApp() {
   const navigate = useNavigate();
   const {
@@ -1104,90 +1191,7 @@ function MainApp() {
     );
   }
 
-  const ProjectSkeletonCard = () => (
-    <div className="bg-white rounded-[10px] shadow-lg overflow-hidden animate-pulse">
-      <div className="p-8">
-        <div className="h-10 bg-gray-200 rounded-lg mb-6"></div>
-        <div className="h-6 bg-gray-200 rounded w-4/5 mb-8"></div>
-        <div className="flex flex-wrap gap-4 mb-8">
-          <div className="h-9 bg-gray-200 rounded-full w-32"></div>
-          <div className="h-9 bg-gray-200 rounded-full w-28"></div>
-          <div className="h-9 bg-gray-200 rounded-full w-36"></div>
-        </div>
-        <div className="grid grid-cols-3 gap-8 mb-10">
-          <div className="text-center">
-            <div className="h-20 bg-gray-200 rounded-xl mx-auto mb-3 w-20"></div>
-            <div className="h-5 bg-gray-200 rounded w-20 mx-auto"></div>
-          </div>
-          <div className="text-center">
-            <div className="h-20 bg-gray-200 rounded-xl mx-auto mb-3 w-20"></div>
-            <div className="h-5 bg-gray-200 rounded w-20 mx-auto"></div>
-          </div>
-          <div className="text-center">
-            <div className="h-20 bg-gray-200 rounded-xl mx-auto mb-3 w-20"></div>
-            <div className="h-5 bg-gray-200 rounded w-20 mx-auto"></div>
-          </div>
-        </div>
-        <div className="flex justify-between items-center">
-          <div className="h-10 bg-gray-200 rounded-lg w-32"></div>
-          <div className="flex gap-4">
-            <div className="h-10 bg-gray-200 rounded-lg w-10"></div>
-            <div className="h-10 bg-gray-200 rounded-lg w-40"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-
-  const RequisitionSkeleton = () => (
-    <div className="space-y-10 animate-pulse">
-      <div className="h-12 bg-gray-200 rounded-lg w-full max-w-xl mb-6"></div>
-      <div className="flex gap-12 mb-8">
-        <div className="h-8 bg-gray-200 rounded-lg w-48"></div>
-        <div className="h-8 bg-gray-200 rounded-lg w-48"></div>
-        <div className="h-8 bg-gray-200 rounded-lg w-48"></div>
-      </div>
-      <div>
-        <div className="h-8 bg-gray-200 rounded-lg w-64 mb-4"></div>
-        <div className="space-y-3">
-          <div className="h-5 bg-gray-200 rounded"></div>
-          <div className="h-5 bg-gray-200 rounded w-11/12"></div>
-          <div className="h-5 bg-gray-200 rounded w-10/12"></div>
-        </div>
-      </div>
-      <div>
-        <div className="h-8 bg-gray-200 rounded-lg w-80 mb-6"></div>
-        <div className="space-y-6">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-gray-100 rounded-xl p-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="h-7 bg-gray-200 rounded w-96"></div>
-                <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
-              </div>
-              <div className="h-5 bg-gray-200 rounded w-full mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-4/5"></div>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div>
-        <div className="h-8 bg-gray-200 rounded-lg w-96 mb-6"></div>
-        <div className="space-y-6">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="bg-gray-100 rounded-xl p-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="h-7 bg-gray-200 rounded w-80"></div>
-                <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
-              </div>
-              <div className="h-5 bg-gray-200 rounded w-full mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+  
 
   // Guard component for super admin (adjusted for your role-based auth)
   const SuperAdminRoute: React.FC<{ children: React.ReactNode }> = ({
