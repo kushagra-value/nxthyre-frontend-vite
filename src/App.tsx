@@ -128,6 +128,8 @@ const ProjectSkeletonCard = () => (
       <div className="p-4">
         <div className="h-8 bg-gray-200 rounded-lg mb-6"></div>
         <div className="h-4 bg-gray-200 rounded w-4/5 mb-4"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/5 mb-4"></div>
+        <div className="h-4 bg-gray-200 rounded w-2/5 mb-4"></div>
         <div className="flex flex-wrap gap-4 mb-4 w-1/2">
           <div className="h-6 bg-gray-200 rounded-full w-6"></div>
           <div className="h-6 bg-gray-200 rounded-full w-6"></div>
