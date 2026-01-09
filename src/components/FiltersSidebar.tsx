@@ -707,7 +707,7 @@ const fetchCitySuggestions = useCallback(
           </div>
           {expandedSections.location && (
             <>
-            <div className=" flex justify-between items-center gap-2">
+            <div className="flex justify-between items-center">
               
               <div className="relative">
                 <input
