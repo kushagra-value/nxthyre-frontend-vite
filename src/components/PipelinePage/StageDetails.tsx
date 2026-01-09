@@ -37,6 +37,7 @@ import {
 import { PipelineCandidate } from "../../data/pipelineData";
 import candidateService from "../../services/candidateService";
 import { showToast } from "../../utils/toast";
+import { AnalysisResult } from "../../services/candidateService";
 
 interface Stage {
   id: number;
@@ -273,9 +274,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       if (selectedCandidate?.id && selectedCandidate?.candidate?.id) {
         try {
           const apiActivities = await candidateService.getCandidateActivity(
-          selectedCandidate.candidate.id,
-          selectedCandidate.id
-        );
+            selectedCandidate.candidate.id,
+            selectedCandidate.id
+          );
 
           const mappedActivities: Activity[] = apiActivities.map(
             (item: any) => {
@@ -295,9 +296,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 const d = item.data;
                 description = `${selectedCandidate.candidate.full_name} has been moved from ${d.from_stage_name} to ${d.to_stage_name}`;
                 via = "system";
-              }
-
-              else if (item.type === "communication_sent") {
+              } else if (item.type === "communication_sent") {
                 const d = item.data;
                 description = `${selectedCandidate.candidate.full_name} sent you a message `;
                 via = d.mode.toLowerCase();
@@ -322,35 +321,33 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     })
                     .join("");
                 }
-              }
-
-             else {
-              const d = item.data;
-              const subjectBody = (d.subject || "") + " " + (d.body || "");
-              description = subjectBody.trim() || "Activity recorded";
-              via = d.mode ? d.mode.toLowerCase() : "";
-              if (d.replies?.length > 0) {
-                note = d.replies
-                  .map((r: any) => {
-                    if (r.via === "call") {
-                      return `
+              } else {
+                const d = item.data;
+                const subjectBody = (d.subject || "") + " " + (d.body || "");
+                description = subjectBody.trim() || "Activity recorded";
+                via = d.mode ? d.mode.toLowerCase() : "";
+                if (d.replies?.length > 0) {
+                  note = d.replies
+                    .map((r: any) => {
+                      if (r.via === "call") {
+                        return `
                         <div class="w-full flex justify-between">
                           <span>The call was instantiated</span>
                           <span class="text-gray-500">${r.via}</span>
                         </div>
                       `;
-                    } else {
-                      return `
+                      } else {
+                        return `
                         <div class="flex justify-between">
                           <span>${r.body}</span>
                           <span class="text-gray-500">${r.via}</span>
                         </div>
                       `;
-                    }
-                  })
-                  .join("");
+                      }
+                    })
+                    .join("");
+                }
               }
-            } 
 
               return {
                 type: item.type,
@@ -371,7 +368,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       }
     };
     fetchActivity();
-  }, [selectedCandidate?.candidate.id,selectedCandidate?.id]);
+  }, [selectedCandidate?.candidate.id, selectedCandidate?.id]);
 
   const [isExpanded, setIsExpanded] = React.useState(false);
 
@@ -388,7 +385,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
     return "Skip";
   };
 
-  const tabs = ["Profile", "Coding", "Interview", "Activity", "Notes"];
+  const tabs = ["Score", "Profile", "Coding", "Interview", "Activity", "Notes"];
 
   if (!selectedCandidate) {
     return (
@@ -503,8 +500,228 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       ? notes.filter((note) => note.is_team_note && !note.is_community_note)
       : notes.filter((note) => note.is_team_note && note.is_community_note);
 
+  const getColorClass = (color: string) => {
+    switch (color) {
+      case "green":
+        return "text-green-600";
+      case "yellow":
+        return "text-yellow-500 font-medium";
+      case "red":
+        return "text-red-600 font-medium";
+      default:
+        return "text-gray-600";
+    }
+  };
+
+  const getIcon = (color: string) => {
+    switch (color) {
+      case "green":
+        return (
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 17 17"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M8.5 15C11.5376 15 14 12.5376 14 9.5C14 6.46243 11.5376 4 8.5 4C5.46243 4 3 6.46243 3 9.5C3 12.5376 5.46243 15 8.5 15Z"
+              stroke="#009951"
+            />
+            <path
+              d="M6.57227 9.775L7.67227 10.875L10.4223 8.125"
+              stroke="#009951"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        );
+      case "yellow":
+        return (
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 17 17"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M8.5 4.84615C5.92975 4.84615 3.84615 6.92975 3.84615 9.5C3.84615 12.0703 5.92975 14.1538 8.5 14.1538C11.0703 14.1538 13.1538 12.0703 13.1538 9.5C13.1538 6.92975 11.0703 4.84615 8.5 4.84615ZM3 9.5C3 6.46243 5.46243 4 8.5 4C11.5375 4 14 6.46243 14 9.5C14 12.5375 11.5375 15 8.5 15C5.46243 15 3 12.5375 3 9.5Z"
+              fill="#CD9B05"
+            />
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M8.5 7C8.77613 7 9 7.18315 9 7.40909V9.59088C9 9.81684 8.77613 10 8.5 10C8.22387 10 8 9.81684 8 9.59088V7.40909C8 7.18315 8.22387 7 8.5 7Z"
+              fill="#CD9B05"
+            />
+            <path
+              d="M9 11.5C9 11.7761 8.77613 12 8.5 12C8.22387 12 8 11.7761 8 11.5C8 11.2239 8.22387 11 8.5 11C8.77613 11 9 11.2239 9 11.5Z"
+              fill="#CD9B05"
+            />
+          </svg>
+        );
+      case "red":
+        return (
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 17 17"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g clip-path="url(#clip0_4090_2502)">
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M8.5 14.3125C5.84212 14.3125 3.6875 12.1572 3.6875 9.5C3.6875 6.84281 5.84212 4.6875 8.5 4.6875C11.1579 4.6875 13.3125 6.84281 13.3125 9.5C13.3125 12.1572 11.1579 14.3125 8.5 14.3125ZM8.5 4C5.46228 4 3 6.46125 3 9.5C3 12.5387 5.46228 15 8.5 15C11.5377 15 14 12.5387 14 9.5C14 6.46125 11.5377 4 8.5 4ZM10.4652 7.53376C10.3298 7.3997 10.1108 7.3997 9.97537 7.53376L8.49794 9.01186L7.04181 7.55436C6.9074 7.4203 6.68947 7.4203 6.55575 7.55436C6.42134 7.68843 6.42134 7.90844 6.55575 8.0425L8.01188 9.49656L6.54545 10.9644C6.41035 11.0984 6.41035 11.3184 6.54545 11.4559C6.68088 11.59 6.90018 11.59 7.03562 11.4559L8.50206 9.98814L9.95819 11.4456C10.0926 11.5797 10.3105 11.5797 10.4446 11.4456C10.579 11.3116 10.579 11.0916 10.4446 10.9575L8.98812 9.50344L10.4652 8.0253C10.6003 7.8878 10.6003 7.67126 10.4652 7.53376Z"
+                fill="#CF272D"
+              />
+            </g>
+            <defs>
+              <clipPath id="clip0_4090_2502">
+                <rect
+                  width="11"
+                  height="11"
+                  fill="white"
+                  transform="translate(3 4)"
+                />
+              </clipPath>
+            </defs>
+          </svg>
+        );
+      default:
+        return null; // or a default icon if needed
+    }
+  };
+  // const [booleanData, setBooleanData] = useState<AnalysisResult | null>(null);
+  // const [hasBooleanAnalysis, setHasBooleanAnalysis] = useState(false);
+
   const renderTabContent = () => {
     switch (activeTab) {
+      case "Score":
+        const currentStage = stages.find(
+          (stage) => stage.name === selectedStage
+        );
+        const slug = currentStage?.slug;
+        const jobScoreObj =
+          selectedCandidate.candidate.stageData?.[slug]?.job_score_obj;
+
+        console.log("selectedCandidate:", selectedCandidate);
+
+        if (!jobScoreObj) {
+          return (
+            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+              <div className="text-center text-gray-500 mt-6">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-base font-medium">Loading analysis...</p>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+            {/* Top Badge */}
+            <div className="mb-4">
+              <div className="flex items-start gap-4 bg-green-100 rounded-md px-2 py-3 mr-2">
+                <span className="text-xl bg-green-600 text-white p-2 rounded-md">
+                  {jobScoreObj.candidate_match_score.score}
+                </span>
+                <div className="flex flex-col">
+                  <span className="text-black text-sm">
+                    {jobScoreObj.candidate_match_score.label}
+                  </span>
+                  <span className="text-gray-600 text-sm">
+                    {jobScoreObj.candidate_match_score.description}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Fit Summary */}
+            <div className="mb-4">
+              <h3 className="text-md font-semibold mb-3 text-gray-600">
+                Quick Fit Summary
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {jobScoreObj.quick_fit_summary.map(
+                  (item: { badge: string; color: string }, index: number) => (
+                    <span
+                      key={index}
+                      className={`bg-blue-50 ${getColorClass(
+                        item.color
+                      )} px-3 py-1 rounded-full text-sm flex gap-1 items-center`}
+                    >
+                      {item.badge}
+                      {getIcon(item.color)}
+                    </span>
+                  )
+                )}
+              </div>
+            </div>
+
+            <div className="mb-3 border-b border-gray-200"></div>
+
+            {/* Gaps / Risks */}
+            <div className="mb-4">
+              <h4 className="text-md font-semibold mb-3 text-gray-600">
+                Gaps / Risks
+              </h4>
+              <ul className="space-y-2 text-sm text-gray-600">
+                {jobScoreObj.gaps_risks.map((gap: string, index: number) => (
+                  <li key={index} className="bg-gray-50 p-2 rounded-md">
+                    {gap}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="mb-3 border-b border-gray-200"></div>
+
+            {/* Recommended Message */}
+            <div className="mb-4">
+              <h4 className="text-md font-semibold mb-3 text-blue-600">
+                Recommended Message to Client
+              </h4>
+              <p className="text-sm text-gray-600">
+                {jobScoreObj.recommended_message}
+              </p>
+            </div>
+
+            <div className="mb-3 border-b border-gray-200"></div>
+
+            {/* Callout */}
+            <div className="bg-yellow-50 border rounded-md">
+              <div className="flex items-center gap-2 px-3 py-4 mb-1">
+                <svg
+                  className="h-5 w-5 text-yellow-600 mt-0.5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <h3 className="text-yellow-600">Call Attention</h3>
+              </div>
+              <div className="px-4 pb-4">
+                <ul className="text-sm text-gray-500 space-y-1 list-disc list-inside">
+                  {jobScoreObj.call_attention.map(
+                    (attention: string, index: number) => (
+                      <li key={index}>{attention}</li>
+                    )
+                  )}
+                </ul>
+              </div>
+            </div>
+          </div>
+        );
+
       case "Profile":
         const positions = selectedCandidate.candidate.positions || [];
         const educations = selectedCandidate.candidate.educations || [];

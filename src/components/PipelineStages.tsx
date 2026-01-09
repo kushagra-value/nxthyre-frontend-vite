@@ -226,7 +226,7 @@ interface Note {
 interface PipelineStagesProps {
   onBack: () => void;
   onOpenLogoutModal: () => void;
-  onSendInvite: ()=> void;
+  onSendInvite: () => void;
   deductCredits: () => Promise<void>;
   initialJobId?: number | null;
 }
@@ -715,6 +715,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           highlights:
             contextualDetails.match_analysis?.matched_skills?.join(", ") || "",
           notes: contextualDetails.candidate_notes || [],
+          job_score_obj: contextualDetails.job_score_obj || {},
         };
       case "ai-interview":
       case "shortlisted":
@@ -757,6 +758,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             skillsCoverage: "",
           },
           potentialRedFlags: report.potential_red_flags || [],
+          job_score_obj: contextualDetails.job_score_obj || {},
         };
       default:
         return contextualDetails; // Fallback for other stages

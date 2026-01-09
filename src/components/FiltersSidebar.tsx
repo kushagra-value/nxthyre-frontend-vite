@@ -26,7 +26,7 @@ import { showToast } from "../utils/toast";
 
 interface FiltersSidebarProps {
   filters: {
-    keywords: string[];
+    keywords: string;
     booleanSearch: boolean;
     boolQuery?: string;
     semanticSearch: boolean;
@@ -707,7 +707,7 @@ const fetchCitySuggestions = useCallback(
           </div>
           {expandedSections.location && (
             <>
-            <div className=" flex justify-between items-center gap-2">
+            <div className="flex justify-between items-center">
               
               <div className="relative">
                 <input

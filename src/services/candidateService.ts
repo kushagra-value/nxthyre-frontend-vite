@@ -434,6 +434,7 @@ class CandidateService {
         "hasLinkedIn", // Not supported by backend
         "is_prevetted",
         "is_active",
+        "keywords",
       ];
 
       // Updated snake case mapping to exactly match backend expectations
@@ -553,14 +554,7 @@ class CandidateService {
         requestBody.bool_query = filters.boolQuery.trim();
       }
 
-      // UPDATED: Adjust search_type logic to use the new text_query field
-      if (filters.semanticSearch) {
-        requestBody.search_type = "semantic";
-      } else if (requestBody.text_query) {
-        requestBody.search_type = "keyword";
-      }
-
-      if (filters.jobId && !filters.semanticSearch) {
+      if (filters.jobId) {
         requestBody.enable_boolean_analysis = true;
       }
 
