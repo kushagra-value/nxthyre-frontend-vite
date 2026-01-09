@@ -766,20 +766,55 @@ const inboundStages = pipelineStages
       )}
 
       {loadingCandidates ? (
-        <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <p className="ml-4 text-gray-400 text-xs lg:text-base font-[400]">
-            Loading candidates...
-          </p>
-        </div>
+        <>
+          {Array.from({ length: candidatesPerPage }, (_, index) => (
+            <div
+              key={index}
+              className="rounded-lg border border-gray-200"
+            >
+              <div className="pt-5 animate-pulse">
+                <div className="flex px-4 items-center space-x-3">
+                  <div className="w-4 h-4 bg-gray-200 rounded" />
+                  <div className="border-b border-[#E2E2E2] flex items-center space-x-3 pb-5 w-full">
+                    <div className="w-14 h-14 bg-gray-200 rounded-full flex-shrink-0" />
+                    <div className="flex-1 min-w-0 space-y-3">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="h-6 bg-gray-200 rounded w-64" /> {/* Name + possible badge */}
+                        <div className="h-5 bg-gray-200 rounded w-32" /> {/* Location */}
+                      </div>
+                      <div className="h-4 bg-gray-200 rounded w-full" /> {/* Headline */}
+                      <div className="h-4 bg-gray-200 rounded w-4/5" /> {/* Headline continuation or active text */}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-5 pl-12 flex space-x-12 gap-2">
+                  {Array.from({ length: 4 }, (_, j) => (
+                    <div key={j} className="flex flex-col space-y-1">
+                      <div className="h-3 bg-gray-200 rounded w-24" /> {/* Label */}
+                      <div className="h-5 bg-gray-200 rounded w-32" /> {/* Value */}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="p-3 pl-12 mt-5 bg-gray-100 flex items-center justify-between rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    {Array.from({ length: 7 }, (_, j) => (
+                      <div key={j} className="w-10 h-10 bg-gray-200 rounded-full" />
+                    ))}
+                  </div>
+                  <div className="h-10 bg-gray-200 rounded-md w-64" /> {/* Save to Pipeline button + dropdown */}
+                </div>
+              </div>
+            </div>
+          ))}
+        </>
       ) : candidates.length === 0 ? (
         <div className="text-center py-8 space-y-2">
-          {activeTab === "inbound" && totalCount < activeCategoryTotalCount && (
-            <div className="m-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
+          {!loadingCandidates && activeTab === "inbound" && totalCount < activeCategoryTotalCount && (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
               <p className="text-yellow-700 text-sm">
-                There might be fewer candidates in the Inbound tab due to
-                applied filters. You can click on the "Clear All Filters" button
-                in the sidebar to view all candidates.
+                There might be fewer candidates in the Inbound tab due to applied filters. You can click on the "Clear All Filters" button in the sidebar to view all candidates.
               </p>
             </div>
           )}
@@ -790,16 +825,13 @@ const inboundStages = pipelineStages
       ) : (
         <>
           <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
-            {activeTab === "inbound" &&
-              totalCount < activeCategoryTotalCount && (
-                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
-                  <p className="text-yellow-700 text-sm">
-                    There might be fewer candidates in the Inbound tab due to
-                    applied filters. You can click on the "Clear All Filters"
-                    button in the sidebar to view all candidates.
-                  </p>
-                </div>
-              )}
+            {!loadingCandidates && activeTab === "inbound" && totalCount < activeCategoryTotalCount && (
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
+                <p className="text-yellow-700 text-sm">
+                  There might be fewer candidates in the Inbound tab due to applied filters. You can click on the "Clear All Filters" button in the sidebar to view all candidates.
+                </p>
+              </div>
+            )}
             {candidates.map((candidate) => {
               // Extract college name from education_summary.title
               let collegeName = candidate?.education_summary?.title
