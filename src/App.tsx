@@ -133,27 +133,7 @@ const ProjectSkeletonCard = () => (
           <div className="h-9 bg-gray-200 rounded-full w-28"></div>
           <div className="h-9 bg-gray-200 rounded-full w-36"></div>
         </div>
-        <div className="grid grid-cols-3 gap-8 mb-10">
-          <div className="text-center">
-            <div className="h-20 bg-gray-200 rounded-xl mx-auto mb-3 w-20"></div>
-            <div className="h-5 bg-gray-200 rounded w-20 mx-auto"></div>
-          </div>
-          <div className="text-center">
-            <div className="h-20 bg-gray-200 rounded-xl mx-auto mb-3 w-20"></div>
-            <div className="h-5 bg-gray-200 rounded w-20 mx-auto"></div>
-          </div>
-          <div className="text-center">
-            <div className="h-20 bg-gray-200 rounded-xl mx-auto mb-3 w-20"></div>
-            <div className="h-5 bg-gray-200 rounded w-20 mx-auto"></div>
-          </div>
-        </div>
-        <div className="flex justify-between items-center">
-          <div className="h-10 bg-gray-200 rounded-lg w-32"></div>
-          <div className="flex gap-4">
-            <div className="h-10 bg-gray-200 rounded-lg w-10"></div>
-            <div className="h-10 bg-gray-200 rounded-lg w-40"></div>
-          </div>
-        </div>
+        
       </div>
     </div>
   );
