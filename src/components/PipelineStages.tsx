@@ -715,7 +715,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           highlights:
             contextualDetails.match_analysis?.matched_skills?.join(", ") || "",
           notes: contextualDetails.candidate_notes || [],
-          jobScoreObj: contextualDetails.job_score_obj || {},
+          job_score_obj: contextualDetails.job_score_obj || {},
         };
       case "ai-interview":
       case "shortlisted":
@@ -758,7 +758,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             skillsCoverage: "",
           },
           potentialRedFlags: report.potential_red_flags || [],
-          jobScoreObj: contextualDetails.job_score_obj || {},
+          job_score_obj: contextualDetails.job_score_obj || {},
         };
       default:
         return contextualDetails; // Fallback for other stages
