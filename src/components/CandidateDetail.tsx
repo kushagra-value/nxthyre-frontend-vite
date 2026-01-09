@@ -329,6 +329,7 @@ interface CandidateDetailProps {
   textQuery?: string;      // NEW: Current keyword string (text_query)
   boolQuery?: string;      // NEW: Current boolean query
   enableAnalysis?: boolean;
+  onAnalysisFetched?: (analysis: AnalysisResult) => void;
 }
 
 const CandidateDetail: React.FC<CandidateDetailProps> = ({
@@ -343,7 +344,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   jobId,
   textQuery,
   boolQuery,
-  enableAnalysis
+  enableAnalysis,
+  onAnalysisFetched
 }) => {
   const [newComment, setNewComment] = useState("");
   const [detailedCandidate, setDetailedCandidate] =
@@ -373,6 +375,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           );
           setBooleanData(data);
           setHasBooleanAnalysis(true);
+          if (onAnalysisFetched) {
+            onAnalysisFetched(data); 
+          }
           if (activeTab !== "Boolean-Search") {
             setActiveTab("Boolean-Search"); // Optional: auto-switch to show analysis
           }
