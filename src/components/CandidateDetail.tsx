@@ -502,7 +502,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl p-3 lg:p-3 min-h-[81vh] animate-pulse">
+      <div className="bg-white rounded-xl p-4 lg:p-4 min-h-[81vh] animate-pulse">
       {/* Header skeleton */}
       <div className="flex space-x-3 items-center mt-1 mb-6">
         <div className="w-12 h-12 bg-gray-200 rounded-full flex-shrink-0" />
