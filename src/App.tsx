@@ -998,20 +998,27 @@ function MainApp() {
     // UPDATED: Show loading if authLoading (prevents flash of fallback)
     if (authLoading) {
       return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading...</p>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-10 animate-pulse">
+            <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-8"></div>
+            <div className="h-8 bg-gray-200 rounded w-3/4 mx-auto mb-6"></div>
+            <div className="space-y-4 mb-10">
+              <div className="h-5 bg-gray-200 rounded"></div>
+              <div className="h-5 bg-gray-200 rounded w-11/12"></div>
+              <div className="h-5 bg-gray-200 rounded w-10/12"></div>
+            </div>
+            <div className="h-12 bg-gray-200 rounded-lg"></div>
           </div>
         </div>
       );
     }
+
     if (claiming) {
       return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Joining {workspaceName}...</p>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-10 animate-pulse">
+            <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-8"></div>
+            <div className="h-8 bg-gray-200 rounded w-11/12 mx-auto"></div>
           </div>
         </div>
       );
@@ -1060,14 +1067,127 @@ function MainApp() {
   }
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+      <div className="min-h-screen bg-gray-50">
+        {/* Header skeleton */}
+        <div className="sticky top-0 bg-white shadow-sm z-40 animate-pulse">
+          <div className="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
+            <div className="h-10 bg-gray-200 rounded-lg w-64"></div>
+            <div className="flex items-center gap-8">
+              <div className="h-12 bg-gray-200 rounded-lg w-96"></div>
+              <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
+              <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Welcome + search bar skeleton */}
+        <div className="container mx-auto py-6">
+          <div className="bg-white flex h-[99px] mb-6 shadow-lg rounded-[10px]">
+            <div className="flex-1 flex items-center justify-between px-12">
+              <div className="h-9 bg-gray-200 rounded w-80"></div>
+              <div className="h-14 bg-gray-100 rounded-lg w-[544px]"></div>
+            </div>
+            <div className="bg-gray-100 w-[210px] flex flex-col items-center justify-center">
+              <div className="h-10 bg-gray-200 rounded w-32 mb-2"></div>
+              <div className="h-6 bg-gray-200 rounded w-40"></div>
+            </div>
+          </div>
+
+          {/* Project grid skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(12)].map((_, i) => (
+              <ProjectSkeletonCard key={i} />
+            ))}
+          </div>
         </div>
       </div>
     );
   }
+
+  const ProjectSkeletonCard = () => (
+    <div className="bg-white rounded-[10px] shadow-lg overflow-hidden animate-pulse">
+      <div className="p-8">
+        <div className="h-10 bg-gray-200 rounded-lg mb-6"></div>
+        <div className="h-6 bg-gray-200 rounded w-4/5 mb-8"></div>
+        <div className="flex flex-wrap gap-4 mb-8">
+          <div className="h-9 bg-gray-200 rounded-full w-32"></div>
+          <div className="h-9 bg-gray-200 rounded-full w-28"></div>
+          <div className="h-9 bg-gray-200 rounded-full w-36"></div>
+        </div>
+        <div className="grid grid-cols-3 gap-8 mb-10">
+          <div className="text-center">
+            <div className="h-20 bg-gray-200 rounded-xl mx-auto mb-3 w-20"></div>
+            <div className="h-5 bg-gray-200 rounded w-20 mx-auto"></div>
+          </div>
+          <div className="text-center">
+            <div className="h-20 bg-gray-200 rounded-xl mx-auto mb-3 w-20"></div>
+            <div className="h-5 bg-gray-200 rounded w-20 mx-auto"></div>
+          </div>
+          <div className="text-center">
+            <div className="h-20 bg-gray-200 rounded-xl mx-auto mb-3 w-20"></div>
+            <div className="h-5 bg-gray-200 rounded w-20 mx-auto"></div>
+          </div>
+        </div>
+        <div className="flex justify-between items-center">
+          <div className="h-10 bg-gray-200 rounded-lg w-32"></div>
+          <div className="flex gap-4">
+            <div className="h-10 bg-gray-200 rounded-lg w-10"></div>
+            <div className="h-10 bg-gray-200 rounded-lg w-40"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+
+  const RequisitionSkeleton = () => (
+    <div className="space-y-10 animate-pulse">
+      <div className="h-12 bg-gray-200 rounded-lg w-full max-w-xl mb-6"></div>
+      <div className="flex gap-12 mb-8">
+        <div className="h-8 bg-gray-200 rounded-lg w-48"></div>
+        <div className="h-8 bg-gray-200 rounded-lg w-48"></div>
+        <div className="h-8 bg-gray-200 rounded-lg w-48"></div>
+      </div>
+      <div>
+        <div className="h-8 bg-gray-200 rounded-lg w-64 mb-4"></div>
+        <div className="space-y-3">
+          <div className="h-5 bg-gray-200 rounded"></div>
+          <div className="h-5 bg-gray-200 rounded w-11/12"></div>
+          <div className="h-5 bg-gray-200 rounded w-10/12"></div>
+        </div>
+      </div>
+      <div>
+        <div className="h-8 bg-gray-200 rounded-lg w-80 mb-6"></div>
+        <div className="space-y-6">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-gray-100 rounded-xl p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-7 bg-gray-200 rounded w-96"></div>
+                <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
+              </div>
+              <div className="h-5 bg-gray-200 rounded w-full mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-4/5"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="h-8 bg-gray-200 rounded-lg w-96 mb-6"></div>
+        <div className="space-y-6">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="bg-gray-100 rounded-xl p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-7 bg-gray-200 rounded w-80"></div>
+                <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
+              </div>
+              <div className="h-5 bg-gray-200 rounded w-full mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 
   // Guard component for super admin (adjusted for your role-based auth)
   const SuperAdminRoute: React.FC<{ children: React.ReactNode }> = ({
@@ -1325,9 +1445,10 @@ function MainApp() {
                     </div>
 
                     {loadingCategories ? (
-                      <div className="col-span-full text-center py-10">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                        <p className="text-gray-600">Loading projects...</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {[...Array(12)].map((_, i) => (
+                          <ProjectSkeletonCard key={i} />
+                        ))}
                       </div>
                     ) : categories.length === 0 ? (
                       <div className="col-span-full text-center py-20">
@@ -1597,13 +1718,8 @@ function MainApp() {
                           </div>
                         </div>
                         {loadingCompetencies ? (
-                          <div className="flex items-center justify-center py-8">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                            <span className="ml-2 text-gray-600">
-                              Loading...
-                            </span>
-                          </div>
-                        ) : jobDataForModal && competenciesData ? (
+                            <RequisitionSkeleton />
+                          ) : jobDataForModal && competenciesData ? (
                           <>
                             <h2 className="text-2xl font-semibold text-gray-900 mb-1">
                               {jobDataForModal.title}
