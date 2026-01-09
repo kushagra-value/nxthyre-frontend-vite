@@ -502,12 +502,89 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl p-3 lg:p-4">
-        <div className="text-center text-gray-500 mt-6">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-base font-medium">Loading candidate details...</p>
+      <div className="bg-white rounded-xl p-3 lg:p-3 min-h-[81vh] animate-pulse">
+      {/* Header skeleton */}
+      <div className="flex space-x-3 items-center mt-1 mb-6">
+        <div className="w-12 h-12 bg-gray-200 rounded-full flex-shrink-0" />
+        <div className="flex-1 space-y-2">
+          <div className="h-6 bg-gray-200 rounded w-64" /> {/* Name */}
+          <div className="h-4 bg-gray-200 rounded w-96" /> {/* Headline */}
+          <div className="h-4 bg-gray-200 rounded w-48" /> {/* Location */}
+        </div>
+        <div className="w-10 h-10 bg-gray-200 rounded-lg" /> {/* Share button */}
+      </div>
+
+      {/* Contact section skeleton */}
+      <div className="border-t border-gray-300 border-b p-3 space-y-3 mb-6">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 bg-gray-200 rounded" /> {/* Mail icon */}
+            <div className="h-4 bg-gray-200 rounded w-72" /> {/* Email */}
+          </div>
+          <div className="w-8 h-8 bg-gray-200 rounded" /> {/* Copy button */}
+        </div>
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 bg-gray-200 rounded" /> {/* Phone icon */}
+            <div className="h-4 bg-gray-200 rounded w-48" /> {/* Phone */}
+          </div>
+          <div className="flex space-x-2">
+            <div className="w-8 h-8 bg-gray-200 rounded" /> {/* WhatsApp */}
+            <div className="w-8 h-8 bg-gray-200 rounded" /> {/* Copy */}
+          </div>
         </div>
       </div>
+
+      {/* Send Invite button skeleton */}
+      <div className="mb-6">
+        <div className="h-10 bg-gray-200 rounded-lg w-full" />
+      </div>
+
+      {/* Tabs skeleton */}
+      <div className="flex space-x-4 border-b border-gray-200 mb-4 pb-2">
+        {Array.from({ length: 6 }, (_, i) => (
+          <div key={i} className="flex items-center space-x-1">
+            <div className="w-8 h-8 bg-gray-200 rounded" /> {/* Icon placeholder */}
+            <div className="h-4 bg-gray-200 rounded w-20" /> {/* Tab name */}
+          </div>
+        ))}
+      </div>
+
+      {/* Content area skeleton (mimics Profile tab) */}
+      <div className="space-y-6">
+        {/* Profile Summary */}
+        <div className="bg-gray-100 p-3 rounded-lg">
+          <div className="h-5 bg-gray-200 rounded w-48 mb-3" /> {/* Title */}
+          <div className="space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-full" />
+            <div className="h-4 bg-gray-200 rounded w-full" />
+            <div className="h-4 bg-gray-200 rounded w-3/4" />
+          </div>
+        </div>
+
+        {/* Experience section */}
+        <div className="bg-gray-100 p-3 rounded-lg">
+          <div className="h-5 bg-gray-200 rounded w-32 mb-4" /> {/* Title */}
+          {Array.from({ length: 2 }, (_, i) => (
+            <div key={i} className="border-l-2 border-gray-200 ml-2 pl-4 space-y-3 py-3">
+              <div className="flex items-center space-x-3">
+                <div className="w-5 h-5 bg-gray-200 rounded-full flex-shrink-0" /> {/* Company logo */}
+                <div className="space-y-2 flex-1">
+                  <div className="h-5 bg-gray-200 rounded w-64" /> {/* Job title */}
+                  <div className="h-4 bg-gray-200 rounded w-48" /> {/* Company + location */}
+                  <div className="h-4 bg-gray-200 rounded w-32" /> {/* Dates */}
+                </div>
+              </div>
+              <div className="space-y-2 ml-8">
+                <div className="h-4 bg-gray-200 rounded w-full" />
+                <div className="h-4 bg-gray-200 rounded w-full" />
+                <div className="h-4 bg-gray-200 rounded w-5/6" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
     );
   }
 
