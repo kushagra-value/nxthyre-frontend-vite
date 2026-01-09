@@ -770,7 +770,7 @@ const inboundStages = pipelineStages
           {Array.from({ length: candidatesPerPage }, (_, index) => (
             <div
               key={index}
-              className="rounded-lg border border-gray-200"
+              className="rounded-lg border border-gray-200 p-4"
             >
               <div className="pt-5 animate-pulse">
                 <div className="flex px-4 items-center space-x-3">
