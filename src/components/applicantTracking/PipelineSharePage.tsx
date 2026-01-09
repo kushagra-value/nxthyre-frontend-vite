@@ -1459,44 +1459,7 @@ const handleCopyProfile = async (applicationId: string) => {
   const workMode = "Hybrid";
   const notice = "Immediate (max 15 Days)";
   
-  if (isFetching) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        {/* Header skeleton */}
-        <div className="sticky top-0 bg-white shadow-sm z-40 animate-pulse">
-          <div className="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
-            <div className="h-10 bg-gray-200 rounded-lg w-64"></div>
-            <div className="flex items-center gap-8">
-              <div className="h-12 bg-gray-200 rounded-lg w-96"></div>
-              <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
-              <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
-            </div>
-          </div>
-        </div>
-
-        {/* Welcome + search bar skeleton */}
-        <div className="container mx-auto py-6">
-          <div className="bg-white flex h-[99px] mb-6 shadow-lg rounded-[10px]">
-            <div className="flex-1 flex items-center justify-between px-12">
-              <div className="h-9 bg-gray-200 rounded w-80"></div>
-              <div className="h-14 bg-gray-100 rounded-lg w-[544px]"></div>
-            </div>
-            <div className="bg-gray-100 w-[210px] flex flex-col items-center justify-center">
-              <div className="h-10 bg-gray-200 rounded w-32 mb-2"></div>
-              <div className="h-6 bg-gray-200 rounded w-40"></div>
-            </div>
-          </div>
-
-          {/* Project grid skeleton */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(12)].map((_, i) => (
-              <ProjectSkeletonCard key={i} />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  
 
 
   if (!isAuthenticated) {
