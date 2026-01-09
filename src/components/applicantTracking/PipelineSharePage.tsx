@@ -1445,16 +1445,286 @@ const handleCopyProfile = async (applicationId: string) => {
 
 
   if (authLoading) {
-    return <div>Loading authentication...</div>;
-  }
+  return (
+    <div className="bg-[#FFFFFF] min-h-screen">
+      {/* Header Skeleton */}
+      <div className="mb-4 bg-white shadow-sm border-b border-gray-200 flex items-center justify-between max-w-full mx-auto px-7 py-2">
+        <div className="flex items-center gap-12">
+          <div className="h-12 bg-gray-200 rounded w-32" /> {/* Logo placeholder */}
+          <div className="h-10 bg-gray-200 rounded w-48" /> {/* Button placeholder */}
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-[95vw] space-y-4">
+        {/* Pipeline Title & Info Skeleton */}
+        <div className="relative bg-white rounded-xl shadow-lg px-8 py-6">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-gray-200 rounded" /> {/* Back arrow */}
+          <div className="flex items-center justify-between pl-8">
+            <div className="flex items-center gap-12">
+              <div>
+                <div className="h-8 bg-gray-200 rounded w-96 mb-3" /> {/* Pipeline name */}
+                <div className="flex items-center gap-4">
+                  <div className="h-5 bg-gray-200 rounded w-32" />
+                  <div className="w-px h-5 bg-gray-200" />
+                  <div className="h-5 bg-gray-200 rounded w-24" />
+                  <div className="w-px h-5 bg-gray-200" />
+                  <div className="h-5 bg-gray-200 rounded w-20" />
+                  <div className="w-px h-5 bg-gray-200" />
+                  <div className="h-5 bg-gray-200 rounded w-40" />
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-6">
+              <div className="hidden sm:flex items-center">
+                <div className="h-10 bg-gray-200 rounded-lg w-80" /> {/* Search bar */}
+              </div>
+              <div className="h-5 bg-gray-200 rounded w-20" /> {/* Share text */}
+              <div className="w-10 h-10 bg-gray-200 rounded-full" /> {/* Mail icon */}
+              <div className="w-10 h-10 bg-gray-200 rounded-full" /> {/* Link icon */}
+            </div>
+          </div>
+        </div>
+
+        {/* Tabs Skeleton */}
+        <div className="relative mx-8">
+          <div className="flex items-center gap-24 pt-4 border-b border-[#818283] pb-4">
+            <div className="h-8 bg-gray-200 rounded w-32" />
+            <div className="h-8 bg-gray-200 rounded w-32" />
+          </div>
+        </div>
+
+        {/* Pipeline Stages Skeleton (same as isFetching) */}
+        <div className="px-8 py-10">
+          <div className="overflow-x-auto hide-scrollbar">
+            <div className="flex space-x-4 min-w-max pb-2 animate-pulse">
+              {/* 5 Skeleton Stages */}
+              {Array.from({ length: 5 }, (_, i) => (
+                <div key={i} className="w-96 h-[80vh]">
+                  <div className="bg-[#F5F9FB] h-full rounded-lg p-3 space-y-3">
+                    {/* Stage Header */}
+                    <div className="flex items-center mb-2">
+                      <div className="w-1 h-6 bg-gray-300 rounded-r mr-3" />
+                      <div className="h-7 bg-gray-300 rounded w-48" />
+                      <div className="ml-auto flex flex-col gap-0.5">
+                        <div className="w-1 h-1 bg-gray-300 rounded-full" />
+                        <div className="w-1 h-1 bg-gray-300 rounded-full" />
+                        <div className="w-1 h-1 bg-gray-300 rounded-full" />
+                      </div>
+                    </div>
+                    <div className="h-5 bg-gray-300 rounded w-32 ml-4" />
+
+                    {/* Stats */}
+                    <div className="flex items-end justify-between mt-4 ml-4">
+                      <div>
+                        <div className="h-10 bg-gray-300 rounded w-20 inline-block" />
+                        <div className="h-5 bg-gray-300 rounded w-24 inline-block ml-2" />
+                      </div>
+                      <div className="text-right">
+                        <div className="h-10 bg-gray-300 rounded w-20 inline-block" />
+                        <div className="h-5 bg-gray-300 rounded w-16 inline-block ml-2" />
+                      </div>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="mb-8 w-[95%] bg-gray-200 h-2 rounded-full mt-4 ml-4">
+                      <div className="bg-gray-300 h-2 rounded-full w-3/4" />
+                    </div>
+
+                    {/* Candidate Cards (3 per stage) */}
+                    <div className="pt-8 space-y-3">
+                      {Array.from({ length: 3 }, (_, j) => (
+                        <div key={j} className="bg-white rounded-2xl p-4 space-y-4">
+                          <div className="grid grid-cols-12 gap-3 items-center">
+                            <div className="col-span-2">
+                              <div className="w-10 h-10 bg-gray-200 rounded-full" />
+                            </div>
+                            <div className="col-span-8 space-y-2">
+                              <div className="h-5 bg-gray-200 rounded w-64" />
+                              <div className="h-4 bg-gray-200 rounded w-48" />
+                            </div>
+                          </div>
+                          <div className="col-start-3 col-span-10 space-y-2">
+                            <div className="h-4 bg-gray-200 rounded w-full" />
+                            <div className="flex gap-2">
+                              {Array.from({ length: 5 }, (_, k) => (
+                                <div key={k} className="w-6 h-6 bg-gray-200 rounded-full" />
+                              ))}
+                            </div>
+                          </div>
+                          <div className="border-t border-gray-200 my-3" />
+                          <div className="flex items-center justify-between">
+                            <div className="flex gap-6">
+                              {Array.from({ length: 3 }, (_, k) => (
+                                <div key={k} className="flex items-center gap-2">
+                                  <div className="w-5 h-5 bg-gray-200 rounded" />
+                                  <div className="h-5 bg-gray-200 rounded w-8" />
+                                </div>
+                              ))}
+                            </div>
+                            <div className="h-8 bg-gray-200 rounded w-16" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Add Custom Stage Skeleton */}
+              <div className="w-96 h-[80vh] bg-[#F5F9FB] rounded-lg flex flex-col items-center justify-center">
+                <div className="w-16 h-16 bg-gray-200 rounded-full" />
+                <div className="h-6 bg-gray-200 rounded w-48 mt-4" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
   if (!isAuthenticated) {
     return <div>You need to be logged in to view this page.</div>;
   }
 
   if (isFetching) {
-    return <div>Loading pipeline data...</div>;
-  }
+  return (
+    <div className="bg-[#FFFFFF] min-h-screen">
+      {/* Header Skeleton */}
+      <div className="mb-4 bg-white shadow-sm border-b border-gray-200 flex items-center justify-between max-w-full mx-auto px-7 py-2">
+        <div className="flex items-center gap-12">
+          <div className="h-12 bg-gray-200 rounded w-32" /> {/* Logo placeholder */}
+          <div className="h-10 bg-gray-200 rounded w-48" /> {/* Button placeholder */}
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-[95vw] space-y-4">
+        {/* Pipeline Title & Info Skeleton */}
+        <div className="relative bg-white rounded-xl shadow-lg px-8 py-6">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-gray-200 rounded" /> {/* Back arrow */}
+          <div className="flex items-center justify-between pl-8">
+            <div className="flex items-center gap-12">
+              <div>
+                <div className="h-8 bg-gray-200 rounded w-96 mb-3" /> {/* Pipeline name */}
+                <div className="flex items-center gap-4">
+                  <div className="h-5 bg-gray-200 rounded w-32" />
+                  <div className="w-px h-5 bg-gray-200" />
+                  <div className="h-5 bg-gray-200 rounded w-24" />
+                  <div className="w-px h-5 bg-gray-200" />
+                  <div className="h-5 bg-gray-200 rounded w-20" />
+                  <div className="w-px h-5 bg-gray-200" />
+                  <div className="h-5 bg-gray-200 rounded w-40" />
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-6">
+              <div className="hidden sm:flex items-center">
+                <div className="h-10 bg-gray-200 rounded-lg w-80" /> {/* Search bar */}
+              </div>
+              <div className="h-5 bg-gray-200 rounded w-20" /> {/* Share text */}
+              <div className="w-10 h-10 bg-gray-200 rounded-full" /> {/* Mail icon */}
+              <div className="w-10 h-10 bg-gray-200 rounded-full" /> {/* Link icon */}
+            </div>
+          </div>
+        </div>
+
+        {/* Tabs Skeleton */}
+        <div className="relative mx-8">
+          <div className="flex items-center gap-24 pt-4 border-b border-[#818283] pb-4">
+            <div className="h-8 bg-gray-200 rounded w-32" />
+            <div className="h-8 bg-gray-200 rounded w-32" />
+          </div>
+        </div>
+
+        {/* Pipeline Stages Skeleton */}
+        <div className="px-8 py-10">
+          <div className="overflow-x-auto hide-scrollbar">
+            <div className="flex space-x-4 min-w-max pb-2 animate-pulse">
+              {/* 5 Skeleton Stages */}
+              {Array.from({ length: 5 }, (_, i) => (
+                <div key={i} className="w-96 h-[80vh]">
+                  <div className="bg-[#F5F9FB] h-full rounded-lg p-3 space-y-3">
+                    {/* Stage Header */}
+                    <div className="flex items-center mb-2">
+                      <div className="w-1 h-6 bg-gray-300 rounded-r mr-3" />
+                      <div className="h-7 bg-gray-300 rounded w-48" />
+                      <div className="ml-auto flex flex-col gap-0.5">
+                        <div className="w-1 h-1 bg-gray-300 rounded-full" />
+                        <div className="w-1 h-1 bg-gray-300 rounded-full" />
+                        <div className="w-1 h-1 bg-gray-300 rounded-full" />
+                      </div>
+                    </div>
+                    <div className="h-5 bg-gray-300 rounded w-32 ml-4" />
+
+                    {/* Stats */}
+                    <div className="flex items-end justify-between mt-4 ml-4">
+                      <div>
+                        <div className="h-10 bg-gray-300 rounded w-20 inline-block" />
+                        <div className="h-5 bg-gray-300 rounded w-24 inline-block ml-2" />
+                      </div>
+                      <div className="text-right">
+                        <div className="h-10 bg-gray-300 rounded w-20 inline-block" />
+                        <div className="h-5 bg-gray-300 rounded w-16 inline-block ml-2" />
+                      </div>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="mb-8 w-[95%] bg-gray-200 h-2 rounded-full mt-4 ml-4">
+                      <div className="bg-gray-300 h-2 rounded-full w-3/4" />
+                    </div>
+
+                    {/* Candidate Cards (3 per stage) */}
+                    <div className="pt-8 space-y-3">
+                      {Array.from({ length: 3 }, (_, j) => (
+                        <div key={j} className="bg-white rounded-2xl p-4 space-y-4">
+                          <div className="grid grid-cols-12 gap-3 items-center">
+                            <div className="col-span-2">
+                              <div className="w-10 h-10 bg-gray-200 rounded-full" />
+                            </div>
+                            <div className="col-span-8 space-y-2">
+                              <div className="h-5 bg-gray-200 rounded w-64" />
+                              <div className="h-4 bg-gray-200 rounded w-48" />
+                            </div>
+                          </div>
+                          <div className="col-start-3 col-span-10 space-y-2">
+                            <div className="h-4 bg-gray-200 rounded w-full" />
+                            <div className="flex gap-2">
+                              {Array.from({ length: 5 }, (_, k) => (
+                                <div key={k} className="w-6 h-6 bg-gray-200 rounded-full" />
+                              ))}
+                            </div>
+                          </div>
+                          <div className="border-t border-gray-200 my-3" />
+                          <div className="flex items-center justify-between">
+                            <div className="flex gap-6">
+                              {Array.from({ length: 3 }, (_, k) => (
+                                <div key={k} className="flex items-center gap-2">
+                                  <div className="w-5 h-5 bg-gray-200 rounded" />
+                                  <div className="h-5 bg-gray-200 rounded w-8" />
+                                </div>
+                              ))}
+                            </div>
+                            <div className="h-8 bg-gray-200 rounded w-16" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Add Custom Stage Skeleton */}
+              <div className="w-96 h-[80vh] bg-[#F5F9FB] rounded-lg flex flex-col items-center justify-center">
+                <div className="w-16 h-16 bg-gray-200 rounded-full" />
+                <div className="h-6 bg-gray-200 rounded w-48 mt-4" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
   
   return (
