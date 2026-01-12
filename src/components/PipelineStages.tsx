@@ -49,6 +49,7 @@ import { showToast } from "../utils/toast";
 import PipelinesSideCard from "./PipelinePage/PipelinesSideCard";
 import { candidateService } from "../services/candidateService";
 import TemplateSelector from "./TemplateSelector";
+import toast from "react-hot-toast";
 
 // Define interfaces for API responses
 interface Stage {
@@ -421,7 +422,18 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     }
     try {
       await jobPostService.uploadResumes(activeJobId, uploadFiles);
-      showToast.success("Candidates uploaded successfully");
+      toast.success(
+        "Resumes queued for analysis. Refresh after 10 mins to check status.",
+        {
+          duration: 7000,
+          position: "bottom-right",
+          style: {
+            background: "#0abc1eff",
+            color: "#fff",
+            fontWeight: "500",
+          },
+        }
+      );
       setShowUploadModal(false);
       setUploadFiles(null);
       // Refresh candidates for Uncontacted stage
