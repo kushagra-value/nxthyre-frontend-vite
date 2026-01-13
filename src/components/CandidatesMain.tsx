@@ -15,6 +15,7 @@ import {
   Search,
   Share,
   ArrowDownNarrowWide,
+  ShareIcon,
 } from "lucide-react";
 
 import {
@@ -1652,7 +1653,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                       );
                     })()}
                     </div> */}
-                    // Update the button logic as follows:
+                    {/* // Update the button logic as follows: */}
                     <div className="rounded-md flex space-x-1 border border-blue-400 hover:border-blue-600 transition-colors">
                       {(() => {
                         const shortlistedStage = pipelineStages.find(
@@ -1692,6 +1693,45 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                               <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
                             </svg>
                             {buttonText}
+                          </button>
+                        );
+                      })()}
+                    </div>
+
+                    <div className="rounded-md flex space-x-1 border border-blue-400 hover:border-blue-600 transition-colors">
+                      {(() => {
+                        // const shortlistedStage = pipelineStages.find(
+                        //   (stage) => stage.slug === "shortlisted"
+                        // );
+
+                        // const defaultStageId =
+                        //   shortlistedStage?.id ?? undefined;
+
+                        // const buttonText = shortlistedStage
+                        //   ? "Save to Shortlisted"
+                        //   : "Add to Pipeline"; // fallback text if shortlisted stage missing
+
+                        return (
+                          <button
+                            className="pl-3 pr-2 py-1.5 text-blue-600 text-sm font-medium flex items-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+
+                            // aria-label={`${buttonText} for ${candidate.full_name}`}
+                          >
+                            {/* <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="text-[#0F47F2] mr-2"
+                            >
+                              <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+                            </svg> */}
+                            <ShareIcon className="w-4 h-4 ml-1 mt-[2px] text-blue-600" />
+                            Move to Autopilot
                           </button>
                         );
                       })()}
