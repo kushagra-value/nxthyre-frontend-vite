@@ -79,7 +79,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   loadingCandidates,
   sourcingCounts,
   activeCategoryTotalCount,
-  currentAnalysis
+  currentAnalysis,
 }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
@@ -265,7 +265,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         parseInt(jobId),
         candidateId,
         stageId,
-        candidateId === selectedCandidate?.id ? currentAnalysis ?? undefined : undefined
+        candidateId === selectedCandidate?.id
+          ? currentAnalysis ?? undefined
+          : undefined
       );
 
       if (stageId) {
@@ -314,26 +316,26 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   };
 
   useEffect(() => {
-  if (jobId) {
-    candidateService
-      .getPipelineStages(parseInt(jobId))
-      .then((stages) => {
-        setPipelineStages(stages);
-      })
-      .catch((error) => {
-        showToast.error(error.message || "Failed to fetch pipeline stages");
-      });
-  }
-}, [jobId]);
+    if (jobId) {
+      candidateService
+        .getPipelineStages(parseInt(jobId))
+        .then((stages) => {
+          setPipelineStages(stages);
+        })
+        .catch((error) => {
+          showToast.error(error.message || "Failed to fetch pipeline stages");
+        });
+    }
+  }, [jobId]);
 
   const handleDropdownToggle = (candidateId: string, e: React.MouseEvent) => {
-  e.stopPropagation();
-  if (showDropdown === candidateId) {
-    setShowDropdown(null);
-    return;
-  }
-  setShowDropdown(candidateId);
-};
+    e.stopPropagation();
+    if (showDropdown === candidateId) {
+      setShowDropdown(null);
+      return;
+    }
+    setShowDropdown(candidateId);
+  };
 
   const handleSortSelect = (sortValue: string) => {
     setSortBy(sortValue);
@@ -509,33 +511,33 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   );
 
   const desiredInboundSlugs = [
-  "coding-contest",
-  "ai-interview",
-  "shortlisted",
-  "archives",
-] as const;
+    "coding-contest",
+    "ai-interview",
+    "shortlisted",
+    "archives",
+  ] as const;
 
-const inboundStages = pipelineStages
-  .filter((stage) => desiredInboundSlugs.includes(stage.slug as any))
-  .sort(
-    (a, b) =>
-      desiredInboundSlugs.indexOf(a.slug as any) -
-      desiredInboundSlugs.indexOf(b.slug as any)
-  );
+  const inboundStages = pipelineStages
+    .filter((stage) => desiredInboundSlugs.includes(stage.slug as any))
+    .sort(
+      (a, b) =>
+        desiredInboundSlugs.indexOf(a.slug as any) -
+        desiredInboundSlugs.indexOf(b.slug as any)
+    );
 
   const getStagesToShow = (isInbound: boolean) =>
-  isInbound ? inboundStages : pipelineStages.slice(0, 5);
+    isInbound ? inboundStages : pipelineStages.slice(0, 5);
 
   const getStageDisplayName = (stage: PipelineStage): string => {
-  switch (stage.slug) {
-    case "coding-contest":
-      return "Coding Round";
-    case "archives":
-      return "Archived";
-    default:
-      return stage.name;
-  }
-};
+    switch (stage.slug) {
+      case "coding-contest":
+        return "Coding Round";
+      case "archives":
+        return "Archived";
+      default:
+        return stage.name;
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl  h-fit">
@@ -1568,7 +1570,7 @@ const inboundStages = pipelineStages
                           );
                         })()}
                     </div>
-                    <div className="rounded-md flex space-x-1 border border-blue-400 hover:border-blue-600 transition-colors">
+                    {/* <div className="rounded-md flex space-x-1 border border-blue-400 hover:border-blue-600 transition-colors">
                       {(() => {
                         const isInbound = activeTab === "inbound";
                         const codingRoundStage = pipelineStages.find(
@@ -1649,6 +1651,50 @@ const inboundStages = pipelineStages
                       </>
                       );
                     })()}
+                    </div> */}
+                    // Update the button logic as follows:
+                    <div className="rounded-md flex space-x-1 border border-blue-400 hover:border-blue-600 transition-colors">
+                      {(() => {
+                        const shortlistedStage = pipelineStages.find(
+                          (stage) => stage.slug === "shortlisted"
+                        );
+
+                        const defaultStageId =
+                          shortlistedStage?.id ?? undefined;
+
+                        const buttonText = shortlistedStage
+                          ? "Save to Shortlisted"
+                          : "Add to Pipeline"; // fallback text if shortlisted stage missing
+
+                        return (
+                          <button
+                            className="pl-3 pr-2 py-1.5 text-blue-600 text-sm font-medium flex items-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSaveToPipeline(
+                                candidate.id,
+                                defaultStageId
+                              );
+                            }}
+                            aria-label={`${buttonText} for ${candidate.full_name}`}
+                          >
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="text-[#0F47F2] mr-2"
+                            >
+                              <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+                            </svg>
+                            {buttonText}
+                          </button>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
