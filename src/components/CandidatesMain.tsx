@@ -1714,7 +1714,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
                           return (
                             <button
-                              className="pl-3 pr-2 py-1.5 text-blue-600 text-sm font-medium flex items-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                              className="pl-3 pr-2 py-1.5 text-blue-600 text-sm font-medium flex items-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 cursor-default"
 
                               // aria-label={`${buttonText} for ${candidate.full_name}`}
                             >
