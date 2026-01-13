@@ -170,7 +170,7 @@ export default function ProjectCard({
       </div>
 
       <div className="flex items-center gap-3 mb-3">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1" title="Inbound Candidates">
           <svg
             width="14"
             height="14"
@@ -209,7 +209,7 @@ export default function ProjectCard({
           </span>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1" title="Shortlisted Candidates">
           <svg
             width="14"
             height="14"
@@ -240,7 +240,10 @@ export default function ProjectCard({
           </span>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div
+          className="flex items-center gap-1"
+          title="Total Replied Candidates"
+        >
           <div
             className={`relative w-5 h-5  ${
               isActive ? "border border-[#4B5563]" : ""
@@ -276,6 +279,7 @@ export default function ProjectCard({
             onEditJobRole(jobId);
           }}
           className={`w-[32px] h-[32px] rounded-full border-[0.5px] border-${iconColor} flex items-center justify-center hover:bg-gray-50 transition-colors`}
+          title="Edit Job Role"
         >
           <svg
             width="16"
@@ -299,6 +303,7 @@ export default function ProjectCard({
             onArchiveJob?.(jobId);
           }}
           className={`w-[32px] h-[32px] rounded-full border-[0.5px] border-${iconColor} flex items-center justify-center hover:bg-gray-50 transition-colors`}
+          title="Archive Job Role"
         >
           <svg
             width="16"
@@ -321,6 +326,7 @@ export default function ProjectCard({
             onSharePipelines(jobId);
           }}
           className={`w-[32px] h-[32px] rounded-full border-[0.5px] border-${iconColor} flex items-center justify-center hover:bg-gray-50 transition-colors`}
+          title="Share Pipelines"
         >
           <svg
             width="16"
@@ -347,6 +353,7 @@ export default function ProjectCard({
             }
           }}
           className={`w-[32px] h-[32px] rounded-full border-[0.5px] border-${iconColor} flex items-center justify-center hover:bg-gray-50 transition-colors`}
+          title={isPublished ? "Unpublish Job" : "Publish Job"}
         >
           {isPublished ? (
             <svg
