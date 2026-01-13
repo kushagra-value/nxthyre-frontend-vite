@@ -794,6 +794,19 @@ function MainApp() {
     }
     setShowCategoryActions(null);
   };
+  const handleCopyJobId = (jobId: number) => {
+    navigator.clipboard
+      .writeText(jobId.toString())
+      .then(() => {
+        showToast.success(`Job ID copied to clipboard: ${jobId}`);
+      })
+      .catch(() => {
+        showToast.error("Failed to copy job ID");
+      });
+
+    setShowCategoryActions(null);
+  };
+
   const handleCopyJobLink = (jobId: number) => {
     const job = categories.find((cat) => cat.id === jobId);
     if (job) {
@@ -893,6 +906,9 @@ function MainApp() {
   const handleCategoryAction = (action: string, jobId: number) => {
     setShowCategoryActions(null);
     switch (action) {
+      case "job-id":
+        handleCopyJobId(jobId);
+        break;
       case "requisition-info":
         handleRequisitionInfo(jobId);
         break;
@@ -2093,6 +2109,33 @@ function MainApp() {
                             {/* Right side – Action buttons */}
                             <div className="flex items-center gap-4">
                               <div className="flex items-center gap-3 mb-1">
+                                <button
+                                  onClick={() =>
+                                    handleCategoryAction(
+                                      "job-id",
+                                      activeCategoryId
+                                    )
+                                  }
+                                  title="Copy Job ID"
+                                  className={`w-[32px] h-[32px] rounded-full border-[0.5px] border-[#818283] flex items-center justify-center hover:bg-gray-50 transition-colors`}
+                                >
+                                  <svg
+                                    width="15"
+                                    height="17"
+                                    viewBox="0 0 15 17"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      d="M2.83398 7.49486C2.83398 5.29494 2.83398 4.19498 3.51741 3.51155C4.20084 2.82813 5.3008 2.82812 7.50072 2.82812H9.83408C12.034 2.82812 13.1339 2.82813 13.8174 3.51155C14.5008 4.19498 14.5008 5.29494 14.5008 7.49486V11.3838C14.5008 13.5837 14.5008 14.6836 13.8174 15.3671C13.1339 16.0505 12.034 16.0505 9.83408 16.0505H7.50072C5.3008 16.0505 4.20084 16.0505 3.51741 15.3671C2.83398 14.6836 2.83398 13.5837 2.83398 11.3838V7.49486Z"
+                                      stroke="#818283"
+                                    />
+                                    <path
+                                      d="M2.83337 13.7224C1.54469 13.7224 0.5 12.6778 0.5 11.389V6.72231C0.5 3.78908 0.5 2.32248 1.41123 1.41123C2.32248 0.5 3.78908 0.5 6.72231 0.5H9.83346C11.1222 0.5 12.1668 1.54469 12.1668 2.83337"
+                                      stroke="#818283"
+                                    />
+                                  </svg>
+                                </button>
                                 <button
                                   onClick={() =>
                                     handleCategoryAction(
