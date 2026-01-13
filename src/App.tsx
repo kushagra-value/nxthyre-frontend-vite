@@ -386,7 +386,7 @@ function MainApp() {
           workApproach,
           joiningTimeline,
           inboundCount: job.inbound_count || 0,
-          shortlistedCount: job.shortlisted_count || 0,
+          shortlistedCount: job.shortlisted_candidate_count || 0,
           totalApplied: job.total_applied || 0,
           totalReplied: job.total_replied || 0,
           status: job.status,
