@@ -75,6 +75,7 @@ interface Category {
   workApproach: string; // "Hybrid", "Remote", "Onsite"
   joiningTimeline: string; // "Immediate", "15 days", etc.
   inboundCount: number; // 556 in image
+  shortlistedCount: number; // NEW
   totalApplied: number; // 61 in image
   totalReplied: number; // 21 in image
   status: "DRAFT" | "PUBLISHED";
@@ -385,6 +386,7 @@ function MainApp() {
           workApproach,
           joiningTimeline,
           inboundCount: job.inbound_count || 0,
+          shortlistedCount: job.shortlisted_count || 0,
           totalApplied: job.total_applied || 0,
           totalReplied: job.total_replied || 0,
           status: job.status,
@@ -1477,6 +1479,7 @@ function MainApp() {
                               workApproach={job.workApproach}
                               joiningTimeline={job.joiningTimeline}
                               inboundCount={job.inboundCount}
+                              shortlistedCount={job.}
                               totalApplied={job.totalApplied}
                               totalReplied={job.totalReplied}
                               status={job.status}
