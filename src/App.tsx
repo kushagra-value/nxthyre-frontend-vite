@@ -130,7 +130,7 @@ const ProjectSkeletonCard = () => (
   <div className="bg-white rounded-[10px] shadow-lg overflow-hidden animate-pulse hover:shadow-xl transition-shadow duration-300">
     <div className="p-6">
       {/* Top row: Status badge + hover actions placeholder */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-8">
         <div className="h-7 bg-gray-200 rounded-full w-28"></div>
         <div className="flex items-center gap-2">
           <div className="w-24 h-8 bg-gray-200 rounded-full"></div> 
