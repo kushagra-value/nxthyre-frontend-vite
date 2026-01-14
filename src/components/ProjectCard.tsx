@@ -116,7 +116,7 @@ export default function ProjectCard({
 
       {/* Job title */}
       <div className="mb-[30px]">
-        <h2 className={`text-[24px] max-w-[21ch] truncate font-normal ${titleClass} flex items-center gap-[8px]`}>
+        <h2 className={`text-[24px] max-w-[18ch] truncate font-normal ${titleClass} flex items-center gap-[8px]`}>
           {jobName}
           <div className="w-[20px] h-[20px]">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
