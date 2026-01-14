@@ -292,7 +292,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const [sendVia, setSendVia] = useState("email");
 
   const [loadingStages, setLoadingStages] = useState(false);
-
+const [stagesError, setStagesError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<
     { id: string; name: string }[]
   >([]);
@@ -568,10 +568,12 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       );
       const data: Stage[] = response.data;
       setStages(data.sort((a, b) => a.sort_order - b.sort_order));
+      setStagesError(null);
       setSelectedStage(data[0]?.name || "Uncontacted");
     } catch (error) {
       console.error("Error fetching stages:", error);
       setStages([]);
+      setStagesError("Failed to load pipeline stages");
     }
   };
 
@@ -1648,7 +1650,30 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       </div>
                     ))}
                   </div>
-                ) : (
+                ) :stagesError ? (
+                  <div className="p-8 text-center text-gray-500">
+                    <AlertCircle className="w-16 h-16 mx-auto mb-4 text-red-400" />
+                    <p className="text-lg font-medium text-gray-700">{stagesError}</p>
+                    <p className="text-sm mt-2 text-gray-600">
+                      Please check your connection or try again.
+                    </p>
+                    <button
+                      onClick={() => activeJobId && fetchStages(activeJobId)}
+                      className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ):filteredStages.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                  <p className="text-lg font-medium text-gray-700">No stages found</p>
+                  <p className="text-sm mt-2 text-gray-600">
+                    This job does not have any pipeline stages configured yet.
+                  </p>
+                </div>
+              ) : (
+
                   <>
                   <button
                     onClick={() => {
@@ -1706,8 +1731,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       </span>
                     </div>
                   </button>
-                {filteredStages.length > 0
-                  ? filteredStages.map((stage) => {
+                  {filteredStages.map((stage) => {
                       const Icon = getStageIcon(stage.name);
                       const isSelected = selectedStage === stage.name;
                       const description = getStageDescription(stage.name);
@@ -1755,16 +1779,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           </div>
                         </button>
                       );
-                    })
-                  : (
-                      <div className="p-8 text-center text-gray-500">
-                        <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                        <p className="text-lg font-medium text-gray-700">No stages found</p>
-                        <p className="text-sm mt-2 text-gray-600">
-                          This job does not have any pipeline stages configured yet.
-                        </p>
-                      </div>
-                    )}
+                    })}
+                  
                   </>
                 )}
               </div>
