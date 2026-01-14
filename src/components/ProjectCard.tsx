@@ -90,30 +90,31 @@ export default function ProjectCard({
             {/* If you add a logoUrl prop later, replace with <img src={logoUrl} className="rounded-full object-cover" /> */}
           </div>
 
-          <div>
-            <h3 className="text-[18px] font-semibold text-[#181D25]">{companyName}</h3>
-            <p className={`text-[16px] ${subtitleClass} mt-[4px]`}>{postedAgo}</p>          </div>
-        </div>
 
-        {/* On Track badge – colors taken directly from Figma */}
-        {badgeText && (
-          <div className="flex items-center gap-[5px] px-[10px] py-[7px] bg-[#F4F4F4] rounded-full">
-            {/* On Track wave/check icon SVG here */}
-            <div className="w-[18px] h-[18px] bg-[#A8E8CD] rounded-[12px] flex items-center justify-center">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="18" height="18" rx="9" fill="#A8E8CD"/>
-              <path d="M3 11.1712C3 11.1712 5.36538 7.91788 6.75 7.47363C8.13462 7.02938 9.37847 11.8209 11.7692 11.1712C13.6377 10.6634 15 6.75 15 6.75" stroke="#1CB977" stroke-linecap="round"/>
-              </svg>
+          {/* On Track badge – colors taken directly from Figma */}
+          {badgeText && (
+            <div className="flex items-center gap-[5px] px-[10px] py-[7px] bg-[#F4F4F4] rounded-full">
+              {/* On Track wave/check icon SVG here */}
+              <div className="w-[18px] h-[18px] bg-[#A8E8CD] rounded-[12px] flex items-center justify-center">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="18" height="18" rx="9" fill="#A8E8CD"/>
+                <path d="M3 11.1712C3 11.1712 5.36538 7.91788 6.75 7.47363C8.13462 7.02938 9.37847 11.8209 11.7692 11.1712C13.6377 10.6634 15 6.75 15 6.75" stroke="#1CB977" stroke-linecap="round"/>
+                </svg>
 
+              </div>
+              <span className="text-[14px] font-normal text-[#1CB977]">{badgeText}</span>
             </div>
-            <span className="text-[14px] font-normal text-[#1CB977]">{badgeText}</span>
-          </div>
-        )}
+          )}
+      </div>
+
+      <div>
+        <h3 className="text-[18px] font-semibold text-[#181D25]">{companyName}</h3>
+        <p className={`text-[16px] ${subtitleClass} mt-[4px]`}>{postedAgo}</p>          </div>
       </div>
 
       {/* Job title */}
-      <div className="mb-[42px]">
-        <h2 className={`text-[24px] font-normal ${titleClass} flex items-center gap-[8px]`}>
+      <div className="mb-[30px]">
+        <h2 className={`text-[24px] max-w-[21ch] truncate font-normal ${titleClass} flex items-center gap-[8px]`}>
           {jobName}
           <div className="w-[20px] h-[20px]">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -198,17 +199,17 @@ export default function ProjectCard({
 
         {/*Candidate Sourced by Autopilot */}
         <div className="flex items-center gap-[8px]">
-          <div className="w-[24px] h-[24px]  flex items-center justify-center">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="12" fill="url(#paint0_linear_4467_2149)"/>
-              <defs>
-              <linearGradient id="paint0_linear_4467_2149" x1="12" y1="0" x2="12" y2="24" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#2B60FF"/>
-              <stop offset="1" stop-color="#15E8CC"/>
-              </linearGradient>
-              </defs>
-            </svg>
-          </div>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="12" fill="url(#paint0_linear_4472_2148)"/>
+            <path d="M12 4L14 9.42857L20 12L14 14L12 20L10 14L4 12L10 9.42857L12 4Z" fill="white"/>
+            <defs>
+            <linearGradient id="paint0_linear_4472_2148" x1="12" y1="0" x2="12" y2="24" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#2B60FF"/>
+            <stop offset="1" stop-color="#15E8CC"/>
+            </linearGradient>
+            </defs>
+          </svg>
+
           <span className="text-[20px] text-[#0F47F2]">{featuredCount}</span>
         </div>
       </div>
