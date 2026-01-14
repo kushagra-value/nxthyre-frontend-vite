@@ -43,6 +43,7 @@ import {
 import { User } from "./types/auth";
 import type { Job } from "./services/jobPostService";
 import {
+  
   ChevronDown,
   Edit,
   Mail,
@@ -57,6 +58,7 @@ import {
   Users,
   Info,
   ChevronLeft,
+  ChevronRight,
   Briefcase,
   LocateIcon,
   FileSearch,
@@ -127,10 +129,17 @@ interface Workspace {
 const ProjectSkeletonCard = () => (
   <div className="bg-white rounded-[10px] shadow-lg overflow-hidden animate-pulse">
     <div className="p-4">
-      <div className="h-8 bg-gray-200 rounded-lg mb-6"></div>
+      <div className="flex items-center justify-center">
+        <div className="h-6 bg-gray-200 rounded-full w-6"></div>
+        <div className="h-6 bg-gray-200 rounded-full w-24"></div>
+      </div>
       <div className="h-4 bg-gray-200 rounded w-4/5 mb-4"></div>
-      <div className="h-4 bg-gray-200 rounded w-1/5 mb-4"></div>
-      <div className="h-4 bg-gray-200 rounded w-2/5 mb-4"></div>
+      <div className="h-8 bg-gray-200 rounded-lg mb-6"></div>
+      <div className="flex justify-left items-center gap-4">
+        <div className="h-4 bg-gray-200 rounded w-1/5 mb-4"></div>
+        <div className="h-4 bg-gray-200 rounded w-2/5 mb-4"></div>
+        <div className="h-4 bg-gray-200 rounded w-2/5 mb-4"></div>
+      </div>
       <div className="flex flex-wrap gap-4 mb-4 w-1/2">
         <div className="h-6 bg-gray-200 rounded-full w-6"></div>
         <div className="h-6 bg-gray-200 rounded-full w-6"></div>
@@ -263,6 +272,7 @@ function MainApp() {
   const [currentAnalysis, setCurrentAnalysis] = useState<AnalysisResult | null>(
     null
   );
+  const [currentRequisitionPage, setCurrentRequisitionPage] = useState<number>(1); 
   const [currentJobIdForModal, setCurrentJobIdForModal] = useState<
     number | null
   >(null);
@@ -395,6 +405,13 @@ function MainApp() {
         };
       });
       setCategories(mappedCategories);
+      setCurrentRequisitionPage(1); 
+      if (mappedCategories.length === 0) {
+        setActiveCategoryId(null);
+        setHasSelectedJob(false);
+      } else {
+        setHasSelectedJob(false);
+      }
       if (mappedCategories.length === 0) {
         setActiveCategoryId(null);
         setHasSelectedJob(false);
@@ -1166,7 +1183,7 @@ function MainApp() {
 
           {/* Project grid skeleton */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(12)].map((_, i) => (
+            {[...Array(8)].map((_, i) => ( 
               <ProjectSkeletonCard key={i} />
             ))}
           </div>
@@ -1413,8 +1430,50 @@ function MainApp() {
                             />
                           </div>
                         ))}
+                        <div className="mt-12 bg-black text-white py-5 px-8 flex items-center justify-between">
+                          <div className="text-gray-400 text-lg">
+                            Showing {(currentRequisitionPage - 1) * 8 + 1} to{" "}
+                            {Math.min(currentRequisitionPage * 8, categories.length)} of{" "}
+                            {categories.length} requisitions
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => setCurrentRequisitionPage(prev => Math.max(prev - 1, 1))}
+                              disabled={currentRequisitionPage === 1}
+                              className="text-gray-400 hover:text-white disabled:opacity-50"
+                            >
+                              <ChevronLeft className="w-6 h-6" />
+                            </button>
+                            
+                            {Array.from({ length: Math.ceil(categories.length / 8) }, (_, i) => i + 1).map((page) => (
+                              <button
+                                key={page}
+                                onClick={() => setCurrentRequisitionPage(page)}
+                                className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
+                                  page === currentRequisitionPage
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-white text-black hover:bg-gray-200"
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            ))}
+                            
+                            <button
+                              onClick={() => setCurrentRequisitionPage(prev => Math.min(prev + 1, Math.ceil(categories.length / 8)))}
+                              disabled={currentRequisitionPage === Math.ceil(categories.length / 8)}
+                              className="text-gray-400 hover:text-white disabled:opacity-50"
+                            >
+                              <ChevronRight className="w-6 h-6" />
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     )}
+
+                  
+                    
+                  
                   </div>
                   <CreateJobRoleModal
                     isOpen={showCreateJobRole}
