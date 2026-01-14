@@ -290,6 +290,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const [cutoffScore, setCutoffScore] = useState("75");
   const [sendAfter, setSendAfter] = useState("24");
   const [sendVia, setSendVia] = useState("email");
+
+  const [loadingStages, setLoadingStages] = useState(false);
+
   const [suggestions, setSuggestions] = useState<
     { id: string; name: string }[]
   >([]);
@@ -390,10 +393,18 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
   // Fetch stages when activeJobId changes
   useEffect(() => {
-    if (activeJobId !== null) {
-      fetchStages(activeJobId);
-    }
-  }, [activeJobId]);
+  if (activeJobId !== null) {
+    setLoadingStages(true);
+    fetchStages(activeJobId)
+      .catch((error) => {
+        console.error("Error fetching stages:", error);
+        setStages([]);
+      })
+      .finally(() => {
+        setLoadingStages(false);
+      });
+  }
+}, [activeJobId]);
 
   useEffect(() => {
     if (viewMode === "prospect") {
@@ -1621,62 +1632,80 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 )}
               </div>
               <div className="space-y-2">
-                <button
-                  onClick={() => {
-                    setViewMode("prospect");
-                    setSelectedStage("Uncontacted");
-                    setActiveStageTab("uncontacted");
-                  }}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    viewMode === "prospect"
-                      ? "bg-blue-50 text-blue-700 border border-blue-200"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  {viewMode === "prospect" && (
-                    <div className="w-1 h-8 bg-blue-500 rounded-tr-xl rounded-br-xl rounded" />
-                  )}
-
-                  {(() => {
-                    const ProspectIcon = getStageIcon("Uncontacted");
-                    return (
-                      <ProspectIcon
-                        className={`w-4 h-4 ${
-                          viewMode === "prospect"
-                            ? "text-blue-600"
-                            : "text-gray-600"
-                        }`}
-                      />
-                    );
-                  })()}
-
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex flex-col items-start justify-center">
-                      <span className="flex-1 font-medium">Prospect</span>
-
-                      <p className={`text-xs text-blue-600`}>
-                        {stages.find((s) => ["Invites Sent"].includes(s.name))
-                          ?.activity_update ||
-                          stages.find((s) => ["Uncontacted"].includes(s.name))
-                            ?.activity_update}
-                      </p>
-                    </div>
-                    <span
-                      className={`px-2 py-1 text-sm ${
-                        viewMode === "prospect"
-                          ? "text-blue-800"
-                          : "text-gray-400"
-                      }`}
-                    >
-                      {[
-                        stages.find((s) => ["Uncontacted"].includes(s.name))
-                          ?.candidate_count || 0,
-                        stages.find((s) => ["Invites Sent"].includes(s.name))
-                          ?.candidate_count || 0,
-                      ].reduce((sum, count) => sum + count, 0)}
-                    </span>
+                {loadingStages ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 7 }, (_, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center space-x-3 px-3 py-3 rounded-lg animate-pulse"
+                      >
+                        <div className="w-6 h-6 bg-gray-300 rounded" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-5 bg-gray-300 rounded w-40" />
+                          <div className="h-3 bg-gray-300 rounded w-60" />
+                        </div>
+                        <div className="h-6 w-12 bg-gray-300 rounded" />
+                      </div>
+                    ))}
                   </div>
-                </button>
+                ) : (
+                  <>
+                  <button
+                    onClick={() => {
+                      setViewMode("prospect");
+                      setSelectedStage("Uncontacted");
+                      setActiveStageTab("uncontacted");
+                    }}
+                    className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                      viewMode === "prospect"
+                        ? "bg-blue-50 text-blue-700 border border-blue-200"
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {viewMode === "prospect" && (
+                      <div className="w-1 h-8 bg-blue-500 rounded-tr-xl rounded-br-xl rounded" />
+                    )}
+
+                    {(() => {
+                      const ProspectIcon = getStageIcon("Uncontacted");
+                      return (
+                        <ProspectIcon
+                          className={`w-4 h-4 ${
+                            viewMode === "prospect"
+                              ? "text-blue-600"
+                              : "text-gray-600"
+                          }`}
+                        />
+                      );
+                    })()}
+
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex flex-col items-start justify-center">
+                        <span className="flex-1 font-medium">Prospect</span>
+
+                        <p className={`text-xs text-blue-600`}>
+                          {stages.find((s) => ["Invites Sent"].includes(s.name))
+                            ?.activity_update ||
+                            stages.find((s) => ["Uncontacted"].includes(s.name))
+                              ?.activity_update}
+                        </p>
+                      </div>
+                      <span
+                        className={`px-2 py-1 text-sm ${
+                          viewMode === "prospect"
+                            ? "text-blue-800"
+                            : "text-gray-400"
+                        }`}
+                      >
+                        {[
+                          stages.find((s) => ["Uncontacted"].includes(s.name))
+                            ?.candidate_count || 0,
+                          stages.find((s) => ["Invites Sent"].includes(s.name))
+                            ?.candidate_count || 0,
+                        ].reduce((sum, count) => sum + count, 0)}
+                      </span>
+                    </div>
+                  </button>
                 {filteredStages.length > 0
                   ? filteredStages.map((stage) => {
                       const Icon = getStageIcon(stage.name);
@@ -1727,61 +1756,17 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         </button>
                       );
                     })
-                  : pipelineStages
-                      .filter(
-                        (stage) =>
-                          !["Uncontacted", "Invites Sent"].includes(stage)
-                      )
-                      .map((stage) => {
-                        const Icon = getStageIcon(stage);
-                        const isSelected = selectedStage === stage;
-                        const candidateCount =
-                          pipelineCandidates[stage]?.length || 0;
-
-                        return (
-                          <button
-                            key={stage}
-                            onClick={() => handleStageSelect(stage)}
-                            className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                              isSelected
-                                ? "bg-blue-50 text-blue-700 border border-blue-200"
-                                : "text-gray-700 hover:bg-gray-50"
-                            }`}
-                          >
-                            {isSelected && (
-                              <div className="w-1 h-8 bg-blue-500 rounded-tr-xl rounded-br-xl  rounded" />
-                            )}
-                            {(() => {
-                              const StageIcon = getStageIcon(stage);
-                              return (
-                                <StageIcon
-                                  className={`w-4 h-4 ${
-                                    isSelected
-                                      ? "text-[#0F47F2]"
-                                      : "text-gray-600"
-                                  }`}
-                                />
-                              );
-                            })()}
-                            <div className="flex items-center justify-between w-full">
-                              <div className="flex flex-col items-start justify-center">
-                                <span className="flex-1 font-medium">
-                                  {stage}
-                                </span>
-                              </div>
-                              <span
-                                className={`px-2 py-1 text-sm ${
-                                  isSelected
-                                    ? "text-[#0F47F2]"
-                                    : "text-gray-400"
-                                }`}
-                              >
-                                {candidateCount}
-                              </span>
-                            </div>
-                          </button>
-                        );
-                      })}
+                  : (
+                      <div className="p-8 text-center text-gray-500">
+                        <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                        <p className="text-lg font-medium text-gray-700">No stages found</p>
+                        <p className="text-sm mt-2 text-gray-600">
+                          This job does not have any pipeline stages configured yet.
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </div>
