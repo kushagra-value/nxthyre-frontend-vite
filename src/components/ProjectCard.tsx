@@ -109,7 +109,7 @@ export default function ProjectCard({
       </div>
 
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-row gap-4">
         <h3 className="text-[18px] font-semibold text-[#181D25]">{companyName}</h3>
         <p className={`text-[16px] ${subtitleClass} mt-[4px]`}>{postedAgo}</p> 
       </div>
