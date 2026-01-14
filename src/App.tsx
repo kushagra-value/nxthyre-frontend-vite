@@ -127,24 +127,58 @@ interface Workspace {
 }
 
 const ProjectSkeletonCard = () => (
-  <div className="bg-white rounded-[10px] shadow-lg overflow-hidden animate-pulse">
-    <div className="p-4">
-      <div className="flex items-center justify-center">
-        <div className="h-6 bg-gray-200 rounded-full w-6"></div>
-        <div className="h-6 bg-gray-200 rounded-full w-24"></div>
+  <div className="bg-white rounded-[10px] shadow-lg overflow-hidden animate-pulse hover:shadow-xl transition-shadow duration-300">
+    <div className="p-6">
+      {/* Top row: Status badge + hover actions placeholder */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="h-7 bg-gray-200 rounded-full w-28"></div>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+          <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+          <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+        </div>
       </div>
-      <div className="h-4 bg-gray-200 rounded w-4/5 mb-4"></div>
-      <div className="h-8 bg-gray-200 rounded-lg mb-6"></div>
-      <div className="flex justify-left items-center gap-4">
-        <div className="h-4 bg-gray-200 rounded w-1/5 mb-4"></div>
-        <div className="h-4 bg-gray-200 rounded w-2/5 mb-4"></div>
-        <div className="h-4 bg-gray-200 rounded w-2/5 mb-4"></div>
+
+      {/* Job title */}
+      <div className="h-8 bg-gray-200 rounded-lg w-4/5 mb-3"></div>
+
+      {/* Company name */}
+      <div className="h-5 bg-gray-200 rounded w-3/5 mb-6"></div>
+
+      {/* Chips row: Experience, Work Approach, Joining Timeline */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        <div className="h-8 bg-gray-200 rounded-full px-4 w-32"></div>
+        <div className="h-8 bg-gray-200 rounded-full px-4 w-28"></div>
+        <div className="h-8 bg-gray-200 rounded-full px-4 w-36"></div>
       </div>
-      <div className="flex flex-wrap gap-4 mb-4 w-1/2">
-        <div className="h-6 bg-gray-200 rounded-full w-6"></div>
-        <div className="h-6 bg-gray-200 rounded-full w-6"></div>
-        <div className="h-6 bg-gray-200 rounded-full w-6"></div>
-        <div className="h-6 bg-gray-200 rounded-full w-6"></div>
+
+      {/* Stats grid: Inbound, Shortlisted, Applied, Replied */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div>
+          <div className="h-4 bg-gray-200 rounded w-20 mb-1"></div>
+          <div className="h-7 bg-gray-200 rounded w-16"></div>
+        </div>
+        <div>
+          <div className="h-4 bg-gray-200 rounded w-24 mb-1"></div>
+          <div className="h-7 bg-gray-200 rounded w-16"></div>
+        </div>
+        <div>
+          <div className="h-4 bg-gray-200 rounded w-20 mb-1"></div>
+          <div className="h-7 bg-gray-200 rounded w-16"></div>
+        </div>
+        <div>
+          <div className="h-4 bg-gray-200 rounded w-20 mb-1"></div>
+          <div className="h-7 bg-gray-200 rounded w-16"></div>
+        </div>
+      </div>
+
+      {/* Bottom row: Featured badge + Posted ago + Interviews */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="h-9 bg-gray-200 rounded-lg px-4 w-32"></div>
+          <div className="h-5 bg-gray-200 rounded w-24"></div>
+        </div>
+        <div className="h-5 bg-gray-200 rounded w-28"></div>
       </div>
     </div>
   </div>
