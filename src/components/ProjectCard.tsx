@@ -79,11 +79,11 @@ export default function ProjectCard({
       >
       <div className="px-[20px] pt-[20px] pb-[20px] flex flex-col h-full">
       {/* Header: Avatar + Company/Posting time + On Track badge */}
-      <div className="flex justify-between items-start mb-[28px]">
+      <div className="w-full flex justify-between items-start mb-[28px]">
         <div className="flex items-start gap-[20px]">
           {/* Company avatar */}
-          <div className={`w-[42px] h-[42px] rounded-full ${avatarBorderClass} bg-white flex items-center justify-center transition-colors duration-200`}>
-            <span className="text-[24px] font-semibold text-[#181D25] rounded-full border-[0.5px] border-[#818283] ">
+          <div className={`w-[42px] h-[42px] rounded-full ${avatarBorderClass} border-[0.5px] border-[#818283] bg-white flex items-center justify-center transition-colors duration-200`}>
+            <span className="text-[24px] font-semibold text-[#181D25] ">
               {companyName.charAt(0).toUpperCase()}
             </span>
 
@@ -105,11 +105,11 @@ export default function ProjectCard({
               <span className="text-[14px] font-normal text-[#1CB977]">{badgeText}</span>
             </div>
           )}
-      </div>
+        </div>
       </div>
 
 
-      <div>
+      <div className="flex flex-col gap-4">
         <h3 className="text-[18px] font-semibold text-[#181D25]">{companyName}</h3>
         <p className={`text-[16px] ${subtitleClass} mt-[4px]`}>{postedAgo}</p> 
       </div>
@@ -136,7 +136,7 @@ export default function ProjectCard({
       </div>
 
       {/* Tag pills – plain, no prefix icons */}
-      <div className="flex gap-[30px] mb-[40px]">
+      <div className="flex gap-[30px] mb-[30px]">
         <div className="flex items-center justify-center px-[10px] h-[38px] bg-[#F0F0F0] rounded-[5px]">
           <span className={`text-[16px] ${textClass}`}>{experience}</span>
         </div>
