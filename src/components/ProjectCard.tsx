@@ -83,7 +83,7 @@ export default function ProjectCard({
         <div className="flex items-start gap-[20px]">
           {/* Company avatar */}
           <div className={`w-[42px] h-[42px] rounded-full ${avatarBorderClass} bg-white flex items-center justify-center transition-colors duration-200`}>
-            <span className="text-[24px] font-semibold text-[#181D25]">
+            <span className="text-[24px] font-semibold text-[#181D25] rounded-full border-[0.5px] border-[#818283] ">
               {companyName.charAt(0).toUpperCase()}
             </span>
 
@@ -113,7 +113,7 @@ export default function ProjectCard({
         <h3 className="text-[18px] font-semibold text-[#181D25]">{companyName}</h3>
         <p className={`text-[16px] ${subtitleClass} mt-[4px]`}>{postedAgo}</p> 
       </div>
-      
+
       {/* Job title */}
       <div className="mb-[30px]">
         <h2 className={`text-[24px] max-w-[21ch] truncate font-normal ${titleClass} flex items-center gap-[8px]`}>
