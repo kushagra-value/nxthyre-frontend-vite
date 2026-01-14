@@ -1925,6 +1925,7 @@ function MainApp() {
                       </div>
                     </div>
                   )}
+                  </div>
                 </div>
               ) : (
                 <>
