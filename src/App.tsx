@@ -145,9 +145,9 @@ const ProjectSkeletonCard = () => (
 
       {/* Chips row: Experience, Work Approach, Joining Timeline */}
       <div className="flex flex-wrap gap-2 mb-6">
-        <div className="h-8 bg-gray-200 rounded-full px-4 w-28"></div>
-        <div className="h-8 bg-gray-200 rounded-full px-4 w-28"></div>
-        <div className="h-8 bg-gray-200 rounded-full px-4 w-28"></div>
+        <div className="h-4 bg-gray-200 rounded-full px-4 w-22"></div>
+        <div className="h-4 bg-gray-200 rounded-full px-4 w-22"></div>
+        <div className="h-4 bg-gray-200 rounded-full px-4 w-22"></div>
       </div>
 
       
@@ -155,7 +155,6 @@ const ProjectSkeletonCard = () => (
       {/* Bottom row: Featured badge + Posted ago + Interviews */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-9 bg-gray-200 rounded-full w-24"></div>
           <div className="h-5 bg-gray-200 rounded-full w-24"></div>
           <div className="h-5 bg-gray-200 rounded-full w-24"></div>
           <div className="h-5 bg-gray-200 rounded-full w-24"></div>
