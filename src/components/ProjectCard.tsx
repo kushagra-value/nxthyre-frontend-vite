@@ -80,7 +80,7 @@ export default function ProjectCard({
       <div className="px-[20px] pt-[20px] pb-[20px] flex flex-col h-full">
       {/* Header: Avatar + Company/Posting time + On Track badge */}
       <div className="w-full flex justify-between items-start mb-[28px]">
-        <div className="flex items-start gap-[20px]">
+        <div className=" w-full flex justify-between items-start">
           {/* Company avatar */}
           <div className={`w-[42px] h-[42px] rounded-full ${avatarBorderClass} border-[0.5px] border-[#818283] bg-white flex items-center justify-center transition-colors duration-200`}>
             <span className="text-[24px] font-semibold text-[#181D25] ">
