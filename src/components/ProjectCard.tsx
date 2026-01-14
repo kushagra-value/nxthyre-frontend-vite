@@ -106,12 +106,14 @@ export default function ProjectCard({
             </div>
           )}
       </div>
+      </div>
+
 
       <div>
         <h3 className="text-[18px] font-semibold text-[#181D25]">{companyName}</h3>
-        <p className={`text-[16px] ${subtitleClass} mt-[4px]`}>{postedAgo}</p>          </div>
+        <p className={`text-[16px] ${subtitleClass} mt-[4px]`}>{postedAgo}</p> 
       </div>
-
+      
       {/* Job title */}
       <div className="mb-[30px]">
         <h2 className={`text-[24px] max-w-[21ch] truncate font-normal ${titleClass} flex items-center gap-[8px]`}>
