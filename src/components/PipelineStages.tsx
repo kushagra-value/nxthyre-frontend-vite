@@ -57,6 +57,7 @@ interface Stage {
   name: string;
   slug: string;
   sort_order: number;
+  stage_type: string;
   candidate_count: number;
   activity_update: string;
 }
@@ -1382,9 +1383,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     },
   ];
 
-  // Filter stages based on active tab
   const filteredStages = stages.filter(
-    (stage) => !["Uncontacted", "Invites Sent"].includes(stage.name)
+  (stage) =>
+    stage.stage_type === "SYSTEM" &&
+    !["Uncontacted", "Invites Sent", "Archives"].includes(stage.name)
   );
 
   const selectedCategory = categories.find((cat) => cat.id === activeJobId);
