@@ -137,17 +137,17 @@ const ProjectSkeletonCard = () => (
         </div>
       </div>
 
-      {/* Job title */}
-      <div className="h-8 bg-gray-200 rounded-lg w-4/5 mb-3"></div>
-
       {/* Company name */}
       <div className="h-5 bg-gray-200 rounded w-3/5 mb-6"></div>
 
+      {/* Job title */}
+      <div className="h-8 bg-gray-200 rounded-lg w-4/5 mb-3"></div>
+      
       {/* Chips row: Experience, Work Approach, Joining Timeline */}
       <div className="flex flex-wrap gap-2 mb-6">
-        <div className="h-4 bg-gray-200 rounded-full px-4 w-22"></div>
-        <div className="h-4 bg-gray-200 rounded-full px-4 w-22"></div>
-        <div className="h-4 bg-gray-200 rounded-full px-4 w-22"></div>
+        <div className="h-8 bg-gray-200 rounded-full px-4 w-24"></div>
+        <div className="h-8 bg-gray-200 rounded-full px-4 w-24"></div>
+        <div className="h-8 bg-gray-200 rounded-full px-4 w-24"></div>
       </div>
 
       
