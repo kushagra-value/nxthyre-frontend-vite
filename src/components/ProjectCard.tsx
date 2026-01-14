@@ -150,7 +150,7 @@ export default function ProjectCard({
       <hr className="border-t-[0.5px] border-[#818283] mb-[17px]" />
 
       {/* Bottom stats row */}
-      <div className="flex justify-between items-center">
+      <div className="w-5/6 flex justify-between items-center">
         {/*Candidates Inbound applicants */}
         <div className="flex items-center gap-[8px]">
           <div className="w-[24px] h-[24px] rounded-full bg-[#4B5563] flex items-center justify-center">
