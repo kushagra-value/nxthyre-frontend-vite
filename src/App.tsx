@@ -75,6 +75,7 @@ interface Category {
   workApproach: string; // "Hybrid", "Remote", "Onsite"
   joiningTimeline: string; // "Immediate", "15 days", etc.
   inboundCount: number; // 556 in image
+  shortlistedCount: number; // NEW
   totalApplied: number; // 61 in image
   totalReplied: number; // 21 in image
   status: "DRAFT" | "PUBLISHED";
@@ -124,73 +125,71 @@ interface Workspace {
 }
 
 const ProjectSkeletonCard = () => (
-    <div className="bg-white rounded-[10px] shadow-lg overflow-hidden animate-pulse">
-      <div className="p-4">
-        <div className="h-8 bg-gray-200 rounded-lg mb-6"></div>
-        <div className="h-4 bg-gray-200 rounded w-4/5 mb-4"></div>
-        <div className="h-4 bg-gray-200 rounded w-1/5 mb-4"></div>
-        <div className="h-4 bg-gray-200 rounded w-2/5 mb-4"></div>
-        <div className="flex flex-wrap gap-4 mb-4 w-1/2">
-          <div className="h-6 bg-gray-200 rounded-full w-6"></div>
-          <div className="h-6 bg-gray-200 rounded-full w-6"></div>
-          <div className="h-6 bg-gray-200 rounded-full w-6"></div>
-          <div className="h-6 bg-gray-200 rounded-full w-6"></div>
-        </div>
+  <div className="bg-white rounded-[10px] shadow-lg overflow-hidden animate-pulse">
+    <div className="p-4">
+      <div className="h-8 bg-gray-200 rounded-lg mb-6"></div>
+      <div className="h-4 bg-gray-200 rounded w-4/5 mb-4"></div>
+      <div className="h-4 bg-gray-200 rounded w-1/5 mb-4"></div>
+      <div className="h-4 bg-gray-200 rounded w-2/5 mb-4"></div>
+      <div className="flex flex-wrap gap-4 mb-4 w-1/2">
+        <div className="h-6 bg-gray-200 rounded-full w-6"></div>
+        <div className="h-6 bg-gray-200 rounded-full w-6"></div>
+        <div className="h-6 bg-gray-200 rounded-full w-6"></div>
+        <div className="h-6 bg-gray-200 rounded-full w-6"></div>
       </div>
     </div>
-  );
+  </div>
+);
 
-
-  const RequisitionSkeleton = () => (
-    <div className="space-y-10 animate-pulse">
-      <div className="h-12 bg-gray-200 rounded-lg w-full max-w-xl mb-6"></div>
-      <div className="flex gap-12 mb-8">
-        <div className="h-8 bg-gray-200 rounded-lg w-48"></div>
-        <div className="h-8 bg-gray-200 rounded-lg w-48"></div>
-        <div className="h-8 bg-gray-200 rounded-lg w-48"></div>
-      </div>
-      <div>
-        <div className="h-8 bg-gray-200 rounded-lg w-64 mb-4"></div>
-        <div className="space-y-3">
-          <div className="h-5 bg-gray-200 rounded"></div>
-          <div className="h-5 bg-gray-200 rounded w-11/12"></div>
-          <div className="h-5 bg-gray-200 rounded w-10/12"></div>
-        </div>
-      </div>
-      <div>
-        <div className="h-8 bg-gray-200 rounded-lg w-80 mb-6"></div>
-        <div className="space-y-6">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-gray-100 rounded-xl p-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="h-7 bg-gray-200 rounded w-96"></div>
-                <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
-              </div>
-              <div className="h-5 bg-gray-200 rounded w-full mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-4/5"></div>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div>
-        <div className="h-8 bg-gray-200 rounded-lg w-96 mb-6"></div>
-        <div className="space-y-6">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="bg-gray-100 rounded-xl p-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="h-7 bg-gray-200 rounded w-80"></div>
-                <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
-              </div>
-              <div className="h-5 bg-gray-200 rounded w-full mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            </div>
-          ))}
-        </div>
+const RequisitionSkeleton = () => (
+  <div className="space-y-10 animate-pulse">
+    <div className="h-12 bg-gray-200 rounded-lg w-full max-w-xl mb-6"></div>
+    <div className="flex gap-12 mb-8">
+      <div className="h-8 bg-gray-200 rounded-lg w-48"></div>
+      <div className="h-8 bg-gray-200 rounded-lg w-48"></div>
+      <div className="h-8 bg-gray-200 rounded-lg w-48"></div>
+    </div>
+    <div>
+      <div className="h-8 bg-gray-200 rounded-lg w-64 mb-4"></div>
+      <div className="space-y-3">
+        <div className="h-5 bg-gray-200 rounded"></div>
+        <div className="h-5 bg-gray-200 rounded w-11/12"></div>
+        <div className="h-5 bg-gray-200 rounded w-10/12"></div>
       </div>
     </div>
-  );
+    <div>
+      <div className="h-8 bg-gray-200 rounded-lg w-80 mb-6"></div>
+      <div className="space-y-6">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="bg-gray-100 rounded-xl p-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="h-7 bg-gray-200 rounded w-96"></div>
+              <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
+            </div>
+            <div className="h-5 bg-gray-200 rounded w-full mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-4/5"></div>
+          </div>
+        ))}
+      </div>
+    </div>
+    <div>
+      <div className="h-8 bg-gray-200 rounded-lg w-96 mb-6"></div>
+      <div className="space-y-6">
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="bg-gray-100 rounded-xl p-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="h-7 bg-gray-200 rounded w-80"></div>
+              <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
+            </div>
+            <div className="h-5 bg-gray-200 rounded w-full mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
 
-  
 function MainApp() {
   const navigate = useNavigate();
   const {
@@ -261,7 +260,9 @@ function MainApp() {
   const [jobDataForModal, setJobDataForModal] = useState<Job | null>(null);
   const [competenciesData, setCompetenciesData] = useState<any>(null);
   const [loadingCompetencies, setLoadingCompetencies] = useState(false);
-  const [currentAnalysis, setCurrentAnalysis] = useState<AnalysisResult | null>(null);
+  const [currentAnalysis, setCurrentAnalysis] = useState<AnalysisResult | null>(
+    null
+  );
   const [currentJobIdForModal, setCurrentJobIdForModal] = useState<
     number | null
   >(null);
@@ -385,6 +386,7 @@ function MainApp() {
           workApproach,
           joiningTimeline,
           inboundCount: job.inbound_count || 0,
+          shortlistedCount: job.shortlisted_candidate_count || 0,
           totalApplied: job.total_applied || 0,
           totalReplied: job.total_replied || 0,
           status: job.status,
@@ -412,7 +414,7 @@ function MainApp() {
       const newFilters = {
         ...filters,
         jobId: job.id.toString(),
-        keywords: job.skills ? job.skills.join(', ') : "",
+        keywords: job.skills ? job.skills.join(", ") : "",
         minTotalExp: job.experience_min_years
           ? job.experience_min_years.toString()
           : "",
@@ -1173,8 +1175,6 @@ function MainApp() {
     );
   }
 
-  
-
   // Guard component for super admin (adjusted for your role-based auth)
   const SuperAdminRoute: React.FC<{ children: React.ReactNode }> = ({
     children,
@@ -1477,6 +1477,7 @@ function MainApp() {
                               workApproach={job.workApproach}
                               joiningTimeline={job.joiningTimeline}
                               inboundCount={job.inboundCount}
+                              shortlistedCount={job.shortlistedCount}
                               totalApplied={job.totalApplied}
                               totalReplied={job.totalReplied}
                               status={job.status}
@@ -1704,8 +1705,8 @@ function MainApp() {
                           </div>
                         </div>
                         {loadingCompetencies ? (
-                            <RequisitionSkeleton />
-                          ) : jobDataForModal && competenciesData ? (
+                          <RequisitionSkeleton />
+                        ) : jobDataForModal && competenciesData ? (
                           <>
                             <h2 className="text-2xl font-semibold text-gray-900 mb-1">
                               {jobDataForModal.title}
@@ -2364,10 +2365,10 @@ function MainApp() {
                             onUpdateCandidate={handleUpdateCandidate}
                             defaultBoolQuery={defaultBoolQuery}
                             jobId={filters.jobId}
-                            textQuery={filters.keywords}           // ← Current text_query (keyword mode)
-                            boolQuery={filters.boolQuery || ""}    // ← Current bool_query (boolean mode)
-                            enableAnalysis={!!filters.jobId} 
-                            onAnalysisFetched={setCurrentAnalysis} 
+                            textQuery={filters.keywords} // ← Current text_query (keyword mode)
+                            boolQuery={filters.boolQuery || ""} // ← Current bool_query (boolean mode)
+                            enableAnalysis={!!filters.jobId}
+                            onAnalysisFetched={setCurrentAnalysis}
                           />
                         </div>
                         {/* TemplateSelector rendered as an overlay with 40% width when active */}
