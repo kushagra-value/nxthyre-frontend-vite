@@ -115,10 +115,11 @@ export default function ProjectCard({
       </div>
 
       {/* Job title */}
-      <div className="mb-[30px]">
-        <h2 className={`text-[24px] max-w-[18ch] truncate font-normal ${titleClass} flex items-center gap-[8px]`}>
+      <div className="mb-[30px] flex items-center gap-[8px]">
+        <h2 className={`text-[24px] max-w-[18ch] truncate font-normal ${titleClass} `}>
           {jobName}
-          <div className="w-[20px] h-[20px]">
+        </h2>
+        <div className="w-[20px] h-[20px]">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <g clip-path="url(#clip0_4467_2105)">
             <path d="M13.3327 10.7513V14.2513C13.3327 17.168 12.166 18.3346 9.24935 18.3346H5.74935C2.83268 18.3346 1.66602 17.168 1.66602 14.2513V10.7513C1.66602 7.83464 2.83268 6.66797 5.74935 6.66797H9.24935C12.166 6.66797 13.3327 7.83464 13.3327 10.7513Z" stroke="#4B5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -131,8 +132,6 @@ export default function ProjectCard({
             </defs>
             </svg>
           </div>
-          
-        </h2>
       </div>
 
       {/* Tag pills – plain, no prefix icons */}
