@@ -1391,90 +1391,109 @@ function MainApp() {
                         </div>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {categories.map((job) => (
-                          <div
-                            key={job.id}
-                            className="rounded-[10px] transition-all duration-300"
-                          >
-                            <ProjectCard
-                              jobId={job.id}
-                              jobName={job.name}
-                              companyName={job.companyName}
-                              experience={job.experience}
-                              workApproach={job.workApproach}
-                              joiningTimeline={job.joiningTimeline}
-                              inboundCount={job.inboundCount}
-                              shortlistedCount={job.shortlistedCount}
-                              totalApplied={job.totalApplied}
-                              totalReplied={job.totalReplied}
-                              postedAgo="3 month ago"
-                              interviewsCount={2}
-                              badgeText="On Track"
-                              featuredCount={61}
-                              status={job.status}
-                              visibility={job.visibility}
-                              isActive={activeCategoryId === job.id}
-                              onEditJobRole={handleEditJobRole}
-                              onArchiveJob={() =>
-                                showToast.success("Archive coming soon")
-                              }
-                              onSharePipelines={handleSharePipelines}
-                              onPublishJob={handlePublishJobRole}
-                              onUnpublishJob={handleUnpublishJobRole}
-                              onSelectCard={() => {
-                                setActiveCategoryId(job.id);
-                                setHasSelectedJob(true);
-                                fetchJobDetailsAndSetFilters(job.id);
-                              }}
-                            />
-                          </div>
-                        ))}
-                        <div className="mt-12 bg-black text-white py-5 px-8 flex items-center justify-between">
-                          <div className="text-gray-400 text-lg">
-                            Showing {(currentRequisitionPage - 1) * 8 + 1} to{" "}
-                            {Math.min(currentRequisitionPage * 8, categories.length)} of{" "}
-                            {categories.length} requisitions
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <button
-                              onClick={() => setCurrentRequisitionPage(prev => Math.max(prev - 1, 1))}
-                              disabled={currentRequisitionPage === 1}
-                              className="text-gray-400 hover:text-white disabled:opacity-50"
-                            >
-                              <ChevronLeft className="w-6 h-6" />
-                            </button>
-                            
-                            {Array.from({ length: Math.ceil(categories.length / 8) }, (_, i) => i + 1).map((page) => (
-                              <button
-                                key={page}
-                                onClick={() => setCurrentRequisitionPage(page)}
-                                className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
-                                  page === currentRequisitionPage
-                                    ? "bg-blue-600 text-white"
-                                    : "bg-white text-black hover:bg-gray-200"
-                                }`}
-                              >
-                                {page}
-                              </button>
-                            ))}
-                            
-                            <button
-                              onClick={() => setCurrentRequisitionPage(prev => Math.min(prev + 1, Math.ceil(categories.length / 8)))}
-                              disabled={currentRequisitionPage === Math.ceil(categories.length / 8)}
-                              className="text-gray-400 hover:text-white disabled:opacity-50"
-                            >
-                              <ChevronRight className="w-6 h-6" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                        <>
+                          {(() => {
+                            const itemsPerPage = 8;
+                            const startIndex = (currentRequisitionPage - 1) * itemsPerPage;
+                            const endIndex = startIndex + itemsPerPage;
+                            const currentCategories = categories.slice(startIndex, endIndex);
 
+                            return (
+                              <>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                  {currentCategories.map((job) => (
+                                    <div
+                                      key={job.id}
+                                      className="rounded-[10px] transition-all duration-300"
+                                    >
+                                      <ProjectCard
+                                        jobId={job.id}
+                                        jobName={job.name}
+                                        companyName={job.companyName}
+                                        experience={job.experience}
+                                        workApproach={job.workApproach}
+                                        joiningTimeline={job.joiningTimeline}
+                                        inboundCount={job.inboundCount}
+                                        shortlistedCount={job.shortlistedCount}
+                                        totalApplied={job.totalApplied}
+                                        totalReplied={job.totalReplied}
+                                        postedAgo="3 month ago"
+                                        interviewsCount={2}
+                                        badgeText="On Track"
+                                        featuredCount={61}
+                                        status={job.status}
+                                        visibility={job.visibility}
+                                        isActive={activeCategoryId === job.id}
+                                        onEditJobRole={handleEditJobRole}
+                                        onArchiveJob={() =>
+                                          showToast.success("Archive coming soon")
+                                        }
+                                        onSharePipelines={handleSharePipelines}
+                                        onPublishJob={handlePublishJobRole}
+                                        onUnpublishJob={handleUnpublishJobRole}
+                                        onSelectCard={() => {
+                                          setActiveCategoryId(job.id);
+                                          setHasSelectedJob(true);
+                                          fetchJobDetailsAndSetFilters(job.id);
+                                        }}
+                                      />
+                                    </div>
+                                  ))}
+                                  {categories.length > 0 && (
+                                    <div className="mt-12 bg-black text-white py-5 px-8 flex items-center justify-between w-full">
+                                      <div className="text-gray-400 text-lg">
+                                        Showing {(currentRequisitionPage - 1) * 8 + 1} to{" "}
+                                        {Math.min(currentRequisitionPage * 8, categories.length)} of{" "}
+                                        {categories.length} requisitions
+                                      </div>
+                                      <div className="flex items-center gap-3">
+                                        <button
+                                          onClick={() => setCurrentRequisitionPage(prev => Math.max(prev - 1, 1))}
+                                          disabled={currentRequisitionPage === 1}
+                                          className="text-gray-400 hover:text-white disabled:opacity-50"
+                                        >
+                                          <ChevronLeft className="w-6 h-6" />
+                                        </button>
+
+                                        {Array.from(
+                                          { length: Math.ceil(categories.length / 8) },
+                                          (_, i) => i + 1
+                                        ).map((page) => (
+                                          <button
+                                            key={page}
+                                            onClick={() => setCurrentRequisitionPage(page)}
+                                            className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
+                                              page === currentRequisitionPage
+                                                ? "bg-blue-600 text-white"
+                                                : "bg-white text-black hover:bg-gray-200"
+                                            }`}
+                                          >
+                                            {page}
+                                          </button>
+                                        ))}
+
+                                        <button
+                                          onClick={() =>
+                                            setCurrentRequisitionPage(prev =>
+                                              Math.min(prev + 1, Math.ceil(categories.length / 8))
+                                            )
+                                          }
+                                          disabled={currentRequisitionPage === Math.ceil(categories.length / 8)}
+                                          className="text-gray-400 hover:text-white disabled:opacity-50"
+                                        >
+                                          <ChevronRight className="w-6 h-6" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>                               
+                              </>                     
+                          );
+                          })()}
+                        </>
+                      )}
                   
-                    
                   
-                  </div>
                   <CreateJobRoleModal
                     isOpen={showCreateJobRole}
                     workspaceId={selectedWorkspaceId || 1}
