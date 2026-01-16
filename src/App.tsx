@@ -72,6 +72,7 @@ import { AnalysisResult } from "./services/candidateService";
 interface Category {
   id: number;
   name: string; // Job title
+  location:string;
   companyName: string; // e.g., "Debitte"
   experience: string; // e.g., "8+ years"
   workApproach: string; // "Hybrid", "Remote", "Onsite"
@@ -390,6 +391,7 @@ function MainApp() {
           : minExp === 1
           ? "1+ year"
           : `${minExp}+ years`;
+        const location = job.location[0];
 
         // Map work approach
         let workApproach = "Hybrid";
@@ -408,6 +410,7 @@ function MainApp() {
           name: job.title,
           companyName,
           experience,
+          location,
           workApproach,
           joiningTimeline,
           inboundCount: job.inbound_count || 0,
@@ -847,7 +850,7 @@ function MainApp() {
   const handleCopyJobID = (jobId: number) => {
     const job = categories.find((cat) => cat.id === jobId);
     if (job) {
-      const jobLink = String(job.id);
+      const jobLink = `${job.name}, ${job.location} (Job ID: ${job.id})`;
       navigator.clipboard
         .writeText(jobLink)
         .then(() => {

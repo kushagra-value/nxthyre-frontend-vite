@@ -54,6 +54,7 @@ export default function ProjectCard({
   onSelectCard,
 }: ProjectCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
   const borderClass = isHovered
     ? "border-[#0F47F2] shadow-[0px_1px_30px_2px_rgba(15,71,242,0.31)]"
     : "border-[#BCBCBC]";
@@ -72,13 +73,15 @@ export default function ProjectCard({
     }
   };
   const handleCopyClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation(); // Prevent card click / navigation
+    e.stopPropagation();
     onCopyJobID?.(jobId);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
   };
 
   return (
     <div
-        className={`w-full h-[300px] bg-white rounded-[10px] shadow-sm cursor-pointer transition-all duration-200`}
+        className={`w-full h-[300px] bg-white rounded-[10px] shadow-sm border-[0.5px] ${borderClass} cursor-pointer transition-all duration-200`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleCardClick}
@@ -122,48 +125,84 @@ export default function ProjectCard({
 
       {/* Job title */}
       <div className="mb-[24px] flex items-center gap-[8px]">
-        <h2 className={`text-[24px] max-w-[16ch] truncate font-normal ${titleClass} `}>
-          {jobName}
-        </h2>
-        <button
+          <h2 className={`text-[24px] max-w-[16ch] truncate font-normal ${titleClass}`}>
+            {jobName}
+          </h2>
+
+          <button
             type="button"
             onClick={handleCopyClick}
-            className="shrink-0 rounded hover:bg-gray-100 p-1 -m-1 transition" // Subtle hover feedback
-            title="Copy Job ID"
-            aria-label="Copy Job ID"
+            className={`shrink-0 rounded p-1 -m-1 transition ${
+              isCopied ? "bg-green-100" : "hover:bg-gray-100"
+            }`}
+            title={isCopied ? "Copied!" : "Copy Job ID"}
+            aria-label={isCopied ? "Copied!" : "Copy Job ID"}
           >
-            <svg
-              className={`w-[20px] h-[20px] transition-colors`}
-              style={{ color: iconColor }} // Syncs with card hover (blue when hovered)
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <g clipPath="url(#clip0_4467_2105)">
-                <path
-                  d="M13.3327 10.7513V14.2513C13.3327 17.168 12.166 18.3346 9.24935 18.3346H5.74935C2.83268 18.3346 1.66602 17.168 1.66602 14.2513V10.7513C1.66602 7.83464 2.83268 6.66797 5.74935 6.66797H9.24935C12.166 6.66797 13.3327 7.83464 13.3327 10.7513Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+            {isCopied ? (
+              // Success icon (copy + checkmark)
+              <svg
+                className="w-[20px] h-[20px] transition-colors"
+                viewBox="0 0 800 800"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <path
                   opacity="0.4"
-                  d="M18.3327 5.7513V9.2513C18.3327 12.168 17.166 13.3346 14.2493 13.3346H13.3327V10.7513C13.3327 7.83463 12.166 6.66797 9.24935 6.66797H6.66602V5.7513C6.66602 2.83464 7.83268 1.66797 10.7493 1.66797H14.2493C17.166 1.66797 18.3327 2.83464 18.3327 5.7513Z"
+                  d="M733.333 370V230C733.333 113.333 686.667 66.6667 570 66.6667H430C313.333 66.6667 266.667 113.333 266.667 230V266.667H370C486.667 266.667 533.333 313.333 533.333 430V533.333H570C686.667 533.333 733.333 486.667 733.333 370Z"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="50"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </g>
-              <defs>
-                <clipPath id="clip0_4467_2105">
-                  <rect width="20" height="20" fill="white"/>
-                </clipPath>
-              </defs>
-            </svg>
+                <path
+                  d="M533.333 570V430C533.333 313.333 486.667 266.667 370 266.667H230C113.333 266.667 66.6667 313.333 66.6667 430V570C66.6667 686.667 113.333 733.333 230 733.333H370C486.667 733.333 533.333 686.667 533.333 570Z"
+                  stroke="currentColor"
+                  strokeWidth="50"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M202.669 499.993L267.669 564.993L397.337 434.993"
+                  stroke="currentColor"
+                  strokeWidth="50"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            ) : (
+              // Normal copy icon
+              <svg
+                className="w-[20px] h-[20px] transition-colors"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g clipPath="url(#clip0_4467_2105)">
+                  <path
+                    d="M13.3327 10.7513V14.2513C13.3327 17.168 12.166 18.3346 9.24935 18.3346H5.74935C2.83268 18.3346 1.66602 17.168 1.66602 14.2513V10.7513C1.66602 7.83464 2.83268 6.66797 5.74935 6.66797H9.24935C12.166 6.66797 13.3327 7.83464 13.3327 10.7513Z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    opacity="0.4"
+                    d="M18.3327 5.7513V9.2513C18.3327 12.168 17.166 13.3346 14.2493 13.3346H13.3327V10.7513C13.3327 7.83463 12.166 6.66797 9.24935 6.66797H6.66602V5.7513C6.66602 2.83464 7.83268 1.66797 10.7493 1.66797H14.2493C17.166 1.66797 18.3327 2.83464 18.3327 5.7513Z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </g>
+                <defs>
+                  <clipPath id="clip0_4467_2105">
+                    <rect width="20" height="20" fill="white"/>
+                  </clipPath>
+                </defs>
+              </svg>
+            )}
           </button>
-      </div>
+        </div>
 
       {/* Tag pills – plain, no prefix icons */}
       <div className="flex gap-[22px] mb-[18px]">
