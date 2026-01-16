@@ -843,6 +843,25 @@ function MainApp() {
     }
     setShowCategoryActions(null);
   };
+
+  const handleCopyJobID = (jobId: number) => {
+    const job = categories.find((cat) => cat.id === jobId);
+    if (job) {
+      const jobLink = String(job.id);
+      navigator.clipboard
+        .writeText(jobLink)
+        .then(() => {
+          showToast.success(`Job link copied to clipboard: ${job.name}`);
+        })
+        .catch(() => {
+          showToast.error("Failed to copy job link");
+        });
+    } else {
+      showToast.error("Job not found");
+    }
+    setShowCategoryActions(null);
+  };
+
   const handleDeleteJobRole = async (jobId: number) => {
     const job = categories.find((cat) => cat.id === jobId);
     if (job) {
@@ -1469,6 +1488,7 @@ function MainApp() {
                                         }
                                         onSharePipelines={handleSharePipelines}
                                         onPublishJob={handlePublishJobRole}
+                                        onCopyJobID={handleCopyJobID}
                                         onUnpublishJob={handleUnpublishJobRole}
                                         onSelectCard={() => {
                                           setActiveCategoryId(job.id);
