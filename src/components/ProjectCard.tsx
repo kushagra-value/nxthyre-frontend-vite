@@ -109,7 +109,7 @@ export default function ProjectCard({
       </div>
 
 
-      <div className="flex flex-row items-center gap-4 mb-[24px]">
+      <div className="flex flex-row items-center gap-4 mb-[20px]">
         <h3 className="text-[18px] font-semibold text-[#181D25]">{companyName}</h3>
         <p className={`text-[16px] ${subtitleClass} mt-[4px]`}>{postedAgo}</p> 
       </div>
@@ -135,7 +135,7 @@ export default function ProjectCard({
       </div>
 
       {/* Tag pills – plain, no prefix icons */}
-      <div className="flex gap-[22px] mb-[20px]">
+      <div className="flex gap-[22px] mb-[18px]">
         <div className="flex items-center justify-center px-[10px] h-[38px] bg-[#F0F0F0] rounded-[5px]">
           <span className={`text-[16px] ${textClass}`}>{experience}</span>
         </div>
@@ -148,7 +148,7 @@ export default function ProjectCard({
       </div>
 
       {/* Divider */}
-      <hr className="border-t-[0.5px] border-[#818283] mb-[20px]" />
+      <hr className="border-t-[0.5px] border-[#818283] mb-[16px]" />
 
       {/* Bottom stats row */}
       <div className="w-5/6 flex justify-between items-center">
