@@ -1456,10 +1456,10 @@ function MainApp() {
                                         shortlistedCount={job.shortlistedCount}
                                         totalApplied={job.totalApplied}
                                         totalReplied={job.totalReplied}
-                                        postedAgo="3 month ago"
-                                        interviewsCount={2}
+                                        postedAgo="1 month ago"
+                                        interviewsCount={0}
                                         badgeText="On Track"
-                                        featuredCount={61}
+                                        featuredCount={0}
                                         status={job.status}
                                         visibility={job.visibility}
                                         isActive={activeCategoryId === job.id}
