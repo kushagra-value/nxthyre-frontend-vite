@@ -79,7 +79,7 @@ export default function ProjectCard({
       >
       <div className="px-[20px] pt-[20px] pb-[20px] flex flex-col h-full">
       {/* Header: Avatar + Company/Posting time + On Track badge */}
-      <div className="w-full flex justify-between items-start mb-[18px]">
+      <div className="w-full flex justify-between items-start mb-[10px]">
         <div className=" w-full flex justify-between items-start">
           {/* Company avatar */}
           <div className={`w-[42px] h-[42px] rounded-full ${avatarBorderClass} border-[0.5px] border-[#818283] bg-white flex items-center justify-center transition-colors duration-200`}>
@@ -109,13 +109,13 @@ export default function ProjectCard({
       </div>
 
 
-      <div className="flex flex-row items-center gap-4 mb-[18px]">
+      <div className="flex flex-row items-center gap-4 mb-[24px]">
         <h3 className="text-[18px] font-semibold text-[#181D25]">{companyName}</h3>
         <p className={`text-[16px] ${subtitleClass} mt-[4px]`}>{postedAgo}</p> 
       </div>
 
       {/* Job title */}
-      <div className="mb-[18px] flex items-center gap-[8px]">
+      <div className="mb-[24px] flex items-center gap-[8px]">
         <h2 className={`text-[24px] max-w-[16ch] truncate font-normal ${titleClass} `}>
           {jobName}
         </h2>
@@ -135,7 +135,7 @@ export default function ProjectCard({
       </div>
 
       {/* Tag pills – plain, no prefix icons */}
-      <div className="flex gap-[22px] mb-[18px]">
+      <div className="flex gap-[22px] mb-[20px]">
         <div className="flex items-center justify-center px-[10px] h-[38px] bg-[#F0F0F0] rounded-[5px]">
           <span className={`text-[16px] ${textClass}`}>{experience}</span>
         </div>
@@ -148,7 +148,7 @@ export default function ProjectCard({
       </div>
 
       {/* Divider */}
-      <hr className="border-t-[0.5px] border-[#818283] mb-[17px]" />
+      <hr className="border-t-[0.5px] border-[#818283] mb-[20px]" />
 
       {/* Bottom stats row */}
       <div className="w-5/6 flex justify-between items-center">
