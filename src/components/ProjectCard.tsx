@@ -184,9 +184,7 @@ export default function ProjectCard({
       {/* Bottom stats row */}
       <div className="w-5/6 flex justify-between items-center">
         {/*Candidates Inbound applicants */}
-        <div className="w-5/6 flex justify-between items-center">
-          {/* Candidates Inbound */}
-          <div className="group relative flex items-center gap-[8px] cursor-help">
+        <div className="group relative flex items-center gap-[8px] cursor-help">
             <div className="w-[24px] h-[24px] rounded-full bg-[#4B5563] flex items-center justify-center transition-colors group-hover:bg-[#0F47F2]">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M7.00065 7.0013C8.61147 7.0013 9.91732 5.69546 9.91732 4.08464C9.91732 2.47381 8.61147 1.16797 7.00065 1.16797C5.38982 1.16797 4.08398 2.47381 4.08398 4.08464C4.08398 5.69546 5.38982 7.0013 7.00065 7.0013Z" stroke="#F5F9FB" strokeLinecap="round" strokeLinejoin="round"/>
