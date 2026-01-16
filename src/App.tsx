@@ -1185,7 +1185,10 @@ function MainApp() {
 
         {/* Welcome + search bar skeleton */}
         <div className="container mx-auto py-6">
-          
+          <div className="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto mb-4">
+            <div className="h-10 bg-gray-200 rounded-lg w-48"></div>
+            <div className="h-10 bg-gray-200 rounded-lg w-96"></div>
+          </div>
 
           {/* Project grid skeleton */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -1363,7 +1366,7 @@ function MainApp() {
                   </div>
 
                   <div className="container mx-auto py-6">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-4">
                       <h1 className="text-2xl font-medium ">
                         Requisitions List
                       </h1>
@@ -1396,7 +1399,7 @@ function MainApp() {
                     </div>
                     {loadingCategories ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {[...Array(12)].map((_, i) => (
+                        {[...Array(8)].map((_, i) => (
                           <ProjectSkeletonCard key={i} />
                         ))}
                       </div>
