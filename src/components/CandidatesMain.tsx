@@ -897,151 +897,130 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                       aria-label={`Select ${candidate.full_name}`}
                     />
                     <div className="border-b border-[#E2E2E2] flex items-center space-x-3 pb-5 w-full">
-                      <div
-                        className={`w-14 h-14 ${getAvatarColor(
-                          candidate.full_name
-                        )} rounded-full flex items-center justify-center text-white text-xs lg:text-base font-[600] `}
-                      >
-                        {candidate?.profile_picture_url ? (
-                          <img
-                            src={candidate.profile_picture_url}
-                            alt={candidate.full_name}
-                            className="w-full h-full object-cover rounded-full"
-                          />
-                        ) : (
-                          candidate.avatar
-                        )}
-                      </div>
+                  
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
-                          <div className="flex items-center space-x-2 flex-wrap">
-                            <h3 className="text-xs lg:text-base font-[600] text-gray-900">
-                              {candidate.full_name}
-                            </h3>
+                          <div className="flex justify-left gap-2">
+                            <div className="flex items-center space-x-2 flex-wrap">
+                              <h3 className="text-xs lg:text-base font-[600] text-gray-900">
+                                {candidate.full_name}
+                              </h3>
 
-                            {candidate.is_background_verified && (
-                              <div
-                                className="relative flex space-x-1"
-                                onMouseEnter={() =>
-                                  setHoveredCandidateId(candidate.id)
-                                }
-                                onMouseLeave={() => setHoveredCandidateId(null)}
-                              >
-                                <span className="mt-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="256"
-                                    height="256"
-                                    viewBox="0 0 256 256"
-                                    xmlSpace="preserve"
-                                  >
-                                    <g
-                                      transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)"
-                                      style={{
-                                        stroke: "none",
-                                        strokeWidth: 0,
-                                        strokeDasharray: "none",
-                                        strokeLinecap: "butt",
-                                        strokeLinejoin: "miter",
-                                        strokeMiterlimit: 10,
-                                        fill: "none",
-                                        fillRule: "nonzero",
-                                        opacity: 1,
-                                      }}
+                              {candidate.is_background_verified && (
+                                <div
+                                  className="relative flex space-x-1"
+                                  onMouseEnter={() =>
+                                    setHoveredCandidateId(candidate.id)
+                                  }
+                                  onMouseLeave={() => setHoveredCandidateId(null)}
+                                >
+                                  <span className="mt-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="256"
+                                      height="256"
+                                      viewBox="0 0 256 256"
+                                      xmlSpace="preserve"
                                     >
-                                      <polygon
-                                        points="45,6.18 57.06,0 64.41,11.38 77.94,12.06 78.62,25.59 90,32.94 83.82,45 90,57.06 78.62,64.41 77.94,77.94 64.41,78.62 57.06,90 45,83.82 32.94,90 25.59,78.62 12.06,77.94 11.38,64.41 0,57.06 6.18,45 0,32.94 11.38,25.59 12.06,12.06 25.59,11.38 32.94,0"
+                                      <g
+                                        transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)"
                                         style={{
                                           stroke: "none",
-                                          strokeWidth: 1,
+                                          strokeWidth: 0,
                                           strokeDasharray: "none",
                                           strokeLinecap: "butt",
                                           strokeLinejoin: "miter",
                                           strokeMiterlimit: 10,
-                                          fill: "rgb(0,150,241)",
+                                          fill: "none",
                                           fillRule: "nonzero",
                                           opacity: 1,
                                         }}
-                                        transform="matrix(1 0 0 1 0 0)"
-                                      />
-                                      <polygon
-                                        points="40.16,58.47 26.24,45.08 29.7,41.48 40.15,51.52 61.22,31.08 64.7,34.67"
-                                        style={{
-                                          stroke: "none",
-                                          strokeWidth: 1,
-                                          strokeDasharray: "none",
-                                          strokeLinecap: "butt",
-                                          strokeLinejoin: "miter",
-                                          strokeMiterlimit: 10,
-                                          fill: "rgb(255,255,255)",
-                                          fillRule: "nonzero",
-                                          opacity: 1,
-                                        }}
-                                        transform="matrix(1 0 0 1 0 0)"
-                                      />
-                                    </g>
-                                  </svg>
-                                </span>
-                                {hoveredCandidateId === candidate.id && (
-                                  <div
-                                    className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg p-3 text-sm text-gray-700 z-10"
-                                    role="tooltip"
-                                    aria-hidden={
-                                      hoveredCandidateId !== candidate.id
-                                    }
-                                  >
-                                    Verified via last employer's confirmation
+                                      >
+                                        <polygon
+                                          points="45,6.18 57.06,0 64.41,11.38 77.94,12.06 78.62,25.59 90,32.94 83.82,45 90,57.06 78.62,64.41 77.94,77.94 64.41,78.62 57.06,90 45,83.82 32.94,90 25.59,78.62 12.06,77.94 11.38,64.41 0,57.06 6.18,45 0,32.94 11.38,25.59 12.06,12.06 25.59,11.38 32.94,0"
+                                          style={{
+                                            stroke: "none",
+                                            strokeWidth: 1,
+                                            strokeDasharray: "none",
+                                            strokeLinecap: "butt",
+                                            strokeLinejoin: "miter",
+                                            strokeMiterlimit: 10,
+                                            fill: "rgb(0,150,241)",
+                                            fillRule: "nonzero",
+                                            opacity: 1,
+                                          }}
+                                          transform="matrix(1 0 0 1 0 0)"
+                                        />
+                                        <polygon
+                                          points="40.16,58.47 26.24,45.08 29.7,41.48 40.15,51.52 61.22,31.08 64.7,34.67"
+                                          style={{
+                                            stroke: "none",
+                                            strokeWidth: 1,
+                                            strokeDasharray: "none",
+                                            strokeLinecap: "butt",
+                                            strokeLinejoin: "miter",
+                                            strokeMiterlimit: 10,
+                                            fill: "rgb(255,255,255)",
+                                            fillRule: "nonzero",
+                                            opacity: 1,
+                                          }}
+                                          transform="matrix(1 0 0 1 0 0)"
+                                        />
+                                      </g>
+                                    </svg>
+                                  </span>
+                                  {hoveredCandidateId === candidate.id && (
+                                    <div
+                                      className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg p-3 text-sm text-gray-700 z-10"
+                                      role="tooltip"
+                                      aria-hidden={
+                                        hoveredCandidateId !== candidate.id
+                                      }
+                                    >
+                                      Verified via last employer's confirmation
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <div className="relative group">
+                                <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[48ch] truncate">
+                                  {candidate.headline}
+                                  {collegeName && (
+                                    <span>
+                                      {" "}
+                                      {"from"} {collegeName}
+                                    </span>
+                                  )}
+                                </p>
+                                {candidate?.headline && (
+                                  <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-5 -left-2 w-max max-w-xs z-10">
+                                    {candidate.headline}{" "}
+                                    {collegeName && (
+                                      <span>
+                                        {" "}
+                                        {"from"} {collegeName}
+                                      </span>
+                                    )}
                                   </div>
                                 )}
-                              </div>
-                            )}
+                              </div>  
+                            </div>
+                            <div className="flex items-center">
+                              <p className="flex items-center justify-end gap-2 text-base font-normal text-[#4B5563]">
+  +                              <MapPin className="w-5 h-5" />
+  +                              {candidate.location?.split(",")[0] ?? "Bangalore"}
+  +                            </p>
+                            </div>
                           </div>
                           <div className="flex space-x-1">
-                            <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563] mt-1">
-                              <MapPin className=" w-4 h-4" />
-                              {candidate.location?.split(",")[0]}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <div className="relative group">
-                            <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[48ch] truncate">
-                              {candidate.headline}
-                              {collegeName && (
-                                <span>
-                                  {" "}
-                                  {"from"} {collegeName}
-                                </span>
-                              )}
-                            </p>
-                            {candidate?.headline && (
-                              <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-5 -left-2 w-max max-w-xs z-10">
-                                {candidate.headline}{" "}
-                                {collegeName && (
-                                  <span>
-                                    {" "}
-                                    {"from"} {collegeName}
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                          {/* {candidate.experience_summary?.title && (
-                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
-                            |
-                          </p>
-                        )}
-                        <div className="relative group">
-                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
-                            {candidate.education_summary?.title}
-                          </p>
-                          {candidate.education_summary?.title && (
-                            <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-5 -left-2 w-max max-w-xs z-10">
-                              {candidate.education_summary?.title}
+                            <div className="inline-block bg-[#DFFBE2] text-[#00A25E] px-4 py-1.5 rounded-lg text-xl font-medium">
+                              98% 
                             </div>
-                          )}
-                        </div> */}
+                          </div>
                         </div>
+                        
 
                         {activeTab === "active" && candidate.last_active_at && (
                           <div className="flex items-center space-x-1 text-xs mt-1 font-[400] text-gray-700">
