@@ -1363,7 +1363,37 @@ function MainApp() {
                   </div>
 
                   <div className="container mx-auto py-6">
-
+                    <div className="flex items-center justify-between">
+                      <h1 className="text-2xl font-medium ">
+                        Requisitions List
+                      </h1>
+                      <div className="relative w-[544px] h-[59px]">
+                          <input
+                            type="text"
+                            placeholder="Search Projects"
+                            value={projectSearchQuery}
+                            onChange={(e) =>
+                              setProjectSearchQuery(e.target.value)
+                            }
+                            className="w-full h-full bg-[#ECF1FF] rounded-[5px] pl-5 pr-16 text-lg text-[#181D25] placeholder:text-[#AAC1FF] focus:outline-none focus:ring-2 focus:ring-[#0F47F2]/20"
+                          />
+                          <button className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-[31px] bg-[#0F47F2] rounded-md flex items-center justify-center hover:bg-[#0d3ec9] transition-colors">
+                            <Search
+                              className="w-[22px] h-[19px] text-white"
+                              strokeWidth={1.33}
+                            />
+                          </button>
+                          {/* Optional: Clear button when typing */}
+                          {projectSearchQuery && (
+                            <button
+                              onClick={() => setProjectSearchQuery("")}
+                              className="absolute right-14 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            >
+                              ✕
+                            </button>
+                          )}
+                      </div>
+                    </div>
                     {loadingCategories ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {[...Array(12)].map((_, i) => (
