@@ -1481,7 +1481,7 @@ function MainApp() {
                                   
                                 </div>
                                 {categories.length > 0 && (
-                                    <div className="mt-12 py-4 px-8 pt-6 flex items-center border-t-[0.5px] border-[#818283] justify-between w-full">
+                                    <div className="mt-4 py-2 px-8 pt-2 flex items-center border-t-[0.5px] border-[#818283] justify-between w-full">
                                       <div className="text-gray-400 text-lg">
                                         Showing {(currentRequisitionPage - 1) * 8 + 1} to{" "}
                                         {Math.min(currentRequisitionPage * 8, categories.length)} of{" "}
