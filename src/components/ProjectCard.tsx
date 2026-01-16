@@ -72,7 +72,7 @@ export default function ProjectCard({
 
   return (
     <div
-        className={`w-full h-[310px] bg-white rounded-[10px] border-[0.5px] ${borderClass} cursor-pointer transition-all duration-200`}
+        className={`w-full h-[310px] bg-white rounded-[10px] shadow-sm cursor-pointer transition-all duration-200`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleCardClick}
