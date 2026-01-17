@@ -716,7 +716,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
   };
 
   const sortOptions = [
-    { value: "", label: "Relevance" },
+    { value: "relevance_desc", label: "Relevance" },
     { value: "experience_asc", label: "Experience(Asc)" },
     { value: "experience_desc", label: "Experience(Desc)" },
     { value: "notice_period_asc", label: "Notice Period(Asc)" },
