@@ -900,7 +900,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
-                          <div className="flex justify-left gap-2">
+                          <div className="flex flex-col justify-left gap-2">
                             <div className="flex items-center space-x-2 flex-wrap">
                               <h3 className="text-xs lg:text-base font-[600] text-gray-900">
                                 {candidate.full_name}
@@ -1009,9 +1009,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                             </div>
                             <div className="flex items-center">
                               <p className="flex items-center justify-end gap-2 text-base font-normal text-[#4B5563]">
-  +                              <MapPin className="w-5 h-5" />
-  +                              {candidate.location?.split(",")[0] ?? "Bangalore"}
-  +                            </p>
+                             <MapPin className="w-5 h-5" />
+                              {candidate.location?.split(",")[0] ?? "Bangalore"}
+                              </p>
                             </div>
                           </div>
                           <div className="flex space-x-1">
