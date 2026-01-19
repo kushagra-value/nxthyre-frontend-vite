@@ -1497,6 +1497,30 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     }
   };
 
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingCandidate, setEditingCandidate] =
+    useState<CandidateListItem | null>(null);
+
+  const [editForm, setEditForm] = useState({
+    experience: "--",
+    tenure: "--",
+    notice: "--",
+    salary: "--",
+  });
+
+  useEffect(() => {
+    if (showEditModal && editingCandidate) {
+      setEditForm({
+        experience: editingCandidate.candidate.experience_years || "--",
+        tenure:
+          editingCandidate.candidate.experience_summary?.duration_years?.toString() ||
+          "--",
+        notice: editingCandidate.candidate.notice_period_summary || "--",
+        salary: editingCandidate.candidate.current_salary_lpa || "--",
+      });
+    }
+  }, [showEditModal, editingCandidate]);
+
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="sticky top-0 z-20 bg-white will-change-transform">
@@ -2342,63 +2366,114 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               </div>
                             </div>
                             <div className="pt-4 pl-12 flex space-x-12 gap-2 text-xs lg:text-base font-[400px] ml-1">
-                              {experienceYears && (
-                                <div className="flex flex-col">
-                                  <p className="text-[#A8A8A8] mr-[5px]">
+                              {/* Experience */}
+                              <div className="flex flex-col">
+                                <div className="flex items-center">
+                                  <p className="text-[#A8A8A8] mr-1">
                                     Experience
                                   </p>
-                                  <p className="text-[#4B5563]">
-                                    {experienceYears}
-                                  </p>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditingCandidate(candidate);
+                                      setShowEditModal(true);
+                                    }}
+                                    className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                                    title="Edit Experience"
+                                  >
+                                    <Edit size={12} />
+                                  </button>
                                 </div>
-                              )}
-                              {/* need to update the current Company Data */}
-                              {candidate.candidate.experience_summary
-                                ?.date_range && (
-                                <div className="flex flex-col">
-                                  <p className="text-[#A8A8A8] mr-[5px]">
+                                <p className="text-[#4B5563]">
+                                  {experienceYears || "--"}
+                                </p>
+                              </div>
+
+                              {/* Current Company (Tenure) */}
+                              <div className="flex flex-col">
+                                <div className="flex items-center">
+                                  <p className="text-[#A8A8A8] mr-1">
                                     Current Company
                                   </p>
-                                  <p className="text-[#4B5563]">
-                                    {
-                                      candidate.candidate.experience_summary
-                                        ?.duration_years
-                                    }{" "}
-                                    {candidate.candidate.experience_summary
-                                      ?.duration_years > 1
-                                      ? "years"
-                                      : "year"}
-                                  </p>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditingCandidate(candidate);
+                                      setShowEditModal(true);
+                                    }}
+                                    className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                                    title="Edit Current Company Tenure"
+                                  >
+                                    <Edit size={12} />
+                                  </button>
                                 </div>
-                              )}
-                              {noticePeriodSummary && (
-                                <div className="flex flex-col">
-                                  <p className="text-[#A8A8A8] mr-[5px]">
+                                <p className="text-[#4B5563]">
+                                  {candidate.candidate.experience_summary
+                                    ?.duration_years
+                                    ? `${candidate.candidate.experience_summary.duration_years} ${
+                                        candidate.candidate.experience_summary
+                                          .duration_years > 1
+                                          ? "years"
+                                          : "year"
+                                      }`
+                                    : "--"}
+                                </p>
+                              </div>
+
+                              {/* Notice Period */}
+                              <div className="flex flex-col">
+                                <div className="flex items-center">
+                                  <p className="text-[#A8A8A8] mr-1">
                                     Notice Period
                                   </p>
-                                  <p className="text-[#4B5563]">
-                                    {noticePeriodSummary
-                                      ?.split(" ")
-                                      .map(
-                                        (word: string) =>
-                                          word.charAt(0).toUpperCase() +
-                                          word.slice(1),
-                                      )
-                                      .join(" ")}
-                                  </p>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditingCandidate(candidate);
+                                      setShowEditModal(true);
+                                    }}
+                                    className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                                    title="Edit Notice Period"
+                                  >
+                                    <Edit size={12} />
+                                  </button>
                                 </div>
-                              )}
-                              {/* need to update the code for Current Salary */}
-                              {currentSalary && (
-                                <div className="flex flex-col">
-                                  <p className="text-[#A8A8A8] mr-[5px]">
+                                <p className="text-[#4B5563]">
+                                  {noticePeriodSummary
+                                    ? noticePeriodSummary
+                                        .split(" ")
+                                        .map(
+                                          (word: String) =>
+                                            word.charAt(0).toUpperCase() +
+                                            word.slice(1),
+                                        )
+                                        .join(" ")
+                                    : "--"}
+                                </p>
+                              </div>
+
+                              {/* Current Salary */}
+                              <div className="flex flex-col">
+                                <div className="flex items-center">
+                                  <p className="text-[#A8A8A8] mr-1">
                                     Current Salary
                                   </p>
-                                  <p className="text-[#4B5563]">
-                                    {currentSalary}
-                                  </p>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditingCandidate(candidate);
+                                      setShowEditModal(true);
+                                    }}
+                                    className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                                    title="Edit Current Salary"
+                                  >
+                                    <Edit size={12} />
+                                  </button>
                                 </div>
-                              )}
+                                <p className="text-[#4B5563]">
+                                  {currentSalary || "--"}
+                                </p>
+                              </div>
                             </div>
                             <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
                               <div className="flex items-center space-x-1">
@@ -3098,6 +3173,86 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 className="px-4 py-2 bg-blue-500 text-white rounded-md"
               >
                 Upload
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEditModal && editingCandidate && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4">
+            <h2 className="text-xl font-bold mb-4">Edit Candidate Details</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Experience
+                </label>
+                <input
+                  type="text"
+                  value={editForm.experience}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, experience: e.target.value })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Current Company Tenure (years)
+                </label>
+                <input
+                  type="number"
+                  value={editForm.tenure === "--" ? "" : editForm.tenure}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, tenure: e.target.value })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Notice Period
+                </label>
+                <input
+                  type="text"
+                  value={editForm.notice}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, notice: e.target.value })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Current Salary (LPA)
+                </label>
+                <input
+                  type="text"
+                  value={editForm.salary}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, salary: e.target.value })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                onClick={() => setShowEditModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                onClick={() => {
+                  // TODO: Add your API call here to update backend
+                  console.log("Saving changes:", editForm);
+                  setShowEditModal(false);
+                }}
+              >
+                Save
               </button>
             </div>
           </div>
