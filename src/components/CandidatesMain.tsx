@@ -990,7 +990,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
                           <div className="flex flex-col justify-left gap-2">
                             <div className="flex items-center space-x-2 flex-wrap">
-                              <h3 className="text-xs lg:text-base font-[600] text-gray-900">
+                              <h3 className="text-[18px] font-[600] text-gray-900">
                                 {candidate.full_name}
                               </h3>
 
@@ -1073,7 +1073,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                             </div>
                             <div className="flex items-center space-x-2">
                               <div className="relative group">
-                                <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[48ch] truncate">
+                                <p className="text-[16px] font-[400] text-[#0F47F2] mt-1 max-w-[56ch] truncate">
                                   {candidate.headline}
                                   {collegeName && (
                                     <span>
@@ -1083,7 +1083,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                   )}
                                 </p>
                                 {candidate?.headline && (
-                                  <div className="absolute hidden group-hover:block bg-blue-500 text-white text-xs font-[400] rounded-md px-2 py-0.5 -bottom-5 -left-2 w-max max-w-xs z-10">
+                                  <div className="absolute hidden group-hover:block bg-blue-500 text-white text-[16px] font-[400] rounded-md px-2 py-0.5 -bottom-5 -left-2 w-max max-w-lg z-10">
                                     {candidate.headline}{" "}
                                     {collegeName && (
                                       <span>
@@ -1095,11 +1095,50 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 )}
                               </div>  
                             </div>
-                            <div className="flex items-center">
-                              <p className="flex items-center justify-end gap-2 text-base font-normal text-[#4B5563]">
-                             <MapPin className="w-5 h-5" />
-                              {candidate.location?.split(",")[0] ?? "Bangalore"}
-                              </p>
+                            <div className="flex items-center gap-6">
+                              <div>
+                                <p className="flex items-center justify-end gap-2 text-[16px] font-normal text-[#4B5563]">
+                                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M13.3327 6.66536C13.3327 10.6654 7.99935 14.6654 7.99935 14.6654C7.99935 14.6654 2.66602 10.6654 2.66602 6.66536C2.66602 5.25088 3.22792 3.89432 4.22811 2.89413C5.22831 1.89393 6.58486 1.33203 7.99935 1.33203C9.41384 1.33203 10.7704 1.89393 11.7706 2.89413C12.7708 3.89432 13.3327 5.25088 13.3327 6.66536Z" stroke="#4B5563" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>
+                                  <path d="M8 8.66797C9.10457 8.66797 10 7.77254 10 6.66797C10 5.5634 9.10457 4.66797 8 4.66797C6.89543 4.66797 6 5.5634 6 6.66797C6 7.77254 6.89543 8.66797 8 8.66797Z" stroke="#4B5563" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>
+                                  </svg>
+                                  {candidate.location?.split(",")[0] ?? "Bangalore"}
+                                </p>
+                              </div>
+                              {activeTab === "active" && candidate.last_active_at && (
+                                <div className="flex items-center space-x-1 text-[16px] mt-1 font-[400] text-[#818283]">
+                                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M13.8327 8.83333C13.8327 12.0533 11.2193 14.6667 7.99935 14.6667C4.77935 14.6667 2.16602 12.0533 2.16602 8.83333C2.16602 5.61333 4.77935 3 7.99935 3C11.2193 3 13.8327 5.61333 13.8327 8.83333Z" stroke="#818283" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                                  <path d="M8 5.33203V8.66536" stroke="#818283" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                                  <path d="M6 1.33203H10" stroke="#818283" stroke-width="1.33" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                  </svg>
+
+                                  {(() => {
+                                    const lastActiveDate: Date = new Date(
+                                      candidate.last_active_at as string
+                                    );
+                                    const today: Date = new Date();
+
+                                    // Compare only date part (ignore time)
+                                    const diffTime: number =
+                                      today.setHours(0, 0, 0, 0) -
+                                      lastActiveDate.setHours(0, 0, 0, 0);
+                                    const diffDays: number = Math.floor(
+                                      diffTime / (1000 * 60 * 60 * 24)
+                                    );
+
+                                    if (diffDays === 0) {
+                                      return "Active today";
+                                    } else if (diffDays > 0) {
+                                      return `Active ${diffDays} day${
+                                        diffDays > 1 ? "s" : ""
+                                      } ago`;
+                                    } else {
+                                      return "N/A"; // fallback if backend sends future dates
+                                    }
+                                  })()}
+                                </div>
+                              )}
                             </div>
                           </div>
                           <div className="flex space-x-1">
@@ -1110,34 +1149,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         </div>
                         
 
-                        {activeTab === "active" && candidate.last_active_at && (
-                          <div className="flex items-center space-x-1 text-xs mt-1 font-[400] text-gray-700">
-                            {(() => {
-                              const lastActiveDate: Date = new Date(
-                                candidate.last_active_at as string
-                              );
-                              const today: Date = new Date();
-
-                              // Compare only date part (ignore time)
-                              const diffTime: number =
-                                today.setHours(0, 0, 0, 0) -
-                                lastActiveDate.setHours(0, 0, 0, 0);
-                              const diffDays: number = Math.floor(
-                                diffTime / (1000 * 60 * 60 * 24)
-                              );
-
-                              if (diffDays === 0) {
-                                return "Active today";
-                              } else if (diffDays > 0) {
-                                return `Active ${diffDays} day${
-                                  diffDays > 1 ? "s" : ""
-                                } ago`;
-                              } else {
-                                return "N/A"; // fallback if backend sends future dates
-                              }
-                            })()}
-                          </div>
-                        )}
+                        
                       </div>
                     </div>
                   </div>
