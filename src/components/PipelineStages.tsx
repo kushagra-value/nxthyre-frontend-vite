@@ -34,6 +34,8 @@ import {
   ArrowDownNarrowWide,
   LogOut,
   AlarmClock,
+  Pencil,
+  PencilLine,
 } from "lucide-react";
 import Header from "./Header";
 import { creditService } from "../services/creditService";
@@ -2365,14 +2367,14 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 </div>
                               </div>
                             </div>
-                            <div className="pt-4 pl-12 flex space-x-12 gap-2 text-xs lg:text-base font-[400px] ml-1">
+                            <div className="pt-4 pl-12 flex space-x-6 gap-2 text-xs lg:text-sm font-[400px]">
                               {/* Experience */}
                               <div className="flex flex-col">
                                 <div className="flex items-center">
                                   <p className="text-[#A8A8A8] mr-1">
                                     Experience
                                   </p>
-                                  <button
+                                  {/* <button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setEditingCandidate(candidate);
@@ -2381,8 +2383,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     className="text-gray-400 hover:text-gray-600 focus:outline-none"
                                     title="Edit Experience"
                                   >
-                                    <Edit size={12} />
-                                  </button>
+                                    <PencilLine size={10} />
+                                  </button> */}
                                 </div>
                                 <p className="text-[#4B5563]">
                                   {experienceYears || "--"}
@@ -2395,7 +2397,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   <p className="text-[#A8A8A8] mr-1">
                                     Current Company
                                   </p>
-                                  <button
+                                  {/* <button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setEditingCandidate(candidate);
@@ -2404,8 +2406,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     className="text-gray-400 hover:text-gray-600 focus:outline-none"
                                     title="Edit Current Company Tenure"
                                   >
-                                    <Edit size={12} />
-                                  </button>
+                                    <PencilLine size={10} />
+                                  </button> */}
                                 </div>
                                 <p className="text-[#4B5563]">
                                   {candidate.candidate.experience_summary
@@ -2426,7 +2428,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   <p className="text-[#A8A8A8] mr-1">
                                     Notice Period
                                   </p>
-                                  <button
+                                  {/* <button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setEditingCandidate(candidate);
@@ -2435,8 +2437,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     className="text-gray-400 hover:text-gray-600 focus:outline-none"
                                     title="Edit Notice Period"
                                   >
-                                    <Edit size={12} />
-                                  </button>
+                                    <PencilLine size={10} />
+                                  </button> */}
                                 </div>
                                 <p className="text-[#4B5563]">
                                   {noticePeriodSummary
@@ -2458,7 +2460,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   <p className="text-[#A8A8A8] mr-1">
                                     Current Salary
                                   </p>
-                                  <button
+                                  {/* <button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setEditingCandidate(candidate);
@@ -2467,8 +2469,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     className="text-gray-400 hover:text-gray-600 focus:outline-none"
                                     title="Edit Current Salary"
                                   >
-                                    <Edit size={12} />
-                                  </button>
+                                    <PencilLine size={10} />
+                                  </button> */}
                                 </div>
                                 <p className="text-[#4B5563]">
                                   {currentSalary || "--"}
