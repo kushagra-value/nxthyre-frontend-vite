@@ -975,12 +975,12 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                       </svg>
                     </button>
                   )}
-                  <div className="relative flex px-4 items-center space-x-3">
+                  <div className="relative flex px-4 items-center space-x-6">
                     <input
                       type="checkbox"
                       checked={selectedCandidates.includes(candidate.id)}
                       onChange={() => handleCandidateSelect(candidate.id)}
-                      className="relative bottom-4 w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mb-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                      className="relative bottom-6 w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mb-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                       onClick={(e) => e.stopPropagation()}
                       aria-label={`Select ${candidate.full_name}`}
                     />
