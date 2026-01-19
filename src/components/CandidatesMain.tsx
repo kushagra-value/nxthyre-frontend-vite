@@ -651,14 +651,15 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   </div>
 
                   {(() => {
-                    const shortlistedStage = pipelineStages.find((stage) => stage.slug === "shortlisted");
-                    return shortlistedStage ? (
+                    const unContactedStage = pipelineStages.find((stage) => stage.slug === "uncontacted");
+                    return unContactedStage ? (
                       <button
-                        onClick={() => handleBulkMoveToStage(shortlistedStage.id)}
-                        className="mx-2 bg-[#0F47F2] text-white rounded-lg px-1.5 py-1.5 font-medium transition-colors "
+                        onClick={() => handleBulkMoveToStage(unContactedStage.id)}
+                        className="mx-2 ml-4 bg-[#0F47F2] text-white rounded-lg px-6 py-2 font-medium transition-colors "
                         aria-label="Bulk shortlist selected candidates"
+                        title="Bulk Move to Prospect"
                       >
-                        Shortlist
+                        Add to Prospect
                       </button>
                     ) : null;
                   })()}
@@ -666,6 +667,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   <button
                     className="p-2 rounded-full "
                     aria-label="Move selected candidates to Autopilot (AI Interview)"
+                    title="Bulk move to AutoPilot"
                   >
                     <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="0.5" y="0.5" width="37" height="37" rx="18.5" stroke="#0F47F2"/>
@@ -681,6 +683,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         onClick={() => handleBulkMoveToStage(archiveStage.id)}
                         className="p-2 rounded-full text-white transition-colors"
                         aria-label="Archive selected candidates"
+                        title="Bulk move to Archive"
                       >
                         <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="19" cy="19" r="18.5" stroke="#818283"/>
@@ -703,6 +706,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
               onClick={() => setShowExportDialog(true)}
               aria-label="Export selected candidates"
+              title="Export Selected Candidates"
             >
               <svg
                 width="15"
@@ -729,6 +733,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
                 aria-label="Sort candidates"
+                title="Sort Candidates"
               >
                 <ArrowDownNarrowWide className="w-4 h-4 rotate-180" />
                 <span className="text-gray-400 font-[400] ml-1 mr-1">
@@ -1228,10 +1233,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 }
                               }}
                               aria-label={`View ${candidate.full_name}'s pinterest`}
+                              title="Pinterest Link"
                             >
                               <svg
-                                width="24"
-                                height="24"
+                                width="28"
+                                height="28"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -1273,10 +1279,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                               }}
                               className="text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full"
                               aria-label={`View ${candidate.full_name}'s Github profile`}
+                              title="Github profile Link"
                             >
                               <svg
-                                width="24"
-                                height="24"
+                                width="28"
+                                height="28"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -1326,10 +1333,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 }
                               }}
                               aria-label={`View ${candidate.full_name}'s LinkedIn profile`}
+                              title="LinkedIn profile Link"
                             >
                               <svg
-                                width="24"
-                                height="24"
+                                width="28"
+                                height="28"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -1375,10 +1383,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 }
                               }}
                               aria-label={`View ${candidate.full_name}'s behance`}
+                              title="Behance Account Link"
                             >
                               <svg
-                                width="24"
-                                height="24"
+                                width="28"
+                                height="28"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -1437,10 +1446,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 }
                               }}
                               aria-label={`View ${candidate.full_name}'s instagram`}
+                              title="Instagram UserId"
                             >
                               <svg
-                                width="24"
-                                height="24"
+                                width="28"
+                                height="28"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -1486,10 +1496,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 }
                               }}
                               aria-label={`View ${candidate.full_name}'s twitter`}
+                              title="Twitter account Link"
                             >
                               <svg
-                                width="26"
-                                height="26"
+                                width="28"
+                                height="28"
                                 viewBox="0 0 26 26"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -1534,10 +1545,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 }
                               }}
                               aria-label={`View ${candidate.full_name}'s dribble`}
+                              title="Dribble Profile Link"
                             >
                               <svg
-                                width="24"
-                                height="24"
+                                width="28"
+                                height="28"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -1615,10 +1627,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 }
                               }}
                               aria-label={`View ${candidate.full_name}'s resume`}
+                              title="Resume Url"
                             >
                               <svg
-                                width="26"
-                                height="26"
+                                width="28"
+                                height="28"
                                 viewBox="0 0 26 26"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -1665,10 +1678,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 }
                               }}
                               aria-label={`View ${candidate.full_name}'s portfolio`}
+                              title={`${candidate.full_name}'s portfolio Link`}
                             >
                               <svg
-                                width="24"
-                                height="24"
+                                width="28"
+                                height="28"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -1684,21 +1698,22 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     </div>
                     <div className="flex items-center">
                       {(() => {
-                        const shortlistedStage = pipelineStages.find((stage) => stage.slug === "shortlisted");
+                        const unContactedStage = pipelineStages.find((stage) => stage.slug === "uncontacted");
                         return (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (shortlistedStage) {
-                                handleSaveToPipeline(candidate.id, shortlistedStage.id);
+                              if (unContactedStage) {
+                                handleSaveToPipeline(candidate.id, unContactedStage.id);
                               } else {
-                                showToast.error("Shortlisted stage not found");
+                                showToast.error("Uncontacted stage not found");
                               }
                             }}
                             className="mr-2 bg-[#0F47F2] text-white font-medium px-6 py-2 rounded-lg transition-colors"
-                            aria-label="Shortlist candidate"
+                            aria-label="Add Candidate to prospect"
+                            title="Add to Prospect"
                           >
-                            Shortlist
+                            Add to Prospect
                           </button>
                         );
                       })()}
@@ -1711,6 +1726,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         }}
                         className="p-2 rounded-full hover:bg-gray-200 transition-colors"
                         aria-label="Autopilot"
+                        title="Move Autopilot"
                       >
                         <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect x="0.5" y="0.5" width="37" height="37" rx="18.5" stroke="#0F47F2"/>
@@ -1729,6 +1745,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                             }}
                             className="p-2 rounded-full hover:bg-gray-200 transition-colors"
                             aria-label="Archive candidate"
+                            title="Archive candidate"
                           >
                             <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="19" cy="19" r="18.5" stroke="#818283"/>
@@ -1746,6 +1763,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         }}
                         className="p-2 rounded-full hover:bg-gray-200 transition-colors"
                         aria-label="Edit candidate"
+                        title="Edit candidate"
                       >
                         <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="19" cy="19" r="18.5" stroke="#818283"/>
