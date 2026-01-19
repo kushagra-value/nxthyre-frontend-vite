@@ -655,7 +655,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     return shortlistedStage ? (
                       <button
                         onClick={() => handleBulkMoveToStage(shortlistedStage.id)}
-                        className="mx-2 bg-[#0F47F2] px-1.5 py-1.5 font-medium transition-colors"
+                        className="mx-2 bg-[#0F47F2] rounded-lg px-1.5 py-1.5 font-medium transition-colors "
                         aria-label="Bulk shortlist selected candidates"
                       >
                         Shortlist
@@ -1683,7 +1683,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 showToast.error("Shortlisted stage not found");
                               }
                             }}
-                            className="mr-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-colors"
+                            className="mr-2 bg-[#0F47F2] text-white font-medium px-6 py-2 rounded-lg transition-colors"
                             aria-label="Shortlist candidate"
                           >
                             Shortlist
