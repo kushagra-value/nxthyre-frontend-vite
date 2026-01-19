@@ -3069,7 +3069,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               <div className="mt-4 flex items-center">
                                 <button
                                   // onClick={}
-                                  className="p-2 bg-blue-500 text-white rounded-md"
+                                  className="px-2 py-1 bg-blue-500 text-white rounded-md"
                                 >
                                   Shortlist
                                 </button>
@@ -3077,7 +3077,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 {/* Autopilot */}
                                 <button
                                   // onClick={}
-                                  className="p-2 rounded-full"
+                                  className="p-1 rounded-full"
                                 >
                                   <svg
                                     width="38"
@@ -3104,7 +3104,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 {/* Archive */}
                                 <button
                                   // onClick={}
-                                  className="p-2 rounded-full"
+                                  className="p-1 rounded-full border border-[#818283]"
                                 >
                                   <svg
                                     width="18"
@@ -3129,7 +3129,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     setEditingCandidate(candidate);
                                     setShowEditModal(true);
                                   }}
-                                  className="p-2 rounded-full"
+                                  className="p-1 rounded-full"
                                 >
                                   <svg
                                     width="38"
