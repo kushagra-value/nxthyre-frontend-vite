@@ -3066,7 +3066,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               </div>
 
                               {/* Buttons */}
-                              <div className="mt-4 flex items-center">
+                              <div className="mt-4 flex gap-2 items-center">
                                 <button
                                   // onClick={}
                                   className="px-2 py-1 bg-blue-500 text-white rounded-md"
