@@ -591,12 +591,12 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     <div className="bg-white rounded-xl  h-fit">
       <div className="border-b border-gray-200">
         <div className="flex items-center justify-between px-4 pt-4 pb-0">
-          <div className="flex space-x-4 2xl:space-x-6 overflow-x-auto">
+          <div className="flex space-x-4 3xl:space-x-6 overflow-x-auto">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-2 text-sm 2xl:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 focus-visible:border-b-2 focus-visible:border-blue-600 ${
+                className={`py-2 text-sm 3xl:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 focus-visible:border-b-2 focus-visible:border-blue-600 ${
                   activeTab === tab.id
                     ? "text-blue-600 border-blue-500"
                     : "text-gray-600 border-transparent hover:text-gray-700"
@@ -617,7 +617,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         </div>
       </div>
 
-      <div className="p-3 2xl:p-4 border-b border-gray-200">
+      <div className="p-3 3xl:p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             {selectedCandidates.length === 0 ? (
@@ -629,12 +629,12 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   aria-label="Select all candidates on this page"
                 />
-                <span className="text-sm 2xl:text-base text-gray-700 font-medium">Select all on this page</span>
+                <span className="text-sm 3xl:text-base text-gray-700 font-medium">Select all on this page</span>
               </div>
             ) : (
               <>
                 <div className="flex items-center rounded-lg overflow-hidden">
-                  <div className="flex items-center gap-2 2xl:gap-3">
+                  <div className="flex items-center gap-2 3xl:gap-3">
                     <input
                       type="checkbox"
                       checked={true}
@@ -655,7 +655,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     return unContactedStage ? (
                       <button
                         onClick={() => handleBulkMoveToStage(unContactedStage.id)}
-                        className="mx-1 2xl:mx-2 2xl:ml-4 bg-[#0F47F2] text-sm xl:text-base text-white rounded-lg px-2 py-1 2xl:px-6 2xl:py-2 font-medium transition-colors text-nowrap"
+                        className="mx-1 3xl:mx-2 3xl:ml-4 bg-[#0F47F2] text-sm xl:text-base text-white rounded-lg px-2 py-1 3xl:px-6 3xl:py-2 font-medium transition-colors text-nowrap"
                         aria-label="Bulk shortlist selected candidates"
                         title="Bulk Move to Prospect"
                       >
@@ -665,7 +665,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   })()}
 
                   <button
-                    className="p-1 2xl:p-2 rounded-full "
+                    className="p-1 3xl:p-2 rounded-full "
                     aria-label="Move selected candidates to Autopilot (AI Interview)"
                     title="Bulk move to AutoPilot"
                   >
@@ -681,7 +681,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     return archiveStage ? (
                       <button
                         onClick={() => handleBulkMoveToStage(archiveStage.id)}
-                        className="p-1 2xl:p-2 rounded-full text-white transition-colors"
+                        className="p-1 3xl:p-2 rounded-full text-white transition-colors"
                         aria-label="Archive selected candidates"
                         title="Bulk move to Archive"
                       >
@@ -699,11 +699,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               </>
             )}
           </div>
-          <div className="flex space-x-1 2xl:space-x-3">
+          <div className="flex space-x-1 3xl:space-x-3">
             
 
             <button
-              className="px-1.5 py-1.5 bg-white text-gray-400 text-xs 2xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+              className="px-1.5 py-1.5 bg-white text-gray-400 text-xs 3xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
               onClick={() => setShowExportDialog(true)}
               aria-label="Export selected candidates"
               title="Export Selected Candidates"
@@ -714,7 +714,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 viewBox="0 0 15 15"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                className="text-gray-400 text-xs 2xl:text-base font-[400] mr-1"
+                className="text-gray-400 text-xs 3xl:text-base font-[400] mr-1"
               >
                 <path
                   d="M7.84594 1.5587C7.75713 1.46158 7.63163 1.40625 7.5 1.40625C7.36838 1.40625 7.24288 1.46158 7.15407 1.5587L4.65405 4.29307C4.47937 4.48414 4.49264 4.78064 4.6837 4.95533C4.87477 5.13001 5.17127 5.11674 5.34595 4.92568L7.03125 3.08237V10C7.03125 10.2589 7.24113 10.4688 7.5 10.4688C7.75888 10.4688 7.96875 10.2589 7.96875 10V3.08237L9.65407 4.92568C9.82875 5.11674 10.1253 5.13001 10.3163 4.95533C10.5074 4.78064 10.5206 4.48414 10.3459 4.29307L7.84594 1.5587Z"
@@ -730,7 +730,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
             <div className="relative flex space-x-2">
               <button
-                className="px-1.5 py-1.5 bg-white text-gray-400 text-xs 2xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                className="px-1.5 py-1.5 bg-white text-gray-400 text-xs 3xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
                 aria-label="Sort candidates"
                 title="Sort Candidates"
@@ -914,7 +914,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               </p>
             </div>
           )}
-          <p className="text-gray-400 text-xs 2xl:text-base font-[400]">
+          <p className="text-gray-400 text-xs 3xl:text-base font-[400]">
             No candidates found.
           </p>
         </div>
@@ -1078,7 +1078,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                             </div>
                             <div className="flex items-center space-x-2">
                               <div className="relative group">
-                                <p className="text-[16px] font-[400] text-[#0F47F2] mt-1 max-w-[36ch] 2xl:max-w-[48ch] truncate">
+                                <p className="text-[16px] font-[400] text-[#0F47F2] mt-1 max-w-[36ch] 3xl:max-w-[48ch] truncate">
                                   {candidate.headline}
                                   {collegeName && (
                                     <span>
@@ -1158,7 +1158,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                       </div>
                     </div>
                   </div>
-                  <div className="pt-5 pl-12 flex space-x-12 gap-2 text-xs 2xl:text-base font-[400px] ml-1">
+                  <div className="pt-5 pl-12 flex space-x-12 gap-2 text-xs 3xl:text-base font-[400px] ml-1">
                     {candidate?.experience_years && (
                       <div className="flex flex-col">
                         <p className="text-[#A8A8A8] mr-[5px]">Experience</p>
@@ -1781,9 +1781,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         </>
       )}
       {totalPages >= 1 ? (
-        <div className="p-3 2xl:p-4 border-t border-gray-200">
+        <div className="p-3 3xl:p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="text-xs text-gray-400 2xl:text-base font-[400]">
+            <div className="text-xs text-gray-400 3xl:text-base font-[400]">
               Showing {startIndex + 1} to{" "}
               {Math.min(endIndex, totalCount) + startIndex} of {totalCount}{" "}
               candidates
@@ -1828,9 +1828,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
           </div>
         </div>
       ) : (
-        <div className="p-3 2xl:p-4 border-t border-gray-200">
+        <div className="p-3 3xl:p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="text-xs text-gray-400 2xl:text-base font-[400]">
+            <div className="text-xs text-gray-400 3xl:text-base font-[400]">
               Showing {startIndex} to{" "}
               {Math.min(endIndex, totalCount) + startIndex} of {totalCount}{" "}
               candidates
