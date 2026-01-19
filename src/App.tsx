@@ -2376,7 +2376,7 @@ function MainApp() {
                         </div>
                       )}
                       <div className="flex w-full gap-3 h-full">
-                        <div className="lg:w-[25%] sticky order-1 lg:order-1 top-16 self-start will-change-transform z-10">
+                        <div className="2xl:w-[25%] sticky order-1 lg:order-1 top-16 self-start will-change-transform z-10">
                           <FiltersSidebar
                             filters={filters}
                             defaultBoolQuery={defaultBoolQuery}
@@ -2387,7 +2387,7 @@ function MainApp() {
                             isSearchMode={isSearchMode}
                           />
                         </div>
-                        <div className="lg:w-[45%] order-2 lg:order-2 ">
+                        <div className="2xl:w-[45%] order-2 lg:order-2 ">
                           <CandidatesMain
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
@@ -2412,7 +2412,7 @@ function MainApp() {
                           />
                         </div>
                         {/* CandidateDetail remains in its original div with 30% width */}
-                        <div className="lg:w-[30%] order-3 sticky top-16 self-start will-change-transform">
+                        <div className="2xl:w-[30%] order-3 sticky top-16 self-start will-change-transform">
                           <CandidateDetail
                             candidate={selectedCandidate}
                             candidates={candidates}
