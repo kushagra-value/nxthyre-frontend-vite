@@ -2281,7 +2281,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       )}
                                     </div>
                                   </div>
-                                  <div className="flex space-x-2">
+                                  <div className="space-x-2">
                                     <div>
                                       {experienceSummaryTitle && (
                                         <div>
@@ -2305,7 +2305,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           )}
                                     </div>
 
-                                    <div className="flex space-x-1">
+                                    <div className="flex space-x-2">
+                                          <div className="flex space-x-1">
                                       <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563] mt-1">
                                         <MapPin className=" w-4 h-4" />
 
@@ -2332,6 +2333,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           ),
                                         )}
                                       </div>
+                                    </div>
                                     </div>
                                   </div>
                                 </div>
