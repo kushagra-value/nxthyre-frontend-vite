@@ -33,6 +33,7 @@ import {
   Link,
   ArrowDownNarrowWide,
   LogOut,
+  AlarmClock,
 } from "lucide-react";
 import Header from "./Header";
 import { creditService } from "../services/creditService";
@@ -2178,7 +2179,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 onClick={(e) => e.stopPropagation()}
                                 aria-label={`Select  ${fullName}`}
                               />
-                              <div className="border-b border-[#E2E2E2] flex items-center space-x-3 pb-5 w-full">
+                              <div className="border-b border-[#E2E2E2] flex items-center space-x-3 pb-3 w-full">
                                 {/* <div
                                   className={`w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600] `}
                                 >
@@ -2281,7 +2282,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       )}
                                     </div>
                                   </div>
-                                  <div className="space-x-2">
+                                  <div className="">
                                     <div>
                                       {experienceSummaryTitle && (
                                         <div>
@@ -2305,7 +2306,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           )}
                                     </div>
 
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-4 mt-1">
                                       <div className="flex space-x-1">
                                         <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563]">
                                           <MapPin className=" w-4 h-4" />
@@ -2315,7 +2316,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       </div>
 
                                       <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
-                                        <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400]">
+                                        <div className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563]">
+                                          <AlarmClock className=" w-4 h-4" />
                                           {candidate.status_tags.map(
                                             (
                                               tag: {
@@ -2339,7 +2341,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 </div>
                               </div>
                             </div>
-                            <div className="pt-5 pl-12 flex space-x-12 gap-2 text-xs lg:text-base font-[400px] ml-1">
+                            <div className="pt-4 pl-12 flex space-x-12 gap-2 text-xs lg:text-base font-[400px] ml-1">
                               {experienceYears && (
                                 <div className="flex flex-col">
                                   <p className="text-[#A8A8A8] mr-[5px]">
