@@ -1143,7 +1143,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                           </div>
                           <div className="flex space-x-1">
                             <div className="inline-block bg-[#DFFBE2] text-[#00A25E] px-4 py-1.5 rounded-lg text-xl font-medium">
-                                ...%
+                                --%
                             </div>
                           </div>
                         </div>
