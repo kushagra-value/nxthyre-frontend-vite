@@ -1162,17 +1162,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         </p>
                       </div>
                     )}
-                    {/* need to update the current Company Data */}
-                    {candidate?.experience_summary?.duration_years && (
-                      <div className="flex flex-col">
-                        <p className="text-[#A8A8A8] mr-[5px]">
-                          Current Company
-                        </p>
-                        <p className="text-[#4B5563]">
-                          {candidate?.experience_summary?.duration_years} years
-                        </p>
-                      </div>
-                    )}
+                    
                     {candidate.notice_period_summary && (
                       <div className="flex flex-col">
                         <p className="text-[#A8A8A8] mr-[5px]">Notice Period</p>
@@ -1191,13 +1181,23 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     {candidate.current_salary_lpa && (
                       <div className="flex flex-col">
                         <p className="text-[#A8A8A8] mr-[5px]">
-                          Current Salary
+                          Current CTC
                         </p>
                         <p className="text-[#4B5563]">
                           {candidate.current_salary_lpa}
                         </p>
                       </div>
                     )}
+                    
+                      <div className="flex flex-col">
+                        <p className="text-[#A8A8A8] mr-[5px]">
+                          Expected CTC
+                        </p>
+                        <p className="text-[#4B5563]">
+                          --LPA
+                        </p>
+                      </div>
+                    
                   </div>
                   <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
                     <div className="flex items-center space-x-3">
