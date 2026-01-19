@@ -619,7 +619,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
       <div className="p-3 lg:p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center">
             {selectedCandidates.length === 0 ? (
               <div className="flex items-center gap-3">
                 <input
@@ -634,7 +634,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             ) : (
               <>
                 <div className="flex items-center rounded-lg overflow-hidden">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
                       checked={true}
@@ -655,19 +655,16 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     return shortlistedStage ? (
                       <button
                         onClick={() => handleBulkMoveToStage(shortlistedStage.id)}
-                        className="bg-[#0F47F2] px-1.5 py-1.5 font-medium transition-colors"
+                        className="mx-2 bg-[#0F47F2] px-1.5 py-1.5 font-medium transition-colors"
                         aria-label="Bulk shortlist selected candidates"
                       >
                         Shortlist
                       </button>
                     ) : null;
                   })()}
-                </div>
 
-                <div className="flex items-center gap-3">
-                  
                   <button
-                    className="p-3 rounded-full "
+                    className="p-2 rounded-full "
                     aria-label="Move selected candidates to Autopilot (AI Interview)"
                   >
                     <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -682,7 +679,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     return archiveStage ? (
                       <button
                         onClick={() => handleBulkMoveToStage(archiveStage.id)}
-                        className="p-3 rounded-full text-white transition-colors"
+                        className="p-2 rounded-full text-white transition-colors"
                         aria-label="Archive selected candidates"
                       >
                         <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -693,7 +690,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                       </button>
                     ) : null;
                   })()}
+
                 </div>
+ 
               </>
             )}
           </div>
@@ -1671,7 +1670,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                           );
                         })()}
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center">
                       {(() => {
                         const shortlistedStage = pipelineStages.find((stage) => stage.slug === "shortlisted");
                         return (
@@ -1684,7 +1683,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 showToast.error("Shortlisted stage not found");
                               }
                             }}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-colors"
+                            className="mr-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-colors"
                             aria-label="Shortlist candidate"
                           >
                             Shortlist
