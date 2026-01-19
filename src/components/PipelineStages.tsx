@@ -3080,8 +3080,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   className="p-1 rounded-full"
                                 >
                                   <svg
-                                    width="38"
-                                    height="38"
+                                    width="28"
+                                    height="28"
                                     viewBox="0 0 38 38"
                                     fill="none"
                                     xmlns="http://www.w3.org/2000/svg"
@@ -3132,8 +3132,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   className="p-1 rounded-full"
                                 >
                                   <svg
-                                    width="38"
-                                    height="38"
+                                    width="28"
+                                    height="28"
                                     viewBox="0 0 38 38"
                                     fill="none"
                                     xmlns="http://www.w3.org/2000/svg"
