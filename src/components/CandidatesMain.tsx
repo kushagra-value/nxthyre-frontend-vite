@@ -633,8 +633,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               </div>
             ) : (
               <>
-                <div className="flex items-center bg-blue-600 text-white rounded-lg overflow-hidden">
-                  <div className="flex items-center gap-4 px-5 py-3">
+                <div className="flex items-center rounded-lg overflow-hidden">
+                  <div className="flex items-center gap-4">
                     <input
                       type="checkbox"
                       checked={true}
@@ -642,7 +642,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         setSelectedCandidates([]);
                         setSelectAll(false);
                       }}
-                      className="w-4 h-4 text-white bg-white border-white rounded focus:ring-white"
+                      className="w-4 h-4 bg-white text-[#0F47F2] text-xs lg:text-base font-[400] border-white rounded focus:ring-white"
                       aria-label="Deselect all candidates"
                     />
                     <span className="font-medium">
@@ -655,7 +655,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     return shortlistedStage ? (
                       <button
                         onClick={() => handleBulkMoveToStage(shortlistedStage.id)}
-                        className="bg-blue-700 hover:bg-blue-800 px-8 py-3 font-medium transition-colors"
+                        className="bg-[#0F47F2] px-1.5 py-1.5 font-medium transition-colors"
                         aria-label="Bulk shortlist selected candidates"
                       >
                         Shortlist
@@ -667,7 +667,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 <div className="flex items-center gap-3">
                   
                   <button
-                    className="p-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+                    className="p-3 rounded-full "
                     aria-label="Move selected candidates to Autopilot (AI Interview)"
                   >
                     <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -682,7 +682,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     return archiveStage ? (
                       <button
                         onClick={() => handleBulkMoveToStage(archiveStage.id)}
-                        className="p-3 rounded-full bg-gray-600 hover:bg-gray-700 text-white transition-colors"
+                        className="p-3 rounded-full text-white transition-colors"
                         aria-label="Archive selected candidates"
                       >
                         <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -981,7 +981,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                       type="checkbox"
                       checked={selectedCandidates.includes(candidate.id)}
                       onChange={() => handleCandidateSelect(candidate.id)}
-                      className="absolute top-4 w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mb-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                      className="relative bottom-4 w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mb-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                       onClick={(e) => e.stopPropagation()}
                       aria-label={`Select ${candidate.full_name}`}
                     />
