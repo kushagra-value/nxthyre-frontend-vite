@@ -3107,9 +3107,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   className="p-1 rounded-full border border-[#818283]"
                                 >
                                   <svg
-                                    width="18"
-                                    height="17"
-                                    viewBox="0 0 18 17"
+                                    width="16"
+                                    height="15"
+                                    viewBox="0 0 16 15"
                                     fill="none"
                                     xmlns="http://www.w3.org/2000/svg"
                                   >
