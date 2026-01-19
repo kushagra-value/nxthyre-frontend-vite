@@ -272,11 +272,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [currentView, setCurrentView] = useState<"pipeline" | "search">(
-    "pipeline"
+    "pipeline",
   ); // New state for toggle
   const [searchQuery, setSearchQuery] = useState("");
   const [hoveredCandidateId, setHoveredCandidateId] = useState<string | null>(
-    null
+    null,
   );
   const [dropdownSearch, setDropdownSearch] = useState("");
   const sortDropdownRef = useRef<HTMLDivElement>(null);
@@ -292,7 +292,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const [sendVia, setSendVia] = useState("email");
 
   const [loadingStages, setLoadingStages] = useState(false);
-const [stagesError, setStagesError] = useState<string | null>(null);
+  const [stagesError, setStagesError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<
     { id: string; name: string }[]
   >([]);
@@ -309,9 +309,8 @@ const [stagesError, setStagesError] = useState<string | null>(null);
 
   const handleReveal = async (candidateId: string) => {
     try {
-      const premResponse = await candidateService.revealPremiumData(
-        candidateId
-      );
+      const premResponse =
+        await candidateService.revealPremiumData(candidateId);
       const updated = candidates.map((c) =>
         c.candidate.id === candidateId
           ? {
@@ -328,12 +327,12 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                 },
               },
             }
-          : c
+          : c,
       );
       setCandidates(updated);
       if (selectedCandidate?.candidate.id === candidateId) {
         fetchCandidateDetails(
-          updated.find((c) => c.candidate.id === candidateId)?.id || 0
+          updated.find((c) => c.candidate.id === candidateId)?.id || 0,
         );
       }
       return premResponse.premium_data;
@@ -393,18 +392,18 @@ const [stagesError, setStagesError] = useState<string | null>(null);
 
   // Fetch stages when activeJobId changes
   useEffect(() => {
-  if (activeJobId !== null) {
-    setLoadingStages(true);
-    fetchStages(activeJobId)
-      .catch((error) => {
-        console.error("Error fetching stages:", error);
-        setStages([]);
-      })
-      .finally(() => {
-        setLoadingStages(false);
-      });
-  }
-}, [activeJobId]);
+    if (activeJobId !== null) {
+      setLoadingStages(true);
+      fetchStages(activeJobId)
+        .catch((error) => {
+          console.error("Error fetching stages:", error);
+          setStages([]);
+        })
+        .finally(() => {
+          setLoadingStages(false);
+        });
+    }
+  }, [activeJobId]);
 
   useEffect(() => {
     if (viewMode === "prospect") {
@@ -418,7 +417,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
       const pdfFiles = filesArray.filter(
-        (file) => file.type === "application/pdf"
+        (file) => file.type === "application/pdf",
       );
       if (pdfFiles.length !== filesArray.length) {
         showToast.error("Only PDF files are allowed.");
@@ -444,7 +443,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
             color: "#fff",
             fontWeight: "500",
           },
-        }
+        },
       );
       setShowUploadModal(false);
       setUploadFiles(null);
@@ -482,7 +481,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
     if (activeJobId !== null && selectedStage) {
       fetchCandidates(
         activeJobId,
-        selectedStage.toLowerCase().replace(" ", "-")
+        selectedStage.toLowerCase().replace(" ", "-"),
       );
     }
   }, [activeJobId, selectedStage, sortBy]);
@@ -529,7 +528,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
         try {
           const res = await jobPostService.searchAutosuggest(
             searchQuery,
-            activeJobId
+            activeJobId,
           );
           setSuggestions(res);
         } catch (error) {
@@ -554,7 +553,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
     ) {
       fetchCandidates(
         activeJobId,
-        selectedStage.toLowerCase().replace(" ", "-")
+        selectedStage.toLowerCase().replace(" ", "-"),
       );
       setSelectedCandidate(null);
     }
@@ -564,7 +563,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
   const fetchStages = async (jobId: number) => {
     try {
       const response = await apiClient.get(
-        `/jobs/applications/stages/?job_id=${jobId}`
+        `/jobs/applications/stages/?job_id=${jobId}`,
       );
       const data: Stage[] = response.data;
       setStages(data.sort((a, b) => a.sort_order - b.sort_order));
@@ -610,7 +609,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
   const fetchCandidateDetails = async (applicationId: number) => {
     try {
       const response = await apiClient.get(
-        `/jobs/applications/${applicationId}/`
+        `/jobs/applications/${applicationId}/`,
       );
       const data = response.data;
       const mappedCandidate: PipelineCandidate = mapCandidateDetails(data);
@@ -633,7 +632,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
         if (cand && activeJobId !== null) {
           await candidateService.scheduleCodingAssessmentEmail(
             cand.candidate.id,
-            activeJobId
+            activeJobId,
           );
         }
       }
@@ -641,7 +640,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
       if (activeJobId !== null) {
         fetchCandidates(
           activeJobId,
-          selectedStage.toLowerCase().replace(" ", "-")
+          selectedStage.toLowerCase().replace(" ", "-"),
         );
         fetchStages(activeJobId);
       }
@@ -662,7 +661,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
       if (activeJobId !== null) {
         fetchCandidates(
           activeJobId,
-          selectedStage.toLowerCase().replace(" ", "-")
+          selectedStage.toLowerCase().replace(" ", "-"),
         );
         fetchStages(activeJobId);
       }
@@ -673,7 +672,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
 
   const bulkMoveCandidates = async (
     applicationIds: number[],
-    stageId: number
+    stageId: number,
   ) => {
     try {
       await apiClient.post("/jobs/bulk-move-stage/", {
@@ -689,17 +688,17 @@ const [stagesError, setStagesError] = useState<string | null>(null);
             if (cand && activeJobId !== null) {
               await candidateService.scheduleCodingAssessmentEmail(
                 cand.candidate.id,
-                activeJobId
+                activeJobId,
               );
             }
-          })
+          }),
         );
       }
 
       if (activeJobId !== null) {
         fetchCandidates(
           activeJobId,
-          selectedStage.toLowerCase().replace(" ", "-")
+          selectedStage.toLowerCase().replace(" ", "-"),
         );
         fetchStages(activeJobId);
       }
@@ -726,7 +725,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
   const mapStageData = (
     slug: string,
     contextualDetails: any,
-    aiInterviewReport?: any
+    aiInterviewReport?: any,
   ) => {
     switch (slug) {
       case "applied":
@@ -799,7 +798,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
     const mappedStageData = mapStageData(
       data.current_stage_details.slug,
       data.contextual_details,
-      data.candidate.ai_interview_report
+      data.candidate.ai_interview_report,
     );
 
     const premiumData = candidateData.premium_data || {};
@@ -893,7 +892,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
           (skill: any) => ({
             name: skill.skill,
             endorsementCount: skill.number_of_endorsements,
-          })
+          }),
         ),
         endorsements: candidateData.skills_data.endorsements.map(
           (end: any) => ({
@@ -903,7 +902,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
             skill_endorsed: end.skill_endorsed,
             endorser_company: end.endorser_company,
             message: end.message,
-          })
+          }),
         ),
         recommendations: {
           received: candidateData.recommendations,
@@ -938,7 +937,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
   const mapToComment = (
     note: any,
     index: number,
-    type: "feedback" | "note"
+    type: "feedback" | "note",
   ) => ({
     id: `${type}-${index}`,
     text: note.comment || "",
@@ -964,7 +963,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
     setSelectedCandidates((prev) =>
       prev.includes(candidateId)
         ? prev.filter((id) => id !== candidateId)
-        : [...prev, candidateId]
+        : [...prev, candidateId],
     );
   };
 
@@ -1397,9 +1396,9 @@ const [stagesError, setStagesError] = useState<string | null>(null);
   ];
 
   const filteredStages = stages.filter(
-  (stage) =>
-    stage.stage_type === "SYSTEM" &&
-    !["Uncontacted", "Invites Sent", "Archives"].includes(stage.name)
+    (stage) =>
+      stage.stage_type === "SYSTEM" &&
+      !["Uncontacted", "Invites Sent", "Archives"].includes(stage.name),
   );
 
   const selectedCategory = categories.find((cat) => cat.id === activeJobId);
@@ -1473,7 +1472,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
         setCandidates([]);
         const res = await jobPostService.getSearchedCandidate(
           sug.id,
-          activeJobId
+          activeJobId,
         );
         const stageName = res.current_stage.name;
         setSelectedStage(stageName);
@@ -1574,7 +1573,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                           .filter((category) =>
                             category.name
                               .toLowerCase()
-                              .includes(dropdownSearch.toLowerCase())
+                              .includes(dropdownSearch.toLowerCase()),
                           )
                           .map((category) => (
                             <div
@@ -1650,10 +1649,12 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                       </div>
                     ))}
                   </div>
-                ) :stagesError ? (
+                ) : stagesError ? (
                   <div className="p-8 text-center text-gray-500">
                     <AlertCircle className="w-16 h-16 mx-auto mb-4 text-red-400" />
-                    <p className="text-lg font-medium text-gray-700">{stagesError}</p>
+                    <p className="text-lg font-medium text-gray-700">
+                      {stagesError}
+                    </p>
                     <p className="text-sm mt-2 text-gray-600">
                       Please check your connection or try again.
                     </p>
@@ -1664,74 +1665,78 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                       Retry
                     </button>
                   </div>
-                ):filteredStages.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
-                  <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                  <p className="text-lg font-medium text-gray-700">No stages found</p>
-                  <p className="text-sm mt-2 text-gray-600">
-                    This job does not have any pipeline stages configured yet.
-                  </p>
-                </div>
-              ) : (
-
+                ) : filteredStages.length === 0 ? (
+                  <div className="p-8 text-center text-gray-500">
+                    <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                    <p className="text-lg font-medium text-gray-700">
+                      No stages found
+                    </p>
+                    <p className="text-sm mt-2 text-gray-600">
+                      This job does not have any pipeline stages configured yet.
+                    </p>
+                  </div>
+                ) : (
                   <>
-                  <button
-                    onClick={() => {
-                      setViewMode("prospect");
-                      setSelectedStage("Uncontacted");
-                      setActiveStageTab("uncontacted");
-                    }}
-                    className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                      viewMode === "prospect"
-                        ? "bg-blue-50 text-blue-700 border border-blue-200"
-                        : "text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {viewMode === "prospect" && (
-                      <div className="w-1 h-8 bg-blue-500 rounded-tr-xl rounded-br-xl rounded" />
-                    )}
+                    <button
+                      onClick={() => {
+                        setViewMode("prospect");
+                        setSelectedStage("Uncontacted");
+                        setActiveStageTab("uncontacted");
+                      }}
+                      className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                        viewMode === "prospect"
+                          ? "bg-blue-50 text-blue-700 border border-blue-200"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      {viewMode === "prospect" && (
+                        <div className="w-1 h-8 bg-blue-500 rounded-tr-xl rounded-br-xl rounded" />
+                      )}
 
-                    {(() => {
-                      const ProspectIcon = getStageIcon("Uncontacted");
-                      return (
-                        <ProspectIcon
-                          className={`w-4 h-4 ${
+                      {(() => {
+                        const ProspectIcon = getStageIcon("Uncontacted");
+                        return (
+                          <ProspectIcon
+                            className={`w-4 h-4 ${
+                              viewMode === "prospect"
+                                ? "text-blue-600"
+                                : "text-gray-600"
+                            }`}
+                          />
+                        );
+                      })()}
+
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex flex-col items-start justify-center">
+                          <span className="flex-1 font-medium">Prospect</span>
+
+                          <p className={`text-xs text-blue-600`}>
+                            {stages.find((s) =>
+                              ["Invites Sent"].includes(s.name),
+                            )?.activity_update ||
+                              stages.find((s) =>
+                                ["Uncontacted"].includes(s.name),
+                              )?.activity_update}
+                          </p>
+                        </div>
+                        <span
+                          className={`px-2 py-1 text-sm ${
                             viewMode === "prospect"
-                              ? "text-blue-600"
-                              : "text-gray-600"
+                              ? "text-blue-800"
+                              : "text-gray-400"
                           }`}
-                        />
-                      );
-                    })()}
-
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex flex-col items-start justify-center">
-                        <span className="flex-1 font-medium">Prospect</span>
-
-                        <p className={`text-xs text-blue-600`}>
-                          {stages.find((s) => ["Invites Sent"].includes(s.name))
-                            ?.activity_update ||
+                        >
+                          {[
                             stages.find((s) => ["Uncontacted"].includes(s.name))
-                              ?.activity_update}
-                        </p>
+                              ?.candidate_count || 0,
+                            stages.find((s) =>
+                              ["Invites Sent"].includes(s.name),
+                            )?.candidate_count || 0,
+                          ].reduce((sum, count) => sum + count, 0)}
+                        </span>
                       </div>
-                      <span
-                        className={`px-2 py-1 text-sm ${
-                          viewMode === "prospect"
-                            ? "text-blue-800"
-                            : "text-gray-400"
-                        }`}
-                      >
-                        {[
-                          stages.find((s) => ["Uncontacted"].includes(s.name))
-                            ?.candidate_count || 0,
-                          stages.find((s) => ["Invites Sent"].includes(s.name))
-                            ?.candidate_count || 0,
-                        ].reduce((sum, count) => sum + count, 0)}
-                      </span>
-                    </div>
-                  </button>
-                  {filteredStages.map((stage) => {
+                    </button>
+                    {filteredStages.map((stage) => {
                       const Icon = getStageIcon(stage.name);
                       const isSelected = selectedStage === stage.name;
                       const description = getStageDescription(stage.name);
@@ -1780,7 +1785,6 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                         </button>
                       );
                     })}
-                  
                   </>
                 )}
               </div>
@@ -1835,7 +1839,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                         setSelectedCandidates(
                           e.target.checked
                             ? currentCandidates.map((c) => c.id.toString())
-                            : []
+                            : [],
                         );
                       }}
                       className="w-4 h-4 text-blue-200 border-gray-200 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 "
@@ -1852,7 +1856,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                           bulkMoveCandidates(
                             selectedCandidates.map((id) => parseInt(id)),
                             stages.find((s) => s.name === selectedStage)?.id ??
-                              0
+                              0,
                           )
                         }
                         className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -1922,7 +1926,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                       </div>
                     ) : (
                       ["AI Interview", "Coding Contest"].includes(
-                        selectedStage
+                        selectedStage,
                       ) && (
                         <div className="relative">
                           <button
@@ -1970,7 +1974,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                                       onChange={(e) => {
                                         const value = e.target.value.replace(
                                           /[^0-9]/g,
-                                          ""
+                                          "",
                                         );
                                         if (
                                           value === "" ||
@@ -2163,11 +2167,11 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                               <input
                                 type="checkbox"
                                 checked={selectedCandidates.includes(
-                                  candidate.id.toString()
+                                  candidate.id.toString(),
                                 )}
                                 onChange={() =>
                                   handleCandidateCheckbox(
-                                    candidate.id.toString()
+                                    candidate.id.toString(),
                                   )
                                 }
                                 className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mb-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2175,7 +2179,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                                 aria-label={`Select  ${fullName}`}
                               />
                               <div className="border-b border-[#E2E2E2] flex items-center space-x-3 pb-5 w-full">
-                                <div
+                                {/* <div
                                   className={`w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-base font-[600] `}
                                 >
                                   {profilePicture ? (
@@ -2187,7 +2191,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                                   ) : (
                                     avatar?.slice(0, 2)
                                   )}
-                                </div>
+                                </div> */}
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center justify-between flex-wrap gap-2 pr-4">
                                     <div className="flex items-center space-x-2 flex-wrap">
@@ -2276,6 +2280,31 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                                         </div>
                                       )}
                                     </div>
+                                  </div>
+                                  <div className="flex space-x-2">
+                                    <div>
+                                      {experienceSummaryTitle && (
+                                        <div>
+                                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                                            {experienceSummaryTitle}
+                                          </p>
+                                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
+                                            |
+                                          </p>
+                                        </div>
+                                      )
+                                        ? educationSummaryTitle && (
+                                            <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                                              {educationSummaryTitle}
+                                            </p>
+                                          )
+                                        : candidate_headline && (
+                                            <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[48ch] truncate">
+                                              {candidate_headline}
+                                            </p>
+                                          )}
+                                    </div>
+
                                     <div className="flex space-x-1">
                                       <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563] mt-1">
                                         <MapPin className=" w-4 h-4" />
@@ -2283,28 +2312,27 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                                         {location?.split(",")[0]}
                                       </p>
                                     </div>
-                                  </div>
-                                  <div className="flex space-x-2">
-                                    {experienceSummaryTitle && (
-                                      <div>
-                                        <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
-                                          {experienceSummaryTitle}
-                                        </p>
-                                        <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1">
-                                          |
-                                        </p>
-                                      </div>
-                                    )
-                                      ? educationSummaryTitle && (
-                                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
-                                            {educationSummaryTitle}
-                                          </p>
-                                        )
-                                      : candidate_headline && (
-                                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[48ch] truncate">
-                                            {candidate_headline}
-                                          </p>
+
+                                    <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
+                                      <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400]">
+                                        {candidate.status_tags.map(
+                                          (
+                                            tag: {
+                                              text: string;
+                                              color: string;
+                                            },
+                                            idx: number,
+                                          ) => (
+                                            <span
+                                              key={idx}
+                                              className={`text-${tag.color}-500`}
+                                            >
+                                              {tag.text}
+                                            </span>
+                                          ),
                                         )}
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -2350,7 +2378,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                                       .map(
                                         (word: string) =>
                                           word.charAt(0).toUpperCase() +
-                                          word.slice(1)
+                                          word.slice(1),
                                       )
                                       .join(" ")}
                                   </p>
@@ -2396,7 +2424,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                                                 if (finalUrl)
                                                   window.open(
                                                     finalUrl,
-                                                    "_blank"
+                                                    "_blank",
                                                   );
                                               },
                                             });
@@ -2461,7 +2489,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                                                 if (finalUrl)
                                                   window.open(
                                                     finalUrl,
-                                                    "_blank"
+                                                    "_blank",
                                                   );
                                               },
                                             });
@@ -2526,7 +2554,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                                                 if (finalUrl)
                                                   window.open(
                                                     finalUrl,
-                                                    "_blank"
+                                                    "_blank",
                                                   );
                                               },
                                             });
@@ -2587,7 +2615,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                                                 if (finalUrl)
                                                   window.open(
                                                     finalUrl,
-                                                    "_blank"
+                                                    "_blank",
                                                   );
                                               },
                                             });
@@ -2660,7 +2688,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                                                 if (finalUrl)
                                                   window.open(
                                                     finalUrl,
-                                                    "_blank"
+                                                    "_blank",
                                                   );
                                               },
                                             });
@@ -2720,7 +2748,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                                                 if (finalUrl)
                                                   window.open(
                                                     finalUrl,
-                                                    "_blank"
+                                                    "_blank",
                                                   );
                                               },
                                             });
@@ -2776,7 +2804,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                                                 if (finalUrl)
                                                   window.open(
                                                     finalUrl,
-                                                    "_blank"
+                                                    "_blank",
                                                   );
                                               },
                                             });
@@ -2869,7 +2897,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                                                 if (finalUrl)
                                                   window.open(
                                                     finalUrl,
-                                                    "_blank"
+                                                    "_blank",
                                                   );
                                               },
                                             });
@@ -2927,7 +2955,7 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                                                 if (finalUrl)
                                                   window.open(
                                                     finalUrl,
-                                                    "_blank"
+                                                    "_blank",
                                                   );
                                               },
                                             });
@@ -2951,23 +2979,6 @@ const [stagesError, setStagesError] = useState<string | null>(null);
                                       </button>
                                     );
                                   })()}
-                              </div>
-                              <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
-                                <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400]">
-                                  {candidate.status_tags.map(
-                                    (
-                                      tag: { text: string; color: string },
-                                      idx: number
-                                    ) => (
-                                      <span
-                                        key={idx}
-                                        className={`text-${tag.color}-500`}
-                                      >
-                                        {tag.text}
-                                      </span>
-                                    )
-                                  )}
-                                </div>
                               </div>
                             </div>
                           </div>
