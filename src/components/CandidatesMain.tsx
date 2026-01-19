@@ -1158,7 +1158,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                       </div>
                     </div>
                   </div>
-                  <div className="pt-5 pl-12 flex space-x-12 gap-2 text-xs lg:text-base font-[400px] ml-1">
+                  <div className="pt-5 pl-12 flex space-x-12 gap-2 text-xs 2xl:text-base font-[400px] ml-1">
                     {candidate?.experience_years && (
                       <div className="flex flex-col">
                         <p className="text-[#A8A8A8] mr-[5px]">Experience</p>
