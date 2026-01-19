@@ -16,6 +16,8 @@ import {
   Share,
   ArrowDownNarrowWide,
   ShareIcon,
+  Upload, 
+  Trash2,
 } from "lucide-react";
 
 import {
@@ -186,6 +188,51 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       setSelectedCandidates(currentPageCandidates);
     } else {
       setSelectedCandidates([]);
+    }
+  };
+
+
+  const handleBulkMoveToStage = async (stageId: number) => {
+    if (selectedCandidates.length === 0) {
+      showToast.error("No candidates selected");
+      return;
+    }
+
+    const stage = pipelineStages.find((s) => s.id === stageId);
+    if (!stage) {
+      showToast.error("Target stage not found");
+      return;
+    }
+
+    let updatedCandidates = [...candidates];
+    let removedCount = 0;
+
+    for (const candidateId of selectedCandidates) {
+      try {
+        await candidateService.saveToPipeline(parseInt(jobId), candidateId, stageId);
+        updatedCandidates = updatedCandidates.filter((c) => c.id !== candidateId);
+        removedCount++;
+      } catch (error: any) {
+        console.error(`Failed to move candidate ${candidateId}:`, error.message);
+        // Individual errors are silently ignored (e.g., candidate already in stage)
+      }
+    }
+
+    if (removedCount > 0) {
+      onCandidatesUpdate(updatedCandidates, totalCount - removedCount);
+      showToast.success(`Moved ${removedCount} candidate${removedCount !== 1 ? "s" : ""} to ${stage.name}`);
+
+      if (removedCount === selectedCandidates.length) {
+        setSelectedCandidates([]);
+        setSelectAll(false);
+      } else {
+        const remainingIds = selectedCandidates.filter((id) =>
+          updatedCandidates.some((c) => c.id === id)
+        );
+        setSelectedCandidates(remainingIds);
+      }
+    } else {
+      showToast.error("Failed to move any candidates");
     }
   };
 
@@ -572,44 +619,86 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
       <div className="p-3 lg:p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              checked={selectAll}
-              onChange={(e) => handleSelectAll(e.target.checked)}
-              className="w-4 h-4 text-blue-200 border-gray-200 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 "
-              aria-label="Select all candidates"
-            />
-            <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">
-              Select all on this page
-            </span>
-          </label>
-          <div className="flex space-x-3">
-            {selectedCandidates.length > 0 && (
-              <button
-                className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                onClick={handleBulkAddToPipeline}
-                aria-label="Add selected candidates to pipeline"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  className="mr-1"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M8 12h8" />
-                  <path d="M12 8v8" />
-                </svg>
-                Add To Pipeline
-              </button>
+          <div className="flex items-center gap-6">
+            {selectedCandidates.length === 0 ? (
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  aria-label="Select all candidates on this page"
+                />
+                <span className="text-gray-700 font-medium">Select all on this page</span>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center bg-blue-600 text-white rounded-lg overflow-hidden">
+                  <div className="flex items-center gap-4 px-5 py-3">
+                    <input
+                      type="checkbox"
+                      checked={true}
+                      onChange={() => {
+                        setSelectedCandidates([]);
+                        setSelectAll(false);
+                      }}
+                      className="w-4 h-4 text-white bg-white border-white rounded focus:ring-white"
+                      aria-label="Deselect all candidates"
+                    />
+                    <span className="font-medium">
+                      {selectedCandidates.length} Candidate{selectedCandidates.length !== 1 ? "s" : ""} Selected
+                    </span>
+                  </div>
+
+                  {(() => {
+                    const shortlistedStage = pipelineStages.find((stage) => stage.slug === "shortlisted");
+                    return shortlistedStage ? (
+                      <button
+                        onClick={() => handleBulkMoveToStage(shortlistedStage.id)}
+                        className="bg-blue-700 hover:bg-blue-800 px-8 py-3 font-medium transition-colors"
+                        aria-label="Bulk shortlist selected candidates"
+                      >
+                        Shortlist
+                      </button>
+                    ) : null;
+                  })()}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  
+                  <button
+                    className="p-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+                    aria-label="Move selected candidates to Autopilot (AI Interview)"
+                  >
+                    <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0.5" y="0.5" width="37" height="37" rx="18.5" stroke="#0F47F2"/>
+                    <path d="M19 7L22 15.1429L31 19L22 22L19 31L16 22L7 19L16 15.1429L19 7Z" fill="#0F47F2"/>
+                    </svg>
+
+                  </button>
+                    
+                  {(() => {
+                    const archiveStage = pipelineStages.find((stage) => stage.slug === "archives");
+                    return archiveStage ? (
+                      <button
+                        onClick={() => handleBulkMoveToStage(archiveStage.id)}
+                        className="p-3 rounded-full bg-gray-600 hover:bg-gray-700 text-white transition-colors"
+                        aria-label="Archive selected candidates"
+                      >
+                        <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="19" cy="19" r="18.5" stroke="#818283"/>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12.3276 10.9102C12.34 10.9102 12.3523 10.9102 12.3647 10.9102L25.6717 10.9102C26.0307 10.9101 26.3598 10.9101 26.6275 10.9461C26.9223 10.9857 27.2339 11.079 27.4902 11.3353C27.7466 11.5916 27.8398 11.9032 27.8794 12.198C27.9154 12.4657 27.9154 12.7948 27.9153 13.1538V13.228C27.9154 13.587 27.9154 13.9161 27.8794 14.1838C27.8398 14.4787 27.7466 14.7903 27.4902 15.0466C27.2466 15.2902 26.9529 15.3865 26.6713 15.4295V19.8726C26.6713 21.3968 26.6713 22.604 26.5443 23.5489C26.4135 24.5213 26.1381 25.3083 25.5175 25.929C24.8968 26.5496 24.1098 26.825 23.1374 26.9558C22.1926 27.0828 20.9853 27.0828 19.4611 27.0828H18.5382C17.014 27.0828 15.8068 27.0828 14.8619 26.9558C13.8896 26.825 13.1026 26.5496 12.4819 25.929C11.8612 25.3083 11.5858 24.5213 11.455 23.5489C11.328 22.604 11.328 21.3968 11.328 19.8726V15.4295C11.0464 15.3865 10.7527 15.2902 10.5091 15.0466C10.2528 14.7903 10.1595 14.4787 10.1199 14.1838C10.0839 13.9161 10.0839 13.587 10.084 13.228C10.084 13.2157 10.084 13.2033 10.084 13.1909C10.084 13.1785 10.084 13.1661 10.084 13.1538C10.0839 12.7948 10.0839 12.4657 10.1199 12.198C10.1595 11.9032 10.2528 11.5916 10.5091 11.3353C10.7654 11.079 11.077 10.9857 11.3718 10.9461C11.6396 10.9101 11.9687 10.9101 12.3276 10.9102ZM12.5721 15.4717V19.8258C12.5721 21.4073 12.5734 22.5308 12.688 23.3831C12.8002 24.2175 13.0106 24.6983 13.3616 25.0493C13.7126 25.4002 14.1933 25.6107 15.0277 25.7228C15.88 25.8374 17.0035 25.8387 18.585 25.8387H19.4143C20.9958 25.8387 22.1193 25.8374 22.9717 25.7228C23.806 25.6107 24.2868 25.4002 24.6378 25.0493C24.9888 24.6983 25.1992 24.2175 25.3113 23.3831C25.4259 22.5308 25.4272 21.4073 25.4272 19.8258V15.4717H12.5721ZM11.3888 12.2149L11.3908 12.2138C11.3924 12.213 11.3952 12.2116 11.3993 12.2099C11.4174 12.2025 11.4575 12.1898 11.5376 12.179C11.7124 12.1555 11.9562 12.1542 12.3647 12.1542H25.6346C26.0431 12.1542 26.287 12.1555 26.4617 12.179C26.5418 12.1898 26.582 12.2025 26.6 12.2099C26.6042 12.2116 26.6069 12.213 26.6085 12.2138L26.6106 12.2149L26.6117 12.217C26.6126 12.2186 26.6139 12.2213 26.6156 12.2255C26.623 12.2436 26.6357 12.2837 26.6465 12.3638C26.67 12.5385 26.6713 12.7824 26.6713 13.1909C26.6713 13.5995 26.67 13.8433 26.6465 14.0181C26.6357 14.0982 26.623 14.1383 26.6156 14.1563C26.6139 14.1605 26.6126 14.1633 26.6117 14.1649L26.6106 14.1669L26.6085 14.168C26.6069 14.1689 26.6042 14.1702 26.6 14.1719C26.582 14.1794 26.5418 14.192 26.4617 14.2028C26.287 14.2263 26.0431 14.2276 25.6346 14.2276H12.3647C11.9562 14.2276 11.7124 14.2263 11.5376 14.2028C11.4575 14.192 11.4174 14.1794 11.3993 14.1719C11.3952 14.1702 11.3924 14.1689 11.3908 14.168L11.3888 14.1669L11.3876 14.1649C11.3868 14.1633 11.3855 14.1605 11.3837 14.1563C11.3763 14.1383 11.3636 14.0982 11.3529 14.0181C11.3294 13.8433 11.328 13.5995 11.328 13.1909C11.328 12.7824 11.3294 12.5385 11.3529 12.3638C11.3636 12.2837 11.3763 12.2436 11.3837 12.2255C11.3855 12.2213 11.3868 12.2186 11.3876 12.217L11.3888 12.2149ZM11.3888 14.1669C11.3884 14.1665 11.3886 14.1666 11.3888 14.1669V14.1669ZM17.7375 17.1304H20.2618C20.4394 17.1304 20.6027 17.1304 20.7398 17.1397C20.8872 17.1498 21.0492 17.1727 21.2138 17.2409C21.5695 17.3882 21.852 17.6707 21.9993 18.0264C22.0675 18.191 22.0904 18.353 22.1005 18.5003C22.1098 18.6374 22.1098 18.8007 22.1098 18.9784V19.0145C22.1098 19.1922 22.1098 19.3555 22.1005 19.4926C22.0904 19.64 22.0675 19.8019 21.9993 19.9666C21.852 20.3222 21.5695 20.6048 21.2138 20.7521C21.0492 20.8202 20.8872 20.8431 20.7398 20.8533C20.6027 20.8625 20.4394 20.8625 20.2618 20.8625H17.7375C17.5599 20.8625 17.3966 20.8625 17.2595 20.8533C17.1122 20.8431 16.9501 20.8202 16.7855 20.7521C16.4299 20.6048 16.1473 20.3222 16 19.9666C15.9318 19.8019 15.9089 19.64 15.8989 19.4926C15.8895 19.3555 15.8895 19.1922 15.8896 19.0145V18.9784C15.8895 18.8007 15.8895 18.6374 15.8989 18.5003C15.9089 18.353 15.9318 18.191 16 18.0264C16.1473 17.6707 16.4299 17.3882 16.7855 17.2409C16.9501 17.1727 17.1122 17.1498 17.2595 17.1397C17.3966 17.1304 17.5599 17.1304 17.7375 17.1304ZM17.2591 18.3913C17.2103 18.4123 17.1714 18.4512 17.1504 18.4999C17.1489 18.5061 17.1438 18.5296 17.14 18.585C17.1339 18.6746 17.1336 18.7948 17.1336 18.9965C17.1336 19.1982 17.1339 19.3183 17.14 19.4079C17.1438 19.4633 17.1489 19.4869 17.1504 19.493C17.1714 19.5418 17.2103 19.5807 17.2591 19.6017C17.2652 19.6032 17.2887 19.6083 17.3442 19.612C17.4337 19.6182 17.5539 19.6185 17.7556 19.6185H20.2437C20.4454 19.6185 20.5656 19.6182 20.6552 19.612C20.7106 19.6083 20.7341 19.6032 20.7403 19.6017C20.789 19.5807 20.8279 19.5418 20.8489 19.493C20.8505 19.4869 20.8555 19.4633 20.8593 19.4079C20.8654 19.3183 20.8657 19.1982 20.8657 18.9965C20.8657 18.7948 20.8654 18.6746 20.8593 18.585C20.8555 18.5296 20.8505 18.5061 20.8489 18.4999C20.8279 18.4512 20.789 18.4123 20.7403 18.3913C20.7341 18.3897 20.7106 18.3846 20.6552 18.3809C20.5656 18.3748 20.4454 18.3744 20.2437 18.3744H17.7556C17.5539 18.3744 17.4337 18.3748 17.3442 18.3809C17.2887 18.3846 17.2652 18.3897 17.2591 18.3913Z" fill="#818283"/>
+                        </svg>
+
+                      </button>
+                    ) : null;
+                  })()}
+                </div>
+              </>
             )}
+          </div>
+          <div className="flex space-x-3">
+            
 
             <button
               className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -887,12 +976,12 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                       </svg>
                     </button>
                   )}
-                  <div className="flex px-4 items-center space-x-3">
+                  <div className="relative flex px-4 items-center space-x-3">
                     <input
                       type="checkbox"
                       checked={selectedCandidates.includes(candidate.id)}
                       onChange={() => handleCandidateSelect(candidate.id)}
-                      className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mb-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                      className="absolute top-4 w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mb-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                       onClick={(e) => e.stopPropagation()}
                       aria-label={`Select ${candidate.full_name}`}
                     />
@@ -1582,172 +1671,78 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                           );
                         })()}
                     </div>
-                    {/* <div className="rounded-md flex space-x-1 border border-blue-400 hover:border-blue-600 transition-colors">
+                    <div className="flex items-center gap-3">
                       {(() => {
-                        const isInbound = activeTab === "inbound";
-                        const codingRoundStage = pipelineStages.find(
-                          (stage) => stage.slug === "coding-contest"
-                        );
-
-                        // For inbound: default action is "Send Coding Round" (targets the coding-contest stage if it exists)
-                        // For other tabs: keep existing behavior (hardcoded stage 3882)
-                        const defaultStageId = isInbound
-                          ? codingRoundStage?.id ?? undefined
-                          : 3882;
-
-                        const buttonText = isInbound
-                          ? codingRoundStage
-                            ? "Send Coding Round"
-                            : "Add to Pipeline" // fallback text if coding stage missing
-                          : "Save to Pipeline";
-
-                        const stagesToShow = getStagesToShow(isInbound);
-
+                        const shortlistedStage = pipelineStages.find((stage) => stage.slug === "shortlisted");
                         return (
-                          <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (shortlistedStage) {
+                                handleSaveToPipeline(candidate.id, shortlistedStage.id);
+                              } else {
+                                showToast.error("Shortlisted stage not found");
+                              }
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-colors"
+                            aria-label="Shortlist candidate"
+                          >
+                            Shortlist
+                          </button>
+                        );
+                      })()}
+
+                      
                       <button
-                        className="pl-3 pr-2 py-1.5 text-blue-600 text-sm font-medium flex items-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleSaveToPipeline(candidate.id, defaultStageId);
+                          
                         }}
-                        aria-label={`${buttonText} for ${candidate.full_name}`}
+                        className="p-2 rounded-full hover:bg-gray-200 transition-colors"
+                        aria-label="Autopilot"
                       >
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="text-[#0F47F2] mr-2"
-                        >
-                          <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+                        <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="0.5" y="0.5" width="37" height="37" rx="18.5" stroke="#0F47F2"/>
+                        <path d="M19 7L22 15.1429L31 19L22 22L19 31L16 22L7 19L16 15.1429L19 7Z" fill="#0F47F2"/>
                         </svg>
-                        Save to Pipeline
+
                       </button>
-                      <div className="w-px bg-blue-500 my-1"></div>
-                      <div className="relative">
-                        <button
-                          className="pl-1.5 pr-2 py-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                          onClick={(e) => handleDropdownToggle(candidate.id, e)}
-                          aria-label={`Add ${candidate.full_name} to pipeline stages`}
-                        >
-                          <ChevronDown className="w-4 h-4 ml-1 mt-[2px] text-blue-600" />
-                        </button>
-                        {showDropdown === candidate.id && (
-                          <div
-                            ref={dropdownRef}
-                            className="absolute mt-2 right-0 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+
+                      {(() => {
+                        const archiveStage = pipelineStages.find((stage) => stage.slug === "archives");
+                        return archiveStage ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSaveToPipeline(candidate.id, archiveStage.id);
+                            }}
+                            className="p-2 rounded-full hover:bg-gray-200 transition-colors"
+                            aria-label="Archive candidate"
                           >
-                            <div className="py-1">
-                              {stagesToShow.map((stage) => (
-                                <button
-                                  key={stage.id}
-                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSaveToPipeline(candidate.id, stage.id);
-                                  }}
-                                  aria-label={`Add ${candidate.full_name} to ${getStageDisplayName(stage)} stage`}
-                                >
-                                  {getStageDisplayName(stage)}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      </>
-                      );
-                    })()}
-                    </div> */}
-                    {/* // Update the button logic as follows: */}
-                    <div className="flex gap-2">
-                      <div className="rounded-md flex space-x-1 border border-blue-400 hover:border-blue-600 transition-colors">
-                        {(() => {
-                          const shortlistedStage = pipelineStages.find(
-                            (stage) => stage.slug === "shortlisted"
-                          );
+                            <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="19" cy="19" r="18.5" stroke="#818283"/>
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M12.3276 10.9102C12.34 10.9102 12.3523 10.9102 12.3647 10.9102L25.6717 10.9102C26.0307 10.9101 26.3598 10.9101 26.6275 10.9461C26.9223 10.9857 27.2339 11.079 27.4902 11.3353C27.7466 11.5916 27.8398 11.9032 27.8794 12.198C27.9154 12.4657 27.9154 12.7948 27.9153 13.1538V13.228C27.9154 13.587 27.9154 13.9161 27.8794 14.1838C27.8398 14.4787 27.7466 14.7903 27.4902 15.0466C27.2466 15.2902 26.9529 15.3865 26.6713 15.4295V19.8726C26.6713 21.3968 26.6713 22.604 26.5443 23.5489C26.4135 24.5213 26.1381 25.3083 25.5175 25.929C24.8968 26.5496 24.1098 26.825 23.1374 26.9558C22.1926 27.0828 20.9853 27.0828 19.4611 27.0828H18.5382C17.014 27.0828 15.8068 27.0828 14.8619 26.9558C13.8896 26.825 13.1026 26.5496 12.4819 25.929C11.8612 25.3083 11.5858 24.5213 11.455 23.5489C11.328 22.604 11.328 21.3968 11.328 19.8726V15.4295C11.0464 15.3865 10.7527 15.2902 10.5091 15.0466C10.2528 14.7903 10.1595 14.4787 10.1199 14.1838C10.0839 13.9161 10.0839 13.587 10.084 13.228C10.084 13.2157 10.084 13.2033 10.084 13.1909C10.084 13.1785 10.084 13.1661 10.084 13.1538C10.0839 12.7948 10.0839 12.4657 10.1199 12.198C10.1595 11.9032 10.2528 11.5916 10.5091 11.3353C10.7654 11.079 11.077 10.9857 11.3718 10.9461C11.6396 10.9101 11.9687 10.9101 12.3276 10.9102ZM12.5721 15.4717V19.8258C12.5721 21.4073 12.5734 22.5308 12.688 23.3831C12.8002 24.2175 13.0106 24.6983 13.3616 25.0493C13.7126 25.4002 14.1933 25.6107 15.0277 25.7228C15.88 25.8374 17.0035 25.8387 18.585 25.8387H19.4143C20.9958 25.8387 22.1193 25.8374 22.9717 25.7228C23.806 25.6107 24.2868 25.4002 24.6378 25.0493C24.9888 24.6983 25.1992 24.2175 25.3113 23.3831C25.4259 22.5308 25.4272 21.4073 25.4272 19.8258V15.4717H12.5721ZM11.3888 12.2149L11.3908 12.2138C11.3924 12.213 11.3952 12.2116 11.3993 12.2099C11.4174 12.2025 11.4575 12.1898 11.5376 12.179C11.7124 12.1555 11.9562 12.1542 12.3647 12.1542H25.6346C26.0431 12.1542 26.287 12.1555 26.4617 12.179C26.5418 12.1898 26.582 12.2025 26.6 12.2099C26.6042 12.2116 26.6069 12.213 26.6085 12.2138L26.6106 12.2149L26.6117 12.217C26.6126 12.2186 26.6139 12.2213 26.6156 12.2255C26.623 12.2436 26.6357 12.2837 26.6465 12.3638C26.67 12.5385 26.6713 12.7824 26.6713 13.1909C26.6713 13.5995 26.67 13.8433 26.6465 14.0181C26.6357 14.0982 26.623 14.1383 26.6156 14.1563C26.6139 14.1605 26.6126 14.1633 26.6117 14.1649L26.6106 14.1669L26.6085 14.168C26.6069 14.1689 26.6042 14.1702 26.6 14.1719C26.582 14.1794 26.5418 14.192 26.4617 14.2028C26.287 14.2263 26.0431 14.2276 25.6346 14.2276H12.3647C11.9562 14.2276 11.7124 14.2263 11.5376 14.2028C11.4575 14.192 11.4174 14.1794 11.3993 14.1719C11.3952 14.1702 11.3924 14.1689 11.3908 14.168L11.3888 14.1669L11.3876 14.1649C11.3868 14.1633 11.3855 14.1605 11.3837 14.1563C11.3763 14.1383 11.3636 14.0982 11.3529 14.0181C11.3294 13.8433 11.328 13.5995 11.328 13.1909C11.328 12.7824 11.3294 12.5385 11.3529 12.3638C11.3636 12.2837 11.3763 12.2436 11.3837 12.2255C11.3855 12.2213 11.3868 12.2186 11.3876 12.217L11.3888 12.2149ZM11.3888 14.1669C11.3884 14.1665 11.3886 14.1666 11.3888 14.1669V14.1669ZM17.7375 17.1304H20.2618C20.4394 17.1304 20.6027 17.1304 20.7398 17.1397C20.8872 17.1498 21.0492 17.1727 21.2138 17.2409C21.5695 17.3882 21.852 17.6707 21.9993 18.0264C22.0675 18.191 22.0904 18.353 22.1005 18.5003C22.1098 18.6374 22.1098 18.8007 22.1098 18.9784V19.0145C22.1098 19.1922 22.1098 19.3555 22.1005 19.4926C22.0904 19.64 22.0675 19.8019 21.9993 19.9666C21.852 20.3222 21.5695 20.6048 21.2138 20.7521C21.0492 20.8202 20.8872 20.8431 20.7398 20.8533C20.6027 20.8625 20.4394 20.8625 20.2618 20.8625H17.7375C17.5599 20.8625 17.3966 20.8625 17.2595 20.8533C17.1122 20.8431 16.9501 20.8202 16.7855 20.7521C16.4299 20.6048 16.1473 20.3222 16 19.9666C15.9318 19.8019 15.9089 19.64 15.8989 19.4926C15.8895 19.3555 15.8895 19.1922 15.8896 19.0145V18.9784C15.8895 18.8007 15.8895 18.6374 15.8989 18.5003C15.9089 18.353 15.9318 18.191 16 18.0264C16.1473 17.6707 16.4299 17.3882 16.7855 17.2409C16.9501 17.1727 17.1122 17.1498 17.2595 17.1397C17.3966 17.1304 17.5599 17.1304 17.7375 17.1304ZM17.2591 18.3913C17.2103 18.4123 17.1714 18.4512 17.1504 18.4999C17.1489 18.5061 17.1438 18.5296 17.14 18.585C17.1339 18.6746 17.1336 18.7948 17.1336 18.9965C17.1336 19.1982 17.1339 19.3183 17.14 19.4079C17.1438 19.4633 17.1489 19.4869 17.1504 19.493C17.1714 19.5418 17.2103 19.5807 17.2591 19.6017C17.2652 19.6032 17.2887 19.6083 17.3442 19.612C17.4337 19.6182 17.5539 19.6185 17.7556 19.6185H20.2437C20.4454 19.6185 20.5656 19.6182 20.6552 19.612C20.7106 19.6083 20.7341 19.6032 20.7403 19.6017C20.789 19.5807 20.8279 19.5418 20.8489 19.493C20.8505 19.4869 20.8555 19.4633 20.8593 19.4079C20.8654 19.3183 20.8657 19.1982 20.8657 18.9965C20.8657 18.7948 20.8654 18.6746 20.8593 18.585C20.8555 18.5296 20.8505 18.5061 20.8489 18.4999C20.8279 18.4512 20.789 18.4123 20.7403 18.3913C20.7341 18.3897 20.7106 18.3846 20.6552 18.3809C20.5656 18.3748 20.4454 18.3744 20.2437 18.3744H17.7556C17.5539 18.3744 17.4337 18.3748 17.3442 18.3809C17.2887 18.3846 17.2652 18.3897 17.2591 18.3913Z" fill="#818283"/>
+                            </svg>
 
-                          const defaultStageId =
-                            shortlistedStage?.id ?? undefined;
+                          </button>
+                        ) : null;
+                      })()}
 
-                          const buttonText = shortlistedStage
-                            ? "Save to Shortlisted"
-                            : "Add to Pipeline"; // fallback text if shortlisted stage missing
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log("Edit candidate ID:", candidate.id);
+                        }}
+                        className="p-2 rounded-full hover:bg-gray-200 transition-colors"
+                        aria-label="Edit candidate"
+                      >
+                        <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="19" cy="19" r="18.5" stroke="#818283"/>
+                        <path d="M20.7701 13.059L21.4652 12.3638C22.6169 11.2121 24.4844 11.2121 25.6361 12.3638C26.7879 13.5156 26.7879 15.383 25.6361 16.5348L24.941 17.2299M20.7701 13.059C20.7701 13.059 20.8569 14.5362 22.1603 15.8396C23.4638 17.1431 24.941 17.2299 24.941 17.2299M20.7701 13.059L14.3791 19.4499C13.9462 19.8828 13.7298 20.0992 13.5437 20.3379C13.3241 20.6194 13.1359 20.924 12.9823 21.2463C12.852 21.5195 12.7553 21.8099 12.5617 22.3906L11.7414 24.8516M24.941 17.2299L18.5501 23.6209C18.1172 24.0537 17.9008 24.2702 17.6621 24.4563C17.3806 24.6759 17.076 24.8642 16.7537 25.0178C16.4805 25.148 16.1901 25.2447 15.6094 25.4383L13.1484 26.2587M11.7414 24.8516L11.5408 25.4532C11.4456 25.7389 11.5199 26.054 11.733 26.2671C11.946 26.4801 12.2611 26.5545 12.5469 26.4592L13.1484 26.2587M11.7414 24.8516L13.1484 26.2587" stroke="#818283"/>
+                        </svg>
 
-                          return (
-                            <button
-                              className="pl-3 pr-2 py-1.5 text-blue-600 text-sm font-medium flex items-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSaveToPipeline(
-                                  candidate.id,
-                                  defaultStageId
-                                );
-                              }}
-                              aria-label={`${buttonText} for ${candidate.full_name}`}
-                            >
-                              <svg
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="text-[#0F47F2] mr-2"
-                              >
-                                <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
-                              </svg>
-                              {buttonText}
-                            </button>
-                          );
-                        })()}
-                      </div>
-
-                      <div className="rounded-md flex space-x-1 border border-blue-400 hover:border-blue-600 transition-colors">
-                        {(() => {
-                          // const shortlistedStage = pipelineStages.find(
-                          //   (stage) => stage.slug === "shortlisted"
-                          // );
-
-                          // const defaultStageId =
-                          //   shortlistedStage?.id ?? undefined;
-
-                          // const buttonText = shortlistedStage
-                          //   ? "Save to Shortlisted"
-                          //   : "Add to Pipeline"; // fallback text if shortlisted stage missing
-
-                          return (
-                            <button
-                              className="pl-3 pr-2 py-1.5 text-blue-600 text-sm font-medium flex items-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 cursor-default"
-
-                              // aria-label={`${buttonText} for ${candidate.full_name}`}
-                            >
-                              {/* <svg
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="text-[#0F47F2] mr-2"
-                            >
-                              <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
-                            </svg> */}
-                              <ShareIcon className="w-4 h-4 mx-1 mt-[2px] text-blue-600" />
-                              Move to Autopilot
-                            </button>
-                          );
-                        })()}
-                      </div>
+                      </button>
+                       
                     </div>
                   </div>
                 </div>
