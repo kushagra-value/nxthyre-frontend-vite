@@ -591,12 +591,12 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     <div className="bg-white rounded-xl  h-fit">
       <div className="border-b border-gray-200">
         <div className="flex items-center justify-between px-4 pt-4 pb-0">
-          <div className="flex space-x-4 md:space-x-6 overflow-x-auto">
+          <div className="flex space-x-4 lg:space-x-6 overflow-x-auto">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-2 text-sm md:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 focus-visible:border-b-2 focus-visible:border-blue-600 ${
+                className={`py-2 text-sm lg:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 focus-visible:border-b-2 focus-visible:border-blue-600 ${
                   activeTab === tab.id
                     ? "text-blue-600 border-blue-500"
                     : "text-gray-600 border-transparent hover:text-gray-700"
@@ -629,12 +629,12 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   aria-label="Select all candidates on this page"
                 />
-                <span className="text-sm md:text-base text-gray-700 font-medium">Select all on this page</span>
+                <span className="text-sm lg:text-base text-gray-700 font-medium">Select all on this page</span>
               </div>
             ) : (
               <>
                 <div className="flex items-center rounded-lg overflow-hidden">
-                  <div className="flex items-center gap-2 md:gap-3">
+                  <div className="flex items-center gap-2 lg:gap-3">
                     <input
                       type="checkbox"
                       checked={true}
@@ -655,7 +655,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     return unContactedStage ? (
                       <button
                         onClick={() => handleBulkMoveToStage(unContactedStage.id)}
-                        className="mx-1 md:mx-2 md:ml-4 bg-[#0F47F2] text-sm xl:text-base text-white rounded-lg px-2 py-1 md:px-6 md:py-2 font-medium transition-colors text-nowrap"
+                        className="mx-1 lg:mx-2 lg:ml-4 bg-[#0F47F2] text-sm xl:text-base text-white rounded-lg px-2 py-1 lg:px-6 lg:py-2 font-medium transition-colors text-nowrap"
                         aria-label="Bulk shortlist selected candidates"
                         title="Bulk Move to Prospect"
                       >
@@ -665,7 +665,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   })()}
 
                   <button
-                    className="p-1 md:p-2 rounded-full "
+                    className="p-1 lg:p-2 rounded-full "
                     aria-label="Move selected candidates to Autopilot (AI Interview)"
                     title="Bulk move to AutoPilot"
                   >
@@ -681,7 +681,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     return archiveStage ? (
                       <button
                         onClick={() => handleBulkMoveToStage(archiveStage.id)}
-                        className="p-1 md:p-2 rounded-full text-white transition-colors"
+                        className="p-1 lg:p-2 rounded-full text-white transition-colors"
                         aria-label="Archive selected candidates"
                         title="Bulk move to Archive"
                       >
@@ -699,7 +699,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               </>
             )}
           </div>
-          <div className="flex space-x-1 md:space-x-3">
+          <div className="flex space-x-1 lg:space-x-3">
             
 
             <button
@@ -1078,7 +1078,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                             </div>
                             <div className="flex items-center space-x-2">
                               <div className="relative group">
-                                <p className="text-[16px] font-[400] text-[#0F47F2] mt-1 max-w-[36ch] md:max-w-[56ch] truncate">
+                                <p className="text-[16px] font-[400] text-[#0F47F2] mt-1 max-w-[36ch] lg:max-w-[56ch] truncate">
                                   {candidate.headline}
                                   {collegeName && (
                                     <span>
