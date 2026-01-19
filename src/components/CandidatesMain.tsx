@@ -655,7 +655,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     return shortlistedStage ? (
                       <button
                         onClick={() => handleBulkMoveToStage(shortlistedStage.id)}
-                        className="mx-2 bg-[#0F47F2] rounded-lg px-1.5 py-1.5 font-medium transition-colors "
+                        className="mx-2 bg-[#0F47F2] text-white rounded-lg px-1.5 py-1.5 font-medium transition-colors "
                         aria-label="Bulk shortlist selected candidates"
                       >
                         Shortlist
