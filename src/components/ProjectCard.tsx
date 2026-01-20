@@ -8,6 +8,7 @@ interface ProjectCardProps {
   experience: string; // e.g., "8+ years"
   workApproach: string; // "Hybrid", "Onsite", "Remote"
   joiningTimeline: string; // e.g., "Immediate"
+  location: string;
   inboundCount: number; // 556 in image
   shortlistedCount: number; // 21
   totalApplied: number; // 61
@@ -36,6 +37,7 @@ export default function ProjectCard({
   experience,
   workApproach,
   joiningTimeline,
+  location,
   inboundCount = 0,
   shortlistedCount = 0,
   totalApplied = 0,
@@ -214,7 +216,7 @@ export default function ProjectCard({
             <span className={`text-[16px] ${textClass}`}>{workApproach}</span>
           </div>
           <div className="flex items-center justify-center px-[10px] h-[38px] bg-[#F0F0F0] rounded-[5px]">
-            <span className={`text-[16px] ${textClass}`}>{joiningTimeline}</span>
+            <span className={`text-[16px] ${textClass}`}>{location}</span>
           </div>
         </div>
 
