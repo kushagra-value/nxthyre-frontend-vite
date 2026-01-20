@@ -1897,27 +1897,13 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     >
       <style>{tabStyles}</style>
       <div className="flex space-x-3 items-center mt-1">
-        <div
-          className={`w-12 h-12 ${getAvatarColor(
-            detailedCandidate?.candidate?.full_name
-          )} rounded-full flex items-center justify-center text-white`}
-        >
-          {detailedCandidate?.candidate?.profile_picture_url ? (
-            <img
-              src={detailedCandidate?.candidate?.profile_picture_url}
-              alt={detailedCandidate?.candidate?.full_name}
-              className="w-full h-full rounded-full"
-            />
-          ) : (
-            detailedCandidate?.candidate?.full_name?.slice(0, 2).toUpperCase()
-          )}
-        </div>
+        
         <div>
           <h2 className="text-base lg:text-[16px] font-bold text-gray-900">
             {detailedCandidate?.candidate?.full_name}
           </h2>
           <div className="relative group">
-            <p className="text-sm text-gray-500 max-w-[32ch] truncate">
+            <p className="text-sm text-gray-500 max-w-[48ch] truncate">
               {detailedCandidate?.candidate?.headline}
             </p>
             {detailedCandidate.candidate?.headline && (
@@ -1926,10 +1912,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               </div>
             )}
           </div>
-          <div className="flex">
+          <div className="flex gap-4 items-center">
             <p className="text-sm text-gray-500">
               {detailedCandidate?.candidate?.location}
             </p>
+            {/* need to update this API */}
+            <p className="text-[14px] text-[#818283] font-[400]">Last Update: May 2025</p>
           </div>
         </div>
         <div className="text-xs text-gray-400 absolute right-6 top-4">
