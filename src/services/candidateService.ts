@@ -171,6 +171,7 @@ export interface CandidateDetailData {
     stage: string;
     premium_data_unlocked: boolean;
     has_premium_data: boolean;
+    job_score?: AnalysisResult;
     premium_data_availability: {
       email: boolean;
       resume_url: boolean;

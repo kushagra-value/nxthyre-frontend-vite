@@ -395,18 +395,18 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           }
 
           const mapped: AnalysisResult = {
-            candidate_id: candidate.id,
-            candidate_name: candidate.full_name,
+            candidate_id: jobScore.candidate_id,
+            candidate_name: jobScore.candidate_name,
             candidate_match_score: {
-              score: jobScore.score?.toString() || "--",
-              label: jobScore.label || "N/A",
-              description: jobScore.description || "No description available",
-              note: jobScore.note || "",
+              score: jobScore.candidate_match_score.score,
+              label: jobScore.candidate_match_score.label,
+              description: jobScore.candidate_match_score.description,
+              note: jobScore.candidate_match_score.note || "",
             },
-            quick_fit_summary: [],
-            gaps_risks: [],
-            recommended_message: "",
-            call_attention: [],
+            quick_fit_summary: jobScore.quick_fit_summary,
+            gaps_risks: jobScore.gaps_risks,
+            recommended_message: jobScore.recommended_message,
+            call_attention: jobScore.call_attention,
           };
 
           setBooleanData(mapped);
