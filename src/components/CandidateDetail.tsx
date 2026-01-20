@@ -380,9 +380,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         setLoadingAnalysis(true);
         setAnalysisError(null);
         try {
-          const detailData = await candidateService.getCandidateDetails(
+          const detailData = await candidateService.getCandidateInboundScore(
             candidate.id,
+            jobId,
           );
+
+          console.log("Detail data :: ", detailData);
           // Note: Assuming job_score comes inside detailData.candidate when job_id is used internally
           // If job_score is not present → backend should be fixed to include it when ?job_id=... is sent
           const jobScore = detailData.candidate?.job_score || null;

@@ -222,7 +222,7 @@ export interface CandidateDetailData {
           answer: string;
           score: number;
           feedback: string;
-        }
+        },
       ];
       technicalSkills: {
         weakSkills: [
@@ -230,14 +230,14 @@ export interface CandidateDetailData {
             skill: string;
             rating: number;
             reason: string;
-          }
+          },
         ];
         strongSkills: [
           {
             skill: string;
             rating: number;
             reason: string;
-          }
+          },
         ];
         skillsCoverage: string;
       };
@@ -413,7 +413,7 @@ export interface AnalyzeResponse {
 class CandidateService {
   async getCandidates(
     filters: any,
-    page: number = 1
+    page: number = 1,
   ): Promise<CandidateSearchResponse> {
     try {
       const requestBody: any = {
@@ -560,20 +560,20 @@ class CandidateService {
 
       const response = await apiClient.post(
         `/candidates/search/?page=${page}`,
-        requestBody
+        requestBody,
       );
 
       // UPDATED: Save returned bool query (supports both field names for robustness)
       if (response.data.bool_query || response.data.boolean_search_terms) {
         localStorage.setItem(
           `bool_query_${filters.jobId}`,
-          response.data.bool_query || response.data.boolean_search_terms || ""
+          response.data.bool_query || response.data.boolean_search_terms || "",
         );
       }
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch candidates"
+        error.response?.data?.error || "Failed to fetch candidates",
       );
     }
   }
@@ -594,7 +594,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to send test email"
+        error.response?.data?.error || "Failed to send test email",
       );
     }
   }
@@ -604,19 +604,19 @@ class CandidateService {
       const { page, ...body } = params;
       const response = await apiClient.post(
         `/candidates/search/?page=${page || 1}`,
-        body
+        body,
       );
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to search candidates"
+        error.response?.data?.error || "Failed to search candidates",
       );
     }
   }
 
   async universalSearch(
     query: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
   ): Promise<CandidateSearchResponse> {
     try {
       let normalizedQuery = query;
@@ -637,7 +637,7 @@ class CandidateService {
         }
       }
       const rawUrl = `/candidates/universal-search/?query=${encodeURIComponent(
-        normalizedQuery
+        normalizedQuery,
       )}&page=1`;
       const response = await apiClient.get(rawUrl, { signal });
       return response.data;
@@ -646,7 +646,7 @@ class CandidateService {
         return { count: 0, next: null, previous: null, results: [] };
       }
       throw new Error(
-        error.response?.data?.error || "Failed to search candidates"
+        error.response?.data?.error || "Failed to search candidates",
       );
     }
   }
@@ -654,12 +654,12 @@ class CandidateService {
   async getCandidateReferences(candidateId: string): Promise<ReferenceData[]> {
     try {
       const response = await apiClient.get(
-        `/organization/candidates/reference/${candidateId}/`
+        `/organization/candidates/reference/${candidateId}/`,
       );
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch candidate references"
+        error.response?.data?.error || "Failed to fetch candidate references",
       );
     }
   }
@@ -670,19 +670,36 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch candidate details"
+        error.response?.data?.error || "Failed to fetch candidate details",
       );
     }
   }
+
+  async getCandidateInboundScore(
+    candidateId: string,
+    jobId: string,
+  ): Promise<CandidateDetailData> {
+    try {
+      const response = await apiClient.get(
+        `/candidates/${candidateId}/${jobId}`,
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch candidate details",
+      );
+    }
+  }
+
   async getShareableProfile(
-    candidateId: string
+    candidateId: string,
   ): Promise<ShareableProfileSensitiveCandidate> {
     try {
       const response = await apiClient.get(`/candidates/share/${candidateId}/`);
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch shareable profile"
+        error.response?.data?.error || "Failed to fetch shareable profile",
       );
     }
   }
@@ -697,14 +714,14 @@ class CandidateService {
       // Update existing template
       const response = await apiClient.put(
         `/jobs/notification-templates/${template.id}/`,
-        template
+        template,
       );
       return response.data;
     } else {
       // Create new template
       const response = await apiClient.post(
         "/jobs/notification-templates/",
-        template
+        template,
       );
       return response.data;
     }
@@ -751,12 +768,12 @@ class CandidateService {
             body: step.body,
             order: step.order,
           })),
-        }
+        },
       );
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to update template"
+        error.response?.data?.error || "Failed to update template",
       );
     }
   }
@@ -765,7 +782,7 @@ class CandidateService {
     jobId: number,
     candidateId: string,
     stageId?: number,
-    job_score_payload?: AnalysisResult
+    job_score_payload?: AnalysisResult,
   ): Promise<PipelineResponse> {
     try {
       const payload: any = {
@@ -776,20 +793,20 @@ class CandidateService {
         payload.current_stage = stageId;
       }
       if (job_score_payload) {
-        payload.job_score_payload = job_score_payload;  // ← NEW
+        payload.job_score_payload = job_score_payload; // ← NEW
       }
       const response = await apiClient.post("/jobs/applications/", payload);
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to save candidate to pipeline"
+        error.response?.data?.error || "Failed to save candidate to pipeline",
       );
     }
   }
 
   async bulkAddToPipeline(
     jobId: number,
-    candidateIds: string[]
+    candidateIds: string[],
   ): Promise<BulkPipelineResponse> {
     try {
       const response = await apiClient.post("/jobs/bulk-add-to-pipeline/", {
@@ -799,7 +816,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to add candidates to pipeline"
+        error.response?.data?.error || "Failed to add candidates to pipeline",
       );
     }
   }
@@ -807,19 +824,19 @@ class CandidateService {
   async getPipelineStages(jobId: number): Promise<PipelineStage[]> {
     try {
       const response = await apiClient.get(
-        `/jobs/applications/stages/?job_id=${jobId}`
+        `/jobs/applications/stages/?job_id=${jobId}`,
       );
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch pipeline stages"
+        error.response?.data?.error || "Failed to fetch pipeline stages",
       );
     }
   }
 
   async scheduleCodingAssessmentEmail(
     candidateId: string,
-    jobId: number
+    jobId: number,
   ): Promise<any> {
     try {
       const response = await apiClient.post(`/assessment/create-and-send/`, {
@@ -829,7 +846,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to send assessment email"
+        error.response?.data?.error || "Failed to send assessment email",
       );
     }
   }
@@ -837,12 +854,12 @@ class CandidateService {
   async getKeywordSuggestions(query: string): Promise<string[]> {
     try {
       const response = await apiClient.get(
-        `/candidates/keyword-suggestions/?q=${encodeURIComponent(query)}`
+        `/candidates/keyword-suggestions/?q=${encodeURIComponent(query)}`,
       );
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch keyword suggestions"
+        error.response?.data?.error || "Failed to fetch keyword suggestions",
       );
     }
   }
@@ -855,16 +872,16 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch recent searches"
+        error.response?.data?.error || "Failed to fetch recent searches",
       );
     }
   }
 
   async revealPremiumData(
-    candidateId: string
+    candidateId: string,
   ): Promise<{ message: string; premium_data: any }> {
     const response = await apiClient.post(
-      `/candidates/${candidateId}/reveal-premium-data/`
+      `/candidates/${candidateId}/reveal-premium-data/`,
     );
     return response.data;
   }
@@ -875,7 +892,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch candidate notes"
+        error.response?.data?.error || "Failed to fetch candidate notes",
       );
     }
   }
@@ -891,7 +908,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch assessment results"
+        error.response?.data?.error || "Failed to fetch assessment results",
       );
     }
   }
@@ -902,24 +919,24 @@ class CandidateService {
       teamNotes?: string;
       communityNotes?: string;
       is_community_note?: boolean;
-    }
+    },
   ): Promise<Note> {
     try {
       const response = await apiClient.post(
         `/candidates/${candidateId}/notes/`,
-        payload
+        payload,
       );
       return response.data;
     } catch (error: any) {
       console.error("Server error response:", error.response?.data);
       throw new Error(
-        error.response?.data?.error || "Failed to post candidate note"
+        error.response?.data?.error || "Failed to post candidate note",
       );
     }
   }
 
   async exportCandidates(
-    candidateIds: string[]
+    candidateIds: string[],
   ): Promise<ExportCandidateResponse> {
     try {
       const response = await apiClient.post("/candidates/export-selected/", {
@@ -928,24 +945,24 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to export candidates"
+        error.response?.data?.error || "Failed to export candidates",
       );
     }
   }
 
   async getCandidateActivity(
     candidateId: string,
-    applicationId?: number
+    applicationId?: number,
   ): Promise<any[]> {
     try {
       const params = applicationId ? `?application_id=${applicationId}` : "";
       const response = await apiClient.get(
-        `/candidates/${candidateId}/activity/${params}`
+        `/candidates/${candidateId}/activity/${params}`,
       );
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch candidate activity"
+        error.response?.data?.error || "Failed to fetch candidate activity",
       );
     }
   }
@@ -953,20 +970,20 @@ class CandidateService {
   async getBackgroundVerifications(candidateId: string): Promise<any[]> {
     try {
       const response = await apiClient.get(
-        `/candidates/${candidateId}/background-verifications/`
+        `/candidates/${candidateId}/background-verifications/`,
       );
       return response.data;
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error ||
-          "Failed to fetch background verifications"
+          "Failed to fetch background verifications",
       );
     }
   }
 
   async getCandidateBooleanSearch(
     candidateId: string,
-    bool_query: string
+    bool_query: string,
   ): Promise<AnalysisResult> {
     try {
       const boolQuery = bool_query;
@@ -982,17 +999,20 @@ class CandidateService {
       }
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch boolean search"
+        error.response?.data?.error || "Failed to fetch boolean search",
       );
     }
   }
 
-    // UPDATED: New method to fetch country suggestions
+  // UPDATED: New method to fetch country suggestions
   async getCountrySuggestions(query: string): Promise<string[]> {
     try {
-      const response = await apiClient.get("/candidates/location-suggestions/", {
-        params: { q: query, country: true },
-      });
+      const response = await apiClient.get(
+        "/candidates/location-suggestions/",
+        {
+          params: { q: query, country: true },
+        },
+      );
       return response.data || [];
     } catch (error: any) {
       console.error("Error fetching country suggestions:", error);
@@ -1004,9 +1024,12 @@ class CandidateService {
   // UPDATED: New method to fetch city suggestions (requires country context on backend if needed)
   async getCitySuggestions(query: string): Promise<string[]> {
     try {
-      const response = await apiClient.get("/candidates/location-suggestions/", {
-        params: { q: query },
-      });
+      const response = await apiClient.get(
+        "/candidates/location-suggestions/",
+        {
+          params: { q: query },
+        },
+      );
       return response.data || [];
     } catch (error: any) {
       console.error("Error fetching city suggestions:", error);
