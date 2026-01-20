@@ -950,7 +950,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               return (
                 <div
                   key={candidate.id}
-                  className={`relative  pt-5 hover:bg-blue-50 ${sharePopupCandidateId === candidate.id ? "bg-black bg-opacity-50 hover:bg-black hover:bg-opacity-60" : ""} transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500  ${selectedCandidate?.id === candidate.id
+                  className={`relative  pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500  ${selectedCandidate?.id === candidate.id
                     ? "bg-blue-50 border-l-4 border-blue-500"
                     : "border border-gray-200"
                     }`}
@@ -960,6 +960,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   role="button"
                   aria-label={`Select candidate ${candidate.full_name}`}
                 >
+                  {sharePopupCandidateId === candidate.id && (
+                    <div className="absolute inset-0 bg-black bg-opacity-50 z-20 rounded-lg backdrop-blur-sm pointer-events-none transition-all duration-300"></div>
+                  )}
                   {candidate.premium_data_unlocked && (
                     <button
                       className="absolute top-0 left-0 z-10 "
@@ -1722,14 +1725,14 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                           );
                         })()}
                       <button
-                        className="text-gray-400 bg-[#4B5563] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className="text-gray-400 bg-[#4B5563]  rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={(e) => {
                           e.stopPropagation();
                           setSharePopupCandidateId(candidate.id);
                         }}
                         title="Share Profile"
                       >
-                        <svg width="22" height="22" viewBox="0 0 15 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <svg width="15" height="17" viewBox="0 0 15 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M5.05044 8.42938C5.05044 9.6287 4.05408 10.601 2.82502 10.601C1.59596 10.601 0.599609 9.6287 0.599609 8.42938C0.599609 7.23007 1.59596 6.25781 2.82502 6.25781C4.05408 6.25781 5.05044 7.23007 5.05044 8.42938Z" stroke="#F5F9FB" stroke-width="1.2" />
                           <path d="M9.50161 3.64453L5.05078 6.68473" stroke="#F5F9FB" stroke-width="1.2" stroke-linecap="round" />
                           <path d="M9.50161 13.2121L5.05078 10.1719" stroke="#F5F9FB" stroke-width="1.2" stroke-linecap="round" />
