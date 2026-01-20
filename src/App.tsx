@@ -1544,6 +1544,7 @@ function MainApp() {
                                       experience={job.experience}
                                       workApproach={job.workApproach}
                                       joiningTimeline={job.joiningTimeline}
+                                      location={job.location}
                                       inboundCount={job.inboundCount}
                                       shortlistedCount={job.shortlistedCount}
                                       totalApplied={job.totalApplied}
