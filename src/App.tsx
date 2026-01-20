@@ -43,7 +43,6 @@ import {
 import { User } from "./types/auth";
 import type { Job } from "./services/jobPostService";
 import {
-  
   ChevronDown,
   Edit,
   Mail,
@@ -72,7 +71,7 @@ import { AnalysisResult } from "./services/candidateService";
 interface Category {
   id: number;
   name: string; // Job title
-  location:string;
+  location: string;
   companyName: string; // e.g., "Debitte"
   experience: string; // e.g., "8+ years"
   workApproach: string; // "Hybrid", "Remote", "Onsite"
@@ -135,7 +134,7 @@ const ProjectSkeletonCard = () => (
       <div className="flex items-center justify-between mb-8">
         <div className="h-7 bg-gray-200 rounded-full w-28"></div>
         <div className="flex items-center gap-2">
-          <div className="w-24 h-8 bg-gray-200 rounded-full"></div> 
+          <div className="w-24 h-8 bg-gray-200 rounded-full"></div>
         </div>
       </div>
 
@@ -144,15 +143,13 @@ const ProjectSkeletonCard = () => (
 
       {/* Job title */}
       <div className="h-8 bg-gray-200 rounded-lg w-4/5 mb-3"></div>
-      
+
       {/* Chips row: Experience, Work Approach, Joining Timeline */}
       <div className="flex flex-wrap gap-2 mb-8">
         <div className="h-8 bg-gray-200 rounded-full px-4 w-24"></div>
         <div className="h-8 bg-gray-200 rounded-full px-4 w-24"></div>
         <div className="h-8 bg-gray-200 rounded-full px-4 w-24"></div>
       </div>
-
-      
 
       {/* Bottom row: Featured badge + Posted ago + Interviews */}
       <div className="flex items-center justify-between">
@@ -249,11 +246,11 @@ function MainApp() {
   const [searchTerm, setSearchTerm] = useState("");
   const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
   const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
-    null
+    null,
   );
   const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
   const [showUnpublishModal, setShowUnpublishModal] = useState<number | null>(
-    null
+    null,
   );
   const [sourcingCounts, setSourcingCounts] = useState({
     inbound: 0,
@@ -287,9 +284,10 @@ function MainApp() {
   const [competenciesData, setCompetenciesData] = useState<any>(null);
   const [loadingCompetencies, setLoadingCompetencies] = useState(false);
   const [currentAnalysis, setCurrentAnalysis] = useState<AnalysisResult | null>(
-    null
+    null,
   );
-  const [currentRequisitionPage, setCurrentRequisitionPage] = useState<number>(1); 
+  const [currentRequisitionPage, setCurrentRequisitionPage] =
+    useState<number>(1);
   const [currentJobIdForModal, setCurrentJobIdForModal] = useState<
     number | null
   >(null);
@@ -305,7 +303,7 @@ function MainApp() {
           (ws: MyWorkspace) => ({
             id: ws.id,
             name: ws.name,
-          })
+          }),
         );
         setWorkspaces(mappedWorkspaces);
       } catch (error) {
@@ -363,35 +361,37 @@ function MainApp() {
     }
   }, [activeCategoryId]);
 
-   const getTimeAgo = (dateString: string): string => {
-      const past = new Date(dateString);
-      if (isNaN(past.getTime())) return "Invalid date";
+  const getTimeAgo = (dateString: string): string => {
+    const past = new Date(dateString);
+    if (isNaN(past.getTime())) return "Invalid date";
 
-      const now = new Date();
+    const now = new Date();
 
-      let years = now.getFullYear() - past.getFullYear();
-      let months = now.getMonth() - past.getMonth();
-      let days = now.getDate() - past.getDate();
+    let years = now.getFullYear() - past.getFullYear();
+    let months = now.getMonth() - past.getMonth();
+    let days = now.getDate() - past.getDate();
 
-      if (days < 0) {
-        months--;
-        const daysInPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
-        days += daysInPrevMonth;
-      }
+    if (days < 0) {
+      months--;
+      const daysInPrevMonth = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        0,
+      ).getDate();
+      days += daysInPrevMonth;
+    }
 
-      if (months < 0) {
-        years--;
-        months += 12;
-      }
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
 
-      if (years > 0) return `${years} year${years > 1 ? "s" : ""} ago`;
-      if (months > 0) return `${months} month${months > 1 ? "s" : ""} ago`;
-      if (days > 0) return `${days} day${days > 1 ? "s" : ""} ago`;
+    if (years > 0) return `${years} year${years > 1 ? "s" : ""} ago`;
+    if (months > 0) return `${months} month${months > 1 ? "s" : ""} ago`;
+    if (days > 0) return `${days} day${days > 1 ? "s" : ""} ago`;
 
-      return "today";
-    };
-
-
+    return "today";
+  };
 
   const fetchCategories = async () => {
     setLoadingCategories(true);
@@ -408,7 +408,7 @@ function MainApp() {
             job.organization_details?.name?.toLowerCase().includes(query) ||
             job.workspace_details?.name?.toLowerCase().includes(query);
           const skillsMatch = job.skills?.some((skill: string) =>
-            skill.toLowerCase().includes(query)
+            skill.toLowerCase().includes(query),
           );
           return titleMatch || companyMatch || skillsMatch;
         });
@@ -420,8 +420,8 @@ function MainApp() {
         const experience = maxExp
           ? `${minExp}+ years`
           : minExp === 1
-          ? "1+ year"
-          : `${minExp}+ years`;
+            ? "1+ year"
+            : `${minExp}+ years`;
         const location = job.location[0];
 
         // Map work approach
@@ -455,7 +455,7 @@ function MainApp() {
         };
       });
       setCategories(mappedCategories);
-      setCurrentRequisitionPage(1); 
+      setCurrentRequisitionPage(1);
       if (mappedCategories.length === 0) {
         setActiveCategoryId(null);
         setHasSelectedJob(false);
@@ -507,7 +507,7 @@ function MainApp() {
         if (debouncedSearchQuery.trim() !== "") {
           response = await candidateService.universalSearch(
             debouncedSearchQuery,
-            controller.signal
+            controller.signal,
           );
           const candidates = response.results.map((candidate: any) => ({
             ...candidate,
@@ -564,7 +564,7 @@ function MainApp() {
             // Assume API returns 'bool_query' field
             localStorage.setItem(
               `bool_query_${appliedFilters.jobId}`,
-              response.boolean_search_terms
+              response.boolean_search_terms,
             );
             setDefaultBoolQuery(response.boolean_search_terms); // For FiltersSidebar
           } else {
@@ -593,7 +593,7 @@ function MainApp() {
         setLoadingCandidates(false);
       }
     },
-    [selectedCandidate, debouncedSearchQuery, sortBy, filters, activeTab]
+    [selectedCandidate, debouncedSearchQuery, sortBy, filters, activeTab],
   );
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
@@ -601,7 +601,7 @@ function MainApp() {
   };
   const handleCandidatesUpdate = (
     newCandidates: CandidateListItem[],
-    count: number
+    count: number,
   ) => {
     setCandidates(newCandidates);
     setTotalCount(count);
@@ -611,7 +611,7 @@ function MainApp() {
       setSelectedCandidate(null);
     } else {
       const updatedSelected = newCandidates.find(
-        (c) => c.id === selectedCandidate?.id
+        (c) => c.id === selectedCandidate?.id,
       );
       if (updatedSelected) {
         setSelectedCandidate(updatedSelected);
@@ -677,7 +677,7 @@ function MainApp() {
         workspaceIds: userStatus.roles
           .filter(
             (role) =>
-              role.workspace_id !== null && role.workspace_id !== undefined
+              role.workspace_id !== null && role.workspace_id !== undefined,
           )
           .map((role) => Number(role.workspace_id)),
         isVerified: firebaseUser?.emailVerified ?? true,
@@ -704,18 +704,18 @@ function MainApp() {
   const updateCandidateEmail = (
     candidateId: string,
     candidate_email: string,
-    candidate_phone: string
+    candidate_phone: string,
   ) => {
     setCandidates((prevCandidates) =>
       prevCandidates.map((cand) =>
         cand.id === candidateId
           ? { ...cand, candidate_email, candidate_phone }
-          : cand
-      )
+          : cand,
+      ),
     );
     if (selectedCandidate?.id === candidateId) {
       setSelectedCandidate((prev) =>
-        prev ? { ...prev, candidate_email, candidate_phone } : prev
+        prev ? { ...prev, candidate_email, candidate_phone } : prev,
       );
     }
   };
@@ -1025,7 +1025,7 @@ function MainApp() {
   };
   const handleUpdateCandidate = (updated: CandidateListItem) => {
     setCandidates((prev) =>
-      prev.map((c) => (c.id === updated.id ? updated : c))
+      prev.map((c) => (c.id === updated.id ? updated : c)),
     );
     if (selectedCandidate?.id === updated.id) {
       setSelectedCandidate(updated);
@@ -1042,7 +1042,7 @@ function MainApp() {
       (newFilters.maxSalary && !isValidNumber(newFilters.maxSalary))
     ) {
       showToast.error(
-        "Invalid input in experience or salary fields. Please enter numbers only."
+        "Invalid input in experience or salary fields. Please enter numbers only.",
       );
       setCandidates([]);
       setTotalCount(0);
@@ -1057,7 +1057,7 @@ function MainApp() {
       Number(newFilters.minTotalExp) > Number(newFilters.maxTotalExp)
     ) {
       showToast.error(
-        "Minimum total experience cannot be greater than maximum."
+        "Minimum total experience cannot be greater than maximum.",
       );
       setCandidates([]);
       setTotalCount(0);
@@ -1118,9 +1118,8 @@ function MainApp() {
       setClaiming(true);
       try {
         console.log("Claiming invite with token:", inviteToken);
-        const data = await organizationService.claimWorkspaceInvite(
-          inviteToken
-        );
+        const data =
+          await organizationService.claimWorkspaceInvite(inviteToken);
         console.log("Claim response:", data);
         showToast.success("Successfully joined the workspace!");
         contextSetSelectedWorkspaceId(data.workspace.id);
@@ -1136,7 +1135,7 @@ function MainApp() {
           showToast.error("Invitation expired.");
         } else if (errorMsg.includes("different email")) {
           showToast.error(
-            "You are logged in with a different email than the invited recipient. Please sign out and sign in with the invited email."
+            "You are logged in with a different email than the invited recipient. Please sign out and sign in with the invited email.",
           );
           await signOut();
         } else if (errorMsg.includes("different organization")) {
@@ -1246,7 +1245,7 @@ function MainApp() {
 
           {/* Project grid skeleton */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => ( 
+            {[...Array(8)].map((_, i) => (
               <ProjectSkeletonCard key={i} />
             ))}
           </div>
@@ -1425,30 +1424,30 @@ function MainApp() {
                         Requisitions List
                       </h1>
                       <div className="relative w-[544px] h-[59px]">
-                          <input
-                            type="text"
-                            placeholder="Search Projects"
-                            value={projectSearchQuery}
-                            onChange={(e) =>
-                              setProjectSearchQuery(e.target.value)
-                            }
-                            className="w-full h-full bg-[#F0F0F0] rounded-[5px] pl-5 pr-16 text-lg text-[#4B5563] placeholder:text-[#AAC1FF] focus:outline-none focus:ring-2 focus:ring-[#0F47F2]/20"
+                        <input
+                          type="text"
+                          placeholder="Search Projects"
+                          value={projectSearchQuery}
+                          onChange={(e) =>
+                            setProjectSearchQuery(e.target.value)
+                          }
+                          className="w-full h-full bg-[#F0F0F0] rounded-[5px] pl-5 pr-16 text-lg text-[#4B5563] placeholder:text-[#AAC1FF] focus:outline-none focus:ring-2 focus:ring-[#0F47F2]/20"
+                        />
+                        <button className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-[31px] bg-[#0F47F2] rounded-md flex items-center justify-center hover:bg-[#0d3ec9] transition-colors">
+                          <Search
+                            className="w-[22px] h-[19px] text-white"
+                            strokeWidth={1.33}
                           />
-                          <button className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-[31px] bg-[#0F47F2] rounded-md flex items-center justify-center hover:bg-[#0d3ec9] transition-colors">
-                            <Search
-                              className="w-[22px] h-[19px] text-white"
-                              strokeWidth={1.33}
-                            />
+                        </button>
+                        {/* Optional: Clear button when typing */}
+                        {projectSearchQuery && (
+                          <button
+                            onClick={() => setProjectSearchQuery("")}
+                            className="absolute right-14 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          >
+                            ✕
                           </button>
-                          {/* Optional: Clear button when typing */}
-                          {projectSearchQuery && (
-                            <button
-                              onClick={() => setProjectSearchQuery("")}
-                              className="absolute right-14 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                            >
-                              ✕
-                            </button>
-                          )}
+                        )}
                       </div>
                     </div>
                     {loadingCategories ? (
@@ -1484,542 +1483,566 @@ function MainApp() {
                         </div>
                       </div>
                     ) : (
-                        <>
-                          {(() => {
-                            const itemsPerPage = 8;
-                            const startIndex = (currentRequisitionPage - 1) * itemsPerPage;
-                            const endIndex = startIndex + itemsPerPage;
-                            const currentCategories = categories.slice(startIndex, endIndex);
-
-                            return (
-                              <>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                  {currentCategories.map((job) => (
-                                    <div
-                                      key={job.id}
-                                      className="rounded-[10px] transition-all duration-300"
-                                    >
-                                      <ProjectCard
-                                        jobId={job.id}
-                                        jobName={job.name}
-                                        companyName={job.companyName}
-                                        experience={job.experience}
-                                        workApproach={job.workApproach}
-                                        joiningTimeline={job.joiningTimeline}
-                                        inboundCount={job.inboundCount}
-                                        shortlistedCount={job.shortlistedCount}
-                                        totalApplied={job.totalApplied}
-                                        totalReplied={job.totalReplied}
-                                        postedAgo={job.postedAgo}
-                                        interviewsCount={0}
-                                        badgeText="On Track"
-                                        featuredCount={0}
-                                        status={job.status}
-                                        visibility={job.visibility}
-                                        isActive={activeCategoryId === job.id}
-                                        onEditJobRole={handleEditJobRole}
-                                        onArchiveJob={() =>
-                                          showToast.success("Archive coming soon")
-                                        }
-                                        onSharePipelines={handleSharePipelines}
-                                        onPublishJob={handlePublishJobRole}
-                                        onCopyJobID={handleCopyJobID}
-                                        onUnpublishJob={handleUnpublishJobRole}
-                                        onSelectCard={() => {
-                                          setActiveCategoryId(job.id);
-                                          setHasSelectedJob(true);
-                                          fetchJobDetailsAndSetFilters(job.id);
-                                        }}
-                                      />
-                                    </div>
-                                  ))}
-                                  
-                                </div>
-                                {categories.length > 0 && (
-                                    <div className="mt-4 py-2 px-8 pt-2 flex items-center border-t-[0.5px] border-[#E5E7EB] justify-between w-full">
-                                      <div className="text-gray-400 text-lg">
-                                        Showing {(currentRequisitionPage - 1) * 8 + 1} to{" "}
-                                        {Math.min(currentRequisitionPage * 8, categories.length)} of{" "}
-                                        {categories.length} requisitions
-                                      </div>
-                                      <div className="flex items-center gap-3">
-                                        <button
-                                          onClick={() => setCurrentRequisitionPage(prev => Math.max(prev - 1, 1))}
-                                          disabled={currentRequisitionPage === 1}
-                                          className="text-gray-400 hover:text-white disabled:opacity-50"
-                                        >
-                                          <ChevronLeft className="w-6 h-6" />
-                                        </button>
-
-                                        {Array.from(
-                                          { length: Math.ceil(categories.length / 8) },
-                                          (_, i) => i + 1
-                                        ).map((page) => (
-                                          <button
-                                            key={page}
-                                            onClick={() => setCurrentRequisitionPage(page)}
-                                            className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
-                                              page === currentRequisitionPage
-                                                ? "bg-blue-600 text-white"
-                                                : "bg-white text-black hover:bg-gray-200"
-                                            }`}
-                                          >
-                                            {page}
-                                          </button>
-                                        ))}
-
-                                        <button
-                                          onClick={() =>
-                                            setCurrentRequisitionPage(prev =>
-                                              Math.min(prev + 1, Math.ceil(categories.length / 8))
-                                            )
-                                          }
-                                          disabled={currentRequisitionPage === Math.ceil(categories.length / 8)}
-                                          className="text-gray-400 hover:text-white disabled:opacity-50"
-                                        >
-                                          <ChevronRight className="w-6 h-6" />
-                                        </button>
-                                      </div>
-                                    </div>
-                                )}                               
-                              </>                     
+                      <>
+                        {(() => {
+                          const itemsPerPage = 8;
+                          const startIndex =
+                            (currentRequisitionPage - 1) * itemsPerPage;
+                          const endIndex = startIndex + itemsPerPage;
+                          const currentCategories = categories.slice(
+                            startIndex,
+                            endIndex,
                           );
-                          })()}
-                        </>
-                      )}
-                  
-                  
-                  <CreateJobRoleModal
-                    isOpen={showCreateJobRole}
-                    workspaceId={selectedWorkspaceId || 1}
-                    workspaces={workspaces}
-                    handlePipelinesClick={handlePipelinesClick}
-                    onClose={() => setShowCreateJobRole(false)}
-                    onJobCreated={handleJobCreatedOrUpdated}
-                  />
-                  <EditJobRoleModal
-                    isOpen={showEditJobRole}
-                    onClose={() => {
-                      setShowEditJobRole(false);
-                      setEditingJobId(null);
-                    }}
-                    handlePipelinesClick={handlePipelinesClick}
-                    workspaces={workspaces}
-                    workspaceId={selectedWorkspaceId || 1}
-                    jobId={editingJobId || 0}
-                    onJobUpdated={handleJobCreatedOrUpdated}
-                  />
-                  <EditTemplateModal
-                    jobId={String(activeCategoryId)}
-                    isOpen={showEditTemplate}
-                    onClose={() => setShowEditTemplate(false)}
-                    templateName={editingTemplate}
-                  />
 
-                  {showLogoutModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
-                      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-                        <div className="text-center">
-                          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <LogOut className="w-6 h-6 text-red-600" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            Confirm Logout
-                          </h3>
-                          <p className="text-gray-600 mb-6">
-                            Are you sure you want to sign out? You'll need to
-                            log in again to access your account.
-                          </p>
-                          <div className="flex space-x-3">
-                            <button
-                              onClick={handleCloseLogoutModal}
-                              className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              onClick={handleLogoutConfirm}
-                              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                            >
-                              Sign Out
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {showPublishModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
-                      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-                        <div className="text-center">
-                          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Globe className="w-6 h-6 text-green-600" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            Confirm Publish Job
-                          </h3>
-                          <p className="text-gray-600 mb-6">
-                            Are you sure you want to publish{" "}
-                            {
-                              categories.find(
-                                (cat) => cat.id === showPublishModal
-                              )?.name
-                            }
-                            ? This action will publish job on LinkedIn, Google
-                            Jobs,Times Ascent, Cutshort and others.
-                          </p>
-                          <span className="text-gray-400 text-sm mb-6">
-                            (Note: Once published, the job will be visible on
-                            both platforms within 24–48 hours.)
-                          </span>
-                          <div className="flex space-x-3">
-                            <button
-                              onClick={() => setShowPublishModal(null)}
-                              className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              onClick={() =>
-                                handlePublishJobRole(showPublishModal)
-                              }
-                              className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                            >
-                              Publish
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {showUnpublishModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
-                      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-                        <div className="text-center">
-                          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Pause className="w-6 h-6 text-red-600" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            Confirm Unpublish Job
-                          </h3>
-                          <p className="text-gray-600 mb-6">
-                            Are you sure you want to Unpublish
-                            {
-                              categories.find(
-                                (cat) => cat.id === showUnpublishModal
-                              )?.name
-                            }
-                            ? This action cannot be undone.
-                          </p>
-                          <span className="text-gray-400 text-sm mb-6">
-                            (Note: this action will unpublish job on published
-                            over LinkedIn, Google Jobs,Times Ascent, Cutshort
-                            and others within 24–48 hours.)
-                          </span>
-                          <div className="flex space-x-3">
-                            <button
-                              onClick={() => setShowUnpublishModal(null)}
-                              className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleUnpublishJobRole(showUnpublishModal)
-                              }
-                              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                            >
-                              Unpublish
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {showDeleteModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
-                      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-                        <div className="text-center">
-                          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Trash2 className="w-6 h-6 text-red-600" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            Confirm Delete Job
-                          </h3>
-                          <p className="text-gray-600 mb-6">
-                            Are you sure you want to delete{" "}
-                            {
-                              categories.find(
-                                (cat) => cat.id === showDeleteModal
-                              )?.name
-                            }
-                            ? This action cannot be undone.
-                          </p>
-                          <div className="flex space-x-3">
-                            <button
-                              onClick={() => setShowDeleteModal(null)}
-                              className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleDeleteJobRole(showDeleteModal)
-                              }
-                              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {showRequisitionInfoModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-end overflow-y-auto">
-                      <div className="bg-white rounded-3xl shadow-xl max-w-2xl w-full max-h-[100vh] overflow-y-auto p-6">
-                        {/* Header */}
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-2">
-                            <button
-                              className="w-8 h-8 text-gray-800"
-                              onClick={handleCloseRequisitionModal}
-                            >
-                              <ArrowLeft className="w-8 h-8" />
-                            </button>
-                            <h1 className="text-lg font-semibold text-gray-800">
-                              Requisition Info
-                            </h1>
-                          </div>
-                        </div>
-                        {loadingCompetencies ? (
-                          <RequisitionSkeleton />
-                        ) : jobDataForModal && competenciesData ? (
-                          <>
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-1">
-                              {jobDataForModal.title}
-                            </h2>
-                            <div className="flex space-x-8 mt-2 mb-6">
-                              <span className="flex items-center text-gray-500">
-                                <Briefcase className="w-4 h-4 mr-1" />{" "}
-                                {jobDataForModal.experience_min_years}+ years
-                              </span>
-                              <span className="flex items-center text-gray-500">
-                                <LocateIcon className="w-4 h-4 mr-1" />{" "}
-                                {jobDataForModal.work_approach}
-                              </span>
-                              <span className="flex items-center text-gray-500">
-                                <FileSearch className="w-4 h-4 mr-1" />{" "}
-                                Immediate
-                              </span>
-                            </div>
-
-                            {/* Role Overview */}
-                            <div className="mb-6">
-                              <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                                Role Overview
-                              </h3>
-                              <p className="text-gray-600 text-sm">
-                                {competenciesData.role_overview}
-                              </p>
-                            </div>
-
-                            {/* The Core Expectation */}
-                            <div className="mb-6">
-                              <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                                The Core Expectation
-                              </h3>
-                              <ul className="text-gray-600 text-sm list-disc pl-5 space-y-1">
-                                {competenciesData.the_core_expectation.map(
-                                  (item: string, idx: number) => (
-                                    <li key={idx}>{item}</li>
-                                  )
-                                )}
-                              </ul>
-                            </div>
-
-                            {/* Key Responsibilities Explained */}
-                            <div className="mb-6">
-                              <h3 className="text-lg font-semibold text-gray-700 mb-3">
-                                Key Responsibilities Explained
-                              </h3>
-                              <div className="space-y-3">
-                                {/* Functional */}
-                                {competenciesData.key_responsibilities_explained.functional.map(
-                                  (item: any, idx: number) => (
-                                    <div
-                                      key={idx}
-                                      className="bg-blue-50 rounded-lg p-4"
+                          return (
+                            <>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                {currentCategories.map((job) => (
+                                  <div
+                                    key={job.id}
+                                    className="rounded-[10px] transition-all duration-300"
+                                  >
+                                    <ProjectCard
+                                      jobId={job.id}
+                                      jobName={job.name}
+                                      companyName={job.companyName}
+                                      experience={job.experience}
+                                      workApproach={job.workApproach}
+                                      joiningTimeline={job.joiningTimeline}
+                                      inboundCount={job.inboundCount}
+                                      shortlistedCount={job.shortlistedCount}
+                                      totalApplied={job.totalApplied}
+                                      totalReplied={job.totalReplied}
+                                      postedAgo={job.postedAgo}
+                                      interviewsCount={0}
+                                      badgeText="On Track"
+                                      featuredCount={0}
+                                      status={job.status}
+                                      visibility={job.visibility}
+                                      isActive={activeCategoryId === job.id}
+                                      onEditJobRole={handleEditJobRole}
+                                      onArchiveJob={() =>
+                                        showToast.success("Archive coming soon")
+                                      }
+                                      onSharePipelines={handleSharePipelines}
+                                      onPublishJob={handlePublishJobRole}
+                                      onCopyJobID={handleCopyJobID}
+                                      onUnpublishJob={handleUnpublishJobRole}
+                                      onSelectCard={() => {
+                                        setActiveCategoryId(job.id);
+                                        setHasSelectedJob(true);
+                                        fetchJobDetailsAndSetFilters(job.id);
+                                      }}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                              {categories.length > 0 && (
+                                <div className="mt-4 py-2 px-8 pt-2 flex items-center border-t-[0.5px] border-[#E5E7EB] justify-between w-full">
+                                  <div className="text-gray-400 text-lg">
+                                    Showing{" "}
+                                    {(currentRequisitionPage - 1) * 8 + 1} to{" "}
+                                    {Math.min(
+                                      currentRequisitionPage * 8,
+                                      categories.length,
+                                    )}{" "}
+                                    of {categories.length} requisitions
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <button
+                                      onClick={() =>
+                                        setCurrentRequisitionPage((prev) =>
+                                          Math.max(prev - 1, 1),
+                                        )
+                                      }
+                                      disabled={currentRequisitionPage === 1}
+                                      className="text-gray-400 hover:text-white disabled:opacity-50"
                                     >
-                                      <div className="flex items-start space-x-3">
-                                        <div>
-                                          <div className="flex items-center space-x-2 mb-1">
-                                            <h4 className="font-medium text-gray-600">
-                                              {item.competency}
-                                            </h4>
-                                            {item.why_it_matters && (
-                                              <div className="relative group inline-block ml-2">
-                                                <svg
-                                                  className="w-4 h-4 text-gray-400 group-hover:text-blue-500 cursor-help transition-colors duration-200"
-                                                  fill="none"
-                                                  stroke="currentColor"
-                                                  viewBox="0 0 24 24"
-                                                  xmlns="http://www.w3.org/2000/svg"
-                                                >
-                                                  <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                  />
-                                                </svg>
-                                                <div className="absolute z-20 hidden group-hover:block bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-gray-700 shadow-md whitespace-normal w-64 left-full ml-2 top-0">
-                                                  {item.why_it_matters}
+                                      <ChevronLeft className="w-6 h-6" />
+                                    </button>
+
+                                    {Array.from(
+                                      {
+                                        length: Math.ceil(
+                                          categories.length / 8,
+                                        ),
+                                      },
+                                      (_, i) => i + 1,
+                                    ).map((page) => (
+                                      <button
+                                        key={page}
+                                        onClick={() =>
+                                          setCurrentRequisitionPage(page)
+                                        }
+                                        className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
+                                          page === currentRequisitionPage
+                                            ? "bg-blue-600 text-white"
+                                            : "bg-white text-black hover:bg-gray-200"
+                                        }`}
+                                      >
+                                        {page}
+                                      </button>
+                                    ))}
+
+                                    <button
+                                      onClick={() =>
+                                        setCurrentRequisitionPage((prev) =>
+                                          Math.min(
+                                            prev + 1,
+                                            Math.ceil(categories.length / 8),
+                                          ),
+                                        )
+                                      }
+                                      disabled={
+                                        currentRequisitionPage ===
+                                        Math.ceil(categories.length / 8)
+                                      }
+                                      className="text-gray-400 hover:text-white disabled:opacity-50"
+                                    >
+                                      <ChevronRight className="w-6 h-6" />
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </>
+                    )}
+
+                    <CreateJobRoleModal
+                      isOpen={showCreateJobRole}
+                      workspaceId={selectedWorkspaceId || 1}
+                      workspaces={workspaces}
+                      handlePipelinesClick={handlePipelinesClick}
+                      onClose={() => setShowCreateJobRole(false)}
+                      onJobCreated={handleJobCreatedOrUpdated}
+                    />
+                    <EditJobRoleModal
+                      isOpen={showEditJobRole}
+                      onClose={() => {
+                        setShowEditJobRole(false);
+                        setEditingJobId(null);
+                      }}
+                      handlePipelinesClick={handlePipelinesClick}
+                      workspaces={workspaces}
+                      workspaceId={selectedWorkspaceId || 1}
+                      jobId={editingJobId || 0}
+                      onJobUpdated={handleJobCreatedOrUpdated}
+                    />
+                    <EditTemplateModal
+                      jobId={String(activeCategoryId)}
+                      isOpen={showEditTemplate}
+                      onClose={() => setShowEditTemplate(false)}
+                      templateName={editingTemplate}
+                    />
+
+                    {showLogoutModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                          <div className="text-center">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                              <LogOut className="w-6 h-6 text-red-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              Confirm Logout
+                            </h3>
+                            <p className="text-gray-600 mb-6">
+                              Are you sure you want to sign out? You'll need to
+                              log in again to access your account.
+                            </p>
+                            <div className="flex space-x-3">
+                              <button
+                                onClick={handleCloseLogoutModal}
+                                className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={handleLogoutConfirm}
+                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                              >
+                                Sign Out
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {showPublishModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                          <div className="text-center">
+                            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                              <Globe className="w-6 h-6 text-green-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              Confirm Publish Job
+                            </h3>
+                            <p className="text-gray-600 mb-6">
+                              Are you sure you want to publish{" "}
+                              {
+                                categories.find(
+                                  (cat) => cat.id === showPublishModal,
+                                )?.name
+                              }
+                              ? This action will publish job on LinkedIn, Google
+                              Jobs,Times Ascent, Cutshort and others.
+                            </p>
+                            <span className="text-gray-400 text-sm mb-6">
+                              (Note: Once published, the job will be visible on
+                              both platforms within 24–48 hours.)
+                            </span>
+                            <div className="flex space-x-3">
+                              <button
+                                onClick={() => setShowPublishModal(null)}
+                                className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handlePublishJobRole(showPublishModal)
+                                }
+                                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                              >
+                                Publish
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {showUnpublishModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                          <div className="text-center">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                              <Pause className="w-6 h-6 text-red-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              Confirm Unpublish Job
+                            </h3>
+                            <p className="text-gray-600 mb-6">
+                              Are you sure you want to Unpublish
+                              {
+                                categories.find(
+                                  (cat) => cat.id === showUnpublishModal,
+                                )?.name
+                              }
+                              ? This action cannot be undone.
+                            </p>
+                            <span className="text-gray-400 text-sm mb-6">
+                              (Note: this action will unpublish job on published
+                              over LinkedIn, Google Jobs,Times Ascent, Cutshort
+                              and others within 24–48 hours.)
+                            </span>
+                            <div className="flex space-x-3">
+                              <button
+                                onClick={() => setShowUnpublishModal(null)}
+                                className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleUnpublishJobRole(showUnpublishModal)
+                                }
+                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                              >
+                                Unpublish
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {showDeleteModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                          <div className="text-center">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                              <Trash2 className="w-6 h-6 text-red-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              Confirm Delete Job
+                            </h3>
+                            <p className="text-gray-600 mb-6">
+                              Are you sure you want to delete{" "}
+                              {
+                                categories.find(
+                                  (cat) => cat.id === showDeleteModal,
+                                )?.name
+                              }
+                              ? This action cannot be undone.
+                            </p>
+                            <div className="flex space-x-3">
+                              <button
+                                onClick={() => setShowDeleteModal(null)}
+                                className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleDeleteJobRole(showDeleteModal)
+                                }
+                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {showRequisitionInfoModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-end overflow-y-auto">
+                        <div className="bg-white rounded-3xl shadow-xl max-w-2xl w-full max-h-[100vh] overflow-y-auto p-6">
+                          {/* Header */}
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                              <button
+                                className="w-8 h-8 text-gray-800"
+                                onClick={handleCloseRequisitionModal}
+                              >
+                                <ArrowLeft className="w-8 h-8" />
+                              </button>
+                              <h1 className="text-lg font-semibold text-gray-800">
+                                Requisition Info
+                              </h1>
+                            </div>
+                          </div>
+                          {loadingCompetencies ? (
+                            <RequisitionSkeleton />
+                          ) : jobDataForModal && competenciesData ? (
+                            <>
+                              <h2 className="text-2xl font-semibold text-gray-900 mb-1">
+                                {jobDataForModal.title}
+                              </h2>
+                              <div className="flex space-x-8 mt-2 mb-6">
+                                <span className="flex items-center text-gray-500">
+                                  <Briefcase className="w-4 h-4 mr-1" />{" "}
+                                  {jobDataForModal.experience_min_years}+ years
+                                </span>
+                                <span className="flex items-center text-gray-500">
+                                  <LocateIcon className="w-4 h-4 mr-1" />{" "}
+                                  {jobDataForModal.work_approach}
+                                </span>
+                                <span className="flex items-center text-gray-500">
+                                  <FileSearch className="w-4 h-4 mr-1" />{" "}
+                                  Immediate
+                                </span>
+                              </div>
+
+                              {/* Role Overview */}
+                              <div className="mb-6">
+                                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                                  Role Overview
+                                </h3>
+                                <p className="text-gray-600 text-sm">
+                                  {competenciesData.role_overview}
+                                </p>
+                              </div>
+
+                              {/* The Core Expectation */}
+                              <div className="mb-6">
+                                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                                  The Core Expectation
+                                </h3>
+                                <ul className="text-gray-600 text-sm list-disc pl-5 space-y-1">
+                                  {competenciesData.the_core_expectation.map(
+                                    (item: string, idx: number) => (
+                                      <li key={idx}>{item}</li>
+                                    ),
+                                  )}
+                                </ul>
+                              </div>
+
+                              {/* Key Responsibilities Explained */}
+                              <div className="mb-6">
+                                <h3 className="text-lg font-semibold text-gray-700 mb-3">
+                                  Key Responsibilities Explained
+                                </h3>
+                                <div className="space-y-3">
+                                  {/* Functional */}
+                                  {competenciesData.key_responsibilities_explained.functional.map(
+                                    (item: any, idx: number) => (
+                                      <div
+                                        key={idx}
+                                        className="bg-blue-50 rounded-lg p-4"
+                                      >
+                                        <div className="flex items-start space-x-3">
+                                          <div>
+                                            <div className="flex items-center space-x-2 mb-1">
+                                              <h4 className="font-medium text-gray-600">
+                                                {item.competency}
+                                              </h4>
+                                              {item.why_it_matters && (
+                                                <div className="relative group inline-block ml-2">
+                                                  <svg
+                                                    className="w-4 h-4 text-gray-400 group-hover:text-blue-500 cursor-help transition-colors duration-200"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                  >
+                                                    <path
+                                                      strokeLinecap="round"
+                                                      strokeLinejoin="round"
+                                                      strokeWidth={2}
+                                                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                    />
+                                                  </svg>
+                                                  <div className="absolute z-20 hidden group-hover:block bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-gray-700 shadow-md whitespace-normal w-64 left-full ml-2 top-0">
+                                                    {item.why_it_matters}
+                                                  </div>
                                                 </div>
-                                              </div>
+                                              )}
+                                            </div>
+                                            <p className="text-sm text-gray-400">
+                                              {item.context}
+                                            </p>
+                                            {item.priority && (
+                                              <p className="text-xs text-gray-500 mt-1">
+                                                Priority: {item.priority} |
+                                                Depth: {item.depth_required}
+                                              </p>
                                             )}
                                           </div>
-                                          <p className="text-sm text-gray-400">
-                                            {item.context}
-                                          </p>
-                                          {item.priority && (
-                                            <p className="text-xs text-gray-500 mt-1">
-                                              Priority: {item.priority} | Depth:{" "}
-                                              {item.depth_required}
-                                            </p>
-                                          )}
                                         </div>
                                       </div>
-                                    </div>
-                                  )
-                                )}
-                                {/* Leadership (new subsection for API structure) */}
-                                {competenciesData.key_responsibilities_explained
-                                  .leadership &&
-                                  competenciesData
-                                    .key_responsibilities_explained.leadership
-                                    .length > 0 && (
-                                    <div className="mt-6 pt-4 border-t border-gray-200">
-                                      <h4 className="font-semibold text-gray-700 mb-3">
-                                        Leadership Responsibilities
-                                      </h4>
-                                      {competenciesData.key_responsibilities_explained.leadership.map(
-                                        (item: any, idx: number) => (
-                                          <div
-                                            key={idx}
-                                            className="bg-green-50 rounded-lg p-4"
-                                          >
-                                            <div className="flex items-start space-x-3">
-                                              <div>
-                                                <div className="flex items-center space-x-2 mb-1">
-                                                  <h5 className="font-medium text-gray-600">
-                                                    {item.responsibility}
-                                                  </h5>
-                                                  {item.why_it_matters && (
-                                                    <div className="relative group inline-block ml-2">
-                                                      <svg
-                                                        className="w-4 h-4 text-gray-400 group-hover:text-blue-500 cursor-help transition-colors duration-200"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                      >
-                                                        <path
-                                                          strokeLinecap="round"
-                                                          strokeLinejoin="round"
-                                                          strokeWidth={2}
-                                                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                        />
-                                                      </svg>
-                                                      <div className="absolute z-20 hidden group-hover:block bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-gray-700 shadow-md whitespace-normal w-64 left-full ml-2 top-0">
-                                                        {item.why_it_matters}
+                                    ),
+                                  )}
+                                  {/* Leadership (new subsection for API structure) */}
+                                  {competenciesData
+                                    .key_responsibilities_explained
+                                    .leadership &&
+                                    competenciesData
+                                      .key_responsibilities_explained.leadership
+                                      .length > 0 && (
+                                      <div className="mt-6 pt-4 border-t border-gray-200">
+                                        <h4 className="font-semibold text-gray-700 mb-3">
+                                          Leadership Responsibilities
+                                        </h4>
+                                        {competenciesData.key_responsibilities_explained.leadership.map(
+                                          (item: any, idx: number) => (
+                                            <div
+                                              key={idx}
+                                              className="bg-green-50 rounded-lg p-4"
+                                            >
+                                              <div className="flex items-start space-x-3">
+                                                <div>
+                                                  <div className="flex items-center space-x-2 mb-1">
+                                                    <h5 className="font-medium text-gray-600">
+                                                      {item.responsibility}
+                                                    </h5>
+                                                    {item.why_it_matters && (
+                                                      <div className="relative group inline-block ml-2">
+                                                        <svg
+                                                          className="w-4 h-4 text-gray-400 group-hover:text-blue-500 cursor-help transition-colors duration-200"
+                                                          fill="none"
+                                                          stroke="currentColor"
+                                                          viewBox="0 0 24 24"
+                                                          xmlns="http://www.w3.org/2000/svg"
+                                                        >
+                                                          <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                          />
+                                                        </svg>
+                                                        <div className="absolute z-20 hidden group-hover:block bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-gray-700 shadow-md whitespace-normal w-64 left-full ml-2 top-0">
+                                                          {item.why_it_matters}
+                                                        </div>
                                                       </div>
-                                                    </div>
+                                                    )}
+                                                  </div>
+                                                  <p className="text-sm text-gray-400">
+                                                    {item.context}
+                                                  </p>
+                                                  {item.evidence && (
+                                                    <p className="text-xs text-gray-500 mt-1">
+                                                      Evidence: {item.evidence}
+                                                    </p>
                                                   )}
                                                 </div>
-                                                <p className="text-sm text-gray-400">
-                                                  {item.context}
-                                                </p>
-                                                {item.evidence && (
-                                                  <p className="text-xs text-gray-500 mt-1">
-                                                    Evidence: {item.evidence}
-                                                  </p>
-                                                )}
                                               </div>
                                             </div>
-                                          </div>
-                                        )
-                                      )}
-                                    </div>
-                                  )}
-                              </div>
-                            </div>
-
-                            {/* Required Technical Skills & Purpose */}
-                            <div className="mb-6">
-                              <h3 className="text-lg font-semibold text-gray-700 mb-3">
-                                Required Technical Skills & Purpose
-                              </h3>
-                              <div className="space-y-3">
-                                {competenciesData.required_technical_skills_purpose.map(
-                                  (item: any, idx: number) => (
-                                    <div
-                                      key={idx}
-                                      className="bg-blue-50 rounded-lg p-4"
-                                    >
-                                      <div className="flex items-center space-x-2 mb-1">
-                                        <h4 className="font-medium text-gray-600">
-                                          {item.skill}
-                                        </h4>
-                                        {item.why_it_matters && (
-                                          <div className="relative group inline-block ml-2">
-                                            <svg
-                                              className="w-4 h-4 text-gray-400 group-hover:text-blue-500 cursor-help transition-colors duration-200"
-                                              fill="none"
-                                              stroke="currentColor"
-                                              viewBox="0 0 24 24"
-                                              xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                              <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                              />
-                                            </svg>
-                                            <div className="absolute z-20 hidden group-hover:block bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-gray-700 shadow-md whitespace-normal w-64 left-full ml-2 top-0">
-                                              {item.why_it_matters}
-                                            </div>
-                                          </div>
+                                          ),
                                         )}
                                       </div>
-                                      <p className="text-sm text-gray-400">
-                                        {item.context}
-                                      </p>
-                                      {item.priority && (
-                                        <p className="text-xs text-gray-500 mt-1">
-                                          Priority: {item.priority}
-                                        </p>
-                                      )}
-                                      {item.assessment_guidance && (
-                                        <p className="text-xs text-gray-500 mt-1">
-                                          Assessment: {item.assessment_guidance}
-                                        </p>
-                                      )}
-                                    </div>
-                                  )
-                                )}
+                                    )}
+                                </div>
                               </div>
+
+                              {/* Required Technical Skills & Purpose */}
+                              <div className="mb-6">
+                                <h3 className="text-lg font-semibold text-gray-700 mb-3">
+                                  Required Technical Skills & Purpose
+                                </h3>
+                                <div className="space-y-3">
+                                  {competenciesData.required_technical_skills_purpose.map(
+                                    (item: any, idx: number) => (
+                                      <div
+                                        key={idx}
+                                        className="bg-blue-50 rounded-lg p-4"
+                                      >
+                                        <div className="flex items-center space-x-2 mb-1">
+                                          <h4 className="font-medium text-gray-600">
+                                            {item.skill}
+                                          </h4>
+                                          {item.why_it_matters && (
+                                            <div className="relative group inline-block ml-2">
+                                              <svg
+                                                className="w-4 h-4 text-gray-400 group-hover:text-blue-500 cursor-help transition-colors duration-200"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                              >
+                                                <path
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                  strokeWidth={2}
+                                                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                />
+                                              </svg>
+                                              <div className="absolute z-20 hidden group-hover:block bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-gray-700 shadow-md whitespace-normal w-64 left-full ml-2 top-0">
+                                                {item.why_it_matters}
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                        <p className="text-sm text-gray-400">
+                                          {item.context}
+                                        </p>
+                                        {item.priority && (
+                                          <p className="text-xs text-gray-500 mt-1">
+                                            Priority: {item.priority}
+                                          </p>
+                                        )}
+                                        {item.assessment_guidance && (
+                                          <p className="text-xs text-gray-500 mt-1">
+                                            Assessment:{" "}
+                                            {item.assessment_guidance}
+                                          </p>
+                                        )}
+                                      </div>
+                                    ),
+                                  )}
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="text-center py-8 text-gray-500">
+                              Failed to load data. Please try again.
                             </div>
-                          </>
-                        ) : (
-                          <div className="text-center py-8 text-gray-500">
-                            Failed to load data. Please try again.
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                   </div>
                 </div>
               ) : (
@@ -2072,7 +2095,7 @@ function MainApp() {
 
                               <h1 className="text-[24px] font-['Gellix',_sans-serif] font-semibold text-[#4B5563]">
                                 {categories.find(
-                                  (c) => c.id === activeCategoryId
+                                  (c) => c.id === activeCategoryId,
                                 )?.name || "Untitled Job"}
                               </h1>
 
@@ -2116,7 +2139,7 @@ function MainApp() {
                                   <span>
                                     {
                                       categories.find(
-                                        (c) => c.id === activeCategoryId
+                                        (c) => c.id === activeCategoryId,
                                       )?.experience
                                     }
                                   </span>
@@ -2146,7 +2169,7 @@ function MainApp() {
                                   <span>
                                     {
                                       categories.find(
-                                        (c) => c.id === activeCategoryId
+                                        (c) => c.id === activeCategoryId,
                                       )?.workApproach
                                     }
                                   </span>
@@ -2171,7 +2194,7 @@ function MainApp() {
                                   <span>
                                     {
                                       categories.find(
-                                        (c) => c.id === activeCategoryId
+                                        (c) => c.id === activeCategoryId,
                                       )?.joiningTimeline
                                     }
                                   </span>
@@ -2186,7 +2209,7 @@ function MainApp() {
                                   onClick={() =>
                                     handleCategoryAction(
                                       "copy-link",
-                                      activeCategoryId
+                                      activeCategoryId,
                                     )
                                   }
                                   title="Copy Link"
@@ -2213,7 +2236,7 @@ function MainApp() {
                                   onClick={() =>
                                     handleCategoryAction(
                                       "edit-template",
-                                      activeCategoryId
+                                      activeCategoryId,
                                     )
                                   }
                                   title="Edit Template"
@@ -2236,16 +2259,16 @@ function MainApp() {
                                 </button>
 
                                 {categories.find(
-                                  (c) => c.id === activeCategoryId
+                                  (c) => c.id === activeCategoryId,
                                 )?.status === "DRAFT" &&
                                   categories.find(
-                                    (c) => c.id === activeCategoryId
+                                    (c) => c.id === activeCategoryId,
                                   )?.visibility === "PRIVATE" && (
                                     <button
                                       onClick={() =>
                                         handleCategoryAction(
                                           "publish-job",
-                                          activeCategoryId
+                                          activeCategoryId,
                                         )
                                       }
                                       title="Publish Job"
@@ -2255,16 +2278,16 @@ function MainApp() {
                                     </button>
                                   )}
                                 {categories.find(
-                                  (c) => c.id === activeCategoryId
+                                  (c) => c.id === activeCategoryId,
                                 )?.status === "PUBLISHED" &&
                                   categories.find(
-                                    (c) => c.id === activeCategoryId
+                                    (c) => c.id === activeCategoryId,
                                   )?.visibility === "PUBLIC" && (
                                     <button
                                       onClick={() =>
                                         handleCategoryAction(
                                           "unpublish-job",
-                                          activeCategoryId
+                                          activeCategoryId,
                                         )
                                       }
                                       title="Unpublish Job"
@@ -2290,7 +2313,7 @@ function MainApp() {
                                   onClick={() =>
                                     handleCategoryAction(
                                       "edit-job",
-                                      activeCategoryId
+                                      activeCategoryId,
                                     )
                                   }
                                   title="Edit Job"
@@ -2315,7 +2338,7 @@ function MainApp() {
                                   onClick={() =>
                                     handleCategoryAction(
                                       "requisition-info",
-                                      activeCategoryId
+                                      activeCategoryId,
                                     )
                                   }
                                   title="Requisition Info"
@@ -2349,7 +2372,7 @@ function MainApp() {
                                   onClick={() =>
                                     handleCategoryAction(
                                       "archive",
-                                      activeCategoryId
+                                      activeCategoryId,
                                     )
                                   }
                                   title="Archive"
@@ -2382,7 +2405,7 @@ function MainApp() {
                                 onClick={() =>
                                   handleCategoryAction(
                                     "share-pipelines",
-                                    activeCategoryId
+                                    activeCategoryId,
                                   )
                                 }
                                 className="px-6 py-2.5 font-['Gellix',_sans-serif] bg-[#1CB977] text-white rounded-lg font-medium hover:bg-[#0d3ec9] transition-colors flex items-center gap-2 shadow-md"
@@ -2458,6 +2481,7 @@ function MainApp() {
                             boolQuery={filters.boolQuery || ""} // ← Current bool_query (boolean mode)
                             enableAnalysis={!!filters.jobId}
                             onAnalysisFetched={setCurrentAnalysis}
+                            activeMiddleTab={activeTab} // ← Pass activeTab to CandidateDetail
                           />
                         </div>
                         {/* TemplateSelector rendered as an overlay with 40% width when active */}
@@ -2551,7 +2575,7 @@ function MainApp() {
                               Are you sure you want to publish{" "}
                               {
                                 categories.find(
-                                  (cat) => cat.id === showPublishModal
+                                  (cat) => cat.id === showPublishModal,
                                 )?.name
                               }
                               ? This action will publish job on LinkedIn, Google
@@ -2595,7 +2619,7 @@ function MainApp() {
                               Are you sure you want to Unpublish
                               {
                                 categories.find(
-                                  (cat) => cat.id === showUnpublishModal
+                                  (cat) => cat.id === showUnpublishModal,
                                 )?.name
                               }
                               ? This action cannot be undone.
@@ -2639,7 +2663,7 @@ function MainApp() {
                               Are you sure you want to delete{" "}
                               {
                                 categories.find(
-                                  (cat) => cat.id === showDeleteModal
+                                  (cat) => cat.id === showDeleteModal,
                                 )?.name
                               }
                               ? This action cannot be undone.
@@ -2727,7 +2751,7 @@ function MainApp() {
                                   {competenciesData.the_core_expectation.map(
                                     (item: string, idx: number) => (
                                       <li key={idx}>{item}</li>
-                                    )
+                                    ),
                                   )}
                                 </ul>
                               </div>
@@ -2791,7 +2815,7 @@ function MainApp() {
                                           </div>
                                         </div>
                                       </div>
-                                    )
+                                    ),
                                   )}
                                   {/* Leadership (new subsection for API structure) */}
                                   {competenciesData
@@ -2857,7 +2881,7 @@ function MainApp() {
                                                 </div>
                                               </div>
                                             </div>
-                                          )
+                                          ),
                                         )}
                                       </div>
                                     )}
@@ -2923,7 +2947,7 @@ function MainApp() {
                                           </p>
                                         )}
                                       </div>
-                                    )
+                                    ),
                                   )}
                                 </div>
                               </div>
