@@ -950,7 +950,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               return (
                 <div
                   key={candidate.id}
-                  className={`relative pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500  ${selectedCandidate?.id === candidate.id
+                  className={`relative  pt-5 hover:bg-blue-50 ${sharePopupCandidateId === candidate.id ? "bg-black bg-opacity-50 hover:bg-black hover:bg-opacity-60" : ""} transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500  ${selectedCandidate?.id === candidate.id
                     ? "bg-blue-50 border-l-4 border-blue-500"
                     : "border border-gray-200"
                     }`}
@@ -1722,14 +1722,21 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                           );
                         })()}
                       <button
-                        className="text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full p-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className="text-gray-400 bg-[#4B5563] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={(e) => {
                           e.stopPropagation();
                           setSharePopupCandidateId(candidate.id);
                         }}
                         title="Share Profile"
                       >
-                        <Share2 className="w-4 h-4" />
+                        <svg width="28" height="28" viewBox="0 0 15 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M5.05044 8.42938C5.05044 9.6287 4.05408 10.601 2.82502 10.601C1.59596 10.601 0.599609 9.6287 0.599609 8.42938C0.599609 7.23007 1.59596 6.25781 2.82502 6.25781C4.05408 6.25781 5.05044 7.23007 5.05044 8.42938Z" stroke="#F5F9FB" stroke-width="1.2" />
+                          <path d="M9.50161 3.64453L5.05078 6.68473" stroke="#F5F9FB" stroke-width="1.2" stroke-linecap="round" />
+                          <path d="M9.50161 13.2121L5.05078 10.1719" stroke="#F5F9FB" stroke-width="1.2" stroke-linecap="round" />
+                          <path d="M13.9547 14.07C13.9547 15.2693 12.9584 16.2416 11.7293 16.2416C10.5003 16.2416 9.50391 15.2693 9.50391 14.07C9.50391 12.8707 10.5003 11.8984 11.7293 11.8984C12.9584 11.8984 13.9547 12.8707 13.9547 14.07Z" stroke="#F5F9FB" stroke-width="1.2" />
+                          <path d="M13.9547 2.77313C13.9547 3.97246 12.9584 4.94471 11.7293 4.94471C10.5003 4.94471 9.50391 3.97246 9.50391 2.77313C9.50391 1.57381 10.5003 0.601562 11.7293 0.601562C12.9584 0.601562 13.9547 1.57381 13.9547 2.77313Z" stroke="#F5F9FB" stroke-width="1.2" />
+                        </svg>
+
                       </button>
                     </div>
                     <div className="flex items-center">
