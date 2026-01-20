@@ -245,6 +245,7 @@ function MainApp() {
   const [activeTab, setActiveTab] = useState("outbound");
   const [searchTerm, setSearchTerm] = useState("");
   const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
+
   const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
     null,
   );
@@ -267,6 +268,31 @@ function MainApp() {
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [activeCategoryTotalCount, setActiveCategoryTotalCount] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [logos, setLogos] = useState<Record<string, string | null | undefined>>(
+    {},
+  );
+
+  const fetchLogo = async (query: string) => {
+    if (!query || logos[query] !== undefined) return;
+    try {
+      const response = await fetch(
+        `https://api.logo.dev/search?q=${encodeURIComponent(query)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${import.meta.env.VITE_LOGO_DEV_API_KEY}`,
+          },
+        },
+      );
+      const data = await response.json();
+      const logoUrl = data.length > 0 ? data[0].logo_url : null;
+
+      setLogos((prev) => ({ ...prev, [query]: logoUrl }));
+    } catch (error) {
+      console.error(`Error fetching logo for ${query}:`, error);
+      setLogos((prev) => ({ ...prev, [query]: undefined }));
+    }
+  };
+
   const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
   const [loadingCandidates, setLoadingCandidates] = useState(true);
   const [loadingCategories, setLoadingCategories] = useState(true);
@@ -355,6 +381,24 @@ function MainApp() {
   useEffect(() => {
     setIsSearchMode(debouncedSearchQuery.trim() !== "");
   }, [debouncedSearchQuery]);
+
+  useEffect(() => {
+    if (categories.length > 0) {
+      const uniqueCompanies = Array.from(
+        new Set(categories.map((c) => c.companyName)),
+      );
+      uniqueCompanies.forEach((company) => {
+        if (
+          company &&
+          company !== "Confidential" &&
+          logos[company] === undefined
+        ) {
+          fetchLogo(company);
+        }
+      });
+    }
+  }, [categories, logos]);
+
   useEffect(() => {
     if (activeCategoryId) {
       fetchJobDetailsAndSetFilters(activeCategoryId);
@@ -1509,6 +1553,7 @@ function MainApp() {
                                       experience={job.experience}
                                       workApproach={job.workApproach}
                                       joiningTimeline={job.joiningTimeline}
+                                      location={job.location}
                                       inboundCount={job.inboundCount}
                                       shortlistedCount={job.shortlistedCount}
                                       totalApplied={job.totalApplied}
@@ -1533,6 +1578,7 @@ function MainApp() {
                                         setHasSelectedJob(true);
                                         fetchJobDetailsAndSetFilters(job.id);
                                       }}
+                                      logoUrl={logos[job.companyName]}
                                     />
                                   </div>
                                 ))}
