@@ -1729,7 +1729,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         }}
                         title="Share Profile"
                       >
-                        <svg width="28" height="28" viewBox="0 0 15 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <svg width="22" height="22" viewBox="0 0 15 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M5.05044 8.42938C5.05044 9.6287 4.05408 10.601 2.82502 10.601C1.59596 10.601 0.599609 9.6287 0.599609 8.42938C0.599609 7.23007 1.59596 6.25781 2.82502 6.25781C4.05408 6.25781 5.05044 7.23007 5.05044 8.42938Z" stroke="#F5F9FB" stroke-width="1.2" />
                           <path d="M9.50161 3.64453L5.05078 6.68473" stroke="#F5F9FB" stroke-width="1.2" stroke-linecap="round" />
                           <path d="M9.50161 13.2121L5.05078 10.1719" stroke="#F5F9FB" stroke-width="1.2" stroke-linecap="round" />
