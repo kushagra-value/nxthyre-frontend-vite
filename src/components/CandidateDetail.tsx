@@ -935,7 +935,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       return (
         <div className="bg-white p-8 rounded-lg border border-gray-200 text-center">
           <div className="text-gray-600 text-lg">
-            {activeTab === "inbound"
+            {activeMiddleTab === "inbound"
               ? "No job score available for this candidate in inbound."
               : "No analysis available. Please add keywords or boolean query in filters."}
           </div>
