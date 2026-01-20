@@ -681,7 +681,7 @@ class CandidateService {
   ): Promise<CandidateDetailData> {
     try {
       const response = await apiClient.get(
-        `/candidates/${candidateId}/${jobId}`,
+        `/candidates/${candidateId}/job_id=${jobId}`,
       );
       return response.data;
     } catch (error: any) {
