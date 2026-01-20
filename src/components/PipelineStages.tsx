@@ -415,17 +415,24 @@ const [stagesError, setStagesError] = useState<string | null>(null);
 
   // Handle file upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const filesArray = Array.from(e.target.files);
-      const pdfFiles = filesArray.filter(
-        (file) => file.type === "application/pdf"
+  if (e.target.files) {
+    const filesArray = Array.from(e.target.files);
+    const allowedFiles = filesArray.filter((file) => {
+      const fileName = file.name.toLowerCase();
+      return (
+        fileName.endsWith('.pdf') ||
+        fileName.endsWith('.doc') ||
+        fileName.endsWith('.docx')
       );
-      if (pdfFiles.length !== filesArray.length) {
-        showToast.error("Only PDF files are allowed.");
-      }
-      setUploadFiles(pdfFiles);
+    });
+
+    if (allowedFiles.length !== filesArray.length) {
+      showToast.error("Only PDF, DOC, and DOCX files are allowed.");
     }
-  };
+
+    setUploadFiles(allowedFiles.length > 0 ? allowedFiles : null);
+  }
+};
 
   const handleUploadCandidates = async () => {
     if (!uploadFiles || uploadFiles.length === 0 || !activeJobId) {
@@ -3063,11 +3070,11 @@ const [stagesError, setStagesError] = useState<string | null>(null);
       {showUploadModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-lg font-semibold mb-4">Upload Resumes</h2>
+            <h2 className="text-lg font-semibold mb-4">Upload Resumes (PDF, DOC, DOCX)</h2>
             <input
               type="file"
               multiple
-              accept=".pdf"
+              accept=".pdf,.doc,.docx"
               onChange={handleFileChange}
               className="mb-4 w-full"
             />
