@@ -43,6 +43,7 @@ import {
 import { User } from "./types/auth";
 import type { Job } from "./services/jobPostService";
 import {
+
   ChevronDown,
   Edit,
   Mail,
@@ -151,6 +152,8 @@ const ProjectSkeletonCard = () => (
         <div className="h-8 bg-gray-200 rounded-full px-4 w-24"></div>
       </div>
 
+
+
       {/* Bottom row: Featured badge + Posted ago + Interviews */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -247,11 +250,11 @@ function MainApp() {
   const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
 
   const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
-    null,
+    null
   );
   const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
   const [showUnpublishModal, setShowUnpublishModal] = useState<number | null>(
-    null,
+    null
   );
   const [sourcingCounts, setSourcingCounts] = useState({
     inbound: 0,
@@ -268,9 +271,7 @@ function MainApp() {
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [activeCategoryTotalCount, setActiveCategoryTotalCount] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [logos, setLogos] = useState<Record<string, string | null | undefined>>(
-    {},
-  );
+  const [logos, setLogos] = useState<Record<string, string | null | undefined>>({});
 
   const fetchLogo = async (query: string) => {
     if (!query || logos[query] !== undefined) return;
@@ -281,7 +282,7 @@ function MainApp() {
           headers: {
             Authorization: `Bearer ${import.meta.env.VITE_LOGO_DEV_API_KEY}`,
           },
-        },
+        }
       );
       const data = await response.json();
       const logoUrl = data.length > 0 ? data[0].logo_url : null;
@@ -292,6 +293,8 @@ function MainApp() {
       setLogos((prev) => ({ ...prev, [query]: undefined }));
     }
   };
+
+
 
   const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
   const [loadingCandidates, setLoadingCandidates] = useState(true);
@@ -310,10 +313,9 @@ function MainApp() {
   const [competenciesData, setCompetenciesData] = useState<any>(null);
   const [loadingCompetencies, setLoadingCompetencies] = useState(false);
   const [currentAnalysis, setCurrentAnalysis] = useState<AnalysisResult | null>(
-    null,
+    null
   );
-  const [currentRequisitionPage, setCurrentRequisitionPage] =
-    useState<number>(1);
+  const [currentRequisitionPage, setCurrentRequisitionPage] = useState<number>(1);
   const [currentJobIdForModal, setCurrentJobIdForModal] = useState<
     number | null
   >(null);
@@ -329,7 +331,7 @@ function MainApp() {
           (ws: MyWorkspace) => ({
             id: ws.id,
             name: ws.name,
-          }),
+          })
         );
         setWorkspaces(mappedWorkspaces);
       } catch (error) {
@@ -384,15 +386,9 @@ function MainApp() {
 
   useEffect(() => {
     if (categories.length > 0) {
-      const uniqueCompanies = Array.from(
-        new Set(categories.map((c) => c.companyName)),
-      );
-      uniqueCompanies.forEach((company) => {
-        if (
-          company &&
-          company !== "Confidential" &&
-          logos[company] === undefined
-        ) {
+      const uniqueCompanies = Array.from(new Set(categories.map(c => c.companyName)));
+      uniqueCompanies.forEach(company => {
+        if (company && company !== "Confidential" && logos[company] === undefined) {
           fetchLogo(company);
         }
       });
@@ -417,11 +413,7 @@ function MainApp() {
 
     if (days < 0) {
       months--;
-      const daysInPrevMonth = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        0,
-      ).getDate();
+      const daysInPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
       days += daysInPrevMonth;
     }
 
@@ -436,6 +428,8 @@ function MainApp() {
 
     return "today";
   };
+
+
 
   const fetchCategories = async () => {
     setLoadingCategories(true);
@@ -452,7 +446,7 @@ function MainApp() {
             job.organization_details?.name?.toLowerCase().includes(query) ||
             job.workspace_details?.name?.toLowerCase().includes(query);
           const skillsMatch = job.skills?.some((skill: string) =>
-            skill.toLowerCase().includes(query),
+            skill.toLowerCase().includes(query)
           );
           return titleMatch || companyMatch || skillsMatch;
         });
@@ -550,7 +544,7 @@ function MainApp() {
         if (debouncedSearchQuery.trim() !== "") {
           response = await candidateService.universalSearch(
             debouncedSearchQuery,
-            controller.signal,
+            controller.signal
           );
           const candidates = response.results.map((candidate: any) => ({
             ...candidate,
@@ -607,7 +601,7 @@ function MainApp() {
             // Assume API returns 'bool_query' field
             localStorage.setItem(
               `bool_query_${appliedFilters.jobId}`,
-              response.boolean_search_terms,
+              response.boolean_search_terms
             );
             setDefaultBoolQuery(response.boolean_search_terms); // For FiltersSidebar
           } else {
@@ -636,7 +630,7 @@ function MainApp() {
         setLoadingCandidates(false);
       }
     },
-    [selectedCandidate, debouncedSearchQuery, sortBy, filters, activeTab],
+    [selectedCandidate, debouncedSearchQuery, sortBy, filters, activeTab]
   );
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
@@ -644,7 +638,7 @@ function MainApp() {
   };
   const handleCandidatesUpdate = (
     newCandidates: CandidateListItem[],
-    count: number,
+    count: number
   ) => {
     setCandidates(newCandidates);
     setTotalCount(count);
@@ -654,7 +648,7 @@ function MainApp() {
       setSelectedCandidate(null);
     } else {
       const updatedSelected = newCandidates.find(
-        (c) => c.id === selectedCandidate?.id,
+        (c) => c.id === selectedCandidate?.id
       );
       if (updatedSelected) {
         setSelectedCandidate(updatedSelected);
@@ -720,7 +714,7 @@ function MainApp() {
         workspaceIds: userStatus.roles
           .filter(
             (role) =>
-              role.workspace_id !== null && role.workspace_id !== undefined,
+              role.workspace_id !== null && role.workspace_id !== undefined
           )
           .map((role) => Number(role.workspace_id)),
         isVerified: firebaseUser?.emailVerified ?? true,
@@ -747,18 +741,18 @@ function MainApp() {
   const updateCandidateEmail = (
     candidateId: string,
     candidate_email: string,
-    candidate_phone: string,
+    candidate_phone: string
   ) => {
     setCandidates((prevCandidates) =>
       prevCandidates.map((cand) =>
         cand.id === candidateId
           ? { ...cand, candidate_email, candidate_phone }
-          : cand,
-      ),
+          : cand
+      )
     );
     if (selectedCandidate?.id === candidateId) {
       setSelectedCandidate((prev) =>
-        prev ? { ...prev, candidate_email, candidate_phone } : prev,
+        prev ? { ...prev, candidate_email, candidate_phone } : prev
       );
     }
   };
@@ -1068,7 +1062,7 @@ function MainApp() {
   };
   const handleUpdateCandidate = (updated: CandidateListItem) => {
     setCandidates((prev) =>
-      prev.map((c) => (c.id === updated.id ? updated : c)),
+      prev.map((c) => (c.id === updated.id ? updated : c))
     );
     if (selectedCandidate?.id === updated.id) {
       setSelectedCandidate(updated);
@@ -1085,7 +1079,7 @@ function MainApp() {
       (newFilters.maxSalary && !isValidNumber(newFilters.maxSalary))
     ) {
       showToast.error(
-        "Invalid input in experience or salary fields. Please enter numbers only.",
+        "Invalid input in experience or salary fields. Please enter numbers only."
       );
       setCandidates([]);
       setTotalCount(0);
@@ -1100,7 +1094,7 @@ function MainApp() {
       Number(newFilters.minTotalExp) > Number(newFilters.maxTotalExp)
     ) {
       showToast.error(
-        "Minimum total experience cannot be greater than maximum.",
+        "Minimum total experience cannot be greater than maximum."
       );
       setCandidates([]);
       setTotalCount(0);
@@ -1161,8 +1155,9 @@ function MainApp() {
       setClaiming(true);
       try {
         console.log("Claiming invite with token:", inviteToken);
-        const data =
-          await organizationService.claimWorkspaceInvite(inviteToken);
+        const data = await organizationService.claimWorkspaceInvite(
+          inviteToken
+        );
         console.log("Claim response:", data);
         showToast.success("Successfully joined the workspace!");
         contextSetSelectedWorkspaceId(data.workspace.id);
@@ -1178,7 +1173,7 @@ function MainApp() {
           showToast.error("Invitation expired.");
         } else if (errorMsg.includes("different email")) {
           showToast.error(
-            "You are logged in with a different email than the invited recipient. Please sign out and sign in with the invited email.",
+            "You are logged in with a different email than the invited recipient. Please sign out and sign in with the invited email."
           );
           await signOut();
         } else if (errorMsg.includes("different organization")) {
@@ -1529,17 +1524,13 @@ function MainApp() {
                       <>
                         {(() => {
                           const itemsPerPage = 8;
-                          const startIndex =
-                            (currentRequisitionPage - 1) * itemsPerPage;
+                          const startIndex = (currentRequisitionPage - 1) * itemsPerPage;
                           const endIndex = startIndex + itemsPerPage;
-                          const currentCategories = categories.slice(
-                            startIndex,
-                            endIndex,
-                          );
+                          const currentCategories = categories.slice(startIndex, endIndex);
 
                           return (
                             <>
-                              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 gap-6">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
                                 {currentCategories.map((job) => (
                                   <div
                                     key={job.id}
@@ -1581,25 +1572,18 @@ function MainApp() {
                                     />
                                   </div>
                                 ))}
+
                               </div>
                               {categories.length > 0 && (
                                 <div className="mt-4 py-2 px-8 pt-2 flex items-center border-t-[0.5px] border-[#E5E7EB] justify-between w-full">
                                   <div className="text-gray-400 text-lg">
-                                    Showing{" "}
-                                    {(currentRequisitionPage - 1) * 8 + 1} to{" "}
-                                    {Math.min(
-                                      currentRequisitionPage * 8,
-                                      categories.length,
-                                    )}{" "}
-                                    of {categories.length} requisitions
+                                    Showing {(currentRequisitionPage - 1) * 8 + 1} to{" "}
+                                    {Math.min(currentRequisitionPage * 8, categories.length)} of{" "}
+                                    {categories.length} requisitions
                                   </div>
                                   <div className="flex items-center gap-3">
                                     <button
-                                      onClick={() =>
-                                        setCurrentRequisitionPage((prev) =>
-                                          Math.max(prev - 1, 1),
-                                        )
-                                      }
+                                      onClick={() => setCurrentRequisitionPage(prev => Math.max(prev - 1, 1))}
                                       disabled={currentRequisitionPage === 1}
                                       className="text-gray-400 hover:text-white disabled:opacity-50"
                                     >
@@ -1607,21 +1591,15 @@ function MainApp() {
                                     </button>
 
                                     {Array.from(
-                                      {
-                                        length: Math.ceil(
-                                          categories.length / 8,
-                                        ),
-                                      },
-                                      (_, i) => i + 1,
+                                      { length: Math.ceil(categories.length / 8) },
+                                      (_, i) => i + 1
                                     ).map((page) => (
                                       <button
                                         key={page}
-                                        onClick={() =>
-                                          setCurrentRequisitionPage(page)
-                                        }
+                                        onClick={() => setCurrentRequisitionPage(page)}
                                         className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${page === currentRequisitionPage
-                                            ? "bg-blue-600 text-white"
-                                            : "bg-white text-black hover:bg-gray-200"
+                                          ? "bg-blue-600 text-white"
+                                          : "bg-white text-black hover:bg-gray-200"
                                           }`}
                                       >
                                         {page}
@@ -1630,17 +1608,11 @@ function MainApp() {
 
                                     <button
                                       onClick={() =>
-                                        setCurrentRequisitionPage((prev) =>
-                                          Math.min(
-                                            prev + 1,
-                                            Math.ceil(categories.length / 8),
-                                          ),
+                                        setCurrentRequisitionPage(prev =>
+                                          Math.min(prev + 1, Math.ceil(categories.length / 8))
                                         )
                                       }
-                                      disabled={
-                                        currentRequisitionPage ===
-                                        Math.ceil(categories.length / 8)
-                                      }
+                                      disabled={currentRequisitionPage === Math.ceil(categories.length / 8)}
                                       className="text-gray-400 hover:text-white disabled:opacity-50"
                                     >
                                       <ChevronRight className="w-6 h-6" />
@@ -1653,6 +1625,7 @@ function MainApp() {
                         })()}
                       </>
                     )}
+
 
                     <CreateJobRoleModal
                       isOpen={showCreateJobRole}
@@ -1727,7 +1700,7 @@ function MainApp() {
                               Are you sure you want to publish{" "}
                               {
                                 categories.find(
-                                  (cat) => cat.id === showPublishModal,
+                                  (cat) => cat.id === showPublishModal
                                 )?.name
                               }
                               ? This action will publish job on LinkedIn, Google
@@ -1771,7 +1744,7 @@ function MainApp() {
                               Are you sure you want to Unpublish
                               {
                                 categories.find(
-                                  (cat) => cat.id === showUnpublishModal,
+                                  (cat) => cat.id === showUnpublishModal
                                 )?.name
                               }
                               ? This action cannot be undone.
@@ -1815,7 +1788,7 @@ function MainApp() {
                               Are you sure you want to delete{" "}
                               {
                                 categories.find(
-                                  (cat) => cat.id === showDeleteModal,
+                                  (cat) => cat.id === showDeleteModal
                                 )?.name
                               }
                               ? This action cannot be undone.
@@ -1898,7 +1871,7 @@ function MainApp() {
                                   {competenciesData.the_core_expectation.map(
                                     (item: string, idx: number) => (
                                       <li key={idx}>{item}</li>
-                                    ),
+                                    )
                                   )}
                                 </ul>
                               </div>
@@ -1949,18 +1922,17 @@ function MainApp() {
                                             </p>
                                             {item.priority && (
                                               <p className="text-xs text-gray-500 mt-1">
-                                                Priority: {item.priority} |
-                                                Depth: {item.depth_required}
+                                                Priority: {item.priority} | Depth:{" "}
+                                                {item.depth_required}
                                               </p>
                                             )}
                                           </div>
                                         </div>
                                       </div>
-                                    ),
+                                    )
                                   )}
                                   {/* Leadership (new subsection for API structure) */}
-                                  {competenciesData
-                                    .key_responsibilities_explained
+                                  {competenciesData.key_responsibilities_explained
                                     .leadership &&
                                     competenciesData
                                       .key_responsibilities_explained.leadership
@@ -2014,7 +1986,7 @@ function MainApp() {
                                                 </div>
                                               </div>
                                             </div>
-                                          ),
+                                          )
                                         )}
                                       </div>
                                     )}
@@ -2069,12 +2041,11 @@ function MainApp() {
                                         )}
                                         {item.assessment_guidance && (
                                           <p className="text-xs text-gray-500 mt-1">
-                                            Assessment:{" "}
-                                            {item.assessment_guidance}
+                                            Assessment: {item.assessment_guidance}
                                           </p>
                                         )}
                                       </div>
-                                    ),
+                                    )
                                   )}
                                 </div>
                               </div>
@@ -2139,7 +2110,7 @@ function MainApp() {
 
                               <h1 className="text-[24px] font-['Gellix',_sans-serif] font-semibold text-[#4B5563]">
                                 {categories.find(
-                                  (c) => c.id === activeCategoryId,
+                                  (c) => c.id === activeCategoryId
                                 )?.name || "Untitled Job"}
                               </h1>
 
@@ -2183,7 +2154,7 @@ function MainApp() {
                                   <span>
                                     {
                                       categories.find(
-                                        (c) => c.id === activeCategoryId,
+                                        (c) => c.id === activeCategoryId
                                       )?.experience
                                     }
                                   </span>
@@ -2213,7 +2184,7 @@ function MainApp() {
                                   <span>
                                     {
                                       categories.find(
-                                        (c) => c.id === activeCategoryId,
+                                        (c) => c.id === activeCategoryId
                                       )?.workApproach
                                     }
                                   </span>
@@ -2238,7 +2209,7 @@ function MainApp() {
                                   <span>
                                     {
                                       categories.find(
-                                        (c) => c.id === activeCategoryId,
+                                        (c) => c.id === activeCategoryId
                                       )?.joiningTimeline
                                     }
                                   </span>
@@ -2253,7 +2224,7 @@ function MainApp() {
                                   onClick={() =>
                                     handleCategoryAction(
                                       "copy-link",
-                                      activeCategoryId,
+                                      activeCategoryId
                                     )
                                   }
                                   title="Copy Link"
@@ -2280,7 +2251,7 @@ function MainApp() {
                                   onClick={() =>
                                     handleCategoryAction(
                                       "edit-template",
-                                      activeCategoryId,
+                                      activeCategoryId
                                     )
                                   }
                                   title="Edit Template"
@@ -2303,16 +2274,16 @@ function MainApp() {
                                 </button>
 
                                 {categories.find(
-                                  (c) => c.id === activeCategoryId,
+                                  (c) => c.id === activeCategoryId
                                 )?.status === "DRAFT" &&
                                   categories.find(
-                                    (c) => c.id === activeCategoryId,
+                                    (c) => c.id === activeCategoryId
                                   )?.visibility === "PRIVATE" && (
                                     <button
                                       onClick={() =>
                                         handleCategoryAction(
                                           "publish-job",
-                                          activeCategoryId,
+                                          activeCategoryId
                                         )
                                       }
                                       title="Publish Job"
@@ -2322,16 +2293,16 @@ function MainApp() {
                                     </button>
                                   )}
                                 {categories.find(
-                                  (c) => c.id === activeCategoryId,
+                                  (c) => c.id === activeCategoryId
                                 )?.status === "PUBLISHED" &&
                                   categories.find(
-                                    (c) => c.id === activeCategoryId,
+                                    (c) => c.id === activeCategoryId
                                   )?.visibility === "PUBLIC" && (
                                     <button
                                       onClick={() =>
                                         handleCategoryAction(
                                           "unpublish-job",
-                                          activeCategoryId,
+                                          activeCategoryId
                                         )
                                       }
                                       title="Unpublish Job"
@@ -2357,7 +2328,7 @@ function MainApp() {
                                   onClick={() =>
                                     handleCategoryAction(
                                       "edit-job",
-                                      activeCategoryId,
+                                      activeCategoryId
                                     )
                                   }
                                   title="Edit Job"
@@ -2382,7 +2353,7 @@ function MainApp() {
                                   onClick={() =>
                                     handleCategoryAction(
                                       "requisition-info",
-                                      activeCategoryId,
+                                      activeCategoryId
                                     )
                                   }
                                   title="Requisition Info"
@@ -2416,7 +2387,7 @@ function MainApp() {
                                   onClick={() =>
                                     handleCategoryAction(
                                       "archive",
-                                      activeCategoryId,
+                                      activeCategoryId
                                     )
                                   }
                                   title="Archive"
@@ -2449,7 +2420,7 @@ function MainApp() {
                                 onClick={() =>
                                   handleCategoryAction(
                                     "share-pipelines",
-                                    activeCategoryId,
+                                    activeCategoryId
                                   )
                                 }
                                 className="px-6 py-2.5 font-['Gellix',_sans-serif] bg-[#1CB977] text-white rounded-lg font-medium hover:bg-[#0d3ec9] transition-colors flex items-center gap-2 shadow-md"
@@ -2525,7 +2496,6 @@ function MainApp() {
                             boolQuery={filters.boolQuery || ""} // ← Current bool_query (boolean mode)
                             enableAnalysis={!!filters.jobId}
                             onAnalysisFetched={setCurrentAnalysis}
-                            activeMiddleTab={activeTab} // ← Pass activeTab to CandidateDetail
                           />
                         </div>
                         {/* TemplateSelector rendered as an overlay with 40% width when active */}
@@ -2619,7 +2589,7 @@ function MainApp() {
                               Are you sure you want to publish{" "}
                               {
                                 categories.find(
-                                  (cat) => cat.id === showPublishModal,
+                                  (cat) => cat.id === showPublishModal
                                 )?.name
                               }
                               ? This action will publish job on LinkedIn, Google
@@ -2663,7 +2633,7 @@ function MainApp() {
                               Are you sure you want to Unpublish
                               {
                                 categories.find(
-                                  (cat) => cat.id === showUnpublishModal,
+                                  (cat) => cat.id === showUnpublishModal
                                 )?.name
                               }
                               ? This action cannot be undone.
@@ -2707,7 +2677,7 @@ function MainApp() {
                               Are you sure you want to delete{" "}
                               {
                                 categories.find(
-                                  (cat) => cat.id === showDeleteModal,
+                                  (cat) => cat.id === showDeleteModal
                                 )?.name
                               }
                               ? This action cannot be undone.
@@ -2795,7 +2765,7 @@ function MainApp() {
                                   {competenciesData.the_core_expectation.map(
                                     (item: string, idx: number) => (
                                       <li key={idx}>{item}</li>
-                                    ),
+                                    )
                                   )}
                                 </ul>
                               </div>
@@ -2859,7 +2829,7 @@ function MainApp() {
                                           </div>
                                         </div>
                                       </div>
-                                    ),
+                                    )
                                   )}
                                   {/* Leadership (new subsection for API structure) */}
                                   {competenciesData
@@ -2925,7 +2895,7 @@ function MainApp() {
                                                 </div>
                                               </div>
                                             </div>
-                                          ),
+                                          )
                                         )}
                                       </div>
                                     )}
@@ -2991,7 +2961,7 @@ function MainApp() {
                                           </p>
                                         )}
                                       </div>
-                                    ),
+                                    )
                                   )}
                                 </div>
                               </div>
