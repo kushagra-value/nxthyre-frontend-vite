@@ -3216,15 +3216,15 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 </button>
 
                                 {/* Archive */}
-
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    // handleSaveToPipeline(candidate.id, archiveStage.id);
+                                    archiveCandidate(candidate.id);
                                   }}
-                                  className="p-2 rounded-full hover:bg-gray-200 transition-colors"
+                                  className="p-2 rounded-full hover:bg-red-50 transition-colors"
                                   aria-label="Archive candidate"
-                                  title="Archive candidate"
+                                  title="Archive this candidate"
+                                  disabled={selectedStage === "Archives"} // optional: disable if already archived
                                 >
                                   <svg
                                     width="38"
