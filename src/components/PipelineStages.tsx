@@ -754,6 +754,45 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     }
   };
 
+  const moveToAutopilot = async (applicationId: number) => {
+    try {
+      // Find the "Applied" stage (autopilot stage)
+      const appliedStage = stages.find(
+        (s) =>
+          s.slug === "applied" ||
+          s.name.toLowerCase().includes("applied") ||
+          s.name === "Autopilot",
+      );
+
+      if (!appliedStage) {
+        showToast.error("Applied / Autopilot stage not found");
+        return;
+      }
+
+      // Move candidate to Applied stage
+      await apiClient.patch(`/jobs/applications/${applicationId}/`, {
+        current_stage: appliedStage.id,
+      });
+
+      // Optional: trigger any email/scheduling logic if needed (like in bulkMoveCandidates)
+      // Example: if (appliedStage.slug === "applied") { ... schedule something ... }
+
+      showToast.success("Candidate moved to Autopilot (Applied stage)");
+
+      // Refresh current view
+      if (activeJobId !== null) {
+        fetchCandidates(
+          activeJobId,
+          selectedStage.toLowerCase().replace(" ", "-"),
+        );
+        fetchStages(activeJobId);
+      }
+    } catch (error) {
+      console.error("Error moving candidate to Autopilot:", error);
+      showToast.error("Failed to move candidate to Autopilot");
+    }
+  };
+
   const handleSortSelect = (sortValue: string) => {
     setSortBy(sortValue);
     setShowSortDropdown(false);
@@ -3132,17 +3171,24 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       : "Move to Shortlisted"
                                   }
                                 >
-                                  Shortlist
+                                  {selectedStage === "Shortlisted"
+                                    ? "Shortlisted"
+                                    : "Shortlist"}
                                 </button>
 
-                                {/* Autopilot */}
+                                {/* Autopilot - Move to Applied stage */}
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
+                                    moveToAutopilot(candidate.id);
                                   }}
-                                  className="p-2 rounded-full hover:bg-gray-200 transition-colors"
-                                  aria-label="Autopilot"
-                                  title="Move Autopilot"
+                                  className="p-2 rounded-full hover:bg-blue-50 transition-colors"
+                                  aria-label="Move to Autopilot (Applied stage)"
+                                  title="Move to Autopilot stage"
+                                  disabled={
+                                    selectedStage === "Applied" ||
+                                    selectedStage === "Autopilot"
+                                  }
                                 >
                                   <svg
                                     width="38"
