@@ -36,6 +36,7 @@ import {
   AlarmClock,
   Pencil,
   PencilLine,
+  SearchCodeIcon,
 } from "lucide-react";
 import Header from "./Header";
 import { creditService } from "../services/creditService";
@@ -714,6 +715,80 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       // handleConfirmReveal();
     } catch (error) {
       console.error("Error bulk moving candidates:", error);
+    }
+  };
+
+  const shortlistCandidate = async (applicationId: number) => {
+    try {
+      // Find the "Shortlisted" stage
+      const shortlistedStage = stages.find(
+        (s) =>
+          s.slug === "shortlisted" ||
+          s.name.toLowerCase().includes("shortlist"),
+      );
+
+      if (!shortlistedStage) {
+        showToast.error("Shortlisted stage not found");
+        return;
+      }
+
+      // Move candidate to shortlisted stage
+      await apiClient.patch(`/jobs/applications/${applicationId}/`, {
+        current_stage: shortlistedStage.id,
+      });
+
+      showToast.success("Candidate shortlisted successfully");
+
+      // Refresh current view
+      if (activeJobId !== null) {
+        fetchCandidates(
+          activeJobId,
+          selectedStage.toLowerCase().replace(" ", "-"),
+        );
+        fetchStages(activeJobId);
+      }
+    } catch (error) {
+      console.error("Error shortlisting candidate:", error);
+      showToast.error("Failed to shortlist candidate");
+    }
+  };
+
+  const moveToAutopilot = async (applicationId: number) => {
+    try {
+      // Find the "Applied" stage (autopilot stage)
+      const appliedStage = stages.find(
+        (s) =>
+          s.slug === "applied" ||
+          s.name.toLowerCase().includes("applied") ||
+          s.name === "Autopilot",
+      );
+
+      if (!appliedStage) {
+        showToast.error("Applied / Autopilot stage not found");
+        return;
+      }
+
+      // Move candidate to Applied stage
+      await apiClient.patch(`/jobs/applications/${applicationId}/`, {
+        current_stage: appliedStage.id,
+      });
+
+      // Optional: trigger any email/scheduling logic if needed (like in bulkMoveCandidates)
+      // Example: if (appliedStage.slug === "applied") { ... schedule something ... }
+
+      showToast.success("Candidate moved to Autopilot (Applied stage)");
+
+      // Refresh current view
+      if (activeJobId !== null) {
+        fetchCandidates(
+          activeJobId,
+          selectedStage.toLowerCase().replace(" ", "-"),
+        );
+        fetchStages(activeJobId);
+      }
+    } catch (error) {
+      console.error("Error moving candidate to Autopilot:", error);
+      showToast.error("Failed to move candidate to Autopilot");
     }
   };
 
@@ -1573,8 +1648,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       onClick={() => setCurrentView("search")}
                       className="flex items-center justify-center bg-gray-600 h-10 w-10 rounded-lg ml-2 text-white focus:outline-none"
                       aria-label="Toggle to search candidates"
+                      title="Toggle to search candidates"
                     >
-                      <Users />
+                      <SearchCodeIcon />
                     </button>
                     {isDropdownOpen && (
                       <div className="absolute top-10 z-10 w-[90%] bg-white shadow-lg mt-1 rounded-[10px] max-h-80 overflow-y-auto border border-gray-200 py-2 px-4">
@@ -1793,7 +1869,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           <div className="flex items-center justify-between w-full">
                             <div className="flex flex-col items-start justify-center">
                               <span className="flex-1 font-medium">
-                                {stage.name}
+                                {stage.name != "Applied"
+                                  ? stage.name
+                                  : "Autopilot"}
                               </span>
                               {stage.activity_update && (
                                 <p className={`text-xs ${description.color}`}>
@@ -2329,34 +2407,42 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                         )}
                                     </div>
 
-                                    <div className="flex gap-4 mt-1">
-                                      <div className="flex space-x-1">
-                                        <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563]">
-                                          <MapPin className=" w-4 h-4" />
+                                    <div className="flex justify-between">
+                                      <div className="flex gap-4">
+                                        <div className="flex space-x-1">
+                                          <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563]">
+                                            <MapPin className=" w-4 h-4" />
 
-                                          {location?.split(",")[0]}
-                                        </p>
+                                            {location?.split(",")[0]}
+                                          </p>
+                                        </div>
+
+                                        <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
+                                          <div className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563]">
+                                            <AlarmClock className=" w-4 h-4" />
+                                            {candidate.status_tags.map(
+                                              (
+                                                tag: {
+                                                  text: string;
+                                                  color: string;
+                                                },
+                                                idx: number,
+                                              ) => (
+                                                <span
+                                                  key={idx}
+                                                  className={`text-${tag.color}-500`}
+                                                >
+                                                  {tag.text}
+                                                </span>
+                                              ),
+                                            )}
+                                          </div>
+                                        </div>
                                       </div>
 
-                                      <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
-                                        <div className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563]">
-                                          <AlarmClock className=" w-4 h-4" />
-                                          {candidate.status_tags.map(
-                                            (
-                                              tag: {
-                                                text: string;
-                                                color: string;
-                                              },
-                                              idx: number,
-                                            ) => (
-                                              <span
-                                                key={idx}
-                                                className={`text-${tag.color}-500`}
-                                              >
-                                                {tag.text}
-                                              </span>
-                                            ),
-                                          )}
+                                      <div className="flex space-x-1">
+                                        <div className="inline-block bg-[#DFFBE2] text-[#00A25E] px-4 py-1.5 rounded-lg text-xl font-medium">
+                                          --%
                                         </div>
                                       </div>
                                     </div>
@@ -2364,7 +2450,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 </div>
                               </div>
                             </div>
-                            <div className="pt-4 pl-12 flex space-x-12 gap-2 text-xs lg:text-sm font-[400px]">
+                            <div className="pt-2 pl-12 flex space-x-12 gap-2 text-xs lg:text-sm font-[400px]">
                               {/* Experience */}
                               <div className="flex flex-col">
                                 <div className="flex items-center">
@@ -3062,57 +3148,92 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               </div>
 
                               {/* Buttons */}
-                              <div className="mt-4 flex gap-2 items-center">
+                              <div className="flex items-center mr-1">
                                 <button
-                                  // onClick={}
-                                  className="px-2 py-1 bg-blue-500 text-white rounded-md"
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // prevent opening candidate details
+                                    shortlistCandidate(candidate.id);
+                                  }}
+                                  className="mr-2 bg-[#0F47F2] text-white font-medium px-6 py-2 rounded-lg transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-300"
+                                  disabled={selectedStage === "Shortlisted"} // optional: disable if already shortlisted
+                                  title={
+                                    selectedStage === "Shortlisted"
+                                      ? "Already shortlisted"
+                                      : "Move to Shortlisted"
+                                  }
                                 >
-                                  Shortlist
+                                  {selectedStage === "Shortlisted"
+                                    ? "Shortlisted"
+                                    : "Shortlist"}
                                 </button>
 
-                                {/* Autopilot */}
+                                {/* Autopilot - Move to Applied stage */}
                                 <button
-                                  // onClick={}
-                                  className="p-1 rounded-full"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    moveToAutopilot(candidate.id);
+                                  }}
+                                  className="p-2 rounded-full hover:bg-blue-50 transition-colors"
+                                  aria-label="Move to Autopilot (Applied stage)"
+                                  title="Move to Autopilot stage"
+                                  disabled={
+                                    selectedStage === "Applied" ||
+                                    selectedStage === "Autopilot"
+                                  }
                                 >
-                                  <svg
-                                    width="28"
-                                    height="28"
-                                    viewBox="0 0 38 38"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <rect
-                                      x="0.5"
-                                      y="0.5"
-                                      width="37"
-                                      height="37"
-                                      rx="18.5"
-                                      stroke="#0F47F2"
-                                    />
-                                    <path
-                                      d="M19 7L22 15.1429L31 19L22 22L19 31L16 22L7 19L16 15.1429L19 7Z"
-                                      fill="#0F47F2"
-                                    />
-                                  </svg>
+                                  {selectedStage === "Applied" ||
+                                  selectedStage === "Autopilot" ? null : (
+                                    <svg
+                                      width="38"
+                                      height="38"
+                                      viewBox="0 0 38 38"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <rect
+                                        x="0.5"
+                                        y="0.5"
+                                        width="37"
+                                        height="37"
+                                        rx="18.5"
+                                        stroke="#0F47F2"
+                                      />
+                                      <path
+                                        d="M19 7L22 15.1429L31 19L22 22L19 31L16 22L7 19L16 15.1429L19 7Z"
+                                        fill="#0F47F2"
+                                      />
+                                    </svg>
+                                  )}
                                 </button>
 
                                 {/* Archive */}
                                 <button
-                                  // onClick={}
-                                  className="p-1 rounded-full border border-[#818283]"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    archiveCandidate(candidate.id);
+                                  }}
+                                  className="p-2 rounded-full hover:bg-red-50 transition-colors"
+                                  aria-label="Archive candidate"
+                                  title="Archive this candidate"
+                                  disabled={selectedStage === "Archives"} // optional: disable if already archived
                                 >
                                   <svg
-                                    width="16"
-                                    height="15"
-                                    viewBox="0 0 18 17"
+                                    width="38"
+                                    height="38"
+                                    viewBox="0 0 38 38"
                                     fill="none"
                                     xmlns="http://www.w3.org/2000/svg"
                                   >
+                                    <circle
+                                      cx="19"
+                                      cy="19"
+                                      r="18.5"
+                                      stroke="#818283"
+                                    />
                                     <path
                                       fill-rule="evenodd"
                                       clip-rule="evenodd"
-                                      d="M2.24365 2.78583e-06C2.25598 1.10795e-05 2.26836 1.10907e-05 2.28077 1.10907e-05L15.5878 2.78583e-06C15.9467 -3.86824e-05 16.2758 -7.19172e-05 16.5435 0.0359225C16.8384 0.0755579 17.1499 0.16882 17.4062 0.42511C17.6626 0.681401 17.7558 0.993018 17.7954 1.28784C17.8314 1.55557 17.8314 1.88469 17.8314 2.24365V2.31787C17.8314 2.67684 17.8314 3.00595 17.7954 3.27368C17.7558 3.5685 17.6626 3.88012 17.4062 4.13641C17.1626 4.38005 16.869 4.47636 16.5873 4.51933V8.96245C16.5873 10.4867 16.5873 11.6939 16.4603 12.6387C16.3295 13.6111 16.0541 14.3981 15.4335 15.0188C14.8128 15.6394 14.0258 15.9149 13.0534 16.0456C12.1086 16.1726 10.9013 16.1726 9.37714 16.1726H8.45422C6.93004 16.1726 5.72279 16.1726 4.77796 16.0456C3.80559 15.9149 3.01857 15.6394 2.3979 15.0188C1.77724 14.3981 1.50179 13.6111 1.37106 12.6387C1.24403 11.6939 1.24404 10.4867 1.24406 8.96245V4.51933C0.962381 4.47636 0.668753 4.38005 0.42511 4.13641C0.16882 3.88012 0.075558 3.5685 0.0359226 3.27368C-7.18184e-05 3.00595 -3.86828e-05 2.67684 2.7855e-06 2.31788C1.10792e-05 2.30554 1.10904e-05 2.29316 1.10904e-05 2.28077C1.10904e-05 2.26836 1.10792e-05 2.25598 2.7855e-06 2.24365C-3.86828e-05 1.88468 -7.18184e-05 1.55557 0.0359226 1.28784C0.075558 0.993018 0.16882 0.681401 0.42511 0.42511C0.681401 0.16882 0.993018 0.0755579 1.28784 0.0359225C1.55557 -7.19172e-05 1.88469 -3.86824e-05 2.24365 2.78583e-06ZM2.48811 4.56152V8.91568C2.48811 10.4971 2.48943 11.6207 2.60402 12.473C2.7162 13.3073 2.92658 13.7881 3.27758 14.1391C3.62857 14.4901 4.10932 14.7005 4.94373 14.8126C5.79604 14.9272 6.91955 14.9286 8.501 14.9286H9.33036C10.9118 14.9286 12.0353 14.9272 12.8877 14.8126C13.722 14.7005 14.2028 14.4901 14.5538 14.1391C14.9048 13.7881 15.1152 13.3073 15.2273 12.473C15.3419 11.6207 15.3433 10.4971 15.3433 8.91568V4.56152H2.48811ZM1.30479 1.30479L1.30682 1.30366C1.30842 1.30282 1.31117 1.30148 1.31535 1.29976C1.33341 1.29233 1.37352 1.27964 1.45361 1.26887C1.62837 1.24538 1.87221 1.24406 2.28077 1.24406H15.5506C15.9591 1.24406 16.203 1.24538 16.3777 1.26887C16.4578 1.27964 16.498 1.29233 16.516 1.29976C16.5202 1.30148 16.5229 1.30282 16.5245 1.30366L16.5266 1.30478L16.5277 1.30682C16.5286 1.30842 16.5299 1.31117 16.5316 1.31535C16.539 1.33341 16.5517 1.37352 16.5625 1.45361C16.586 1.62837 16.5873 1.87221 16.5873 2.28077C16.5873 2.68931 16.586 2.93315 16.5625 3.10792C16.5517 3.188 16.539 3.22811 16.5316 3.24617C16.5299 3.25036 16.5286 3.2531 16.5277 3.25471L16.5266 3.25674L16.5245 3.25787C16.5229 3.25871 16.5202 3.26005 16.516 3.26177C16.498 3.2692 16.4578 3.28188 16.3777 3.29265C16.203 3.31614 15.9591 3.31747 15.5506 3.31747H2.28077C1.87221 3.31747 1.62837 3.31614 1.45361 3.29265C1.37352 3.28188 1.33341 3.2692 1.31535 3.26177C1.31117 3.26005 1.30842 3.25871 1.30682 3.25787L1.30479 3.25673L1.30366 3.25471C1.30282 3.2531 1.30148 3.25036 1.29976 3.24617C1.29233 3.22811 1.27964 3.188 1.26887 3.10792C1.24538 2.93315 1.24406 2.68931 1.24406 2.28077C1.24406 1.87221 1.24538 1.62837 1.26887 1.45361C1.27964 1.37352 1.29233 1.33341 1.29976 1.31535C1.30148 1.31117 1.30282 1.30842 1.30366 1.30682L1.30479 1.30479ZM1.30479 3.25673C1.30446 3.25639 1.30457 3.25646 1.30479 3.25673V3.25673ZM7.65355 6.22025H10.1778C10.3555 6.22023 10.5188 6.22022 10.6559 6.22958C10.8032 6.23963 10.9652 6.26253 11.1298 6.33073C11.4855 6.47801 11.768 6.76057 11.9153 7.1162C11.9835 7.28083 12.0064 7.44289 12.0165 7.59019C12.0258 7.72728 12.0258 7.89058 12.0258 8.06823V8.10439C12.0258 8.28204 12.0258 8.44534 12.0165 8.58244C12.0064 8.72982 11.9835 8.89179 11.9153 9.05642C11.768 9.41205 11.4855 9.69462 11.1298 9.84191C10.9652 9.91009 10.8032 9.93298 10.6559 9.9431C10.5188 9.95238 10.3555 9.95238 10.1778 9.95238H7.65355C7.4759 9.95238 7.3126 9.95238 7.1755 9.9431C7.02818 9.93298 6.86616 9.91009 6.70153 9.84191C6.3459 9.69462 6.06335 9.41205 5.91605 9.05642C5.84785 8.89179 5.82495 8.72982 5.8149 8.58244C5.80554 8.44534 5.80555 8.28204 5.80557 8.10439V8.06823C5.80555 7.89058 5.80554 7.72728 5.8149 7.59019C5.82495 7.44289 5.84785 7.28083 5.91605 7.1162C6.06335 6.76057 6.3459 6.47801 6.70153 6.33073C6.86616 6.26253 7.02818 6.23963 7.1755 6.22958C7.3126 6.22022 7.4759 6.22023 7.65355 6.22025ZM7.1751 7.48112C7.12631 7.50211 7.08742 7.54101 7.06645 7.58977C7.0649 7.59591 7.05984 7.61946 7.05606 7.67486C7.04995 7.76444 7.04961 7.88461 7.04961 8.08631C7.04961 8.28801 7.04995 8.40819 7.05606 8.49776C7.05984 8.55316 7.0649 8.57672 7.06645 8.58285C7.08742 8.63162 7.12631 8.67052 7.1751 8.6915C7.1812 8.69308 7.20476 8.69814 7.26018 8.70187C7.34975 8.708 7.46993 8.70834 7.67163 8.70834H10.1597C10.3614 8.70834 10.4816 8.708 10.5712 8.70187C10.6266 8.69814 10.6501 8.69308 10.6563 8.6915C10.705 8.67052 10.7439 8.63162 10.7649 8.58285C10.7665 8.57672 10.7715 8.55316 10.7753 8.49776C10.7814 8.40819 10.7817 8.28801 10.7817 8.08631C10.7817 7.88461 10.7814 7.76444 10.7753 7.67486C10.7715 7.61946 10.7665 7.59591 10.7649 7.58977C10.7439 7.54101 10.705 7.50211 10.6563 7.48112C10.6501 7.47955 10.6266 7.47449 10.5712 7.47076C10.4816 7.46462 10.3614 7.46429 10.1597 7.46429H7.67163C7.46993 7.46429 7.34975 7.46462 7.26018 7.47076C7.20476 7.47449 7.18119 7.47955 7.1751 7.48112Z"
+                                      d="M12.3276 10.9102C12.34 10.9102 12.3523 10.9102 12.3647 10.9102L25.6717 10.9102C26.0307 10.9101 26.3598 10.9101 26.6275 10.9461C26.9223 10.9857 27.2339 11.079 27.4902 11.3353C27.7466 11.5916 27.8398 11.9032 27.8794 12.198C27.9154 12.4657 27.9154 12.7948 27.9153 13.1538V13.228C27.9154 13.587 27.9154 13.9161 27.8794 14.1838C27.8398 14.4787 27.7466 14.7903 27.4902 15.0466C27.2466 15.2902 26.9529 15.3865 26.6713 15.4295V19.8726C26.6713 21.3968 26.6713 22.604 26.5443 23.5489C26.4135 24.5213 26.1381 25.3083 25.5175 25.929C24.8968 26.5496 24.1098 26.825 23.1374 26.9558C22.1926 27.0828 20.9853 27.0828 19.4611 27.0828H18.5382C17.014 27.0828 15.8068 27.0828 14.8619 26.9558C13.8896 26.825 13.1026 26.5496 12.4819 25.929C11.8612 25.3083 11.5858 24.5213 11.455 23.5489C11.328 22.604 11.328 21.3968 11.328 19.8726V15.4295C11.0464 15.3865 10.7527 15.2902 10.5091 15.0466C10.2528 14.7903 10.1595 14.4787 10.1199 14.1838C10.0839 13.9161 10.0839 13.587 10.084 13.228C10.084 13.2157 10.084 13.2033 10.084 13.1909C10.084 13.1785 10.084 13.1661 10.084 13.1538C10.0839 12.7948 10.0839 12.4657 10.1199 12.198C10.1595 11.9032 10.2528 11.5916 10.5091 11.3353C10.7654 11.079 11.077 10.9857 11.3718 10.9461C11.6396 10.9101 11.9687 10.9101 12.3276 10.9102ZM12.5721 15.4717V19.8258C12.5721 21.4073 12.5734 22.5308 12.688 23.3831C12.8002 24.2175 13.0106 24.6983 13.3616 25.0493C13.7126 25.4002 14.1933 25.6107 15.0277 25.7228C15.88 25.8374 17.0035 25.8387 18.585 25.8387H19.4143C20.9958 25.8387 22.1193 25.8374 22.9717 25.7228C23.806 25.6107 24.2868 25.4002 24.6378 25.0493C24.9888 24.6983 25.1992 24.2175 25.3113 23.3831C25.4259 22.5308 25.4272 21.4073 25.4272 19.8258V15.4717H12.5721ZM11.3888 12.2149L11.3908 12.2138C11.3924 12.213 11.3952 12.2116 11.3993 12.2099C11.4174 12.2025 11.4575 12.1898 11.5376 12.179C11.7124 12.1555 11.9562 12.1542 12.3647 12.1542H25.6346C26.0431 12.1542 26.287 12.1555 26.4617 12.179C26.5418 12.1898 26.582 12.2025 26.6 12.2099C26.6042 12.2116 26.6069 12.213 26.6085 12.2138L26.6106 12.2149L26.6117 12.217C26.6126 12.2186 26.6139 12.2213 26.6156 12.2255C26.623 12.2436 26.6357 12.2837 26.6465 12.3638C26.67 12.5385 26.6713 12.7824 26.6713 13.1909C26.6713 13.5995 26.67 13.8433 26.6465 14.0181C26.6357 14.0982 26.623 14.1383 26.6156 14.1563C26.6139 14.1605 26.6126 14.1633 26.6117 14.1649L26.6106 14.1669L26.6085 14.168C26.6069 14.1689 26.6042 14.1702 26.6 14.1719C26.582 14.1794 26.5418 14.192 26.4617 14.2028C26.287 14.2263 26.0431 14.2276 25.6346 14.2276H12.3647C11.9562 14.2276 11.7124 14.2263 11.5376 14.2028C11.4575 14.192 11.4174 14.1794 11.3993 14.1719C11.3952 14.1702 11.3924 14.1689 11.3908 14.168L11.3888 14.1669L11.3876 14.1649C11.3868 14.1633 11.3855 14.1605 11.3837 14.1563C11.3763 14.1383 11.3636 14.0982 11.3529 14.0181C11.3294 13.8433 11.328 13.5995 11.328 13.1909C11.328 12.7824 11.3294 12.5385 11.3529 12.3638C11.3636 12.2837 11.3763 12.2436 11.3837 12.2255C11.3855 12.2213 11.3868 12.2186 11.3876 12.217L11.3888 12.2149ZM11.3888 14.1669C11.3884 14.1665 11.3886 14.1666 11.3888 14.1669V14.1669ZM17.7375 17.1304H20.2618C20.4394 17.1304 20.6027 17.1304 20.7398 17.1397C20.8872 17.1498 21.0492 17.1727 21.2138 17.2409C21.5695 17.3882 21.852 17.6707 21.9993 18.0264C22.0675 18.191 22.0904 18.353 22.1005 18.5003C22.1098 18.6374 22.1098 18.8007 22.1098 18.9784V19.0145C22.1098 19.1922 22.1098 19.3555 22.1005 19.4926C22.0904 19.64 22.0675 19.8019 21.9993 19.9666C21.852 20.3222 21.5695 20.6048 21.2138 20.7521C21.0492 20.8202 20.8872 20.8431 20.7398 20.8533C20.6027 20.8625 20.4394 20.8625 20.2618 20.8625H17.7375C17.5599 20.8625 17.3966 20.8625 17.2595 20.8533C17.1122 20.8431 16.9501 20.8202 16.7855 20.7521C16.4299 20.6048 16.1473 20.3222 16 19.9666C15.9318 19.8019 15.9089 19.64 15.8989 19.4926C15.8895 19.3555 15.8895 19.1922 15.8896 19.0145V18.9784C15.8895 18.8007 15.8895 18.6374 15.8989 18.5003C15.9089 18.353 15.9318 18.191 16 18.0264C16.1473 17.6707 16.4299 17.3882 16.7855 17.2409C16.9501 17.1727 17.1122 17.1498 17.2595 17.1397C17.3966 17.1304 17.5599 17.1304 17.7375 17.1304ZM17.2591 18.3913C17.2103 18.4123 17.1714 18.4512 17.1504 18.4999C17.1489 18.5061 17.1438 18.5296 17.14 18.585C17.1339 18.6746 17.1336 18.7948 17.1336 18.9965C17.1336 19.1982 17.1339 19.3183 17.14 19.4079C17.1438 19.4633 17.1489 19.4869 17.1504 19.493C17.1714 19.5418 17.2103 19.5807 17.2591 19.6017C17.2652 19.6032 17.2887 19.6083 17.3442 19.612C17.4337 19.6182 17.5539 19.6185 17.7556 19.6185H20.2437C20.4454 19.6185 20.5656 19.6182 20.6552 19.612C20.7106 19.6083 20.7341 19.6032 20.7403 19.6017C20.789 19.5807 20.8279 19.5418 20.8489 19.493C20.8505 19.4869 20.8555 19.4633 20.8593 19.4079C20.8654 19.3183 20.8657 19.1982 20.8657 18.9965C20.8657 18.7948 20.8654 18.6746 20.8593 18.585C20.8555 18.5296 20.8505 18.5061 20.8489 18.4999C20.8279 18.4512 20.789 18.4123 20.7403 18.3913C20.7341 18.3897 20.7106 18.3846 20.6552 18.3809C20.5656 18.3748 20.4454 18.3744 20.2437 18.3744H17.7556C17.5539 18.3744 17.4337 18.3748 17.3442 18.3809C17.2887 18.3846 17.2652 18.3897 17.2591 18.3913Z"
                                       fill="#818283"
                                     />
                                   </svg>
@@ -3128,8 +3249,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   className="p-1 rounded-full"
                                 >
                                   <svg
-                                    width="28"
-                                    height="28"
+                                    width="38"
+                                    height="38"
                                     viewBox="0 0 38 38"
                                     fill="none"
                                     xmlns="http://www.w3.org/2000/svg"
