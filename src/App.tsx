@@ -2210,7 +2210,7 @@ function MainApp() {
                                     {
                                       categories.find(
                                         (c) => c.id === activeCategoryId
-                                      )?.joiningTimeline
+                                      )?.location
                                     }
                                   </span>
                                 </div>

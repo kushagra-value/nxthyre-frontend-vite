@@ -702,6 +702,17 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
           </div>
           <div className="flex space-x-1 2xl:space-x-3">
 
+            {activeTab === "inbound" && (
+              <button
+                className="px-1.5 py-1.5 bg-white text-gray-400 text-xs 2xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                title="Filter by Source"
+              >
+                <svg width="15" height="13" viewBox="0 0 15 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M11.6496 0.601562H2.54961C1.63037 0.601562 1.17075 0.601562 0.88518 0.853462C0.599609 1.10536 0.599609 1.51078 0.599609 2.32163V2.74319C0.599609 3.37742 0.599609 3.69454 0.768349 3.95743C0.937089 4.22031 1.24536 4.38347 1.86192 4.70978L3.75539 5.71191C4.16906 5.93081 4.37589 6.04032 4.52399 6.1612C4.8324 6.41292 5.02226 6.70869 5.1083 7.07151C5.14961 7.24568 5.14961 7.44954 5.14961 7.85721V9.48857C5.14961 10.0444 5.14961 10.3223 5.31336 10.539C5.47711 10.7556 5.76794 10.8625 6.34964 11.0764C7.57073 11.5252 8.18127 11.7496 8.61547 11.4942C9.04961 11.2389 9.04961 10.6555 9.04961 9.48857V7.85721C9.04961 7.44954 9.04961 7.24568 9.09095 7.07151C9.17694 6.70869 9.36681 6.41292 9.67523 6.1612C9.8233 6.04032 10.0301 5.93081 10.4439 5.71191L12.3373 4.70978C12.9538 4.38347 13.2621 4.22031 13.4309 3.95743C13.5996 3.69454 13.5996 3.37742 13.5996 2.74319V2.32163C13.5996 1.51078 13.5996 1.10536 13.3141 0.853462C13.0285 0.601562 12.5688 0.601562 11.6496 0.601562Z" stroke="#818283" stroke-width="1.2" />
+                </svg>
+                <p className="hidden xl:inline">Source</p>
+              </button>
+            )}
 
             <button
               className="px-1.5 py-1.5 bg-white text-gray-400 text-xs 2xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -725,8 +736,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   d="M2.34375 9.375C2.34375 9.11612 2.13389 8.90625 1.875 8.90625C1.61612 8.90625 1.40625 9.11612 1.40625 9.375V9.40931C1.40624 10.2641 1.40623 10.953 1.47908 11.4949C1.55471 12.0574 1.71652 12.5311 2.09272 12.9072C2.46892 13.2835 2.94259 13.4453 3.50516 13.5209C4.04701 13.5937 4.73596 13.5937 5.59071 13.5937H9.40931C10.2641 13.5937 10.953 13.5937 11.4949 13.5209C12.0574 13.4453 12.5311 13.2835 12.9073 12.9072C13.2835 12.5311 13.4453 12.0574 13.5209 11.4949C13.5937 10.953 13.5938 10.2641 13.5938 9.40931V9.375C13.5938 9.11612 13.3839 8.90625 13.125 8.90625C12.8661 8.90625 12.6562 9.11612 12.6562 9.375C12.6562 10.2721 12.6553 10.8978 12.5918 11.3699C12.5301 11.8286 12.4174 12.0714 12.2444 12.2444C12.0714 12.4174 11.8286 12.5301 11.3699 12.5918C10.8978 12.6552 10.2721 12.6562 9.375 12.6562H5.625C4.72787 12.6562 4.10217 12.6552 3.63008 12.5918C3.17147 12.5301 2.92861 12.4174 2.75563 12.2444C2.58266 12.0714 2.46988 11.8286 2.40822 11.3699C2.34474 10.8978 2.34375 10.2721 2.34375 9.375Z"
                   fill="#818283"
                 />
-              </svg>
-              Export
+              </svg> <p className="hidden xl:inline">Export</p>
             </button>
 
             <div className="relative flex space-x-2">
@@ -737,11 +747,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 title="Sort Candidates"
               >
                 <ArrowDownNarrowWide className="w-4 h-4 rotate-180" />
-                <span className="text-gray-400 font-[400] ml-1 mr-1">
+                <span className="text-gray-400 font-[400] ml-1 mr-1 hidden xl:inline">
                   {sortOptions.find((opt) => opt.value === sortBy)?.label ||
                     "Relevance"}
                 </span>
-                <ChevronDown className="w-4 h-4 mt-1" />
+                <ChevronDown className="w-4 h-4 mt-1 hidden xl:inline" />
               </button>
               {showSortDropdown && (
                 <div
