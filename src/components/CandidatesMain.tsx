@@ -656,7 +656,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     return unContactedStage ? (
                       <button
                         onClick={() => handleBulkMoveToStage(unContactedStage.id)}
-                        className="mx-1 2xl:mx-2 2xl:ml-4 bg-[#0F47F2] text-sm xl:text-base text-white rounded-lg px-2 py-1 2xl:px-6 2xl:py-2 font-medium transition-colors text-nowrap"
+                        className="mx-1 2xl:mx-2 bg-[#0F47F2] text-sm xl:text-base text-white rounded-lg px-2 py-1 2xl:px-4 2xl:py-2 font-medium transition-colors text-nowrap"
                         aria-label="Bulk shortlist selected candidates"
                         title="Bulk Move to Prospect"
                       >
