@@ -719,6 +719,41 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     }
   };
 
+  const shortlistCandidate = async (applicationId: number) => {
+    try {
+      // Find the "Shortlisted" stage
+      const shortlistedStage = stages.find(
+        (s) =>
+          s.slug === "shortlisted" ||
+          s.name.toLowerCase().includes("shortlist"),
+      );
+
+      if (!shortlistedStage) {
+        showToast.error("Shortlisted stage not found");
+        return;
+      }
+
+      // Move candidate to shortlisted stage
+      await apiClient.patch(`/jobs/applications/${applicationId}/`, {
+        current_stage: shortlistedStage.id,
+      });
+
+      showToast.success("Candidate shortlisted successfully");
+
+      // Refresh current view
+      if (activeJobId !== null) {
+        fetchCandidates(
+          activeJobId,
+          selectedStage.toLowerCase().replace(" ", "-"),
+        );
+        fetchStages(activeJobId);
+      }
+    } catch (error) {
+      console.error("Error shortlisting candidate:", error);
+      showToast.error("Failed to shortlist candidate");
+    }
+  };
+
   const handleSortSelect = (sortValue: string) => {
     setSortBy(sortValue);
     setShowSortDropdown(false);
@@ -2341,7 +2376,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           )}
                                     </div>
 
-                                    <div className="flex justify-between mt-1">
+                                    <div className="flex justify-between">
                                       <div className="flex gap-4">
                                         <div className="flex space-x-1">
                                           <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563]">
@@ -2384,7 +2419,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 </div>
                               </div>
                             </div>
-                            <div className="pt-4 pl-12 flex space-x-12 gap-2 text-xs lg:text-sm font-[400px]">
+                            <div className="pt-2 pl-12 flex space-x-12 gap-2 text-xs lg:text-sm font-[400px]">
                               {/* Experience */}
                               <div className="flex flex-col">
                                 <div className="flex items-center">
@@ -3085,8 +3120,17 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               {/* Buttons */}
                               <div className="flex items-center mr-1">
                                 <button
-                                  // onClick={}
-                                  className="mr-2 bg-[#0F47F2] text-white font-medium px-6 py-2 rounded-lg transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // prevent opening candidate details
+                                    shortlistCandidate(candidate.id);
+                                  }}
+                                  className="mr-2 bg-[#0F47F2] text-white font-medium px-6 py-2 rounded-lg transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-300"
+                                  disabled={selectedStage === "Shortlisted"} // optional: disable if already shortlisted
+                                  title={
+                                    selectedStage === "Shortlisted"
+                                      ? "Already shortlisted"
+                                      : "Move to Shortlisted"
+                                  }
                                 >
                                   Shortlist
                                 </button>
