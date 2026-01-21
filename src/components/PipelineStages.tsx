@@ -36,6 +36,7 @@ import {
   AlarmClock,
   Pencil,
   PencilLine,
+  SearchCodeIcon,
 } from "lucide-react";
 import Header from "./Header";
 import { creditService } from "../services/creditService";
@@ -1650,7 +1651,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       className="flex items-center justify-center bg-gray-600 h-10 w-10 rounded-lg ml-2 text-white focus:outline-none"
                       aria-label="Toggle to search candidates"
                     >
-                      <Users />
+                      <SearchCodeIcon />
                     </button>
                     {isDropdownOpen && (
                       <div className="absolute top-10 z-10 w-[90%] bg-white shadow-lg mt-1 rounded-[10px] max-h-80 overflow-y-auto border border-gray-200 py-2 px-4">
