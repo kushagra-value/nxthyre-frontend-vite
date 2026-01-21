@@ -2341,34 +2341,36 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           )}
                                     </div>
 
-                                    <div className="flex gap-4 mt-1">
-                                      <div className="flex space-x-1">
-                                        <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563]">
-                                          <MapPin className=" w-4 h-4" />
+                                    <div className="flex justify-between mt-1">
+                                      <div className="flex gap-4">
+                                        <div className="flex space-x-1">
+                                          <p className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563]">
+                                            <MapPin className=" w-4 h-4" />
 
-                                          {location?.split(",")[0]}
-                                        </p>
-                                      </div>
+                                            {location?.split(",")[0]}
+                                          </p>
+                                        </div>
 
-                                      <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
-                                        <div className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563]">
-                                          <AlarmClock className=" w-4 h-4" />
-                                          {candidate.status_tags.map(
-                                            (
-                                              tag: {
-                                                text: string;
-                                                color: string;
-                                              },
-                                              idx: number,
-                                            ) => (
-                                              <span
-                                                key={idx}
-                                                className={`text-${tag.color}-500`}
-                                              >
-                                                {tag.text}
-                                              </span>
-                                            ),
-                                          )}
+                                        <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
+                                          <div className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563]">
+                                            <AlarmClock className=" w-4 h-4" />
+                                            {candidate.status_tags.map(
+                                              (
+                                                tag: {
+                                                  text: string;
+                                                  color: string;
+                                                },
+                                                idx: number,
+                                              ) => (
+                                                <span
+                                                  key={idx}
+                                                  className={`text-${tag.color}-500`}
+                                                >
+                                                  {tag.text}
+                                                </span>
+                                              ),
+                                            )}
+                                          </div>
                                         </div>
                                       </div>
 
@@ -3081,7 +3083,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               </div>
 
                               {/* Buttons */}
-                              <div className="flex items-center">
+                              <div className="flex items-center mr-1">
                                 <button
                                   // onClick={}
                                   className="mr-2 bg-[#0F47F2] text-white font-medium px-6 py-2 rounded-lg transition-colors"
