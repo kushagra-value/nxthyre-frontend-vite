@@ -299,7 +299,7 @@ const HighlightedText: React.FC<HighlightedTextProps> = ({
         className="bg-blue-600 text-white px-1 rounded font-medium"
       >
         {highlighted}
-      </mark>
+      </mark>,
     );
 
     lastIndex = index + keyword.length;
@@ -319,17 +319,18 @@ interface CandidateDetailProps {
   updateCandidateEmail: (
     candidateId: string,
     candidate_email: string,
-    candidate_phone: string
+    candidate_phone: string,
   ) => void;
   deductCredits: () => Promise<void>;
   onUpdateCandidate: (updated: CandidateListItem) => void;
   enableBooleanAnalysis?: boolean;
   defaultBoolQuery: string;
   jobId?: string;
-  textQuery?: string;      // NEW: Current keyword string (text_query)
-  boolQuery?: string;      // NEW: Current boolean query
+  textQuery?: string; // NEW: Current keyword string (text_query)
+  boolQuery?: string; // NEW: Current boolean query
   enableAnalysis?: boolean;
   onAnalysisFetched?: (analysis: AnalysisResult) => void;
+  activeMiddleTab?: string;
 }
 
 const CandidateDetail: React.FC<CandidateDetailProps> = ({
@@ -345,7 +346,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   textQuery,
   boolQuery,
   enableAnalysis,
-  onAnalysisFetched
+  onAnalysisFetched,
+  activeMiddleTab,
 }) => {
   const [newComment, setNewComment] = useState("");
   const [detailedCandidate, setDetailedCandidate] =
@@ -358,45 +360,120 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const [logos, setLogos] = useState<{ [key: string]: string | undefined }>({});
   const random70to99 = () => Math.floor(Math.random() * 30 + 70);
 
-  // Update the fetchBooleanSearch useEffect to conditionally set the activeTab after fetching
   useEffect(() => {
-    const fetchBooleanSearch = async () => {
-    const effectiveQuery = 
-      boolQuery?.trim() || 
-      textQuery?.trim() || 
-      defaultBoolQuery?.trim() || "";
-
-    if (candidate?.id && enableAnalysis && effectiveQuery) {
-        // Assume props.enableBooleanAnalysis
-        try {
-          const data = await candidateService.getCandidateBooleanSearch(
-            candidate.id,
-            effectiveQuery
-          );
-          setBooleanData(data);
-          setHasBooleanAnalysis(true);
-          if (onAnalysisFetched) {
-            onAnalysisFetched(data); 
-          }
-          if (activeTab !== "Boolean-Search") {
-            setActiveTab("Boolean-Search"); // Optional: auto-switch to show analysis
-          }
-        } catch (error) {
-          console.error("Error fetching boolean search:", error);
-          setBooleanData(null);
-          setHasBooleanAnalysis(false);
-          setActiveTab("Profile");
-        }
-      } else {
-        setHasBooleanAnalysis(false); // Initially hide tab
+    const fetchAnalysis = async () => {
+      if (!candidate?.id || !enableAnalysis || !jobId) {
+        setHasBooleanAnalysis(false);
         setBooleanData(null);
+        setAnalysisError(null);
+        setLoadingAnalysis(false);
         if (activeTab === "Boolean-Search") {
           setActiveTab("Profile");
         }
+        return;
+      }
+
+      setHasBooleanAnalysis(true); // Show tab whenever job is selected
+
+      if (activeMiddleTab === "inbound") {
+        // Inbound case: Use candidate detail API with job_id
+        setLoadingAnalysis(true);
+        setAnalysisError(null);
+        try {
+          const detailData = await candidateService.getCandidateInboundScore(
+            candidate.id,
+            jobId,
+          );
+
+          console.log("Detail data :: ", detailData);
+          // Note: Assuming job_score comes inside detailData.candidate when job_id is used internally
+          // If job_score is not present → backend should be fixed to include it when ?job_id=... is sent
+          const jobScore = detailData.candidate?.job_score || null;
+
+          if (!jobScore) {
+            throw new Error("No job_score found in candidate detail response");
+          }
+
+          const mapped: AnalysisResult = {
+            candidate_id: jobScore.candidate_id,
+            candidate_name: jobScore.candidate_name,
+            candidate_match_score: {
+              score: jobScore.candidate_match_score.score,
+              label: jobScore.candidate_match_score.label,
+              description: jobScore.candidate_match_score.description,
+              note: jobScore.candidate_match_score.note || "",
+            },
+            quick_fit_summary: jobScore.quick_fit_summary,
+            gaps_risks: jobScore.gaps_risks,
+            recommended_message: jobScore.recommended_message,
+            call_attention: jobScore.call_attention,
+          };
+
+          setBooleanData(mapped);
+          if (onAnalysisFetched) onAnalysisFetched(mapped);
+
+          // Auto-switch only on success
+          if (activeTab !== "Boolean-Search") {
+            setActiveTab("Boolean-Search");
+          }
+        } catch (err: any) {
+          console.error("Inbound job score fetch failed:", err);
+          setAnalysisError(
+            "Failed to load job score for this inbound candidate.",
+          );
+        } finally {
+          setLoadingAnalysis(false);
+        }
+      } else {
+        // Other tabs: Normal boolean analysis (only if there's a query)
+        const effectiveQuery =
+          boolQuery?.trim() ||
+          textQuery?.trim() ||
+          defaultBoolQuery?.trim() ||
+          "";
+
+        if (!effectiveQuery) {
+          setBooleanData(null);
+          return;
+        }
+
+        setLoadingAnalysis(true);
+        setAnalysisError(null);
+
+        try {
+          const data = await candidateService.getCandidateBooleanSearch(
+            candidate.id,
+            effectiveQuery,
+          );
+          setBooleanData(data);
+          if (onAnalysisFetched) onAnalysisFetched(data);
+
+          if (activeTab !== "Boolean-Search") {
+            setActiveTab("Boolean-Search");
+          }
+        } catch (err: any) {
+          console.error("Boolean analysis fetch failed:", err);
+          setAnalysisError(
+            "Failed to analyze candidate. Check query or try again.",
+          );
+        } finally {
+          setLoadingAnalysis(false);
+        }
       }
     };
-    fetchBooleanSearch();
-    }, [candidate?.id, enableAnalysis, boolQuery, textQuery, defaultBoolQuery, activeTab]);
+
+    fetchAnalysis();
+  }, [
+    candidate?.id,
+    enableAnalysis,
+    jobId,
+    activeTab,
+    boolQuery,
+    textQuery,
+    defaultBoolQuery,
+    onAnalysisFetched,
+  ]);
+
   // In ProfileTab or where email/phone shown, update display
   const displayEmail =
     detailedCandidate?.candidate?.premium_data_unlocked &&
@@ -418,13 +495,16 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const [booleanData, setBooleanData] = useState<AnalysisResult | null>(null);
   const [hasBooleanAnalysis, setHasBooleanAnalysis] = useState(false);
 
+  const [loadingAnalysis, setLoadingAnalysis] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+
   // Inside the CandidateDetail component, add this useMemo after the existing state declarations
   const keywords = useMemo(
     () =>
       hasBooleanAnalysis && booleanData?.quick_fit_summary
         ? booleanData.quick_fit_summary.map((item) => item.badge)
         : [],
-    [booleanData, hasBooleanAnalysis]
+    [booleanData, hasBooleanAnalysis],
   );
 
   // Update the tabs array to include icons
@@ -442,7 +522,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   // Now filter the tabs dynamically
   const visibleTabs = tabs.filter(
-    (tab) => tab.name !== "Boolean-Search" || hasBooleanAnalysis
+    (tab) => tab.name !== "Boolean-Search" || hasBooleanAnalysis,
   );
 
   interface NotesTabProps {
@@ -477,7 +557,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           headers: {
             Authorization: `Bearer ${import.meta.env.VITE_LOGO_DEV_API_KEY}`,
           },
-        }
+        },
       );
       const data = await response.json();
       const logoUrl = data.length > 0 ? data[0].logo_url : null;
@@ -503,88 +583,97 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   if (loading) {
     return (
       <div className="bg-white rounded-xl p-4 lg:p-4 min-h-[81vh] animate-pulse">
-      {/* Header skeleton */}
-      <div className="flex space-x-3 items-center mt-1 mb-6">
-        <div className="w-12 h-12 bg-gray-200 rounded-full flex-shrink-0" />
-        <div className="flex-1 space-y-2">
-          <div className="h-6 bg-gray-200 rounded w-64" /> {/* Name */}
-          <div className="h-4 bg-gray-200 rounded w-96" /> {/* Headline */}
-          <div className="h-4 bg-gray-200 rounded w-48" /> {/* Location */}
+        {/* Header skeleton */}
+        <div className="flex space-x-3 items-center mt-1 mb-6">
+          <div className="w-12 h-12 bg-gray-200 rounded-full flex-shrink-0" />
+          <div className="flex-1 space-y-2">
+            <div className="h-6 bg-gray-200 rounded w-64" /> {/* Name */}
+            <div className="h-4 bg-gray-200 rounded w-96" /> {/* Headline */}
+            <div className="h-4 bg-gray-200 rounded w-48" /> {/* Location */}
+          </div>
+          <div className="w-10 h-10 bg-gray-200 rounded-lg" />{" "}
+          {/* Share button */}
         </div>
-        <div className="w-10 h-10 bg-gray-200 rounded-lg" /> {/* Share button */}
-      </div>
 
-      {/* Contact section skeleton */}
-      <div className="border-t border-gray-300 border-b p-3 space-y-3 mb-6">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-gray-200 rounded" /> {/* Mail icon */}
-            <div className="h-4 bg-gray-200 rounded w-72" /> {/* Email */}
+        {/* Contact section skeleton */}
+        <div className="border-t border-gray-300 border-b p-3 space-y-3 mb-6">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 bg-gray-200 rounded" /> {/* Mail icon */}
+              <div className="h-4 bg-gray-200 rounded w-72" /> {/* Email */}
+            </div>
+            <div className="w-8 h-8 bg-gray-200 rounded" /> {/* Copy button */}
           </div>
-          <div className="w-8 h-8 bg-gray-200 rounded" /> {/* Copy button */}
-        </div>
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-gray-200 rounded" /> {/* Phone icon */}
-            <div className="h-4 bg-gray-200 rounded w-48" /> {/* Phone */}
-          </div>
-          <div className="flex space-x-2">
-            <div className="w-8 h-8 bg-gray-200 rounded" /> {/* WhatsApp */}
-            <div className="w-8 h-8 bg-gray-200 rounded" /> {/* Copy */}
-          </div>
-        </div>
-      </div>
-
-      {/* Send Invite button skeleton */}
-      <div className="mb-6">
-        <div className="h-10 bg-gray-200 rounded-lg w-full" />
-      </div>
-
-      {/* Tabs skeleton */}
-      <div className="flex space-x-4 border-b border-gray-200 mb-4 pb-2 w-4/5">
-        {Array.from({ length: 4 }, (_, i) => (
-          <div key={i} className="flex items-center space-x-1">
-            <div className="w-8 h-8 bg-gray-200 rounded" /> {/* Icon placeholder */}
-            <div className="h-4 bg-gray-200 rounded w-20" /> {/* Tab name */}
-          </div>
-        ))}
-      </div>
-
-      {/* Content area skeleton (mimics Profile tab) */}
-      <div className="space-y-6">
-        {/* Profile Summary */}
-        <div className="bg-gray-100 p-3 rounded-lg">
-          <div className="h-5 bg-gray-200 rounded w-48 mb-3" /> {/* Title */}
-          <div className="space-y-2">
-            <div className="h-4 bg-gray-200 rounded w-full" />
-            <div className="h-4 bg-gray-200 rounded w-full" />
-            <div className="h-4 bg-gray-200 rounded w-3/4" />
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 bg-gray-200 rounded" /> {/* Phone icon */}
+              <div className="h-4 bg-gray-200 rounded w-48" /> {/* Phone */}
+            </div>
+            <div className="flex space-x-2">
+              <div className="w-8 h-8 bg-gray-200 rounded" /> {/* WhatsApp */}
+              <div className="w-8 h-8 bg-gray-200 rounded" /> {/* Copy */}
+            </div>
           </div>
         </div>
 
-        {/* Experience section */}
-        <div className="bg-gray-100 p-3 rounded-lg">
-          <div className="h-5 bg-gray-200 rounded w-32 mb-4" /> {/* Title */}
-          {Array.from({ length: 2 }, (_, i) => (
-            <div key={i} className="border-l-2 border-gray-200 ml-2 pl-4 space-y-3 py-3">
-              <div className="flex items-center space-x-3">
-                <div className="w-5 h-5 bg-gray-200 rounded-full flex-shrink-0" /> {/* Company logo */}
-                <div className="space-y-2 flex-1">
-                  <div className="h-5 bg-gray-200 rounded w-64" /> {/* Job title */}
-                  <div className="h-4 bg-gray-200 rounded w-48" /> {/* Company + location */}
-                  <div className="h-4 bg-gray-200 rounded w-32" /> {/* Dates */}
-                </div>
-              </div>
-              <div className="space-y-2 ml-8">
-                <div className="h-4 bg-gray-200 rounded w-full" />
-                <div className="h-4 bg-gray-200 rounded w-full" />
-                <div className="h-4 bg-gray-200 rounded w-5/6" />
-              </div>
+        {/* Send Invite button skeleton */}
+        <div className="mb-6">
+          <div className="h-10 bg-gray-200 rounded-lg w-full" />
+        </div>
+
+        {/* Tabs skeleton */}
+        <div className="flex space-x-4 border-b border-gray-200 mb-4 pb-2 w-4/5">
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className="flex items-center space-x-1">
+              <div className="w-8 h-8 bg-gray-200 rounded" />{" "}
+              {/* Icon placeholder */}
+              <div className="h-4 bg-gray-200 rounded w-20" /> {/* Tab name */}
             </div>
           ))}
         </div>
+
+        {/* Content area skeleton (mimics Profile tab) */}
+        <div className="space-y-6">
+          {/* Profile Summary */}
+          <div className="bg-gray-100 p-3 rounded-lg">
+            <div className="h-5 bg-gray-200 rounded w-48 mb-3" /> {/* Title */}
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-full" />
+              <div className="h-4 bg-gray-200 rounded w-full" />
+              <div className="h-4 bg-gray-200 rounded w-3/4" />
+            </div>
+          </div>
+
+          {/* Experience section */}
+          <div className="bg-gray-100 p-3 rounded-lg">
+            <div className="h-5 bg-gray-200 rounded w-32 mb-4" /> {/* Title */}
+            {Array.from({ length: 2 }, (_, i) => (
+              <div
+                key={i}
+                className="border-l-2 border-gray-200 ml-2 pl-4 space-y-3 py-3"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-5 h-5 bg-gray-200 rounded-full flex-shrink-0" />{" "}
+                  {/* Company logo */}
+                  <div className="space-y-2 flex-1">
+                    <div className="h-5 bg-gray-200 rounded w-64" />{" "}
+                    {/* Job title */}
+                    <div className="h-4 bg-gray-200 rounded w-48" />{" "}
+                    {/* Company + location */}
+                    <div className="h-4 bg-gray-200 rounded w-32" />{" "}
+                    {/* Dates */}
+                  </div>
+                </div>
+                <div className="space-y-2 ml-8">
+                  <div className="h-4 bg-gray-200 rounded w-full" />
+                  <div className="h-4 bg-gray-200 rounded w-full" />
+                  <div className="h-4 bg-gray-200 rounded w-5/6" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
     );
   }
 
@@ -632,7 +721,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const handleShareProfile = () => {
     window.open(
       `/candidate-profiles/${detailedCandidate.candidate.id}`,
-      "_blank"
+      "_blank",
     );
   };
 
@@ -655,9 +744,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   const handleReveal = async (candidateId: string) => {
     try {
-      const premResponse = await candidateService.revealPremiumData(
-        candidateId
-      );
+      const premResponse =
+        await candidateService.revealPremiumData(candidateId);
       const updated = {
         ...candidate!,
         premium_data_unlocked: true,
@@ -677,7 +765,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       await handleReveal(detailedCandidate.candidate.id);
       await deductCredits();
       const updatedDetails = await candidateService.getCandidateDetails(
-        detailedCandidate.candidate.id
+        detailedCandidate.candidate.id,
       );
       setDetailedCandidate(updatedDetails);
       onSendInvite();
@@ -813,77 +901,120 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   };
 
   const BooleanSearchTab = () => {
-    if (!booleanData) {
+    if (loadingAnalysis) {
       return (
         <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 animate-pulse">
-          {/* Top Badge Skeleton */}
-          <div className="mb-6">
-            <div className="flex items-start gap-4 bg-gray-50 rounded-md px-4 py-4">
-              <div className="w-16 h-16 bg-gray-200 rounded-md" />
-              <div className="space-y-3 flex-1">
-                <div className="h-5 bg-gray-200 rounded w-32" />
-                <div className="h-4 bg-gray-200 rounded w-64" />
-                <div className="h-4 bg-gray-200 rounded w-48" />
-              </div>
+          <div className="flex items-start gap-4 bg-gray-50 rounded-md px-4 py-4">
+            <div className="w-16 h-16 bg-gray-200 rounded-md" />
+            <div className="space-y-3 flex-1">
+              <div className="h-5 bg-gray-200 rounded w-32" />
+              <div className="h-4 bg-gray-200 rounded w-64" />
             </div>
           </div>
-
-          {/* Quick Fit Summary Skeleton */}
-          <div className="mb-6">
-            <div className="h-6 bg-gray-200 rounded w-48 mb-4" />
+          <div className="mt-6 space-y-4">
+            <div className="h-6 bg-gray-200 rounded w-48" />
             <div className="flex flex-wrap gap-3">
-              {Array.from({ length: 8 }, (_, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <div className="h-8 bg-gray-200 rounded-full w-32" />
-                  <div className="w-5 h-5 bg-gray-200 rounded-full" />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mb-4 border-b border-gray-200" />
-
-          {/* Gaps / Risks Skeleton */}
-          <div className="mb-6">
-            <div className="h-6 bg-gray-200 rounded w-40 mb-4" />
-            <div className="space-y-3">
-              {Array.from({ length: 5 }, (_, i) => (
-                <div key={i} className="h-12 bg-gray-50 rounded-md p-3">
-                  <div className="h-4 bg-gray-200 rounded w-full" />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mb-4 border-b border-gray-200" />
-
-          {/* Recommended Message Skeleton */}
-          <div className="mb-6">
-            <div className="h-6 bg-gray-200 rounded w-64 mb-4" />
-            <div className="space-y-3">
-              <div className="h-4 bg-gray-200 rounded w-full" />
-              <div className="h-4 bg-gray-200 rounded w-full" />
-              <div className="h-4 bg-gray-200 rounded w-5/6" />
-            </div>
-          </div>
-
-          <div className="mb-4 border-b border-gray-200" />
-
-          {/* Call Attention Skeleton */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-6 h-6 bg-yellow-200 rounded-full" />
-              <div className="h-6 bg-yellow-200 rounded w-40" />
-            </div>
-            <div className="space-y-3 pl-9">
-              {Array.from({ length: 4 }, (_, i) => (
-                <div key={i} className="h-4 bg-yellow-100 rounded w-11/12" />
-              ))}
+              {Array(6)
+                .fill(0)
+                .map((_, i) => (
+                  <div key={i} className="h-8 bg-gray-200 rounded-full w-28" />
+                ))}
             </div>
           </div>
         </div>
       );
     }
+
+    if (analysisError) {
+      return (
+        <div className="bg-white p-8 rounded-lg border border-gray-200 text-center">
+          <div className="text-red-600 text-lg font-medium mb-2">Error</div>
+          <p className="text-gray-700">{analysisError}</p>
+        </div>
+      );
+    }
+
+    if (!booleanData) {
+      return (
+        <div className="bg-white p-8 rounded-lg border border-gray-200 text-center">
+          <div className="text-gray-600 text-lg">
+            {activeMiddleTab === "inbound"
+              ? "No job score available for this candidate in inbound."
+              : "No analysis available. Please add keywords or boolean query in filters."}
+          </div>
+        </div>
+      );
+    }
+    //   return (
+    //     <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 animate-pulse">
+    //       {/* Top Badge Skeleton */}
+    //       <div className="mb-6">
+    //         <div className="flex items-start gap-4 bg-gray-50 rounded-md px-4 py-4">
+    //           <div className="w-16 h-16 bg-gray-200 rounded-md" />
+    //           <div className="space-y-3 flex-1">
+    //             <div className="h-5 bg-gray-200 rounded w-32" />
+    //             <div className="h-4 bg-gray-200 rounded w-64" />
+    //             <div className="h-4 bg-gray-200 rounded w-48" />
+    //           </div>
+    //         </div>
+    //       </div>
+
+    //       {/* Quick Fit Summary Skeleton */}
+    //       <div className="mb-6">
+    //         <div className="h-6 bg-gray-200 rounded w-48 mb-4" />
+    //         <div className="flex flex-wrap gap-3">
+    //           {Array.from({ length: 8 }, (_, i) => (
+    //             <div key={i} className="flex items-center gap-2">
+    //               <div className="h-8 bg-gray-200 rounded-full w-32" />
+    //               <div className="w-5 h-5 bg-gray-200 rounded-full" />
+    //             </div>
+    //           ))}
+    //         </div>
+    //       </div>
+
+    //       <div className="mb-4 border-b border-gray-200" />
+
+    //       {/* Gaps / Risks Skeleton */}
+    //       <div className="mb-6">
+    //         <div className="h-6 bg-gray-200 rounded w-40 mb-4" />
+    //         <div className="space-y-3">
+    //           {Array.from({ length: 5 }, (_, i) => (
+    //             <div key={i} className="h-12 bg-gray-50 rounded-md p-3">
+    //               <div className="h-4 bg-gray-200 rounded w-full" />
+    //             </div>
+    //           ))}
+    //         </div>
+    //       </div>
+
+    //       <div className="mb-4 border-b border-gray-200" />
+
+    //       {/* Recommended Message Skeleton */}
+    //       <div className="mb-6">
+    //         <div className="h-6 bg-gray-200 rounded w-64 mb-4" />
+    //         <div className="space-y-3">
+    //           <div className="h-4 bg-gray-200 rounded w-full" />
+    //           <div className="h-4 bg-gray-200 rounded w-full" />
+    //           <div className="h-4 bg-gray-200 rounded w-5/6" />
+    //         </div>
+    //       </div>
+
+    //       <div className="mb-4 border-b border-gray-200" />
+
+    //       {/* Call Attention Skeleton */}
+    //       <div className="bg-yellow-50 border border-yellow-200 rounded-md p-6">
+    //         <div className="flex items-center gap-3 mb-4">
+    //           <div className="w-6 h-6 bg-yellow-200 rounded-full" />
+    //           <div className="h-6 bg-yellow-200 rounded w-40" />
+    //         </div>
+    //         <div className="space-y-3 pl-9">
+    //           {Array.from({ length: 4 }, (_, i) => (
+    //             <div key={i} className="h-4 bg-yellow-100 rounded w-11/12" />
+    //           ))}
+    //         </div>
+    //       </div>
+    //     </div>
+    //   );
+    // };
 
     return (
       <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
@@ -914,7 +1045,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               <span
                 key={index}
                 className={`bg-blue-50 ${getColorClass(
-                  item.color
+                  item.color,
                 )} px-3 py-1 rounded-full text-sm flex gap-1 items-center`}
               >
                 {item.badge}
@@ -1277,7 +1408,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                       </p>
                     )}
                   </div>
-                )
+                ),
               )
             ) : (
               <p className="text-sm text-gray-500">
@@ -1342,7 +1473,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     // Extract resume skills from detailedCandidate
     const resumeSkills =
       detailedCandidate?.candidate?.skills_data?.skills_mentioned?.map(
-        (skill) => skill.skill
+        (skill) => skill.skill,
       ) || [];
 
     // State to manage expansion
@@ -1703,9 +1834,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       const fetchNotes = async () => {
         try {
           setIsLoading(true);
-          const fetchedNotes = await candidateService.getCandidateNotes(
-            candidateId
-          );
+          const fetchedNotes =
+            await candidateService.getCandidateNotes(candidateId);
           setNotes(fetchedNotes);
         } catch (error) {
           console.error("Failed to fetch notes:", error);
@@ -1733,9 +1863,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         setNewComment("");
 
         // Refetch notes to update the UI
-        const updatedNotes = await candidateService.getCandidateNotes(
-          candidateId
-        );
+        const updatedNotes =
+          await candidateService.getCandidateNotes(candidateId);
         setNotes(updatedNotes);
       } catch (error) {
         console.error("Failed to add note:", error);
@@ -1897,7 +2026,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     >
       <style>{tabStyles}</style>
       <div className="flex space-x-3 items-center mt-1">
-        
         <div>
           <h2 className="text-base lg:text-[16px] font-bold text-gray-900">
             {detailedCandidate?.candidate?.full_name}
@@ -1917,7 +2045,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               {detailedCandidate?.candidate?.location}
             </p>
             {/* need to update this API */}
-            <p className="text-[14px] text-[#818283] font-[400]">Last Update: May 2025</p>
+            <p className="text-[14px] text-[#818283] font-[400]">
+              Last Update: May 2025
+            </p>
           </div>
         </div>
         <div className="text-xs text-gray-400 absolute right-6 top-4">
