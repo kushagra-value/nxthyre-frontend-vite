@@ -1441,7 +1441,7 @@ function MainApp() {
                       onOpenLogoutModal={handleOpenLogoutModal}
                       credits={credits}
                       searchQuery={""}
-                      setSearchQuery={() => {}}
+                      setSearchQuery={() => { }}
                       showCreateRoleButton={true}
                       showSearchBar={false}
                     />
@@ -1455,7 +1455,7 @@ function MainApp() {
                       onOpenLogoutModal={handleOpenLogoutModal}
                       credits={credits}
                       searchQuery={""}
-                      setSearchQuery={() => {}}
+                      setSearchQuery={() => { }}
                       showCreateRoleButton={true}
                       showSearchBar={false}
                     />
@@ -1539,7 +1539,7 @@ function MainApp() {
 
                           return (
                             <>
-                              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 mx-auto">
+                              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 gap-6">
                                 {currentCategories.map((job) => (
                                   <div
                                     key={job.id}
@@ -1619,11 +1619,10 @@ function MainApp() {
                                         onClick={() =>
                                           setCurrentRequisitionPage(page)
                                         }
-                                        className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
-                                          page === currentRequisitionPage
+                                        className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${page === currentRequisitionPage
                                             ? "bg-blue-600 text-white"
                                             : "bg-white text-black hover:bg-gray-200"
-                                        }`}
+                                          }`}
                                       >
                                         {page}
                                       </button>
