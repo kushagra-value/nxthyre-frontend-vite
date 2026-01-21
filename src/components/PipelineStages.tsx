@@ -1800,7 +1800,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           <div className="flex items-center justify-between w-full">
                             <div className="flex flex-col items-start justify-center">
                               <span className="flex-1 font-medium">
-                                {stage.name}
+                                {stage.name != "Applied"
+                                  ? stage.name
+                                  : "Autopilot"}
                               </span>
                               {stage.activity_update && (
                                 <p className={`text-xs ${description.color}`}>
