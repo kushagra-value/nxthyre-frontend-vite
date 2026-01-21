@@ -3248,6 +3248,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     setShowEditModal(true);
                                   }}
                                   className="p-1 rounded-full"
+                                  title="Edit candidate details"
+                                  aria-label="Edit candidate details"
                                 >
                                   <svg
                                     width="38"
