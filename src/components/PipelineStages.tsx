@@ -1650,6 +1650,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       onClick={() => setCurrentView("search")}
                       className="flex items-center justify-center bg-gray-600 h-10 w-10 rounded-lg ml-2 text-white focus:outline-none"
                       aria-label="Toggle to search candidates"
+                      title="Toggle to search candidates"
                     >
                       <SearchCodeIcon />
                     </button>
