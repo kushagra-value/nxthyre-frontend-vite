@@ -50,8 +50,8 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [formData, setFormData] = useState({
-    allowInbound: true,
-    keepPrivate: false,
+    allowInbound: false,
+    keepPrivate: true,
     shareExternally: false,
     title: "",
     skills: [] as string[],
@@ -121,7 +121,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     Admin: 7,
     Others: 8,
   };
-const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [competencies, setCompetencies] = useState<string[]>([]);
   const [editableJD, setEditableJD] = useState("");
   const [aiJdResponse, setAiJdResponse] = useState<any>(null);
@@ -153,10 +153,9 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
       disabled={disabled}
       className={`
         flex items-center justify-start px-4 py-2 rounded-lg  text-md font-[400] transition-all duration-200
-        ${
-          isSelected
-            ? "bg-[#ECF1FF] text-blue-700"
-            : "bg-[#F0F0F0]  text-gray-700 hover:bg-gray-100"
+        ${isSelected
+          ? "bg-[#ECF1FF] text-blue-700"
+          : "bg-[#F0F0F0]  text-gray-700 hover:bg-gray-100"
         }
         ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
       `}
@@ -165,10 +164,9 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
         <div
           className={`
             w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center transition-all duration-200
-            ${
-              isSelected
-                ? "border-blue-500 bg-white"
-                : "border-gray-300 bg-white"
+            ${isSelected
+              ? "border-blue-500 bg-white"
+              : "border-gray-300 bg-white"
             }
           `}
         >
@@ -227,27 +225,27 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
 
   // UPDATED: Replace Geoapify fetch with jobPostService.getLocationSuggestions for consistency and to use backend API
   const fetchLocationSuggestions = useCallback(
-  debounce(async (query: string) => {
-    if (query.length < 2) {
-      setLocationSuggestions([]);
-      setIsLoadingLocation(false);
-      return;
-    }
+    debounce(async (query: string) => {
+      if (query.length < 2) {
+        setLocationSuggestions([]);
+        setIsLoadingLocation(false);
+        return;
+      }
 
-    setIsLoadingLocation(true);
-    try {
-      const suggestions = await candidateService.getCitySuggestions(query);
-      setLocationSuggestions(suggestions);
-    } catch (error) {
-      console.error("Error fetching location suggestions:", error);
-      setLocationSuggestions([]);
-      showToast.error("Failed to fetch location suggestions");
-    } finally {
-      setIsLoadingLocation(false);
-    }
-  }, 300),
-  []
-);
+      setIsLoadingLocation(true);
+      try {
+        const suggestions = await candidateService.getCitySuggestions(query);
+        setLocationSuggestions(suggestions);
+      } catch (error) {
+        console.error("Error fetching location suggestions:", error);
+        setLocationSuggestions([]);
+        showToast.error("Failed to fetch location suggestions");
+      } finally {
+        setIsLoadingLocation(false);
+      }
+    }, 300),
+    []
+  );
 
   const handleSkillInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^a-zA-Z0-9\s]/g, "");
@@ -599,10 +597,10 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
       const errorMessage = error.response?.data?.description
         ? `Description error: ${error.response.data.description}`
         : error.response?.data?.description_file
-        ? `File upload error: ${error.response.data.description_file}`
-        : error.response?.data?.department
-        ? `Department error: ${error.response.data.department.join(" ")}`
-        : error.message || "Failed to create job role";
+          ? `File upload error: ${error.response.data.description_file}`
+          : error.response?.data?.department
+            ? `Department error: ${error.response.data.department.join(" ")}`
+            : error.message || "Failed to create job role";
       showToast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -673,10 +671,10 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
       const errorMessage = error.response?.data?.description
         ? `Description error: ${error.response.data.description}`
         : error.response?.data?.description_file
-        ? `File upload error: ${error.response.data.description_file}`
-        : error.response?.data?.department
-        ? `Department error: ${error.response.data.department.join(" ")}`
-        : error.message || "Failed to create job role";
+          ? `File upload error: ${error.response.data.description_file}`
+          : error.response?.data?.department
+            ? `Department error: ${error.response.data.department.join(" ")}`
+            : error.message || "Failed to create job role";
       showToast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -694,7 +692,7 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
       setAiJdResponse(aiResponse);
       setBooleanSearchTerm(
         aiResponse.jd_competencies.search_criteria.search_criteria_expression ||
-          ""
+        ""
       );
 
       // Update originals after regeneration
@@ -885,42 +883,37 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
             <div className="flex items-center space-x-64">
               <div className="flex flex-col justify-center gap-2 items-center">
                 <span
-                  className={`ml-2 text-sm ${
-                    currentStep >= 1
+                  className={`ml-2 text-sm ${currentStep >= 1
                       ? "text-blue-500 font-medium"
                       : "text-gray-500"
-                  }`}
+                    }`}
                 >
                   Basic Info
                 </span>
                 <div
-                  className={`w-3 h-3 rounded-full ${
-                    currentStep >= 1 ? "bg-blue-500" : "bg-gray-300"
-                  }`}
+                  className={`w-3 h-3 rounded-full ${currentStep >= 1 ? "bg-blue-500" : "bg-gray-300"
+                    }`}
                 ></div>
               </div>
               <div className="flex flex-col justify-center gap-2 items-center">
                 <span
-                  className={`ml-2 text-sm ${
-                    currentStep >= 2
+                  className={`ml-2 text-sm ${currentStep >= 2
                       ? "text-blue-500 font-medium"
                       : "text-gray-500"
-                  }`}
+                    }`}
                 >
                   Update and Refine JD
                 </span>
                 <div
-                  className={`w-3 h-3 rounded-full ${
-                    currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
-                  }`}
+                  className={`w-3 h-3 rounded-full ${currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
+                    }`}
                 ></div>
               </div>
             </div>
             <div className="relative top-[-6px] right-[25px]">
               <div
-                className={`w-[351px] h-px ${
-                  currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
-                }`}
+                className={`w-[351px] h-px ${currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
+                  }`}
               ></div>
             </div>
             <div className="flex-1 overflow-y-auto mt-2 pr-10">
@@ -1190,7 +1183,7 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
                 </div>
               </div>
 
-              <div className="flex flex-col items-start space-y-3">
+              {/* <div className="flex flex-col items-start space-y-3">
                 <span className="text-sm font-medium text-gray-700">
                   Job Post Control
                 </span>
@@ -1212,7 +1205,7 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
                     onMouseEnter={() => setShowTooltip("inbound")}
                     onMouseLeave={() => setShowTooltip(null)}
                   >
-                    {/* <input
+                     <input
                       type="radio"
                       name="privacy"
                       value="inbound"
@@ -1220,7 +1213,7 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
                       onChange={() => setFormData(prev => ({ ...prev, allowInbound: true, keepPrivate: false }))}
                       className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                       disabled={isLoading}
-                    /> */}
+                    />
                     <span className="ml-2  px-2 text-sm bg-gray-200 rounded-full font-medium text-gray-700">
                       i
                     </span>
@@ -1325,7 +1318,7 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
                   Turning on this feature will enable AI interview, as a
                   secondary screening round
                 </p>
-              </div>
+              </div> */}
 
               <div className="grid grid-cols-12 gap-4">
                 <div className="col-span-6">
@@ -1390,9 +1383,8 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
                           }));
                         }
                       }}
-                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500  ${
-                        formData.confidential ? "bg-gray-100 text-gray-400" : ""
-                      }`}
+                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500  ${formData.confidential ? "bg-gray-100 text-gray-400" : ""
+                        }`}
                       disabled={isLoading || formData.confidential}
                     />
                     <input
@@ -1407,9 +1399,8 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
                           }));
                         }
                       }}
-                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        formData.confidential ? "bg-gray-100 text-gray-400" : ""
-                      }`}
+                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${formData.confidential ? "bg-gray-100 text-gray-400" : ""
+                        }`}
                       disabled={isLoading || formData.confidential}
                     />
                     <button
@@ -1420,11 +1411,10 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
                           confidential: !prev.confidential,
                         }))
                       }
-                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-md font-[400] transition-all duration-200 ${
-                        formData.confidential
+                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-md font-[400] transition-all duration-200 ${formData.confidential
                           ? "bg-[#ECF1FF] text-blue-600"
                           : "bg-[#F0F0F0] text-gray-400"
-                      }`}
+                        }`}
                       disabled={isLoading}
                     >
                       {formData.confidential ? (
@@ -1459,11 +1449,10 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
                           jobDescription: "",
                         }))
                       }
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                        formData.uploadType === "paste"
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${formData.uploadType === "paste"
                           ? "bg-white text-blue-600 shadow-sm"
                           : "text-gray-600"
-                      }`}
+                        }`}
                       disabled={isLoading}
                     >
                       Paste Text
@@ -1476,11 +1465,10 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
                           jobDescription: "",
                         }))
                       }
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                        formData.uploadType === "upload"
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${formData.uploadType === "upload"
                           ? "bg-white text-blue-600 shadow-sm"
                           : "text-gray-600"
-                      }`}
+                        }`}
                       disabled={isLoading}
                     >
                       Upload File
@@ -1663,8 +1651,8 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
                 {isLoading
                   ? "Loading..."
                   : formData.allowInbound
-                  ? "Create Job"
-                  : "Create"}
+                    ? "Create Job"
+                    : "Create"}
               </button>
 
               <button
