@@ -526,7 +526,6 @@ function MainApp() {
         maxTotalExp: job.experience_max_years
           ? job.experience_max_years.toString()
           : "",
-        locations: job.location ? job.location.filter(Boolean) : [],
         application_type: activeTab,
         sort_by: sortBy,
       };
@@ -1531,7 +1530,7 @@ function MainApp() {
 
                           return (
                             <>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 mx-auto">
                                 {currentCategories.map((job) => (
                                   <div
                                     key={job.id}
