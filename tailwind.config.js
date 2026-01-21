@@ -62,7 +62,7 @@ export default {
           "100%": { transform: "translateY(0)", opacity: "1" },
         },
         screens: {
-          '3xl': '1920px',
+          '3xl': '1800px',
         },
       },
     },
