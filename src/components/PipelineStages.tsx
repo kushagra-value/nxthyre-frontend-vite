@@ -3190,26 +3190,29 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     selectedStage === "Autopilot"
                                   }
                                 >
-                                  <svg
-                                    width="38"
-                                    height="38"
-                                    viewBox="0 0 38 38"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <rect
-                                      x="0.5"
-                                      y="0.5"
-                                      width="37"
-                                      height="37"
-                                      rx="18.5"
-                                      stroke="#0F47F2"
-                                    />
-                                    <path
-                                      d="M19 7L22 15.1429L31 19L22 22L19 31L16 22L7 19L16 15.1429L19 7Z"
-                                      fill="#0F47F2"
-                                    />
-                                  </svg>
+                                  {selectedStage === "Applied" ||
+                                  selectedStage === "Autopilot" ? null : (
+                                    <svg
+                                      width="38"
+                                      height="38"
+                                      viewBox="0 0 38 38"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <rect
+                                        x="0.5"
+                                        y="0.5"
+                                        width="37"
+                                        height="37"
+                                        rx="18.5"
+                                        stroke="#0F47F2"
+                                      />
+                                      <path
+                                        d="M19 7L22 15.1429L31 19L22 22L19 31L16 22L7 19L16 15.1429L19 7Z"
+                                        fill="#0F47F2"
+                                      />
+                                    </svg>
+                                  )}
                                 </button>
 
                                 {/* Archive */}
