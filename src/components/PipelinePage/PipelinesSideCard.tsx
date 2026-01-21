@@ -78,7 +78,7 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
   const handleShareProfile = () => {
     window.open(
       `/candidate-profiles/${selectedCandidate?.candidate.id}`,
-      "_blank"
+      "_blank",
     );
   };
 
@@ -122,8 +122,8 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
       {selectedCandidate ? (
         <>
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
-              {/* show the initials from full name */}
+            {/* <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
+              
               {selectedCandidate?.candidate.profilePicture.displayImageUrl ? (
                 <img
                   src={
@@ -140,7 +140,7 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
                   .toUpperCase()
                   ?.slice(0, 2)
               )}
-            </div>
+            </div> */}
             <div>
               <h2 className="text-base lg:text-[16px] font-bold text-gray-900">
                 {selectedCandidate.candidate.full_name}
