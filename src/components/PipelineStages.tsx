@@ -794,6 +794,132 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     }
   };
 
+  // Bulk shortlist selected candidates to "Shortlisted" stage
+  const bulkShortlist = async (applicationIds: number[]) => {
+    if (applicationIds.length === 0) return;
+
+    try {
+      const shortlistedStage = stages.find(
+        (s) =>
+          s.slug === "shortlisted" ||
+          s.name.toLowerCase().includes("shortlist"),
+      );
+
+      if (!shortlistedStage) {
+        showToast.error("Shortlisted stage not found");
+        return;
+      }
+
+      await apiClient.post("/jobs/bulk-move-stage/", {
+        application_ids: applicationIds,
+        current_stage: shortlistedStage.id,
+      });
+
+      showToast.success(
+        `${applicationIds.length} candidate${applicationIds.length !== 1 ? "s" : ""} shortlisted`,
+      );
+
+      if (activeJobId !== null) {
+        fetchCandidates(
+          activeJobId,
+          selectedStage.toLowerCase().replace(" ", "-"),
+        );
+        fetchStages(activeJobId);
+      }
+
+      // Optional: clear selection after success
+      setSelectedCandidates([]);
+      setSelectAll(false);
+    } catch (error) {
+      console.error("Bulk shortlist failed:", error);
+      showToast.error("Failed to shortlist selected candidates");
+    }
+  };
+
+  // Bulk move to Autopilot / Applied stage
+  const bulkAutopilot = async (applicationIds: number[]) => {
+    if (applicationIds.length === 0) return;
+
+    try {
+      const appliedStage = stages.find(
+        (s) =>
+          s.slug === "applied" ||
+          s.name === "Autopilot" ||
+          s.name.toLowerCase().includes("applied"),
+      );
+
+      if (!appliedStage) {
+        showToast.error("Applied / Autopilot stage not found");
+        return;
+      }
+
+      await apiClient.post("/jobs/bulk-move-stage/", {
+        application_ids: applicationIds,
+        current_stage: appliedStage.id,
+      });
+
+      showToast.success(
+        `${applicationIds.length} candidate${applicationIds.length !== 1 ? "s" : ""} moved to Autopilot`,
+      );
+
+      if (activeJobId !== null) {
+        fetchCandidates(
+          activeJobId,
+          selectedStage.toLowerCase().replace(" ", "-"),
+        );
+        fetchStages(activeJobId);
+      }
+
+      setSelectedCandidates([]);
+      setSelectAll(false);
+    } catch (error) {
+      console.error("Bulk autopilot move failed:", error);
+      showToast.error("Failed to move candidates to Autopilot");
+    }
+  };
+
+  // Bulk archive selected candidates
+  const bulkArchive = async (applicationIds: number[]) => {
+    if (applicationIds.length === 0) return;
+
+    try {
+      const archiveStage = stages.find(
+        (s) =>
+          s.slug === "archives" || s.name.toLowerCase().includes("archive"),
+      );
+
+      if (!archiveStage) {
+        showToast.error("Archives stage not found");
+        return;
+      }
+
+      await apiClient.post("/jobs/bulk-move-stage/", {
+        application_ids: applicationIds,
+        current_stage: archiveStage.id,
+        status: "ARCHIVED",
+        archive_reason: "Bulk archived from pipeline view",
+      });
+
+      showToast.success(
+        `${applicationIds.length} candidate${applicationIds.length !== 1 ? "s" : ""} archived`,
+      );
+
+      if (activeJobId !== null) {
+        fetchCandidates(
+          activeJobId,
+          selectedStage.toLowerCase().replace(" ", "-"),
+        );
+        fetchStages(activeJobId);
+      }
+
+      setSelectedCandidates([]);
+      setSelectAll(false);
+    } catch (error) {
+      console.error("Bulk archive failed:", error);
+      showToast.error("Failed to archive selected candidates");
+    }
+  };
+
   const handleSortSelect = (sortValue: string) => {
     setSortBy(sortValue);
     setShowSortDropdown(false);
@@ -1939,35 +2065,110 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   </label>
                   <div className="flex space-x-3">
                     {selectedCandidates.length > 0 && (
-                      <button
-                        onClick={() =>
-                          bulkMoveCandidates(
-                            selectedCandidates.map((id) => parseInt(id)),
-                            stages.find((s) => s.name === selectedStage)?.id ??
-                              0,
-                          )
-                        }
-                        className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                        aria-label="move candidates to pipeline"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          className="mr-1"
+                      // <button
+                      //   onClick={() =>
+                      //     bulkMoveCandidates(
+                      //       selectedCandidates.map((id) => parseInt(id)),
+                      //       stages.find((s) => s.name === selectedStage)?.id ??
+                      //         0,
+                      //     )
+                      //   }
+                      //   className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                      //   aria-label="move candidates to pipeline"
+                      // >
+                      //   <svg
+                      //     xmlns="http://www.w3.org/2000/svg"
+                      //     width="16"
+                      //     height="16"
+                      //     viewBox="0 0 24 24"
+                      //     fill="none"
+                      //     stroke="currentColor"
+                      //     stroke-width="2"
+                      //     stroke-linecap="round"
+                      //     stroke-linejoin="round"
+                      //     className="mr-1"
+                      //   >
+                      //     <circle cx="12" cy="12" r="10" />
+                      //     <path d="M8 12h8" />
+                      //     <path d="M12 8v8" />
+                      //   </svg>
+                      //   Move to Next Stage
+                      // </button>
+
+                      <div>
+                        {/* Bulk Shortlist */}
+                        <button
+                          onClick={() =>
+                            bulkShortlist(
+                              selectedCandidates.map((id) => parseInt(id)),
+                            )
+                          }
+                          className="px-3 py-1.5 bg-white text-green-600 text-xs lg:text-sm font-medium rounded-lg border border-green-300 hover:bg-green-50 transition-colors flex items-center gap-1 shadow-sm"
+                          title="Shortlist selected candidates"
                         >
-                          <circle cx="12" cy="12" r="10" />
-                          <path d="M8 12h8" />
-                          <path d="M12 8v8" />
-                        </svg>
-                        Move to Next Stage
-                      </button>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                            <line x1="7" y1="7" x2="7.01" y2="7" />
+                          </svg>
+                          Shortlist
+                        </button>
+                        {/* Bulk Autopilot */}
+                        <button
+                          onClick={() =>
+                            bulkAutopilot(
+                              selectedCandidates.map((id) => parseInt(id)),
+                            )
+                          }
+                          className="px-3 py-1.5 bg-white text-indigo-600 text-xs lg:text-sm font-medium rounded-lg border border-indigo-300 hover:bg-indigo-50 transition-colors flex items-center gap-1 shadow-sm"
+                          title="Move selected to Autopilot / Applied"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path d="M12 2v20M2 12h20" />
+                          </svg>
+                          Autopilot
+                        </button>
+                        {/* Bulk Archive */}
+                        <button
+                          onClick={() =>
+                            bulkArchive(
+                              selectedCandidates.map((id) => parseInt(id)),
+                            )
+                          }
+                          className="px-3 py-1.5 bg-white text-red-600 text-xs lg:text-sm font-medium rounded-lg border border-red-300 hover:bg-red-50 transition-colors flex items-center gap-1 shadow-sm"
+                          title="Archive selected candidates"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <polyline points="21 8 21 21 3 21 3 8" />
+                            <rect width="22" height="5" x="1" y="3" rx="2" />
+                            <line x1="10" y1="12" x2="14" y2="12" />
+                          </svg>
+                          Archive
+                        </button>
+                      </div>
                     )}
 
                     {viewMode === "prospect" ? (
