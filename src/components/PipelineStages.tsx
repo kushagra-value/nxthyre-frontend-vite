@@ -2060,7 +2060,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       aria-label="Select all candidates"
                     />
                     {selectedCandidates.length > 0 ? (
-                      <span className="ml-2 text-sm lg:text-base font-[300] text-blue-500">
+                      <span className="ml-2 text-sm lg:text-base font-[500] text-blue-500">
                         {selectedCandidates.length} Candidates Selected
                         <span className="mx-1 border border-left border-gray-300"></span>
                       </span>
@@ -2110,7 +2110,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               selectedCandidates.map((id) => parseInt(id)),
                             )
                           }
-                          className="mr-1 bg-[#0F47F2] text-white font-medium px-4 py-1 rounded-lg transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-300"
+                          className="mx-1 bg-[#0F47F2] text-white font-medium px-4 py-[1.5] rounded-lg transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-300"
                           disabled={selectedStage === "Shortlisted"}
                           title="Shortlist selected candidates"
                         >
@@ -2135,8 +2135,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           {selectedStage === "Applied" ||
                           selectedStage === "Autopilot" ? null : (
                             <svg
-                              width="34"
-                              height="34"
+                              width="36"
+                              height="36"
                               viewBox="0 0 38 38"
                               fill="none"
                               xmlns="http://www.w3.org/2000/svg"
@@ -2170,8 +2170,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           disabled={selectedStage === "Archives"}
                         >
                           <svg
-                            width="34"
-                            height="34"
+                            width="36"
+                            height="36"
                             viewBox="0 0 38 38"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
@@ -2191,7 +2191,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                     {viewMode === "prospect" ? (
                       <div className="relative">
                         <button
-                          className="px-1.5 py-1 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                          className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                           onClick={() => setShowUploadModal(true)}
                           aria-label="Upload Candidates"
                         >
@@ -2366,7 +2366,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
                     <div className="relative flex space-x-2">
                       <button
-                        className="px-1.5 py-1 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() => setShowSortDropdown(!showSortDropdown)}
                         aria-label="Sort candidates"
                       >
