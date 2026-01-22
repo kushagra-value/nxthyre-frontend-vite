@@ -2044,34 +2044,34 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               )}
               <div className="p-3 lg:p-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={selectAll}
-                      onChange={(e) => {
-                        setSelectAll(e.target.checked);
-                        setSelectedCandidates(
-                          e.target.checked
-                            ? currentCandidates.map((c) => c.id.toString())
-                            : [],
-                        );
-                      }}
-                      className="w-4 h-4 text-blue-200 border-gray-200 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 "
-                      aria-label="Select all candidates"
-                    />
-                    {selectedCandidates.length > 0 ? (
-                      <span className="ml-2 text-sm lg:text-base font-[500] text-blue-500">
-                        {selectedCandidates.length} Candidates Selected
-                        <span className="mx-1 border border-left border-gray-300"></span>
-                      </span>
-                    ) : (
-                      <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">
-                        Select all on this page
-                      </span>
-                    )}
-                  </label>
                   <div className="flex justify-between space-x-3">
                     <div className="flex items-center">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={selectAll}
+                          onChange={(e) => {
+                            setSelectAll(e.target.checked);
+                            setSelectedCandidates(
+                              e.target.checked
+                                ? currentCandidates.map((c) => c.id.toString())
+                                : [],
+                            );
+                          }}
+                          className="w-4 h-4 text-blue-200 border-gray-200 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 "
+                          aria-label="Select all candidates"
+                        />
+                        {selectedCandidates.length > 0 ? (
+                          <span className="ml-2 text-sm lg:text-base font-[500] text-blue-500">
+                            {selectedCandidates.length} Candidates Selected
+                            <span className="mx-1 border border-left border-gray-300"></span>
+                          </span>
+                        ) : (
+                          <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">
+                            Select all on this page
+                          </span>
+                        )}
+                      </label>
                       {selectedCandidates.length > 0 && (
                         // <button
                         //   onClick={() =>
