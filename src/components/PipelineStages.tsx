@@ -2438,38 +2438,40 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       </div>
 
                       {/* Sort button - Relevance by default */}
-                      <button
-                        className="px-2 py-2 2xl:py-2.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                        onClick={() => setShowSortDropdown(!showSortDropdown)}
-                        aria-label="Sort candidates"
-                        title="Sort candidates"
-                      >
-                        <ArrowDownNarrowWide className="w-4 h-4 rotate-180" />
-                        <span className="text-gray-400 font-[400] ml-1 mr-1 hidden 3xl:inline">
-                          {sortOptions.find((opt) => opt.value === sortBy)
-                            ?.label || "Relevance"}
-                        </span>
-                        <ChevronDown className="w-4 h-4 mt-1" />
-                      </button>
-                      {showSortDropdown && (
-                        <div
-                          ref={sortDropdownRef}
-                          className="absolute top-full right-10 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+                      <div className="relative flex space-x-2">
+                        <button
+                          className="px-2 py-2 2xl:py-2.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                          onClick={() => setShowSortDropdown(!showSortDropdown)}
+                          aria-label="Sort candidates"
+                          title="Sort candidates"
                         >
-                          <div className="py-1">
-                            {sortOptions.map((option) => (
-                              <button
-                                key={option.value}
-                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                                onClick={() => handleSortSelect(option.value)}
-                                aria-label={`Sort candidates by ${option.label}`}
-                              >
-                                {option.label}
-                              </button>
-                            ))}
+                          <ArrowDownNarrowWide className="w-4 h-4 rotate-180" />
+                          <span className="text-gray-400 font-[400] ml-1 mr-1 hidden 3xl:inline">
+                            {sortOptions.find((opt) => opt.value === sortBy)
+                              ?.label || "Relevance"}
+                          </span>
+                          <ChevronDown className="w-4 h-4 mt-1" />
+                        </button>
+                        {showSortDropdown && (
+                          <div
+                            ref={sortDropdownRef}
+                            className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+                          >
+                            <div className="py-1">
+                              {sortOptions.map((option) => (
+                                <button
+                                  key={option.value}
+                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                  onClick={() => handleSortSelect(option.value)}
+                                  aria-label={`Sort candidates by ${option.label}`}
+                                >
+                                  {option.label}
+                                </button>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
