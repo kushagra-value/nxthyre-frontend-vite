@@ -2188,7 +2188,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       </div>
                     )}
 
-                    {viewMode === "prospect" ? (
+                    {/* {viewMode === "prospect" ? (
                       <div className="relative">
                         <button
                           className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2362,9 +2362,74 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           )}
                         </div>
                       )
-                    )}
+                    )} */}
 
                     <div className="relative flex space-x-2">
+                      {/* Source button */}
+                      <button
+                        className="px-1.5 py-1.5 bg-white text-gray-400 text-xs 2xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        title="Filter by Source"
+                      >
+                        <svg
+                          width="15"
+                          height="13"
+                          viewBox="0 0 15 13"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M11.6496 0.601562H2.54961C1.63037 0.601562 1.17075 0.601562 0.88518 0.853462C0.599609 1.10536 0.599609 1.51078 0.599609 2.32163V2.74319C0.599609 3.37742 0.599609 3.69454 0.768349 3.95743C0.937089 4.22031 1.24536 4.38347 1.86192 4.70978L3.75539 5.71191C4.16906 5.93081 4.37589 6.04032 4.52399 6.1612C4.8324 6.41292 5.02226 6.70869 5.1083 7.07151C5.14961 7.24568 5.14961 7.44954 5.14961 7.85721V9.48857C5.14961 10.0444 5.14961 10.3223 5.31336 10.539C5.47711 10.7556 5.76794 10.8625 6.34964 11.0764C7.57073 11.5252 8.18127 11.7496 8.61547 11.4942C9.04961 11.2389 9.04961 10.6555 9.04961 9.48857V7.85721C9.04961 7.44954 9.04961 7.24568 9.09095 7.07151C9.17694 6.70869 9.36681 6.41292 9.67523 6.1612C9.8233 6.04032 10.0301 5.93081 10.4439 5.71191L12.3373 4.70978C12.9538 4.38347 13.2621 4.22031 13.4309 3.95743C13.5996 3.69454 13.5996 3.37742 13.5996 2.74319V2.32163C13.5996 1.51078 13.5996 1.10536 13.3141 0.853462C13.0285 0.601562 12.5688 0.601562 11.6496 0.601562Z"
+                            stroke="#818283"
+                            stroke-width="1.2"
+                          />
+                        </svg>
+                        <p className="hidden 3xl:inline">Source</p>
+                      </button>
+
+                      {/* Upload Button */}
+                      <div className="relative">
+                        <button
+                          className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                          onClick={() => setShowUploadModal(true)}
+                          aria-label="Upload Candidates"
+                        >
+                          <svg
+                            width="15"
+                            height="17"
+                            viewBox="0 0 15 17"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M7.00084 7.00168C8.65816 7.00168 10.0017 5.65816 10.0017 4.00084C10.0017 2.34352 8.65816 1 7.00084 1C5.34352 1 4 2.34352 4 4.00084C4 5.65816 5.34352 7.00168 7.00084 7.00168Z"
+                              stroke="#818283"
+                            />
+                            <path
+                              d="M9.25231 9.49539C8.55731 9.33717 7.79758 9.25 7.00168 9.25C3.68704 9.25 1 10.7614 1 12.6259C1 14.4904 1 16.0019 7.00168 16.0019C11.2684 16.0019 12.5018 15.2379 12.8584 14.1264"
+                              stroke="#818283"
+                            />
+                            <path
+                              d="M11.5047 14.5017C13.1621 14.5017 14.5056 13.1582 14.5056 11.5008C14.5056 9.84352 13.1621 8.5 11.5047 8.5C9.84743 8.5 8.50391 9.84352 8.50391 11.5008C8.50391 13.1582 9.84743 14.5017 11.5047 14.5017Z"
+                              stroke="#818283"
+                            />
+                            <path
+                              d="M11.5039 10.4922V12.4927"
+                              stroke="#818283"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                            <path
+                              d="M10.5039 11.5H12.5045"
+                              stroke="#818283"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                          Upload
+                        </button>
+                      </div>
+
+                      {/* Sort button - Relevance by default */}
                       <button
                         className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() => setShowSortDropdown(!showSortDropdown)}
