@@ -20,6 +20,11 @@ import {
   Trash2,
   Share2,
   X,
+  Crown,
+  Building2,
+  GraduationCap,
+  Check,
+  Flame,
 } from "lucide-react";
 
 import {
@@ -63,6 +68,145 @@ interface CandidatesMainProps {
   activeCategoryTotalCount: number;
   currentAnalysis?: AnalysisResult | null;
 }
+
+const CandidateEditForm = ({
+  candidate,
+  formData,
+  setFormData,
+  onSave,
+  onCancel,
+  selectedCandidates,
+}: any) => {
+  return (
+    <div className="pl-12 pr-4 w-full">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-bold text-gray-900">{candidate.full_name}</h3>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="relative">
+          <div className="flex items-center gap-2 px-3 py-2.5 border border-blue-200 rounded-lg bg-blue-50/50">
+            <Flame className="w-4 h-4 text-gray-400" />
+            <span className="text-gray-700 font-medium text-sm truncate">
+              {candidate.headline || "N/A"}
+            </span>
+            <ChevronDown className="w-4 h-4 ml-auto text-blue-400" />
+          </div>
+        </div>
+        <div className="relative">
+          <div className="flex items-center gap-2 px-3 py-2.5 border border-blue-200 rounded-lg bg-blue-50/50">
+            <Building2 className="w-4 h-4 text-gray-400" />
+            <span className="text-gray-700 font-medium text-sm truncate">
+              {candidate.experience_summary?.title || "N/A"}
+            </span>
+            <ChevronDown className="w-4 h-4 ml-auto text-blue-400" />
+          </div>
+        </div>
+        <div className="relative">
+          <div className="flex items-center gap-2 px-3 py-2.5 border border-blue-200 rounded-lg bg-blue-50/50">
+            <GraduationCap className="w-4 h-4 text-gray-400" />
+            <span className="text-gray-700 font-medium text-sm truncate">
+              {candidate.education_summary?.title || "N/A"}
+            </span>
+            <ChevronDown className="w-4 h-4 ml-auto text-blue-400" />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+        <div>
+          <label className="text-xs text-gray-500 font-medium mb-1.5 block">
+            Experience
+          </label>
+          <div className="relative flex items-center">
+            <div className="w-20 px-3 py-2 border border-blue-200 rounded-lg bg-white text-gray-700 text-sm font-medium">
+              {candidate.experience_years}
+            </div>
+            <span className="ml-2 text-sm text-gray-500">Years</span>
+          </div>
+        </div>
+
+        <div>
+          <label className="text-xs text-gray-500 font-medium mb-1.5 block">
+            Notice Period
+          </label>
+          <div className="relative flex items-center">
+            <input
+              type="number"
+              className="w-20 px-3 py-2 border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium text-gray-700"
+              value={formData.notice_period}
+              onChange={(e) =>
+                setFormData({ ...formData, notice_period: e.target.value })
+              }
+            />
+            <span className="ml-2 text-sm text-gray-500">Days</span>
+          </div>
+        </div>
+
+        <div>
+          <label className="text-xs text-gray-500 font-medium mb-1.5 block">
+            Current CTC
+          </label>
+          <div className="relative flex items-center">
+            <input
+              type="number"
+              className="w-20 px-3 py-2 border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium text-gray-700"
+              value={formData.current_salary}
+              onChange={(e) =>
+                setFormData({ ...formData, current_salary: e.target.value })
+              }
+            />
+            <span className="ml-2 text-sm text-gray-500">LPA</span>
+          </div>
+        </div>
+
+        <div>
+          <label className="text-xs text-gray-500 font-medium mb-1.5 block">
+            Expected CTC
+          </label>
+          <div className="relative flex items-center">
+            <input
+              type="number"
+              className="w-20 px-3 py-2 border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium text-gray-700"
+              value={formData.expected_ctc}
+              onChange={(e) =>
+                setFormData({ ...formData, expected_ctc: e.target.value })
+              }
+            />
+            <span className="ml-2 text-sm text-gray-500">LPA</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 px-3 py-2 border border-blue-200 rounded-lg bg-blue-50/50 min-w-[200px]">
+          <MapPin className="w-4 h-4 text-gray-400" />
+          <span className="text-gray-700 font-medium text-sm truncate">
+            {candidate.location || "Bangalore"}
+          </span>
+          <ChevronDown className="w-4 h-4 ml-auto text-blue-400" />
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onSave}
+            title="Save changes"
+            className="w-10 h-10 flex items-center justify-center bg-[#0F47F2] hover:bg-blue-700 text-white rounded-full transition-colors shadow-sm"
+          >
+            <Check className="w-6 h-6" />
+          </button>
+          <button
+            onClick={onCancel}
+            title="Cancel edit"
+            className="w-10 h-10 flex items-center justify-center border border-gray-200 hover:bg-gray-50 rounded-full text-gray-400 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const CandidatesMain: React.FC<CandidatesMainProps> = ({
   activeTab,
@@ -111,6 +255,15 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   } | null>(null);
   const [revealLoading, setRevealLoading] = useState(false);
   const [sharePopupCandidateId, setSharePopupCandidateId] = useState<string | null>(null);
+
+  const [editingCandidateId, setEditingCandidateId] = useState<string | null>(
+    null
+  );
+  const [editFormData, setEditFormData] = useState({
+    notice_period: "",
+    current_salary: "",
+    expected_ctc: "",
+  });
 
   const tabs = [
     {
@@ -554,6 +707,80 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     }
   };
 
+  const handleEditClick = (candidate: CandidateListItem) => {
+    let notice = "";
+    if (candidate.notice_period_summary) {
+      const match = candidate.notice_period_summary.match(/\d+/);
+      if (match) notice = match[0];
+    }
+
+    let salary = "";
+    if (candidate.current_salary_lpa) {
+      // Remove non-numeric except dot
+      const match = candidate.current_salary_lpa
+        .toString()
+        .match(/(\d+(\.\d+)?)/);
+      if (match) salary = match[0];
+    }
+
+    let expected = "";
+    if (candidate.expected_ctc) {
+      expected = (candidate.expected_ctc / 100000).toString();
+    }
+
+    setEditFormData({
+      notice_period: notice,
+      current_salary: salary,
+      expected_ctc: expected,
+    });
+    setEditingCandidateId(candidate.id);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingCandidateId) return;
+
+    try {
+      const payload = {
+        notice_period_days: editFormData.notice_period
+          ? parseInt(editFormData.notice_period)
+          : undefined,
+        current_salary: editFormData.current_salary
+          ? parseFloat(editFormData.current_salary) * 100000
+          : undefined,
+        expected_ctc: editFormData.expected_ctc
+          ? parseFloat(editFormData.expected_ctc) * 100000
+          : undefined,
+      };
+
+      await candidateService.updateCandidateEditableFields(
+        editingCandidateId,
+        payload
+      );
+      showToast.success("Candidate updated successfully");
+
+      const updatedCandidates = candidates.map((c) => {
+        if (c.id === editingCandidateId) {
+          return {
+            ...c,
+            notice_period_summary: payload.notice_period_days
+              ? `${payload.notice_period_days} Days`
+              : c.notice_period_summary,
+            current_salary_lpa: payload.current_salary
+              ? `${payload.current_salary / 100000} LPA`
+              : c.current_salary_lpa,
+            expected_ctc: payload.expected_ctc ? payload.expected_ctc : c.expected_ctc,
+          };
+        }
+        return c;
+      });
+      onCandidatesUpdate(updatedCandidates, totalCount);
+
+      setEditingCandidateId(null);
+    } catch (error: any) {
+      showToast.error(error.message);
+    }
+  };
+
   const startIndex = (currentPage - 1) * candidatesPerPage;
   const endIndex = Math.min(startIndex + candidatesPerPage, candidates.length);
   const [hoveredCandidateId, setHoveredCandidateId] = useState<string | null>(
@@ -956,6 +1183,33 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   .join(" ");
 
               collegeName = toTitleCase(collegeName);
+
+
+              if (editingCandidateId === candidate.id) {
+                return (
+                  <div
+                    key={candidate.id}
+                    className="relative pt-6 border-l-4 border-blue-500 bg-white rounded-lg shadow-lg mb-4 p-4 z-10"
+                  >
+                    <div className="absolute top-6 left-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedCandidates.includes(candidate.id)}
+                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mb-3"
+                        readOnly
+                      />
+                    </div>
+                    <CandidateEditForm
+                      candidate={candidate}
+                      formData={editFormData}
+                      setFormData={setEditFormData}
+                      onSave={handleSaveEdit}
+                      onCancel={() => setEditingCandidateId(null)}
+                      selectedCandidates={selectedCandidates}
+                    />
+                  </div>
+                );
+              }
 
               return (
                 <div
@@ -1802,7 +2056,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          console.log("Edit candidate ID:", candidate.id);
+                          handleEditClick(candidate);
                         }}
                         className="p-2 rounded-full hover:bg-gray-200 transition-colors"
                         aria-label="Edit candidate"
