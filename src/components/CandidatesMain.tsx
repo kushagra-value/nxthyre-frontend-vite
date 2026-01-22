@@ -1225,7 +1225,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   aria-label={`Select candidate ${candidate.full_name}`}
                 >
                   {sharePopupCandidateId === candidate.id && (
-                    <div className="absolute inset-0 bg-black bg-opacity-50 z-20 rounded-lg backdrop-blur-sm pointer-events-none transition-all duration-300"></div>
+                    <div className="absolute inset-0 bg-black bg-opacity-50 z-20 rounded-lg pointer-events-none transition-all duration-300"></div>
                   )}
                   {candidate.premium_data_unlocked && (
                     <button
