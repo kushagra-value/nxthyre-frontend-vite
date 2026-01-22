@@ -2223,7 +2223,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             key={candidate.id}
                             className={`relative pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
                               selectedCandidate?.id === candidate.id
-                                ? "bg-blue-50 border-l-4 border-blue-500"
+                                ? "border-l-4 border-blue-500"
                                 : "border border-gray-200"
                             }`}
                             onClick={() => handleCandidateSelect(candidate)}
@@ -2405,7 +2405,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
                                         <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
                                           <div className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563]">
-                                            <AlarmClock className=" w-4 h-4" />
+                                            {candidate.status_tags ? (
+                                              <AlarmClock className=" w-4 h-4" />
+                                            ) : null}
                                             {candidate.status_tags.map(
                                               (
                                                 tag: {
@@ -2538,7 +2540,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             </div>
                             <div className="flex justify-between items-center">
                               {/* Premium data icons */}
-                              <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
+                              <div className="p-3 pl-12 mt-5 bg-transparent flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
                                 <div className="flex items-center space-x-1">
                                   {candidate.candidate.premium_data_availability
                                     ?.pinterest_username &&
@@ -2576,8 +2578,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s Pinterest profile`}
                                         >
                                           <svg
-                                            width="24"
-                                            height="24"
+                                            width="28"
+                                            height="28"
                                             viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -2595,8 +2597,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             <defs>
                                               <clipPath id="clip0_3112_1059">
                                                 <rect
-                                                  width="24"
-                                                  height="24"
+                                                  width="28"
+                                                  height="28"
                                                   fill="white"
                                                 />
                                               </clipPath>
@@ -2641,8 +2643,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s GitHub profile`}
                                         >
                                           <svg
-                                            width="24"
-                                            height="24"
+                                            width="28"
+                                            height="28"
                                             viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -2660,8 +2662,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             <defs>
                                               <clipPath id="clip0_3112_1059">
                                                 <rect
-                                                  width="24"
-                                                  height="24"
+                                                  width="28"
+                                                  height="28"
                                                   fill="white"
                                                 />
                                               </clipPath>
@@ -2706,8 +2708,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s LinkedIn profile`}
                                         >
                                           <svg
-                                            width="24"
-                                            height="24"
+                                            width="28"
+                                            height="28"
                                             viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -2721,8 +2723,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             <defs>
                                               <clipPath id="clip0_3112_1074">
                                                 <rect
-                                                  width="24"
-                                                  height="24"
+                                                  width="28"
+                                                  height="28"
                                                   fill="white"
                                                 />
                                               </clipPath>
@@ -2767,8 +2769,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s portfolio`}
                                         >
                                           <svg
-                                            width="24"
-                                            height="24"
+                                            width="28"
+                                            height="28"
                                             viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -2794,8 +2796,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             <defs>
                                               <clipPath id="clip0_3112_1068">
                                                 <rect
-                                                  width="24"
-                                                  height="24"
+                                                  width="28"
+                                                  height="28"
                                                   fill="white"
                                                 />
                                               </clipPath>
@@ -2840,8 +2842,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s portfolio`}
                                         >
                                           <svg
-                                            width="24"
-                                            height="24"
+                                            width="28"
+                                            height="28"
                                             viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -2855,8 +2857,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             <defs>
                                               <clipPath id="clip0_3112_1076">
                                                 <rect
-                                                  width="24"
-                                                  height="24"
+                                                  width="28"
+                                                  height="28"
                                                   fill="white"
                                                 />
                                               </clipPath>
@@ -2900,9 +2902,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s twitter`}
                                         >
                                           <svg
-                                            width="26"
-                                            height="26"
-                                            viewBox="0 0 26 26"
+                                            width="28"
+                                            height="28"
+                                            viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
                                           >
@@ -2956,8 +2958,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s dribble`}
                                         >
                                           <svg
-                                            width="24"
-                                            height="24"
+                                            width="28"
+                                            height="28"
                                             viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -3049,9 +3051,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s resume`}
                                         >
                                           <svg
-                                            width="26"
-                                            height="26"
-                                            viewBox="0 0 26 26"
+                                            width="28"
+                                            height="28"
+                                            viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
                                           >
@@ -3107,8 +3109,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s portfolio`}
                                         >
                                           <svg
-                                            width="24"
-                                            height="24"
+                                            width="28"
+                                            height="28"
                                             viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
