@@ -2030,7 +2030,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           }`}
                           aria-label={`Switch to ${tab.label} tab`}
                         >
-                          {tab.label}
+                          {tab.id == "inbox" ? null : tab.label}
                           {tab.count > 0 && (
                             <span className="ml-2 px-2 py-1 text-xs bg-blue-50 text-gray-600 rounded-full">
                               {tab.count}
@@ -2064,7 +2064,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         {selectedCandidates.length > 0 ? (
                           <span className="ml-2 text-sm lg:text-base font-[500] text-blue-500">
                             {selectedCandidates.length} Candidates Selected
-                            <span className="mx-2 border-left border-gray-300"></span>
+                            <span className="mx-2 border border-left border-gray-300"></span>
                           </span>
                         ) : (
                           <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">
@@ -2440,7 +2440,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       {/* Sort button - Relevance by default */}
                       <div className="relative flex space-x-2">
                         <button
-                          className="px-2 py-2 2xl:py-2.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                          className="px-2 py-2 xl:py-2.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                           onClick={() => setShowSortDropdown(!showSortDropdown)}
                           aria-label="Sort candidates"
                           title="Sort candidates"
