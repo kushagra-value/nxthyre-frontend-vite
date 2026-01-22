@@ -794,6 +794,132 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     }
   };
 
+  // Bulk shortlist selected candidates to "Shortlisted" stage
+  const bulkShortlist = async (applicationIds: number[]) => {
+    if (applicationIds.length === 0) return;
+
+    try {
+      const shortlistedStage = stages.find(
+        (s) =>
+          s.slug === "shortlisted" ||
+          s.name.toLowerCase().includes("shortlist"),
+      );
+
+      if (!shortlistedStage) {
+        showToast.error("Shortlisted stage not found");
+        return;
+      }
+
+      await apiClient.post("/jobs/bulk-move-stage/", {
+        application_ids: applicationIds,
+        current_stage: shortlistedStage.id,
+      });
+
+      showToast.success(
+        `${applicationIds.length} candidate${applicationIds.length !== 1 ? "s" : ""} shortlisted`,
+      );
+
+      if (activeJobId !== null) {
+        fetchCandidates(
+          activeJobId,
+          selectedStage.toLowerCase().replace(" ", "-"),
+        );
+        fetchStages(activeJobId);
+      }
+
+      // Optional: clear selection after success
+      setSelectedCandidates([]);
+      setSelectAll(false);
+    } catch (error) {
+      console.error("Bulk shortlist failed:", error);
+      showToast.error("Failed to shortlist selected candidates");
+    }
+  };
+
+  // Bulk move to Autopilot / Applied stage
+  const bulkAutopilot = async (applicationIds: number[]) => {
+    if (applicationIds.length === 0) return;
+
+    try {
+      const appliedStage = stages.find(
+        (s) =>
+          s.slug === "applied" ||
+          s.name === "Autopilot" ||
+          s.name.toLowerCase().includes("applied"),
+      );
+
+      if (!appliedStage) {
+        showToast.error("Applied / Autopilot stage not found");
+        return;
+      }
+
+      await apiClient.post("/jobs/bulk-move-stage/", {
+        application_ids: applicationIds,
+        current_stage: appliedStage.id,
+      });
+
+      showToast.success(
+        `${applicationIds.length} candidate${applicationIds.length !== 1 ? "s" : ""} moved to Autopilot`,
+      );
+
+      if (activeJobId !== null) {
+        fetchCandidates(
+          activeJobId,
+          selectedStage.toLowerCase().replace(" ", "-"),
+        );
+        fetchStages(activeJobId);
+      }
+
+      setSelectedCandidates([]);
+      setSelectAll(false);
+    } catch (error) {
+      console.error("Bulk autopilot move failed:", error);
+      showToast.error("Failed to move candidates to Autopilot");
+    }
+  };
+
+  // Bulk archive selected candidates
+  const bulkArchive = async (applicationIds: number[]) => {
+    if (applicationIds.length === 0) return;
+
+    try {
+      const archiveStage = stages.find(
+        (s) =>
+          s.slug === "archives" || s.name.toLowerCase().includes("archive"),
+      );
+
+      if (!archiveStage) {
+        showToast.error("Archives stage not found");
+        return;
+      }
+
+      await apiClient.post("/jobs/bulk-move-stage/", {
+        application_ids: applicationIds,
+        current_stage: archiveStage.id,
+        status: "ARCHIVED",
+        archive_reason: "Bulk archived from pipeline view",
+      });
+
+      showToast.success(
+        `${applicationIds.length} candidate${applicationIds.length !== 1 ? "s" : ""} archived`,
+      );
+
+      if (activeJobId !== null) {
+        fetchCandidates(
+          activeJobId,
+          selectedStage.toLowerCase().replace(" ", "-"),
+        );
+        fetchStages(activeJobId);
+      }
+
+      setSelectedCandidates([]);
+      setSelectAll(false);
+    } catch (error) {
+      console.error("Bulk archive failed:", error);
+      showToast.error("Failed to archive selected candidates");
+    }
+  };
+
   const handleSortSelect = (sortValue: string) => {
     setSortBy(sortValue);
     setShowSortDropdown(false);
@@ -1062,44 +1188,15 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     const icons = {
       Uncontacted: () => (
         <svg
-          width="20"
-          height="17"
-          viewBox="0 0 20 17"
+          width="19"
+          height="15"
+          viewBox="0 0 19 15"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M7.3 7.55469C8.29411 7.55469 9.1 6.71522 9.1 5.67969C9.1 4.64415 8.29411 3.80469 7.3 3.80469C6.30589 3.80469 5.5 4.64415 5.5 5.67969C5.5 6.71522 6.30589 7.55469 7.3 7.55469Z"
-            stroke="#818283"
-            stroke-width="1.2"
-          />
-          <path
-            d="M10.8992 11.3203C10.8992 12.3559 10.8992 13.1953 7.29922 13.1953C3.69922 13.1953 3.69922 12.3559 3.69922 11.3203C3.69922 10.2848 5.31099 9.44531 7.29922 9.44531C9.28741 9.44531 10.8992 10.2848 10.8992 11.3203Z"
-            stroke="#818283"
-            stroke-width="1.2"
-          />
-          <path
-            d="M1 8.5C1 4.96446 1 3.1967 2.05441 2.09835C3.10883 1 4.80588 1 8.2 1H11.8C15.1941 1 16.8912 1 17.9456 2.09835C19 3.1967 19 4.96446 19 8.5C19 12.0355 19 13.8033 17.9456 14.9016C16.8912 16 15.1941 16 11.8 16H8.2C4.80588 16 3.10883 16 2.05441 14.9016C1 13.8033 1 12.0355 1 8.5Z"
-            stroke="#818283"
-            stroke-width="1.2"
-          />
-          <path
-            d="M16.2992 8.49219H12.6992"
-            stroke="#818283"
-            stroke-width="1.2"
-            stroke-linecap="round"
-          />
-          <path
-            d="M16.3008 5.69531H11.8008"
-            stroke="#818283"
-            stroke-width="1.2"
-            stroke-linecap="round"
-          />
-          <path
-            d="M16.3016 11.3125H13.6016"
-            stroke="#818283"
-            stroke-width="1.2"
-            stroke-linecap="round"
+            d="M6.05625 7.04187C6.95186 7.01086 7.79922 6.62834 8.41487 5.97713C9.03051 5.32593 9.3649 4.45844 9.34562 3.5625C9.36471 3.11232 9.29466 2.66281 9.13948 2.2398C8.9843 1.81678 8.74707 1.4286 8.4414 1.09755C8.13574 0.766509 7.76767 0.499128 7.35835 0.310773C6.94902 0.122419 6.50652 0.0168052 6.05625 0C5.60497 0.0152756 5.16117 0.119766 4.75048 0.307442C4.33979 0.495118 3.97033 0.762265 3.66341 1.09347C3.3565 1.42467 3.11821 1.81337 2.9623 2.23714C2.80638 2.66091 2.73593 3.11136 2.755 3.5625C2.73889 4.45956 3.07593 5.32702 3.69347 5.97788C4.31101 6.62874 5.15958 7.01087 6.05625 7.04187ZM6.05625 1.49625C6.31119 1.51128 6.56058 1.57692 6.78989 1.68934C7.0192 1.80176 7.22382 1.95872 7.39184 2.15105C7.55985 2.34338 7.68789 2.56724 7.76848 2.80957C7.84907 3.0519 7.88061 3.30785 7.86125 3.5625C7.87777 4.06417 7.69877 4.55264 7.36201 4.92485C7.02525 5.29706 6.55707 5.5239 6.05625 5.5575C5.55543 5.5239 5.08725 5.29706 4.75049 4.92485C4.41373 4.55264 4.23473 4.06417 4.25125 3.5625C4.23189 3.30785 4.26343 3.0519 4.34402 2.80957C4.42461 2.56724 4.55265 2.34338 4.72066 2.15105C4.88868 1.95872 5.0933 1.80176 5.32261 1.68934C5.55192 1.57692 5.80131 1.51128 6.05625 1.49625ZM14.5944 7.49313C15.343 7.46525 16.0503 7.14251 16.5619 6.59527C17.0736 6.04804 17.3481 5.3207 17.3256 4.57188C17.3513 3.82103 17.0782 3.09064 16.5662 2.54082C16.0542 1.991 15.3451 1.6666 14.5944 1.63875C13.8457 1.66966 13.1396 1.99539 12.6302 2.54487C12.1208 3.09436 11.8493 3.82301 11.875 4.57188C11.8525 5.31872 12.1254 6.04433 12.6345 6.59123C13.1436 7.13813 13.8478 7.4622 14.5944 7.49313ZM14.5944 3.12313C14.9504 3.15346 15.2804 3.32214 15.5135 3.59299C15.7466 3.86384 15.8643 4.21527 15.8413 4.57188C15.8611 4.9265 15.742 5.27489 15.5092 5.54315C15.2764 5.81141 14.9483 5.97842 14.5944 6.00875C14.2384 5.98135 13.9072 5.8156 13.672 5.54702C13.4367 5.27844 13.3159 4.92839 13.3356 4.57188C13.3127 4.21337 13.432 3.86028 13.6676 3.5891C13.9032 3.31793 14.2362 3.15051 14.5944 3.12313ZM14.5113 8.9775C13.8065 8.97517 13.1107 9.13581 12.4783 9.44687C11.8459 9.75792 11.294 10.211 10.8656 10.7706C10.2807 10.0632 9.54566 9.49474 8.71382 9.10655C7.88198 8.71835 6.97419 8.52013 6.05625 8.52625C4.49744 8.49407 2.98852 9.07632 1.85538 10.1473C0.722233 11.2182 0.0557969 12.6919 0 14.25H1.48438C1.53075 13.0824 2.03789 11.9806 2.89476 11.1861C3.75164 10.3915 4.88843 9.96887 6.05625 10.0106C7.2229 9.96892 8.35842 10.3919 9.2134 11.1868C10.0684 11.9817 10.5729 13.0834 10.6162 14.25H12.1006C12.1042 13.5628 11.9752 12.8814 11.7206 12.2431C11.9614 11.7065 12.3539 11.2519 12.8497 10.9354C13.3455 10.6189 13.9231 10.4543 14.5113 10.4619C15.2759 10.4329 16.021 10.7076 16.5838 11.2259C17.1467 11.7443 17.4817 12.4643 17.5156 13.2288V14.25H19V13.2288C18.9658 12.0707 18.4744 10.9732 17.6332 10.1765C16.792 9.37986 15.6695 8.94874 14.5113 8.9775Z"
+            fill="#0F47F2"
           />
         </svg>
       ),
@@ -1107,32 +1204,22 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       Applied: () => (
         <svg
           width="18"
-          height="20"
-          viewBox="0 0 18 20"
+          height="18"
+          viewBox="0 0 18 18"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <path
-            d="M15.9616 10.5818L16.3845 8.84325C16.8782 6.81385 17.125 5.79915 16.9391 4.92102C16.7924 4.22766 16.4622 3.59781 15.9905 3.11112C15.393 2.49474 14.4718 2.22285 12.6294 1.67907C10.787 1.13529 9.86574 0.863399 9.06859 1.06815C8.43909 1.22981 7.86727 1.59346 7.42544 2.1131C6.94633 2.67655 6.69648 3.50142 6.32469 5.00074C6.26225 5.25253 6.19637 5.52334 6.12539 5.81514L5.70243 7.55386C5.20876 9.58326 4.96192 10.5979 5.14781 11.4761C5.29458 12.1695 5.62471 12.7993 6.09647 13.286C6.69393 13.9024 7.61514 14.1743 9.45757 14.7181C11.1182 15.2082 12.0304 15.4774 12.778 15.3758C12.8599 15.3648 12.9397 15.3492 13.0184 15.329C13.6478 15.1673 14.2196 14.8037 14.6615 14.284C15.221 13.6259 15.4679 12.6113 15.9616 10.5818Z"
+          <rect
+            x="0.5"
+            y="0.5"
+            width="17"
+            height="17"
+            rx="8.5"
             stroke="#818283"
-            stroke-width="1.2"
           />
           <path
-            d="M12.7771 15.3829C12.6068 15.9575 12.3073 16.4773 11.9046 16.8928C11.3071 17.5092 10.3858 17.781 8.54349 18.3249C6.70104 18.8686 5.77984 19.1405 4.98262 18.9357C4.35316 18.7741 3.78135 18.4105 3.3395 17.8908C2.77992 17.2327 2.53308 16.218 2.03941 14.1886L1.61649 12.45C1.12282 10.4206 0.875986 9.40594 1.06187 8.52779C1.20864 7.83446 1.53877 7.2046 2.01053 6.71791C2.60799 6.10153 3.52919 5.82965 5.3716 5.28586C5.72017 5.18298 6.03576 5.08984 6.32377 5.00781"
-            stroke="#818283"
-            stroke-width="1.2"
-          />
-          <path
-            d="M8.98828 8.21094L12.9341 9.37554"
-            stroke="#818283"
-            stroke-width="1.2"
-            stroke-linecap="round"
-          />
-          <path
-            d="M8.35156 10.8047L10.7191 11.5034"
-            stroke="#818283"
-            stroke-width="1.2"
-            stroke-linecap="round"
+            d="M8.53083 4.27347C8.69153 3.83727 9.30847 3.83727 9.46917 4.27347L10.4256 6.86949C10.4731 6.9984 10.5715 7.10209 10.6978 7.15621L13.7912 8.48196C14.2138 8.66306 14.1886 9.27048 13.7524 9.41587L10.7372 10.4209C10.5879 10.4707 10.4707 10.5879 10.4209 10.7372L9.47434 13.577C9.32239 14.0328 8.67761 14.0328 8.52566 13.577L7.57906 10.7372C7.52929 10.5879 7.41213 10.4707 7.26283 10.4209L4.24761 9.41587C3.81145 9.27048 3.78618 8.66306 4.20877 8.48196L7.30219 7.15621C7.42846 7.10209 7.52691 6.9984 7.5744 6.86949L8.53083 4.27347Z"
+            fill="#818283"
           />
         </svg>
       ),
@@ -1193,21 +1280,36 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       ),
       Shortlisted: () => (
         <svg
-          width="18"
-          height="15"
-          viewBox="0 0 18 15"
+          width="17"
+          height="18"
+          viewBox="0 0 17 18"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M10.603 1H7.39705C4.37448 1 2.8632 1 1.9242 1.9519C1.22129 2.66447 1.04456 3.70215 1.00013 5.46423C0.994434 5.69014 1.17697 5.87067 1.39261 5.92797C2.0806 6.11071 2.58817 6.74527 2.58817 7.5C2.58817 8.25473 2.0806 8.88929 1.39261 9.07203C1.17697 9.12931 0.994434 9.30984 1.00013 9.5358C1.04456 11.2979 1.22129 12.3355 1.9242 13.0481C2.8632 14 4.37448 14 7.39705 14H10.603C13.6255 14 15.1368 14 16.0759 13.0481C16.7787 12.3355 16.9555 11.2979 16.9999 9.5358C17.0056 9.30984 16.8231 9.12931 16.6074 9.07203C15.9195 8.88929 15.4119 8.25473 15.4119 7.5C15.4119 6.74527 15.9195 6.11071 16.6074 5.92797C16.8231 5.87067 17.0056 5.69014 16.9999 5.46423C16.9555 3.70215 16.7787 2.66447 16.0759 1.9519C15.1368 1 13.6255 1 10.603 1Z"
+            d="M7.52901 8.68303C9.78868 8.68303 11.6205 6.85119 11.6205 4.59151C11.6205 2.33184 9.78868 0.5 7.52901 0.5C5.26934 0.5 3.4375 2.33184 3.4375 4.59151C3.4375 6.85119 5.26934 8.68303 7.52901 8.68303Z"
             stroke="#818283"
-            stroke-width="1.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
           />
           <path
-            d="M8.31828 5.89328C8.62228 5.33943 8.77428 5.0625 9.00156 5.0625C9.22884 5.0625 9.38084 5.33943 9.68485 5.89328L9.76349 6.03661C9.84981 6.19399 9.89301 6.27264 9.96037 6.32456C10.0277 6.37647 10.1116 6.39581 10.2793 6.43433L10.432 6.46942C11.0224 6.60511 11.3176 6.67288 11.3878 6.90224C11.458 7.13161 11.2568 7.37057 10.8544 7.84856L10.7502 7.97222C10.6359 8.10799 10.5787 8.17592 10.5529 8.25993C10.5272 8.34394 10.5359 8.43454 10.5532 8.61581L10.5689 8.78074C10.6297 9.41847 10.6602 9.7373 10.4764 9.87908C10.2924 10.0208 10.0161 9.89159 9.4634 9.63314L9.32044 9.56627C9.16332 9.49282 9.08484 9.45609 9.00156 9.45609C8.91828 9.45609 8.8398 9.49282 8.68268 9.56627L8.53972 9.63314C7.987 9.89159 7.71068 10.0208 7.52676 9.87908C7.34295 9.7373 7.37337 9.41847 7.4342 8.78074L7.44996 8.61581C7.46724 8.43454 7.47588 8.34394 7.4502 8.25993C7.42444 8.17592 7.36727 8.10799 7.25291 7.97222L7.14878 7.84856C6.74634 7.37057 6.54512 7.13161 6.61534 6.90224C6.68557 6.67288 6.98073 6.60511 7.57108 6.46942L7.7238 6.43433C7.89156 6.39581 7.9754 6.37647 8.04276 6.32456C8.11012 6.27264 8.15332 6.19399 8.23964 6.03661L8.31828 5.89328Z"
+            d="M0.5 16.8687C0.5 13.7019 3.65047 11.1406 7.5292 11.1406C8.31477 11.1406 9.07579 11.247 9.78771 11.4434"
             stroke="#818283"
-            stroke-width="1.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M15.7105 13.5896C15.7105 14.2033 15.5386 14.7843 15.2359 15.2753C15.064 15.5699 14.8431 15.8318 14.5894 16.0445C14.0166 16.5601 13.2638 16.8628 12.4373 16.8628C11.2426 16.8628 10.2033 16.2246 9.63868 15.2753C9.33591 14.7843 9.16406 14.2033 9.16406 13.5896C9.16406 12.5586 9.63868 11.6339 10.3915 11.0365C10.9561 10.5864 11.6681 10.3164 12.4373 10.3164C14.2457 10.3164 15.7105 11.7812 15.7105 13.5896Z"
+            stroke="#818283"
+            stroke-miterlimit="10"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M11.1641 13.591L11.9742 14.4011L13.7172 12.7891"
+            stroke="#818283"
+            stroke-linecap="round"
+            stroke-linejoin="round"
           />
         </svg>
       ),
@@ -1928,7 +2030,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           }`}
                           aria-label={`Switch to ${tab.label} tab`}
                         >
-                          {tab.label}
+                          {tab.id == "inbox" ? null : tab.label}
                           {tab.count > 0 && (
                             <span className="ml-2 px-2 py-1 text-xs bg-blue-50 text-gray-600 rounded-full">
                               {tab.count}
@@ -1942,59 +2044,158 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               )}
               <div className="p-3 lg:p-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={selectAll}
-                      onChange={(e) => {
-                        setSelectAll(e.target.checked);
-                        setSelectedCandidates(
-                          e.target.checked
-                            ? currentCandidates.map((c) => c.id.toString())
-                            : [],
-                        );
-                      }}
-                      className="w-4 h-4 text-blue-200 border-gray-200 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 "
-                      aria-label="Select all candidates"
-                    />
-                    <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">
-                      Select all on this page
-                    </span>
-                  </label>
-                  <div className="flex space-x-3">
-                    {selectedCandidates.length > 0 && (
-                      <button
-                        onClick={() =>
-                          bulkMoveCandidates(
-                            selectedCandidates.map((id) => parseInt(id)),
-                            stages.find((s) => s.name === selectedStage)?.id ??
-                              0,
-                          )
-                        }
-                        className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                        aria-label="move candidates to pipeline"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          className="mr-1"
-                        >
-                          <circle cx="12" cy="12" r="10" />
-                          <path d="M8 12h8" />
-                          <path d="M12 8v8" />
-                        </svg>
-                        Move to Next Stage
-                      </button>
-                    )}
+                  <div className="flex justify-between space-x-3 w-full">
+                    <div className="flex items-center">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={selectAll}
+                          onChange={(e) => {
+                            setSelectAll(e.target.checked);
+                            setSelectedCandidates(
+                              e.target.checked
+                                ? currentCandidates.map((c) => c.id.toString())
+                                : [],
+                            );
+                          }}
+                          className="w-4 h-4 text-blue-200 border-gray-200 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 "
+                          aria-label="Select all candidates"
+                        />
+                        {selectedCandidates.length > 0 ? (
+                          <span className="ml-2 text-sm lg:text-base font-[500] text-blue-500">
+                            {selectedCandidates.length} Candidates Selected
+                            <span className="mx-2 border border-left border-gray-300"></span>
+                          </span>
+                        ) : (
+                          <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">
+                            Select all on this page
+                          </span>
+                        )}
+                      </label>
+                      {selectedCandidates.length > 0 && (
+                        // <button
+                        //   onClick={() =>
+                        //     bulkMoveCandidates(
+                        //       selectedCandidates.map((id) => parseInt(id)),
+                        //       stages.find((s) => s.name === selectedStage)?.id ??
+                        //         0,
+                        //     )
+                        //   }
+                        //   className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        //   aria-label="move candidates to pipeline"
+                        // >
+                        //   <svg
+                        //     xmlns="http://www.w3.org/2000/svg"
+                        //     width="16"
+                        //     height="16"
+                        //     viewBox="0 0 24 24"
+                        //     fill="none"
+                        //     stroke="currentColor"
+                        //     stroke-width="2"
+                        //     stroke-linecap="round"
+                        //     stroke-linejoin="round"
+                        //     className="mr-1"
+                        //   >
+                        //     <circle cx="12" cy="12" r="10" />
+                        //     <path d="M8 12h8" />
+                        //     <path d="M12 8v8" />
+                        //   </svg>
+                        //   Move to Next Stage
+                        // </button>
 
-                    {viewMode === "prospect" ? (
+                        <div className="flex items-center">
+                          {/* Bulk Shortlist */}
+                          <button
+                            onClick={() =>
+                              bulkShortlist(
+                                selectedCandidates.map((id) => parseInt(id)),
+                              )
+                            }
+                            className="mr-1 bg-[#0F47F2] text-white font-medium px-6 py-2 rounded-lg transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-300"
+                            disabled={selectedStage === "Shortlisted"}
+                            title="Shortlist selected candidates"
+                          >
+                            Shortlist
+                          </button>
+
+                          {/* Bulk Autopilot */}
+                          <button
+                            onClick={() =>
+                              bulkAutopilot(
+                                selectedCandidates.map((id) => parseInt(id)),
+                              )
+                            }
+                            className="p-1 rounded-full hover:bg-blue-50 transition-colors"
+                            aria-label="Move to Autopilot (Applied stage)"
+                            title="Move to Autopilot stage"
+                            disabled={
+                              selectedStage === "Applied" ||
+                              selectedStage === "Autopilot"
+                            }
+                          >
+                            {selectedStage === "Applied" ||
+                            selectedStage === "Autopilot" ? null : (
+                              <svg
+                                width="38"
+                                height="38"
+                                viewBox="0 0 38 38"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <rect
+                                  x="0.5"
+                                  y="0.5"
+                                  width="37"
+                                  height="37"
+                                  rx="18.5"
+                                  stroke="#0F47F2"
+                                />
+                                <path
+                                  d="M19 7L22 15.1429L31 19L22 22L19 31L16 22L7 19L16 15.1429L19 7Z"
+                                  fill="#0F47F2"
+                                />
+                              </svg>
+                            )}
+                          </button>
+
+                          {/* Bulk Archive */}
+                          <button
+                            onClick={() =>
+                              bulkArchive(
+                                selectedCandidates.map((id) => parseInt(id)),
+                              )
+                            }
+                            className="p-1 rounded-full hover:bg-red-50 transition-colors"
+                            aria-label="Archive candidate"
+                            title="Archive this candidate"
+                            disabled={selectedStage === "Archives"}
+                          >
+                            <svg
+                              width="38"
+                              height="38"
+                              viewBox="0 0 38 38"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <circle
+                                cx="19"
+                                cy="19"
+                                r="18.5"
+                                stroke="#818283"
+                              />
+                              <path
+                                fill-rule="evenodd"
+                                clip-rule="evenodd"
+                                d="M12.3276 10.9102C12.34 10.9102 12.3523 10.9102 12.3647 10.9102L25.6717 10.9102C26.0307 10.9101 26.3598 10.9101 26.6275 10.9461C26.9223 10.9857 27.2339 11.079 27.4902 11.3353C27.7466 11.5916 27.8398 11.9032 27.8794 12.198C27.9154 12.4657 27.9154 12.7948 27.9153 13.1538V13.228C27.9154 13.587 27.9154 13.9161 27.8794 14.1838C27.8398 14.4787 27.7466 14.7903 27.4902 15.0466C27.2466 15.2902 26.9529 15.3865 26.6713 15.4295V19.8726C26.6713 21.3968 26.6713 22.604 26.5443 23.5489C26.4135 24.5213 26.1381 25.3083 25.5175 25.929C24.8968 26.5496 24.1098 26.825 23.1374 26.9558C22.1926 27.0828 20.9853 27.0828 19.4611 27.0828H18.5382C17.014 27.0828 15.8068 27.0828 14.8619 26.9558C13.8896 26.825 13.1026 26.5496 12.4819 25.929C11.8612 25.3083 11.5858 24.5213 11.455 23.5489C11.328 22.604 11.328 21.3968 11.328 19.8726V15.4295C11.0464 15.3865 10.7527 15.2902 10.5091 15.0466C10.2528 14.7903 10.1595 14.4787 10.1199 14.1838C10.0839 13.9161 10.0839 13.587 10.084 13.228C10.084 13.2157 10.084 13.2033 10.084 13.1909C10.084 13.1785 10.084 13.1661 10.084 13.1538C10.0839 12.7948 10.0839 12.4657 10.1199 12.198C10.1595 11.9032 10.2528 11.5916 10.5091 11.3353C10.7654 11.079 11.077 10.9857 11.3718 10.9461C11.6396 10.9101 11.9687 10.9101 12.3276 10.9102ZM12.5721 15.4717V19.8258C12.5721 21.4073 12.5734 22.5308 12.688 23.3831C12.8002 24.2175 13.0106 24.6983 13.3616 25.0493C13.7126 25.4002 14.1933 25.6107 15.0277 25.7228C15.88 25.8374 17.0035 25.8387 18.585 25.8387H19.4143C20.9958 25.8387 22.1193 25.8374 22.9717 25.7228C23.806 25.6107 24.2868 25.4002 24.6378 25.0493C24.9888 24.6983 25.1992 24.2175 25.3113 23.3831C25.4259 22.5308 25.4272 21.4073 25.4272 19.8258V15.4717H12.5721ZM11.3888 12.2149L11.3908 12.2138C11.3924 12.213 11.3952 12.2116 11.3993 12.2099C11.4174 12.2025 11.4575 12.1898 11.5376 12.179C11.7124 12.1555 11.9562 12.1542 12.3647 12.1542H25.6346C26.0431 12.1542 26.287 12.1555 26.4617 12.179C26.5418 12.1898 26.582 12.2025 26.6 12.2099C26.6042 12.2116 26.6069 12.213 26.6085 12.2138L26.6106 12.2149L26.6117 12.217C26.6126 12.2186 26.6139 12.2213 26.6156 12.2255C26.623 12.2436 26.6357 12.2837 26.6465 12.3638C26.67 12.5385 26.6713 12.7824 26.6713 13.1909C26.6713 13.5995 26.67 13.8433 26.6465 14.0181C26.6357 14.0982 26.623 14.1383 26.6156 14.1563C26.6139 14.1605 26.6126 14.1633 26.6117 14.1649L26.6106 14.1669L26.6085 14.168C26.6069 14.1689 26.6042 14.1702 26.6 14.1719C26.582 14.1794 26.5418 14.192 26.4617 14.2028C26.287 14.2263 26.0431 14.2276 25.6346 14.2276H12.3647C11.9562 14.2276 11.7124 14.2263 11.5376 14.2028C11.4575 14.192 11.4174 14.1794 11.3993 14.1719C11.3952 14.1702 11.3924 14.1689 11.3908 14.168L11.3888 14.1669L11.3876 14.1649C11.3868 14.1633 11.3855 14.1605 11.3837 14.1563C11.3763 14.1383 11.3636 14.0982 11.3529 14.0181C11.3294 13.8433 11.328 13.5995 11.328 13.1909C11.328 12.7824 11.3294 12.5385 11.3529 12.3638C11.3636 12.2837 11.3763 12.2436 11.3837 12.2255C11.3855 12.2213 11.3868 12.2186 11.3876 12.217L11.3888 12.2149ZM11.3888 14.1669C11.3884 14.1665 11.3886 14.1666 11.3888 14.1669V14.1669ZM17.7375 17.1304H20.2618C20.4394 17.1304 20.6027 17.1304 20.7398 17.1397C20.8872 17.1498 21.0492 17.1727 21.2138 17.2409C21.5695 17.3882 21.852 17.6707 21.9993 18.0264C22.0675 18.191 22.0904 18.353 22.1005 18.5003C22.1098 18.6374 22.1098 18.8007 22.1098 18.9784V19.0145C22.1098 19.1922 22.1098 19.3555 22.1005 19.4926C22.0904 19.64 22.0675 19.8019 21.9993 19.9666C21.852 20.3222 21.5695 20.6048 21.2138 20.7521C21.0492 20.8202 20.8872 20.8431 20.7398 20.8533C20.6027 20.8625 20.4394 20.8625 20.2618 20.8625H17.7375C17.5599 20.8625 17.3966 20.8625 17.2595 20.8533C17.1122 20.8431 16.9501 20.8202 16.7855 20.7521C16.4299 20.6048 16.1473 20.3222 16 19.9666C15.9318 19.8019 15.9089 19.64 15.8989 19.4926C15.8895 19.3555 15.8895 19.1922 15.8896 19.0145V18.9784C15.8895 18.8007 15.8895 18.6374 15.8989 18.5003C15.9089 18.353 15.9318 18.191 16 18.0264C16.1473 17.6707 16.4299 17.3882 16.7855 17.2409C16.9501 17.1727 17.1122 17.1498 17.2595 17.1397C17.3966 17.1304 17.5599 17.1304 17.7375 17.1304ZM17.2591 18.3913C17.2103 18.4123 17.1714 18.4512 17.1504 18.4999C17.1489 18.5061 17.1438 18.5296 17.14 18.585C17.1339 18.6746 17.1336 18.7948 17.1336 18.9965C17.1336 19.1982 17.1339 19.3183 17.14 19.4079C17.1438 19.4633 17.1489 19.4869 17.1504 19.493C17.1714 19.5418 17.2103 19.5807 17.2591 19.6017C17.2652 19.6032 17.2887 19.6083 17.3442 19.612C17.4337 19.6182 17.5539 19.6185 17.7556 19.6185H20.2437C20.4454 19.6185 20.5656 19.6182 20.6552 19.612C20.7106 19.6083 20.7341 19.6032 20.7403 19.6017C20.789 19.5807 20.8279 19.5418 20.8489 19.493C20.8505 19.4869 20.8555 19.4633 20.8593 19.4079C20.8654 19.3183 20.8657 19.1982 20.8657 18.9965C20.8657 18.7948 20.8654 18.6746 20.8593 18.585C20.8555 18.5296 20.8505 18.5061 20.8489 18.4999C20.8279 18.4512 20.789 18.4123 20.7403 18.3913C20.7341 18.3897 20.7106 18.3846 20.6552 18.3809C20.5656 18.3748 20.4454 18.3744 20.2437 18.3744H17.7556C17.5539 18.3744 17.4337 18.3748 17.3442 18.3809C17.2887 18.3846 17.2652 18.3897 17.2591 18.3913Z"
+                                fill="#818283"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* {viewMode === "prospect" ? (
                       <div className="relative">
                         <button
                           className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2168,40 +2369,109 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           )}
                         </div>
                       )
-                    )}
+                    )} */}
 
-                    <div className="relative flex space-x-2">
+                    <div className="flex items-center space-x-2">
+                      {/* Source button */}
                       <button
-                        className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                        onClick={() => setShowSortDropdown(!showSortDropdown)}
-                        aria-label="Sort candidates"
+                        className="px-3 py-2.5 bg-white text-gray-400 text-xs 2xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        title="Filter by Source"
                       >
-                        <ArrowDownNarrowWide className="w-4 h-4 rotate-180" />
-                        <span className="text-gray-400 font-[400] ml-1 mr-1">
-                          {sortOptions.find((opt) => opt.value === sortBy)
-                            ?.label || "Relevance"}
-                        </span>
-                        <ChevronDown className="w-4 h-4 mt-1" />
-                      </button>
-                      {showSortDropdown && (
-                        <div
-                          ref={sortDropdownRef}
-                          className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+                        <svg
+                          width="15"
+                          height="13"
+                          viewBox="0 0 15 13"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
                         >
-                          <div className="py-1">
-                            {sortOptions.map((option) => (
-                              <button
-                                key={option.value}
-                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                                onClick={() => handleSortSelect(option.value)}
-                                aria-label={`Sort candidates by ${option.label}`}
-                              >
-                                {option.label}
-                              </button>
-                            ))}
+                          <path
+                            d="M11.6496 0.601562H2.54961C1.63037 0.601562 1.17075 0.601562 0.88518 0.853462C0.599609 1.10536 0.599609 1.51078 0.599609 2.32163V2.74319C0.599609 3.37742 0.599609 3.69454 0.768349 3.95743C0.937089 4.22031 1.24536 4.38347 1.86192 4.70978L3.75539 5.71191C4.16906 5.93081 4.37589 6.04032 4.52399 6.1612C4.8324 6.41292 5.02226 6.70869 5.1083 7.07151C5.14961 7.24568 5.14961 7.44954 5.14961 7.85721V9.48857C5.14961 10.0444 5.14961 10.3223 5.31336 10.539C5.47711 10.7556 5.76794 10.8625 6.34964 11.0764C7.57073 11.5252 8.18127 11.7496 8.61547 11.4942C9.04961 11.2389 9.04961 10.6555 9.04961 9.48857V7.85721C9.04961 7.44954 9.04961 7.24568 9.09095 7.07151C9.17694 6.70869 9.36681 6.41292 9.67523 6.1612C9.8233 6.04032 10.0301 5.93081 10.4439 5.71191L12.3373 4.70978C12.9538 4.38347 13.2621 4.22031 13.4309 3.95743C13.5996 3.69454 13.5996 3.37742 13.5996 2.74319V2.32163C13.5996 1.51078 13.5996 1.10536 13.3141 0.853462C13.0285 0.601562 12.5688 0.601562 11.6496 0.601562Z"
+                            stroke="#818283"
+                            stroke-width="1.2"
+                          />
+                        </svg>
+                        <p className="hidden 3xl:inline">Source</p>
+                      </button>
+
+                      {/* Upload Button */}
+                      <div className="relative">
+                        <button
+                          className="px-3 py-2.5 bg-white text-gray-400 text-xs 2xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                          onClick={() => setShowUploadModal(true)}
+                          aria-label="Upload Candidates"
+                          title="Upload Candidates"
+                        >
+                          <svg
+                            width="15"
+                            height="13"
+                            viewBox="0 0 15 13"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M7.00084 7.00168C8.65816 7.00168 10.0017 5.65816 10.0017 4.00084C10.0017 2.34352 8.65816 1 7.00084 1C5.34352 1 4 2.34352 4 4.00084C4 5.65816 5.34352 7.00168 7.00084 7.00168Z"
+                              stroke="#818283"
+                            />
+                            <path
+                              d="M9.25231 9.49539C8.55731 9.33717 7.79758 9.25 7.00168 9.25C3.68704 9.25 1 10.7614 1 12.6259C1 14.4904 1 16.0019 7.00168 16.0019C11.2684 16.0019 12.5018 15.2379 12.8584 14.1264"
+                              stroke="#818283"
+                            />
+                            <path
+                              d="M11.5047 14.5017C13.1621 14.5017 14.5056 13.1582 14.5056 11.5008C14.5056 9.84352 13.1621 8.5 11.5047 8.5C9.84743 8.5 8.50391 9.84352 8.50391 11.5008C8.50391 13.1582 9.84743 14.5017 11.5047 14.5017Z"
+                              stroke="#818283"
+                            />
+                            <path
+                              d="M11.5039 10.4922V12.4927"
+                              stroke="#818283"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                            <path
+                              d="M10.5039 11.5H12.5045"
+                              stroke="#818283"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                          <p className="hidden 3xl:inline">Upload</p>
+                        </button>
+                      </div>
+
+                      {/* Sort button - Relevance by default */}
+                      <div className="relative flex space-x-2">
+                        <button
+                          className="px-2 py-2 xl:py-2.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                          onClick={() => setShowSortDropdown(!showSortDropdown)}
+                          aria-label="Sort candidates"
+                          title="Sort candidates"
+                        >
+                          <ArrowDownNarrowWide className="w-4 h-4 rotate-180" />
+                          <span className="text-gray-400 font-[400] ml-1 mr-1 hidden 3xl:inline">
+                            {sortOptions.find((opt) => opt.value === sortBy)
+                              ?.label || "Relevance"}
+                          </span>
+                          <ChevronDown className="w-4 h-4 mt-1" />
+                        </button>
+                        {showSortDropdown && (
+                          <div
+                            ref={sortDropdownRef}
+                            className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+                          >
+                            <div className="py-1">
+                              {sortOptions.map((option) => (
+                                <button
+                                  key={option.value}
+                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                  onClick={() => handleSortSelect(option.value)}
+                                  aria-label={`Sort candidates by ${option.label}`}
+                                >
+                                  {option.label}
+                                </button>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2247,7 +2517,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             key={candidate.id}
                             className={`relative pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
                               selectedCandidate?.id === candidate.id
-                                ? "bg-blue-50 border-l-4 border-blue-500"
+                                ? "border-l-4 border-blue-500"
                                 : "border border-gray-200"
                             }`}
                             onClick={() => handleCandidateSelect(candidate)}
@@ -2429,7 +2699,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
                                         <div className="rounded-md flex space-x-1 items-center text-xs lg:text-base font-[400] text-[#4B5563]">
                                           <div className="flex items-center gap-2 text-xs lg:text-base font-[400] text-[#4B5563]">
-                                            <AlarmClock className=" w-4 h-4" />
+                                            {candidate.status_tags ? (
+                                              <AlarmClock className=" w-4 h-4" />
+                                            ) : null}
                                             {candidate.status_tags.map(
                                               (
                                                 tag: {
@@ -2562,7 +2834,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             </div>
                             <div className="flex justify-between items-center">
                               {/* Premium data icons */}
-                              <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
+                              <div className="p-3 pl-12 mt-5 bg-transparent flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
                                 <div className="flex items-center space-x-1">
                                   {candidate.candidate.premium_data_availability
                                     ?.pinterest_username &&
@@ -2600,8 +2872,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s Pinterest profile`}
                                         >
                                           <svg
-                                            width="24"
-                                            height="24"
+                                            width="28"
+                                            height="28"
                                             viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -2619,8 +2891,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             <defs>
                                               <clipPath id="clip0_3112_1059">
                                                 <rect
-                                                  width="24"
-                                                  height="24"
+                                                  width="28"
+                                                  height="28"
                                                   fill="white"
                                                 />
                                               </clipPath>
@@ -2665,8 +2937,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s GitHub profile`}
                                         >
                                           <svg
-                                            width="24"
-                                            height="24"
+                                            width="28"
+                                            height="28"
                                             viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -2684,8 +2956,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             <defs>
                                               <clipPath id="clip0_3112_1059">
                                                 <rect
-                                                  width="24"
-                                                  height="24"
+                                                  width="28"
+                                                  height="28"
                                                   fill="white"
                                                 />
                                               </clipPath>
@@ -2730,8 +3002,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s LinkedIn profile`}
                                         >
                                           <svg
-                                            width="24"
-                                            height="24"
+                                            width="28"
+                                            height="28"
                                             viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -2745,8 +3017,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             <defs>
                                               <clipPath id="clip0_3112_1074">
                                                 <rect
-                                                  width="24"
-                                                  height="24"
+                                                  width="28"
+                                                  height="28"
                                                   fill="white"
                                                 />
                                               </clipPath>
@@ -2791,8 +3063,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s portfolio`}
                                         >
                                           <svg
-                                            width="24"
-                                            height="24"
+                                            width="28"
+                                            height="28"
                                             viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -2818,8 +3090,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             <defs>
                                               <clipPath id="clip0_3112_1068">
                                                 <rect
-                                                  width="24"
-                                                  height="24"
+                                                  width="28"
+                                                  height="28"
                                                   fill="white"
                                                 />
                                               </clipPath>
@@ -2864,8 +3136,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s portfolio`}
                                         >
                                           <svg
-                                            width="24"
-                                            height="24"
+                                            width="28"
+                                            height="28"
                                             viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -2879,8 +3151,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             <defs>
                                               <clipPath id="clip0_3112_1076">
                                                 <rect
-                                                  width="24"
-                                                  height="24"
+                                                  width="28"
+                                                  height="28"
                                                   fill="white"
                                                 />
                                               </clipPath>
@@ -2924,9 +3196,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s twitter`}
                                         >
                                           <svg
-                                            width="26"
-                                            height="26"
-                                            viewBox="0 0 26 26"
+                                            width="28"
+                                            height="28"
+                                            viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
                                           >
@@ -2980,8 +3252,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s dribble`}
                                         >
                                           <svg
-                                            width="24"
-                                            height="24"
+                                            width="28"
+                                            height="28"
                                             viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -3073,9 +3345,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s resume`}
                                         >
                                           <svg
-                                            width="26"
-                                            height="26"
-                                            viewBox="0 0 26 26"
+                                            width="28"
+                                            height="28"
+                                            viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
                                           >
@@ -3131,8 +3403,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s portfolio`}
                                         >
                                           <svg
-                                            width="24"
-                                            height="24"
+                                            width="28"
+                                            height="28"
                                             viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"

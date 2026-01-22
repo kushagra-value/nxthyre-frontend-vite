@@ -156,9 +156,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
   const handleRevealPremiumData = async (candidateId: string) => {
     try {
-      const premResponse = await candidateService.revealPremiumData(
-        candidateId
-      );
+      const premResponse =
+        await candidateService.revealPremiumData(candidateId);
       // Update selectedCandidate with revealed data
       if (selectedCandidate) {
         setSelectedCandidate({
@@ -237,13 +236,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
     const fetchData = async () => {
       console.log(
         "Fetching assessment results for candidate:",
-        selectedCandidate?.candidate.id + " and jobId: " + jobId
+        selectedCandidate?.candidate.id + " and jobId: " + jobId,
       );
       if (selectedCandidate?.candidate.id && jobId) {
         try {
           const data = await candidateService.getAssessmentResults(
             jobId,
-            selectedCandidate?.candidate.id
+            selectedCandidate?.candidate.id,
           );
 
           // console.log("Assessment results data:", data);
@@ -275,7 +274,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         try {
           const apiActivities = await candidateService.getCandidateActivity(
             selectedCandidate.candidate.id,
-            selectedCandidate.id
+            selectedCandidate.id,
           );
 
           const mappedActivities: Activity[] = apiActivities.map(
@@ -286,7 +285,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   day: "numeric",
                   month: "short",
                   year: "numeric",
-                }
+                },
               );
               let description = "";
               let via = "";
@@ -358,7 +357,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 note,
                 data: item.data,
               };
-            }
+            },
           );
 
           setActivities(mappedActivities);
@@ -419,11 +418,11 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       try {
         // Placeholder for API call to unarchive and move candidate
         console.log(
-          `Unarchiving and moving candidate ${selectedCandidate.id} to stage ${selectedStageId}`
+          `Unarchiving and moving candidate ${selectedCandidate.id} to stage ${selectedStageId}`,
         );
         await moveCandidate(
           parseInt(selectedCandidate.id.toString()),
-          selectedStageId
+          selectedStageId,
         );
         alert("Candidate unarchived and moved successfully");
       } catch (error) {
@@ -451,7 +450,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       try {
         setIsLoading(true);
         const fetchedNotes = await candidateService.getCandidateNotes(
-          selectedCandidate?.candidate.id
+          selectedCandidate?.candidate.id,
         );
         setNotes(fetchedNotes);
       } catch (error) {
@@ -478,13 +477,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
       await candidateService.postCandidateNote(
         selectedCandidate?.candidate.id,
-        payload
+        payload,
       );
       setNewComment("");
 
       // Refetch notes to update the UI
       const updatedNotes = await candidateService.getCandidateNotes(
-        selectedCandidate?.candidate.id
+        selectedCandidate?.candidate.id,
       );
       setNotes(updatedNotes);
     } catch (error) {
@@ -603,7 +602,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
     switch (activeTab) {
       case "Score":
         const currentStage = stages.find(
-          (stage) => stage.name === selectedStage
+          (stage) => stage.name === selectedStage,
         );
         const slug = currentStage?.slug;
         const jobScoreObj =
@@ -652,13 +651,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     <span
                       key={index}
                       className={`bg-blue-50 ${getColorClass(
-                        item.color
+                        item.color,
                       )} px-3 py-1 rounded-full text-sm flex gap-1 items-center`}
                     >
                       {item.badge}
                       {getIcon(item.color)}
                     </span>
-                  )
+                  ),
                 )}
               </div>
             </div>
@@ -714,7 +713,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   {jobScoreObj.call_attention.map(
                     (attention: string, index: number) => (
                       <li key={index}>{attention}</li>
-                    )
+                    ),
                   )}
                 </ul>
               </div>
@@ -782,7 +781,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                           {exp.description}
                         </p>
                       </div>
-                    )
+                    ),
                   )
                 ) : (
                   <p className="text-sm text-[#818283] ml-4">
@@ -869,7 +868,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       <p className="text-sm text-[#818283]">
                         {cert.startDate && (
                           <span>
-                            {cert.startDate?.month}/{cert.startDate?.year} -{" "}
+                            {cert.startDate?.month}/{cert.startDate?.year}{" "}
+                            -{" "}
                           </span>
                         )}
                         {cert.endDate && (
@@ -1069,8 +1069,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                             q.status === "Pass"
                               ? "text-[#007A5A]"
                               : q.status === "Fail"
-                              ? "text-[#ED051C]"
-                              : "text-[#818283]"
+                                ? "text-[#ED051C]"
+                                : "text-[#818283]"
                           } font-medium`}
                         >
                           {q.status}
@@ -1207,7 +1207,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                           >
                             {observation}
                           </li>
-                        )
+                        ),
                       )}
                     </ul>
                   ) : (
@@ -1337,7 +1337,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     className="flex justify-start space-x-2 cursor-pointer"
                     onClick={() =>
                       setSelectedActivityIndex(
-                        selectedActivityIndex === index ? null : index
+                        selectedActivityIndex === index ? null : index,
                       )
                     }
                   >
@@ -1473,7 +1473,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                                 month: "short",
                                 day: "numeric",
                                 year: "numeric",
-                              }
+                              },
                             )}
                           </p>
                         </div>
@@ -1609,7 +1609,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             <button
               onClick={() => {
                 const currentIndex = stages.findIndex(
-                  (s) => s.name === selectedStage
+                  (s) => s.name === selectedStage,
                 );
                 const nextStage = stages[currentIndex + 1];
                 if (nextStage)
@@ -1674,7 +1674,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             <button
               onClick={() => {
                 const currentIndex = stages.findIndex(
-                  (s) => s.name === selectedStage
+                  (s) => s.name === selectedStage,
                 );
                 const nextStage = stages[currentIndex + 1];
                 if (nextStage)
@@ -1701,7 +1701,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   return (
     <>
       <div className="bg-white rounded-lg overflow-hidden relative h-full">
-        {selectedStage === "Uncontacted" && (
+        {/* {selectedStage === "Uncontacted" && (
           <div className="mb-3">
             <button
               className="flex-1 px-3 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
@@ -1712,7 +1712,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             </button>
           </div>
         )}
-        {buttonControls()}
+        {buttonControls()} */}
         <div className="mt-2">
           <div className="flex space-x-3 border-b border-gray-200">
             {tabs.map((tab) => (
