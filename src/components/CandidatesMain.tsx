@@ -725,7 +725,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
     let expected = "";
     if (candidate.expected_ctc) {
-      expected = (candidate.expected_ctc / 100000).toString();
+      expected = (candidate.expected_ctc).toString();
     }
 
     setEditFormData({
@@ -745,10 +745,10 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
           ? parseInt(editFormData.notice_period)
           : undefined,
         current_salary: editFormData.current_salary
-          ? parseFloat(editFormData.current_salary) * 100000
+          ? parseFloat(editFormData.current_salary)
           : undefined,
         expected_ctc: editFormData.expected_ctc
-          ? parseFloat(editFormData.expected_ctc) * 100000
+          ? parseFloat(editFormData.expected_ctc)
           : undefined,
       };
 
@@ -766,7 +766,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               ? `${payload.notice_period_days} Days`
               : c.notice_period_summary,
             current_salary_lpa: payload.current_salary
-              ? `${payload.current_salary / 100000} LPA`
+              ? `${payload.current_salary} LPA`
               : c.current_salary_lpa,
             expected_ctc: payload.expected_ctc ? payload.expected_ctc : c.expected_ctc,
           };
