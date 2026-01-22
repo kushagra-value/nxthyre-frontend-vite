@@ -2110,7 +2110,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               selectedCandidates.map((id) => parseInt(id)),
                             )
                           }
-                          className="mr-2 bg-[#0F47F2] text-white font-medium px-6 py-2 rounded-lg transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-300"
+                          className="mr-1 bg-[#0F47F2] text-white font-medium px-4 py-1 rounded-lg transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-300"
                           disabled={selectedStage === "Shortlisted"}
                           title="Shortlist selected candidates"
                         >
@@ -2124,7 +2124,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               selectedCandidates.map((id) => parseInt(id)),
                             )
                           }
-                          className="p-2 rounded-full hover:bg-blue-50 transition-colors"
+                          className="p-1 rounded-full hover:bg-blue-50 transition-colors"
                           aria-label="Move to Autopilot (Applied stage)"
                           title="Move to Autopilot stage"
                           disabled={
@@ -2135,8 +2135,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           {selectedStage === "Applied" ||
                           selectedStage === "Autopilot" ? null : (
                             <svg
-                              width="38"
-                              height="38"
+                              width="34"
+                              height="34"
                               viewBox="0 0 38 38"
                               fill="none"
                               xmlns="http://www.w3.org/2000/svg"
@@ -2164,14 +2164,14 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               selectedCandidates.map((id) => parseInt(id)),
                             )
                           }
-                          className="p-2 rounded-full hover:bg-red-50 transition-colors"
+                          className="p-1 rounded-full hover:bg-red-50 transition-colors"
                           aria-label="Archive candidate"
                           title="Archive this candidate"
                           disabled={selectedStage === "Archives"}
                         >
                           <svg
-                            width="38"
-                            height="38"
+                            width="34"
+                            height="34"
                             viewBox="0 0 38 38"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
