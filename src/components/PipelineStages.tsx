@@ -2454,7 +2454,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       {showSortDropdown && (
                         <div
                           ref={sortDropdownRef}
-                          className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+                          className="absolute top-full right-10 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
                         >
                           <div className="py-1">
                             {sortOptions.map((option) => (
