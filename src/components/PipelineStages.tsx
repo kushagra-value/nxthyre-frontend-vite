@@ -2064,7 +2064,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         {selectedCandidates.length > 0 ? (
                           <span className="ml-2 text-sm lg:text-base font-[500] text-blue-500">
                             {selectedCandidates.length} Candidates Selected
-                            <span className="mx-1 border border-left border-gray-300"></span>
                           </span>
                         ) : (
                           <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">
@@ -2072,6 +2071,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           </span>
                         )}
                       </label>
+                      <span className="mx-2 border border-left border-gray-300"></span>
                       {selectedCandidates.length > 0 && (
                         // <button
                         //   onClick={() =>
@@ -2103,7 +2103,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         //   Move to Next Stage
                         // </button>
 
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center">
                           {/* Bulk Shortlist */}
                           <button
                             onClick={() =>
@@ -2111,7 +2111,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 selectedCandidates.map((id) => parseInt(id)),
                               )
                             }
-                            className="mr-2 bg-[#0F47F2] text-white font-medium px-6 py-2 rounded-lg transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-300"
+                            className="mr-1 bg-[#0F47F2] text-white font-medium px-6 py-2 rounded-lg transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-300"
                             disabled={selectedStage === "Shortlisted"}
                             title="Shortlist selected candidates"
                           >
@@ -2125,7 +2125,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 selectedCandidates.map((id) => parseInt(id)),
                               )
                             }
-                            className="p-2 rounded-full hover:bg-blue-50 transition-colors"
+                            className="p-1 rounded-full hover:bg-blue-50 transition-colors"
                             aria-label="Move to Autopilot (Applied stage)"
                             title="Move to Autopilot stage"
                             disabled={
@@ -2165,7 +2165,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 selectedCandidates.map((id) => parseInt(id)),
                               )
                             }
-                            className="p-2 rounded-full hover:bg-red-50 transition-colors"
+                            className="p-1 rounded-full hover:bg-red-50 transition-colors"
                             aria-label="Archive candidate"
                             title="Archive this candidate"
                             disabled={selectedStage === "Archives"}
@@ -2371,10 +2371,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       )
                     )} */}
 
-                    <div className="relative flex items-center space-x-2">
+                    <div className="flex items-center justify-end space-x-2">
                       {/* Source button */}
                       <button
-                        className="px-1.5 py-1.5 bg-white text-gray-400 text-xs 2xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className="px-2 py-2 bg-white text-gray-400 text-xs 2xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         title="Filter by Source"
                       >
                         <svg
@@ -2399,6 +2399,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           className="px-1.5 py-1.5 bg-white text-gray-400 text-xs 2xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                           onClick={() => setShowUploadModal(true)}
                           aria-label="Upload Candidates"
+                          title="Upload Candidates"
                         >
                           <svg
                             width="15"
@@ -2441,6 +2442,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() => setShowSortDropdown(!showSortDropdown)}
                         aria-label="Sort candidates"
+                        title="Sort candidates"
                       >
                         <ArrowDownNarrowWide className="w-4 h-4 rotate-180" />
                         <span className="text-gray-400 font-[400] ml-1 mr-1 hidden 3xl:inline">
