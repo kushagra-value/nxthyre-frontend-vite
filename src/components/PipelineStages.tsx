@@ -2044,7 +2044,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               )}
               <div className="p-3 lg:p-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
-                  <div className="flex justify-between space-x-3">
+                  <div className="flex justify-between space-x-3 w-full">
                     <div className="flex items-center">
                       <label className="flex items-center">
                         <input
@@ -2064,6 +2064,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         {selectedCandidates.length > 0 ? (
                           <span className="ml-2 text-sm lg:text-base font-[500] text-blue-500">
                             {selectedCandidates.length} Candidates Selected
+                            <span className="mx-2 border border-left border-gray-300 p-2"></span>
                           </span>
                         ) : (
                           <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">
@@ -2071,7 +2072,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           </span>
                         )}
                       </label>
-                      <span className="mx-2 border border-left border-gray-300"></span>
                       {selectedCandidates.length > 0 && (
                         // <button
                         //   onClick={() =>
@@ -2371,7 +2371,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       )
                     )} */}
 
-                    <div className="flex items-center justify-end space-x-2">
+                    <div className="flex items-center space-x-2">
                       {/* Source button */}
                       <button
                         className="px-3 py-2.5 bg-white text-gray-400 text-xs 2xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2439,7 +2439,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
                       {/* Sort button - Relevance by default */}
                       <button
-                        className="px-1.5 py-1.5 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className="p-2 bg-white text-gray-400 text-xs lg:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() => setShowSortDropdown(!showSortDropdown)}
                         aria-label="Sort candidates"
                         title="Sort candidates"
