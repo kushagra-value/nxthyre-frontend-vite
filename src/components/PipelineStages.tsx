@@ -2374,7 +2374,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                     <div className="flex items-center justify-end space-x-2">
                       {/* Source button */}
                       <button
-                        className="px-2 py-2 bg-white text-gray-400 text-xs 2xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className="px-3 py-2.5 bg-white text-gray-400 text-xs 2xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         title="Filter by Source"
                       >
                         <svg
@@ -2396,7 +2396,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       {/* Upload Button */}
                       <div className="relative">
                         <button
-                          className="px-1.5 py-1.5 bg-white text-gray-400 text-xs 2xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                          className="px-3 py-2.5 bg-white text-gray-400 text-xs 2xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                           onClick={() => setShowUploadModal(true)}
                           aria-label="Upload Candidates"
                           title="Upload Candidates"
