@@ -2059,9 +2059,16 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       className="w-4 h-4 text-blue-200 border-gray-200 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 "
                       aria-label="Select all candidates"
                     />
-                    <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">
-                      Select all on this page
-                    </span>
+                    {selectedCandidates.length > 0 ? (
+                      <span className="ml-2 text-sm lg:text-base font-[300] text-blue-500">
+                        {selectedCandidates.length} Candidates Selected
+                        <span className="mx-1 border border-left border-gray-300"></span>
+                      </span>
+                    ) : (
+                      <span className="ml-2 text-xs text-gray-400 lg:text-base font-[400]">
+                        Select all on this page
+                      </span>
+                    )}
                   </label>
                   <div className="flex space-x-3">
                     {selectedCandidates.length > 0 && (
@@ -2095,7 +2102,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       //   Move to Next Stage
                       // </button>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
                         {/* Bulk Shortlist */}
                         <button
                           onClick={() =>
