@@ -2124,7 +2124,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       </div> */}
 
       {/* The tabs rendering JSX */}
-      <div className="flex space-x-4 border-b border-gray-200">
+      <div className="flex justify-between w-full border-b border-gray-200 ">
         {visibleTabs.map((tab) => (
           <div key={tab.name} className="tab-button">
             <button
