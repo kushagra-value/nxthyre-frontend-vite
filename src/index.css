@@ -8,8 +8,8 @@
 .zoom-80-container {
   transform: scale(0.8);
   transform-origin: top left;
-  width: 120vw;
-  min-height: 120vh;
+  width: 124vw;
+  min-height: 125vh;
   margin: 0 auto;
   /* overflow-x: hidden; */
   position: relative;
