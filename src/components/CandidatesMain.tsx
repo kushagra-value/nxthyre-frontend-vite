@@ -995,7 +995,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     stroke-width="1.2"
                   />
                 </svg>
-                <p className="hidden lg:inline">Source</p>
+                <p className="hidden 2xl:inline">Source</p>
               </button>
             )}
 
