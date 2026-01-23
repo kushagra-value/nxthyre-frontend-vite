@@ -7,6 +7,10 @@ export interface CandidateListItem {
   current_salary_lpa: string;
   avatar: string;
   headline: string;
+  source?: {
+    source: string;
+    original_platform: string;
+  };
   location: string;
   linkedin_url?: string;
   is_background_verified: boolean;
@@ -801,7 +805,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to save candidate to pipeline"
+        error.response?.data?.error || "Failed to save candidate to pipeline",
       );
     }
   }
@@ -812,21 +816,20 @@ class CandidateService {
       notice_period_days?: number;
       current_salary?: number;
       expected_ctc?: number;
-    }
+    },
   ): Promise<any> {
     try {
       const response = await apiClient.patch(
         `/candidates/${candidateId}/editable-fields/`,
-        data
+        data,
       );
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to update candidate fields"
+        error.response?.data?.error || "Failed to update candidate fields",
       );
     }
   }
-
 
   async bulkAddToPipeline(
     jobId: number,
@@ -1000,7 +1003,7 @@ class CandidateService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error ||
-        "Failed to fetch background verifications",
+          "Failed to fetch background verifications",
       );
     }
   }
