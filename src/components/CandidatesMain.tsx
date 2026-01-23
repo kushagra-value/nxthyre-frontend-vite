@@ -1033,11 +1033,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 title="Sort Candidates"
               >
                 <ArrowDownNarrowWide className="w-4 h-4 rotate-180" />
-                <span className="text-gray-400 font-[400] ml-1 mr-1 hidden 3xl:inline">
+                <span className="text-gray-400 font-[400] ml-1 mr-1 hidden 2xl:inline">
                   {sortOptions.find((opt) => opt.value === sortBy)?.label ||
                     "Relevance"}
                 </span>
-                <ChevronDown className="w-4 h-4 mt-1 hidden 3xl:inline" />
+                <ChevronDown className="w-4 h-4 mt-1 hidden 2xl:inline" />
               </button>
               {showSortDropdown && (
                 <div
