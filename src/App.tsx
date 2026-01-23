@@ -2535,6 +2535,8 @@ function MainApp() {
                               boolQuery={filters.boolQuery || ""} // ← Current bool_query (boolean mode)
                               enableAnalysis={!!filters.jobId}
                               onAnalysisFetched={setCurrentAnalysis}
+                              activeMiddleTab={activeTab}
+                              setActiveMiddleTab={setActiveTab}
                             />
                           </div>
                           {/* TemplateSelector rendered as an overlay with 40% width when active */}
