@@ -216,7 +216,7 @@ export default function ProjectCard({
         </div>
 
         {/* Tag pills – plain, no prefix icons */}
-        <div className="flex gap-[18px] mb-[18px]">
+        <div className="flex gap-3 mb-[18px]">
           <div className="flex items-center justify-center px-[10px] h-[38px] bg-[#F0F0F0] rounded-[5px]">
             <span className={`text-[16px] ${textClass}`}>{experience}</span>
           </div>
