@@ -1757,7 +1757,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       <SearchCodeIcon />
                     </button>
                     {isDropdownOpen && (
-                      <div className="absolute top-10 z-10 w-[90%] bg-white shadow-lg mt-1 rounded-[10px] h-80vh overflow-y-auto border border-gray-200 py-2 px-4">
+                      <div className="absolute top-10 z-10 w-[90%] bg-white shadow-lg mt-1 rounded-[10px] h-60vh overflow-y-auto border border-gray-200 py-2 px-4">
                         <div className="relative mb-3 p-2">
                           <input
                             type="text"
