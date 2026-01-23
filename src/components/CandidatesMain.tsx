@@ -1022,7 +1022,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   fill="#818283"
                 />
               </svg>{" "}
-              <p className="hidden 3xl:inline">Export</p>
+              <p className="hidden 2xl:inline">Export</p>
             </button>
 
             <div className="relative flex space-x-2">

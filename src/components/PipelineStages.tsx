@@ -2390,7 +2390,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             stroke-width="1.2"
                           />
                         </svg>
-                        <p className="hidden 3xl:inline">Source</p>
+                        <p className="hidden 2xl:inline">Source</p>
                       </button>
 
                       {/* Upload Button */}
@@ -2433,7 +2433,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               stroke-linejoin="round"
                             />
                           </svg>
-                          <p className="hidden 3xl:inline">Upload</p>
+                          <p className="hidden 2xl:inline">Upload</p>
                         </button>
                       </div>
 
@@ -2446,7 +2446,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           title="Sort candidates"
                         >
                           <ArrowDownNarrowWide className="w-4 h-4 rotate-180" />
-                          <span className="text-gray-400 font-[400] ml-1 mr-1 hidden 3xl:inline">
+                          <span className="text-gray-400 font-[400] ml-1 mr-1 hidden 2xl:inline">
                             {sortOptions.find((opt) => opt.value === sortBy)
                               ?.label || "Relevance"}
                           </span>
