@@ -1714,7 +1714,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         )}
         {buttonControls()} */}
         <div className="mt-2">
-          <div className="flex space-x-3 border-b border-gray-200">
+          <div className="flex justify-between w-full border-b border-gray-200">
             {tabs.map((tab) => (
               <button
                 key={tab}
