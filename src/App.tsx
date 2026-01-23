@@ -129,7 +129,7 @@ interface Workspace {
 
 const ProjectSkeletonCard = () => (
   <div className="bg-white rounded-[10px] shadow-lg overflow-hidden animate-pulse hover:shadow-xl transition-shadow duration-300">
-    <div className="p-6">
+    <div className="p-12">
       {/* Top row: Status badge + hover actions placeholder */}
       <div className="flex items-center justify-between mb-8">
         <div className="h-7 bg-gray-200 rounded-full w-28"></div>
@@ -1412,17 +1412,18 @@ function MainApp() {
           path="/"
           element={
             isAuthenticated ? (
-              showPipelineSharePage ? (
+              <div className="zoom-80-container">
+                showPipelineSharePage ? (
                 <PipelineSharePage
                   pipelineName={job?.name || "Pipeline Name"}
                   onBack={handleBackFromPipelineShare}
                 />
-              ) : showShareableProfile ? (
+                ) : showShareableProfile ? (
                 <ShareableProfile
                   candidateId={currentCandidateId}
                   onBack={handleBackFromShareableProfile}
                 />
-              ) : showPipelineStages ? (
+                ) : showPipelineStages ? (
                 <>
                   <Toaster />
                   <PipelineStages
@@ -1433,7 +1434,7 @@ function MainApp() {
                     initialJobId={activeCategoryId}
                   />
                 </>
-              ) : categories.length === 0 ? (
+                ) : categories.length === 0 ? (
                 <div className="min-h-screen bg-gray-50">
                   <div className="sticky top-0 bg-white z-40 shadow-sm">
                     <Header
@@ -1447,7 +1448,7 @@ function MainApp() {
                     />
                   </div>
                 </div>
-              ) : !hasSelectedJob ? (
+                ) : !hasSelectedJob ? (
                 <div className="min-h-screen bg-gray-50">
                   <div className="sticky top-0 bg-white z-40 shadow-sm">
                     <Header
@@ -2090,7 +2091,7 @@ function MainApp() {
                     )}
                   </div>
                 </div>
-              ) : (
+                ) : (
                 <>
                   <Toaster />
                   <div className="bg-gray-50 min-h-screen">
@@ -3006,7 +3007,8 @@ function MainApp() {
                     )}
                   </div>
                 </>
-              )
+                )
+              </div>
             ) : (
               <>
                 <Toaster />
