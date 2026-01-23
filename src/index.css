@@ -7,18 +7,20 @@
 
 .zoom-80-container {
   transform: scale(0.8);
-  transform-origin: top center; /* ← centers horizontally */
-  width: 125%; /* 100 / 0.8 */
+  transform-origin: top center;
+  width: 125vw;
   min-height: 125vh;
-  margin: 0 auto; /* helps centering */
+  margin: 0 auto;
   overflow-x: hidden;
   position: relative;
 }
-/* 
-.zoom-80-container > * {
-  width: 80%;
-  height: auto;
-} */
+
+html,
+body {
+  overflow-x: hidden !important;
+  margin: 0;
+  padding: 0;
+}
 
 @font-face {
   font-family: "Gellix";
