@@ -1417,7 +1417,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                   )}
                                 </div>
                               )}
-                              {/* need to update the API here */}
+                              {/* Updated the API here */}
                               {activeTab === "inbound" &&
                                 candidate.source?.original_platform ==
                                   "naukri_nvite" && (
