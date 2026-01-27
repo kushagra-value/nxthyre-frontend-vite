@@ -23,12 +23,10 @@ import {
 interface ShareableProfileProps {
   candidateId: string;
   onBack?: () => void;
-  candidate?: CandidateListItem;
 }
 const ShareableProfile: React.FC<ShareableProfileProps> = ({
   candidateId,
   onBack,
-  candidate,
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +43,8 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
       try {
         const data = await candidateService.getShareableProfile(candidateId);
         setAnonymizedCandidate(data);
+
+        console.log("Anonymized Candidate Data:", data);
       } catch (err) {
         setError("Failed to load candidate profile");
       } finally {
@@ -68,8 +68,6 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
   }, [candidateId]);
 
   const candidateProfileUrl = `https://app.nxthyre.com/candidate-profiles/${candidateId}`;
-
-  console.log("Candidate in shreable profile :", candidate);
 
   const handleCopyId = () => {
     showToast.success("Candidate ID copied to clipboard");

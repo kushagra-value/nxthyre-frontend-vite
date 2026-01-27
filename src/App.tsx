@@ -1372,7 +1372,6 @@ function MainApp() {
             <ShareableProfile
               candidateId={currentCandidateId}
               onBack={handleBackFromShareableProfile}
-              candidate={selectedCandidate}
             />
           }
         />
@@ -1423,7 +1422,6 @@ function MainApp() {
                   <ShareableProfile
                     candidateId={currentCandidateId}
                     onBack={handleBackFromShareableProfile}
-                    candidate={selectedCandidate}
                   />
                 ) : showPipelineStages ? (
                   <>
