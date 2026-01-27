@@ -29,6 +29,7 @@ import {
   Linkedin,
   Circle,
   CircleIcon,
+  Sparkle,
 } from "lucide-react";
 
 // Custom SVG Icon for IdCard
@@ -362,6 +363,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const [logos, setLogos] = useState<{ [key: string]: string | undefined }>({});
   const random70to99 = () => Math.floor(Math.random() * 30 + 70);
 
+  const [candidatePhone, setCandidatePhone] = useState<string>(""); // NEW: Candidate phone number [candidate_phone]
+  const [candidateEmail, setCandidateEmail] = useState<string>(""); // NEW: Candidate email address [candidate_email]
+
   useEffect(() => {
     const fetchAnalysis = async () => {
       if (!candidate?.id || !enableAnalysis || !jobId) {
@@ -388,6 +392,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           );
 
           console.log("Detail data :: ", detailData);
+
+          setCandidatePhone(detailData.candidate?.phone || "");
+          setCandidateEmail(detailData.candidate?.email || "");
           // Note: Assuming job_score comes inside detailData.candidate when job_id is used internally
           // If job_score is not present → backend should be fixed to include it when ?job_id=... is sent
           const jobScore = detailData.candidate?.job_score || null;
@@ -1022,7 +1029,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
         {/* Top Badge */}
         <div className="mb-4">
-          <div className="flex items-center gap-4 bg-green-100 rounded-md px-2 py-3 mr-2 mb-3">
+          <div
+            className="flex items-center gap-4 bg-green-100 rounded-md px-2 py-3 mr-2 mb-3"
+            title={`${booleanData.candidate_match_score.note}`}
+          >
             <span className="text-xl bg-green-600 text-white p-2 rounded-md">
               {booleanData.candidate_match_score.score}
             </span>
@@ -1055,6 +1065,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                   item.color,
                 )} px-3 py-1 rounded-full text-sm flex gap-1 items-center`}
               >
+                {item.status === "validated" ? (
+                  <Sparkle
+                    className={`w-4 h-4 text-${item.color} bg-${item.color}`}
+                  />
+                ) : null}
                 {item.badge}
                 {getIcon(item.color)}
               </span>
@@ -2071,7 +2086,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
-            <span className="text-sm text-gray-700">{displayEmail}</span>
+            {/* <span className="text-sm text-gray-700">{displayEmail}</span> */}
+            <span className="text-sm text-gray-700">{candidateEmail}</span>
           </div>
           <button
             className={`flex space-x-2 ml-auto p-1 ${
@@ -2088,7 +2104,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         <div className="flex justify-between items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
-            <span className="text-sm text-gray-700">{displayPhone}</span>
+            {/* <span className="text-sm text-gray-700">{displayPhone}</span> */}
+            <span className="text-sm text-gray-700">{candidatePhone}</span>
           </div>
           <div>
             <button
