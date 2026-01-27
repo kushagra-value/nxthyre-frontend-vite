@@ -3512,7 +3512,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       // setSharePopupCandidateId(candidate.id);
-                                      handleShareProfile(candidate.id);
+                                      handleShareProfile(
+                                        candidate.candidate.id,
+                                      );
                                     }}
                                     title="Share Profile"
                                   >
