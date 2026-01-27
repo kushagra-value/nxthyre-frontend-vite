@@ -17,15 +17,18 @@ import {
   candidateService,
   ShareableProfileSensitiveCandidate,
   ReferenceData,
+  CandidateListItem,
 } from "../../services/candidateService";
 
 interface ShareableProfileProps {
   candidateId: string;
   onBack?: () => void;
+  candidate?: CandidateListItem;
 }
 const ShareableProfile: React.FC<ShareableProfileProps> = ({
   candidateId,
   onBack,
+  candidate,
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,6 +68,8 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
   }, [candidateId]);
 
   const candidateProfileUrl = `https://app.nxthyre.com/candidate-profiles/${candidateId}`;
+
+  console.log("Candidate in shreable profile :", candidate);
 
   const handleCopyId = () => {
     showToast.success("Candidate ID copied to clipboard");
@@ -221,7 +226,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
               <div className=" col-span-2 flex-1">
                 <div className="mb-4">
                   <h2 className="text-4xl font-[400] text-gray-700 mb-2">
-                    XXXXXXX XXXX
+                    {anonymizedCandidate?.full_name || "N/A"}
                   </h2>
                   <div className="flex flex-col items-start justify-start text-gray-600 mb-2">
                     <div className="flex items-center justify-left">
@@ -471,7 +476,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                         </div>
                         <p className="text-sm text-gray-700">{note.content}</p>
                       </div>
-                    )
+                    ),
                   )}
                 </div>
               </div>
