@@ -1031,7 +1031,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         <div className="mb-4">
           <div
             className="flex items-center gap-4 bg-green-100 rounded-md px-2 py-3 mr-2 mb-3"
-            title={`${booleanData.candidate_match_score.note}`}
+            // title={`${booleanData.candidate_match_score.note}`}
           >
             <span className="text-xl bg-green-600 text-white p-2 rounded-md">
               {booleanData.candidate_match_score.score}
@@ -2091,12 +2091,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
           <button
             className={`flex space-x-2 ml-auto p-1 ${
-              displayEmail
+              candidateEmail
                 ? "text-gray-400 hover:text-gray-600"
                 : "text-gray-300 cursor-not-allowed"
             }`}
-            onClick={() => displayEmail && handleCopy(displayEmail)}
-            disabled={!displayEmail}
+            onClick={() => candidateEmail && handleCopy(candidateEmail)}
+            disabled={!candidateEmail}
           >
             <Copy className="w-4 h-4" />
           </button>
@@ -2110,23 +2110,23 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <div>
             <button
               className={`p-1 ${
-                displayPhone
+                candidatePhone
                   ? "text-gray-400 hover:text-gray-600"
                   : "text-gray-300 cursor-not-allowed"
               }`}
-              onClick={() => displayPhone && handleWhatsApp(displayPhone)}
-              disabled={!displayPhone}
+              onClick={() => candidatePhone && handleWhatsApp(candidatePhone)}
+              disabled={!candidatePhone}
             >
               <FontAwesomeIcon icon={faWhatsapp} />
             </button>
             <button
               className={`p-1 ${
-                displayPhone
+                candidatePhone
                   ? "text-gray-400 hover:text-gray-600"
                   : "text-gray-300 cursor-not-allowed"
               }`}
-              onClick={() => displayPhone && handleCopy(displayPhone)}
-              disabled={!displayPhone}
+              onClick={() => candidatePhone && handleCopy(candidatePhone)}
+              disabled={!candidatePhone}
             >
               <Copy className="w-4 h-4" />
             </button>

@@ -33,6 +33,7 @@ import {
   SignalMedium,
   CheckCheck,
   UserRoundCheck,
+  Sparkle,
 } from "lucide-react";
 import { PipelineCandidate } from "../../data/pipelineData";
 import candidateService from "../../services/candidateService";
@@ -625,7 +626,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
           <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
             {/* Top Badge */}
             <div className="mb-4">
-              <div className="flex items-start gap-4 bg-green-100 rounded-md px-2 py-3 mr-2">
+              <div className="flex items-center gap-4 bg-green-100 rounded-md px-2 py-3 mr-2 mb-3">
                 <span className="text-xl bg-green-600 text-white p-2 rounded-md">
                   {jobScoreObj.candidate_match_score.score}
                 </span>
@@ -633,10 +634,15 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   <span className="text-black text-sm">
                     {jobScoreObj.candidate_match_score.label}
                   </span>
-                  <span className="text-gray-600 text-sm">
-                    {jobScoreObj.candidate_match_score.description}
-                  </span>
                 </div>
+              </div>
+              <div className="text-gray-600 bg-gray-50 rounded-md px-2 py-3 mr-2 mb-3">
+                <h2 className="font-semibold mb-1 text-md">
+                  Profile Match Description
+                </h2>
+                <span className="text-sm">
+                  {jobScoreObj.candidate_match_score.description}
+                </span>
               </div>
             </div>
 
@@ -647,13 +653,27 @@ const StageDetails: React.FC<StageDetailsProps> = ({
               </h3>
               <div className="flex flex-wrap gap-2">
                 {jobScoreObj.quick_fit_summary.map(
-                  (item: { badge: string; color: string }, index: number) => (
+                  (
+                    item: {
+                      badge: string;
+                      color: string;
+                      evidence: string;
+                      priority: string;
+                    },
+                    index: number,
+                  ) => (
                     <span
                       key={index}
                       className={`bg-blue-50 ${getColorClass(
                         item.color,
                       )} px-3 py-1 rounded-full text-sm flex gap-1 items-center`}
+                      title={`${item.evidence}`}
                     >
+                      {item.priority === "CRITICAL" ? (
+                        <Sparkle
+                          className={`w-4 h-4 text-${item.color} bg-${item.color}`}
+                        />
+                      ) : null}
                       {item.badge}
                       {getIcon(item.color)}
                     </span>
@@ -664,7 +684,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
             <div className="mb-3 border-b border-gray-200"></div>
 
-            {/* Gaps / Risks */}
+            {/* Gaps / Risks
             <div className="mb-4">
               <h4 className="text-md font-semibold mb-3 text-gray-600">
                 Gaps / Risks
@@ -676,6 +696,31 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   </li>
                 ))}
               </ul>
+            </div> */}
+            {/* Gaps / Risks */}
+            <div className="mb-4">
+              <h4 className="text-md font-semibold mb-3 text-gray-600">
+                Gaps / Risks
+              </h4>
+              <div className="space-y-2 text-sm text-gray-600">
+                {jobScoreObj.gaps_risks.map((gap: string, index: number) => {
+                  const [category, description] = gap.split(/:\s*/, 2);
+                  return (
+                    <details
+                      key={index}
+                      open={index === 0}
+                      className="bg-gray-50 rounded-md overflow-hidden"
+                    >
+                      <summary className="p-2 font-medium cursor-pointer hover:bg-gray-100">
+                        {category}
+                      </summary>
+                      <div className="p-2 border-t border-gray-200">
+                        {description}
+                      </div>
+                    </details>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="mb-3 border-b border-gray-200"></div>
