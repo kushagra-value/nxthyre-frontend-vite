@@ -1032,9 +1032,13 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               </span>
             </div>
           </div>
-          <div className="text-gray-600 bg-gray-100 rounded-md px-2 py-3 text-lg mr-2 mb-3">
-            <h2 className="font-semibold mb-1">Profile Match Description</h2>
-            {booleanData.candidate_match_score.description}
+          <div className="text-gray-600 bg-gray-100 rounded-md px-2 py-3 mr-2 mb-3">
+            <h2 className="font-semibold mb-1 text-md">
+              Profile Match Description
+            </h2>
+            <span className="text-sm">
+              {booleanData.candidate_match_score.description}
+            </span>
           </div>
         </div>
 
