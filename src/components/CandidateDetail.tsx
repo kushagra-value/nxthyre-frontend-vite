@@ -366,6 +366,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const [candidatePhone, setCandidatePhone] = useState<string>(""); // NEW: Candidate phone number [candidate_phone]
   const [candidateEmail, setCandidateEmail] = useState<string>(""); // NEW: Candidate email address [candidate_email]
 
+  let finalEmail = "a******@gmail.com";
+  let finalPhone = "+91 95*****89";
+
   useEffect(() => {
     const fetchAnalysis = async () => {
       if (!candidate?.id || !enableAnalysis || !jobId) {
@@ -2087,16 +2090,22 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <div className="flex items-center space-x-2">
             <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
             {/* <span className="text-sm text-gray-700">{displayEmail}</span> */}
-            <span className="text-sm text-gray-700">{candidateEmail}</span>
+            {
+              (finalEmail =
+                activeMiddleTab === "inbound"
+                  ? candidateEmail
+                  : detailedCandidate?.candidate?.email || "a*****@gmail.com")
+            }
+            <span className="text-sm text-gray-700">{finalEmail}</span>
           </div>
           <button
             className={`flex space-x-2 ml-auto p-1 ${
-              candidateEmail
+              finalEmail
                 ? "text-gray-400 hover:text-gray-600"
                 : "text-gray-300 cursor-not-allowed"
             }`}
-            onClick={() => candidateEmail && handleCopy(candidateEmail)}
-            disabled={!candidateEmail}
+            onClick={() => finalEmail && handleCopy(finalEmail)}
+            disabled={!finalEmail}
           >
             <Copy className="w-4 h-4" />
           </button>
@@ -2105,28 +2114,34 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <div className="flex items-center space-x-2">
             <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
             {/* <span className="text-sm text-gray-700">{displayPhone}</span> */}
-            <span className="text-sm text-gray-700">{candidatePhone}</span>
+            {
+              (finalPhone =
+                activeMiddleTab === "inbound"
+                  ? candidatePhone
+                  : detailedCandidate?.candidate?.phone || "+91 95*****89")
+            }
+            <span className="text-sm text-gray-700">{finalPhone}</span>
           </div>
           <div>
             <button
               className={`p-1 ${
-                candidatePhone
+                finalPhone
                   ? "text-gray-400 hover:text-gray-600"
                   : "text-gray-300 cursor-not-allowed"
               }`}
-              onClick={() => candidatePhone && handleWhatsApp(candidatePhone)}
-              disabled={!candidatePhone}
+              onClick={() => finalPhone && handleWhatsApp(finalPhone)}
+              disabled={!finalPhone}
             >
               <FontAwesomeIcon icon={faWhatsapp} />
             </button>
             <button
               className={`p-1 ${
-                candidatePhone
+                finalPhone
                   ? "text-gray-400 hover:text-gray-600"
                   : "text-gray-300 cursor-not-allowed"
               }`}
-              onClick={() => candidatePhone && handleCopy(candidatePhone)}
-              disabled={!candidatePhone}
+              onClick={() => finalPhone && handleCopy(finalPhone)}
+              disabled={!finalPhone}
             >
               <Copy className="w-4 h-4" />
             </button>
