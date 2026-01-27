@@ -2090,12 +2090,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <div className="flex items-center space-x-2">
             <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
             {/* <span className="text-sm text-gray-700">{displayEmail}</span> */}
-            {
-              <span className="text-sm text-gray-700">
-                (finalEmail = activeMiddleTab === "inbound" ? candidateEmail :
-                detailedCandidate?.candidate?.email || "a*****@gmail.com")
-              </span>
-            }
+            <span className="text-sm text-gray-700">
+              {
+                (finalEmail =
+                  activeMiddleTab === "inbound"
+                    ? candidateEmail
+                    : detailedCandidate?.candidate?.email || "a*****@gmail.com")
+              }
+            </span>
           </div>
           <button
             className={`flex space-x-2 ml-auto p-1 ${
@@ -2113,12 +2115,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <div className="flex items-center space-x-2">
             <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
             {/* <span className="text-sm text-gray-700">{displayPhone}</span> */}
-            {
-              <span className="text-sm text-gray-700">
-                (finalPhone = activeMiddleTab === "inbound" ? candidatePhone :
-                detailedCandidate?.candidate?.phone || "+91 95*****89")
-              </span>
-            }
+            <span className="text-sm text-gray-700">
+              {
+                (finalPhone =
+                  activeMiddleTab === "inbound"
+                    ? candidatePhone
+                    : detailedCandidate?.candidate?.phone || "+91 95*****89")
+              }
+            </span>
           </div>
           <div>
             <button
