@@ -2077,7 +2077,6 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 if (url) {
                                   window.open(url, "_blank");
                                 } else {
-                                  handleConfirmReveal();
                                   setPendingReveal({
                                     candidateId: candidate.id,
                                     onSuccess: (prem) => {
@@ -2088,6 +2087,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                     },
                                   });
                                   // setShowRevealDialog(true);
+                                  handleConfirmReveal();
                                 }
                               }}
                               aria-label={`View ${candidate.full_name}'s resume`}
