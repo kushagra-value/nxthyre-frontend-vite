@@ -1022,17 +1022,17 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
         {/* Top Badge */}
         <div className="mb-4">
-          <div className="flex items-start gap-4 bg-green-200 rounded-md px-2 py-3 mr-2">
+          <div className="flex items-center gap-4 bg-green-200 rounded-md px-2 py-3 mr-2 mb-3">
             <span className="text-xl bg-green-600 text-white p-2 rounded-md">
               {booleanData.candidate_match_score.score}
             </span>
             <div className="flex flex-col">
-              <span className="text-black text-sm">
+              <span className="text-black text-lg">
                 {booleanData.candidate_match_score.label}
               </span>
             </div>
           </div>
-          <div className="text-gray-600 text-sm mb-3">
+          <div className="text-gray-600 bg-gray-100 rounded-md px-2 py-3 text-sm mr-2 mb-3">
             <h2 className="font-semibold mb-1">Profile Match Description</h2>
             {booleanData.candidate_match_score.description}
           </div>
