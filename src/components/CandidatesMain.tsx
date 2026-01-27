@@ -710,7 +710,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     setRevealLoading(true);
     try {
       const prem = await handleReveal(pendingReveal.candidateId);
-      await deductCredits();
+      // await deductCredits();
       pendingReveal.onSuccess(prem);
     } catch (e) {
       // Error already handled in handleReveal
@@ -2086,7 +2086,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                         window.open(finalUrl, "_blank");
                                     },
                                   });
-                                  setShowRevealDialog(true);
+                                  // setShowRevealDialog(true);
+                                  handleConfirmReveal();
                                 }
                               }}
                               aria-label={`View ${candidate.full_name}'s resume`}
