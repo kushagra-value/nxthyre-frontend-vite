@@ -363,6 +363,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     }
   };
 
+  const handleShareProfile = (candidateId: string) => {
+    window.open(`/candidate-profiles/${candidateId}`, "_blank");
+  };
+
   // Fetch categories when component mounts
   useEffect(() => {
     const fetchCategories = async () => {
@@ -3503,6 +3507,57 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                         </button>
                                       );
                                     })()}
+                                  <button
+                                    className=" rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      // setSharePopupCandidateId(candidate.id);
+                                      handleShareProfile(candidate.id);
+                                    }}
+                                    title="Share Profile"
+                                  >
+                                    <svg
+                                      width="28"
+                                      height="28"
+                                      viewBox="0 0 29 29"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <circle
+                                        cx="14.5"
+                                        cy="14.5"
+                                        r="14.5"
+                                        fill="#4B5563"
+                                      />
+                                      <path
+                                        d="M12.2575 14.5192C12.2575 15.7185 11.2611 16.6908 10.0321 16.6908C8.80299 16.6908 7.80664 15.7185 7.80664 14.5192C7.80664 13.3199 8.80299 12.3477 10.0321 12.3477C11.2611 12.3477 12.2575 13.3199 12.2575 14.5192Z"
+                                        stroke="#F5F9FB"
+                                        stroke-width="1.2"
+                                      />
+                                      <path
+                                        d="M16.7086 9.73438L12.2578 12.7746"
+                                        stroke="#F5F9FB"
+                                        stroke-width="1.2"
+                                        stroke-linecap="round"
+                                      />
+                                      <path
+                                        d="M16.7086 19.3019L12.2578 16.2617"
+                                        stroke="#F5F9FB"
+                                        stroke-width="1.2"
+                                        stroke-linecap="round"
+                                      />
+                                      <path
+                                        d="M21.1618 20.1599C21.1618 21.3592 20.1654 22.3314 18.9364 22.3314C17.7073 22.3314 16.7109 21.3592 16.7109 20.1599C16.7109 18.9605 17.7073 17.9883 18.9364 17.9883C20.1654 17.9883 21.1618 18.9605 21.1618 20.1599Z"
+                                        stroke="#F5F9FB"
+                                        stroke-width="1.2"
+                                      />
+                                      <path
+                                        d="M21.1618 8.86298C21.1618 10.0623 20.1654 11.0346 18.9364 11.0346C17.7073 11.0346 16.7109 10.0623 16.7109 8.86298C16.7109 7.66365 17.7073 6.69141 18.9364 6.69141C20.1654 6.69141 21.1618 7.66365 21.1618 8.86298Z"
+                                        stroke="#F5F9FB"
+                                        stroke-width="1.2"
+                                      />
+                                    </svg>
+                                  </button>
                                 </div>
                               </div>
 
