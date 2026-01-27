@@ -170,16 +170,22 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
             <div className="flex justify-between items-center space-x-2">
               <div className="flex items-center space-x-2">
                 <Mail className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1" />
-                <span className="text-sm text-gray-500">{displayEmail}</span>
+                {/* <span className="text-sm text-gray-500">{displayEmail}</span> */}
+                <span className="text-sm text-gray-500">
+                  {selectedCandidate.candidate.email}
+                </span>
               </div>
               <button
                 className={`flex space-x-2 ml-auto p-1 ${
-                  displayEmail
+                  selectedCandidate.candidate.email
                     ? "text-gray-400 hover:text-gray-600"
                     : "text-gray-300 cursor-not-allowed"
                 }`}
-                onClick={() => displayEmail && handleCopy(displayEmail)}
-                disabled={!displayEmail}
+                onClick={() =>
+                  selectedCandidate.candidate.email &&
+                  handleCopy(selectedCandidate.candidate.email)
+                }
+                disabled={!selectedCandidate.candidate.email}
               >
                 <Copy className="w-4 h-4" />
               </button>
@@ -187,28 +193,36 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
             <div className="flex justify-between items-center space-x-2">
               <div className="flex items-center space-x-2">
                 <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                <span className="text-sm text-gray-500">{displayPhone}</span>
+                <span className="text-sm text-gray-500">
+                  {selectedCandidate.candidate.phone}
+                </span>
               </div>
               <div>
                 <button
                   className={`p-1 ${
-                    displayPhone
+                    selectedCandidate.candidate.phone
                       ? "text-gray-400 hover:text-gray-600"
                       : "text-gray-300 cursor-not-allowed"
                   }`}
-                  onClick={() => displayPhone && handleWhatsApp(displayPhone)}
-                  disabled={!displayPhone}
+                  onClick={() =>
+                    selectedCandidate.candidate.phone &&
+                    handleWhatsApp(selectedCandidate.candidate.phone)
+                  }
+                  disabled={!selectedCandidate.candidate.phone}
                 >
                   <FontAwesomeIcon icon={faWhatsapp} />
                 </button>
                 <button
                   className={`p-1 ${
-                    displayPhone
+                    selectedCandidate.candidate.phone
                       ? "text-gray-400 hover:text-gray-600"
                       : "text-gray-300 cursor-not-allowed"
                   }`}
-                  onClick={() => displayPhone && handleCopy(displayPhone)}
-                  disabled={!displayPhone}
+                  onClick={() =>
+                    selectedCandidate.candidate.phone &&
+                    handleCopy(selectedCandidate.candidate.phone)
+                  }
+                  disabled={!selectedCandidate.candidate.phone}
                 >
                   <Copy className="w-4 h-4" />
                 </button>
