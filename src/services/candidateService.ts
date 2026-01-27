@@ -61,6 +61,7 @@ export interface CandidateListItem {
     all_phone_numbers: string[];
   } | null;
   expected_ctc?: number;
+  job_score?: AnalysisResult;
 }
 
 export interface CandidateSearchResponse {

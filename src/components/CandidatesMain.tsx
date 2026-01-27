@@ -1615,12 +1615,14 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                             </div>
                           </div>
                           <div className="flex space-x-1">
-                            <div className="inline-block bg-[#DFFBE2] text-[#00A25E] px-4 py-1.5 rounded-lg text-xl font-medium">
-                              {candidate.id === selectedCandidate?.id &&
-                              currentAnalysis?.candidate_id === candidate.id
-                                ? `${currentAnalysis.candidate_match_score.score}`
-                                : "--%"}
-                            </div>
+                            {activeTab === "inbound" && (
+                              <div className="inline-block bg-[#DFFBE2] text-[#00A25E] px-4 py-1.5 rounded-lg text-xl font-medium">
+                                {candidate?.job_score?.candidate_match_score
+                                  .score
+                                  ? `${candidate.job_score.candidate_match_score.score}`
+                                  : "--%"}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
