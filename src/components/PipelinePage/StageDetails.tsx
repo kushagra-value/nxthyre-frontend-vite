@@ -709,12 +709,12 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     <details
                       key={index}
                       open={index === 0}
-                      className="bg-gray-50 rounded-md overflow-hidden"
+                      className="bg-gray-50 rounded-md overflow-hidden gap-2"
                     >
                       <summary className="px-3 py-4 font-medium cursor-pointer hover:bg-gray-100 text-gray-600">
                         {category}
                       </summary>
-                      <div className="px-2 py-4 border-t border-gray-200 text-gray-600">
+                      <div className="px-3 py-4 border-t border-gray-200 text-gray-600">
                         {description}
                       </div>
                     </details>
