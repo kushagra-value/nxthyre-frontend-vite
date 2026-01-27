@@ -631,7 +631,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   {jobScoreObj.candidate_match_score.score}
                 </span>
                 <div className="flex flex-col">
-                  <span className="text-black text-sm">
+                  <span className="text-black text-lg">
                     {jobScoreObj.candidate_match_score.label}
                   </span>
                 </div>
@@ -711,10 +711,10 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       open={index === 0}
                       className="bg-gray-50 rounded-md overflow-hidden"
                     >
-                      <summary className="p-2 font-medium cursor-pointer hover:bg-gray-100">
+                      <summary className="px-3 py-4 font-medium cursor-pointer hover:bg-gray-100 text-gray-600">
                         {category}
                       </summary>
-                      <div className="p-2 border-t border-gray-200">
+                      <div className="px-2 py-4 border-t border-gray-200 text-gray-600">
                         {description}
                       </div>
                     </details>
