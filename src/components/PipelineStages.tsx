@@ -352,7 +352,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     setRevealLoading(true);
     try {
       const prem = await handleReveal(pendingReveal.candidateId);
-      await deductCredits();
+      // await deductCredits();
       pendingReveal.onSuccess(prem);
     } catch (e) {
       // Error already handled in handleReveal
@@ -3424,7 +3424,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                                     );
                                                 },
                                               });
-                                              setShowRevealDialog(true);
+                                              // setShowRevealDialog(true);
+                                              handleConfirmReveal();
                                             }
                                           }}
                                           aria-label={`View ${candidate.candidate.full_name}'s resume`}
