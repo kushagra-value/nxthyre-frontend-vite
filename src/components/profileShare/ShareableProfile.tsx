@@ -145,33 +145,58 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto">
-          <div className="w-full flex justify-between items-center space-x-4 h-16">
-            <div className="flex items-center">
-              <button
-                onClick={handleBack}
-                className="flex items-center space-x-2 px-4 py-2 text-gray-500"
+      <div className="max-w-6xl bg-gray-50 mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="w-full flex justify-between items-center space-x-4 h-16">
+          <div className="flex items-center">
+            <button
+              onClick={handleBack}
+              className="flex items-center space-x-2 px-4 py-2 text-gray-500"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <ChevronLeft className="w-4 h-4 mr-1 text-gray-500" />
-                <ChevronLeft className="w-4 h-4 mr-2 text-gray-500" />
-                <span className="font-[400]">
-                  {shareOption === "full_profile"
-                    ? "Full Profile View"
-                    : "Anonymous Profile View"}
-                </span>
-              </button>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={handleCopyId}
-                className="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-                title="Copy ID"
-              >
-                <Copy className="w-4 h-4 text-gray-500" />
-                <span className="font-medium">Copy Profile ID</span>
-              </button>
-            </div>
+                <g clip-path="url(#clip0_4689_3183)">
+                  <path
+                    d="M12.94 4.6673C12.9405 4.75504 12.9237 4.84201 12.8905 4.92324C12.8573 5.00446 12.8085 5.07834 12.7467 5.14063L5.88667 12.0006L12.7467 18.8606C12.8559 18.9882 12.913 19.1522 12.9065 19.32C12.9 19.4878 12.8304 19.6469 12.7117 19.7657C12.593 19.8844 12.4338 19.954 12.266 19.9604C12.0983 19.9669 11.9342 19.9099 11.8067 19.8006L4 12.0006L11.8067 4.19397C11.9003 4.10223 12.0188 4.04011 12.1475 4.01537C12.2762 3.99064 12.4093 4.00438 12.5303 4.05489C12.6512 4.10539 12.7546 4.19042 12.8274 4.29934C12.9003 4.40827 12.9395 4.53625 12.94 4.6673Z"
+                    fill="#4B5563"
+                  />
+                  <path
+                    d="M20.274 4.6673C20.2745 4.75504 20.2577 4.84201 20.2245 4.92324C20.1913 5.00446 20.1424 5.07834 20.0807 5.14063L13.2207 12.0006L20.0807 18.8606C20.1899 18.9882 20.2469 19.1522 20.2405 19.32C20.234 19.4878 20.1644 19.6469 20.0457 19.7657C19.927 19.8844 19.7678 19.954 19.6 19.9604C19.4322 19.9669 19.2682 19.9099 19.1406 19.8006L11.334 12.0006L19.1406 4.19397C19.2342 4.10223 19.3528 4.04011 19.4815 4.01537C19.6102 3.99064 19.7433 4.00438 19.8642 4.05489C19.9852 4.10539 20.0885 4.19042 20.1614 4.29934C20.2343 4.40827 20.2734 4.53625 20.274 4.6673Z"
+                    fill="#4B5563"
+                  />
+                </g>
+                <defs>
+                  <clipPath id="clip0_4689_3183">
+                    <rect
+                      width="24"
+                      height="24"
+                      fill="white"
+                      transform="matrix(0 -1 1 0 0 24)"
+                    />
+                  </clipPath>
+                </defs>
+              </svg>
+
+              <span className="font-[400]">
+                {shareOption === "full_profile"
+                  ? "Full Profile View"
+                  : "Anonymous Profile View"}
+              </span>
+            </button>
+          </div>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={handleCopyId}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+              title="Copy ID"
+            >
+              <Copy className="w-4 h-4 text-gray-500" />
+              <span className="font-medium">Copy Profile ID</span>
+            </button>
           </div>
         </div>
       </div>
