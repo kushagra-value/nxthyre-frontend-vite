@@ -226,7 +226,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                   <h2 className="text-2xl font-semibold text-gray-600 mb-3">
                     {candidateData?.full_name || "N/A"}
                     {candidateData?.job_score?.candidate_match_score?.score && (
-                      <span className="bg-green-100 text-green-700 text-lg ml-3 p-2 rounded-lg border border-green-700">
+                      <span className="bg-green-50 text-green-500 text-lg ml-3 py-2 px-2.5 font-[400] rounded-lg border border-green-500">
                         {candidateData?.job_score?.candidate_match_score?.score}
                       </span>
                     )}
