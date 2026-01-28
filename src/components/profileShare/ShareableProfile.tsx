@@ -213,7 +213,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
         <div className="p-2">
           <div className="bg-white p-4 rounded-lg">
             {/* Profile Header */}
-            <div className="flex gap-24 mb-6">
+            <div className="flex gap-4 mb-6">
               <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
                 <img
                   src={
@@ -265,7 +265,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                   </div>
                 </div>
               </div>
-              <div className="flex-1">
+              <div className="flex">
                 <div className="mb-4">
                   <div className="flex flex-col items-start justify-start text-gray-600 mb-2">
                     <div className="flex items-center justify-left">
