@@ -145,7 +145,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="max-w-6xl bg-gray-50 mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-6xl bg-gray-50 mx-auto px-8">
         <div className="w-full flex justify-between items-center space-x-4 h-16">
           <div className="flex items-center">
             <button
@@ -191,11 +191,15 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
           <div className="flex items-center space-x-4">
             <button
               onClick={handleCopyId}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+              className="flex items-center space-x-2 px-8 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
               title="Copy ID"
             >
               <Copy className="w-4 h-4 text-gray-500" />
-              <span className="font-medium">Copy Profile ID</span>
+              <span className="font-medium">
+                {shareOption === "full_profile"
+                  ? "Copy Full Profile View"
+                  : "Copy Anonymous Profile View"}
+              </span>
             </button>
           </div>
         </div>
