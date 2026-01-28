@@ -64,6 +64,91 @@ export interface CandidateListItem {
   job_score?: AnalysisResult;
 }
 
+export interface ShareableProfileCandidate {
+  id: string;
+  full_name: string;
+  headline: string;
+  profile_summary: string;
+  location: string;
+  profile_picture_url: string | null;
+  status: string;
+  gender: string;
+  is_recently_promoted: boolean;
+  is_background_verified: boolean;
+  is_active: boolean;
+  is_prevetted: boolean;
+  notice_period_days: number | null;
+  current_salary: number | null;
+  application_type: string;
+  stage: string;
+  total_experience: number;
+  skills_data: {
+    skills_mentioned: {
+      skill: string;
+      number_of_endorsements: number;
+    }[];
+    endorsements: any[];
+  };
+  experience: {
+    job_title: string;
+    company: string;
+    location: string;
+    start_date: string | null;
+    end_date: string | null;
+    description: string;
+    is_current: boolean;
+  }[];
+  education: {
+    institution: string;
+    degree: string;
+    specialization: string;
+    is_top_tier: boolean;
+    start_date: string | null;
+    end_date: string | null;
+  }[];
+  certifications: any[];
+  recommendations: any[];
+  notes: any[];
+  current_stage_in_job: any | null;
+  ai_interview_report: any | null;
+  job_score: AnalysisResult;
+  premium_data_unlocked: boolean;
+  premium_data_availability: {
+    email: boolean;
+    resume_url: boolean;
+    resume_text: boolean;
+    linkedin_url: boolean;
+    portfolio_url: boolean;
+    phone_number: boolean;
+    dribble_username: boolean;
+    behance_username: boolean;
+    instagram_username: boolean;
+    pinterest_username: boolean;
+    twitter_username: boolean;
+    github_username: boolean;
+    all_emails: boolean;
+    all_phone_numbers: boolean;
+  };
+  premium_data: {
+    email: string;
+    phone: string;
+    linkedin_url: string;
+    github_url: string;
+    twitter_url: string | null;
+    resume_url: string;
+    resume_text: string | null;
+    portfolio_url: string;
+    dribble_username: string | null;
+    behance_username: string | null;
+    instagram_username: string | null;
+    pinterest_username: string | null;
+    all_emails: string[];
+    all_phone_numbers: string[];
+  };
+  email: string;
+  phone: string;
+}
+
 export interface CandidateSearchResponse {
   count: number;
   next: string | null;
@@ -700,7 +785,7 @@ class CandidateService {
 
   async getShareableProfile(
     candidateId: string,
-  ): Promise<ShareableProfileSensitiveCandidate> {
+  ): Promise<ShareableProfileCandidate> {
     try {
       const response = await apiClient.get(`/candidates/share/${candidateId}/`);
       return response.data;

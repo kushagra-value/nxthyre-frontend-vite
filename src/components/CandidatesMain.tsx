@@ -37,6 +37,7 @@ import {
 } from "../services/candidateService";
 import { showToast } from "../utils/toast";
 import { AnalysisResult } from "../services/candidateService";
+import ShareableProfile from "./profileShare/ShareableProfile";
 
 interface CandidatesMainProps {
   activeTab: string;
@@ -2164,7 +2165,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         className=" rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setSharePopupCandidateId(candidate.id);
+                          // setSharePopupCandidateId(candidate.id);
+                          <ShareableProfile
+                            candidateId={candidate.id}
+                            shareOption="anonymous_profile"
+                          />;
                         }}
                         title="Share Profile"
                       >

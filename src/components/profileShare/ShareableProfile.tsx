@@ -15,17 +15,20 @@ import { showToast } from "../../utils/toast";
 import { useNavigate } from "react-router-dom";
 import {
   candidateService,
-  ShareableProfileSensitiveCandidate,
+  // ShareableProfileSensitiveCandidate,
+  ShareableProfileCandidate,
   ReferenceData,
-  CandidateListItem,
+  // CandidateListItem,
 } from "../../services/candidateService";
 
 interface ShareableProfileProps {
   candidateId: string;
+  shareOption?: "anonymous_profile" | "full_profile";
   onBack?: () => void;
 }
 const ShareableProfile: React.FC<ShareableProfileProps> = ({
   candidateId,
+  shareOption,
   onBack,
 }) => {
   const [loading, setLoading] = useState(false);
@@ -34,17 +37,17 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
   const [referencesLoading, setReferencesLoading] = useState(false);
   const [referencesError, setReferencesError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const [anonymizedCandidate, setAnonymizedCandidate] =
-    useState<ShareableProfileSensitiveCandidate | null>(null);
+  const [candidateData, setCandidateData] =
+    useState<ShareableProfileCandidate | null>(null);
 
   useEffect(() => {
     const fetchShareableProfile = async () => {
       setLoading(true);
       try {
         const data = await candidateService.getShareableProfile(candidateId);
-        setAnonymizedCandidate(data);
+        setCandidateData(data);
 
-        console.log("Anonymized Candidate Data:", data);
+        console.log("Candidate Data:", data);
       } catch (err) {
         setError("Failed to load candidate profile");
       } finally {
@@ -119,7 +122,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
                 className="text-xl lg:text-2xl font-bold text-blue-600 cursor-pointer"
-                onClick={onBack}
+                onClick={handleGoToDashboard}
               >
                 <g clip-path="url(#clip0_1918_2679)">
                   <path
@@ -214,7 +217,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
               <div className="col-span-1 w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
                 <img
                   src={
-                    anonymizedCandidate?.profile_picture_url ||
+                    candidateData?.profile_picture_url ||
                     "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=200"
                   }
                   alt="Profile"
@@ -224,16 +227,28 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
               <div className=" col-span-2 flex-1">
                 <div className="mb-4">
                   <h2 className="text-4xl font-[400] text-gray-700 mb-2">
-                    {anonymizedCandidate?.full_name || "N/A"}
+                    {candidateData?.full_name || "N/A"}
                   </h2>
                   <div className="flex flex-col items-start justify-start text-gray-600 mb-2">
                     <div className="flex items-center justify-left">
                       <Mail className="w-4 h-4 mr-1" />
-                      <span>***********************</span>
+                      {shareOption === "full_profile" ? (
+                        <span>
+                          {candidateData?.premium_data?.email || "N/A"}
+                        </span>
+                      ) : (
+                        <span>a********@gmail.com</span>
+                      )}
                     </div>
                     <div className="flex items-center justify-left">
                       <Phone className="w-4 h-4 mr-1" />
-                      <span>************</span>
+                      {shareOption === "full_profile" ? (
+                        <span>
+                          {candidateData?.premium_data?.phone || "N/A"}
+                        </span>
+                      ) : (
+                        <span>+91 98******57</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -243,25 +258,25 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
               <div>
                 <div className="text-sm text-gray-500">Experience</div>
                 <div className="font-semibold text-gray-900">
-                  {anonymizedCandidate?.total_experience || "N/A"}
+                  {candidateData?.total_experience || "N/A"}
                 </div>
               </div>
-              <div>
+              {/* <div>
                 <div className="text-sm text-gray-500">Current Company</div>
                 <div className="font-semibold text-gray-900">
-                  {anonymizedCandidate?.time_in_current_company || "N/A"}
+                  {candidateData?.time_in_current_company || "N/A"}
                 </div>
-              </div>
+              </div> */}
               <div>
                 <div className="text-sm text-gray-500">Notice Period</div>
                 <div className="font-semibold text-gray-900">
-                  {anonymizedCandidate?.notice_period || "N/A"}
+                  {candidateData?.notice_period_days || "N/A"}
                 </div>
               </div>
               <div>
                 <div className="text-sm text-gray-500">Current Salary</div>
                 <div className="font-semibold text-gray-900">
-                  {anonymizedCandidate?.current_salary_formatted || "N/A"}
+                  {candidateData?.current_salary || "N/A"}
                 </div>
               </div>
             </div>
@@ -272,7 +287,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                 Profile Summary
               </h3>
               <p className="text-gray-700 leading-relaxed">
-                {anonymizedCandidate?.profile_summary}
+                {candidateData?.profile_summary}
               </p>
             </div>
 
@@ -286,7 +301,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                     Skills
                   </h3>
                   <div className="grid grid-cols-3 gap-2">
-                    {anonymizedCandidate?.skills
+                    {candidateData?.skills_data.skills_mentioned
                       .slice(0, 9)
                       .map((skill, index) => (
                         <div key={index} className="text-center">
@@ -306,7 +321,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                     Education
                   </h3>
                   <div className="space-y-4">
-                    {anonymizedCandidate?.education.map((edu, index) => (
+                    {candidateData?.education.map((edu, index) => (
                       <div key={index}>
                         <div className="font-medium text-gray-900">
                           {edu.degree} in {edu.specialization}
@@ -328,7 +343,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                     Certificates
                   </h3>
                   <div className="space-y-3">
-                    {anonymizedCandidate?.certifications.map((cert, index) => (
+                    {candidateData?.certifications.map((cert, index) => (
                       <div key={index}>
                         <div className="font-medium text-gray-900">
                           {cert.name}
@@ -355,7 +370,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                     Work Experience
                   </h3>
                   <div className="space-y-6">
-                    {anonymizedCandidate?.experience.map((exp, index) => (
+                    {candidateData?.experience.map((exp, index) => (
                       <div key={index}>
                         <div className="font-medium text-gray-900">
                           {exp.job_title}
@@ -461,21 +476,19 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                   Community Notes
                 </h3>
                 <div className="space-y-4">
-                  {anonymizedCandidate?.community_notes?.map(
-                    (note: any, index: any) => (
-                      <div key={index}>
-                        <div className="flex flex-col items-left justify-between mb-2">
-                          <div className="font-medium text-gray-500">
-                            {note.organization_name}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {new Date(note.posted_at).toLocaleDateString()}
-                          </div>
+                  {candidateData?.notes?.map((note: any, index: any) => (
+                    <div key={index}>
+                      <div className="flex flex-col items-left justify-between mb-2">
+                        <div className="font-medium text-gray-500">
+                          {note.organization_name}
                         </div>
-                        <p className="text-sm text-gray-700">{note.content}</p>
+                        <div className="text-sm text-gray-500">
+                          {new Date(note.posted_at).toLocaleDateString()}
+                        </div>
                       </div>
-                    ),
-                  )}
+                      <p className="text-sm text-gray-700">{note.content}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
