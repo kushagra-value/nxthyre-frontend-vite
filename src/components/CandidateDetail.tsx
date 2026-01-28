@@ -732,7 +732,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   const handleShareProfile = () => {
     window.open(
-      `/candidate-profiles/${detailedCandidate.candidate.id}`,
+      `/candidate-profiles/${detailedCandidate.candidate.id}/?job_id=${jobId}`,
       "_blank",
     );
   };

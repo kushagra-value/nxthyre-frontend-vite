@@ -25,11 +25,13 @@ import {
 
 interface ShareableProfileProps {
   candidateId: string;
+  jobId: string;
   shareOption?: "anonymous_profile" | "full_profile";
   onBack?: () => void;
 }
 const ShareableProfile: React.FC<ShareableProfileProps> = ({
   candidateId,
+  jobId,
   shareOption,
   onBack,
 }) => {
@@ -72,7 +74,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
     fetchReferences();
   }, [candidateId]);
 
-  const candidateProfileUrl = `https://app.nxthyre.com/candidate-profiles/${candidateId}`;
+  const candidateProfileUrl = `https://app.nxthyre.com/candidate-profiles/${candidateId}/?job_id=${jobId}`;
 
   const handleCopyId = () => {
     showToast.success("Candidate ID copied to clipboard");
