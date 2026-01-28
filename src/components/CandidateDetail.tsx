@@ -32,6 +32,8 @@ import {
   Sparkle,
 } from "lucide-react";
 
+import { useNavigate } from "react-router-dom";
+
 // Custom SVG Icon for IdCard
 const IdCard: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg
@@ -368,6 +370,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   let finalEmail = "a******@gmail.com";
   let finalPhone = "+91 95*****89";
+
+  // In your parent component:
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAnalysis = async () => {
@@ -2077,7 +2082,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
         <div className="text-xs text-gray-400 absolute right-6 top-4">
           <button
-            onClick={handleShareProfile}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(
+                `/candidate-profiles/${candidate.id}?job_id=${jobId}&shareOption=anonymous_profile`,
+              );
+            }}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             title="Share Profile"
           >
