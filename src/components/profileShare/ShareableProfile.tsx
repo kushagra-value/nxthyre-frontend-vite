@@ -215,7 +215,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
         <div className="p-2">
           <div className="bg-white p-8 rounded-xl">
             {/* Profile Header */}
-            <div className="flex gap-8 mb-6">
+            <div className="flex gap-8">
               <div className="w-28 h-28 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
                 <img
                   src={
@@ -277,7 +277,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
               </div>
               <div className="flex">
                 <div className="">
-                  <div className="flex flex-col items-end justify-start text-gray-500 gap-2">
+                  <div className="flex flex-col items-end justify-start text-gray-500 gap-3">
                     <div className="flex items-center justify-left gap-2">
                       {shareOption === "full_profile" ? (
                         <span>
@@ -304,112 +304,32 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
             </div>
           </div>
 
-          {/* Profile Summary */}
-          <div className="mb-8 pb-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">
-              Profile Summary
-            </h3>
-            <p className="text-gray-700 leading-relaxed">
-              {candidateData?.profile_summary}
-            </p>
+          {/* Profile Match Description or Profile Summary */}
+          <div className="bg-white p-8 rounded-xl mt-6">
+            {shareOption === "anonymous_profile" ? (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-600 mb-3">
+                  Profile Summary
+                </h3>
+                <p className="text-gray-500 leading-relaxed">
+                  {candidateData?.profile_summary}
+                </p>
+              </div>
+            ) : (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-600 mb-3">
+                  Profile Match Description
+                </h3>
+                <p className="text-gray-500 leading-relaxed">
+                  {candidateData?.job_score?.candidate_match_score
+                    ?.description || "N/A"}
+                </p>
+              </div>
+            )}
           </div>
 
-          {/* Two Column Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 ">
-            {/* Left Column */}
-            <div className="space-y-6">
-              {/* Skills */}
-              <div>
-                <h3 className="text-lg font-semibold text-blue-600 mb-4">
-                  Skills
-                </h3>
-                <div className="grid grid-cols-3 gap-2">
-                  {candidateData?.skills_data.skills_mentioned
-                    .slice(0, 9)
-                    .map((skill, index) => (
-                      <div key={index} className="text-center">
-                        <div className="bg-gray-100 rounded-lg py-2 px-3 mb-1">
-                          <div className="text-sm font-[400] text-gray-700">
-                            {skill.skill}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-
-              {/* Education */}
-              <div>
-                <h3 className="text-lg font-semibold text-blue-600 mb-4">
-                  Education
-                </h3>
-                <div className="space-y-4">
-                  {candidateData?.education.map((edu, index) => (
-                    <div key={index}>
-                      <div className="font-medium text-gray-900">
-                        {edu.degree} in {edu.specialization}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        {edu.institution}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {edu.start_date} - {edu.end_date}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Certificates */}
-              <div>
-                <h3 className="text-lg font-semibold text-blue-600 mb-4">
-                  Certificates
-                </h3>
-                <div className="space-y-3">
-                  {candidateData?.certifications.map((cert, index) => (
-                    <div key={index}>
-                      <div className="font-medium text-gray-900">
-                        {cert.name}
-                      </div>
-                      <div className="text-sm text-gray-600">{cert.issuer}</div>
-                      <div className="text-sm text-gray-500">
-                        Issued {cert.issued_date}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* References */}
-            </div>
-
-            {/* Right Column */}
-            <div className="ml-8 pl-8 border-l border-gray-200 col-span-2 space-y-6">
-              {/* Work Experience */}
-              <div>
-                <h3 className="text-lg font-semibold text-blue-600 mb-4">
-                  Work Experience
-                </h3>
-                <div className="space-y-6">
-                  {candidateData?.experience.map((exp, index) => (
-                    <div key={index}>
-                      <div className="font-medium text-gray-900">
-                        {exp.job_title}
-                      </div>
-                      <div className="text-sm text-gray-600 mb-1">
-                        ************* | {exp.location}
-                      </div>
-                      <div className="text-sm text-gray-500 mb-2">
-                        {exp.start_date} - {exp.end_date || "Present"}
-                      </div>
-                      <p className="text-sm text-gray-700">{exp.description}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
           <div className="pt-6 mt-6 border-t border-gray-200 w-full grid grid-cols-1 lg:grid-cols-3">
+            {/* References Section */}
             <div className="mr-8 col-span-1">
               <h3 className="text-lg font-semibold text-blue-600 mb-4">
                 References
@@ -488,8 +408,8 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                 )}
               </div>
             </div>
-            {/* Community Notes */}
 
+            {/* Community Notes Section */}
             <div className="ml-8 pl-8 col-span-2">
               <h3 className="text-lg font-semibold text-blue-600 mb-4">
                 Community Notes
