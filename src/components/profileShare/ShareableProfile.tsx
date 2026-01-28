@@ -216,7 +216,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
           <div className="bg-white p-8 rounded-xl">
             {/* Profile Header */}
             <div className="flex gap-8 mb-6">
-              <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+              <div className="w-28 h-28 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
                 <img
                   src={
                     candidateData?.profile_picture_url ||
@@ -228,31 +228,31 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
               </div>
               <div className="flex-1">
                 <div className="mb-4">
-                  <h2 className="text-2xl font-semibold text-gray-600 mb-2">
+                  <h2 className="text-2xl font-semibold text-gray-600 mb-3">
                     {candidateData?.full_name || "N/A"}
                   </h2>
-                  <h4 className="text-lg font-[400] text-gray-500 mb-2">
+                  <h4 className="text-lg font-[400] text-gray-500 mb-3">
                     {candidateData?.headline}
                   </h4>
-                  <h4 className="text-lg font-[400] text-gray-400 mb-2">
+                  <h4 className="text-lg font-[400] text-gray-400 mb-3">
                     {candidateData?.location}
                   </h4>
                   <div className="flex gap-12 items-center">
-                    <div className="flex gap-1">
+                    <div className="flex gap-2 items-center">
                       {/* <div className="text-sm text-gray-500">Experience</div> */}
                       <Briefcase className="w-4 h-4 text-gray-500" />
                       <div className="font-[400] text-gray-500">
                         {candidateData?.total_experience || "N/A"}
                       </div>
                     </div>
-                    <div className="flex gap-1">
+                    <div className="flex gap-2 items-center">
                       {/* <div className="text-sm text-gray-500">Notice Period</div> */}
                       <CalendarSearch className="w-4 h-4 text-gray-500" />
                       <div className="font-[400] text-gray-500">
                         {candidateData?.notice_period_days || "N/A"}
                       </div>
                     </div>
-                    <div className="flex gap-1">
+                    <div className="flex gap-2 items-center">
                       {/* <div className="text-sm text-gray-500">Current Salary</div> */}
                       <svg
                         width="17"
