@@ -213,20 +213,18 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
         <div className="p-2">
           <div className="bg-white p-4 rounded-lg">
             {/* Profile Header */}
-            <div className="grid grid-cols-6 mb-6">
-              <div className="col-span-1 w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-                <div>
-                  <img
-                    src={
-                      candidateData?.profile_picture_url ||
-                      "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=200"
-                    }
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+            <div className="flex gap-24 mb-6">
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                <img
+                  src={
+                    candidateData?.profile_picture_url ||
+                    "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=200"
+                  }
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <div className=" col-span-3 flex-1">
+              <div className="flex-1">
                 <div className="mb-4">
                   <h2 className="text-4xl font-[400] text-gray-700 mb-2">
                     {candidateData?.full_name || "N/A"}
@@ -237,33 +235,37 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                   <h4 className="text-xl font-[400] text-gray-400 mb-2">
                     {candidateData?.location}
                   </h4>
-                  <div>
-                    <div className="text-sm text-gray-500">Experience</div>
-                    <div className="font-semibold text-gray-900">
-                      {candidateData?.total_experience || "N/A"}
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <div className="text-sm text-gray-500">Experience</div>
+                      <div className="font-semibold text-gray-900">
+                        {candidateData?.total_experience || "N/A"}
+                      </div>
                     </div>
-                  </div>
-                  {/* <div>
-                        <div className="text-sm text-gray-500">Current Company</div>
-                        <div className="font-semibold text-gray-900">
-                          {candidateData?.time_in_current_company || "N/A"}
-                        </div>
-                      </div> */}
-                  <div>
-                    <div className="text-sm text-gray-500">Notice Period</div>
-                    <div className="font-semibold text-gray-900">
-                      {candidateData?.notice_period_days || "N/A"}
+                    {/* <div>
+                          <div className="text-sm text-gray-500">Current Company</div>
+                          <div className="font-semibold text-gray-900">
+                            {candidateData?.time_in_current_company || "N/A"}
+                          </div>
+                        </div> */}
+                    <div>
+                      <div className="text-sm text-gray-500">Notice Period</div>
+                      <div className="font-semibold text-gray-900">
+                        {candidateData?.notice_period_days || "N/A"}
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-500">Current Salary</div>
-                    <div className="font-semibold text-gray-900">
-                      {candidateData?.current_salary || "N/A"}
+                    <div>
+                      <div className="text-sm text-gray-500">
+                        Current Salary
+                      </div>
+                      <div className="font-semibold text-gray-900">
+                        {candidateData?.current_salary || "N/A"}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className=" col-span-2 flex-1">
+              <div className="flex-1">
                 <div className="mb-4">
                   <div className="flex flex-col items-start justify-start text-gray-600 mb-2">
                     <div className="flex items-center justify-left">
