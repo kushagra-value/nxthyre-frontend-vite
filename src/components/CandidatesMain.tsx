@@ -1285,12 +1285,12 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 );
               }
 
-              const handleShareProfile = () => {
-                window.open(
-                  `/candidate-profiles/${candidate.id}/?job_id=${jobId}`,
-                  "_blank",
-                );
-              };
+              // const handleShareProfile = () => {
+              //   window.open(
+              //     `/candidate-profiles/${candidate.id}/?job_id=${jobId}`,
+              //     "_blank",
+              //   );
+              // };
 
               return (
                 <div
@@ -2174,13 +2174,13 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                           e.stopPropagation();
                           // setSharePopupCandidateId(candidate.id);
 
-                          // <ShareableProfile
-                          //   candidateId={candidate.id}
-                          //   jobId={jobId}
-                          //   shareOption="anonymous_profile"
-                          // />;
+                          <ShareableProfile
+                            candidateId={candidate.id}
+                            jobId={jobId}
+                            shareOption="anonymous_profile"
+                          />;
 
-                          handleShareProfile();
+                          // handleShareProfile();
                         }}
                         title="Share Profile"
                       >

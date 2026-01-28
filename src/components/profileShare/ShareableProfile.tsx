@@ -48,7 +48,10 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
     const fetchShareableProfile = async () => {
       setLoading(true);
       try {
-        const data = await candidateService.getShareableProfile(candidateId);
+        const data = await candidateService.getShareableProfile(
+          candidateId,
+          jobId,
+        );
         setCandidateData(data);
 
         console.log("Candidate Data:", data);

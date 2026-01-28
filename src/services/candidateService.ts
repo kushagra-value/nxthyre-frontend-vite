@@ -785,9 +785,12 @@ class CandidateService {
 
   async getShareableProfile(
     candidateId: string,
+    jobId: string,
   ): Promise<ShareableProfileCandidate> {
     try {
-      const response = await apiClient.get(`/candidates/share/${candidateId}/`);
+      const response = await apiClient.get(
+        `/candidates/share/${candidateId}/?job_id=${jobId}`,
+      );
       return response.data;
     } catch (error: any) {
       throw new Error(
