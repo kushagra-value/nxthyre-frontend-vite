@@ -39,6 +39,8 @@ import { showToast } from "../utils/toast";
 import { AnalysisResult } from "../services/candidateService";
 import ShareableProfile from "./profileShare/ShareableProfile";
 
+import { useNavigate } from "react-router-dom";
+
 interface CandidatesMainProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -247,6 +249,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   // Local state for search input
   const [localSearchTerm, setLocalSearchTerm] = useState("");
@@ -2179,11 +2183,18 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         //   e.stopPropagation();
                         //   // setSharePopupCandidateId(candidate.id);
                         // }}
+
+                        // onClick={(e) => {
+                        //   e.stopPropagation();
+                        //   setShareCandidateId(candidate.id);
+                        //   setShareJobId(jobId);
+                        //   setShowShareProfile(true);
+                        // }}
                         onClick={(e) => {
                           e.stopPropagation();
-                          setShareCandidateId(candidate.id);
-                          setShareJobId(jobId);
-                          setShowShareProfile(true);
+                          navigate(
+                            `/candidate-profiles/${candidate.id}?job_id=${jobId}&shareOption=anonymous_profile`,
+                          );
                         }}
                         title="Share Profile"
                       >
@@ -2504,7 +2515,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       {/* // In the parent component's return JSX: */}
       {showShareProfile && shareCandidateId && shareJobId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-lg max-w-6xl w-full h-full overflow-auto">
+          <div className="bg-white rounded-lg shadow-lg w-full h-full overflow-auto">
             <button
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
               onClick={() => setShowShareProfile(false)}

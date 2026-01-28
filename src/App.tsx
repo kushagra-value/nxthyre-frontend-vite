@@ -1345,6 +1345,10 @@ function MainApp() {
           }
         />
         <Route
+          path="/candidate-profiles/:candidateId"
+          element={<ShareableProfile />}
+        />
+        <Route
           path="/linkedin-auth"
           element={
             <LinkedInAuth

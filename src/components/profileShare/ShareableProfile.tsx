@@ -14,7 +14,7 @@ import {
   CalendarSearch,
 } from "lucide-react";
 import { showToast } from "../../utils/toast";
-import { useNavigate } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import {
   candidateService,
   // ShareableProfileSensitiveCandidate,
@@ -24,25 +24,42 @@ import {
 } from "../../services/candidateService";
 
 interface ShareableProfileProps {
-  candidateId: string;
-  jobId: string;
+  candidateId?: string;
+  jobId?: string;
   shareOption?: "anonymous_profile" | "full_profile";
   onBack?: () => void;
 }
 const ShareableProfile: React.FC<ShareableProfileProps> = ({
-  candidateId,
-  jobId,
-  shareOption,
-  onBack,
+  candidateId: propCandidateId,
+  jobId: propJobId,
+  shareOption: propShareOption,
+  onBack: propOnBack,
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [references, setReferences] = useState<ReferenceData[]>([]);
   const [referencesLoading, setReferencesLoading] = useState(false);
   const [referencesError, setReferencesError] = useState<string | null>(null);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [candidateData, setCandidateData] =
     useState<ShareableProfileCandidate | null>(null);
+
+  const { candidateId: paramCandidateId } = useParams<{
+    candidateId: string;
+  }>();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  // Prioritize URL params over props (for routed usage)
+  const candidateId = paramCandidateId || propCandidateId || "";
+  const jobId = searchParams.get("job_id") || propJobId || "";
+  const shareOption =
+    (searchParams.get("shareOption") as
+      | "anonymous_profile"
+      | "full_profile"
+      | undefined) ||
+    propShareOption ||
+    "anonymous_profile"; // Default if not provided
 
   useEffect(() => {
     const fetchShareableProfile = async () => {
@@ -75,7 +92,16 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
     };
     fetchShareableProfile();
     fetchReferences();
-  }, [candidateId]);
+  }, [candidateId, jobId]);
+
+  // For back navigation (if needed), use history back instead of onBack
+  const handleBack = () => {
+    if (propOnBack) {
+      propOnBack(); // For modal compatibility if you keep both modes
+    } else {
+      navigate(-1); // Go back in history for routed mode
+    }
+  };
 
   const candidateProfileUrl = `https://app.nxthyre.com/candidate-profiles/${candidateId}/?job_id=${jobId}`;
 
@@ -129,7 +155,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
                 className="text-xl lg:text-2xl font-bold text-blue-600 cursor-pointer"
-                onClick={onBack}
+                onClick={handleBack}
               >
                 <g clip-path="url(#clip0_1918_2679)">
                   <path
