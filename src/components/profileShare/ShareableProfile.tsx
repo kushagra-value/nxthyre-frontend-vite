@@ -238,27 +238,28 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                     </h4>
                     <div>
                       <div className="text-sm text-gray-500">Experience</div>
-                        <div className="font-semibold text-gray-900">
-                          {candidateData?.total_experience || "N/A"}
-                        </div>
+                      <div className="font-semibold text-gray-900">
+                        {candidateData?.total_experience || "N/A"}
                       </div>
-                      {/* <div>
+                    </div>
+                    {/* <div>
                         <div className="text-sm text-gray-500">Current Company</div>
                         <div className="font-semibold text-gray-900">
                           {candidateData?.time_in_current_company || "N/A"}
                         </div>
                       </div> */}
-                      <div>
-                        <div className="text-sm text-gray-500">Notice Period</div>
-                        <div className="font-semibold text-gray-900">
-                          {candidateData?.notice_period_days || "N/A"}
-                        </div>
+                    <div>
+                      <div className="text-sm text-gray-500">Notice Period</div>
+                      <div className="font-semibold text-gray-900">
+                        {candidateData?.notice_period_days || "N/A"}
                       </div>
-                      <div>
-                        <div className="text-sm text-gray-500">Current Salary</div>
-                        <div className="font-semibold text-gray-900">
-                          {candidateData?.current_salary || "N/A"}
-                        </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-500">
+                        Current Salary
+                      </div>
+                      <div className="font-semibold text-gray-900">
+                        {candidateData?.current_salary || "N/A"}
                       </div>
                     </div>
                   </div>
