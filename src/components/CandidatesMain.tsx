@@ -270,6 +270,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     expected_ctc: "",
   });
 
+  // Inside your parent component:
+  const [showShareProfile, setShowShareProfile] = useState(false);
+  const [shareCandidateId, setShareCandidateId] = useState<string | null>(null);
+  const [shareJobId, setShareJobId] = useState<string | null>(null);
+
   const tabs = [
     {
       id: "outbound",
@@ -834,7 +839,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl  h-fit">
+    <div className="bg-white rounded-xl h-fit">
       <div className="border-b border-gray-200">
         <div className="flex items-center justify-between px-4 pt-4 pb-0">
           <div className="flex space-x-4 2xl:space-x-6 overflow-x-auto">
@@ -2170,17 +2175,15 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         })()}
                       <button
                         className=" rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        // onClick={(e) => {
+                        //   e.stopPropagation();
+                        //   // setSharePopupCandidateId(candidate.id);
+                        // }}
                         onClick={(e) => {
                           e.stopPropagation();
-                          // setSharePopupCandidateId(candidate.id);
-
-                          <ShareableProfile
-                            candidateId={candidate.id}
-                            jobId={jobId}
-                            shareOption="anonymous_profile"
-                          />;
-
-                          // handleShareProfile();
+                          setShareCandidateId(candidate.id);
+                          setShareJobId(jobId);
+                          setShowShareProfile(true);
                         }}
                         title="Share Profile"
                       >
@@ -2494,6 +2497,40 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* // In the parent component's return JSX: */}
+      {showShareProfile && shareCandidateId && shareJobId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-6xl w-full h-full overflow-auto">
+            <button
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              onClick={() => setShowShareProfile(false)}
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M6 18L18 6M6 6L18 18"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+            <ShareableProfile
+              candidateId={shareCandidateId}
+              jobId={shareJobId}
+              shareOption="anonymous_profile"
+              onBack={() => setShowShareProfile(false)} // Optional: pass a callback to close from inside
+            />
           </div>
         </div>
       )}

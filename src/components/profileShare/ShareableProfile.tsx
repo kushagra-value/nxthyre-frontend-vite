@@ -129,7 +129,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
                 className="text-xl lg:text-2xl font-bold text-blue-600 cursor-pointer"
-                onClick={handleGoToDashboard}
+                onClick={onBack}
               >
                 <g clip-path="url(#clip0_1918_2679)">
                   <path
