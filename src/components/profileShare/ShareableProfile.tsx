@@ -211,72 +211,83 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="p-8">
-            {/* Profile Header */}
-            <div className="grid grid-cols-4 gap-24 mb-6 ">
-              <div className="col-span-1 w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-                <img
-                  src={
-                    candidateData?.profile_picture_url ||
-                    "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=200"
-                  }
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className=" col-span-2 flex-1">
-                <div className="mb-4">
-                  <h2 className="text-4xl font-[400] text-gray-700 mb-2">
-                    {candidateData?.full_name || "N/A"}
-                  </h2>
-                  <div className="flex flex-col items-start justify-start text-gray-600 mb-2">
-                    <div className="flex items-center justify-left">
-                      <Mail className="w-4 h-4 mr-1" />
-                      {shareOption === "full_profile" ? (
-                        <span>
-                          {candidateData?.premium_data?.email || "N/A"}
-                        </span>
-                      ) : (
-                        <span>a********@gmail.com</span>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-left">
-                      <Phone className="w-4 h-4 mr-1" />
-                      {shareOption === "full_profile" ? (
-                        <span>
-                          {candidateData?.premium_data?.phone || "N/A"}
-                        </span>
-                      ) : (
-                        <span>+91 98******57</span>
-                      )}
+          <div className="p-8 bg-blue-100 ">
+            <div className="bg-white">
+              {/* Profile Header */}
+              <div className="grid grid-cols-6 gap-4 mb-6 ">
+                <div className="col-span-1 w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+                  <img
+                    src={
+                      candidateData?.profile_picture_url ||
+                      "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=200"
+                    }
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className=" col-span-3 flex-1">
+                  <div className="mb-4">
+                    <h2 className="text-4xl font-[400] text-gray-700 mb-2">
+                      {candidateData?.full_name || "N/A"}
+                    </h2>
+                    <h4 className="text-xl font-[400] text-gray-500 mb-2">
+                      {candidateData?.headline}
+                    </h4>
+                    <h4 className="text-xl font-[400] text-gray-400 mb-2">
+                      {candidateData?.location}
+                    </h4>
+                    <div>
+                      <div className="text-sm text-gray-500">Experience</div>
+                        <div className="font-semibold text-gray-900">
+                          {candidateData?.total_experience || "N/A"}
+                        </div>
+                      </div>
+                      {/* <div>
+                        <div className="text-sm text-gray-500">Current Company</div>
+                        <div className="font-semibold text-gray-900">
+                          {candidateData?.time_in_current_company || "N/A"}
+                        </div>
+                      </div> */}
+                      <div>
+                        <div className="text-sm text-gray-500">Notice Period</div>
+                        <div className="font-semibold text-gray-900">
+                          {candidateData?.notice_period_days || "N/A"}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-500">Current Salary</div>
+                        <div className="font-semibold text-gray-900">
+                          {candidateData?.current_salary || "N/A"}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            <div className="grid grid-cols-4 gap-24 pb-6 mb-6 border-b border-gray-200">
-              <div>
-                <div className="text-sm text-gray-500">Experience</div>
-                <div className="font-semibold text-gray-900">
-                  {candidateData?.total_experience || "N/A"}
-                </div>
-              </div>
-              {/* <div>
-                <div className="text-sm text-gray-500">Current Company</div>
-                <div className="font-semibold text-gray-900">
-                  {candidateData?.time_in_current_company || "N/A"}
-                </div>
-              </div> */}
-              <div>
-                <div className="text-sm text-gray-500">Notice Period</div>
-                <div className="font-semibold text-gray-900">
-                  {candidateData?.notice_period_days || "N/A"}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">Current Salary</div>
-                <div className="font-semibold text-gray-900">
-                  {candidateData?.current_salary || "N/A"}
+                <div className=" col-span-2 flex-1">
+                  <div className="mb-4">
+                    <div className="flex flex-col items-start justify-start text-gray-600 mb-2">
+                      <div className="flex items-center justify-left">
+                        {shareOption === "full_profile" ? (
+                          <span>
+                            {candidateData?.premium_data?.email || "N/A"}
+                          </span>
+                        ) : (
+                          <span>a********@gmail.com</span>
+                        )}
+                        <Mail className="w-4 h-4 mr-1" />
+                      </div>
+                      <div className="flex items-center justify-left">
+                        {shareOption === "full_profile" ? (
+                          <span>
+                            {candidateData?.premium_data?.phone || "N/A"}
+                          </span>
+                        ) : (
+                          <span>+91 98******57</span>
+                        )}
+                        <Phone className="w-4 h-4 mr-1" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
