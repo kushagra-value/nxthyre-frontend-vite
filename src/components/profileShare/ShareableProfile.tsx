@@ -209,20 +209,22 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
       </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="p-8 bg-blue-50 ">
-          <div className="bg-white">
+      <div className="max-w-6xl bg-gray-50 mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="p-2">
+          <div className="bg-white p-4 rounded-lg">
             {/* Profile Header */}
-            <div className="grid grid-cols-6 gap-4 mb-6 ">
-              <div className="col-span-1 w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-                <img
-                  src={
-                    candidateData?.profile_picture_url ||
-                    "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=200"
-                  }
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
+            <div className="grid grid-cols-6 mb-6">
+              <div className="col-span-1 w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                <div>
+                  <img
+                    src={
+                      candidateData?.profile_picture_url ||
+                      "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=200"
+                    }
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </div>
               <div className=" col-span-3 flex-1">
                 <div className="mb-4">
