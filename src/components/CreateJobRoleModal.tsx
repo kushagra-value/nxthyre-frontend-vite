@@ -50,7 +50,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [formData, setFormData] = useState({
-    allowInbound: false,
+    allowInbound: true,
     keepPrivate: true,
     shareExternally: false,
     title: "",
@@ -884,8 +884,8 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
               <div className="flex flex-col justify-center gap-2 items-center">
                 <span
                   className={`ml-2 text-sm ${currentStep >= 1
-                      ? "text-blue-500 font-medium"
-                      : "text-gray-500"
+                    ? "text-blue-500 font-medium"
+                    : "text-gray-500"
                     }`}
                 >
                   Basic Info
@@ -898,8 +898,8 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
               <div className="flex flex-col justify-center gap-2 items-center">
                 <span
                   className={`ml-2 text-sm ${currentStep >= 2
-                      ? "text-blue-500 font-medium"
-                      : "text-gray-500"
+                    ? "text-blue-500 font-medium"
+                    : "text-gray-500"
                     }`}
                 >
                   Update and Refine JD
@@ -1412,8 +1412,8 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
                         }))
                       }
                       className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-md font-[400] transition-all duration-200 ${formData.confidential
-                          ? "bg-[#ECF1FF] text-blue-600"
-                          : "bg-[#F0F0F0] text-gray-400"
+                        ? "bg-[#ECF1FF] text-blue-600"
+                        : "bg-[#F0F0F0] text-gray-400"
                         }`}
                       disabled={isLoading}
                     >
@@ -1450,8 +1450,8 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
                         }))
                       }
                       className={`px-3 py-1 text-sm rounded-md transition-colors ${formData.uploadType === "paste"
-                          ? "bg-white text-blue-600 shadow-sm"
-                          : "text-gray-600"
+                        ? "bg-white text-blue-600 shadow-sm"
+                        : "text-gray-600"
                         }`}
                       disabled={isLoading}
                     >
@@ -1466,8 +1466,8 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
                         }))
                       }
                       className={`px-3 py-1 text-sm rounded-md transition-colors ${formData.uploadType === "upload"
-                          ? "bg-white text-blue-600 shadow-sm"
-                          : "text-gray-600"
+                        ? "bg-white text-blue-600 shadow-sm"
+                        : "text-gray-600"
                         }`}
                       disabled={isLoading}
                     >

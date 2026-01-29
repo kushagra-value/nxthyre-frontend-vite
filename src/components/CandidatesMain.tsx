@@ -1088,8 +1088,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 <button
                   onClick={() => setShowSourceDropdown(prev => !prev)}
                   className={`flex items-center gap-2.5 px-4 py-2.5 rounded-lg border transition-colors hover:border-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${selectedSource
-                      ? "border-blue-400 bg-blue-50 text-blue-600"
-                      : "border-gray-300 bg-white text-gray-400"
+                    ? "border-blue-400 bg-blue-50 text-blue-600"
+                    : "border-gray-300 bg-white text-gray-400"
                     }`}
                 >
                   {selectedSource ? (
@@ -1454,26 +1454,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   {sharePopupCandidateId === candidate.id && (
                     <div className="absolute inset-0 bg-black bg-opacity-50 z-20 rounded-lg pointer-events-none transition-all duration-300"></div>
                   )}
-                  {candidate.premium_data_unlocked && (
-                    <button
-                      className="absolute top-0 left-0 z-10 "
-                      title="Information revealed"
-                    >
-                      <svg
-                        width="21"
-                        height="18"
-                        viewBox="0 0 21 18"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className=""
-                      >
-                        <path
-                          d="M0.5 17.5L0.5 4.5C0.5 2.29086 2.29086 0.5 4.5 0.5L20.5 0.5L10.5 9L0.5 17.5Z"
-                          fill="#3B82F6"
-                        />
-                      </svg>
-                    </button>
-                  )}
+
                   <div className="relative flex px-4 items-center space-x-6">
                     <input
                       type="checkbox"
