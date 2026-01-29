@@ -234,7 +234,7 @@ export default function ProjectCard({
                 onClick={(e) => {
                   e.stopPropagation();
                   onCopyJobID?.(jobId);
-                  setIsCopied(true);
+                  setIsCopied(false);
                 }}
                 className={`w-4 h-4 ml-1 text-green-500`}
               />
