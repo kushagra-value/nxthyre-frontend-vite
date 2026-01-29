@@ -345,7 +345,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
             )}
           </div>
 
-          {/* {effectiveResumeUrl && (
+          {effectiveResumeUrl && (
             <div className="bg-white p-8 rounded-xl mt-6">
               <h3 className="text-lg font-semibold text-gray-600 mb-3">
                 Resume
@@ -357,37 +357,6 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                 width="100%"
                 height="900px"
                 className="border border-gray-200 rounded-lg min-h-[800px]"
-              />
-
-              
-              <p className="mt-2 text-sm text-gray-500">
-                If the resume doesn't display,{" "}
-                <a
-                  href={effectiveResumeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 underline"
-                >
-                  open it in a new tab
-                </a>
-                .
-              </p>
-            </div>
-          )} */}
-
-          {effectiveResumeUrl && (
-            <div className="bg-white p-8 rounded-xl mt-6">
-              <h3 className="text-lg font-semibold text-gray-600 mb-3">
-                Resume
-              </h3>
-
-              <iframe
-                src={`https://docs.google.com/gview?url=${encodeURIComponent(effectiveResumeUrl)}&embedded=true`}
-                width="100%"
-                height="900px"
-                className="border border-gray-200 rounded-lg min-h-[800px]"
-                title="Candidate Resume"
-                allowFullScreen
               />
 
               <p className="mt-2 text-sm text-gray-500">
