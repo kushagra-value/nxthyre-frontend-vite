@@ -1306,7 +1306,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   key={candidate.id}
                   className={`relative pt-5 cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2  ${
                     selectedCandidate?.id === candidate.id
-                      ? "bg-white border-l-4 border-blue-500 shadow-lg shadow-gray-500"
+                      ? "bg-white border-l-4 border-blue-500 shadow-[0_0_20px_0_rgba(0,0,0,0.15),_0_0_8px_0_rgba(0,0,0,0.1)]"
                       : "border border-gray-200"
                   }`}
                   onClick={() => handleCandidateClick(candidate)}
