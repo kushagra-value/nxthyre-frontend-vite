@@ -1684,7 +1684,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                       <p className="text-[#4B5563]">--LPA</p>
                     </div>
                   </div>
-                  <div className="p-3 pl-12 mt-5 bg-[#F5F9FB] flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
+                  <div className="p-3 pl-12 mt-5 bg-white flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg border-t border-gray-200">
                     <div className="flex items-center space-x-3">
                       {candidate.premium_data_availability
                         ?.pinterest_username &&
@@ -2245,32 +2245,6 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                       </button>
                     </div>
                     <div className="flex items-center">
-                      {(() => {
-                        const unContactedStage = pipelineStages.find(
-                          (stage) => stage.slug === "uncontacted",
-                        );
-                        return (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (unContactedStage) {
-                                handleSaveToPipeline(
-                                  candidate.id,
-                                  unContactedStage.id,
-                                );
-                              } else {
-                                showToast.error("Uncontacted stage not found");
-                              }
-                            }}
-                            className="mr-2 bg-[#0F47F2] text-white font-medium px-6 py-2 rounded-lg transition-colors"
-                            aria-label="Add Candidate to prospect"
-                            title="Add to Prospect"
-                          >
-                            Add to Prospect
-                          </button>
-                        );
-                      })()}
-
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -2365,6 +2339,32 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                           />
                         </svg>
                       </button>
+
+                      {(() => {
+                        const unContactedStage = pipelineStages.find(
+                          (stage) => stage.slug === "uncontacted",
+                        );
+                        return (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (unContactedStage) {
+                                handleSaveToPipeline(
+                                  candidate.id,
+                                  unContactedStage.id,
+                                );
+                              } else {
+                                showToast.error("Uncontacted stage not found");
+                              }
+                            }}
+                            className="mr-2 bg-[#0F47F2] text-white font-medium px-6 py-2 rounded-lg transition-colors"
+                            aria-label="Add Candidate to prospect"
+                            title="Add to Prospect"
+                          >
+                            Add to Prospect
+                          </button>
+                        );
+                      })()}
                     </div>
                   </div>
                   {sharePopupCandidateId === candidate.id && (

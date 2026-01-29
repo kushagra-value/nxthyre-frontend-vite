@@ -2525,7 +2525,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             key={candidate.id}
                             className={`relative pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
                               selectedCandidate?.id === candidate.id
-                                ? "border-l-4 border-blue-500"
+                                ? "bg-white border-l-4 border-blue-500 shadow-[0_0_20px_0_rgba(0,0,0,0.15),_0_0_8px_0_rgba(0,0,0,0.1)]"
                                 : "border border-gray-200"
                             }`}
                             onClick={() => handleCandidateSelect(candidate)}
@@ -2925,7 +2925,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 <p className="text-[#4B5563]">--</p>
                               </div>
                             </div>
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center border-t border-gray-200 mt-2 pt-4">
                               {/* Premium data icons */}
                               <div className="p-3 pl-12 mt-5 bg-transparent flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg">
                                 <div className="flex items-center space-x-1">
@@ -3579,24 +3579,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
                               {/* Buttons */}
                               <div className="flex items-center mr-1">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation(); // prevent opening candidate details
-                                    shortlistCandidate(candidate.id);
-                                  }}
-                                  className="mr-2 bg-[#0F47F2] text-white font-medium px-6 py-2 rounded-lg transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-300"
-                                  disabled={selectedStage === "Shortlisted"} // optional: disable if already shortlisted
-                                  title={
-                                    selectedStage === "Shortlisted"
-                                      ? "Already shortlisted"
-                                      : "Move to Shortlisted"
-                                  }
-                                >
-                                  {selectedStage === "Shortlisted"
-                                    ? "Shortlisted"
-                                    : "Shortlist"}
-                                </button>
-
                                 {/* Autopilot - Move to Applied stage */}
                                 <button
                                   onClick={(e) => {
@@ -3698,6 +3680,24 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       stroke="#818283"
                                     />
                                   </svg>
+                                </button>
+
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // prevent opening candidate details
+                                    shortlistCandidate(candidate.id);
+                                  }}
+                                  className="mr-2 bg-[#0F47F2] text-white font-medium px-6 py-2 rounded-lg transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-300"
+                                  disabled={selectedStage === "Shortlisted"} // optional: disable if already shortlisted
+                                  title={
+                                    selectedStage === "Shortlisted"
+                                      ? "Already shortlisted"
+                                      : "Move to Shortlisted"
+                                  }
+                                >
+                                  {selectedStage === "Shortlisted"
+                                    ? "Shortlisted"
+                                    : "Shortlist"}
                                 </button>
                               </div>
                             </div>
