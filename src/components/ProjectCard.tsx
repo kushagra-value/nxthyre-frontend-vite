@@ -1,3 +1,4 @@
+import { Copy } from "lucide-react";
 import { useState } from "react";
 
 interface ProjectCardProps {
@@ -228,6 +229,13 @@ export default function ProjectCard({
           </div>
           <div className="flex items-center justify-center px-[10px] h-[38px] bg-[#F0F0F0] rounded-[5px]">
             <span className={`text-[16px] ${textClass}`}>Job ID: {jobId}</span>
+            <Copy
+              onClick={(e) => {
+                e.stopPropagation();
+                onCopyJobID?.(jobId);
+              }}
+              className="w-4 h-4 ml-1"
+            />
           </div>
         </div>
 
