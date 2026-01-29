@@ -173,6 +173,7 @@ export interface PipelineCandidate {
       all_emails: string[];
       all_phone_numbers: string[];
     } | null;
+    source?: any;
     // Stage-specific data
     stageData: {
       uncontacted?: {
