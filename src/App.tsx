@@ -1479,12 +1479,12 @@ function MainApp() {
                             onChange={(e) =>
                               setProjectSearchQuery(e.target.value)
                             }
-                            className="w-full h-full bg-white rounded-[5px] pl-5 pr-16 text-lg text-[#4B5563] placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#4B5563]/20"
+                            className="w-full h-full bg-white rounded-[5px] pl-5 pr-16 text-lg text-[#4B5563] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4B5563]/20"
                           />
                           <button className="absolute right-4 top-1/2 -translate-y-1/2 w-9 h-[35px] bg-[#0F47F2] rounded-md flex items-center justify-center hover:bg-[#0d3ec9] transition-colors">
                             <Search
                               className="w-[22px] h-[20px] text-white font-semibold"
-                              strokeWidth={1.33}
+                              strokeWidth={1.45}
                             />
                           </button>
                           {/* Optional: Clear button when typing */}
