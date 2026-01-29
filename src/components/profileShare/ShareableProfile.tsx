@@ -230,7 +230,9 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
               <div className="w-28 h-28 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
                 <img
                   src={
-                    candidateData?.profile_picture_url || "/default_image.png"
+                    candidateData?.profile_picture_url ||
+                    // "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=200"
+                    "/profile_dp.jpg"
                   }
                   alt="Profile"
                   className="w-full h-full object-cover"
