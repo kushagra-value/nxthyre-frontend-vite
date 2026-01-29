@@ -418,36 +418,25 @@ export default function ProjectCard({
           {/* Candidates Sourced by Autopilot */}
           <div className="group relative flex items-center gap-[8px] cursor-help">
             <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
+              width="38"
+              height="38"
+              viewBox="0 0 38 38"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="transition-transform group-hover:scale-110"
+              className="p-2 rounded-full hover:bg-gray-200 transition-colors"
             >
-              <circle
-                cx="12"
-                cy="12"
-                r="12"
-                fill="url(#paint0_linear_4472_2148)"
+              <rect
+                x="0.5"
+                y="0.5"
+                width="37"
+                height="37"
+                rx="18.5"
+                stroke="#0F47F2"
               />
               <path
-                d="M12 4L14 9.42857L20 12L14 14L12 20L10 14L4 12L10 9.42857L12 4Z"
-                fill="white"
+                d="M19 7L22 15.1429L31 19L22 22L19 31L16 22L7 19L16 15.1429L19 7Z"
+                fill="#0F47F2"
               />
-              <defs>
-                <linearGradient
-                  id="paint0_linear_4472_2148"
-                  x1="12"
-                  y1="0"
-                  x2="12"
-                  y2="24"
-                  gradientUnits="userSpaceOnUse"
-                >
-                  <stop stopColor="#2B60FF" />
-                  <stop offset="1" stopColor="#15E8CC" />
-                </linearGradient>
-              </defs>
             </svg>
             <span className="text-[20px] text-[#0F47F2] transition-colors group-hover:text-[#0B3AB0]">
               {featuredCount}
