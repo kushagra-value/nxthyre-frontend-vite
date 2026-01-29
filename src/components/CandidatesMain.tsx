@@ -1304,7 +1304,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               return (
                 <div
                   key={candidate.id}
-                  className={`relative  pt-5 hover:bg-blue-50 transition-colors cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500  ${
+                  className={`relative pt-5 cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-gray-400 focus-visible:shadow-gray-400  ${
                     selectedCandidate?.id === candidate.id
                       ? "bg-blue-50 border-l-4 border-blue-500"
                       : "border border-gray-200"
