@@ -2858,7 +2858,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                                 </clipPath>
                                               </defs>
                                             </svg>
-
                                           );
                                         } else {
                                           return (
