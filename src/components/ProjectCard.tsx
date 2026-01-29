@@ -228,7 +228,7 @@ export default function ProjectCard({
             <span className={`text-[16px] ${textClass}`}>{location}</span>
           </div>
           <div className="flex items-center justify-center px-[8px] h-[38px] bg-[#F0F0F0] rounded-[5px]">
-            <span className={`text-[16px] ${textClass}`}>Job ID: {jobId}</span>$
+            <span className={`text-[16px] ${textClass}`}>Job ID: {jobId}</span>
             {isCopied ? (
               <CopyCheck
                 onClick={(e) => {
