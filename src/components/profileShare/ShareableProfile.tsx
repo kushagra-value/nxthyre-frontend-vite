@@ -362,7 +362,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
 
           {effectiveResumeUrl && (
             <div className="bg-white p-8 rounded-xl mt-6">
-              <h3 className="text-lg font-semibold text-gray-600 mb-4">
+              <h3 className="text-lg font-semibold text-gray-600 mb-3">
                 Resume
               </h3>
 
@@ -390,15 +390,35 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
             </div>
           )}
 
+          {/* Community Notes Section */}
+          <div className="bg-white p-8 rounded-xl mt-6">
+            <h3 className="text-lg font-semibold text-gray-600 mb-3">Notes</h3>
+            <div className="space-y-4">
+              {candidateData?.notes?.map((note: any, index: any) => (
+                <div key={index}>
+                  <div className="flex flex-col items-left justify-between mb-2">
+                    <div className="font-medium text-gray-500">
+                      {note.organization_name}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {new Date(note.posted_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600">{note.content}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* References Section */}
           <div className="bg-white p-8 rounded-xl mt-6">
-            <h3 className="text-lg font-semibold text-blue-600 mb-4">
+            <h3 className="text-lg font-semibold text-gray-600 mb-3">
               References
             </h3>
             <div className="space-y-3">
               {referencesLoading ? (
                 <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 mx-auto mb-4"></div>
                   <p className="text-sm text-gray-600">Loading references...</p>
                 </div>
               ) : referencesError ? (
@@ -413,10 +433,10 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                       className="flex items-center justify-between"
                     >
                       <div>
-                        <div className="font-medium text-gray-900">
+                        <div className="font-medium text-gray-600">
                           {ref.hr_name}
                         </div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-gray-500">
                           {ref.hr_title} at *************
                         </div>
                       </div>
@@ -463,28 +483,6 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                   ))}
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Community Notes Section */}
-          <div className="bg-white p-8 rounded-xl mt-6">
-            <h3 className="text-lg font-semibold text-blue-600 mb-4">
-              Community Notes
-            </h3>
-            <div className="space-y-4">
-              {candidateData?.notes?.map((note: any, index: any) => (
-                <div key={index}>
-                  <div className="flex flex-col items-left justify-between mb-2">
-                    <div className="font-medium text-gray-500">
-                      {note.organization_name}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {new Date(note.posted_at).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-700">{note.content}</p>
-                </div>
-              ))}
             </div>
           </div>
         </div>
