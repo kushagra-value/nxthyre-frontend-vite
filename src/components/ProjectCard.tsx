@@ -234,7 +234,7 @@ export default function ProjectCard({
                 e.stopPropagation();
                 onCopyJobID?.(jobId);
               }}
-              className="w-2 h-2"
+              className="w-4 h-4 ml-1"
             />
           </div>
         </div>
