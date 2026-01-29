@@ -217,17 +217,17 @@ export default function ProjectCard({
         </div>
 
         {/* Tag pills – plain, no prefix icons */}
-        <div className="flex gap-3 mb-[18px]">
-          <div className="flex items-center justify-center px-[10px] h-[38px] bg-[#F0F0F0] rounded-[5px]">
+        <div className="flex gap-2 mb-[18px]">
+          <div className="flex items-center justify-center px-[8px] h-[38px] bg-[#F0F0F0] rounded-[5px]">
             <span className={`text-[16px] ${textClass}`}>{experience}</span>
           </div>
           {/* <div className="flex items-center justify-center px-[10px] h-[38px] bg-[#F0F0F0] rounded-[5px]">
             <span className={`text-[16px] ${textClass}`}>{workApproach}</span>
           </div> */}
-          <div className="flex items-center justify-center px-[10px] h-[38px] bg-[#F0F0F0] rounded-[5px]">
+          <div className="flex items-center justify-center px-[8px] h-[38px] bg-[#F0F0F0] rounded-[5px]">
             <span className={`text-[16px] ${textClass}`}>{location}</span>
           </div>
-          <div className="flex items-center justify-center px-[10px] h-[38px] bg-[#F0F0F0] rounded-[5px]">
+          <div className="flex items-center justify-center px-[8px] h-[38px] bg-[#F0F0F0] rounded-[5px]">
             <span className={`text-[16px] ${textClass}`}>Job ID: {jobId}</span>
             <Copy
               onClick={(e) => {
