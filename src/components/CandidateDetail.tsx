@@ -2084,9 +2084,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              navigate(
-                `/candidate-profiles/${candidate.id}?job_id=${jobId}&shareOption=anonymous_profile`,
-              );
+              navigate(`/candidate-profiles/${candidate.id}?job_id=${jobId}`, {
+                state: {
+                  shareOption: "anonymous_profile", // or "full_profile" as needed
+                  resumeUrl:
+                    candidate.premium_data &&
+                    (candidate.premium_data.resume_url || ""), // pass resume URL safely
+                },
+              });
             }}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             title="Share Profile"
