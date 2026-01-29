@@ -2193,7 +2193,15 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(
-                            `/candidate-profiles/${candidate.id}?job_id=${jobId}&shareOption=anonymous_profile`,
+                            `/candidate-profiles/${candidate.id}?job_id=${jobId}`,
+                            {
+                              state: {
+                                shareOption: "anonymous_profile", // or "full_profile" as needed
+                                resumeUrl:
+                                  candidate.premium_data &&
+                                  (candidate.premium_data.resume_url || ""), // pass resume URL safely
+                              },
+                            },
                           );
                         }}
                         title="Share Profile"

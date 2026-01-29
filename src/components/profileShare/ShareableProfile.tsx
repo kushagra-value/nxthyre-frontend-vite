@@ -15,7 +15,12 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { showToast } from "../../utils/toast";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import {
+  useParams,
+  useSearchParams,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import {
   candidateService,
   // ShareableProfileSensitiveCandidate,
@@ -54,13 +59,24 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
   // Prioritize URL params over props (for routed usage)
   const candidateId = paramCandidateId || propCandidateId || "";
   const jobId = searchParams.get("job_id") || propJobId || "";
-  const shareOption =
-    (searchParams.get("shareOption") as
-      | "anonymous_profile"
-      | "full_profile"
-      | undefined) ||
-    propShareOption ||
-    "anonymous_profile"; // Default if not provided
+  // const shareOption =
+  //   (searchParams.get("shareOption") as
+  //     | "anonymous_profile"
+  //     | "full_profile"
+  //     | undefined) ||
+  //   propShareOption ||
+  //   "anonymous_profile"; // Default if not provided
+
+  // Inside component
+  const location = useLocation();
+  const { shareOption, resumeUrl } = (location.state || {}) as {
+    shareOption?: "anonymous_profile" | "full_profile";
+    resumeUrl?: string;
+  };
+
+  // Default to anonymous if not provided
+  const effectiveShareOption = shareOption || "anonymous_profile";
+  const effectiveResumeUrl = resumeUrl || "";
 
   useEffect(() => {
     const fetchShareableProfile = async () => {
@@ -182,7 +198,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
               </svg>
 
               <span className="font-[400]">
-                {shareOption === "full_profile"
+                {effectiveShareOption === "full_profile"
                   ? "Full Profile View"
                   : "Anonymous Profile View"}
               </span>
@@ -196,7 +212,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
             >
               <Copy className="w-4 h-4 text-gray-500" />
               <span className="font-medium">
-                {shareOption === "full_profile"
+                {effectiveShareOption === "full_profile"
                   ? "Copy Full Profile View"
                   : "Copy Anonymous Profile View"}
               </span>
@@ -279,7 +295,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                 <div className="">
                   <div className="flex flex-col items-end justify-start text-gray-500 gap-3">
                     <div className="flex items-center justify-left gap-2">
-                      {shareOption === "full_profile" ? (
+                      {effectiveShareOption === "full_profile" ? (
                         <span>
                           {candidateData?.premium_data?.email || "N/A"}
                         </span>
@@ -289,7 +305,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                       <Mail className="w-4 h-4 mr-1" />
                     </div>
                     <div className="flex items-center justify-left gap-2">
-                      {shareOption === "full_profile" ? (
+                      {effectiveShareOption === "full_profile" ? (
                         <span>
                           {candidateData?.premium_data?.phone || "N/A"}
                         </span>
@@ -306,7 +322,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
 
           {/* Profile Match Description or Profile Summary */}
           <div className="bg-white p-8 rounded-xl mt-6">
-            {shareOption === "anonymous_profile" ? (
+            {effectiveShareOption === "anonymous_profile" ? (
               <div>
                 <h3 className="text-lg font-semibold text-gray-600 mb-3">
                   Profile Summary
@@ -327,6 +343,22 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
               </div>
             )}
           </div>
+
+          {effectiveResumeUrl && (
+            <div className="bg-white p-8 rounded-xl mt-6">
+              <h3 className="text-lg font-semibold text-gray-600 mb-4">
+                Resume
+              </h3>
+              <iframe
+                src={effectiveResumeUrl}
+                width="100%"
+                height="900"
+                className="border border-gray-200 rounded-lg"
+                title="Candidate Resume"
+                sandbox="allow-same-origin allow-scripts"
+              />
+            </div>
+          )}
 
           <div className="pt-6 mt-6 border-t border-gray-200 w-full grid grid-cols-1 lg:grid-cols-3">
             {/* References Section */}
