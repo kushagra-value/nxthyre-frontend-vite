@@ -430,9 +430,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           if (onAnalysisFetched) onAnalysisFetched(mapped);
 
           // Auto-switch only on success
-          if (activeTab !== "Boolean-Search") {
-            setActiveTab("Boolean-Search");
-          }
+          // if (activeTab !== "Boolean-Search") {
+          //   setActiveTab("Boolean-Search");
+          // }
         } catch (err: any) {
           console.error("Inbound job score fetch failed:", err);
           setAnalysisError(
@@ -465,9 +465,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           setBooleanData(data);
           if (onAnalysisFetched) onAnalysisFetched(data);
 
-          if (activeTab !== "Boolean-Search") {
-            setActiveTab("Boolean-Search");
-          }
+          // if (activeTab !== "Boolean-Search") {
+          //   setActiveTab("Boolean-Search");
+          // }
         } catch (err: any) {
           console.error("Boolean analysis fetch failed:", err);
           setAnalysisError(
@@ -962,76 +962,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         </div>
       );
     }
-    //   return (
-    //     <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 animate-pulse">
-    //       {/* Top Badge Skeleton */}
-    //       <div className="mb-6">
-    //         <div className="flex items-start gap-4 bg-gray-50 rounded-md px-4 py-4">
-    //           <div className="w-16 h-16 bg-gray-200 rounded-md" />
-    //           <div className="space-y-3 flex-1">
-    //             <div className="h-5 bg-gray-200 rounded w-32" />
-    //             <div className="h-4 bg-gray-200 rounded w-64" />
-    //             <div className="h-4 bg-gray-200 rounded w-48" />
-    //           </div>
-    //         </div>
-    //       </div>
-
-    //       {/* Quick Fit Summary Skeleton */}
-    //       <div className="mb-6">
-    //         <div className="h-6 bg-gray-200 rounded w-48 mb-4" />
-    //         <div className="flex flex-wrap gap-3">
-    //           {Array.from({ length: 8 }, (_, i) => (
-    //             <div key={i} className="flex items-center gap-2">
-    //               <div className="h-8 bg-gray-200 rounded-full w-32" />
-    //               <div className="w-5 h-5 bg-gray-200 rounded-full" />
-    //             </div>
-    //           ))}
-    //         </div>
-    //       </div>
-
-    //       <div className="mb-4 border-b border-gray-200" />
-
-    //       {/* Gaps / Risks Skeleton */}
-    //       <div className="mb-6">
-    //         <div className="h-6 bg-gray-200 rounded w-40 mb-4" />
-    //         <div className="space-y-3">
-    //           {Array.from({ length: 5 }, (_, i) => (
-    //             <div key={i} className="h-12 bg-gray-50 rounded-md p-3">
-    //               <div className="h-4 bg-gray-200 rounded w-full" />
-    //             </div>
-    //           ))}
-    //         </div>
-    //       </div>
-
-    //       <div className="mb-4 border-b border-gray-200" />
-
-    //       {/* Recommended Message Skeleton */}
-    //       <div className="mb-6">
-    //         <div className="h-6 bg-gray-200 rounded w-64 mb-4" />
-    //         <div className="space-y-3">
-    //           <div className="h-4 bg-gray-200 rounded w-full" />
-    //           <div className="h-4 bg-gray-200 rounded w-full" />
-    //           <div className="h-4 bg-gray-200 rounded w-5/6" />
-    //         </div>
-    //       </div>
-
-    //       <div className="mb-4 border-b border-gray-200" />
-
-    //       {/* Call Attention Skeleton */}
-    //       <div className="bg-yellow-50 border border-yellow-200 rounded-md p-6">
-    //         <div className="flex items-center gap-3 mb-4">
-    //           <div className="w-6 h-6 bg-yellow-200 rounded-full" />
-    //           <div className="h-6 bg-yellow-200 rounded w-40" />
-    //         </div>
-    //         <div className="space-y-3 pl-9">
-    //           {Array.from({ length: 4 }, (_, i) => (
-    //             <div key={i} className="h-4 bg-yellow-100 rounded w-11/12" />
-    //           ))}
-    //         </div>
-    //       </div>
-    //     </div>
-    //   );
-    // };
 
     return (
       <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
