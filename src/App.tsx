@@ -1471,7 +1471,7 @@ function MainApp() {
                         <h1 className="text-2xl font-medium ">
                           Requisitions List
                         </h1>
-                        <div className="relative w-[544px] h-[59px] bg-white">
+                        <div className="relative w-[544px] h-[59px] bg-white rounded-xl">
                           <input
                             type="text"
                             placeholder="Search Projects"
