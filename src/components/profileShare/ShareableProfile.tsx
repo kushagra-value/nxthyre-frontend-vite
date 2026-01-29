@@ -347,22 +347,6 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
 
           {/* {effectiveResumeUrl && (
             <div className="bg-white p-8 rounded-xl mt-6">
-              <h3 className="text-lg font-semibold text-gray-600 mb-4">
-                Resume
-              </h3>
-              <iframe
-                src={effectiveResumeUrl}
-                width="100%"
-                height="900"
-                className="border border-gray-200 rounded-lg"
-                title="Candidate Resume"
-                sandbox="allow-same-origin allow-scripts"
-              />
-            </div>
-          )} */}
-
-          {effectiveResumeUrl && (
-            <div className="bg-white p-8 rounded-xl mt-6">
               <h3 className="text-lg font-semibold text-gray-600 mb-3">
                 Resume
               </h3>
@@ -375,7 +359,37 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                 className="border border-gray-200 rounded-lg min-h-[800px]"
               />
 
-              {/* Optional fallback */}
+              
+              <p className="mt-2 text-sm text-gray-500">
+                If the resume doesn't display,{" "}
+                <a
+                  href={effectiveResumeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline"
+                >
+                  open it in a new tab
+                </a>
+                .
+              </p>
+            </div>
+          )} */}
+
+          {effectiveResumeUrl && (
+            <div className="bg-white p-8 rounded-xl mt-6">
+              <h3 className="text-lg font-semibold text-gray-600 mb-3">
+                Resume
+              </h3>
+
+              <iframe
+                src={`https://docs.google.com/gview?url=${encodeURIComponent(effectiveResumeUrl)}&embedded=true`}
+                width="100%"
+                height="900px"
+                className="border border-gray-200 rounded-lg min-h-[800px]"
+                title="Candidate Resume"
+                allowFullScreen
+              />
+
               <p className="mt-2 text-sm text-gray-500">
                 If the resume doesn't display,{" "}
                 <a
