@@ -7,6 +7,7 @@ import { useAuthContext } from "../../context/AuthContext";
 import { showToast } from "../../utils/toast";
 import StageDetails from "./StageDetails";
 import { PipelineCandidate } from "../../data/pipelineData";
+import { useNavigate } from "react-router-dom";
 
 interface Stage {
   id: number;
@@ -74,6 +75,8 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
   deductCredits,
 }) => {
   const { user } = useAuthContext();
+
+  const navigate = useNavigate();
 
   const handleShareProfile = () => {
     window.open(
@@ -158,7 +161,23 @@ const PipelinesSideCard: React.FC<PipelinesSideCardProps> = ({
             </div>
             <div className="text-xs text-gray-400 absolute right-6 top-4">
               <button
-                onClick={handleShareProfile}
+                // onClick={handleShareProfile}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(
+                    `/candidate-profiles/${selectedCandidate.candidate.id}?job_id=${jobId}`,
+                    {
+                      state: {
+                        shareOption: "full_profile", // or "full_profile" as needed
+                        resumeUrl:
+                          selectedCandidate.candidate.premium_data &&
+                          (selectedCandidate.candidate.premium_data
+                            .resume_url ||
+                            ""), // pass resume URL safely
+                      },
+                    },
+                  );
+                }}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 title="Share Profile"
               >

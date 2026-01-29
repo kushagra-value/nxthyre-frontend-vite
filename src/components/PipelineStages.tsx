@@ -55,6 +55,8 @@ import { candidateService } from "../services/candidateService";
 import TemplateSelector from "./TemplateSelector";
 import toast from "react-hot-toast";
 
+import { useNavigate } from "react-router-dom";
+
 // Define interfaces for API responses
 interface Stage {
   id: number;
@@ -300,6 +302,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const [suggestions, setSuggestions] = useState<
     { id: string; name: string }[]
   >([]);
+
+  const navigate = useNavigate();
 
   const handleSendInvite = async (applicationId: number) => {
     // Optionally deduct credits or handle other logic here
@@ -3511,9 +3515,19 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     className=" rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      // setSharePopupCandidateId(candidate.id);
-                                      handleShareProfile(
-                                        candidate.candidate.id,
+                                      navigate(
+                                        `/candidate-profiles/${candidate.candidate.id}?job_id=${activeJobId}`,
+                                        {
+                                          state: {
+                                            shareOption: "full_profile", // or "full_profile" as needed
+                                            resumeUrl:
+                                              candidate.candidate
+                                                .premium_data &&
+                                              (candidate.candidate.premium_data
+                                                .resume_url ||
+                                                ""), // pass resume URL safely
+                                          },
+                                        },
                                       );
                                     }}
                                     title="Share Profile"
