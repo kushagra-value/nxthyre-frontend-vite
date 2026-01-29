@@ -1471,7 +1471,7 @@ function MainApp() {
                         <h1 className="text-2xl font-medium ">
                           Requisitions List
                         </h1>
-                        <div className="relative w-[544px] h-[59px]">
+                        <div className="relative w-[544px] h-[59px] bg-white">
                           <input
                             type="text"
                             placeholder="Search Projects"
@@ -1479,11 +1479,11 @@ function MainApp() {
                             onChange={(e) =>
                               setProjectSearchQuery(e.target.value)
                             }
-                            className="w-full h-full bg-[#F0F0F0] rounded-[5px] pl-5 pr-16 text-lg text-[#4B5563] placeholder:text-[#AAC1FF] focus:outline-none focus:ring-2 focus:ring-[#0F47F2]/20"
+                            className="w-full h-full bg-white rounded-[5px] pl-5 pr-16 text-lg text-[#4B5563] placeholder:text-[#4B5563] focus:outline-none focus:ring-2 focus:ring-[#4B5563]/20"
                           />
-                          <button className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-[31px] bg-[#0F47F2] rounded-md flex items-center justify-center hover:bg-[#0d3ec9] transition-colors">
+                          <button className="absolute right-4 top-1/2 -translate-y-1/2 w-9 h-[35px] bg-[#0F47F2] rounded-md flex items-center justify-center hover:bg-[#0d3ec9] transition-colors">
                             <Search
-                              className="w-[22px] h-[19px] text-white"
+                              className="w-[22px] h-[20px] text-white font-semibold"
                               strokeWidth={1.33}
                             />
                           </button>
