@@ -229,25 +229,25 @@ export default function ProjectCard({
           </div>
           <div className="flex items-center justify-center px-[8px] h-[38px] bg-[#F0F0F0] rounded-[5px]">
             <span className={`text-[16px] ${textClass}`}>Job ID: {jobId}</span>$
-            {isCopied} ? (
-            <CopyCheck
-              onClick={(e) => {
-                e.stopPropagation();
-                onCopyJobID?.(jobId);
-                setIsCopied(true);
-              }}
-              className={`w-4 h-4 ml-1 text-green-500`}
-            />
+            {isCopied ? (
+              <CopyCheck
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCopyJobID?.(jobId);
+                  setIsCopied(true);
+                }}
+                className={`w-4 h-4 ml-1 text-green-500`}
+              />
             ) : (
-            <Copy
-              onClick={(e) => {
-                e.stopPropagation();
-                onCopyJobID?.(jobId);
-                setIsCopied(true);
-              }}
-              className={`w-4 h-4 ml-1 ${textClass}`}
-            />
-            )
+              <Copy
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCopyJobID?.(jobId);
+                  setIsCopied(true);
+                }}
+                className={`w-4 h-4 ml-1 ${textClass}`}
+              />
+            )}
           </div>
         </div>
 
