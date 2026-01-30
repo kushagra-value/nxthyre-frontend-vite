@@ -37,14 +37,6 @@ interface ShareableProfileProps {
   onBack?: () => void;
 }
 
-interface BadgeItem {
-  badge: string;
-  color: string;
-  status: string;
-  evidence: string;
-  priority: string;
-}
-
 const ShareableProfile: React.FC<ShareableProfileProps> = ({
   candidateId: propCandidateId,
   jobId: propJobId,
@@ -461,26 +453,31 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                 <h3 className="text-lg font-semibold text-gray-600 mb-3">
                   Quick Fit Summary
                 </h3>
-                <div className="p-4 border border-gray-300 rounded-lg">
+                <div className="">
                   {/* Key Skills - Always visible */}
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-500 mb-2">
+                    {/* <h4 className="text-sm font-medium text-gray-500 mb-2">
                       Key Skills (Top 5)
-                    </h4>
+                    </h4> */}
                     <div className="flex flex-wrap gap-2">
                       {keySkills.map((item, index) => (
-                        <span
+                        <div
                           key={index}
-                          className={`bg-blue-50 ${getColorClass(item.color)} px-3 py-1 rounded-full text-sm flex gap-1 items-center border border-gray-200`}
+                          className={`${getColorClass(item.color)} p-4 border border-gray-300 rounded-lg gap-2 w-full flex flex-col`}
                         >
-                          {item.status === "validated" ? (
-                            <Sparkle
-                              className={`w-4 h-4 ${getColorClass(item.color)}`}
-                            />
-                          ) : null}
-                          {item.badge}
-                          {getIcon(item.color)}
-                        </span>
+                          <div
+                            className={`flex gap-2 items-center ${getColorClass(item.color)}`}
+                          >
+                            {item.status === "validated" ? (
+                              <Sparkle
+                                className={`w-4 h-4 ${getColorClass(item.color)}`}
+                              />
+                            ) : null}
+                            {item.badge}
+                            {getIcon(item.color)}
+                          </div>
+                          <div className="text-gray-500">{item.evidence}</div>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -506,41 +503,31 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                       {isExpanded && (
                         <div className="flex flex-wrap gap-2 animate-fade-in">
                           {moreSkills.map((item, index) => (
-                            <span
-                              key={index + 5} // Offset index to avoid collision
-                              className={`bg-blue-50 ${getColorClass(item.color)} px-3 py-1 rounded-full text-sm flex gap-1 items-center border border-gray-200`}
+                            <div
+                              key={index}
+                              className={`${getColorClass(item.color)} p-4 border border-gray-300 rounded-lg gap-2 w-full flex flex-col`}
                             >
-                              {item.status === "validated" ? (
-                                <Sparkle
-                                  className={`w-4 h-4 ${getColorClass(item.color)}`}
-                                />
-                              ) : null}
-                              {item.badge}
-                              {getIcon(item.color)}
-                            </span>
+                              <div
+                                className={`flex gap-2 items-center ${getColorClass(item.color)}`}
+                              >
+                                {item.status === "validated" ? (
+                                  <Sparkle
+                                    className={`w-4 h-4 ${getColorClass(item.color)}`}
+                                  />
+                                ) : null}
+                                {item.badge}
+                                {getIcon(item.color)}
+                              </div>
+                              <div className="text-gray-500">
+                                {item.evidence}
+                              </div>
+                            </div>
                           ))}
                         </div>
                       )}
                     </div>
                   )}
                 </div>
-
-                {/* Optional: Add CSS for animation if needed
-                <style jsx>{`
-                  @keyframes fadeIn {
-                    from {
-                      opacity: 0;
-                      transform: translateY(-10px);
-                    }
-                    to {
-                      opacity: 1;
-                      transform: translateY(0);
-                    }
-                  }
-                  .animate-fade-in {
-                    animation: fadeIn 0.3s ease-out;
-                  }
-                `}</style> */}
               </div>
             )}
           </div>
