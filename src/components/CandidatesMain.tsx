@@ -372,10 +372,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   }, []);
 
   useEffect(() => {
-    if (activeTab === "inbound") {
-      onInboundSourceChange?.(selectedSource);
+    if (activeTab !== "inbound") {
+      setSelectedSource(null);
     }
-  }, [selectedSource, activeTab, onInboundSourceChange]);
+  }, [activeTab]);
+
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
