@@ -461,8 +461,8 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
             )}
           </div>
 
-          <div className="bg-white p-8 rounded-xl mt-6">
-            {effectiveShareOption === "full_profile" && (
+          {effectiveShareOption === "full_profile" && (
+            <div className="bg-white p-8 rounded-xl mt-6">
               <div>
                 <h3 className="text-lg font-semibold text-gray-600 mb-3">
                   Quick Fit Summary
@@ -545,8 +545,8 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                   )}
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {effectiveResumeUrl && (
             <div className="bg-white p-8 rounded-xl mt-6">
