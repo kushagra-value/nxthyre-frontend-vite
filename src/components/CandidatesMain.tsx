@@ -1265,7 +1265,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 <ChevronDown className="w-4 h-4 mt-1 hidden 2xl:inline" />
               </button>
               {showSortDropdown && (
-                <div ref={sortDropdownRef} className="absolute top-full right-0 mt-2 w-96 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                <div ref={sortDropdownRef} className="absolute top-full right-0 mt-2 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-10">
                   <div className="py-1">
                     {getSortOptions().map((option) => (
                       <button
