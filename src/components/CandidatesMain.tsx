@@ -316,13 +316,42 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     },
   ];
 
-  const sortOptions = [
-    { value: "", label: "Relevance" },
-    { value: "experience_asc", label: "Experience(Asc)" },
-    { value: "experience_desc", label: "Experience(Desc)" },
-    { value: "notice_period_asc", label: "Notice Period(Asc)" },
-    { value: "notice_period_desc", label: "Notice Period(Desc)" },
-  ];
+  const getSortOptions = useCallback(() => {
+    switch (activeTab) {
+      case "inbound":
+        return [
+          { value: "", label: "Newest Applications" }, // default: time_applied_score_desc
+          { value: "score_desc", label: "Match Score (Highest)" },
+          { value: "score_asc", label: "Match Score (Lowest)" },
+          { value: "time_applied_desc", label: "Application Date (Newest)" },
+          { value: "time_applied_asc", label: "Application Date (Oldest)" },
+          { value: "time_applied_score_desc", label: "Newest, then Highest Score" },
+          { value: "time_applied_score_asc", label: "Oldest, then Highest Score" },
+        ];
+      case "active":
+        return [
+          { value: "", label: "Most Recently Active" }, // default: time_active_desc
+          { value: "time_active_desc", label: "Last Active (Recent First)" },
+          { value: "time_active_asc", label: "Last Active (Oldest First)" },
+          { value: "notice_period_asc", label: "Notice Period (Low to High)" },
+          { value: "notice_period_desc", label: "Notice Period (High to Low)" },
+          { value: "expected_ctc_asc", label: "Expected CTC (Low to High)" },
+          { value: "expected_ctc_desc", label: "Expected CTC (High to Low)" },
+        ];
+      case "prevetted":
+      case "outbound":
+      default:
+        return [
+          { value: "", label: "Relevance" }, // "" triggers tab default (experience_desc)
+          { value: "experience_asc", label: "Experience (Low to High)" },
+          { value: "experience_desc", label: "Experience (High to Low)" },
+          { value: "notice_period_asc", label: "Notice Period (Low to High)" },
+          { value: "notice_period_desc", label: "Notice Period (High to Low)" },
+          { value: "expected_ctc_asc", label: "Expected CTC (Low to High)" },
+          { value: "expected_ctc_desc", label: "Expected CTC (High to Low)" },
+        ];
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -339,6 +368,12 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    if (activeTab !== "inbound") {
+      setSelectedSource(null);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -362,6 +397,14 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       setCurrentPage(1);
     }
   }, [totalCount, currentPage, setCurrentPage]);
+
+
+  useEffect(() => {
+    const options = getSortOptions();
+    if (sortBy && !options.some((opt) => opt.value === sortBy)) {
+      setSortBy("");
+    }
+  }, [activeTab, getSortOptions, sortBy]);
 
   const handleCandidateSelect = (candidateId: string) => {
     setSelectedCandidates((prev) =>
@@ -743,6 +786,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   const handleSortSelect = (sortValue: string) => {
     setSortBy(sortValue);
     setShowSortDropdown(false);
+    setCurrentPage(1);
   };
 
   const downloadFile = (
@@ -880,19 +924,6 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
     return pageNumbers;
   };
-
-  let displayedCandidates = candidates;
-  if (selectedSource) {
-    displayedCandidates = candidates.filter((candidate) => {
-      const sourceObj = candidate?.source;
-
-      if (selectedSource === "NXTHYRE") {
-        return sourceObj == null;
-      }
-
-      return sourceObj?.source === selectedSource;
-    });
-  }
 
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLDivElement>,
@@ -1041,8 +1072,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`py-2 text-sm 2xl:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 focus-visible:border-b-2 focus-visible:border-blue-600 ${activeTab === tab.id
-                    ? "text-blue-600 border-blue-500"
-                    : "text-gray-600 border-transparent hover:text-gray-700"
+                  ? "text-blue-600 border-blue-500"
+                  : "text-gray-600 border-transparent hover:text-gray-700"
                   }`}
                 aria-label={`Switch to ${tab.label} tab`}
               >
@@ -1180,8 +1211,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 <button
                   onClick={() => setShowSourceDropdown((prev) => !prev)}
                   className={`flex items-center gap-2.5 px-4 py-2.5 rounded-lg border transition-colors hover:border-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${selectedSource
-                      ? "border-blue-400 bg-blue-50 text-blue-600"
-                      : "border-gray-300 bg-white text-gray-400"
+                    ? "border-blue-400 bg-blue-50 text-blue-600"
+                    : "border-gray-300 bg-white text-gray-400"
                     }`}
                 >
                   {selectedSource ? (
@@ -1203,6 +1234,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedSource(null);
+                          setCurrentPage(1);
                         }}
                       />
                     </>
@@ -1235,10 +1267,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                           onClick={() => {
                             setSelectedSource(option.value);
                             setShowSourceDropdown(false);
+                            setCurrentPage(1);
                           }}
                           className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors ${selectedSource === option.value
-                              ? "bg-blue-50 text-blue-600"
-                              : "text-gray-700"
+                            ? "bg-blue-50 text-blue-600"
+                            : "text-gray-700"
                             }`}
                         >
                           <div className="w-6 h-6 flex-shrink-0">
@@ -1291,18 +1324,14 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               >
                 <ArrowDownNarrowWide className="w-4 h-4 rotate-180" />
                 <span className="text-gray-400 font-[400] ml-1 mr-1 hidden 2xl:inline">
-                  {sortOptions.find((opt) => opt.value === sortBy)?.label ||
-                    "Relevance"}
+                  {getSortOptions().find((opt) => opt.value === sortBy)?.label || "Sort"}
                 </span>
                 <ChevronDown className="w-4 h-4 mt-1 hidden 2xl:inline" />
               </button>
               {showSortDropdown && (
-                <div
-                  ref={sortDropdownRef}
-                  className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
-                >
+                <div ref={sortDropdownRef} className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
                   <div className="py-1">
-                    {sortOptions.map((option) => (
+                    {getSortOptions().map((option) => (
                       <button
                         key={option.value}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -1552,8 +1581,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 <div
                   key={candidate.id}
                   className={`relative pt-5 cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2  ${selectedCandidate?.id === candidate.id
-                      ? "bg-white border-l-4 border-blue-500 shadow-[0_0_20px_0_rgba(0,0,0,0.15),_0_0_8px_0_rgba(0,0,0,0.1)]"
-                      : "border border-gray-200"
+                    ? "bg-white border-l-4 border-blue-500 shadow-[0_0_20px_0_rgba(0,0,0,0.15),_0_0_8px_0_rgba(0,0,0,0.1)]"
+                    : "border border-gray-200"
                     }`}
                   onClick={() => handleCandidateClick(candidate)}
                   onKeyDown={(e) => handleKeyDown(e, candidate)}
@@ -2767,10 +2796,10 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     typeof page === "number" && handlePageChange(page)
                   }
                   className={`px-3 py-1 text-sm rounded-lg transition-colors focus-visible:ring focus-visible:ring-2 focus-visible:ring-blue-500 ${page === currentPage
-                      ? "bg-blue-600 text-white"
-                      : typeof page === "number"
-                        ? "text-gray-600 hover:bg-gray-100"
-                        : "text-gray-600 cursor-default"
+                    ? "bg-blue-600 text-white"
+                    : typeof page === "number"
+                      ? "text-gray-600 hover:bg-gray-100"
+                      : "text-gray-600 cursor-default"
                     }`}
                   disabled={typeof page !== "number"}
                   area-label={`Go to page ${page}`}
@@ -2818,10 +2847,10 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     typeof page === "number" && handlePageChange(page)
                   }
                   className={`px-3 py-1 text-sm rounded-lg transition-colors ${page === currentPage
-                      ? "bg-blue-600 text-white"
-                      : typeof page === "number"
-                        ? "text-gray-600 hover:bg-gray-100"
-                        : "text-gray-600 cursor-default"
+                    ? "bg-blue-600 text-white"
+                    : typeof page === "number"
+                      ? "text-gray-600 hover:bg-gray-100"
+                      : "text-gray-600 cursor-default"
                     }`}
                   disabled={typeof page !== "number"}
                 >

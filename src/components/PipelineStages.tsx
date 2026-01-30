@@ -269,6 +269,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const [showSourceDropdown, setShowSourceDropdown] = useState(false);
   const sourceDropdownRef = useRef<HTMLDivElement>(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 25; // Adjustable; no max limit on API
+  const [totalCandidates, setTotalCandidates] = useState(0);
+  const [loadingCandidates, setLoadingCandidates] = useState(false);
+
   const sourceOptions = [
     {
       value: "NAUKRI_NVITE",
@@ -569,6 +574,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   }, []);
 
   useEffect(() => {
+    setCurrentPage(1);
+  }, [activeJobId, selectedStage, sortBy, activeStageTab, viewMode, selectedSource]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         sourceDropdownRef.current &&
@@ -789,26 +798,28 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   };
 
   const fetchCandidates = async (jobId: number, stageSlug: string) => {
+    setLoadingCandidates(true);
     let url = `/jobs/applications/?job_id=${jobId}&stage_slug=${stageSlug}${sortBy ? `&sort_by=${sortBy}` : ""
       }`;
     if (viewMode === "prospect" && activeStageTab === "inbox") {
       url = `/jobs/applications/replied-candidates/?job_id=${jobId}${sortBy ? `&sort_by=${sortBy}` : ""
         }`;
     }
+    url += `&page=${currentPage}&page_size=${pageSize}`;
+
     try {
       const response = await apiClient.get(url);
-      let rawData = response.data;
+      const data = response.data;
+
       let candidateData: any[] = [];
-      if (Array.isArray(rawData)) {
-        candidateData = rawData;
-      } else if (rawData && Array.isArray(rawData.results)) {
-        candidateData = rawData.results; // paginated response
-      } else if (rawData && Array.isArray(rawData.replied_candidates)) {
-        // if inbox endpoint uses a different key
-        candidateData = rawData.replied_candidates;
-      } else {
-        console.warn("Unexpected candidate data format:", rawData);
-        candidateData = [];
+      let count = 0;
+
+      if (Array.isArray(data)) {
+        candidateData = data;
+        count = data.length;
+      } else if (data && Array.isArray(data.results)) {
+        candidateData = data.results;
+        count = data.count || data.results.length;
       }
       const mappedData = candidateData.map((item) => ({
         ...item,
@@ -821,10 +832,20 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         },
       }));
       setCandidates(mappedData);
-      handleCandidateSelect(mappedData[0]);
+      setTotalCandidates(count);
+      if (mappedData.length > 0) {
+        if (!selectedCandidate || !mappedData.some((c: any) => c.id === selectedCandidate.id)) {
+          handleCandidateSelect(mappedData[0]);
+        }
+      } else {
+        setSelectedCandidate(null);
+      }
     } catch (error) {
       console.error("Error fetching candidates:", error);
       setCandidates([]);
+      setTotalCandidates(0);
+    } finally {
+      setLoadingCandidates(false);
     }
   };
 
@@ -1853,6 +1874,17 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   };
 
   useEffect(() => {
+    if (activeJobId !== null && selectedStage) {
+      fetchCandidates(activeJobId, selectedStage.toLowerCase().replace(" ", "-"));
+    }
+  }, [activeJobId, selectedStage, sortBy, currentPage, activeStageTab, viewMode]);
+
+  useEffect(() => {
+    setSelectedCandidates([]);
+    setSelectAll(false);
+  }, [currentPage]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         settingsPopupRef.current &&
@@ -2110,8 +2142,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         setActiveStageTab("uncontacted");
                       }}
                       className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${viewMode === "prospect"
-                          ? "bg-blue-50 text-blue-700 border border-blue-200"
-                          : "text-gray-700 hover:bg-gray-50"
+                        ? "bg-blue-50 text-blue-700 border border-blue-200"
+                        : "text-gray-700 hover:bg-gray-50"
                         }`}
                     >
                       {viewMode === "prospect" && (
@@ -2123,8 +2155,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         return (
                           <ProspectIcon
                             className={`w-4 h-4 ${viewMode === "prospect"
-                                ? "text-blue-600"
-                                : "text-gray-600"
+                              ? "text-blue-600"
+                              : "text-gray-600"
                               }`}
                           />
                         );
@@ -2145,8 +2177,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         </div>
                         <span
                           className={`px-2 py-1 text-sm ${viewMode === "prospect"
-                              ? "text-blue-800"
-                              : "text-gray-400"
+                            ? "text-blue-800"
+                            : "text-gray-400"
                             }`}
                         >
                           {[
@@ -2168,8 +2200,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           key={stage.id}
                           onClick={() => handleStageSelect(stage.name)}
                           className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${isSelected
-                              ? "bg-blue-50 text-blue-700 border border-blue-200"
-                              : "text-gray-700 hover:bg-gray-50"
+                            ? "bg-blue-50 text-blue-700 border border-blue-200"
+                            : "text-gray-700 hover:bg-gray-50"
                             }`}
                         >
                           {isSelected && (
@@ -2232,8 +2264,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               setSelectedStage("Inbox");
                           }}
                           className={`py-2 text-sm lg:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 focus-visible:border-b-2 focus-visible:border-blue-600 ${activeStageTab === tab.id
-                              ? "text-blue-600 border-blue-500"
-                              : "text-gray-600 border-transparent hover:text-gray-700"
+                            ? "text-blue-600 border-blue-500"
+                            : "text-gray-600 border-transparent hover:text-gray-700"
                             }`}
                           aria-label={`Switch to ${tab.label} tab`}
                         >
@@ -2585,8 +2617,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         <button
                           onClick={() => setShowSourceDropdown((prev) => !prev)}
                           className={`flex items-center gap-2.5 px-4 py-2.5 rounded-lg border transition-colors hover:border-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${selectedSource
-                              ? "border-blue-400 bg-blue-50 text-blue-600"
-                              : "border-gray-300 bg-white text-gray-400"
+                            ? "border-blue-400 bg-blue-50 text-blue-600"
+                            : "border-gray-300 bg-white text-gray-400"
                             }`}
                         >
                           {selectedSource ? (
@@ -2643,8 +2675,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     setShowSourceDropdown(false);
                                   }}
                                   className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors ${selectedSource === option.value
-                                      ? "bg-blue-50 text-blue-600"
-                                      : "text-gray-700"
+                                    ? "bg-blue-50 text-blue-600"
+                                    : "text-gray-700"
                                     }`}
                                 >
                                   <div className="w-6 h-6 flex-shrink-0">
@@ -2747,7 +2779,22 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 </div>
               </div>
               <div className="divide-y divide-gray-200">
-                {displayedCandidates.length === 0 ? (
+                {loadingCandidates ? (
+                  <div className="space-y-4 p-4">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <div key={i} className="animate-pulse">
+                        <div className="flex items-center space-x-4 p-4 border rounded-lg">
+                          <div className="w-4 h-4 bg-gray-200 rounded" />
+                          <div className="w-14 h-14 bg-gray-200 rounded-full" />
+                          <div className="flex-1 space-y-3">
+                            <div className="h-5 bg-gray-200 rounded w-48" />
+                            <div className="h-4 bg-gray-200 rounded w-64" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : displayedCandidates.length === 0 ? (
                   <div className="p-8 text-center text-gray-500">
                     <User className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                     <p className="text-lg font-medium">
@@ -2799,8 +2846,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           <div
                             key={candidate.id}
                             className={`relative pt-5 transition-colors cursor-pointer rounded-lg focus-visible:outline  ${selectedCandidate?.id === candidate.id
-                                ? "bg-white border-l-4 border-blue-500 shadow-[0_0_20px_0_rgba(0,0,0,0.15),_0_0_8px_0_rgba(0,0,0,0.1)]"
-                                : "border border-gray-200"
+                              ? "bg-white border-l-4 border-blue-500 shadow-[0_0_20px_0_rgba(0,0,0,0.15),_0_0_8px_0_rgba(0,0,0,0.1)]"
+                              : "border border-gray-200"
                               }`}
                             onClick={() => handleCandidateSelect(candidate)}
                             tabIndex={0}
@@ -4091,6 +4138,34 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         );
                       })}
                     </div>
+                    {totalCandidates > pageSize && (
+                      <div className="flex flex-col items-center py-4 border-t border-gray-200 space-y-3">
+                        <div className="text-sm text-gray-600">
+                          Showing {(currentPage - 1) * pageSize + 1} to{" "}
+                          {Math.min(currentPage * pageSize, totalCandidates)} of {totalCandidates}{" "}
+                          {selectedSource && "(filtered by source)"}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                          >
+                            Previous
+                          </button>
+                          <span className="text-sm font-medium">
+                            Page {currentPage} of {Math.ceil(totalCandidates / pageSize)}
+                          </span>
+                          <button
+                            onClick={() => setCurrentPage((p) => p + 1)}
+                            disabled={currentPage * pageSize >= totalCandidates}
+                            className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                          >
+                            Next
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
               </div>
