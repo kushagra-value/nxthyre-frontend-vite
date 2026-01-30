@@ -2035,7 +2035,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                       <div className="flex flex-col">
                         <p className="text-[#A8A8A8] mr-[5px]">Notice Period</p>
                         <p className="text-[#4B5563]">
-                          --
+                          --day
                         </p>
                       </div>
                     )}
