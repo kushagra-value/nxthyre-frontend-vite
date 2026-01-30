@@ -70,6 +70,7 @@ interface CandidatesMainProps {
   };
   activeCategoryTotalCount: number;
   currentAnalysis?: AnalysisResult | null;
+  onInboundSourceChange?: (source: string | null) => void;
 }
 
 const CandidateEditForm = ({
@@ -234,6 +235,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   sourcingCounts,
   activeCategoryTotalCount,
   currentAnalysis,
+  onInboundSourceChange,
 }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
@@ -370,10 +372,10 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   }, []);
 
   useEffect(() => {
-    if (activeTab !== "inbound") {
-      setSelectedSource(null);
+    if (activeTab === "inbound") {
+      onInboundSourceChange?.(selectedSource);
     }
-  }, [activeTab]);
+  }, [selectedSource, activeTab, onInboundSourceChange]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -417,7 +419,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
   // UPDATED: Source filter options with logos and values
   const sourceOptions = [
     {
-      value: "NAUKRI_NVITE",
+      value: "naukri",
       label: "Naukri Invites",
       logo: (
         <svg
@@ -460,7 +462,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       ),
     },
     {
-      value: "PUBLIC_JOB_PAGE",
+      value: "pyjamahr",
       label: "Pyjama",
       logo: (
         <svg
@@ -1446,17 +1448,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       ) : (
         <>
           <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
-            {!loadingCandidates &&
-              activeTab === "inbound" &&
-              totalCount < activeCategoryTotalCount && (
-                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
-                  <p className="text-yellow-700 text-sm">
-                    There might be fewer candidates in the Inbound tab due to
-                    applied filters. You can click on the "Clear All Filters"
-                    button in the sidebar to view all candidates.
-                  </p>
-                </div>
-              )}
+
             {candidates.map((candidate) => {
               // Extract college name from education_summary.title
               let collegeName = candidate?.education_summary?.title
@@ -2795,15 +2787,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       ) : (
         <div className="p-3 2xl:p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-400 2xl:text-base font-[400]">
-              Showing {selectedSource ? "filtered" : startIndex + 1} to{" "}
-              {selectedSource
-                ? candidates.length
-                : Math.min(endIndex, totalCount)}{" "}
-              of{" "}
-              {selectedSource
-                ? `${candidates.length} candidates`
-                : totalCount}{" "}
+            <div className="text-xs text-gray-400 2xl:text-base font-[400]">
+              Showing {(currentPage - 1) * candidatesPerPage + 1} to{" "}
+              {(currentPage - 1) * candidatesPerPage + candidates.length} of {totalCount}{" "}
               candidates
             </div>
             <div className="flex items-center space-x-2">
