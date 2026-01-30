@@ -127,10 +127,24 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
   };
 
   const [isExpanded, setIsExpanded] = useState(false);
-  const data = candidateData?.job_score?.quick_fit_summary || [];
 
-  // Assuming we sort by priority for key skills (CRITICAL first), but for simplicity, take first 5
-  // You can enhance sorting logic if needed, e.g., prioritize 'CRITICAL'
+  let data = candidateData?.job_score?.quick_fit_summary || [];
+
+  // Sort data: CRITICAL first, then IMPORTANT, then others (LEADERSHIP, EXPERIENCE)
+  const priorityOrder = {
+    CRITICAL: 0,
+    IMPORTANT: 1,
+    LEADERSHIP: 2,
+    EXPERIENCE: 3,
+  };
+  data = data.sort((a, b) => {
+    const orderA =
+      priorityOrder[a.priority as keyof typeof priorityOrder] ?? 99;
+    const orderB =
+      priorityOrder[b.priority as keyof typeof priorityOrder] ?? 99;
+    return orderA - orderB;
+  });
+
   const keySkills = data.slice(0, 5);
   const moreSkills = data.slice(5);
 
@@ -468,7 +482,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                           <div
                             className={`flex gap-2 items-center font-semibold ${getColorClass(item.color)}`}
                           >
-                            {item.status === "validated" ? (
+                            {item.priority === "CRITICAL" ? (
                               <Sparkle
                                 className={`w-4 h-4 ${getColorClass(item.color)}`}
                               />
@@ -512,7 +526,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                               <div
                                 className={`flex gap-2 items-center font-semibold ${getColorClass(item.color)}`}
                               >
-                                {item.status === "validated" ? (
+                                {item.priority === "CRITICAL" ? (
                                   <Sparkle
                                     className={`w-4 h-4 ${getColorClass(item.color)}`}
                                   />
