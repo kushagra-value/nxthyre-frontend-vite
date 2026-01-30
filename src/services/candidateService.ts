@@ -485,6 +485,8 @@ export interface QuickFitItem {
   badge: string;
   status: string;
   color: string;
+  evidence: string;
+  priority: string;
 }
 
 export interface AnalysisResult {
