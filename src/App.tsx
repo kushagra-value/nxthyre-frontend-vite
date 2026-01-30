@@ -693,12 +693,13 @@ function MainApp() {
       is_prevetted: activeTab === "prevetted",
       is_active: activeTab === "active",
       sort_by: sortBy,
+      inbound_source: filters.inbound_source,
     };
     setFilters(newFilters);
     if (activeCategoryId) {
       fetchCandidates(currentPage, newFilters);
     }
-  }, [activeTab, sortBy, debouncedSearchQuery, isAuthenticated, currentPage]);
+  }, [activeTab, filters.inbound_source, sortBy, debouncedSearchQuery, isAuthenticated, currentPage]);
   useEffect(() => {
     const fetchCreditBalance = async () => {
       try {
