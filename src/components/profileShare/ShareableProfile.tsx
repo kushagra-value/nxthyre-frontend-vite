@@ -463,10 +463,10 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                       {keySkills.map((item, index) => (
                         <div
                           key={index}
-                          className={`${getColorClass(item.color)} p-4 border border-gray-300 rounded-lg gap-2 w-full flex flex-col`}
+                          className={`${getColorClass(item.color)} p-4 border border-gray-200 rounded-lg gap-2 w-full flex flex-col`}
                         >
                           <div
-                            className={`flex gap-2 items-center ${getColorClass(item.color)}`}
+                            className={`flex gap-2 items-center font-semibold ${getColorClass(item.color)}`}
                           >
                             {item.status === "validated" ? (
                               <Sparkle
@@ -476,7 +476,9 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                             {item.badge}
                             {getIcon(item.color)}
                           </div>
-                          <div className="text-gray-500">{item.evidence}</div>
+                          <div className="text-gray-500 pl-1">
+                            {item.evidence}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -505,10 +507,10 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                           {moreSkills.map((item, index) => (
                             <div
                               key={index}
-                              className={`${getColorClass(item.color)} p-4 border border-gray-300 rounded-lg gap-2 w-full flex flex-col`}
+                              className={`${getColorClass(item.color)} p-4 border border-gray-200 rounded-lg gap-2 w-full flex flex-col`}
                             >
                               <div
-                                className={`flex gap-2 items-center ${getColorClass(item.color)}`}
+                                className={`flex gap-2 items-center font-semibold ${getColorClass(item.color)}`}
                               >
                                 {item.status === "validated" ? (
                                   <Sparkle
@@ -518,7 +520,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                                 {item.badge}
                                 {getIcon(item.color)}
                               </div>
-                              <div className="text-gray-500">
+                              <div className="text-gray-500 pl-1">
                                 {item.evidence}
                               </div>
                             </div>
