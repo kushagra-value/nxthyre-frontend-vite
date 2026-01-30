@@ -4234,10 +4234,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           >
                             <ChevronLeft className="w-4 h-4" />
                           </button>
-                          <span className="text-sm font-medium">
+                          {/* <span className="text-sm font-medium">
                             Page {currentPage} of{" "}
                             {Math.ceil(totalCandidates / pageSize)}
-                          </span>
+                          </span> */}
                           {getPageNumbers().map((page, index) => (
                             <button
                               key={index}
