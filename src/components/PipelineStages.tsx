@@ -1977,6 +1977,50 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     }
   }, [showEditModal, editingCandidate]);
 
+  const totalPages = totalCandidates / pageSize;
+  const maxVisiblePages = 5;
+
+  const getPageNumbers = () => {
+    const pageNumbers: (number | string)[] = [];
+
+    if (totalPages <= maxVisiblePages + 2) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      pageNumbers.push(1);
+      const halfWindow = Math.floor(maxVisiblePages / 2);
+      let startPage = Math.max(2, currentPage - halfWindow);
+      let endPage = Math.min(totalPages - 1, currentPage + halfWindow);
+
+      if (endPage - startPage + 1 < maxVisiblePages) {
+        if (currentPage <= halfWindow + 1) {
+          endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
+        } else {
+          startPage = Math.max(2, endPage - maxVisiblePages + 1);
+        }
+      }
+
+      if (startPage > 2) {
+        pageNumbers.push("...");
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pageNumbers.push(i);
+      }
+
+      if (endPage < totalPages - 1) {
+        pageNumbers.push("...");
+      }
+
+      if (totalPages > 1) {
+        pageNumbers.push(totalPages);
+      }
+    }
+
+    return pageNumbers;
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="sticky top-0 z-20 bg-white will-change-transform">
@@ -4176,11 +4220,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       <div className="flex justify-between items-center py-4 border-t border-gray-200 space-y-3">
                         <div className="text-sm text-gray-400">
                           Showing {(currentPage - 1) * pageSize + 1} to{" "}
-                          candidates
-                          {Math.min(
-                            currentPage * pageSize,
-                            totalCandidates,
-                          )} of {totalCandidates}{" "}
+                          {Math.min(currentPage * pageSize, totalCandidates)} of{" "}
+                          {totalCandidates} candidates
                           {selectedSource && "(filtered by source)"}
                         </div>
                         <div className="flex items-center space-x-2">
@@ -4197,6 +4238,25 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             Page {currentPage} of{" "}
                             {Math.ceil(totalCandidates / pageSize)}
                           </span>
+                          {getPageNumbers().map((page, index) => (
+                            <button
+                              key={index}
+                              onClick={() =>
+                                typeof page === "number" && setCurrentPage(page)
+                              }
+                              className={`px-3 py-1 text-sm rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                                page === currentPage
+                                  ? "bg-blue-600 text-white"
+                                  : typeof page === "number"
+                                    ? "text-gray-600 hover:bg-gray-100"
+                                    : "text-gray-600 cursor-default"
+                              }`}
+                              disabled={typeof page !== "number"}
+                              area-label={`Go to page ${page}`}
+                            >
+                              {page}
+                            </button>
+                          ))}
                           <button
                             onClick={() => setCurrentPage((p) => p + 1)}
                             disabled={currentPage * pageSize >= totalCandidates}
