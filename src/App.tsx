@@ -121,6 +121,7 @@ interface Filters {
   is_active: boolean;
   sort_by: string;
   boolQuery?: string;
+  inbound_source?: string | null;
 }
 interface Workspace {
   id: number;
@@ -377,10 +378,17 @@ function MainApp() {
     is_active: false,
     sort_by: "",
     boolQuery: "",
+    inbound_source: null,
   });
   useEffect(() => {
     setIsSearchMode(debouncedSearchQuery.trim() !== "");
   }, [debouncedSearchQuery]);
+
+  useEffect(() => {
+    if (activeTab !== "inbound") {
+      setFilters(prev => ({ ...prev, inbound_source: null }));
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     if (categories.length > 0) {
@@ -1446,7 +1454,7 @@ function MainApp() {
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
                         searchQuery={""}
-                        setSearchQuery={() => {}}
+                        setSearchQuery={() => { }}
                         showCreateRoleButton={true}
                         showSearchBar={false}
                       />
@@ -1460,7 +1468,7 @@ function MainApp() {
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
                         searchQuery={""}
-                        setSearchQuery={() => {}}
+                        setSearchQuery={() => { }}
                         showCreateRoleButton={true}
                         showSearchBar={false}
                       />
@@ -1626,11 +1634,10 @@ function MainApp() {
                                           onClick={() =>
                                             setCurrentRequisitionPage(page)
                                           }
-                                          className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
-                                            page === currentRequisitionPage
-                                              ? "bg-blue-600 text-white"
-                                              : "bg-white text-black hover:bg-gray-200"
-                                          }`}
+                                          className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${page === currentRequisitionPage
+                                            ? "bg-blue-600 text-white"
+                                            : "bg-white text-black hover:bg-gray-200"
+                                            }`}
                                         >
                                           {page}
                                         </button>
@@ -2522,6 +2529,10 @@ function MainApp() {
                                 activeCategoryTotalCount
                               }
                               currentAnalysis={currentAnalysis}
+                              onInboundSourceChange={(source: string | null) => {
+                                setFilters(prev => ({ ...prev, inbound_source: source }));
+                                setCurrentPage(1);
+                              }}
                             />
                           </div>
                           {/* CandidateDetail remains in its original div with 30% width */}

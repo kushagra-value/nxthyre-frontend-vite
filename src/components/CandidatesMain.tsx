@@ -1168,6 +1168,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                           e.stopPropagation();
                           setSelectedSource(null);
                           setCurrentPage(1);
+                          onInboundSourceChange?.(null);
                         }}
                       />
                     </>
@@ -1201,6 +1202,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                             setSelectedSource(option.value);
                             setShowSourceDropdown(false);
                             setCurrentPage(1);
+                            onInboundSourceChange?.(option.value);
                           }}
                           className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors ${selectedSource === option.value
                             ? "bg-blue-50 text-blue-600"
