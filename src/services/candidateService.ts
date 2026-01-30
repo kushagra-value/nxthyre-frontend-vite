@@ -62,6 +62,7 @@ export interface CandidateListItem {
   } | null;
   expected_ctc?: number;
   job_score?: AnalysisResult;
+  time_applied: string;
 }
 
 export interface ShareableProfileCandidate {
@@ -1092,7 +1093,7 @@ class CandidateService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error ||
-          "Failed to fetch background verifications",
+        "Failed to fetch background verifications",
       );
     }
   }

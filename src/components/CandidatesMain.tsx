@@ -187,7 +187,7 @@ const CandidateEditForm = ({
         <div className="flex items-center gap-2 px-3 py-2 border border-blue-200 rounded-lg bg-blue-50/50 min-w-[200px]">
           <MapPin className="w-4 h-4 text-gray-400" />
           <span className="text-gray-700 font-medium text-sm truncate">
-            {candidate.location || "Bangalore"}
+            {candidate.location || ""}
           </span>
           <ChevronDown className="w-4 h-4 ml-auto text-blue-400" />
         </div>
@@ -1911,8 +1911,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                       stroke-linejoin="round"
                                     />
                                   </svg>
-                                  {candidate.location?.split(",")[0] ??
-                                    "Bangalore"}
+                                  {candidate.location?.split(",")[0] ?? ""}
                                 </p>
                               </div>
                               {activeTab === "active" &&
@@ -1974,6 +1973,18 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                     })()}
                                   </div>
                                 )}
+                              {activeTab === "inbound" &&
+                                candidate.time_applied && (
+                                  <div className="flex items-center space-x-1 text-[16px] mt-1 font-[400] text-[#818283]">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                      <path d="M13.8327 8.83333C13.8327 12.0533 11.2193 14.6667 7.99935 14.6667C4.77935 14.6667 2.16602 12.0533 2.16602 8.83333C2.16602 5.61333 4.77935 3 7.99935 3C11.2193 3 13.8327 5.61333 13.8327 8.83333Z" stroke="#818283" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round" />
+                                      <path d="M8 5.33203V8.66536" stroke="#818283" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round" />
+                                      <path d="M6 1.33203H10" stroke="#818283" stroke-width="1.33" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+
+                                    {candidate.time_applied}
+                                  </div>
+                                )}
                             </div>
                           </div>
                           <div className="flex space-x-1">
@@ -1991,16 +2002,23 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     </div>
                   </div>
                   <div className="pt-5 pl-12 flex space-x-12 gap-2 text-xs 2xl:text-base font-[400px] ml-1">
-                    {candidate?.experience_years && (
+                    {candidate?.experience_years ? (
                       <div className="flex flex-col">
                         <p className="text-[#A8A8A8] mr-[5px]">Experience</p>
                         <p className="text-[#4B5563]">
                           {candidate.experience_years}
                         </p>
                       </div>
+                    ) : (
+                      <div className="flex flex-col">
+                        <p className="text-[#A8A8A8] mr-[5px]">Experience</p>
+                        <p className="text-[#4B5563]">
+                          -- year exp
+                        </p>
+                      </div>
                     )}
 
-                    {candidate.notice_period_summary && (
+                    {candidate.notice_period_summary ? (
                       <div className="flex flex-col">
                         <p className="text-[#A8A8A8] mr-[5px]">Notice Period</p>
                         <p className="text-[#4B5563]">
@@ -2013,21 +2031,46 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                             .join(" ")}
                         </p>
                       </div>
+                    ) : (
+                      <div className="flex flex-col">
+                        <p className="text-[#A8A8A8] mr-[5px]">Notice Period</p>
+                        <p className="text-[#4B5563]">
+                          --
+                        </p>
+                      </div>
                     )}
                     {/* need to update the code for Current Salary */}
-                    {candidate.current_salary_lpa && (
+                    {candidate.current_salary_lpa ? (
                       <div className="flex flex-col">
                         <p className="text-[#A8A8A8] mr-[5px]">Current CTC</p>
                         <p className="text-[#4B5563]">
                           {candidate.current_salary_lpa}
                         </p>
                       </div>
+                    ) : (
+                      <div className="flex flex-col">
+                        <p className="text-[#A8A8A8] mr-[5px]">Current CTC</p>
+                        <p className="text-[#4B5563]">
+                          --LPA
+                        </p>
+                      </div>
+                    )}
+                    {candidate.expected_ctc ? (
+                      <div className="flex flex-col">
+                        <p className="text-[#A8A8A8] mr-[5px]">Expected CTC</p>
+                        <p className="text-[#4B5563]">
+                          {candidate.expected_ctc}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col">
+                        <p className="text-[#A8A8A8] mr-[5px]">Expected CTC</p>
+                        <p className="text-[#4B5563]">
+                          --LPA
+                        </p>
+                      </div>
                     )}
 
-                    <div className="flex flex-col">
-                      <p className="text-[#A8A8A8] mr-[5px]">Expected CTC</p>
-                      <p className="text-[#4B5563]">--LPA</p>
-                    </div>
                   </div>
                   <div className="p-3 pl-12 mt-5 bg-white flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg border-t border-gray-200">
                     <div className="flex items-center space-x-3">
