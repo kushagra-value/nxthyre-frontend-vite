@@ -1495,7 +1495,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             </div>
           ))}
         </>
-      ) : displayedCandidates.length === 0 ? (
+      ) : candidates.length === 0 ? (
         <div className="text-center py-8 space-y-2">
           {!loadingCandidates &&
             activeTab === "inbound" &&
@@ -1526,7 +1526,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   </p>
                 </div>
               )}
-            {displayedCandidates.map((candidate) => {
+            {candidates.map((candidate) => {
               // Extract college name from education_summary.title
               let collegeName = candidate?.education_summary?.title
                 ? candidate.education_summary.title.split("-")[0].trim()
@@ -2007,7 +2007,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                           {candidate.notice_period_summary
                             .split(" ")
                             .map(
-                              (word) =>
+                              (word: string) =>
                                 word.charAt(0).toUpperCase() + word.slice(1),
                             )
                             .join(" ")}
@@ -2824,11 +2824,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
             <div className="text-sm text-gray-400 2xl:text-base font-[400]">
               Showing {selectedSource ? "filtered" : startIndex + 1} to{" "}
               {selectedSource
-                ? displayedCandidates.length
+                ? candidates.length
                 : Math.min(endIndex, totalCount)}{" "}
               of{" "}
               {selectedSource
-                ? `${displayedCandidates.length} candidates`
+                ? `${candidates.length} candidates`
                 : totalCount}{" "}
               candidates
             </div>
