@@ -4218,7 +4218,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                     </div>
                     {totalCandidates > pageSize && (
                       <div className="flex justify-between items-center py-4 border-t border-gray-200 space-y-3">
-                        <div className="text-sm text-gray-400">
+                        <div className="text-sm text-gray-400 ml-4 mt-4">
                           Showing {(currentPage - 1) * pageSize + 1} to{" "}
                           {Math.min(currentPage * pageSize, totalCandidates)} of{" "}
                           {totalCandidates} candidates
