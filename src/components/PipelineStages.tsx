@@ -4438,6 +4438,61 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         </div>
       )}
 
+      {showExportDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Export {selectedCandidates.length} Candidate
+              {selectedCandidates.length !== 1 ? "s" : ""}
+            </h3>
+            <p className="text-sm text-gray-600 mt-2">
+              Please choose the export format for the selected candidates.
+            </p>
+            <div className="mt-4 flex justify-start space-x-2">
+              <button
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                onClick={() => handleExportCandidates("csv")}
+                disabled={exportLoading}
+                area-label="Export candidates as CSV"
+              >
+                {exportLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Exporting...
+                  </>
+                ) : (
+                  "Export as CSV"
+                )}
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                onClick={() => handleExportCandidates("xlsx")}
+                disabled={exportLoading}
+                area-label="Export candidates as Excel"
+              >
+                {exportLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Exporting...
+                  </>
+                ) : (
+                  "Export as Excel"
+                )}
+              </button>
+              <button
+                className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                onClick={() => setShowExportDialog(false)}
+                disabled={exportLoading}
+                area-label="Cancel export dialog"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {showUploadModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
