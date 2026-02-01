@@ -520,8 +520,17 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
     setExportLoading(true);
     try {
+
+      const selectedUuids = displayedCandidates
+        .filter((cand) => selectedCandidates.includes(cand.id.toString()))
+        .map((cand) => cand.candidate.id);
+
+      if (selectedUuids.length === 0) {
+        throw new Error("No valid candidates found for export");
+      }
+
       const response: ExportCandidateResponse =
-        await candidateService.exportCandidates(selectedCandidates);
+        await candidateService.exportCandidates(selectedUuids);
 
       if (typeof response !== "string") {
         throw new Error("Invalid response format: Expected a CSV string");
