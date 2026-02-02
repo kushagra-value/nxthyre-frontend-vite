@@ -70,7 +70,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
   };
 
   // Default to anonymous if not provided
-  const effectiveShareOption = shareOption || "anonymous_profile";
+  const effectiveShareOption = shareOption || "full_profile";
   const effectiveResumeUrl = resumeUrl || "";
 
   useEffect(() => {
