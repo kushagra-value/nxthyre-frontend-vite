@@ -1244,7 +1244,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         </div>
       </div>
 
-      <div className="flex gap-2 border-t border-gray-200 pt-4 bg-white sticky bottom-20">
+      <div className="flex gap-2 border-t border-gray-200 pt-4 bg-white sticky -bottom-60">
         {/* Apply Filters */}
         <div className="w-full rounded-lg">
           <button
