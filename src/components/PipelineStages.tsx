@@ -3311,7 +3311,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                         }
                                         const src = sourceObj.source;
 
-                                        if (src === "NAUKRI_NVITE") {
+                                        if (src === "naukri") {
                                           return (
                                             <svg
                                               width="19"
@@ -3351,7 +3351,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                               </defs>
                                             </svg>
                                           );
-                                        } else if (src === "PUBLIC_JOB_PAGE") {
+                                        } else if (src === "pyjamahr") {
                                           return (
                                             <svg
                                               width="19"
@@ -3389,7 +3389,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                               </defs>
                                             </svg>
                                           );
-                                        } else if (src === "External") {
+                                        } else if (src === "external") {
                                           return (
                                             <svg
                                               width="13"
