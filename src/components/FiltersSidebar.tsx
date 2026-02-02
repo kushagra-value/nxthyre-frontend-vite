@@ -511,163 +511,116 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
   return (
     <div className="bg-white rounded-xl p-3 lg:p-4 flex flex-col max-h-[calc(100vh - 60px)] overflow-y-auto relative hide-scrollbar">
-      <div className="pb-6">
-        {/* Keywords / Boolean Search */}
-        <div className="border-b border-gray-200 mb-4 pb-4 px-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
-              <Search className="w-4 h-4 mr-2 text-gray-500" />
-              {tempFilters.booleanSearch ? "Boolean Search" : "Keywords"}
-            </h3>
-            <div className="flex gap-2 cursor-pointer">
-              {/* <FilterMenu
+      {/* Keywords / Boolean Search */}
+      <div className="border-b border-gray-200 mb-4 pb-4 px-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
+            <Search className="w-4 h-4 mr-2 text-gray-500" />
+            {tempFilters.booleanSearch ? "Boolean Search" : "Keywords"}
+          </h3>
+          <div className="flex gap-2 cursor-pointer">
+            {/* <FilterMenu
                 filters={tempFilters}
                 updateTempFilters={updateTempFilters}
               /> */}
-              <div className="flex items-center gap-2 pl-4 py-2 text-sm text-gray-700">
-                <span
-                  className={`${tempFilters.booleanSearch ? "hidden" : "flex"}`}
-                >
-                  Boolean Search
-                </span>
-                <button
-                  onClick={() =>
-                    updateTempFilters(
-                      "booleanSearch",
-                      !tempFilters.booleanSearch,
-                    )
-                  }
-                  className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
-                    tempFilters.booleanSearch ? "bg-blue-500" : "bg-gray-300"
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${
-                      tempFilters.booleanSearch
-                        ? "translate-x-4"
-                        : "translate-x-1"
-                    }`}
-                  />
-                </button>
-              </div>
-              <div
-                className="cursor-pointer"
-                onClick={() => toggleSection("keywords")}
+            <div className="flex items-center gap-2 pl-4 py-2 text-sm text-gray-700">
+              <span
+                className={`${tempFilters.booleanSearch ? "hidden" : "flex"}`}
               >
-                {expandedSections.keywords ? (
-                  <ChevronUp className="w-4 h-4 mt-2 text-gray-500" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 mt-2 text-gray-500" />
-                )}
-              </div>
+                Boolean Search
+              </span>
+              <button
+                onClick={() =>
+                  updateTempFilters("booleanSearch", !tempFilters.booleanSearch)
+                }
+                className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
+                  tempFilters.booleanSearch ? "bg-blue-500" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${
+                    tempFilters.booleanSearch
+                      ? "translate-x-4"
+                      : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+            <div
+              className="cursor-pointer"
+              onClick={() => toggleSection("keywords")}
+            >
+              {expandedSections.keywords ? (
+                <ChevronUp className="w-4 h-4 mt-2 text-gray-500" />
+              ) : (
+                <ChevronDown className="w-4 h-4 mt-2 text-gray-500" />
+              )}
             </div>
           </div>
-          {expandedSections.keywords && (
-            <div className="space-y-2">
-              {tempFilters.booleanSearch ? (
-                <BooleanSearchComponent
-                  boolQuery={tempFilters.boolQuery || ""}
-                  onChange={handleBoolQueryChange}
-                  onClose={handleCloseBooleanSearch}
-                />
-              ) : (
-                <>
-                  <div className="relative">
-                    <textarea
-                      ref={keywordTextareaRef}
-                      value={tempFilters.keywords || ""}
-                      onChange={(e) =>
-                        updateTempFilters("keywords", e.target.value)
-                      }
-                      placeholder='Enter keywords separated by commas, e.g. "python*, react, css, llm*" (* marks compulsory/must-have terms)'
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none min-h-[80px] overflow-hidden"
-                      rows={1}
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-          )}
         </div>
-
-        <div className="max-h-[calc(100vh-32vh)] overflow-y-auto hide-scrollbar">
-          {/* Total Experience */}
-          <div
-            className={`bg-[#F5F9FB] rounded-t-lg  p-4 ${
-              expandedSections.totalExp
-                ? "mb-4 rounded-lg"
-                : "border-b border-gray-200"
-            }`}
-          >
-            <div
-              className={`flex items-center justify-between cursor-pointer ${
-                expandedSections.totalExp ? "mb-2" : ""
-              }`}
-              onClick={() => toggleSection("totalExp")}
-            >
-              <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
-                <Briefcase className="w-4 h-4 mr-2 text-gray-500" />
-                Total Experience
-              </h3>
-              {expandedSections.totalExp ? (
-                <ChevronUp className="w-4 h-4 text-gray-500" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-gray-500" />
-              )}
-            </div>
-            {expandedSections.totalExp && (
-              <div className="space-y-3">
-                <div className="flex space-x-3">
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      placeholder="0 Years"
-                      value={tempFilters.minTotalExp}
-                      onChange={(e) =>
-                        updateTempFilters("minTotalExp", e.target.value)
-                      }
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 bg-white"
-                      pattern="\d*"
-                      onInput={(e) => {
-                        e.currentTarget.value = e.currentTarget.value.replace(
-                          /[^0-9]/g,
-                          "",
-                        );
-                      }}
-                    />
-                    <label className="text-xs text-gray-500 mt-1 block">
-                      Minimum Exp
-                    </label>
-                  </div>
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      placeholder="5 Years"
-                      value={tempFilters.maxTotalExp}
-                      onChange={(e) =>
-                        updateTempFilters("maxTotalExp", e.target.value)
-                      }
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 bg-white"
-                      pattern="\d*"
-                      onInput={(e) => {
-                        e.currentTarget.value = e.currentTarget.value.replace(
-                          /[^0-9]/g,
-                          "",
-                        );
-                      }}
-                    />
-                    <label className="text-xs text-gray-500 mt-1 block">
-                      Maximum Exp
-                    </label>
-                  </div>
+        {expandedSections.keywords && (
+          <div className="space-y-2">
+            {tempFilters.booleanSearch ? (
+              <BooleanSearchComponent
+                boolQuery={tempFilters.boolQuery || ""}
+                onChange={handleBoolQueryChange}
+                onClose={handleCloseBooleanSearch}
+              />
+            ) : (
+              <>
+                <div className="relative">
+                  <textarea
+                    ref={keywordTextareaRef}
+                    value={tempFilters.keywords || ""}
+                    onChange={(e) =>
+                      updateTempFilters("keywords", e.target.value)
+                    }
+                    placeholder='Enter keywords separated by commas, e.g. "python*, react, css, llm*" (* marks compulsory/must-have terms)'
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none min-h-[80px] overflow-hidden"
+                    rows={1}
+                  />
                 </div>
-                <div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="max-h-[calc(100vh-32vh)] overflow-y-auto hide-scrollbar">
+        {/* Total Experience */}
+        <div
+          className={`bg-[#F5F9FB] rounded-t-lg  p-4 ${
+            expandedSections.totalExp
+              ? "mb-4 rounded-lg"
+              : "border-b border-gray-200"
+          }`}
+        >
+          <div
+            className={`flex items-center justify-between cursor-pointer ${
+              expandedSections.totalExp ? "mb-2" : ""
+            }`}
+            onClick={() => toggleSection("totalExp")}
+          >
+            <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
+              <Briefcase className="w-4 h-4 mr-2 text-gray-500" />
+              Total Experience
+            </h3>
+            {expandedSections.totalExp ? (
+              <ChevronUp className="w-4 h-4 text-gray-500" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-gray-500" />
+            )}
+          </div>
+          {expandedSections.totalExp && (
+            <div className="space-y-3">
+              <div className="flex space-x-3">
+                <div className="flex-1">
                   <input
                     type="text"
-                    placeholder="5 Years"
-                    value={tempFilters.minExperience}
+                    placeholder="0 Years"
+                    value={tempFilters.minTotalExp}
                     onChange={(e) =>
-                      updateTempFilters("minExperience", e.target.value)
+                      updateTempFilters("minTotalExp", e.target.value)
                     }
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 bg-white"
                     pattern="\d*"
@@ -679,568 +632,605 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                     }}
                   />
                   <label className="text-xs text-gray-500 mt-1 block">
-                    Experience in current company
+                    Minimum Exp
                   </label>
                 </div>
-              </div>
-            )}
-          </div>
-
-          {/* Location */}
-          <div
-            className={`bg-[#F5F9FB]  p-4 ${
-              expandedSections.location
-                ? "my-4 rounded-lg"
-                : "border-b border-gray-200"
-            }`}
-          >
-            <div
-              className={`flex items-center justify-between cursor-pointer ${
-                expandedSections.location ? "mb-2" : ""
-              }`}
-              onClick={() => toggleSection("location")}
-            >
-              <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
-                <MapPin className="w-4 h-4 mr-2 text-gray-500" />
-                Location
-              </h3>
-              {expandedSections.location ? (
-                <ChevronUp className="w-4 h-4 text-gray-500" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-gray-500" />
-              )}
-            </div>
-            {expandedSections.location && (
-              <>
-                <div className="flex justify-between items-center">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Search country..."
-                      className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
-                      value={currentCountry} // ← Use separate state
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        console.log("[Country Input] User typed:", value);
-                        setCurrentCountry(value); // ← Update separate state
-                        fetchCountrySuggestions(value); // ← Pass value directly
-
-                        // Clear city when country changes
-                        if (tempFilters.locations.length > 0) {
-                          updateTempFilters("locations", []);
-                          setCurrentCity("");
-                        }
-                      }}
-                    />
-                    {currentCountry.length >= 2 &&
-                      (isLoadingCountries || countrySuggestions.length > 0) && (
-                        <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
-                          {isLoadingCountries ? (
-                            <div className="px-3 py-2 text-sm text-gray-500 text-center">
-                              Loading countries...
-                            </div>
-                          ) : (
-                            countrySuggestions.map((suggestion, index) => (
-                              <div
-                                key={index}
-                                onClick={() => {
-                                  setCurrentCountry(suggestion); // ← Update input state
-                                  updateTempFilters("country", suggestion); // ← Update filter
-                                  setCountrySuggestions([]);
-                                }}
-                                className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                              >
-                                {suggestion}
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      )}
-                    <label className="text-xs text-gray-500 mt-1 block">
-                      Country
-                    </label>
-                  </div>
-
-                  {/* City Searchable Input */}
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder={
-                        tempFilters.country
-                          ? "Search city..."
-                          : "Select country first"
-                      }
-                      className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
-                      value={currentCity} // ← Use separate state
-                      onChange={(e) => {
-                        if (!tempFilters.country) return;
-                        const value = e.target.value;
-                        console.log("[City Input] User typed:", value);
-                        setCurrentCity(value); // ← Update separate state
-                        fetchCitySuggestions(value); // ← Pass value directly
-                      }}
-                      disabled={!tempFilters.country}
-                    />
-                    {tempFilters.country &&
-                      currentCity.length >= 2 &&
-                      (isLoadingCities || citySuggestions.length > 0) && (
-                        <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
-                          {isLoadingCities ? (
-                            <div className="px-3 py-2 text-sm text-gray-500 text-center">
-                              Loading cities...
-                            </div>
-                          ) : (
-                            citySuggestions.map((suggestion, index) => (
-                              <div
-                                key={index}
-                                onClick={() => {
-                                  setCurrentCity(suggestion); // ← Update input state
-                                  updateTempFilters("locations", [suggestion]); // ← Update filter
-                                  setCitySuggestions([]);
-                                }}
-                                className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                              >
-                                {suggestion}
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      )}
-                    <label className="text-xs text-gray-500 mt-1 block">
-                      City
-                    </label>
-                  </div>
-
-                  {/* Display selected location tag */}
-                </div>
-                {tempFilters.locations.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    <div className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200">
-                      <X
-                        className="w-3 h-3 text-gray-400 mr-1 cursor-pointer hover:text-gray-600"
-                        onClick={() => updateTempFilters("locations", [])}
-                      />
-                      <span>{tempFilters.locations[0]}</span>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Companies/Industries */}
-          <div
-            className={`bg-[#F5F9FB]  p-4 ${
-              expandedSections.companies
-                ? "my-4 rounded-lg"
-                : "border-b border-gray-200"
-            }`}
-          >
-            <div
-              className={`flex items-center justify-between cursor-pointer ${
-                expandedSections.companies ? "mb-2" : ""
-              } `}
-              onClick={() => toggleSection("companies")}
-            >
-              <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
-                <Building2 className="w-4 h-4 mr-2 text-gray-500" />
-                Companies/Industries
-              </h3>
-              {expandedSections.companies ? (
-                <ChevronUp className="w-4 h-4 text-gray-500" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-gray-500" />
-              )}
-            </div>
-            {expandedSections.companies && (
-              <div className="space-y-0">
-                <div>
-                  <label className="text-xs text-gray-600 mb-1 block">
-                    Companies
-                  </label>
+                <div className="flex-1">
                   <input
                     type="text"
-                    placeholder="Search Companies"
-                    value={tempFilters.companies}
+                    placeholder="5 Years"
+                    value={tempFilters.maxTotalExp}
                     onChange={(e) =>
-                      updateTempFilters("companies", e.target.value)
+                      updateTempFilters("maxTotalExp", e.target.value)
                     }
-                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 bg-white"
+                    pattern="\d*"
+                    onInput={(e) => {
+                      e.currentTarget.value = e.currentTarget.value.replace(
+                        /[^0-9]/g,
+                        "",
+                      );
+                    }}
                   />
-                </div>
-                <span className="flex justify-center text-gray-400">or</span>
-                <div>
-                  <label className="text-xs text-gray-600 mb-1 block">
-                    Industries
+                  <label className="text-xs text-gray-500 mt-1 block">
+                    Maximum Exp
                   </label>
-                  <input
-                    type="text"
-                    placeholder="Search Industries"
-                    value={tempFilters.industries}
-                    onChange={(e) =>
-                      updateTempFilters("industries", e.target.value)
-                    }
-                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-                  />
                 </div>
               </div>
-            )}
-          </div>
-
-          {/* Salary Range */}
-          <div
-            className={`bg-[#F5F9FB] p-4  ${
-              expandedSections.salary
-                ? "my-4 rounded-lg"
-                : "border-b border-gray-200"
-            }`}
-          >
-            <div
-              className={`flex items-center justify-between cursor-pointer ${
-                expandedSections.salary ? "mb-2" : ""
-              } `}
-              onClick={() => toggleSection("salary")}
-            >
-              <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
-                <DollarSign className="w-4 h-4 mr-2 text-gray-500" />
-                Salary range
-              </h3>
-              {expandedSections.salary ? (
-                <ChevronUp className="w-4 h-4 text-gray-500" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-gray-500" />
-              )}
-            </div>
-            {expandedSections.salary && (
-              <div className="space-y-2">
-                <div className="flex space-x-2">
-                  <select
-                    value={tempFilters.minSalary}
-                    onChange={(e) =>
-                      updateTempFilters("minSalary", e.target.value)
-                    }
-                    className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-500"
-                  >
-                    <option value="">Select Min Salary</option>
-                    <option value="500000">5 LPA</option>
-                    <option value="1000000">10 LPA</option>
-                    <option value="1500000">15 LPA</option>
-                    <option value="2000000">20 LPA</option>
-                    <option value="2500000">25 LPA</option>
-                    <option value="3000000">30 LPA</option>
-                    <option value="3500000">35 LPA</option>
-                    <option value="4000000">40 LPA</option>
-                    <option value="4500000">45 LPA</option>
-                    <option value="5000000">50 LPA</option>
-                    <option value="5500000">55 LPA</option>
-                    <option value="6000000">60 LPA</option>
-                    <option value="6500000">65 LPA</option>
-                    <option value="7000000">70 LPA</option>
-                    <option value="7500000">75 LPA</option>
-                    <option value="8000000">80 LPA</option>
-                    <option value="8500000">85 LPA</option>
-                    <option value="9000000">90 LPA</option>
-                    <option value="9500000">95 LPA</option>
-                    <option value="10000000">100 LPA</option>
-                  </select>
-                  <select
-                    value={tempFilters.maxSalary}
-                    onChange={(e) =>
-                      updateTempFilters("maxSalary", e.target.value)
-                    }
-                    className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-500"
-                  >
-                    <option value="">Select Max Salary</option>
-                    <option value="1000000">10 LPA</option>
-                    <option value="2000000">20 LPA</option>
-                    <option value="3000000">30 LPA</option>
-                    <option value="4000000">40 LPA</option>
-                    <option value="5000000">50 LPA</option>
-                    <option value="6000000">60 LPA</option>
-                    <option value="7000000">70 LPA</option>
-                    <option value="8000000">80 LPA</option>
-                    <option value="9000000">90 LPA</option>
-                    <option value="10000000">100 LPA</option>
-                    <option value="11000000">110 LPA</option>
-                    <option value="12000000">120 LPA</option>
-                    <option value="13000000">130 LPA</option>
-                    <option value="14000000">140 LPA</option>
-                    <option value="15000000">150 LPA</option>
-                    <option value="16000000">160 LPA</option>
-                    <option value="17000000">170 LPA</option>
-                    <option value="18000000">180 LPA</option>
-                    <option value="19000000">190 LPA</option>
-                    <option value="20000000">200 LPA</option>
-                  </select>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Notice Period */}
-          <div
-            className={`bg-[#F5F9FB] p-4 ${
-              expandedSections.notice
-                ? "my-4 rounded-lg"
-                : "border-b border-gray-200"
-            }`}
-          >
-            <div
-              className={`flex items-center justify-between cursor-pointer ${
-                expandedSections.notice ? "mb-2" : ""
-              } `}
-              onClick={() => toggleSection("notice")}
-            >
-              <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
-                <Clock10 className="w-4 h-4 mr-2 text-gray-500" />
-                Notice period
-              </h3>
-              {expandedSections.notice ? (
-                <ChevronUp className="w-4 h-4 text-gray-500" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-gray-500" />
-              )}
-            </div>
-            {expandedSections.notice && (
               <div>
-                <select
-                  value={tempFilters.noticePeriod}
-                  onChange={(e) =>
-                    updateTempFilters("noticePeriod", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-500"
-                >
-                  <option value="">Select Notice Period</option>
-                  {noticePeriodOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
-
-          {/* Colleges */}
-          <div
-            className={`bg-[#F5F9FB] p-4 ${
-              expandedSections.colleges
-                ? "my-4  rounded-lg"
-                : "border-b border-gray-200"
-            }`}
-          >
-            <div
-              className={`flex items-center justify-between cursor-pointer ${
-                expandedSections.colleges ? "mb-2" : ""
-              } `}
-              onClick={() => toggleSection("colleges")}
-            >
-              <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
-                <GraduationCap className="w-4 h-4 mr-2 text-gray-500" />
-                College Education
-              </h3>
-              {expandedSections.colleges ? (
-                <ChevronUp className="w-4 h-4 text-gray-500" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-gray-500" />
-              )}
-            </div>
-            {expandedSections.colleges && (
-              <div className="space-y-2">
                 <input
                   type="text"
-                  placeholder="Search Colleges"
-                  value={tempFilters.colleges}
+                  placeholder="5 Years"
+                  value={tempFilters.minExperience}
                   onChange={(e) =>
-                    updateTempFilters("colleges", e.target.value)
+                    updateTempFilters("minExperience", e.target.value)
                   }
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 bg-white"
+                  pattern="\d*"
+                  onInput={(e) => {
+                    e.currentTarget.value = e.currentTarget.value.replace(
+                      /[^0-9]/g,
+                      "",
+                    );
+                  }}
                 />
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={tempFilters.topTierUniversities}
-                    onChange={(e) =>
-                      updateTempFilters("topTierUniversities", e.target.checked)
-                    }
-                    className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-xs text-gray-700">
-                    Top tier Universities only
-                  </span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={tempFilters.computerScienceGraduates}
-                    onChange={(e) =>
-                      updateTempFilters(
-                        "computerScienceGraduates",
-                        e.target.checked,
-                      )
-                    }
-                    className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-xs text-gray-700">
-                    Show computer science graduates only
-                  </span>
+                <label className="text-xs text-gray-500 mt-1 block">
+                  Experience in current company
                 </label>
               </div>
-            )}
-          </div>
-
-          {/* Spotlight */}
-          <div
-            className={`bg-[#F5F9FB] p-4 ${
-              expandedSections.spotlight
-                ? "my-4 rounded-lg"
-                : "border-b border-gray-200"
-            }`}
-          >
-            <div
-              className={`flex items-center justify-between cursor-pointer ${
-                expandedSections.spotlight ? "mb-2" : ""
-              } `}
-              onClick={() => toggleSection("spotlight")}
-            >
-              <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
-                <Star className="w-4 h-4 mr-2 text-gray-500" />
-                Spotlight
-              </h3>
-              {expandedSections.spotlight ? (
-                <ChevronUp className="w-4 h-4 text-gray-500" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-gray-500" />
-              )}
             </div>
-            {expandedSections.spotlight && (
-              <div className="space-y-2">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={tempFilters.showFemaleCandidates}
-                    onChange={(e) =>
-                      updateTempFilters(
-                        "showFemaleCandidates",
-                        e.target.checked,
-                      )
-                    }
-                    className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-xs text-gray-700">
-                    Show Female Candidates Only
-                  </span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={tempFilters.recentlyPromoted}
-                    onChange={(e) =>
-                      updateTempFilters("recentlyPromoted", e.target.checked)
-                    }
-                    className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-xs text-gray-700">
-                    Show Candidate that got promoted recently
-                  </span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={tempFilters.backgroundVerified}
-                    onChange={(e) =>
-                      updateTempFilters("backgroundVerified", e.target.checked)
-                    }
-                    className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-xs text-gray-700">
-                    Is Background Verified
-                  </span>
-                </label>
-              </div>
-            )}
-          </div>
+          )}
+        </div>
 
-          {/* More Filters */}
+        {/* Location */}
+        <div
+          className={`bg-[#F5F9FB]  p-4 ${
+            expandedSections.location
+              ? "my-4 rounded-lg"
+              : "border-b border-gray-200"
+          }`}
+        >
           <div
-            className={`bg-[#F5F9FB] rounded-b-lg p-4 mb-4 ${
-              expandedSections.moreFilters ? "my-4 rounded-lg" : ""
+            className={`flex items-center justify-between cursor-pointer ${
+              expandedSections.location ? "mb-2" : ""
             }`}
+            onClick={() => toggleSection("location")}
           >
-            <div
-              className={`flex items-center justify-between cursor-pointer ${
-                expandedSections.moreFilters ? "mb-2" : ""
-              } `}
-              onClick={() => toggleSection("moreFilters")}
-            >
-              <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
-                <Filter className="w-4 h-4 mr-2 text-gray-500" />
-                More Filters
-              </h3>
-              {expandedSections.moreFilters ? (
-                <ChevronUp className="w-4 h-4 text-gray-500" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-gray-500" />
-              )}
-            </div>
-            {expandedSections.moreFilters && (
-              <div className="space-y-2">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={tempFilters.hasCertification}
-                    onChange={(e) =>
-                      updateTempFilters("hasCertification", e.target.checked)
-                    }
-                    className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-xs text-gray-700">
-                    Has Certification
-                  </span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={tempFilters.hasResearchPaper}
-                    onChange={(e) =>
-                      updateTempFilters("hasResearchPaper", e.target.checked)
-                    }
-                    className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-xs text-gray-700">
-                    Must have Research Paper
-                  </span>
-                </label>
-
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={tempFilters.hasTwitter}
-                    onChange={(e) =>
-                      updateTempFilters("hasTwitter", e.target.checked)
-                    }
-                    className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-xs text-gray-700">
-                    Must have Twitter
-                  </span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={tempFilters.hasPortfolio}
-                    onChange={(e) =>
-                      updateTempFilters("hasPortfolio", e.target.checked)
-                    }
-                    className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-xs text-gray-700">
-                    Must have Portfolio website
-                  </span>
-                </label>
-              </div>
+            <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
+              <MapPin className="w-4 h-4 mr-2 text-gray-500" />
+              Location
+            </h3>
+            {expandedSections.location ? (
+              <ChevronUp className="w-4 h-4 text-gray-500" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-gray-500" />
             )}
           </div>
+          {expandedSections.location && (
+            <>
+              <div className="flex justify-between items-center">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search country..."
+                    className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
+                    value={currentCountry} // ← Use separate state
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      console.log("[Country Input] User typed:", value);
+                      setCurrentCountry(value); // ← Update separate state
+                      fetchCountrySuggestions(value); // ← Pass value directly
+
+                      // Clear city when country changes
+                      if (tempFilters.locations.length > 0) {
+                        updateTempFilters("locations", []);
+                        setCurrentCity("");
+                      }
+                    }}
+                  />
+                  {currentCountry.length >= 2 &&
+                    (isLoadingCountries || countrySuggestions.length > 0) && (
+                      <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
+                        {isLoadingCountries ? (
+                          <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                            Loading countries...
+                          </div>
+                        ) : (
+                          countrySuggestions.map((suggestion, index) => (
+                            <div
+                              key={index}
+                              onClick={() => {
+                                setCurrentCountry(suggestion); // ← Update input state
+                                updateTempFilters("country", suggestion); // ← Update filter
+                                setCountrySuggestions([]);
+                              }}
+                              className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                            >
+                              {suggestion}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  <label className="text-xs text-gray-500 mt-1 block">
+                    Country
+                  </label>
+                </div>
+
+                {/* City Searchable Input */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder={
+                      tempFilters.country
+                        ? "Search city..."
+                        : "Select country first"
+                    }
+                    className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
+                    value={currentCity} // ← Use separate state
+                    onChange={(e) => {
+                      if (!tempFilters.country) return;
+                      const value = e.target.value;
+                      console.log("[City Input] User typed:", value);
+                      setCurrentCity(value); // ← Update separate state
+                      fetchCitySuggestions(value); // ← Pass value directly
+                    }}
+                    disabled={!tempFilters.country}
+                  />
+                  {tempFilters.country &&
+                    currentCity.length >= 2 &&
+                    (isLoadingCities || citySuggestions.length > 0) && (
+                      <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
+                        {isLoadingCities ? (
+                          <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                            Loading cities...
+                          </div>
+                        ) : (
+                          citySuggestions.map((suggestion, index) => (
+                            <div
+                              key={index}
+                              onClick={() => {
+                                setCurrentCity(suggestion); // ← Update input state
+                                updateTempFilters("locations", [suggestion]); // ← Update filter
+                                setCitySuggestions([]);
+                              }}
+                              className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                            >
+                              {suggestion}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  <label className="text-xs text-gray-500 mt-1 block">
+                    City
+                  </label>
+                </div>
+
+                {/* Display selected location tag */}
+              </div>
+              {tempFilters.locations.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  <div className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200">
+                    <X
+                      className="w-3 h-3 text-gray-400 mr-1 cursor-pointer hover:text-gray-600"
+                      onClick={() => updateTempFilters("locations", [])}
+                    />
+                    <span>{tempFilters.locations[0]}</span>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Companies/Industries */}
+        <div
+          className={`bg-[#F5F9FB]  p-4 ${
+            expandedSections.companies
+              ? "my-4 rounded-lg"
+              : "border-b border-gray-200"
+          }`}
+        >
+          <div
+            className={`flex items-center justify-between cursor-pointer ${
+              expandedSections.companies ? "mb-2" : ""
+            } `}
+            onClick={() => toggleSection("companies")}
+          >
+            <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
+              <Building2 className="w-4 h-4 mr-2 text-gray-500" />
+              Companies/Industries
+            </h3>
+            {expandedSections.companies ? (
+              <ChevronUp className="w-4 h-4 text-gray-500" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-gray-500" />
+            )}
+          </div>
+          {expandedSections.companies && (
+            <div className="space-y-0">
+              <div>
+                <label className="text-xs text-gray-600 mb-1 block">
+                  Companies
+                </label>
+                <input
+                  type="text"
+                  placeholder="Search Companies"
+                  value={tempFilters.companies}
+                  onChange={(e) =>
+                    updateTempFilters("companies", e.target.value)
+                  }
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                />
+              </div>
+              <span className="flex justify-center text-gray-400">or</span>
+              <div>
+                <label className="text-xs text-gray-600 mb-1 block">
+                  Industries
+                </label>
+                <input
+                  type="text"
+                  placeholder="Search Industries"
+                  value={tempFilters.industries}
+                  onChange={(e) =>
+                    updateTempFilters("industries", e.target.value)
+                  }
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Salary Range */}
+        <div
+          className={`bg-[#F5F9FB] p-4  ${
+            expandedSections.salary
+              ? "my-4 rounded-lg"
+              : "border-b border-gray-200"
+          }`}
+        >
+          <div
+            className={`flex items-center justify-between cursor-pointer ${
+              expandedSections.salary ? "mb-2" : ""
+            } `}
+            onClick={() => toggleSection("salary")}
+          >
+            <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
+              <DollarSign className="w-4 h-4 mr-2 text-gray-500" />
+              Salary range
+            </h3>
+            {expandedSections.salary ? (
+              <ChevronUp className="w-4 h-4 text-gray-500" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-gray-500" />
+            )}
+          </div>
+          {expandedSections.salary && (
+            <div className="space-y-2">
+              <div className="flex space-x-2">
+                <select
+                  value={tempFilters.minSalary}
+                  onChange={(e) =>
+                    updateTempFilters("minSalary", e.target.value)
+                  }
+                  className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-500"
+                >
+                  <option value="">Select Min Salary</option>
+                  <option value="500000">5 LPA</option>
+                  <option value="1000000">10 LPA</option>
+                  <option value="1500000">15 LPA</option>
+                  <option value="2000000">20 LPA</option>
+                  <option value="2500000">25 LPA</option>
+                  <option value="3000000">30 LPA</option>
+                  <option value="3500000">35 LPA</option>
+                  <option value="4000000">40 LPA</option>
+                  <option value="4500000">45 LPA</option>
+                  <option value="5000000">50 LPA</option>
+                  <option value="5500000">55 LPA</option>
+                  <option value="6000000">60 LPA</option>
+                  <option value="6500000">65 LPA</option>
+                  <option value="7000000">70 LPA</option>
+                  <option value="7500000">75 LPA</option>
+                  <option value="8000000">80 LPA</option>
+                  <option value="8500000">85 LPA</option>
+                  <option value="9000000">90 LPA</option>
+                  <option value="9500000">95 LPA</option>
+                  <option value="10000000">100 LPA</option>
+                </select>
+                <select
+                  value={tempFilters.maxSalary}
+                  onChange={(e) =>
+                    updateTempFilters("maxSalary", e.target.value)
+                  }
+                  className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-500"
+                >
+                  <option value="">Select Max Salary</option>
+                  <option value="1000000">10 LPA</option>
+                  <option value="2000000">20 LPA</option>
+                  <option value="3000000">30 LPA</option>
+                  <option value="4000000">40 LPA</option>
+                  <option value="5000000">50 LPA</option>
+                  <option value="6000000">60 LPA</option>
+                  <option value="7000000">70 LPA</option>
+                  <option value="8000000">80 LPA</option>
+                  <option value="9000000">90 LPA</option>
+                  <option value="10000000">100 LPA</option>
+                  <option value="11000000">110 LPA</option>
+                  <option value="12000000">120 LPA</option>
+                  <option value="13000000">130 LPA</option>
+                  <option value="14000000">140 LPA</option>
+                  <option value="15000000">150 LPA</option>
+                  <option value="16000000">160 LPA</option>
+                  <option value="17000000">170 LPA</option>
+                  <option value="18000000">180 LPA</option>
+                  <option value="19000000">190 LPA</option>
+                  <option value="20000000">200 LPA</option>
+                </select>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Notice Period */}
+        <div
+          className={`bg-[#F5F9FB] p-4 ${
+            expandedSections.notice
+              ? "my-4 rounded-lg"
+              : "border-b border-gray-200"
+          }`}
+        >
+          <div
+            className={`flex items-center justify-between cursor-pointer ${
+              expandedSections.notice ? "mb-2" : ""
+            } `}
+            onClick={() => toggleSection("notice")}
+          >
+            <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
+              <Clock10 className="w-4 h-4 mr-2 text-gray-500" />
+              Notice period
+            </h3>
+            {expandedSections.notice ? (
+              <ChevronUp className="w-4 h-4 text-gray-500" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-gray-500" />
+            )}
+          </div>
+          {expandedSections.notice && (
+            <div>
+              <select
+                value={tempFilters.noticePeriod}
+                onChange={(e) =>
+                  updateTempFilters("noticePeriod", e.target.value)
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-500"
+              >
+                <option value="">Select Notice Period</option>
+                {noticePeriodOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+
+        {/* Colleges */}
+        <div
+          className={`bg-[#F5F9FB] p-4 ${
+            expandedSections.colleges
+              ? "my-4  rounded-lg"
+              : "border-b border-gray-200"
+          }`}
+        >
+          <div
+            className={`flex items-center justify-between cursor-pointer ${
+              expandedSections.colleges ? "mb-2" : ""
+            } `}
+            onClick={() => toggleSection("colleges")}
+          >
+            <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
+              <GraduationCap className="w-4 h-4 mr-2 text-gray-500" />
+              College Education
+            </h3>
+            {expandedSections.colleges ? (
+              <ChevronUp className="w-4 h-4 text-gray-500" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-gray-500" />
+            )}
+          </div>
+          {expandedSections.colleges && (
+            <div className="space-y-2">
+              <input
+                type="text"
+                placeholder="Search Colleges"
+                value={tempFilters.colleges}
+                onChange={(e) => updateTempFilters("colleges", e.target.value)}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={tempFilters.topTierUniversities}
+                  onChange={(e) =>
+                    updateTempFilters("topTierUniversities", e.target.checked)
+                  }
+                  className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-xs text-gray-700">
+                  Top tier Universities only
+                </span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={tempFilters.computerScienceGraduates}
+                  onChange={(e) =>
+                    updateTempFilters(
+                      "computerScienceGraduates",
+                      e.target.checked,
+                    )
+                  }
+                  className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-xs text-gray-700">
+                  Show computer science graduates only
+                </span>
+              </label>
+            </div>
+          )}
+        </div>
+
+        {/* Spotlight */}
+        <div
+          className={`bg-[#F5F9FB] p-4 ${
+            expandedSections.spotlight
+              ? "my-4 rounded-lg"
+              : "border-b border-gray-200"
+          }`}
+        >
+          <div
+            className={`flex items-center justify-between cursor-pointer ${
+              expandedSections.spotlight ? "mb-2" : ""
+            } `}
+            onClick={() => toggleSection("spotlight")}
+          >
+            <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
+              <Star className="w-4 h-4 mr-2 text-gray-500" />
+              Spotlight
+            </h3>
+            {expandedSections.spotlight ? (
+              <ChevronUp className="w-4 h-4 text-gray-500" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-gray-500" />
+            )}
+          </div>
+          {expandedSections.spotlight && (
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={tempFilters.showFemaleCandidates}
+                  onChange={(e) =>
+                    updateTempFilters("showFemaleCandidates", e.target.checked)
+                  }
+                  className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-xs text-gray-700">
+                  Show Female Candidates Only
+                </span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={tempFilters.recentlyPromoted}
+                  onChange={(e) =>
+                    updateTempFilters("recentlyPromoted", e.target.checked)
+                  }
+                  className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-xs text-gray-700">
+                  Show Candidate that got promoted recently
+                </span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={tempFilters.backgroundVerified}
+                  onChange={(e) =>
+                    updateTempFilters("backgroundVerified", e.target.checked)
+                  }
+                  className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-xs text-gray-700">
+                  Is Background Verified
+                </span>
+              </label>
+            </div>
+          )}
+        </div>
+
+        {/* More Filters */}
+        <div
+          className={`bg-[#F5F9FB] rounded-b-lg p-4 mb-4 ${
+            expandedSections.moreFilters ? "my-4 rounded-lg" : ""
+          }`}
+        >
+          <div
+            className={`flex items-center justify-between cursor-pointer ${
+              expandedSections.moreFilters ? "mb-2" : ""
+            } `}
+            onClick={() => toggleSection("moreFilters")}
+          >
+            <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
+              <Filter className="w-4 h-4 mr-2 text-gray-500" />
+              More Filters
+            </h3>
+            {expandedSections.moreFilters ? (
+              <ChevronUp className="w-4 h-4 text-gray-500" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-gray-500" />
+            )}
+          </div>
+          {expandedSections.moreFilters && (
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={tempFilters.hasCertification}
+                  onChange={(e) =>
+                    updateTempFilters("hasCertification", e.target.checked)
+                  }
+                  className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-xs text-gray-700">
+                  Has Certification
+                </span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={tempFilters.hasResearchPaper}
+                  onChange={(e) =>
+                    updateTempFilters("hasResearchPaper", e.target.checked)
+                  }
+                  className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-xs text-gray-700">
+                  Must have Research Paper
+                </span>
+              </label>
+
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={tempFilters.hasTwitter}
+                  onChange={(e) =>
+                    updateTempFilters("hasTwitter", e.target.checked)
+                  }
+                  className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-xs text-gray-700">
+                  Must have Twitter
+                </span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={tempFilters.hasPortfolio}
+                  onChange={(e) =>
+                    updateTempFilters("hasPortfolio", e.target.checked)
+                  }
+                  className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-xs text-gray-700">
+                  Must have Portfolio website
+                </span>
+              </label>
+            </div>
+          )}
         </div>
       </div>
 
