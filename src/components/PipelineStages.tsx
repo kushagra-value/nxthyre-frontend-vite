@@ -2056,7 +2056,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showSettingsPopup, showSourceDropdown, showActionDropdown]);
 
-
   const handleEditSave = async () => {
     if (!editingCandidate) return;
     try {
@@ -2064,7 +2063,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       const payload: any = {};
 
       // Parse Notice Period
-      if (editForm.notice !== editingCandidate.candidate.notice_period_summary) {
+      if (
+        editForm.notice !== editingCandidate.candidate.notice_period_summary
+      ) {
         const noticeLower = editForm.notice.toLowerCase().trim();
         let days: number | null = null;
 
@@ -2094,7 +2095,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           const lpa = parseFloat(lpaMatch[1]);
           payload.current_salary = Math.round(lpa); // rupees
         } else if (salaryStr !== "") {
-          showToast.error("Invalid Current CTC format (use numbers, e.g. 15 or 15 LPA)");
+          showToast.error(
+            "Invalid Current CTC format (use numbers, e.g. 15 or 15 LPA)",
+          );
           return;
         }
       }
@@ -2135,19 +2138,17 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             }
             if ("current_salary" in payload) {
               const lpa = payload.current_salary;
-              updated.candidate.current_salary_lpa =
-                Number.isInteger(lpa) ? `${lpa} LPA` : `${lpa.toFixed(1)} LPA`;
+              updated.candidate.current_salary_lpa = Number.isInteger(lpa)
+                ? `${lpa} LPA`
+                : `${lpa.toFixed(1)} LPA`;
             }
             return updated;
           }
           return c;
-        })
+        }),
       );
 
-      if (
-        selectedCandidate &&
-        selectedCandidate.candidate.id === uuid
-      ) {
+      if (selectedCandidate && selectedCandidate.candidate.id === uuid) {
         await fetchCandidateDetails(editingCandidate.id); // application ID
       }
 
@@ -2156,8 +2157,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     } catch (error: any) {
       console.error("Edit save error:", error);
       showToast.error(
-        error.response?.data?.detail ||
-        "Failed to update candidate details"
+        error.response?.data?.detail || "Failed to update candidate details",
       );
     }
   };
@@ -4190,11 +4190,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   {candidate.candidate.premium_data_availability
                                     ?.resume_url &&
                                     (() => {
-                                      const url = candidate.candidate
-                                        .premium_data_unlocked
-                                        ? candidate.candidate.premium_data
-                                            ?.resume_url
-                                        : null;
+                                      const url =
+                                        candidate.candidate.premium_data
+                                          ?.resume_url;
                                       return (
                                         <button
                                           className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -4202,23 +4200,27 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             e.stopPropagation();
                                             if (url) {
                                               window.open(url, "_blank");
-                                            } else {
-                                              setPendingReveal({
-                                                candidateId:
-                                                  candidate.candidate.id,
-                                                onSuccess: (prem) => {
-                                                  const finalUrl =
-                                                    prem.candidate.premium_data
-                                                      .resume_url;
-                                                  if (finalUrl)
-                                                    window.open(
-                                                      finalUrl,
-                                                      "_blank",
-                                                    );
-                                                },
-                                              });
-                                              // setShowRevealDialog(true);
-                                              handleConfirmReveal();
+                                            }
+                                            //  else {
+                                            //   setPendingReveal({
+                                            //     candidateId:
+                                            //       candidate.candidate.id,
+                                            //     onSuccess: (prem) => {
+                                            //       const finalUrl =
+                                            //         prem.candidate.premium_data
+                                            //           .resume_url;
+                                            //       if (finalUrl)
+                                            //         window.open(
+                                            //           finalUrl,
+                                            //           "_blank",
+                                            //         );
+                                            //     },
+                                            //   });
+                                            //   // setShowRevealDialog(true);
+                                            //   handleConfirmReveal();
+                                            // }
+                                            else {
+                                              toast.error("Resume not found");
                                             }
                                           }}
                                           aria-label={`View ${candidate.candidate.full_name}'s resume`}
@@ -4727,7 +4729,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   disabled
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-100 cursor-not-allowed text-gray-500 sm:text-sm"
                 />
-                <p className="text-xs text-gray-500 mt-1">Calculated from resume (not editable)</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Calculated from resume (not editable)
+                </p>
               </div>
 
               {/* Current Company Tenure - Read only */}
@@ -4741,7 +4745,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   disabled
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-100 cursor-not-allowed text-gray-500 sm:text-sm"
                 />
-                <p className="text-xs text-gray-500 mt-1">Calculated from current position (not editable)</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Calculated from current position (not editable)
+                </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -4795,7 +4801,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               </button>
               <button
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                onClick={async () => { handleEditSave() }}
+                onClick={async () => {
+                  handleEditSave();
+                }}
               >
                 Save
               </button>
