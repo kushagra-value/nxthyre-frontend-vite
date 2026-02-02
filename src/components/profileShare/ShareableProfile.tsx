@@ -577,7 +577,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
             </div>
           )}
 
-          {/* Community Notes Section */}
+          {/* Community Notes Section
           <div className="bg-white p-8 rounded-xl mt-6">
             <h3 className="text-lg font-semibold text-gray-600 mb-3">Notes</h3>
             <div className="space-y-4">
@@ -595,7 +595,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
 
           {/* References Section */}
           <div className="bg-white p-8 rounded-xl mt-6">
