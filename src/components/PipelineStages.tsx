@@ -55,7 +55,10 @@ import apiClient from "../services/api";
 import { jobPostService } from "../services/jobPostService"; // Import jobPostService
 import { showToast } from "../utils/toast";
 import PipelinesSideCard from "./PipelinePage/PipelinesSideCard";
-import { candidateService, ExportCandidateResponse } from "../services/candidateService";
+import {
+  candidateService,
+  ExportCandidateResponse,
+} from "../services/candidateService";
 import TemplateSelector from "./TemplateSelector";
 import toast from "react-hot-toast";
 
@@ -505,11 +508,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     const blob =
       typeof data === "string"
         ? new Blob([data], {
-          type:
-            type === "csv"
-              ? "text/csv"
-              : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        })
+            type:
+              type === "csv"
+                ? "text/csv"
+                : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          })
         : data;
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -529,7 +532,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
     setExportLoading(true);
     try {
-
       const selectedUuids = displayedCandidates
         .filter((cand) => selectedCandidates.includes(cand.id.toString()))
         .map((cand) => cand.candidate.id);
@@ -603,19 +605,19 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       const updated = candidates.map((c) =>
         c.candidate.id === candidateId
           ? {
-            ...c,
-            candidate: {
-              ...c.candidate,
-              premium_data_unlocked: true,
-              premium_data: premResponse.premium_data,
-              social_links: {
-                linkedin: premResponse.premium_data.linkedin_url,
-                github: premResponse.premium_data.github_url,
-                portfolio: premResponse.premium_data.portfolio_url,
-                resume: premResponse.premium_data.resume_url,
+              ...c,
+              candidate: {
+                ...c.candidate,
+                premium_data_unlocked: true,
+                premium_data: premResponse.premium_data,
+                social_links: {
+                  linkedin: premResponse.premium_data.linkedin_url,
+                  github: premResponse.premium_data.github_url,
+                  portfolio: premResponse.premium_data.portfolio_url,
+                  resume: premResponse.premium_data.resume_url,
+                },
               },
-            },
-          }
+            }
           : c,
       );
       setCandidates(updated);
@@ -1407,15 +1409,15 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           companyUrn: "",
           startDate: exp.start_date
             ? {
-              month: new Date(exp.start_date).getMonth() + 1,
-              year: new Date(exp.start_date).getFullYear(),
-            }
+                month: new Date(exp.start_date).getMonth() + 1,
+                year: new Date(exp.start_date).getFullYear(),
+              }
             : { month: 0, year: 0 },
           endDate: exp.end_date
             ? {
-              month: new Date(exp.end_date).getMonth() + 1,
-              year: new Date(exp.end_date).getFullYear(),
-            }
+                month: new Date(exp.end_date).getMonth() + 1,
+                year: new Date(exp.end_date).getFullYear(),
+              }
             : undefined,
           isCurrent: exp.is_current,
           location: exp.location,
@@ -1441,15 +1443,15 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           licenseNumber: cert.licenseNumber,
           startDate: cert.issued_date
             ? {
-              month: new Date(cert.issued_date).getMonth() + 1,
-              year: new Date(cert.issued_date).getFullYear(),
-            }
+                month: new Date(cert.issued_date).getMonth() + 1,
+                year: new Date(cert.issued_date).getFullYear(),
+              }
             : { month: 0, year: 0 },
           endDate: cert.valid_until
             ? {
-              month: new Date(cert.valid_until).getMonth() + 1,
-              year: new Date(cert.valid_until).getFullYear(),
-            }
+                month: new Date(cert.valid_until).getMonth() + 1,
+                year: new Date(cert.valid_until).getFullYear(),
+              }
             : undefined,
           url: cert.url,
         })),
@@ -2110,7 +2112,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     }
   }, [showEditModal, editingCandidate]);
 
-  const totalPages = totalCandidates / pageSize;
+  const totalPages = Math.ceil(totalCandidates / pageSize);
   const maxVisiblePages = 5;
 
   const getPageNumbers = () => {
@@ -2342,10 +2344,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         setSelectedStage("Uncontacted");
                         setActiveStageTab("uncontacted");
                       }}
-                      className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${viewMode === "prospect"
-                        ? "bg-blue-50 text-blue-700 border border-blue-200"
-                        : "text-gray-700 hover:bg-gray-50"
-                        }`}
+                      className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                        viewMode === "prospect"
+                          ? "bg-blue-50 text-blue-700 border border-blue-200"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
                     >
                       {viewMode === "prospect" && (
                         <div className="w-1 h-8 bg-blue-500 rounded-tr-xl rounded-br-xl rounded" />
@@ -2355,10 +2358,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         const ProspectIcon = getStageIcon("Uncontacted");
                         return (
                           <ProspectIcon
-                            className={`w-4 h-4 ${viewMode === "prospect"
-                              ? "text-blue-600"
-                              : "text-gray-600"
-                              }`}
+                            className={`w-4 h-4 ${
+                              viewMode === "prospect"
+                                ? "text-blue-600"
+                                : "text-gray-600"
+                            }`}
                           />
                         );
                       })()}
@@ -2377,10 +2381,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           </p>
                         </div>
                         <span
-                          className={`px-2 py-1 text-sm ${viewMode === "prospect"
-                            ? "text-blue-800"
-                            : "text-gray-400"
-                            }`}
+                          className={`px-2 py-1 text-sm ${
+                            viewMode === "prospect"
+                              ? "text-blue-800"
+                              : "text-gray-400"
+                          }`}
                         >
                           {[
                             stages.find((s) => ["Uncontacted"].includes(s.name))
@@ -2400,10 +2405,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         <button
                           key={stage.id}
                           onClick={() => handleStageSelect(stage.name)}
-                          className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${isSelected
-                            ? "bg-blue-50 text-blue-700 border border-blue-200"
-                            : "text-gray-700 hover:bg-gray-50"
-                            }`}
+                          className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                            isSelected
+                              ? "bg-blue-50 text-blue-700 border border-blue-200"
+                              : "text-gray-700 hover:bg-gray-50"
+                          }`}
                         >
                           {isSelected && (
                             <div className="w-1 h-8 bg-blue-500 rounded-tr-xl rounded-br-xl  rounded" />
@@ -2412,8 +2418,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             const StageIcon = getStageIcon(stage.name);
                             return (
                               <StageIcon
-                                className={`w-4 h-4 ${isSelected ? "text-blue-600" : "text-gray-600"
-                                  }`}
+                                className={`w-4 h-4 ${
+                                  isSelected ? "text-blue-600" : "text-gray-600"
+                                }`}
                               />
                             );
                           })()}
@@ -2431,8 +2438,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               )}
                             </div>
                             <span
-                              className={`px-2 py-1 text-sm ${isSelected ? "text-blue-800" : "text-gray-400"
-                                }`}
+                              className={`px-2 py-1 text-sm ${
+                                isSelected ? "text-blue-800" : "text-gray-400"
+                              }`}
                             >
                               {stage.candidate_count}
                             </span>
@@ -2464,10 +2472,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             else if (tab.id === "inbox")
                               setSelectedStage("Inbox");
                           }}
-                          className={`py-2 text-sm lg:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 focus-visible:border-b-2 focus-visible:border-blue-600 ${activeStageTab === tab.id
-                            ? "text-blue-600 border-blue-500"
-                            : "text-gray-600 border-transparent hover:text-gray-700"
-                            }`}
+                          className={`py-2 text-sm lg:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 focus-visible:border-b-2 focus-visible:border-blue-600 ${
+                            activeStageTab === tab.id
+                              ? "text-blue-600 border-blue-500"
+                              : "text-gray-600 border-transparent hover:text-gray-700"
+                          }`}
                           aria-label={`Switch to ${tab.label} tab`}
                         >
                           {tab.id == "inbox" ? null : tab.label}
@@ -2574,7 +2583,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             }
                           >
                             {selectedStage === "Applied" ||
-                              selectedStage === "Autopilot" ? null : (
+                            selectedStage === "Autopilot" ? null : (
                               <svg
                                 width="38"
                                 height="38"
@@ -2817,10 +2826,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       <div className="relative" ref={sourceDropdownRef}>
                         <button
                           onClick={() => setShowSourceDropdown((prev) => !prev)}
-                          className={`flex items-center gap-2.5 px-4 py-2.5 rounded-lg border transition-colors hover:border-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${selectedSource
-                            ? "border-blue-400 bg-blue-50 text-blue-600"
-                            : "border-gray-300 bg-white text-gray-400"
-                            }`}
+                          className={`flex items-center gap-2.5 px-4 py-2.5 rounded-lg border transition-colors hover:border-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
+                            selectedSource
+                              ? "border-blue-400 bg-blue-50 text-blue-600"
+                              : "border-gray-300 bg-white text-gray-400"
+                          }`}
                         >
                           {selectedSource ? (
                             <>
@@ -2875,10 +2885,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     setSelectedSource(option.value);
                                     setShowSourceDropdown(false);
                                   }}
-                                  className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors ${selectedSource === option.value
-                                    ? "bg-blue-50 text-blue-600"
-                                    : "text-gray-700"
-                                    }`}
+                                  className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
+                                    selectedSource === option.value
+                                      ? "bg-blue-50 text-blue-600"
+                                      : "text-gray-700"
+                                  }`}
                                 >
                                   <div className="w-6 h-6 flex-shrink-0">
                                     {option.logo}
@@ -2904,7 +2915,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           {selectedAction ? (
                             <>
                               <span className="font-medium">
-                                {actionOptions.find((o) => o.value === selectedAction)?.label}
+                                {
+                                  actionOptions.find(
+                                    (o) => o.value === selectedAction,
+                                  )?.label
+                                }
                               </span>
                               <X
                                 className="w-4 h-4 ml-1"
@@ -2931,12 +2946,15 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     setSelectedAction(option.value);
                                     setShowActionDropdown(false);
                                   }}
-                                  className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors ${selectedAction === option.value
-                                    ? "bg-blue-50 text-blue-600"
-                                    : "text-gray-700"
-                                    }`}
+                                  className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors ${
+                                    selectedAction === option.value
+                                      ? "bg-blue-50 text-blue-600"
+                                      : "text-gray-700"
+                                  }`}
                                 >
-                                  <span className="font-medium">{option.label}</span>
+                                  <span className="font-medium">
+                                    {option.label}
+                                  </span>
                                   {selectedAction === option.value && (
                                     <Check className="w-5 h-5 ml-auto text-blue-600" />
                                   )}
@@ -3122,10 +3140,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         return (
                           <div
                             key={candidate.id}
-                            className={`relative pt-5 transition-colors cursor-pointer rounded-lg focus-visible:outline  ${selectedCandidate?.id === candidate.id
-                              ? "bg-white border-l-4 border-blue-500 shadow-[0_0_20px_0_rgba(0,0,0,0.15),_0_0_8px_0_rgba(0,0,0,0.1)]"
-                              : "border border-gray-200"
-                              }`}
+                            className={`relative pt-5 transition-colors cursor-pointer rounded-lg focus-visible:outline  ${
+                              selectedCandidate?.id === candidate.id
+                                ? "bg-white border-l-4 border-blue-500 shadow-[0_0_20px_0_rgba(0,0,0,0.15),_0_0_8px_0_rgba(0,0,0,0.1)]"
+                                : "border border-gray-200"
+                            }`}
                             onClick={() => handleCandidateSelect(candidate)}
                             tabIndex={0}
                             role="button"
@@ -3253,36 +3272,68 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           </span>
                                           {hoveredCandidateId ===
                                             candidate.id && (
-                                              <div
-                                                className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg p-3 text-sm text-gray-700 z-10"
-                                                role="tooltip"
-                                                aria-hidden={
-                                                  hoveredCandidateId !==
-                                                  candidate.id
-                                                }
-                                              >
-                                                Verified via last employer's
-                                                confirmation
-                                              </div>
-                                            )}
+                                            <div
+                                              className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg p-3 text-sm text-gray-700 z-10"
+                                              role="tooltip"
+                                              aria-hidden={
+                                                hoveredCandidateId !==
+                                                candidate.id
+                                              }
+                                            >
+                                              Verified via last employer's
+                                              confirmation
+                                            </div>
+                                          )}
                                         </div>
                                       )}
                                       {(() => {
                                         const appSource = candidate.source;
-                                        const candSource = candidate.candidate?.source;
-                                        let src = candSource?.source || appSource?.source || null;
+                                        const candSource =
+                                          candidate.candidate?.source;
+                                        let src =
+                                          candSource?.source ||
+                                          appSource?.source ||
+                                          null;
 
                                         if (src === "NAUKRI_NVITE") {
                                           return (
-                                            <svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                              <path d="M9.5 19C14.7469 19 19 14.7469 19 9.5C19 4.25308 14.7469 0 9.5 0C4.25308 0 0 4.25308 0 9.5C0 14.7469 4.25308 19 9.5 19Z" fill="#0F47F2" />
-                                              <path d="M12.3542 13.0156L12.3347 13.9803L12.2714 16.762V16.8692C7.57498 12.8013 6.77113 11.8123 6.63472 11.5103V11.5005C6.61523 11.442 6.61036 11.3836 6.62011 11.3251C6.62011 11.3056 6.62985 11.2813 6.63472 11.2618C6.63472 11.2423 6.64446 11.2277 6.64934 11.2082C6.69805 11.0767 6.77113 10.95 6.8637 10.8428C6.92703 10.76 7.00011 10.682 7.07318 10.609C7.23395 10.4482 7.40934 10.302 7.58959 10.1656C7.68216 10.0974 7.77472 10.0292 7.87703 9.96102C8.0719 9.82948 8.28139 9.69794 8.50062 9.56641C10.1911 11.14 12.3298 12.9962 12.3591 13.0205L12.3542 13.0156Z" fill="url(#paint0_linear_4468_2998)" />
-                                              <path d="M12.4185 3.88768L12.399 4.8523L12.3893 5.32974L12.3698 6.28948L12.3601 6.77179L12.3406 7.7364C12.3065 7.75102 10.1629 8.57922 8.51135 9.56332C8.29212 9.69486 8.08263 9.8264 7.88776 9.95794C7.79032 10.0261 7.69289 10.0944 7.60032 10.1626C7.4152 10.299 7.24468 10.4451 7.08391 10.6059C7.01084 10.679 6.93776 10.7569 6.87443 10.8397C6.7234 11.0297 6.63571 11.2149 6.62109 11.3902L6.64058 10.5864V10.4549V10.411L6.6552 9.90435L6.68443 8.90076L6.69904 8.40871L6.72827 7.41486C7.0693 6.02153 11.8631 4.10204 12.4283 3.88281L12.4185 3.88768Z" fill="white" />
-                                              <path d="M7.99389 4.94871C8.77337 4.94871 9.40183 4.31538 9.40183 3.54076C9.40183 2.76615 8.7685 2.13281 7.99389 2.13281C7.21927 2.13281 6.58594 2.76615 6.58594 3.54076C6.58594 4.31538 7.21927 4.94871 7.99389 4.94871Z" fill="white" />
+                                            <svg
+                                              width="19"
+                                              height="19"
+                                              viewBox="0 0 19 19"
+                                              fill="none"
+                                              xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                              <path
+                                                d="M9.5 19C14.7469 19 19 14.7469 19 9.5C19 4.25308 14.7469 0 9.5 0C4.25308 0 0 4.25308 0 9.5C0 14.7469 4.25308 19 9.5 19Z"
+                                                fill="#0F47F2"
+                                              />
+                                              <path
+                                                d="M12.3542 13.0156L12.3347 13.9803L12.2714 16.762V16.8692C7.57498 12.8013 6.77113 11.8123 6.63472 11.5103V11.5005C6.61523 11.442 6.61036 11.3836 6.62011 11.3251C6.62011 11.3056 6.62985 11.2813 6.63472 11.2618C6.63472 11.2423 6.64446 11.2277 6.64934 11.2082C6.69805 11.0767 6.77113 10.95 6.8637 10.8428C6.92703 10.76 7.00011 10.682 7.07318 10.609C7.23395 10.4482 7.40934 10.302 7.58959 10.1656C7.68216 10.0974 7.77472 10.0292 7.87703 9.96102C8.0719 9.82948 8.28139 9.69794 8.50062 9.56641C10.1911 11.14 12.3298 12.9962 12.3591 13.0205L12.3542 13.0156Z"
+                                                fill="url(#paint0_linear_4468_2998)"
+                                              />
+                                              <path
+                                                d="M12.4185 3.88768L12.399 4.8523L12.3893 5.32974L12.3698 6.28948L12.3601 6.77179L12.3406 7.7364C12.3065 7.75102 10.1629 8.57922 8.51135 9.56332C8.29212 9.69486 8.08263 9.8264 7.88776 9.95794C7.79032 10.0261 7.69289 10.0944 7.60032 10.1626C7.4152 10.299 7.24468 10.4451 7.08391 10.6059C7.01084 10.679 6.93776 10.7569 6.87443 10.8397C6.7234 11.0297 6.63571 11.2149 6.62109 11.3902L6.64058 10.5864V10.4549V10.411L6.6552 9.90435L6.68443 8.90076L6.69904 8.40871L6.72827 7.41486C7.0693 6.02153 11.8631 4.10204 12.4283 3.88281L12.4185 3.88768Z"
+                                                fill="white"
+                                              />
+                                              <path
+                                                d="M7.99389 4.94871C8.77337 4.94871 9.40183 4.31538 9.40183 3.54076C9.40183 2.76615 8.7685 2.13281 7.99389 2.13281C7.21927 2.13281 6.58594 2.76615 6.58594 3.54076C6.58594 4.31538 7.21927 4.94871 7.99389 4.94871Z"
+                                                fill="white"
+                                              />
                                               <defs>
-                                                <linearGradient id="paint0_linear_4468_2998" x1="11.3847" y1="14.4772" x2="5.81139" y2="8.05128" gradientUnits="userSpaceOnUse">
+                                                <linearGradient
+                                                  id="paint0_linear_4468_2998"
+                                                  x1="11.3847"
+                                                  y1="14.4772"
+                                                  x2="5.81139"
+                                                  y2="8.05128"
+                                                  gradientUnits="userSpaceOnUse"
+                                                >
                                                   <stop stop-color="white" />
-                                                  <stop offset="1" stop-color="#B1B1B1" />
+                                                  <stop
+                                                    offset="1"
+                                                    stop-color="#B1B1B1"
+                                                  />
                                                 </linearGradient>
                                               </defs>
                                             </svg>
@@ -3409,15 +3460,15 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                         </div>
                                       )
                                         ? educationSummaryTitle && (
-                                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
-                                            {educationSummaryTitle}
-                                          </p>
-                                        )
+                                            <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[24ch] truncate">
+                                              {educationSummaryTitle}
+                                            </p>
+                                          )
                                         : candidate_headline && (
-                                          <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[48ch] truncate">
-                                            {candidate_headline}
-                                          </p>
-                                        )}
+                                            <p className="text-xs lg:text-base font-[400] text-[#0F47F2] mt-1 max-w-[48ch] truncate">
+                                              {candidate_headline}
+                                            </p>
+                                          )}
                                     </div>
 
                                     <div className="flex justify-between">
@@ -3496,13 +3547,13 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                 <p className="text-[#4B5563]">
                                   {noticePeriodSummary
                                     ? noticePeriodSummary
-                                      .split(" ")
-                                      .map(
-                                        (word: String) =>
-                                          word.charAt(0).toUpperCase() +
-                                          word.slice(1),
-                                      )
-                                      .join(" ")
+                                        .split(" ")
+                                        .map(
+                                          (word: String) =>
+                                            word.charAt(0).toUpperCase() +
+                                            word.slice(1),
+                                        )
+                                        .join(" ")
                                     : "--"}
                                 </p>
                               </div>
@@ -3561,7 +3612,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       const url = candidate.candidate
                                         .premium_data_unlocked
                                         ? candidate.candidate.premium_data
-                                          ?.pinterest_username
+                                            ?.pinterest_username
                                         : null;
                                       return (
                                         <button
@@ -3626,7 +3677,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       const url = candidate.candidate
                                         .premium_data_unlocked
                                         ? candidate.candidate.premium_data
-                                          ?.github_url
+                                            ?.github_url
                                         : null;
                                       return (
                                         <button
@@ -3691,7 +3742,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       const url = candidate.candidate
                                         .premium_data_unlocked
                                         ? candidate.candidate.premium_data
-                                          ?.linkedin_url
+                                            ?.linkedin_url
                                         : null;
                                       return (
                                         <button
@@ -3752,7 +3803,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       const url = candidate.candidate
                                         .premium_data_unlocked
                                         ? candidate.candidate.premium_data
-                                          ?.behance_username
+                                            ?.behance_username
                                         : null;
                                       return (
                                         <button
@@ -3825,7 +3876,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       const url = candidate.candidate
                                         .premium_data_unlocked
                                         ? candidate.candidate.premium_data
-                                          ?.instagram_username
+                                            ?.instagram_username
                                         : null;
                                       return (
                                         <button
@@ -3886,7 +3937,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       const url = candidate.candidate
                                         .premium_data_unlocked
                                         ? candidate.candidate.premium_data
-                                          ?.twitter_url
+                                            ?.twitter_url
                                         : null;
                                       return (
                                         <button
@@ -3941,7 +3992,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       const url = candidate.candidate
                                         .premium_data_unlocked
                                         ? candidate.candidate.premium_data
-                                          ?.dribble_username
+                                            ?.dribble_username
                                         : null;
                                       return (
                                         <button
@@ -4034,7 +4085,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       const url = candidate.candidate
                                         .premium_data_unlocked
                                         ? candidate.candidate.premium_data
-                                          ?.resume_url
+                                            ?.resume_url
                                         : null;
                                       return (
                                         <button
@@ -4093,7 +4144,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                       const url = candidate.candidate
                                         .premium_data_unlocked
                                         ? candidate.candidate.premium_data
-                                          ?.portfolio_url
+                                            ?.portfolio_url
                                         : null;
                                       return (
                                         <button
@@ -4220,7 +4271,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   }
                                 >
                                   {selectedStage === "Applied" ||
-                                    selectedStage === "Autopilot" ? null : (
+                                  selectedStage === "Autopilot" ? null : (
                                     <svg
                                       width="38"
                                       height="38"
@@ -4359,12 +4410,13 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               onClick={() =>
                                 typeof page === "number" && setCurrentPage(page)
                               }
-                              className={`px-3 py-1 text-sm rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 ${page === currentPage
-                                ? "bg-blue-600 text-white"
-                                : typeof page === "number"
-                                  ? "text-gray-600 hover:bg-gray-100"
-                                  : "text-gray-600 cursor-default"
-                                }`}
+                              className={`px-3 py-1 text-sm rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                                page === currentPage
+                                  ? "bg-blue-600 text-white"
+                                  : typeof page === "number"
+                                    ? "text-gray-600 hover:bg-gray-100"
+                                    : "text-gray-600 cursor-default"
+                              }`}
                               disabled={typeof page !== "number"}
                               area-label={`Go to page ${page}`}
                             >
@@ -4460,7 +4512,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             <TemplateSelector
               candidate={selectedCandidate.candidate}
               onBack={handleBackFromTemplate}
-              updateCandidateEmail={() => { }} // Pass a no-op or actual handler if needed
+              updateCandidateEmail={() => {}} // Pass a no-op or actual handler if needed
               jobId={activeJobId?.toString() || ""}
             />
           </div>
@@ -4520,7 +4572,6 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           </div>
         </div>
       )}
-
 
       {showUploadModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
