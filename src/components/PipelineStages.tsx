@@ -265,15 +265,18 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   const [newComment, setNewComment] = useState("");
   const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<"prospect" | "stage">("prospect"); // New state for view mode
+  const [viewMode, setViewMode] = useState<"prospect" | "stage">("prospect");
   const [showRevealDialog, setShowRevealDialog] = useState(false);
 
   const [selectedSource, setSelectedSource] = useState<string | null>(null);
+  const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [showSourceDropdown, setShowSourceDropdown] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
 
   const sourceDropdownRef = useRef<HTMLDivElement>(null);
+  const actionDropdownRef = useRef<HTMLDivElement>(null);
+  const [showActionDropdown, setShowActionDropdown] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10; // Adjustable; no max limit on API
@@ -282,7 +285,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
   const sourceOptions = [
     {
-      value: "NAUKRI_NVITE",
+      value: "naukri",
       label: "Naukri Invites",
       logo: (
         <svg
@@ -325,7 +328,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       ),
     },
     {
-      value: "PUBLIC_JOB_PAGE",
+      value: "pyjamahr",
       label: "Public",
       logo: (
         <svg
@@ -366,7 +369,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       ),
     },
     {
-      value: "External",
+      value: "external",
       label: "External",
       logo: (
         <svg
@@ -395,7 +398,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       ),
     },
     {
-      value: "NXTHYRE",
+      value: "nxthyre",
       label: "Nxthyre",
       logo: (
         <svg
@@ -434,6 +437,12 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         </svg>
       ),
     },
+  ];
+
+  const actionOptions = [
+    { value: null, label: "All" },
+    { value: "autopilot", label: "Autopilot" },
+    { value: "human", label: "Human" },
   ];
 
   const [pendingReveal, setPendingReveal] = useState<{
@@ -698,20 +707,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  let displayedCandidates = candidates;
-  if (selectedSource) {
-    displayedCandidates = candidates.filter((candidate) => {
-      const sourceObj = candidate.candidate?.source;
-
-      if (selectedSource === "NXTHYRE") {
-        return sourceObj == null; // Entire source object is null → Nxthyre
-      }
-
-      // When source exists, compare source.source
-      return sourceObj?.source === selectedSource;
-    });
-  }
-
+  const displayedCandidates = candidates;
   // Fetch stages when activeJobId changes
   useEffect(() => {
     if (activeJobId !== null) {
@@ -907,12 +903,20 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
   const fetchCandidates = async (jobId: number, stageSlug: string) => {
     setLoadingCandidates(true);
-    let url = `/jobs/applications/?job_id=${jobId}&stage_slug=${stageSlug}${sortBy ? `&sort_by=${sortBy}` : ""
-      }`;
+    let url = `/jobs/applications/?job_id=${jobId}&stage_slug=${stageSlug}`;
     if (viewMode === "prospect" && activeStageTab === "inbox") {
-      url = `/jobs/applications/replied-candidates/?job_id=${jobId}${sortBy ? `&sort_by=${sortBy}` : ""
-        }`;
+      url = `/jobs/applications/replied-candidates/?job_id=${jobId}`;
     }
+    if (sortBy) {
+      url += `&sort_by=${sortBy}`;
+    }
+    if (selectedSource) {
+      url += `&source=${selectedSource}`;
+    }
+    if (selectedAction) {
+      url += `&action=${selectedAction}`;
+    }
+
     url += `&page=${currentPage}&page_size=${pageSize}`;
 
     try {
@@ -1270,10 +1274,16 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
   const sortOptions = [
     { value: "relevance_desc", label: "Relevance" },
-    { value: "experience_asc", label: "Experience(Asc)" },
-    { value: "experience_desc", label: "Experience(Desc)" },
-    { value: "notice_period_asc", label: "Notice Period(Asc)" },
-    { value: "notice_period_desc", label: "Notice Period(Desc)" },
+    { value: "score_desc", label: "Match Score ↓" },
+    { value: "score_asc", label: "Match Score ↑" },
+    { value: "time_added_desc", label: "Recently Added" },
+    { value: "time_added_asc", label: "Oldest Added" },
+    { value: "time_added_score_desc", label: "Newest Days, Then Score ↓" },
+    { value: "time_added_score_asc", label: "Oldest Days, Then Score ↑" },
+    { value: "experience_desc", label: "Experience ↓" },
+    { value: "experience_asc", label: "Experience ↑" },
+    { value: "notice_period_desc", label: "Notice Period ↓" },
+    { value: "notice_period_asc", label: "Notice Period ↑" },
   ];
 
   const mapStageData = (
@@ -2001,12 +2011,36 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   ]);
 
   useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    activeJobId,
+    selectedStage,
+    sortBy,
+    activeStageTab,
+    viewMode,
+    selectedSource,
+    selectedAction,
+  ]);
+
+  useEffect(() => {
     setSelectedCandidates([]);
     setSelectAll(false);
   }, [currentPage]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      if (
+        sourceDropdownRef.current &&
+        !sourceDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowSourceDropdown(false);
+      }
+      if (
+        actionDropdownRef.current &&
+        !actionDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowActionDropdown(false);
+      }
       if (
         settingsPopupRef.current &&
         !settingsPopupRef.current.contains(event.target as Node)
@@ -2016,7 +2050,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showSettingsPopup]);
+  }, [showSettingsPopup, showSourceDropdown, showActionDropdown]);
 
   const handleSuggestionSelect = async (sug: { id: string; name: string }) => {
     setSearchQuery(sug.name);
@@ -2851,6 +2885,60 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     {option.label}
                                   </span>
                                   {selectedSource === option.value && (
+                                    <Check className="w-5 h-5 ml-auto text-blue-600" />
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="relative" ref={actionDropdownRef}>
+                        <button
+                          onClick={() => setShowActionDropdown((prev) => !prev)}
+                          className={`flex items-center gap-2.5 px-4 py-2.5 rounded-lg border transition-colors hover:border-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${selectedAction
+                            ? "border-blue-400 bg-blue-50 text-blue-600"
+                            : "border-gray-300 bg-white text-gray-400"
+                            }`}
+                        >
+                          {selectedAction ? (
+                            <>
+                              <span className="font-medium">
+                                {actionOptions.find((o) => o.value === selectedAction)?.label}
+                              </span>
+                              <X
+                                className="w-4 h-4 ml-1"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedAction(null);
+                                }}
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <Users className="w-4 h-4" />
+                              <p className="hidden 2xl:inline">Managed By</p>
+                            </>
+                          )}
+                        </button>
+                        {showActionDropdown && (
+                          <div className="absolute top-full mt-2 left-0 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                            <div className="py-2">
+                              {actionOptions.map((option) => (
+                                <button
+                                  key={option.value ?? "all"}
+                                  onClick={() => {
+                                    setSelectedAction(option.value);
+                                    setShowActionDropdown(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors ${selectedAction === option.value
+                                    ? "bg-blue-50 text-blue-600"
+                                    : "text-gray-700"
+                                    }`}
+                                >
+                                  <span className="font-medium">{option.label}</span>
+                                  {selectedAction === option.value && (
                                     <Check className="w-5 h-5 ml-auto text-blue-600" />
                                   )}
                                 </button>
@@ -4045,8 +4133,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                           aria-label={`View ${candidate.candidate.full_name}'s resume`}
                                         >
                                           <svg
-                                            width="28"
-                                            height="28"
+                                            width="30"
+                                            height="30"
                                             viewBox="0 0 24 24"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
