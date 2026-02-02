@@ -2054,6 +2054,112 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showSettingsPopup, showSourceDropdown, showActionDropdown]);
 
+
+  const handleEditSave = async () => {
+    if (!editingCandidate) return;
+    try {
+      const uuid = editingCandidate.candidate.id;
+      const payload: any = {};
+
+      // Parse Notice Period
+      if (editForm.notice !== editingCandidate.candidate.notice_period_summary) {
+        const noticeLower = editForm.notice.toLowerCase().trim();
+        let days: number | null = null;
+
+        if (noticeLower === "immediate" || noticeLower.includes("immediate")) {
+          days = 0;
+        } else {
+          const match = noticeLower.match(/(\d+)\s*(day|days|month|months)/);
+          if (match) {
+            const num = parseInt(match[1]);
+            days = match[2].startsWith("month") ? num * 30 : num;
+          }
+        }
+
+        if (days !== null) {
+          payload.notice_period_days = days;
+        } else if (editForm.notice.trim() !== "") {
+          showToast.error("Invalid notice period format");
+          return;
+        }
+      }
+
+      // Parse Current CTC
+      if (editForm.salary !== editingCandidate.candidate.current_salary_lpa) {
+        const salaryStr = editForm.salary.trim();
+        const lpaMatch = salaryStr.match(/([\d.]+)/);
+        if (lpaMatch) {
+          const lpa = parseFloat(lpaMatch[1]);
+          payload.current_salary = Math.round(lpa); // rupees
+        } else if (salaryStr !== "") {
+          showToast.error("Invalid Current CTC format (use numbers, e.g. 15 or 15 LPA)");
+          return;
+        }
+      }
+
+      // Parse Expected CTC
+      if (editForm.expected !== "--" && editForm.expected.trim() !== "") {
+        const expStr = editForm.expected.trim();
+        const lpaMatch = expStr.match(/([\d.]+)/);
+        if (lpaMatch) {
+          const lpa = parseFloat(lpaMatch[1]);
+          payload.expected_ctc = Math.round(lpa);
+        } else {
+          showToast.error("Invalid Expected CTC format");
+          return;
+        }
+      }
+
+      if (Object.keys(payload).length === 0) {
+        showToast.info("No changes to save");
+        setShowEditModal(false);
+        return;
+      }
+
+      // API Call
+      await apiClient.patch(`/candidates/${uuid}/editable-fields/`, payload);
+
+      // Update local candidates list
+      setCandidates((prev) =>
+        prev.map((c) => {
+          if (c.candidate.id === uuid) {
+            const updated = { ...c };
+            if ("notice_period_days" in payload) {
+              updated.candidate.notice_period_summary =
+                payload.notice_period_days === 0
+                  ? "Immediate"
+                  : `${payload.notice_period_days} days`;
+              updated.candidate.notice_period_days = payload.notice_period_days;
+            }
+            if ("current_salary" in payload) {
+              const lpa = payload.current_salary;
+              updated.candidate.current_salary_lpa =
+                Number.isInteger(lpa) ? `${lpa} LPA` : `${lpa.toFixed(1)} LPA`;
+            }
+            return updated;
+          }
+          return c;
+        })
+      );
+
+      if (
+        selectedCandidate &&
+        selectedCandidate.candidate.id === uuid
+      ) {
+        await fetchCandidateDetails(editingCandidate.id); // application ID
+      }
+
+      showToast.success("Candidate details updated successfully");
+      setShowEditModal(false);
+    } catch (error: any) {
+      console.error("Edit save error:", error);
+      showToast.error(
+        error.response?.data?.detail ||
+        "Failed to update candidate details"
+      );
+    }
+  };
+
   const handleSuggestionSelect = async (sug: { id: string; name: string }) => {
     setSearchQuery(sug.name);
     setSuggestions([]);
@@ -2095,6 +2201,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     tenure: "--",
     notice: "--",
     salary: "--",
+    expected: "--",
   });
 
   useEffect(() => {
@@ -2106,6 +2213,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           "--",
         notice: editingCandidate.candidate.notice_period_summary || "--",
         salary: editingCandidate.candidate.current_salary_lpa || "--",
+        expected: "--",
       });
     }
   }, [showEditModal, editingCandidate]);
@@ -4565,24 +4673,24 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 <input
                   type="text"
                   value={editForm.experience}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, experience: e.target.value })
-                  }
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  disabled
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-100 cursor-not-allowed text-gray-500 sm:text-sm"
                 />
+                <p className="text-xs text-gray-500 mt-1">Calculated from resume (not editable)</p>
               </div>
+
+              {/* Current Company Tenure - Read only */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Current Company Tenure (years)
                 </label>
                 <input
-                  type="number"
-                  value={editForm.tenure === "--" ? "" : editForm.tenure}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, tenure: e.target.value })
-                  }
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  type="text"
+                  value={editForm.tenure}
+                  disabled
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-100 cursor-not-allowed text-gray-500 sm:text-sm"
                 />
+                <p className="text-xs text-gray-500 mt-1">Calculated from current position (not editable)</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -4594,12 +4702,13 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   onChange={(e) =>
                     setEditForm({ ...editForm, notice: e.target.value })
                   }
+                  placeholder="e.g. Immediate, 30 days, 2 months"
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Current Salary (LPA)
+                  Current CTC (LPA)
                 </label>
                 <input
                   type="text"
@@ -4607,6 +4716,21 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   onChange={(e) =>
                     setEditForm({ ...editForm, salary: e.target.value })
                   }
+                  placeholder="e.g. 15 or 15 LPA"
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Expected CTC (LPA)
+                </label>
+                <input
+                  type="text"
+                  value={editForm.expected}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, expected: e.target.value })
+                  }
+                  placeholder="e.g. 20 or 20 LPA"
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
@@ -4620,11 +4744,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               </button>
               <button
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                onClick={() => {
-                  // TODO: Add your API call here to update backend
-                  console.log("Saving changes:", editForm);
-                  setShowEditModal(false);
-                }}
+                onClick={async () => { handleEditSave() }}
               >
                 Save
               </button>
