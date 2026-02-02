@@ -590,7 +590,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           )}
         </div>
 
-        <div className="max-h-[calc(100vh-40vh)] overflow-y-auto hide-scrollbar">
+        <div className="max-h-[calc(100vh-32vh)] overflow-y-auto hide-scrollbar">
           {/* Total Experience */}
           <div
             className={`bg-[#F5F9FB] rounded-t-lg  p-4 ${
