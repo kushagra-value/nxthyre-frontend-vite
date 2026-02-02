@@ -511,7 +511,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
   return (
     <div className="bg-white rounded-xl p-3 lg:p-4 flex flex-col max-h-[calc(100vh - 60px)] overflow-y-auto relative hide-scrollbar">
-      <div className="pb-20">
+      <div className="pb-6">
         {/* Keywords / Boolean Search */}
         <div className="border-b border-gray-200 mb-4 pb-4 px-4">
           <div className="flex items-center justify-between mb-3">
@@ -590,7 +590,7 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           )}
         </div>
 
-        <div className="max-h-[calc(100vh-40vh)] overflow-y-auto hide-scrollbar">
+        <div className="max-h-[calc(100vh-44vh)] overflow-y-auto hide-scrollbar">
           {/* Total Experience */}
           <div
             className={`bg-[#F5F9FB] rounded-t-lg  p-4 ${
