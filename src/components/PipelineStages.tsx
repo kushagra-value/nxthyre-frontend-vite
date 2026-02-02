@@ -2008,6 +2008,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     currentPage,
     activeStageTab,
     viewMode,
+    selectedSource,
+    selectedAction,
   ]);
 
   useEffect(() => {
