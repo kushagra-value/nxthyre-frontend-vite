@@ -230,11 +230,13 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isLocationManuallyEdited, setIsLocationManuallyEdited] =
     useState(false);
-  
+
   const keywordTextareaRef = useRef<HTMLTextAreaElement>(null);
   const [tempFilters, setTempFilters] = useState({
     ...filters,
-    keywords: Array.isArray(filters.keywords) ? filters.keywords.join(', ') : '',
+    keywords: Array.isArray(filters.keywords)
+      ? filters.keywords.join(", ")
+      : "",
     boolQuery: filters.boolQuery || "",
   });
 
@@ -243,83 +245,82 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
   const [currentLocation, setCurrentLocation] = useState<string>("");
   const [isLoadingCountries, setIsLoadingCountries] = useState(false);
   const [isLoadingCities, setIsLoadingCities] = useState(false);
- 
+
   const [currentCountry, setCurrentCountry] = useState<string>("");
   const [currentCity, setCurrentCity] = useState<string>("");
 
- useEffect(() => {
-  if (JSON.stringify(filters) !== JSON.stringify(tempFilters)) {
-    setTempFilters({
-      ...filters,
-      keywords: Array.isArray(filters.keywords) ? filters.keywords.join(', ') : filters.keywords || '',
-      boolQuery: filters.boolQuery || "",
-    });
-  }
-}, [filters]); 
+  useEffect(() => {
+    if (JSON.stringify(filters) !== JSON.stringify(tempFilters)) {
+      setTempFilters({
+        ...filters,
+        keywords: Array.isArray(filters.keywords)
+          ? filters.keywords.join(", ")
+          : filters.keywords || "",
+        boolQuery: filters.boolQuery || "",
+      });
+    }
+  }, [filters]);
 
-useEffect(() => {
-  if (!tempFilters.booleanSearch && keywordTextareaRef.current) {
-    keywordTextareaRef.current.style.height = "auto";
-    keywordTextareaRef.current.style.height = `${keywordTextareaRef.current.scrollHeight}px`;
-  }
-}, [tempFilters.keywords, tempFilters.booleanSearch]);
+  useEffect(() => {
+    if (!tempFilters.booleanSearch && keywordTextareaRef.current) {
+      keywordTextareaRef.current.style.height = "auto";
+      keywordTextareaRef.current.style.height = `${keywordTextareaRef.current.scrollHeight}px`;
+    }
+  }, [tempFilters.keywords, tempFilters.booleanSearch]);
 
-
-  
   const fetchCountrySuggestions = useCallback(
-  debounce(async (query: string) => {
-    console.log("[Country] Fetch triggered with query:", query);
+    debounce(async (query: string) => {
+      console.log("[Country] Fetch triggered with query:", query);
 
-    if (query.length < 2) {
-      setCountrySuggestions([]);
-      return;
-    }
+      if (query.length < 2) {
+        setCountrySuggestions([]);
+        return;
+      }
 
-    setIsLoadingCountries(true);
-    try {
-      const suggestions = await candidateService.getCountrySuggestions(query);
-      console.log("[Country] Raw API response:", suggestions);
-      
-      const safeSuggestions = Array.isArray(suggestions) ? suggestions : [];
-      setCountrySuggestions(safeSuggestions);
-      console.log("[Country] Final suggestions set:", safeSuggestions);
-    } catch (error) {
-      console.error("Error fetching countries:", error);
-      setCountrySuggestions([]);
-    } finally {
-      setIsLoadingCountries(false);
-    }
-  }, 300),
-  [] // ← No dependencies, just like keywords
-);
+      setIsLoadingCountries(true);
+      try {
+        const suggestions = await candidateService.getCountrySuggestions(query);
+        console.log("[Country] Raw API response:", suggestions);
 
-const fetchCitySuggestions = useCallback(
-  debounce(async (query: string) => {
-    console.log("[City] Fetch triggered with query:", query);
+        const safeSuggestions = Array.isArray(suggestions) ? suggestions : [];
+        setCountrySuggestions(safeSuggestions);
+        console.log("[Country] Final suggestions set:", safeSuggestions);
+      } catch (error) {
+        console.error("Error fetching countries:", error);
+        setCountrySuggestions([]);
+      } finally {
+        setIsLoadingCountries(false);
+      }
+    }, 300),
+    [], // ← No dependencies, just like keywords
+  );
 
-    if (query.length < 2) {
-      setCitySuggestions([]);
-      return;
-    }
+  const fetchCitySuggestions = useCallback(
+    debounce(async (query: string) => {
+      console.log("[City] Fetch triggered with query:", query);
 
-    setIsLoadingCities(true);
-    try {
-      const suggestions = await candidateService.getCitySuggestions(query);
-      console.log("[City] Raw API response:", suggestions);
-      
-      const safeSuggestions = Array.isArray(suggestions) ? suggestions : [];
-      setCitySuggestions(safeSuggestions);
-      console.log("[City] Final suggestions set:", safeSuggestions);
-    } catch (error) {
-      console.error("Error fetching cities:", error);
-      setCitySuggestions([]);
-    } finally {
-      setIsLoadingCities(false);
-    }
-  }, 300),
-  [] // ← No dependencies
-);
+      if (query.length < 2) {
+        setCitySuggestions([]);
+        return;
+      }
 
+      setIsLoadingCities(true);
+      try {
+        const suggestions = await candidateService.getCitySuggestions(query);
+        console.log("[City] Raw API response:", suggestions);
+
+        const safeSuggestions = Array.isArray(suggestions) ? suggestions : [];
+        setCitySuggestions(safeSuggestions);
+        console.log("[City] Final suggestions set:", safeSuggestions);
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+        setCitySuggestions([]);
+      } finally {
+        setIsLoadingCities(false);
+      }
+    }, 300),
+    [], // ← No dependencies
+  );
 
   const toggleSection = (section: SectionKey) => {
     setExpandedSections((prev) => ({
@@ -351,7 +352,7 @@ const fetchCitySuggestions = useCallback(
       }
     }
 
-     if (key === "country") {
+    if (key === "country") {
       if (value !== tempFilters.country) {
         newFilters.locations = []; // Clear selected city when country changes
       }
@@ -366,7 +367,6 @@ const fetchCitySuggestions = useCallback(
     }
 
     setTempFilters(newFilters);
-
   };
 
   const addLocation = (location: string) => {
@@ -382,7 +382,6 @@ const fetchCitySuggestions = useCallback(
     }
   };
 
-  
   // Handle close boolean search
   const handleCloseBooleanSearch = () => {
     updateTempFilters("booleanSearch", false);
@@ -411,7 +410,7 @@ const fetchCitySuggestions = useCallback(
       (tempFilters.maxSalary && !isValidNumber(tempFilters.maxSalary))
     ) {
       showToast.error(
-        "Invalid input in experience or salary fields. Please enter numbers only."
+        "Invalid input in experience or salary fields. Please enter numbers only.",
       );
       return false;
     }
@@ -422,7 +421,7 @@ const fetchCitySuggestions = useCallback(
       Number(tempFilters.minTotalExp) > Number(tempFilters.maxTotalExp)
     ) {
       showToast.error(
-        "Minimum total experience cannot be greater than maximum."
+        "Minimum total experience cannot be greater than maximum.",
       );
       return false;
     }
@@ -492,7 +491,7 @@ const fetchCitySuggestions = useCallback(
 
     setIsLoading(true);
     try {
-     await onApplyFilters(tempFilters);
+      await onApplyFilters(tempFilters);
     } catch (error) {
       showToast.error("Failed to apply filters. Please try again.");
       console.error("Error applying filters:", error);
@@ -573,7 +572,9 @@ const fetchCitySuggestions = useCallback(
                   <textarea
                     ref={keywordTextareaRef}
                     value={tempFilters.keywords || ""}
-                    onChange={(e) => updateTempFilters("keywords", e.target.value)}
+                    onChange={(e) =>
+                      updateTempFilters("keywords", e.target.value)
+                    }
                     placeholder='Enter keywords separated by commas, e.g. "python*, react, css, llm*" (* marks compulsory/must-have terms)'
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none min-h-[80px] overflow-hidden"
                     rows={1}
@@ -626,7 +627,7 @@ const fetchCitySuggestions = useCallback(
                     onInput={(e) => {
                       e.currentTarget.value = e.currentTarget.value.replace(
                         /[^0-9]/g,
-                        ""
+                        "",
                       );
                     }}
                   />
@@ -647,7 +648,7 @@ const fetchCitySuggestions = useCallback(
                     onInput={(e) => {
                       e.currentTarget.value = e.currentTarget.value.replace(
                         /[^0-9]/g,
-                        ""
+                        "",
                       );
                     }}
                   />
@@ -669,7 +670,7 @@ const fetchCitySuggestions = useCallback(
                   onInput={(e) => {
                     e.currentTarget.value = e.currentTarget.value.replace(
                       /[^0-9]/g,
-                      ""
+                      "",
                     );
                   }}
                 />
@@ -707,109 +708,115 @@ const fetchCitySuggestions = useCallback(
           </div>
           {expandedSections.location && (
             <>
-            <div className="flex justify-between items-center">
-              
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search country..."
-                  className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
-                  value={currentCountry}  // ← Use separate state
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    console.log("[Country Input] User typed:", value);
-                    setCurrentCountry(value);  // ← Update separate state
-                    fetchCountrySuggestions(value);  // ← Pass value directly
-                    
-                    // Clear city when country changes
-                    if (tempFilters.locations.length > 0) {
-                      updateTempFilters("locations", []);
-                      setCurrentCity("");
-                    }
-                  }}
-                />
-                {(currentCountry.length >= 2 && (isLoadingCountries || countrySuggestions.length > 0)) && (
-                  <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
-                    {isLoadingCountries ? (
-                      <div className="px-3 py-2 text-sm text-gray-500 text-center">
-                        Loading countries...
-                      </div>
-                    ) : (
-                      countrySuggestions.map((suggestion, index) => (
-                        <div
-                          key={index}
-                          onClick={() => {
-                          setCurrentCountry(suggestion);  // ← Update input state
-                          updateTempFilters("country", suggestion);  // ← Update filter
-                          setCountrySuggestions([]);
-                        }}
-                          className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                        >
-                          {suggestion}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-                <label className="text-xs text-gray-500 mt-1 block">Country</label>
-              </div>
-
-              {/* City Searchable Input */}
-              <div className="relative">
-                
+              <div className="flex justify-between items-center">
+                <div className="relative">
                   <input
                     type="text"
-                    placeholder={tempFilters.country ? "Search city..." : "Select country first"}
+                    placeholder="Search country..."
                     className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
-                    value={currentCity}  // ← Use separate state
+                    value={currentCountry} // ← Use separate state
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      console.log("[Country Input] User typed:", value);
+                      setCurrentCountry(value); // ← Update separate state
+                      fetchCountrySuggestions(value); // ← Pass value directly
+
+                      // Clear city when country changes
+                      if (tempFilters.locations.length > 0) {
+                        updateTempFilters("locations", []);
+                        setCurrentCity("");
+                      }
+                    }}
+                  />
+                  {currentCountry.length >= 2 &&
+                    (isLoadingCountries || countrySuggestions.length > 0) && (
+                      <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
+                        {isLoadingCountries ? (
+                          <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                            Loading countries...
+                          </div>
+                        ) : (
+                          countrySuggestions.map((suggestion, index) => (
+                            <div
+                              key={index}
+                              onClick={() => {
+                                setCurrentCountry(suggestion); // ← Update input state
+                                updateTempFilters("country", suggestion); // ← Update filter
+                                setCountrySuggestions([]);
+                              }}
+                              className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                            >
+                              {suggestion}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  <label className="text-xs text-gray-500 mt-1 block">
+                    Country
+                  </label>
+                </div>
+
+                {/* City Searchable Input */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder={
+                      tempFilters.country
+                        ? "Search city..."
+                        : "Select country first"
+                    }
+                    className="w-full flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-400"
+                    value={currentCity} // ← Use separate state
                     onChange={(e) => {
                       if (!tempFilters.country) return;
                       const value = e.target.value;
                       console.log("[City Input] User typed:", value);
-                      setCurrentCity(value);  // ← Update separate state
-                      fetchCitySuggestions(value);  // ← Pass value directly
+                      setCurrentCity(value); // ← Update separate state
+                      fetchCitySuggestions(value); // ← Pass value directly
                     }}
                     disabled={!tempFilters.country}
                   />
-                {tempFilters.country && currentCity.length >= 2 && (isLoadingCities || citySuggestions.length > 0) && (
-                  <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
-                    {isLoadingCities ? (
-                      <div className="px-3 py-2 text-sm text-gray-500 text-center">
-                        Loading cities...
+                  {tempFilters.country &&
+                    currentCity.length >= 2 &&
+                    (isLoadingCities || citySuggestions.length > 0) && (
+                      <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
+                        {isLoadingCities ? (
+                          <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                            Loading cities...
+                          </div>
+                        ) : (
+                          citySuggestions.map((suggestion, index) => (
+                            <div
+                              key={index}
+                              onClick={() => {
+                                setCurrentCity(suggestion); // ← Update input state
+                                updateTempFilters("locations", [suggestion]); // ← Update filter
+                                setCitySuggestions([]);
+                              }}
+                              className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                            >
+                              {suggestion}
+                            </div>
+                          ))
+                        )}
                       </div>
-                    ) : (
-                      citySuggestions.map((suggestion, index) => (
-                        <div
-                          key={index}
-                          onClick={() => {
-                          setCurrentCity(suggestion);  // ← Update input state
-                          updateTempFilters("locations", [suggestion]);  // ← Update filter
-                          setCitySuggestions([]);
-                        }}
-                          className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                        >
-                          {suggestion}
-                        </div>
-                      ))
                     )}
-                  </div>
-                )}
-                <label className="text-xs text-gray-500 mt-1 block">City</label>
-              </div>
+                  <label className="text-xs text-gray-500 mt-1 block">
+                    City
+                  </label>
+                </div>
 
-              {/* Display selected location tag */}
-              
-            </div>
-            {tempFilters.locations.length > 0 && (
+                {/* Display selected location tag */}
+              </div>
+              {tempFilters.locations.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   <div className="flex items-center bg-white rounded-full px-3 py-1.5 text-xs text-gray-700 border border-gray-200">
                     <X
                       className="w-3 h-3 text-gray-400 mr-1 cursor-pointer hover:text-gray-600"
                       onClick={() => updateTempFilters("locations", [])}
                     />
-                    <span>
-                      {tempFilters.locations[0]}
-                    </span>
+                    <span>{tempFilters.locations[0]}</span>
                   </div>
                 </div>
               )}
@@ -1063,7 +1070,7 @@ const fetchCitySuggestions = useCallback(
                   onChange={(e) =>
                     updateTempFilters(
                       "computerScienceGraduates",
-                      e.target.checked
+                      e.target.checked,
                     )
                   }
                   className="w-3 h-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
@@ -1227,7 +1234,7 @@ const fetchCitySuggestions = useCallback(
         </div>
       </div>
 
-      <div className="flex gap-2 border-t border-gray-200 pt-4">
+      <div className="flex gap-2 border-t border-gray-200 pt-4 sticky bottom-0 bg-white mt-4">
         {/* Apply Filters */}
         <div className="w-full rounded-lg">
           <button
