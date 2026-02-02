@@ -2897,10 +2897,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       <div className="relative" ref={actionDropdownRef}>
                         <button
                           onClick={() => setShowActionDropdown((prev) => !prev)}
-                          className={`flex items-center gap-2.5 px-4 py-2.5 rounded-lg border transition-colors hover:border-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${selectedAction
-                            ? "border-blue-400 bg-blue-50 text-blue-600"
-                            : "border-gray-300 bg-white text-gray-400"
-                            }`}
+                          className="px-3 py-2.5 bg-white text-gray-400 text-xs 2xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         >
                           {selectedAction ? (
                             <>
@@ -2918,7 +2915,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           ) : (
                             <>
                               <Users className="w-4 h-4" />
-                              <p className="hidden 2xl:inline">Managed By</p>
+                              <p className="hidden 2xl:inline">Action</p>
                             </>
                           )}
                         </button>
@@ -2949,7 +2946,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                       </div>
 
                       <button
-                        className="px-1.5 py-1.5 bg-white text-gray-400 text-xs 2xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                        className="px-3 py-2.5 bg-white text-gray-400 text-xs 2xl:text-base font-[400] rounded-lg border border-gray-300 hover:border-gray-400 transition-colors flex items-center space-x-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                         onClick={() => setShowExportDialog(true)}
                         aria-label="Export selected candidates"
                         title="Export Selected Candidates"
