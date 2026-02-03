@@ -1056,10 +1056,12 @@ class CandidateService {
 
   async exportCandidates(
     candidateIds: string[],
+    jobId: number,
   ): Promise<ExportCandidateResponse> {
     try {
       const response = await apiClient.post("/candidates/export-selected/", {
         candidate_ids: candidateIds,
+        job_id: jobId,
       });
       return response.data;
     } catch (error: any) {

@@ -753,10 +753,15 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       return;
     }
 
+    if (!jobId) {
+      showToast.error("No job selected for export");
+      return;
+    }
+
     setExportLoading(true);
     try {
       const response: ExportCandidateResponse =
-        await candidateService.exportCandidates(selectedCandidates);
+        await candidateService.exportCandidates(selectedCandidates, parseInt(jobId));
 
       if (typeof response !== "string") {
         throw new Error("Invalid response format: Expected a CSV string");
@@ -1901,7 +1906,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 )}
                               {activeTab === "inbound" &&
                                 candidate.time_applied && (
-                                  <div className="flex items-center space-x-1 text-[16px] mt-1 font-[400] text-[#818283]">
+                                  <div className="flex items-center gap-2 space-x-1 text-[16px] mt-1 font-[400] text-[#818283]">
                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                                       <path d="M13.8327 8.83333C13.8327 12.0533 11.2193 14.6667 7.99935 14.6667C4.77935 14.6667 2.16602 12.0533 2.16602 8.83333C2.16602 5.61333 4.77935 3 7.99935 3C11.2193 3 13.8327 5.61333 13.8327 8.83333Z" stroke="#818283" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round" />
                                       <path d="M8 5.33203V8.66536" stroke="#818283" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round" />
