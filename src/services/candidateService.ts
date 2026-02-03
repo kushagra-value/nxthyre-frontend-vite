@@ -646,7 +646,7 @@ class CandidateService {
         typeof filters.boolQuery === "string" &&
         filters.boolQuery.trim() !== ""
       ) {
-        requestBody.bool_query = filters.boolQuery.trim();
+        requestBody.bool_q = filters.boolQuery.trim();
       }
 
       if (filters.jobId) {
@@ -659,10 +659,10 @@ class CandidateService {
       );
 
       // UPDATED: Save returned bool query (supports both field names for robustness)
-      if (response.data.bool_query || response.data.boolean_search_terms) {
+      if (response.data.bool_q || response.data.boolean_search_terms) {
         localStorage.setItem(
-          `bool_query_${filters.jobId}`,
-          response.data.bool_query || response.data.boolean_search_terms || "",
+          `bool_q_${filters.jobId}`,
+          response.data.bool_q || response.data.boolean_search_terms || "",
         );
       }
       return response.data;

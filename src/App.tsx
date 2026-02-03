@@ -386,7 +386,7 @@ function MainApp() {
 
   useEffect(() => {
     if (activeTab !== "inbound") {
-      setFilters(prev => ({ ...prev, inbound_source: null }));
+      setFilters((prev) => ({ ...prev, inbound_source: null }));
     }
   }, [activeTab]);
 
@@ -699,7 +699,14 @@ function MainApp() {
     if (activeCategoryId) {
       fetchCandidates(currentPage, newFilters);
     }
-  }, [activeTab, filters.inbound_source, sortBy, debouncedSearchQuery, isAuthenticated, currentPage]);
+  }, [
+    activeTab,
+    filters.inbound_source,
+    sortBy,
+    debouncedSearchQuery,
+    isAuthenticated,
+    currentPage,
+  ]);
   useEffect(() => {
     const fetchCreditBalance = async () => {
       try {
@@ -1455,7 +1462,7 @@ function MainApp() {
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
                         searchQuery={""}
-                        setSearchQuery={() => { }}
+                        setSearchQuery={() => {}}
                         showCreateRoleButton={true}
                         showSearchBar={false}
                       />
@@ -1469,7 +1476,7 @@ function MainApp() {
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
                         searchQuery={""}
-                        setSearchQuery={() => { }}
+                        setSearchQuery={() => {}}
                         showCreateRoleButton={true}
                         showSearchBar={false}
                       />
@@ -1635,10 +1642,11 @@ function MainApp() {
                                           onClick={() =>
                                             setCurrentRequisitionPage(page)
                                           }
-                                          className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${page === currentRequisitionPage
-                                            ? "bg-blue-600 text-white"
-                                            : "bg-white text-black hover:bg-gray-200"
-                                            }`}
+                                          className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
+                                            page === currentRequisitionPage
+                                              ? "bg-blue-600 text-white"
+                                              : "bg-white text-black hover:bg-gray-200"
+                                          }`}
                                         >
                                           {page}
                                         </button>
@@ -2530,8 +2538,13 @@ function MainApp() {
                                 activeCategoryTotalCount
                               }
                               currentAnalysis={currentAnalysis}
-                              onInboundSourceChange={(source: string | null) => {
-                                setFilters(prev => ({ ...prev, inbound_source: source }));
+                              onInboundSourceChange={(
+                                source: string | null,
+                              ) => {
+                                setFilters((prev) => ({
+                                  ...prev,
+                                  inbound_source: source,
+                                }));
                                 setCurrentPage(1);
                               }}
                             />
@@ -2760,8 +2773,14 @@ function MainApp() {
                         </div>
                       )}
                       {showRequisitionInfoModal && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-end overflow-y-auto">
-                          <div className="bg-white rounded-3xl shadow-xl max-w-2xl w-full max-h-[100vh] overflow-y-auto p-6">
+                        <div
+                          className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-start justify-end overflow-y-auto"
+                          onClick={handleCloseRequisitionModal}
+                        >
+                          <div
+                            className="bg-white rounded-3xl shadow-xl max-w-2xl w-full max-h-[125vh] overflow-y-auto p-6"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             {/* Header */}
                             <div className="flex items-center justify-between mb-4">
                               <div className="flex items-center gap-2">
