@@ -963,6 +963,22 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       );
     }
 
+    let quickFitData = booleanData.quick_fit_summary || [];
+
+    const priorityOrder = {
+      CRITICAL: 0,
+      IMPORTANT: 1,
+      LEADERSHIP: 2,
+      EXPERIENCE: 3,
+    };
+    quickFitData = quickFitData.sort((a: any, b: any) => {
+      const orderA =
+        priorityOrder[a.priority as keyof typeof priorityOrder] ?? 99;
+      const orderB =
+        priorityOrder[b.priority as keyof typeof priorityOrder] ?? 99;
+      return orderA - orderB;
+    });
+
     return (
       <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
         {/* Top Badge */}
@@ -996,22 +1012,33 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             Quick Fit Summary
           </h3>
           <div className="flex flex-wrap gap-2">
-            {booleanData.quick_fit_summary.map((item, index) => (
-              <span
-                key={index}
-                className={`bg-blue-50 ${getColorClass(
-                  item.color,
-                )} px-3 py-1 rounded-full text-sm flex gap-1 items-center`}
-              >
-                {item.status === "validated" ? (
-                  <Sparkle
-                    className={`w-4 h-4 text-${item.color} bg-${item.color}`}
-                  />
-                ) : null}
-                {item.badge}
-                {getIcon(item.color)}
-              </span>
-            ))}
+            {quickFitData.map(
+              (
+                item: {
+                  badge: string;
+                  color: string;
+                  evidence: string;
+                  priority: string;
+                },
+                index: number,
+              ) => (
+                <span
+                  key={index}
+                  className={`bg-blue-50 ${getColorClass(
+                    item.color,
+                  )} px-3 py-1 rounded-full text-sm flex gap-1 items-center`}
+                  title={`${item.evidence}`}
+                >
+                  {item.priority === "CRITICAL" ? (
+                    <Sparkle
+                      className={`w-4 h-4 text-${item.color} bg-${item.color}`}
+                    />
+                  ) : null}
+                  {item.badge}
+                  {getIcon(item.color)}
+                </span>
+              ),
+            )}
           </div>
         </div>
 

@@ -40,6 +40,7 @@ import { AnalysisResult } from "../services/candidateService";
 import ShareableProfile from "./profileShare/ShareableProfile";
 
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 interface CandidatesMainProps {
   activeTab: string;
@@ -327,8 +328,14 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
           { value: "score_asc", label: "Match Score (Lowest)" },
           { value: "time_applied_desc", label: "Application Date (Newest)" },
           { value: "time_applied_asc", label: "Application Date (Oldest)" },
-          { value: "time_applied_score_desc", label: "Newest, then Highest Score" },
-          { value: "time_applied_score_asc", label: "Oldest, then Highest Score" },
+          {
+            value: "time_applied_score_desc",
+            label: "Newest, then Highest Score",
+          },
+          {
+            value: "time_applied_score_asc",
+            label: "Oldest, then Highest Score",
+          },
         ];
       case "active":
         return [
@@ -377,7 +384,6 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     }
   }, [activeTab]);
 
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -400,7 +406,6 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       setCurrentPage(1);
     }
   }, [totalCount, currentPage, setCurrentPage]);
-
 
   useEffect(() => {
     const options = getSortOptions();
@@ -502,7 +507,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
           </defs>
         </svg>
       ),
-    }
+    },
   ];
 
   const handleSelectAll = (checked: boolean) => {
@@ -1011,8 +1016,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`py-2 text-sm 2xl:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 focus-visible:border-b-2 focus-visible:border-blue-600 ${activeTab === tab.id
-                  ? "text-blue-600 border-blue-500"
-                  : "text-gray-600 border-transparent hover:text-gray-700"
+                    ? "text-blue-600 border-blue-500"
+                    : "text-gray-600 border-transparent hover:text-gray-700"
                   }`}
                 aria-label={`Switch to ${tab.label} tab`}
               >
@@ -1150,8 +1155,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 <button
                   onClick={() => setShowSourceDropdown((prev) => !prev)}
                   className={`flex items-center gap-2.5 px-4 py-2.5 rounded-lg border transition-colors hover:border-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${selectedSource
-                    ? "border-blue-400 bg-blue-50 text-blue-600"
-                    : "border-gray-300 bg-white text-gray-400"
+                      ? "border-blue-400 bg-blue-50 text-blue-600"
+                      : "border-gray-300 bg-white text-gray-400"
                     }`}
                 >
                   {selectedSource ? (
@@ -1211,8 +1216,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                             onInboundSourceChange?.(option.value);
                           }}
                           className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors ${selectedSource === option.value
-                            ? "bg-blue-50 text-blue-600"
-                            : "text-gray-700"
+                              ? "bg-blue-50 text-blue-600"
+                              : "text-gray-700"
                             }`}
                         >
                           <div className="w-6 h-6 flex-shrink-0">
@@ -1265,12 +1270,16 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               >
                 <ArrowDownNarrowWide className="w-4 h-4 rotate-180" />
                 <span className="text-gray-400 font-[400] ml-1 mr-1 hidden 2xl:inline">
-                  {getSortOptions().find((opt) => opt.value === sortBy)?.label || "Sort"}
+                  {getSortOptions().find((opt) => opt.value === sortBy)
+                    ?.label || "Sort"}
                 </span>
                 <ChevronDown className="w-4 h-4 mt-1 hidden 2xl:inline" />
               </button>
               {showSortDropdown && (
-                <div ref={sortDropdownRef} className="absolute top-full right-0 mt-2 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                <div
+                  ref={sortDropdownRef}
+                  className="absolute top-full right-0 mt-2 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+                >
                   <div className="py-1">
                     {getSortOptions().map((option) => (
                       <button
@@ -1456,7 +1465,6 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       ) : (
         <>
           <div className="space-y-4 border-b-1 border-[#E2E2E2] overflow-y-auto max-h-[calc(100vh-0px)] hide-scrollbar p-4">
-
             {candidates.map((candidate) => {
               // Extract college name from education_summary.title
               let collegeName = candidate?.education_summary?.title
@@ -1512,8 +1520,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 <div
                   key={candidate.id}
                   className={`relative pt-5 cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2  ${selectedCandidate?.id === candidate.id
-                    ? "bg-white border-l-4 border-blue-500 shadow-[0_0_20px_0_rgba(0,0,0,0.15),_0_0_8px_0_rgba(0,0,0,0.1)]"
-                    : "border border-gray-200"
+                      ? "bg-white border-l-4 border-blue-500 shadow-[0_0_20px_0_rgba(0,0,0,0.15),_0_0_8px_0_rgba(0,0,0,0.1)]"
+                      : "border border-gray-200"
                     }`}
                   onClick={() => handleCandidateClick(candidate)}
                   onKeyDown={(e) => handleKeyDown(e, candidate)}
@@ -1628,13 +1636,39 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
                                     if (sourceObj == null) {
                                       return (
-                                        <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                          <path d="M0 8.87714C0 3.97443 4.10406 0 9.16667 0H20V5.64909C20 10.9975 15.5228 15.3332 10 15.3332H0V8.87714Z" fill="#0F47F2" />
-                                          <path d="M5.67872 5.68569C6.30372 5.68569 6.7985 5.84926 7.16309 6.2307C7.52767 6.61214 7.70996 7.13229 7.70996 7.79114V10.4912H6.5918V7.92354C6.5918 7.55156 6.48275 7.25365 6.26465 7.02983C6.04981 6.80601 5.76497 6.6941 5.41016 6.6941C5.04232 6.6941 4.74772 6.80601 4.52637 7.02983C4.30827 7.25365 4.19922 7.55156 4.19922 7.92354V10.4912H3.09082L3.09082 5.68569H4.19922L4.19922 6.50023C4.35547 6.23228 4.56055 6.0258 4.81445 5.88079C5.06836 5.73263 5.35645 5.68569 5.67872 5.68569Z" fill="white" />
-                                          <path d="M13.2129 10.4912H11.875L10.7471 8.9591L9.62402 10.4912H8.2959L10.083 8.05121L8.38476 5.68239H9.74772L10.7568 7.13859L11.7648 5.68404H13.093L11.4258 8.04175L13.2129 10.4912Z" fill="white" />
-                                          <path d="M16.8311 6.78395H15.5469V8.68957C15.5469 8.97644 15.6283 9.18922 15.791 9.32793C15.957 9.46348 16.1833 9.53126 16.4697 9.53126C16.6097 9.53126 16.7301 9.51865 16.8311 9.49343V10.4912C16.6585 10.529 16.4583 10.5479 16.2305 10.5479C15.6803 10.5479 15.2425 10.3887 14.917 10.0703C14.5915 9.75192 14.4287 9.29798 14.4287 8.70848V6.78395H13.501L13.5186 5.68404H14.4287L14.4287 4.48585H15.5469L15.5469 5.68404H16.8311V6.78395Z" fill="white" />
-                                          <path d="M9.16699 0.0498047H19.9502V5.64941C19.95 10.9686 15.4966 15.2832 10 15.2832H0.0498047V8.87695C0.0499069 4.00345 4.13053 0.0498047 9.16699 0.0498047ZM8.34375 5.71191L10.0205 8.05078L8.25586 10.4619L8.19727 10.541H9.64941L9.66406 10.5205L10.7471 9.04199L11.835 10.5205L11.8496 10.541H13.3115L13.2529 10.4619L11.4863 8.04102L13.1338 5.71289L13.1895 5.63379H11.7383L11.7236 5.65527L10.7559 7.05078L9.78906 5.6543L9.77344 5.63281H8.28711L8.34375 5.71191ZM9.72168 5.73242L10.7158 7.16699L10.7568 7.22656L10.7979 7.16699L11.791 5.73438H12.9961L11.3848 8.0127L11.3643 8.04199L11.3857 8.07129L13.1152 10.4414H11.9004L10.7871 8.92969L10.7471 8.875L10.707 8.92969L9.59863 10.4414H8.39355L10.123 8.08105L10.1445 8.05176L10.124 8.02246L8.48242 5.73242H9.72168ZM15.4971 8.68945C15.4971 8.98568 15.5814 9.21504 15.7588 9.36621H15.7598C15.9373 9.51118 16.1756 9.58105 16.4697 9.58105C16.5859 9.58105 16.6894 9.56918 16.7812 9.55176V10.4492C16.6219 10.4807 16.4386 10.498 16.2305 10.498C15.6905 10.498 15.2664 10.3416 14.9521 10.0342C14.6389 9.72775 14.4785 9.28814 14.4785 8.70801V6.73438H13.5518L13.5674 5.73438H14.4785V4.53613H15.4971V5.73438H16.7812V6.73438H15.4971V8.68945ZM5.41016 6.64453C5.03139 6.64453 4.72354 6.7602 4.49121 6.99512H4.49023C4.26151 7.22999 4.14941 7.5416 4.14941 7.92383V10.4414H3.14062V5.73535H4.14941V6.68555L4.24219 6.52539C4.39427 6.26459 4.59311 6.06421 4.83887 5.92383H4.83984C5.08301 5.782 5.36104 5.73535 5.67871 5.73535C6.29473 5.73535 6.7746 5.89699 7.12695 6.26562C7.48042 6.63555 7.66013 7.14185 7.66016 7.79102V10.4414H6.6416V7.92383C6.6416 7.58936 6.55562 7.30906 6.38086 7.08691L6.30078 6.99512C6.07513 6.76004 5.77644 6.64453 5.41016 6.64453ZM15.5967 6.83398H16.8809V5.63379H15.5967V4.43555H14.3789V5.63379H13.4697L13.4688 5.68359L13.4512 6.7832L13.4502 6.83398H14.3789V8.70801C14.3789 9.30681 14.5441 9.77609 14.8818 10.1064C15.2186 10.4358 15.6702 10.5977 16.2305 10.5977C16.461 10.5977 16.6649 10.5788 16.8418 10.54L16.8809 10.5312V9.42969L16.8193 9.44531C16.7235 9.46927 16.6069 9.48145 16.4697 9.48145C16.1909 9.48145 15.9767 9.4152 15.8223 9.28906C15.6748 9.16279 15.5967 8.96629 15.5967 8.68945V6.83398ZM7.75977 7.79102C7.75974 7.12275 7.57471 6.58918 7.19922 6.19629C6.8224 5.80205 6.3127 5.63574 5.67871 5.63574C5.35231 5.63574 5.05441 5.68292 4.79004 5.83691C4.57488 5.9598 4.39567 6.12734 4.24902 6.33496V5.63574H3.04102V10.541H4.24902V7.92383C4.24902 7.56262 4.35466 7.2781 4.56152 7.06543C4.7719 6.85271 5.05324 6.74414 5.41016 6.74414C5.75348 6.74414 6.02449 6.85192 6.22852 7.06445C6.43582 7.2772 6.54199 7.56223 6.54199 7.92383V10.541H7.75977V7.79102Z" stroke="white" stroke-opacity="0.26" stroke-width="0.1" />
-                                          <path d="M17.5566 0.503906L18.0302 1.78317L19.451 2.38914L18.0302 2.86045L17.5566 4.27437L17.0829 2.86045L15.6621 2.38914L17.0829 1.78317L17.5566 0.503906Z" fill="white" />
+                                        <svg
+                                          width="20"
+                                          height="16"
+                                          viewBox="0 0 20 16"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <path
+                                            d="M0 8.87714C0 3.97443 4.10406 0 9.16667 0H20V5.64909C20 10.9975 15.5228 15.3332 10 15.3332H0V8.87714Z"
+                                            fill="#0F47F2"
+                                          />
+                                          <path
+                                            d="M5.67872 5.68569C6.30372 5.68569 6.7985 5.84926 7.16309 6.2307C7.52767 6.61214 7.70996 7.13229 7.70996 7.79114V10.4912H6.5918V7.92354C6.5918 7.55156 6.48275 7.25365 6.26465 7.02983C6.04981 6.80601 5.76497 6.6941 5.41016 6.6941C5.04232 6.6941 4.74772 6.80601 4.52637 7.02983C4.30827 7.25365 4.19922 7.55156 4.19922 7.92354V10.4912H3.09082L3.09082 5.68569H4.19922L4.19922 6.50023C4.35547 6.23228 4.56055 6.0258 4.81445 5.88079C5.06836 5.73263 5.35645 5.68569 5.67872 5.68569Z"
+                                            fill="white"
+                                          />
+                                          <path
+                                            d="M13.2129 10.4912H11.875L10.7471 8.9591L9.62402 10.4912H8.2959L10.083 8.05121L8.38476 5.68239H9.74772L10.7568 7.13859L11.7648 5.68404H13.093L11.4258 8.04175L13.2129 10.4912Z"
+                                            fill="white"
+                                          />
+                                          <path
+                                            d="M16.8311 6.78395H15.5469V8.68957C15.5469 8.97644 15.6283 9.18922 15.791 9.32793C15.957 9.46348 16.1833 9.53126 16.4697 9.53126C16.6097 9.53126 16.7301 9.51865 16.8311 9.49343V10.4912C16.6585 10.529 16.4583 10.5479 16.2305 10.5479C15.6803 10.5479 15.2425 10.3887 14.917 10.0703C14.5915 9.75192 14.4287 9.29798 14.4287 8.70848V6.78395H13.501L13.5186 5.68404H14.4287L14.4287 4.48585H15.5469L15.5469 5.68404H16.8311V6.78395Z"
+                                            fill="white"
+                                          />
+                                          <path
+                                            d="M9.16699 0.0498047H19.9502V5.64941C19.95 10.9686 15.4966 15.2832 10 15.2832H0.0498047V8.87695C0.0499069 4.00345 4.13053 0.0498047 9.16699 0.0498047ZM8.34375 5.71191L10.0205 8.05078L8.25586 10.4619L8.19727 10.541H9.64941L9.66406 10.5205L10.7471 9.04199L11.835 10.5205L11.8496 10.541H13.3115L13.2529 10.4619L11.4863 8.04102L13.1338 5.71289L13.1895 5.63379H11.7383L11.7236 5.65527L10.7559 7.05078L9.78906 5.6543L9.77344 5.63281H8.28711L8.34375 5.71191ZM9.72168 5.73242L10.7158 7.16699L10.7568 7.22656L10.7979 7.16699L11.791 5.73438H12.9961L11.3848 8.0127L11.3643 8.04199L11.3857 8.07129L13.1152 10.4414H11.9004L10.7871 8.92969L10.7471 8.875L10.707 8.92969L9.59863 10.4414H8.39355L10.123 8.08105L10.1445 8.05176L10.124 8.02246L8.48242 5.73242H9.72168ZM15.4971 8.68945C15.4971 8.98568 15.5814 9.21504 15.7588 9.36621H15.7598C15.9373 9.51118 16.1756 9.58105 16.4697 9.58105C16.5859 9.58105 16.6894 9.56918 16.7812 9.55176V10.4492C16.6219 10.4807 16.4386 10.498 16.2305 10.498C15.6905 10.498 15.2664 10.3416 14.9521 10.0342C14.6389 9.72775 14.4785 9.28814 14.4785 8.70801V6.73438H13.5518L13.5674 5.73438H14.4785V4.53613H15.4971V5.73438H16.7812V6.73438H15.4971V8.68945ZM5.41016 6.64453C5.03139 6.64453 4.72354 6.7602 4.49121 6.99512H4.49023C4.26151 7.22999 4.14941 7.5416 4.14941 7.92383V10.4414H3.14062V5.73535H4.14941V6.68555L4.24219 6.52539C4.39427 6.26459 4.59311 6.06421 4.83887 5.92383H4.83984C5.08301 5.782 5.36104 5.73535 5.67871 5.73535C6.29473 5.73535 6.7746 5.89699 7.12695 6.26562C7.48042 6.63555 7.66013 7.14185 7.66016 7.79102V10.4414H6.6416V7.92383C6.6416 7.58936 6.55562 7.30906 6.38086 7.08691L6.30078 6.99512C6.07513 6.76004 5.77644 6.64453 5.41016 6.64453ZM15.5967 6.83398H16.8809V5.63379H15.5967V4.43555H14.3789V5.63379H13.4697L13.4688 5.68359L13.4512 6.7832L13.4502 6.83398H14.3789V8.70801C14.3789 9.30681 14.5441 9.77609 14.8818 10.1064C15.2186 10.4358 15.6702 10.5977 16.2305 10.5977C16.461 10.5977 16.6649 10.5788 16.8418 10.54L16.8809 10.5312V9.42969L16.8193 9.44531C16.7235 9.46927 16.6069 9.48145 16.4697 9.48145C16.1909 9.48145 15.9767 9.4152 15.8223 9.28906C15.6748 9.16279 15.5967 8.96629 15.5967 8.68945V6.83398ZM7.75977 7.79102C7.75974 7.12275 7.57471 6.58918 7.19922 6.19629C6.8224 5.80205 6.3127 5.63574 5.67871 5.63574C5.35231 5.63574 5.05441 5.68292 4.79004 5.83691C4.57488 5.9598 4.39567 6.12734 4.24902 6.33496V5.63574H3.04102V10.541H4.24902V7.92383C4.24902 7.56262 4.35466 7.2781 4.56152 7.06543C4.7719 6.85271 5.05324 6.74414 5.41016 6.74414C5.75348 6.74414 6.02449 6.85192 6.22852 7.06445C6.43582 7.2772 6.54199 7.56223 6.54199 7.92383V10.541H7.75977V7.79102Z"
+                                            stroke="white"
+                                            stroke-opacity="0.26"
+                                            stroke-width="0.1"
+                                          />
+                                          <path
+                                            d="M17.5566 0.503906L18.0302 1.78317L19.451 2.38914L18.0302 2.86045L17.5566 4.27437L17.0829 2.86045L15.6621 2.38914L17.0829 1.78317L17.5566 0.503906Z"
+                                            fill="white"
+                                          />
                                         </svg>
                                       );
                                     }
@@ -1907,10 +1941,35 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                               {activeTab === "inbound" &&
                                 candidate.time_applied && (
                                   <div className="flex items-center gap-2 space-x-1 text-[16px] mt-1 font-[400] text-[#818283]">
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                      <path d="M13.8327 8.83333C13.8327 12.0533 11.2193 14.6667 7.99935 14.6667C4.77935 14.6667 2.16602 12.0533 2.16602 8.83333C2.16602 5.61333 4.77935 3 7.99935 3C11.2193 3 13.8327 5.61333 13.8327 8.83333Z" stroke="#818283" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round" />
-                                      <path d="M8 5.33203V8.66536" stroke="#818283" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round" />
-                                      <path d="M6 1.33203H10" stroke="#818283" stroke-width="1.33" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                                    <svg
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 16 16"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        d="M13.8327 8.83333C13.8327 12.0533 11.2193 14.6667 7.99935 14.6667C4.77935 14.6667 2.16602 12.0533 2.16602 8.83333C2.16602 5.61333 4.77935 3 7.99935 3C11.2193 3 13.8327 5.61333 13.8327 8.83333Z"
+                                        stroke="#818283"
+                                        stroke-width="1.33"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                      />
+                                      <path
+                                        d="M8 5.33203V8.66536"
+                                        stroke="#818283"
+                                        stroke-width="1.33"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                      />
+                                      <path
+                                        d="M6 1.33203H10"
+                                        stroke="#818283"
+                                        stroke-width="1.33"
+                                        stroke-miterlimit="10"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                      />
                                     </svg>
 
                                     {candidate.time_applied}
@@ -1943,9 +2002,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     ) : (
                       <div className="flex flex-col">
                         <p className="text-[#A8A8A8] mr-[5px]">Experience</p>
-                        <p className="text-[#4B5563]">
-                          -- year exp
-                        </p>
+                        <p className="text-[#4B5563]">-- year exp</p>
                       </div>
                     )}
 
@@ -1965,9 +2022,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     ) : (
                       <div className="flex flex-col">
                         <p className="text-[#A8A8A8] mr-[5px]">Notice Period</p>
-                        <p className="text-[#4B5563]">
-                          --day
-                        </p>
+                        <p className="text-[#4B5563]">--day</p>
                       </div>
                     )}
                     {/* need to update the code for Current Salary */}
@@ -1981,9 +2036,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     ) : (
                       <div className="flex flex-col">
                         <p className="text-[#A8A8A8] mr-[5px]">Current CTC</p>
-                        <p className="text-[#4B5563]">
-                          --LPA
-                        </p>
+                        <p className="text-[#4B5563]">--LPA</p>
                       </div>
                     )}
                     {candidate.expected_ctc ? (
@@ -1996,21 +2049,17 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     ) : (
                       <div className="flex flex-col">
                         <p className="text-[#A8A8A8] mr-[5px]">Expected CTC</p>
-                        <p className="text-[#4B5563]">
-                          --LPA
-                        </p>
+                        <p className="text-[#4B5563]">--LPA</p>
                       </div>
                     )}
-
                   </div>
                   <div className="p-3 pl-12 mt-5 bg-white flex items-center justify-between space-x-2 flex-wrap gap-2 rounded-lg border-t border-gray-200">
                     <div className="flex items-center space-x-3">
                       {candidate.premium_data_availability
                         ?.pinterest_username &&
                         (() => {
-                          const url = candidate.premium_data_unlocked
-                            ? candidate.premium_data?.pinterest_username
-                            : null;
+                          const url =
+                            candidate.premium_data?.pinterest_username;
                           return (
                             <button
                               className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2018,17 +2067,23 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 e.stopPropagation();
                                 if (url) {
                                   window.open(url, "_blank");
-                                } else {
-                                  setPendingReveal({
-                                    candidateId: candidate.id,
-                                    onSuccess: (prem) => {
-                                      const finalUrl =
-                                        prem.premium_data.pinterest_username;
-                                      if (finalUrl)
-                                        window.open(finalUrl, "_blank");
-                                    },
-                                  });
-                                  setShowRevealDialog(true);
+                                }
+                                // else {
+                                //   setPendingReveal({
+                                //     candidateId: candidate.id,
+                                //     onSuccess: (prem) => {
+                                //       const finalUrl =
+                                //         prem.premium_data.pinterest_username;
+                                //       if (finalUrl)
+                                //         window.open(finalUrl, "_blank");
+                                //     },
+                                //   });
+                                //   setShowRevealDialog(true);
+                                // }
+                                else {
+                                  toast.error(
+                                    "Pinterest profile not available",
+                                  );
                                 }
                               }}
                               aria-label={`View ${candidate.full_name}'s pinterest`}
@@ -2053,9 +2108,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         })()}
                       {candidate.premium_data_availability?.github_username &&
                         (() => {
-                          const url = candidate.premium_data_unlocked
-                            ? candidate.premium_data?.github_url
-                            : null;
+                          const url = candidate.premium_data?.github_url;
 
                           return (
                             <button
@@ -2063,18 +2116,19 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 e.stopPropagation();
                                 if (url) {
                                   window.open(url, "_blank");
-                                } else {
-                                  setPendingReveal({
-                                    candidateId: candidate.id,
-                                    onSuccess: (prem) => {
-                                      const finalUrl =
-                                        prem.premium_data.github_url;
-                                      if (finalUrl)
-                                        window.open(finalUrl, "_blank");
-                                    },
-                                  });
-                                  setShowRevealDialog(true);
                                 }
+                                // else {
+                                //   setPendingReveal({
+                                //     candidateId: candidate.id,
+                                //     onSuccess: (prem) => {
+                                //       const finalUrl =
+                                //         prem.premium_data.github_url;
+                                //       if (finalUrl)
+                                //         window.open(finalUrl, "_blank");
+                                //     },
+                                //   });
+                                //   setShowRevealDialog(true);
+                                // }
                               }}
                               className="text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full"
                               aria-label={`View ${candidate.full_name}'s Github profile`}
@@ -2108,9 +2162,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         })()}
                       {candidate.premium_data_availability?.linkedin_url &&
                         (() => {
-                          const url = candidate.premium_data_unlocked
-                            ? candidate.premium_data?.linkedin_url
-                            : null;
+                          const url = candidate.premium_data?.linkedin_url;
                           return (
                             <button
                               className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2118,18 +2170,19 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 e.stopPropagation();
                                 if (url) {
                                   window.open(url, "_blank");
-                                } else {
-                                  setPendingReveal({
-                                    candidateId: candidate.id,
-                                    onSuccess: (prem) => {
-                                      const finalUrl =
-                                        prem.premium_data.linkedin_url;
-                                      if (finalUrl)
-                                        window.open(finalUrl, "_blank");
-                                    },
-                                  });
-                                  setShowRevealDialog(true);
                                 }
+                                // else {
+                                //   setPendingReveal({
+                                //     candidateId: candidate.id,
+                                //     onSuccess: (prem) => {
+                                //       const finalUrl =
+                                //         prem.premium_data.linkedin_url;
+                                //       if (finalUrl)
+                                //         window.open(finalUrl, "_blank");
+                                //     },
+                                //   });
+                                //   setShowRevealDialog(true);
+                                // }
                               }}
                               aria-label={`View ${candidate.full_name}'s LinkedIn profile`}
                               title="LinkedIn profile Link"
@@ -2158,9 +2211,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         })()}
                       {candidate.premium_data_availability?.behance_username &&
                         (() => {
-                          const url = candidate.premium_data_unlocked
-                            ? candidate.premium_data?.behance_username
-                            : null;
+                          const url = candidate.premium_data?.behance_username;
                           return (
                             <button
                               className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2168,18 +2219,19 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 e.stopPropagation();
                                 if (url) {
                                   window.open(url, "_blank");
-                                } else {
-                                  setPendingReveal({
-                                    candidateId: candidate.id,
-                                    onSuccess: (prem) => {
-                                      const finalUrl =
-                                        prem.premium_data.behance_username;
-                                      if (finalUrl)
-                                        window.open(finalUrl, "_blank");
-                                    },
-                                  });
-                                  setShowRevealDialog(true);
                                 }
+                                // else {
+                                //   setPendingReveal({
+                                //     candidateId: candidate.id,
+                                //     onSuccess: (prem) => {
+                                //       const finalUrl =
+                                //         prem.premium_data.behance_username;
+                                //       if (finalUrl)
+                                //         window.open(finalUrl, "_blank");
+                                //     },
+                                //   });
+                                //   setShowRevealDialog(true);
+                                // }
                               }}
                               aria-label={`View ${candidate.full_name}'s behance`}
                               title="Behance Account Link"
@@ -2221,9 +2273,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                       {candidate.premium_data_availability
                         ?.instagram_username &&
                         (() => {
-                          const url = candidate.premium_data_unlocked
-                            ? candidate.premium_data?.instagram_username
-                            : null;
+                          const url =
+                            candidate.premium_data?.instagram_username;
                           return (
                             <button
                               className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2231,18 +2282,19 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 e.stopPropagation();
                                 if (url) {
                                   window.open(url, "_blank");
-                                } else {
-                                  setPendingReveal({
-                                    candidateId: candidate.id,
-                                    onSuccess: (prem) => {
-                                      const finalUrl =
-                                        prem.premium_data.instagram_username;
-                                      if (finalUrl)
-                                        window.open(finalUrl, "_blank");
-                                    },
-                                  });
-                                  setShowRevealDialog(true);
                                 }
+                                // else {
+                                //   setPendingReveal({
+                                //     candidateId: candidate.id,
+                                //     onSuccess: (prem) => {
+                                //       const finalUrl =
+                                //         prem.premium_data.instagram_username;
+                                //       if (finalUrl)
+                                //         window.open(finalUrl, "_blank");
+                                //     },
+                                //   });
+                                //   setShowRevealDialog(true);
+                                // }
                               }}
                               aria-label={`View ${candidate.full_name}'s instagram`}
                               title="Instagram UserId"
@@ -2271,9 +2323,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         })()}
                       {candidate.premium_data_availability?.twitter_username &&
                         (() => {
-                          const url = candidate.premium_data_unlocked
-                            ? candidate.premium_data?.twitter_url
-                            : null;
+                          const url = candidate.premium_data?.twitter_url;
                           return (
                             <button
                               className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2281,18 +2331,19 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 e.stopPropagation();
                                 if (url) {
                                   window.open(url, "_blank");
-                                } else {
-                                  setPendingReveal({
-                                    candidateId: candidate.id,
-                                    onSuccess: (prem) => {
-                                      const finalUrl =
-                                        prem.premium_data.twitter_url;
-                                      if (finalUrl)
-                                        window.open(finalUrl, "_blank");
-                                    },
-                                  });
-                                  setShowRevealDialog(true);
                                 }
+                                //  else {
+                                //   setPendingReveal({
+                                //     candidateId: candidate.id,
+                                //     onSuccess: (prem) => {
+                                //       const finalUrl =
+                                //         prem.premium_data.twitter_url;
+                                //       if (finalUrl)
+                                //         window.open(finalUrl, "_blank");
+                                //     },
+                                //   });
+                                //   setShowRevealDialog(true);
+                                // }
                               }}
                               aria-label={`View ${candidate.full_name}'s twitter`}
                               title="Twitter account Link"
@@ -2320,9 +2371,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         })()}
                       {candidate.premium_data_availability?.dribble_username &&
                         (() => {
-                          const url = candidate.premium_data_unlocked
-                            ? candidate.premium_data?.dribble_username
-                            : null;
+                          const url = candidate.premium_data?.dribble_username;
                           return (
                             <button
                               className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2330,18 +2379,19 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 e.stopPropagation();
                                 if (url) {
                                   window.open(url, "_blank");
-                                } else {
-                                  setPendingReveal({
-                                    candidateId: candidate.id,
-                                    onSuccess: (prem) => {
-                                      const finalUrl =
-                                        prem.premium_data.dribble_username;
-                                      if (finalUrl)
-                                        window.open(finalUrl, "_blank");
-                                    },
-                                  });
-                                  setShowRevealDialog(true);
                                 }
+                                // else {
+                                //   setPendingReveal({
+                                //     candidateId: candidate.id,
+                                //     onSuccess: (prem) => {
+                                //       const finalUrl =
+                                //         prem.premium_data.dribble_username;
+                                //       if (finalUrl)
+                                //         window.open(finalUrl, "_blank");
+                                //     },
+                                //   });
+                                //   setShowRevealDialog(true);
+                                // }
                               }}
                               aria-label={`View ${candidate.full_name}'s dribble`}
                               title="Dribble Profile Link"
@@ -2402,9 +2452,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                         })()}
                       {candidate.premium_data_availability?.resume_url &&
                         (() => {
-                          const url = candidate.premium_data_unlocked
-                            ? candidate.premium_data?.resume_url
-                            : null;
+                          const url = candidate.premium_data?.resume_url;
                           return (
                             <button
                               className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2412,18 +2460,22 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 e.stopPropagation();
                                 if (url) {
                                   window.open(url, "_blank");
-                                } else {
-                                  setPendingReveal({
-                                    candidateId: candidate.id,
-                                    onSuccess: (prem) => {
-                                      const finalUrl =
-                                        prem.premium_data.resume_url;
-                                      if (finalUrl)
-                                        window.open(finalUrl, "_blank");
-                                    },
-                                  });
-                                  // setShowRevealDialog(true);
-                                  handleConfirmReveal();
+                                }
+                                // else {
+                                //   setPendingReveal({
+                                //     candidateId: candidate.id,
+                                //     onSuccess: (prem) => {
+                                //       const finalUrl =
+                                //         prem.premium_data.resume_url;
+                                //       if (finalUrl)
+                                //         window.open(finalUrl, "_blank");
+                                //     },
+                                //   });
+                                //   // setShowRevealDialog(true);
+                                //   handleConfirmReveal();
+                                // }
+                                else {
+                                  toast.error("Resume not available");
                                 }
                               }}
                               aria-label={`View ${candidate.full_name}'s resume`}
@@ -2455,9 +2507,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
 
                       {candidate.premium_data_availability?.portfolio_url &&
                         (() => {
-                          const url = candidate.premium_data_unlocked
-                            ? candidate.premium_data?.portfolio_url
-                            : null;
+                          const url = candidate.premium_data?.portfolio_url;
                           return (
                             <button
                               className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -2465,18 +2515,19 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                 e.stopPropagation();
                                 if (url) {
                                   window.open(url, "_blank");
-                                } else {
-                                  setPendingReveal({
-                                    candidateId: candidate.id,
-                                    onSuccess: (prem) => {
-                                      const finalUrl =
-                                        prem.premium_data?.portfolio_url;
-                                      if (finalUrl)
-                                        window.open(finalUrl, "_blank");
-                                    },
-                                  });
-                                  setShowRevealDialog(true);
                                 }
+                                //  else {
+                                //   setPendingReveal({
+                                //     candidateId: candidate.id,
+                                //     onSuccess: (prem) => {
+                                //       const finalUrl =
+                                //         prem.premium_data?.portfolio_url;
+                                //       if (finalUrl)
+                                //         window.open(finalUrl, "_blank");
+                                //     },
+                                //   });
+                                //   setShowRevealDialog(true);
+                                // }
                               }}
                               aria-label={`View ${candidate.full_name}'s portfolio`}
                               title={`${candidate.full_name}'s portfolio Link`}
@@ -2770,10 +2821,10 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     typeof page === "number" && handlePageChange(page)
                   }
                   className={`px-3 py-1 text-sm rounded-lg transition-colors focus-visible:ring focus-visible:ring-2 focus-visible:ring-blue-500 ${page === currentPage
-                    ? "bg-blue-600 text-white"
-                    : typeof page === "number"
-                      ? "text-gray-600 hover:bg-gray-100"
-                      : "text-gray-600 cursor-default"
+                      ? "bg-blue-600 text-white"
+                      : typeof page === "number"
+                        ? "text-gray-600 hover:bg-gray-100"
+                        : "text-gray-600 cursor-default"
                     }`}
                   disabled={typeof page !== "number"}
                   area-label={`Go to page ${page}`}
@@ -2797,8 +2848,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
           <div className="flex items-center justify-between">
             <div className="text-xs text-gray-400 2xl:text-base font-[400]">
               Showing {(currentPage - 1) * candidatesPerPage + 1} to{" "}
-              {(currentPage - 1) * candidatesPerPage + candidates.length} of {totalCount}{" "}
-              candidates
+              {(currentPage - 1) * candidatesPerPage + candidates.length} of{" "}
+              {totalCount} candidates
             </div>
             <div className="flex items-center space-x-2">
               <button
@@ -2815,10 +2866,10 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     typeof page === "number" && handlePageChange(page)
                   }
                   className={`px-3 py-1 text-sm rounded-lg transition-colors ${page === currentPage
-                    ? "bg-blue-600 text-white"
-                    : typeof page === "number"
-                      ? "text-gray-600 hover:bg-gray-100"
-                      : "text-gray-600 cursor-default"
+                      ? "bg-blue-600 text-white"
+                      : typeof page === "number"
+                        ? "text-gray-600 hover:bg-gray-100"
+                        : "text-gray-600 cursor-default"
                     }`}
                   disabled={typeof page !== "number"}
                 >

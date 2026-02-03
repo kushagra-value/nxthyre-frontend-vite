@@ -609,6 +609,22 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         const jobScoreObj =
           selectedCandidate.candidate.stageData?.[slug]?.job_score_obj;
 
+        let quickFitData = jobScoreObj.quick_fit_summary || [];
+
+        const priorityOrder = {
+          CRITICAL: 0,
+          IMPORTANT: 1,
+          LEADERSHIP: 2,
+          EXPERIENCE: 3,
+        };
+        quickFitData = quickFitData.sort((a: any, b: any) => {
+          const orderA =
+            priorityOrder[a.priority as keyof typeof priorityOrder] ?? 99;
+          const orderB =
+            priorityOrder[b.priority as keyof typeof priorityOrder] ?? 99;
+          return orderA - orderB;
+        });
+
         console.log("selectedCandidate:", selectedCandidate);
 
         if (!jobScoreObj) {
@@ -652,7 +668,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 Quick Fit Summary
               </h3>
               <div className="flex flex-wrap gap-2">
-                {jobScoreObj.quick_fit_summary.map(
+                {quickFitData.map(
                   (
                     item: {
                       badge: string;

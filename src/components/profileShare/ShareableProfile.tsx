@@ -548,14 +548,14 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
             </div>
           )}
 
-          {effectiveResumeUrl && (
+          {candidateData?.premium_data?.resume_url && (
             <div className="bg-white p-8 rounded-xl mt-6">
               <h3 className="text-lg font-semibold text-gray-600 mb-3">
                 Resume
               </h3>
 
               <embed
-                src={effectiveResumeUrl}
+                src={candidateData?.premium_data?.resume_url}
                 type="application/pdf"
                 width="100%"
                 height="900px"
@@ -565,7 +565,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
               <p className="mt-2 text-sm text-gray-500">
                 If the resume doesn't display,{" "}
                 <a
-                  href={effectiveResumeUrl}
+                  href={candidateData?.premium_data?.resume_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 underline"
