@@ -2778,7 +2778,7 @@ function MainApp() {
                           onClick={handleCloseRequisitionModal}
                         >
                           <div
-                            className="bg-white rounded-3xl shadow-xl max-w-2xl w-full max-h-[120vh] overflow-y-auto p-6"
+                            className="bg-white rounded-3xl shadow-xl max-w-2xl w-full max-h-[125vh] overflow-y-auto p-6"
                             onClick={(e) => e.stopPropagation()}
                           >
                             {/* Header */}
