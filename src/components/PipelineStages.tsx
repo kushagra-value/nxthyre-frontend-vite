@@ -3717,11 +3717,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   {candidate.candidate.premium_data_availability
                                     ?.pinterest_username &&
                                     (() => {
-                                      const url = candidate.candidate
-                                        .premium_data_unlocked
-                                        ? candidate.candidate.premium_data
-                                            ?.pinterest_username
-                                        : null;
+                                      const url =
+                                        candidate.candidate.premium_data
+                                          ?.pinterest_username;
                                       return (
                                         <button
                                           className="text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -3729,23 +3727,24 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             e.stopPropagation();
                                             if (url) {
                                               window.open(url, "_blank");
-                                            } else {
-                                              setPendingReveal({
-                                                candidateId:
-                                                  candidate.candidate.id,
-                                                onSuccess: (prem) => {
-                                                  const finalUrl =
-                                                    prem.candidate.premium_data
-                                                      .pinterest_username;
-                                                  if (finalUrl)
-                                                    window.open(
-                                                      finalUrl,
-                                                      "_blank",
-                                                    );
-                                                },
-                                              });
-                                              setShowRevealDialog(true);
                                             }
+                                            // else {
+                                            //   setPendingReveal({
+                                            //     candidateId:
+                                            //       candidate.candidate.id,
+                                            //     onSuccess: (prem) => {
+                                            //       const finalUrl =
+                                            //         prem.candidate.premium_data
+                                            //           .pinterest_username;
+                                            //       if (finalUrl)
+                                            //         window.open(
+                                            //           finalUrl,
+                                            //           "_blank",
+                                            //         );
+                                            //     },
+                                            //   });
+                                            //   setShowRevealDialog(true);
+                                            // }
                                           }}
                                           aria-label={`View ${candidate.candidate.full_name}'s Pinterest profile`}
                                         >
@@ -3782,11 +3781,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   {candidate.candidate.premium_data_availability
                                     ?.github_username &&
                                     (() => {
-                                      const url = candidate.candidate
-                                        .premium_data_unlocked
-                                        ? candidate.candidate.premium_data
-                                            ?.github_url
-                                        : null;
+                                      const url =
+                                        candidate.candidate.premium_data
+                                          ?.github_url;
                                       return (
                                         <button
                                           className="text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -3794,23 +3791,24 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             e.stopPropagation();
                                             if (url) {
                                               window.open(url, "_blank");
-                                            } else {
-                                              setPendingReveal({
-                                                candidateId:
-                                                  candidate.candidate.id,
-                                                onSuccess: (prem) => {
-                                                  const finalUrl =
-                                                    prem.candidate.premium_data
-                                                      .github_url;
-                                                  if (finalUrl)
-                                                    window.open(
-                                                      finalUrl,
-                                                      "_blank",
-                                                    );
-                                                },
-                                              });
-                                              setShowRevealDialog(true);
                                             }
+                                            // else {
+                                            //   setPendingReveal({
+                                            //     candidateId:
+                                            //       candidate.candidate.id,
+                                            //     onSuccess: (prem) => {
+                                            //       const finalUrl =
+                                            //         prem.candidate.premium_data
+                                            //           .github_url;
+                                            //       if (finalUrl)
+                                            //         window.open(
+                                            //           finalUrl,
+                                            //           "_blank",
+                                            //         );
+                                            //     },
+                                            //   });
+                                            //   setShowRevealDialog(true);
+                                            // }
                                           }}
                                           aria-label={`View ${candidate.candidate.full_name}'s GitHub profile`}
                                         >
@@ -3847,11 +3845,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   {candidate.candidate.premium_data_availability
                                     ?.linkedin_url &&
                                     (() => {
-                                      const url = candidate.candidate
-                                        .premium_data_unlocked
-                                        ? candidate.candidate.premium_data
-                                            ?.linkedin_url
-                                        : null;
+                                      const url =
+                                        candidate.candidate.premium_data
+                                          ?.linkedin_url;
                                       return (
                                         <button
                                           className="text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -3859,23 +3855,24 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             e.stopPropagation();
                                             if (url) {
                                               window.open(url, "_blank");
-                                            } else {
-                                              setPendingReveal({
-                                                candidateId:
-                                                  candidate.candidate.id,
-                                                onSuccess: (prem) => {
-                                                  const finalUrl =
-                                                    prem.candidate.premium_data
-                                                      .linkedin_ur;
-                                                  if (finalUrl)
-                                                    window.open(
-                                                      finalUrl,
-                                                      "_blank",
-                                                    );
-                                                },
-                                              });
-                                              setShowRevealDialog(true);
                                             }
+                                            // else {
+                                            //   setPendingReveal({
+                                            //     candidateId:
+                                            //       candidate.candidate.id,
+                                            //     onSuccess: (prem) => {
+                                            //       const finalUrl =
+                                            //         prem.candidate.premium_data
+                                            //           .linkedin_ur;
+                                            //       if (finalUrl)
+                                            //         window.open(
+                                            //           finalUrl,
+                                            //           "_blank",
+                                            //         );
+                                            //     },
+                                            //   });
+                                            //   setShowRevealDialog(true);
+                                            // }
                                           }}
                                           aria-label={`View ${candidate.candidate.full_name}'s LinkedIn profile`}
                                         >
@@ -3908,11 +3905,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   {candidate.candidate.premium_data_availability
                                     ?.behance_username &&
                                     (() => {
-                                      const url = candidate.candidate
-                                        .premium_data_unlocked
-                                        ? candidate.candidate.premium_data
-                                            ?.behance_username
-                                        : null;
+                                      const url =
+                                        candidate.candidate.premium_data
+                                          ?.behance_username;
                                       return (
                                         <button
                                           className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -3920,23 +3915,24 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             e.stopPropagation();
                                             if (url) {
                                               window.open(url, "_blank");
-                                            } else {
-                                              setPendingReveal({
-                                                candidateId:
-                                                  candidate.candidate.id,
-                                                onSuccess: (prem) => {
-                                                  const finalUrl =
-                                                    prem.candidate.premium_data
-                                                      .behance_username;
-                                                  if (finalUrl)
-                                                    window.open(
-                                                      finalUrl,
-                                                      "_blank",
-                                                    );
-                                                },
-                                              });
-                                              setShowRevealDialog(true);
                                             }
+                                            // else {
+                                            //   setPendingReveal({
+                                            //     candidateId:
+                                            //       candidate.candidate.id,
+                                            //     onSuccess: (prem) => {
+                                            //       const finalUrl =
+                                            //         prem.candidate.premium_data
+                                            //           .behance_username;
+                                            //       if (finalUrl)
+                                            //         window.open(
+                                            //           finalUrl,
+                                            //           "_blank",
+                                            //         );
+                                            //     },
+                                            //   });
+                                            //   setShowRevealDialog(true);
+                                            // }
                                           }}
                                           aria-label={`View ${candidate.candidate.full_name}'s portfolio`}
                                         >
@@ -3981,11 +3977,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   {candidate.candidate.premium_data_availability
                                     ?.instagram_username &&
                                     (() => {
-                                      const url = candidate.candidate
-                                        .premium_data_unlocked
-                                        ? candidate.candidate.premium_data
-                                            ?.instagram_username
-                                        : null;
+                                      const url =
+                                        candidate.candidate.premium_data
+                                          ?.instagram_username;
                                       return (
                                         <button
                                           className="p-2 text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -3993,23 +3987,24 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             e.stopPropagation();
                                             if (url) {
                                               window.open(url, "_blank");
-                                            } else {
-                                              setPendingReveal({
-                                                candidateId:
-                                                  candidate.candidate.id,
-                                                onSuccess: (prem) => {
-                                                  const finalUrl =
-                                                    prem.candidate.premium_data
-                                                      .instagram_username;
-                                                  if (finalUrl)
-                                                    window.open(
-                                                      finalUrl,
-                                                      "_blank",
-                                                    );
-                                                },
-                                              });
-                                              setShowRevealDialog(true);
                                             }
+                                            // else {
+                                            //   setPendingReveal({
+                                            //     candidateId:
+                                            //       candidate.candidate.id,
+                                            //     onSuccess: (prem) => {
+                                            //       const finalUrl =
+                                            //         prem.candidate.premium_data
+                                            //           .instagram_username;
+                                            //       if (finalUrl)
+                                            //         window.open(
+                                            //           finalUrl,
+                                            //           "_blank",
+                                            //         );
+                                            //     },
+                                            //   });
+                                            //   setShowRevealDialog(true);
+                                            // }
                                           }}
                                           aria-label={`View ${candidate.candidate.full_name}'s portfolio`}
                                         >
@@ -4042,11 +4037,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   {candidate.candidate.premium_data_availability
                                     ?.twitter_username &&
                                     (() => {
-                                      const url = candidate.candidate
-                                        .premium_data_unlocked
-                                        ? candidate.candidate.premium_data
-                                            ?.twitter_url
-                                        : null;
+                                      const url =
+                                        candidate.candidate.premium_data
+                                          ?.twitter_url;
                                       return (
                                         <button
                                           className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -4054,22 +4047,23 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             e.stopPropagation();
                                             if (url) {
                                               window.open(url, "_blank");
-                                            } else {
-                                              setPendingReveal({
-                                                candidateId: candidate.id,
-                                                onSuccess: (prem) => {
-                                                  const finalUrl =
-                                                    prem.candidate.premium_data
-                                                      .twitter_url;
-                                                  if (finalUrl)
-                                                    window.open(
-                                                      finalUrl,
-                                                      "_blank",
-                                                    );
-                                                },
-                                              });
-                                              setShowRevealDialog(true);
                                             }
+                                            // else {
+                                            //   setPendingReveal({
+                                            //     candidateId: candidate.id,
+                                            //     onSuccess: (prem) => {
+                                            //       const finalUrl =
+                                            //         prem.candidate.premium_data
+                                            //           .twitter_url;
+                                            //       if (finalUrl)
+                                            //         window.open(
+                                            //           finalUrl,
+                                            //           "_blank",
+                                            //         );
+                                            //     },
+                                            //   });
+                                            //   setShowRevealDialog(true);
+                                            // }
                                           }}
                                           aria-label={`View ${candidate.candidate.full_name}'s twitter`}
                                         >
@@ -4097,11 +4091,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   {candidate.candidate.premium_data_availability
                                     ?.dribble_username &&
                                     (() => {
-                                      const url = candidate.candidate
-                                        .premium_data_unlocked
-                                        ? candidate.candidate.premium_data
-                                            ?.dribble_username
-                                        : null;
+                                      const url =
+                                        candidate.candidate.premium_data
+                                          ?.dribble_username;
                                       return (
                                         <button
                                           className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -4109,23 +4101,24 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             e.stopPropagation();
                                             if (url) {
                                               window.open(url, "_blank");
-                                            } else {
-                                              setPendingReveal({
-                                                candidateId:
-                                                  candidate.candidate.id,
-                                                onSuccess: (prem) => {
-                                                  const finalUrl =
-                                                    prem.candidate.premium_data
-                                                      .dribble_username;
-                                                  if (finalUrl)
-                                                    window.open(
-                                                      finalUrl,
-                                                      "_blank",
-                                                    );
-                                                },
-                                              });
-                                              setShowRevealDialog(true);
                                             }
+                                            // else {
+                                            //   setPendingReveal({
+                                            //     candidateId:
+                                            //       candidate.candidate.id,
+                                            //     onSuccess: (prem) => {
+                                            //       const finalUrl =
+                                            //         prem.candidate.premium_data
+                                            //           .dribble_username;
+                                            //       if (finalUrl)
+                                            //         window.open(
+                                            //           finalUrl,
+                                            //           "_blank",
+                                            //         );
+                                            //     },
+                                            //   });
+                                            //   setShowRevealDialog(true);
+                                            // }
                                           }}
                                           aria-label={`View ${candidate.candidate.full_name}'s dribble`}
                                         >
@@ -4251,11 +4244,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                   {candidate.candidate.premium_data_availability
                                     ?.portfolio_url &&
                                     (() => {
-                                      const url = candidate.candidate
-                                        .premium_data_unlocked
-                                        ? candidate.candidate.premium_data
-                                            ?.portfolio_url
-                                        : null;
+                                      const url =
+                                        candidate.candidate.premium_data
+                                          ?.portfolio_url;
                                       return (
                                         <button
                                           className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
@@ -4263,23 +4254,24 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                             e.stopPropagation();
                                             if (url) {
                                               window.open(url, "_blank");
-                                            } else {
-                                              setPendingReveal({
-                                                candidateId:
-                                                  candidate.candidate.id,
-                                                onSuccess: (prem) => {
-                                                  const finalUrl =
-                                                    prem.candidate.premium_data
-                                                      ?.portfolio_url;
-                                                  if (finalUrl)
-                                                    window.open(
-                                                      finalUrl,
-                                                      "_blank",
-                                                    );
-                                                },
-                                              });
-                                              setShowRevealDialog(true);
                                             }
+                                            //  else {
+                                            //   setPendingReveal({
+                                            //     candidateId:
+                                            //       candidate.candidate.id,
+                                            //     onSuccess: (prem) => {
+                                            //       const finalUrl =
+                                            //         prem.candidate.premium_data
+                                            //           ?.portfolio_url;
+                                            //       if (finalUrl)
+                                            //         window.open(
+                                            //           finalUrl,
+                                            //           "_blank",
+                                            //         );
+                                            //     },
+                                            //   });
+                                            //   setShowRevealDialog(true);
+                                            // }
                                           }}
                                           aria-label={`View ${candidate.candidate.full_name}'s portfolio`}
                                         >
