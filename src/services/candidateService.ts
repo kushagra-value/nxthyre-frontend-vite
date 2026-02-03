@@ -1097,20 +1097,20 @@ class CandidateService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error ||
-        "Failed to fetch background verifications",
+          "Failed to fetch background verifications",
       );
     }
   }
 
   async getCandidateBooleanSearch(
     candidateId: string,
-    bool_query: string,
+    jobId: string,
   ): Promise<AnalysisResult> {
     try {
-      const boolQuery = bool_query;
+      // const boolQuery = bool_query;
       const response = await apiClient.post("/candidates/analyze/", {
         candidate_ids: [candidateId],
-        bool_query: boolQuery,
+        job_id: jobId,
       });
       const data: AnalyzeResponse = response.data;
       if (data.analysis_results && data.analysis_results.length > 0) {
