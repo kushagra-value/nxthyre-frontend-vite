@@ -443,16 +443,16 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         }
       } else {
         // Other tabs: Normal boolean analysis (only if there's a query)
-        const effectiveQuery =
-          boolQuery?.trim() ||
-          textQuery?.trim() ||
-          defaultBoolQuery?.trim() ||
-          "";
+        // const effectiveQuery =
+        //   boolQuery?.trim() ||
+        //   textQuery?.trim() ||
+        //   defaultBoolQuery?.trim() ||
+        //   "";
 
-        if (!effectiveQuery) {
-          setBooleanData(null);
-          return;
-        }
+        // if (!effectiveQuery) {
+        //   setBooleanData(null);
+        //   return;
+        // }
 
         setLoadingAnalysis(true);
         setAnalysisError(null);
@@ -460,7 +460,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         try {
           const data = await candidateService.getCandidateBooleanSearch(
             candidate.id,
-            effectiveQuery,
+            jobId,
           );
           setBooleanData(data);
           if (onAnalysisFetched) onAnalysisFetched(data);
