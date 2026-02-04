@@ -10,7 +10,6 @@ import { AuthProvider, useAuthContext } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./hooks/useAuth";
 import useDebounce from "./hooks/useDebounce";
-import { authService } from "./services/authService";
 import { creditService } from "./services/creditService";
 import { jobPostService } from "./services/jobPostService";
 import Cookies from "js-cookie";
@@ -29,7 +28,6 @@ import TemplateSelector from "./components/TemplateSelector";
 import CreateJobRoleModal from "./components/CreateJobRoleModal";
 import EditJobRoleModal from "./components/EditJobRoleModal";
 import EditTemplateModal from "./components/EditTemplateModal";
-import CategoryDropdown from "./components/CategoryDropdown";
 import PipelineStages from "./components/PipelineStages";
 import AuthApp from "./components/AuthApp";
 import LinkedInAuth from "./components/auth/LinkedInAuth";
@@ -45,19 +43,12 @@ import type { Job } from "./services/jobPostService";
 import { useLocation } from "react-router-dom";
 import PipelineSkeletonLoader from "./components/skeletons/PipelineSkeletonLoader";
 import {
-  ChevronDown,
-  Edit,
-  Mail,
-  Archive,
   Trash2,
   LogOut,
-  Share2,
   ArrowLeft,
   Pause,
-  Copy,
   Globe,
   Users,
-  Info,
   ChevronLeft,
   ChevronRight,
   Briefcase,
@@ -242,12 +233,14 @@ function MainApp() {
   const [showEditJobRole, setShowEditJobRole] = useState(false);
   const [editingJobId, setEditingJobId] = useState<number | null>(null);
   const [showEditTemplate, setShowEditTemplate] = useState(false);
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [showPipelineStages, setShowPipelineStages] = useState(false);
+  // const [showPipelineStages, setShowPipelineStages] = useState(false);
+  const [showPipelineStages, setShowPipelineStages] = useState(() => {
+    const stored = sessionStorage.getItem("showPipelineStages");
+    return stored ? JSON.parse(stored) : false;
+  });
   const [editingTemplate, setEditingTemplate] = useState<string>("");
   const [activeTab, setActiveTab] = useState("outbound");
   const [searchTerm, setSearchTerm] = useState("");
-  const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
 
   const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
     null,
@@ -264,11 +257,16 @@ function MainApp() {
   });
   const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
   const [showShareLoader, setShowShareLoader] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
   const [projectSearchQuery, setProjectSearchQuery] = useState("");
   const debouncedProjectSearch = useDebounce(projectSearchQuery, 500);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
+  // const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
+  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(
+    () => {
+      const stored = sessionStorage.getItem("activeCategoryId");
+      return stored ? JSON.parse(stored) : null;
+    },
+  );
   const [activeCategoryTotalCount, setActiveCategoryTotalCount] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
   const [logos, setLogos] = useState<Record<string, string | null | undefined>>(
@@ -321,8 +319,29 @@ function MainApp() {
     number | null
   >(null);
   const [defaultBoolQuery, setDefaultBoolQuery] = useState<string>("");
-  // Add this state near your other useState declarations
-  const [hasSelectedJob, setHasSelectedJob] = useState(false);
+  // Initialize hasSelectedJob from sessionStorage (or false if not present)
+  const [hasSelectedJob, setHasSelectedJob] = useState(() => {
+    const stored = sessionStorage.getItem("hasSelectedJob");
+    return stored ? JSON.parse(stored) : false;
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem("hasSelectedJob", JSON.stringify(hasSelectedJob));
+  }, [hasSelectedJob]);
+
+  useEffect(() => {
+    sessionStorage.setItem(
+      "activeCategoryId",
+      JSON.stringify(activeCategoryId),
+    );
+  }, [activeCategoryId]);
+
+  useEffect(() => {
+    sessionStorage.setItem(
+      "showPipelineStages",
+      JSON.stringify(showPipelineStages),
+    );
+  }, [showPipelineStages]);
 
   useEffect(() => {
     const fetchWorkspaces = async () => {
@@ -510,17 +529,46 @@ function MainApp() {
       });
       setCategories(mappedCategories);
       setCurrentRequisitionPage(1);
-      if (mappedCategories.length === 0) {
-        setActiveCategoryId(null);
-        setHasSelectedJob(false);
-      } else {
-        setHasSelectedJob(false);
-      }
-      if (mappedCategories.length === 0) {
-        setActiveCategoryId(null);
-        setHasSelectedJob(false);
-      } else {
-        setHasSelectedJob(false);
+
+      setCategories(mappedCategories);
+      setCurrentRequisitionPage(1);
+
+      // ── RESTORE + VALIDATE HERE ──
+      if (isAuthenticated) {
+        // Restore from storage
+        const storedHas = sessionStorage.getItem("hasSelectedJob");
+        let restoredHas = storedHas ? JSON.parse(storedHas) : false;
+
+        const storedId = sessionStorage.getItem("activeCategoryId");
+        let restoredId = storedId ? JSON.parse(storedId) : null;
+
+        const storedStages = sessionStorage.getItem("showPipelineStages");
+        let restoredStages = storedStages ? JSON.parse(storedStages) : false;
+
+        // Validate restored job ID exists
+        if (restoredId && !mappedCategories.some((c) => c.id === restoredId)) {
+          restoredId = mappedCategories[0]?.id || null;
+          restoredHas = !!restoredId;
+          restoredStages = false;
+        }
+
+        // If no categories at all → force reset
+        if (mappedCategories.length === 0) {
+          restoredId = null;
+          restoredHas = false;
+          restoredStages = false;
+        }
+
+        // Apply validated values
+        setActiveCategoryId(restoredId);
+        console.log("Restored hasSelectedJob:", restoredHas);
+        setHasSelectedJob(restoredHas);
+        setShowPipelineStages(restoredStages);
+
+        // Re-fetch job details if we have a valid job
+        if (restoredId) {
+          fetchJobDetailsAndSetFilters(restoredId);
+        }
       }
     } catch (error) {
       showToast.error("Failed to fetch job categories");
@@ -683,10 +731,10 @@ function MainApp() {
   };
 
   useEffect(() => {
-    if (isAuthenticated && !hasSelectedJob) {
+    if (isAuthenticated) {
       fetchCategories();
     }
-  }, [isAuthenticated, debouncedProjectSearch, hasSelectedJob]);
+  }, [isAuthenticated, debouncedProjectSearch]);
 
   useEffect(() => {
     const newFilters = {
@@ -846,6 +894,9 @@ function MainApp() {
         boolQuery: "", // NEW
       });
       setDefaultBoolQuery("");
+      sessionStorage.removeItem("hasSelectedJob");
+      sessionStorage.removeItem("activeCategoryId");
+      sessionStorage.removeItem("showPipelineStages");
       showToast.success("Successfully logged out");
       navigate("/");
     } catch (error) {
