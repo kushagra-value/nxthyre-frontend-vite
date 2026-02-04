@@ -84,13 +84,22 @@ const ProjectSkeletonCard = () => (
   </div>
 );
 
+
 interface PipelineSharePageProps {
   pipelineName: string;
+  location: string;
+  experience: string;
+  workMode: string;
+  notice: string;
   onBack?: () => void;
 }
 
 const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   pipelineName,
+  location,
+  experience,
+  workMode,
+  notice,
   onBack,
 }) => {
 
@@ -1456,13 +1465,6 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
   const getStageCount = (stageName: string) =>
     stageCandidates[stageName]?.length || 0;
-
-  const location = "Bangalore";
-  const experience = "4+ years";
-  const workMode = "Hybrid";
-  const notice = "Immediate (max 15 Days)";
-
-
 
 
   if (!isAuthenticated) {

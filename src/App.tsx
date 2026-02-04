@@ -1391,6 +1391,10 @@ function MainApp() {
           element={
             <PipelineSharePage
               pipelineName={job?.name || "Pipeline Name"}
+              location={job?.location || "Location"}
+              experience={job?.experience || "Experience"}
+              workMode={job?.workApproach || "Work Mode"}
+              notice={job?.joiningTimeline || "Immidiate(max 15 days)"}
               onBack={handleBackFromPipelineShare}
             />
           }
