@@ -36,7 +36,7 @@ const getWeekDates = (date: Date) => {
   return weekDates;
 };
 
-export const WeekView = ({ events, currentDate,onEventClick, onCellClick }: WeekViewProps) => {
+export const WeekView = ({ events, currentDate, onEventClick, onCellClick }: WeekViewProps) => {
   const weekDates = getWeekDates(currentDate);
 
   const getEventPosition = (event: CalendarEvent) => {
@@ -55,7 +55,7 @@ export const WeekView = ({ events, currentDate,onEventClick, onCellClick }: Week
   };
 
   const getEventsForDate = (date: Date) => {
-    const dateString = date.toISOString().split('T')[0];
+    const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     return events.filter((e) => e.date === dateString);
   };
 
@@ -90,9 +90,8 @@ export const WeekView = ({ events, currentDate,onEventClick, onCellClick }: Week
                   className="h-20 border-b border-dashed border-gray-300 px-4 flex items-start pt-2"
                 >
                   <span
-                    className={`text-lg ${
-                      time === '11:30 am' ? 'text-[#0F47F2]' : 'text-gray-600'
-                    }`}
+                    className={`text-lg ${time === '11:30 am' ? 'text-[#0F47F2]' : 'text-gray-600'
+                      }`}
                   >
                     {time}
                   </span>
@@ -110,7 +109,7 @@ export const WeekView = ({ events, currentDate,onEventClick, onCellClick }: Week
                   {timeSlots.map((_, index) => {
                     const hour = 9 + index;
                     const displayTime = hour === 9 ? '09:00' : hour === 10 ? '10:00' : hour === 11 ? '11:00' : hour === 12 ? '12:00' : `${hour - 12}:00`;
-                    const dateStr = date.toISOString().split('T')[0];
+                    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                     return (
                       <div
                         key={index}

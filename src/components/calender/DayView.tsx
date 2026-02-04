@@ -4,7 +4,7 @@ import { EventCard } from './EventCard';
 interface DayViewProps {
   events: CalendarEvent[];
   currentDate: Date;
-  onCellClick: (date: string, time?: string) => void;  
+  onCellClick: (date: string, time?: string) => void;
   onEventClick?: (eventId: string) => void;
 }
 
@@ -22,8 +22,8 @@ const timeSlots = [
   "07 pm",
 ];
 
-export const DayView = ({ events, currentDate, onEventClick,onCellClick }: DayViewProps) => {
-  const dateString = currentDate.toISOString().split('T')[0];
+export const DayView = ({ events, currentDate, onEventClick, onCellClick }: DayViewProps) => {
+  const dateString = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
   const dayEvents = events.filter((e) => e.date === dateString);
 
   const getEventPosition = (event: CalendarEvent) => {
@@ -69,9 +69,8 @@ export const DayView = ({ events, currentDate, onEventClick,onCellClick }: DayVi
                   className="h-20 border-b border-dashed border-gray-300 px-4 flex items-start pt-2"
                 >
                   <span
-                    className={`text-lg ${
-                      time === '11:30 am' ? 'text-[#0F47F2]' : 'text-gray-600'
-                    }`}
+                    className={`text-lg ${time === '11:30 am' ? 'text-[#0F47F2]' : 'text-gray-600'
+                      }`}
                   >
                     {time}
                   </span>
