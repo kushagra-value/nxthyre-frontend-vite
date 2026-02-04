@@ -620,10 +620,10 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
       const updated = candidates.map((c) =>
         c.id === candidateId
           ? {
-            ...c,
-            premium_data_unlocked: true,
-            premium_data: premResponse.premium_data,
-          }
+              ...c,
+              premium_data_unlocked: true,
+              premium_data: premResponse.premium_data,
+            }
           : c,
       );
       onCandidatesUpdate(updated, totalCount);
@@ -672,7 +672,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         ? pipelineStages.find((stage) => stage.id === stageId)?.name
         : "default stage";
       showToast.success(
-        `Candidate successfully added to pipeline${stageId ? ` (${stageName})` : ""
+        `Candidate successfully added to pipeline${
+          stageId ? ` (${stageName})` : ""
         }`,
       );
       const updatedCandidates = candidates.filter((c) => c.id !== candidateId);
@@ -736,11 +737,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     const blob =
       typeof data === "string"
         ? new Blob([data], {
-          type:
-            type === "csv"
-              ? "text/csv"
-              : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        })
+            type:
+              type === "csv"
+                ? "text/csv"
+                : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          })
         : data;
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -766,7 +767,10 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
     setExportLoading(true);
     try {
       const response: ExportCandidateResponse =
-        await candidateService.exportCandidates(selectedCandidates, parseInt(jobId));
+        await candidateService.exportCandidates(
+          selectedCandidates,
+          parseInt(jobId),
+        );
 
       if (typeof response !== "string") {
         throw new Error("Invalid response format: Expected a CSV string");
@@ -1015,10 +1019,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-2 text-sm 2xl:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 focus-visible:border-b-2 focus-visible:border-blue-600 ${activeTab === tab.id
+                className={`py-2 text-sm 2xl:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 focus-visible:border-b-2 focus-visible:border-blue-600 ${
+                  activeTab === tab.id
                     ? "text-blue-600 border-blue-500"
                     : "text-gray-600 border-transparent hover:text-gray-700"
-                  }`}
+                }`}
                 aria-label={`Switch to ${tab.label} tab`}
               >
                 {tab.label}
@@ -1154,10 +1159,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               <div className="relative" ref={sourceDropdownRef}>
                 <button
                   onClick={() => setShowSourceDropdown((prev) => !prev)}
-                  className={`flex items-center gap-2.5 px-4 py-2.5 rounded-lg border transition-colors hover:border-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${selectedSource
+                  className={`flex items-center gap-2.5 px-4 py-2.5 rounded-lg border transition-colors hover:border-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${
+                    selectedSource
                       ? "border-blue-400 bg-blue-50 text-blue-600"
                       : "border-gray-300 bg-white text-gray-400"
-                    }`}
+                  }`}
                 >
                   {selectedSource ? (
                     <>
@@ -1215,10 +1221,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                             setCurrentPage(1);
                             onInboundSourceChange?.(option.value);
                           }}
-                          className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors ${selectedSource === option.value
+                          className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
+                            selectedSource === option.value
                               ? "bg-blue-50 text-blue-600"
                               : "text-gray-700"
-                            }`}
+                          }`}
                         >
                           <div className="w-6 h-6 flex-shrink-0">
                             {option.logo}
@@ -1519,10 +1526,11 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
               return (
                 <div
                   key={candidate.id}
-                  className={`relative pt-5 cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2  ${selectedCandidate?.id === candidate.id
+                  className={`relative pt-5 cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2  ${
+                    selectedCandidate?.id === candidate.id
                       ? "bg-white border-l-4 border-blue-500 shadow-[0_0_20px_0_rgba(0,0,0,0.15),_0_0_8px_0_rgba(0,0,0,0.1)]"
                       : "border border-gray-200"
-                    }`}
+                  }`}
                   onClick={() => handleCandidateClick(candidate)}
                   onKeyDown={(e) => handleKeyDown(e, candidate)}
                   tabIndex={0}
@@ -1930,8 +1938,9 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                       if (diffDays === 0) {
                                         return "Active today";
                                       } else if (diffDays > 0) {
-                                        return `Active ${diffDays} day${diffDays > 1 ? "s" : ""
-                                          } ago`;
+                                        return `Active ${diffDays} day${
+                                          diffDays > 1 ? "s" : ""
+                                        } ago`;
                                       } else {
                                         return "N/A"; // fallback if backend sends future dates
                                       }
@@ -2455,26 +2464,44 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                           const url = candidate.premium_data?.resume_url;
                           return (
                             <button
-                              className=" text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                              className="text-gray-400 bg-[#F0F0F0] hover:text-gray-600 hover:bg-gray-100 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 if (url) {
-                                  window.open(url, "_blank");
-                                }
-                                // else {
-                                //   setPendingReveal({
-                                //     candidateId: candidate.id,
-                                //     onSuccess: (prem) => {
-                                //       const finalUrl =
-                                //         prem.premium_data.resume_url;
-                                //       if (finalUrl)
-                                //         window.open(finalUrl, "_blank");
-                                //     },
-                                //   });
-                                //   // setShowRevealDialog(true);
-                                //   handleConfirmReveal();
-                                // }
-                                else {
+                                  const ext =
+                                    url.split(".").pop()?.toLowerCase() || "";
+                                  if (ext === "pdf") {
+                                    window.open(url, "_blank");
+                                  } else {
+                                    const newTab = window.open("", "_blank");
+                                    if (newTab) {
+                                      newTab.document.write(`
+            <html>
+              <head>
+                <title>Download Resume</title>
+                <style>
+                  body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f9f9f9; }
+                  .container { text-align: center; }
+                  h1 { color: #333; }
+                  button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+                  button:hover { background-color: #0056b3; }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <h1>Resume Download</h1>
+                  <p>Click the button below to download the resume.</p>
+                  <a href="${url}" download="resume.${ext}">
+                    <button>Download Resume</button>
+                  </a>
+                </div>
+              </body>
+            </html>
+          `);
+                                      newTab.document.close();
+                                    }
+                                  }
+                                } else {
                                   toast.error("Resume not available");
                                 }
                               }}
@@ -2820,12 +2847,13 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   onClick={() =>
                     typeof page === "number" && handlePageChange(page)
                   }
-                  className={`px-3 py-1 text-sm rounded-lg transition-colors focus-visible:ring focus-visible:ring-2 focus-visible:ring-blue-500 ${page === currentPage
+                  className={`px-3 py-1 text-sm rounded-lg transition-colors focus-visible:ring focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                    page === currentPage
                       ? "bg-blue-600 text-white"
                       : typeof page === "number"
                         ? "text-gray-600 hover:bg-gray-100"
                         : "text-gray-600 cursor-default"
-                    }`}
+                  }`}
                   disabled={typeof page !== "number"}
                   area-label={`Go to page ${page}`}
                 >
@@ -2865,12 +2893,13 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                   onClick={() =>
                     typeof page === "number" && handlePageChange(page)
                   }
-                  className={`px-3 py-1 text-sm rounded-lg transition-colors ${page === currentPage
+                  className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                    page === currentPage
                       ? "bg-blue-600 text-white"
                       : typeof page === "number"
                         ? "text-gray-600 hover:bg-gray-100"
                         : "text-gray-600 cursor-default"
-                    }`}
+                  }`}
                   disabled={typeof page !== "number"}
                 >
                   {page}
