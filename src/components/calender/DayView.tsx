@@ -41,7 +41,7 @@ export const DayView = ({ events, currentDate, onEventClick, onCellClick }: DayV
     return { top, height };
   };
 
-  const dayName = currentDate.toLocaleDateString('en-US', {
+  const dayName = currentDate.toLocaleDateString('en-GB', {
     weekday: 'long',
     day: 'numeric',
   });

@@ -73,7 +73,7 @@ export const WeekView = ({ events, currentDate, onEventClick, onCellClick }: Wee
                 className="flex-1 min-w-[200px] p-4 border-l border-dashed border-gray-400"
               >
                 <span className="text-lg text-gray-900 font-normal">
-                  {date.toLocaleDateString('en-US', {
+                  {date.toLocaleDateString('en-GB', {
                     weekday: 'long',
                     day: 'numeric',
                   })}

@@ -24,8 +24,6 @@ export const Calender: React.FC<CalenderProps> = ({ onCellClick, onEventClick, p
   const [error, setError] = useState<string | null>(null);
 
   const mapApiEvent = (apiEvent: any, pipelineStages?: { id: number; name: string; slug: string; sort_order: number }[]): CalendarEvent => {
-    const start = new Date(apiEvent.start_at);
-    const end = new Date(apiEvent.end_at);
 
     const eventStageId = apiEvent.current_stage || apiEvent.stage;
     const stage = pipelineStages?.find(s => s.id === eventStageId);
@@ -35,16 +33,31 @@ export const Calender: React.FC<CalenderProps> = ({ onCellClick, onEventClick, p
       ? stage.slug
       : (apiEvent.round_name?.toLowerCase().replace(/\s+/g, '-') || 'unknown-round');
 
+    // Use event timezone or fall back to Kolkata/System
+    const timeZone = apiEvent.timezone || 'Asia/Kolkata';
+
     return {
       id: apiEvent.id.toString(),
       title: apiEvent.candidate_name || apiEvent.title || 'Interview',
-      type: typeSlug, // This is now the real slug (e.g. "first-interview", "hr-round", etc.)
+      type: typeSlug,
       attendee: apiEvent.candidate_name || 'Candidate',
-      startTime: start.toTimeString().slice(0, 5),
-      endTime: end.toTimeString().slice(0, 5),
-      date: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`,
+      // Format time in 24h format using the event's timezone
+      startTime: new Date(apiEvent.start_at).toLocaleTimeString('en-GB', {
+        timeZone,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }),
+      endTime: new Date(apiEvent.end_at).toLocaleTimeString('en-GB', {
+        timeZone,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }),
+      // Format date as YYYY-MM-DD using the event's timezone
+      date: new Date(apiEvent.start_at).toLocaleDateString('en-CA', { timeZone }),
       confirmed: ['CONFIRMED', 'COMPLETED'].includes(apiEvent.status),
-      roundName: stage?.name || apiEvent.round_name, // optional human name
+      roundName: stage?.name || apiEvent.round_name,
     };
   };
 
@@ -67,7 +80,7 @@ export const Calender: React.FC<CalenderProps> = ({ onCellClick, onEventClick, p
     setCurrentDate(newDate);
   };
 
-  const displayMonth = currentDate.toLocaleDateString('en-US', {
+  const displayMonth = currentDate.toLocaleDateString('en-GB', {
     month: 'long',
     year: 'numeric',
   }).toUpperCase();
