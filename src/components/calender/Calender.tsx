@@ -33,29 +33,28 @@ export const Calender: React.FC<CalenderProps> = ({ onCellClick, onEventClick, p
       ? stage.slug
       : (apiEvent.round_name?.toLowerCase().replace(/\s+/g, '-') || 'unknown-round');
 
-    // Use event timezone or fall back to Kolkata/System
-    const timeZone = apiEvent.timezone || 'Asia/Kolkata';
 
     return {
       id: apiEvent.id.toString(),
       title: apiEvent.candidate_name || apiEvent.title || 'Interview',
       type: typeSlug,
       attendee: apiEvent.candidate_name || 'Candidate',
-      // Format time in 24h format using the event's timezone
+      // Format time based on the raw UTC value to preserve the intended timeface
+      // effectively treating 12:30Z as "12:30 in the specific timezone" if explicit timezone is provided
       startTime: new Date(apiEvent.start_at).toLocaleTimeString('en-GB', {
-        timeZone,
+        timeZone: 'UTC',
         hour: '2-digit',
         minute: '2-digit',
         hour12: false
       }),
       endTime: new Date(apiEvent.end_at).toLocaleTimeString('en-GB', {
-        timeZone,
+        timeZone: 'UTC',
         hour: '2-digit',
         minute: '2-digit',
         hour12: false
       }),
-      // Format date as YYYY-MM-DD using the event's timezone
-      date: new Date(apiEvent.start_at).toLocaleDateString('en-CA', { timeZone }),
+      // Format date using UTC to keep it on the same day as the string
+      date: new Date(apiEvent.start_at).toLocaleDateString('en-CA', { timeZone: 'UTC' }),
       confirmed: ['CONFIRMED', 'COMPLETED'].includes(apiEvent.status),
       roundName: stage?.name || apiEvent.round_name,
     };
