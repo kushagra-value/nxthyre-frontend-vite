@@ -353,7 +353,7 @@ function MainApp() {
         // If pipelines depend on activeCategoryId, ensure it's set first
       }
     }
-  }, [isAuthenticated]); // Empty deps: runs once on mount
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const fetchWorkspaces = async () => {
@@ -540,6 +540,15 @@ function MainApp() {
         };
       });
       setCategories(mappedCategories);
+      // Validate activeCategoryId against fetched categories
+      if (
+        activeCategoryId &&
+        !mappedCategories.some((cat) => cat.id === activeCategoryId)
+      ) {
+        setActiveCategoryId(mappedCategories[0]?.id || null);
+        setHasSelectedJob(!!mappedCategories[0]);
+        setShowPipelineStages(false); // Reset pipelines if invalid job
+      }
       setCurrentRequisitionPage(1);
       if (mappedCategories.length === 0) {
         setActiveCategoryId(null);
@@ -714,10 +723,10 @@ function MainApp() {
   };
 
   useEffect(() => {
-    if (isAuthenticated && !hasSelectedJob) {
+    if (isAuthenticated) {
       fetchCategories();
     }
-  }, [isAuthenticated, debouncedProjectSearch, hasSelectedJob]);
+  }, [isAuthenticated, debouncedProjectSearch]);
 
   useEffect(() => {
     const newFilters = {
