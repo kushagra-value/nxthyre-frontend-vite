@@ -526,7 +526,8 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                         <span>
                           {isExpanded
                             ? "Show Less Skills"
-                            : `Show More Skills (${moreSkills.length})`}
+                            : // : `Show More Skills (${moreSkills.length})`}
+                              "Show More Skills"}
                         </span>
                         <span
                           className={`transform transition-transform ${isExpanded ? "rotate-180" : ""}`}
