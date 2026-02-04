@@ -357,9 +357,13 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
             `/jobs/applications/?job_id=${jobId}&stage_slug=${slug}&sort_by=relevance_desc`
           );
 
+          const rawCandidates = Array.isArray(res.data)
+            ? res.data
+            : res.data.results || [];
+
           return {
             stageName: stage.name,
-            candidates: res.data.map((app: any) => {
+            candidates: rawCandidates.map((app: any) => {
               const headline = app.candidate.headline || "";
               const [role = "", company = ""] = headline.split(" at ");
               const city = app.candidate.location?.split(",")[0] || "";
@@ -1324,10 +1328,10 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
                                       <span
                                         className={`${item.status === "Pass"
-                                            ? "text-[#007A5A]"
-                                            : item.status === "Fail"
-                                              ? "text-[#ED051C]"
-                                              : "text-[#818283]"
+                                          ? "text-[#007A5A]"
+                                          : item.status === "Fail"
+                                            ? "text-[#ED051C]"
+                                            : "text-[#818283]"
                                           } font-medium`}
                                       >
                                         {item.status}
@@ -1607,8 +1611,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`relative pb-4 text-xl font-semibold transition-colors duration-200 ${activeTab === tab.id
-                        ? "text-[#0F47F2]"
-                        : "text-[#818283] hover:text-gray-500"
+                      ? "text-[#0F47F2]"
+                      : "text-[#818283] hover:text-gray-500"
                       }`}
                   >
                     {tab.label}
