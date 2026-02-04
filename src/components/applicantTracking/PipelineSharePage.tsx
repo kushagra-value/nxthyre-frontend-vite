@@ -1472,7 +1472,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
   return (
     <>
-      <div className="bg-[#FFFFFF]">
+      <div className="zoom-80-container bg-[#FFFFFF]">
         <div className="mb-4 bg-white shadow-sm border-b border-gray-200 flex items-center justify-between max-w-full mx-auto px-7 py-2">
 
           <div className="flex items-center">
