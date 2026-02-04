@@ -311,6 +311,48 @@ function MainApp() {
   const [hasSelectedJob, setHasSelectedJob] = useState(false);
 
   useEffect(() => {
+    localStorage.setItem("hasSelectedJob", JSON.stringify(hasSelectedJob));
+  }, [hasSelectedJob]);
+
+  useEffect(() => {
+    localStorage.setItem("activeCategoryId", JSON.stringify(activeCategoryId));
+  }, [activeCategoryId]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "showPipelineStages",
+      JSON.stringify(showPipelineStages),
+    );
+  }, [showPipelineStages]);
+
+  // Add this effect (runs once on mount)
+  useEffect(() => {
+    if (isAuthenticated) {
+      // Only restore if logged in (based on your code's isAuthenticated check)
+      const storedHasSelectedJob = localStorage.getItem("hasSelectedJob");
+      if (storedHasSelectedJob) {
+        setHasSelectedJob(JSON.parse(storedHasSelectedJob));
+      }
+
+      const storedActiveCategoryId = localStorage.getItem("activeCategoryId");
+      if (storedActiveCategoryId) {
+        setActiveCategoryId(JSON.parse(storedActiveCategoryId));
+        // Optionally re-fetch job details if needed
+        if (JSON.parse(storedActiveCategoryId)) {
+          fetchJobDetailsAndSetFilters(JSON.parse(storedActiveCategoryId));
+        }
+      }
+
+      const storedShowPipelineStages =
+        localStorage.getItem("showPipelineStages");
+      if (storedShowPipelineStages) {
+        setShowPipelineStages(JSON.parse(storedShowPipelineStages));
+        // If pipelines depend on activeCategoryId, ensure it's set first
+      }
+    }
+  }, []); // Empty deps: runs once on mount
+
+  useEffect(() => {
     const fetchWorkspaces = async () => {
       try {
         const workspaceData = await organizationService.getMyWorkspaces();
@@ -832,6 +874,9 @@ function MainApp() {
         boolQuery: "", // NEW
       });
       setDefaultBoolQuery("");
+      localStorage.removeItem("hasSelectedJob");
+      localStorage.removeItem("activeCategoryId");
+      localStorage.removeItem("showPipelineStages");
       showToast.success("Successfully logged out");
       navigate("/");
     } catch (error) {
