@@ -145,8 +145,21 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
     return orderA - orderB;
   });
 
-  const keySkills = data.slice(0, 5);
-  const moreSkills = data.slice(5);
+  let count = 0;
+
+  const keySkills: any = [];
+  const moreSkills: any = [];
+
+  {
+    data.map((item, index) =>
+      item.color === "green" && count <= 5
+        ? keySkills.push(item)
+        : item.color === "green" && count > 5
+          ? moreSkills.push(item)
+          : null,
+    );
+  }
+  count += 1;
 
   const toggleExpanded = () => setIsExpanded(!isExpanded);
 
@@ -490,29 +503,27 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                       Key Skills (Top 5)
                     </h4> */}
                     <div className="flex flex-wrap gap-2">
-                      {keySkills.map((item, index) =>
-                        item.color === "green" ? (
+                      {keySkills.map((item: any, index: any) => (
+                        <div
+                          key={index}
+                          className={`${getColorClass(item.color)} p-4 border border-gray-200 rounded-lg gap-2 w-full flex flex-col`}
+                        >
                           <div
-                            key={index}
-                            className={`${getColorClass(item.color)} p-4 border border-gray-200 rounded-lg gap-2 w-full flex flex-col`}
+                            className={`flex gap-2 items-center font-semibold ${getColorClass(item.color)}`}
                           >
-                            <div
-                              className={`flex gap-2 items-center font-semibold ${getColorClass(item.color)}`}
-                            >
-                              {item.priority === "CRITICAL" ? (
-                                <Sparkle
-                                  className={`w-4 h-4 ${getColorClass(item.color)}`}
-                                />
-                              ) : null}
-                              {item.badge}
-                              {getIcon(item.color)}
-                            </div>
-                            <div className="text-gray-500 pl-1">
-                              {item.evidence}
-                            </div>
+                            {item.priority === "CRITICAL" ? (
+                              <Sparkle
+                                className={`w-4 h-4 ${getColorClass(item.color)}`}
+                              />
+                            ) : null}
+                            {item.badge}
+                            {getIcon(item.color)}
                           </div>
-                        ) : null,
-                      )}
+                          <div className="text-gray-500 pl-1">
+                            {item.evidence}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -526,8 +537,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                         <span>
                           {isExpanded
                             ? "Show Less Skills"
-                            : // : `Show More Skills (${moreSkills.length})`}
-                              "Show More Skills"}
+                            : `Show More Skills (${moreSkills.length})`}
                         </span>
                         <span
                           className={`transform transition-transform ${isExpanded ? "rotate-180" : ""}`}
@@ -537,29 +547,27 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                       </button>
                       {isExpanded && (
                         <div className="flex flex-wrap gap-2 animate-fade-in">
-                          {moreSkills.map((item, index) =>
-                            item.color === "green" ? (
+                          {moreSkills.map((item: any, index: any) => (
+                            <div
+                              key={index}
+                              className={`${getColorClass(item.color)} p-4 border border-gray-200 rounded-lg gap-2 w-full flex flex-col`}
+                            >
                               <div
-                                key={index}
-                                className={`${getColorClass(item.color)} p-4 border border-gray-200 rounded-lg gap-2 w-full flex flex-col`}
+                                className={`flex gap-2 items-center font-semibold ${getColorClass(item.color)}`}
                               >
-                                <div
-                                  className={`flex gap-2 items-center font-semibold ${getColorClass(item.color)}`}
-                                >
-                                  {item.priority === "CRITICAL" ? (
-                                    <Sparkle
-                                      className={`w-4 h-4 ${getColorClass(item.color)}`}
-                                    />
-                                  ) : null}
-                                  {item.badge}
-                                  {getIcon(item.color)}
-                                </div>
-                                <div className="text-gray-500 pl-1">
-                                  {item.evidence}
-                                </div>
+                                {item.priority === "CRITICAL" ? (
+                                  <Sparkle
+                                    className={`w-4 h-4 ${getColorClass(item.color)}`}
+                                  />
+                                ) : null}
+                                {item.badge}
+                                {getIcon(item.color)}
                               </div>
-                            ) : null,
-                          )}
+                              <div className="text-gray-500 pl-1">
+                                {item.evidence}
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
