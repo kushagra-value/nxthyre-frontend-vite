@@ -1664,7 +1664,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                                 <div className="bg-blue-500 h-2 rounded-full" style={{ width: '91%' }}></div>
                               </div>
 
-                              <div className="pt-8 overflow-y-auto max-h-[70vh] hide-scrollbar">
+                              <div className="pt-8 overflow-y-auto max-h-[85vh] hide-scrollbar">
                                 <div className="space-y-3">
                                   {candidates.map((candidate: any) =>
                                     renderCandidateCard(candidate, stage.name)
