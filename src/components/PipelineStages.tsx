@@ -702,6 +702,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     selectedSource,
   ]);
 
+
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -2208,6 +2210,16 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       });
     }
   }, [showEditModal, editingCandidate]);
+
+  useEffect(() => {
+    if (!showEditModal) {
+      setEditForm({
+        notice_period_days: "",
+        current_ctc_lpa: "",
+        expected_ctc_lpa: "",
+      });
+    }
+  }, [showEditModal]);
 
   const totalPages = Math.ceil(totalCandidates / pageSize);
   const maxVisiblePages = 5;
