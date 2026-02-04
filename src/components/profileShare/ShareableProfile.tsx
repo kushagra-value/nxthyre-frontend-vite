@@ -375,14 +375,16 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                       {/* <div className="text-sm text-gray-500">Experience</div> */}
                       <Briefcase className="w-4 h-4 text-gray-500" />
                       <div className="font-[400] text-gray-500">
-                        {candidateData?.total_experience || "N/A"}
+                        {candidateData?.total_experience + " " + "years" ||
+                          "N/A"}
                       </div>
                     </div>
                     <div className="flex gap-2 items-center">
                       {/* <div className="text-sm text-gray-500">Notice Period</div> */}
                       <CalendarSearch className="w-4 h-4 text-gray-500" />
                       <div className="font-[400] text-gray-500">
-                        {candidateData?.notice_period_days || "N/A"}
+                        {candidateData?.notice_period_days + " " + "days" ||
+                          "N/A"}
                       </div>
                     </div>
                     <div className="flex gap-2 items-center">
@@ -402,7 +404,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                         />
                       </svg>
                       <div className="font-[400] text-gray-500">
-                        {candidateData?.current_salary || "N/A"}
+                        {candidateData?.current_salary + " " + "LPA" || "N/A"}
                       </div>
                     </div>
                   </div>
