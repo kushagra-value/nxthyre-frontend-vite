@@ -31,7 +31,10 @@ export const EventForm = ({
     location: '',
     stageId: '' as string | number,
     type: 'first-round' as CalendarEvent['type'],
-    date: initialDate || new Date().toISOString().split('T')[0],
+    date: initialDate || (() => {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    })(),
     startTime: initialTime || '09:00',
     endTime: '10:00',
     applicationId: '',
@@ -105,7 +108,10 @@ export const EventForm = ({
       location: '',
       stageId: '',
       type: 'first-round',
-      date: initialDate || new Date().toISOString().split('T')[0],
+      date: initialDate || (() => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      })(),
       startTime: initialTime || '09:00',
       endTime: '10:00',
       applicationId: '',
