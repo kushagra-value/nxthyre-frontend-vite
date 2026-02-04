@@ -2029,6 +2029,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
               return s.sort_order > shortlistedOrder && s.slug !== 'archives';
             })}
             stagesLoading={stagesLoading}
+            candidates={Object.values(stageCandidates).flat()}
           />
 
         </div>

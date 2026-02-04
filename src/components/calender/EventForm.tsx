@@ -11,6 +11,7 @@ interface EventFormProps {
   initialTime?: string;
   pipelineStages?: { id: number; name: string; slug: string; sort_order: number }[];
   stagesLoading?: boolean;
+  candidates?: { id: string; name: string }[];
 }
 
 export const EventForm = ({
@@ -21,6 +22,7 @@ export const EventForm = ({
   initialTime,
   pipelineStages,
   stagesLoading,
+  candidates = [],
 }: EventFormProps) => {
 
   const [formData, setFormData] = useState({
@@ -32,7 +34,7 @@ export const EventForm = ({
     date: initialDate || new Date().toISOString().split('T')[0],
     startTime: initialTime || '09:00',
     endTime: '10:00',
-    applicationId: '', 
+    applicationId: '',
     description: '',
   });
 
@@ -72,8 +74,8 @@ export const EventForm = ({
     };
 
     try {
-      const response = await apiClient.post('/jobs/interview-events/', payload);
-      
+      await apiClient.post('/jobs/interview-events/', payload);
+
       // Trigger parent refresh or toast
       onSubmit({
         title: formData.title || formData.attendee,
@@ -83,11 +85,11 @@ export const EventForm = ({
         endTime: formData.endTime,
         date: formData.date,
         confirmed: true,
-        applicationId: formData.applicationId, 
+        applicationId: formData.applicationId,
         description: formData.description,
       });
 
-      } catch (err: any) {
+    } catch (err: any) {
       console.error("Failed to create interview event:", err);
       const msg = err.response?.data?.detail || "Failed to schedule interview";
       alert(msg);
@@ -106,8 +108,8 @@ export const EventForm = ({
       date: initialDate || new Date().toISOString().split('T')[0],
       startTime: initialTime || '09:00',
       endTime: '10:00',
-      applicationId:'',
-      description : ''
+      applicationId: '',
+      description: ''
     });
     onClose();
   };
@@ -166,16 +168,21 @@ export const EventForm = ({
             <div className="flex items-center gap-4">
               <User className="w-6 h-6 text-gray-600 flex-shrink-0" />
               <div className="flex-1">
-                
-                <input
-                  type="text"
+
+                <select
                   required
-                  placeholder="Select Candidate"
                   value={formData.applicationId || ''}
                   onChange={(e) => setFormData({ ...formData, applicationId: e.target.value })}
-                  className="w-full bg-transparent text-gray-600 placeholder-gray-400 outline-none pb-1"
-                />
-    
+                  className="w-full bg-transparent text-gray-600 outline-none pb-1 appearance-none"
+                >
+                  <option value="" disabled>Select Candidate</option>
+                  {candidates.map((candidate) => (
+                    <option key={candidate.id} value={candidate.id}>
+                      {candidate.name}
+                    </option>
+                  ))}
+                </select>
+
               </div>
             </div>
           </div>
@@ -201,34 +208,34 @@ export const EventForm = ({
             <div className="flex items-center gap-4">
               <Briefcase className="w-6 h-6 text-gray-600 flex-shrink-0" />
               <div className="flex-1">
-                
+
                 {stagesLoading ? (
-                <p className="text-gray-500">Loading rounds...</p>
-              ) : pipelineStages?.length === 0 ? (
-                <p className="text-gray-500">No rounds available</p>
-              ) : (
-                <select
-                  required
-                  value={formData.type}
-                  onChange={(e) =>{
-                    const selectedSlug = e.target.value;
-                    const selectedStage = pipelineStages?.find(stage => stage.slug === selectedSlug);
-                    setFormData({
-                      ...formData,
-                      type: e.target.value as CalendarEvent['type'],
-                      stageId: selectedStage ? selectedStage.id : '',
-                    })
-                  }}
-                  className="w-full  bg-transparent text-gray-600 outline-none appearance-none text-lg"
-                >
-                  <option value="">Select Round</option>
-                  {pipelineStages?.map((stage) => (
-                    <option key={stage.id} value={stage.slug}>
-                      {stage.name}
-                    </option>
-                  ))}
-                </select>
-              )}
+                  <p className="text-gray-500">Loading rounds...</p>
+                ) : pipelineStages?.length === 0 ? (
+                  <p className="text-gray-500">No rounds available</p>
+                ) : (
+                  <select
+                    required
+                    value={formData.type}
+                    onChange={(e) => {
+                      const selectedSlug = e.target.value;
+                      const selectedStage = pipelineStages?.find(stage => stage.slug === selectedSlug);
+                      setFormData({
+                        ...formData,
+                        type: e.target.value as CalendarEvent['type'],
+                        stageId: selectedStage ? selectedStage.id : '',
+                      })
+                    }}
+                    className="w-full  bg-transparent text-gray-600 outline-none appearance-none text-lg"
+                  >
+                    <option value="">Select Round</option>
+                    {pipelineStages?.map((stage) => (
+                      <option key={stage.id} value={stage.slug}>
+                        {stage.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
             </div>
           </div>
@@ -237,7 +244,7 @@ export const EventForm = ({
             <div className="flex items-center gap-4">
               <Calendar className="w-6 h-6 text-gray-600 flex-shrink-0" />
               <div className="flex items-center gap-2">
-                
+
                 <input
                   type="date"
                   value={formData.date}
