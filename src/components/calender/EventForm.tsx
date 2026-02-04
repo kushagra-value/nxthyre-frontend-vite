@@ -52,8 +52,8 @@ export const EventForm = ({
       return;
     }
 
-    const startDateTime = `${formData.date}T${formData.startTime}:00Z`;
-    const endDateTime = `${formData.date}T${formData.endTime}:00Z`;
+    const startDateTime = new Date(`${formData.date}T${formData.startTime}`).toISOString();
+    const endDateTime = new Date(`${formData.date}T${formData.endTime}`).toISOString();
 
     const payload = {
       application: Number(formData.applicationId),
@@ -65,7 +65,7 @@ export const EventForm = ({
       location_type: "VIRTUAL", // You can make this dynamic later
       virtual_conference_url: "https://meet.google.com/placeholder", // Replace later
       status: "SCHEDULED",
-      timezone: "Asia/Kolkata", // Or detect from browser
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       participants: [],
       reminder_preferences: {
         candidate: [24], // 24 hours before
