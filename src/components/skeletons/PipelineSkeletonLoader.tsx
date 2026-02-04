@@ -129,7 +129,7 @@ const CalendarSkeleton = () => (
 // Main Pipeline Skeleton Loader
 const PipelineSkeletonLoader = () => {
     return (
-        <div className="bg-[#FFFFFF]">
+        <div className="zoom-80-container bg-[#FFFFFF]">
             <HeaderSkeleton />
 
             <div className="mx-auto max-w-[95vw] min-h-screen space-y-4">

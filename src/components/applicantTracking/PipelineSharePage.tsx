@@ -1640,7 +1640,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                         return (
                           <div
                             key={stage.id}
-                            className="w-96 h-[80vh] min-h-max"
+                            className="w-96 h-[98vh] min-h-max"
                             onDragOver={handleDragOver}
                             onDrop={(e) => handleDrop(e, stage.name)}
                           >
@@ -1656,20 +1656,6 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                                     <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
                                   </div>
                                 </button>
-                              </div>
-
-                              <p className="text-gray-500 text-base ml-4">Nxthyre Shortlist</p>
-
-
-                              <div className="flex items-end justify-between mt-4 ml-4">
-                                <div>
-                                  <span className="text-3xl font-medium text-gray-700">8</span>
-                                  <span className="text-lg text-gray-400 ml-2">Rejected</span>
-                                </div>
-                                <div className="text-right">
-                                  <span className="text-3xl font-medium text-gray-700">{stageCount}</span>
-                                  <span className="text-lg text-gray-400 ml-2">Total</span>
-                                </div>
                               </div>
 
                               <div className="mb-8 w-[95%] bg-white h-2 rounded-full mt-4 ml-4 mr-4">
