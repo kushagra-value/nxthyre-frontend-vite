@@ -10,7 +10,6 @@ import { AuthProvider, useAuthContext } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./hooks/useAuth";
 import useDebounce from "./hooks/useDebounce";
-import { authService } from "./services/authService";
 import { creditService } from "./services/creditService";
 import { jobPostService } from "./services/jobPostService";
 import Cookies from "js-cookie";
@@ -29,7 +28,6 @@ import TemplateSelector from "./components/TemplateSelector";
 import CreateJobRoleModal from "./components/CreateJobRoleModal";
 import EditJobRoleModal from "./components/EditJobRoleModal";
 import EditTemplateModal from "./components/EditTemplateModal";
-import CategoryDropdown from "./components/CategoryDropdown";
 import PipelineStages from "./components/PipelineStages";
 import AuthApp from "./components/AuthApp";
 import LinkedInAuth from "./components/auth/LinkedInAuth";
@@ -43,19 +41,12 @@ import {
 import { User } from "./types/auth";
 import type { Job } from "./services/jobPostService";
 import {
-  ChevronDown,
-  Edit,
-  Mail,
-  Archive,
   Trash2,
   LogOut,
-  Share2,
   ArrowLeft,
   Pause,
-  Copy,
   Globe,
   Users,
-  Info,
   ChevronLeft,
   ChevronRight,
   Briefcase,
@@ -240,12 +231,10 @@ function MainApp() {
   const [showEditJobRole, setShowEditJobRole] = useState(false);
   const [editingJobId, setEditingJobId] = useState<number | null>(null);
   const [showEditTemplate, setShowEditTemplate] = useState(false);
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showPipelineStages, setShowPipelineStages] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<string>("");
   const [activeTab, setActiveTab] = useState("outbound");
   const [searchTerm, setSearchTerm] = useState("");
-  const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
 
   const [showCategoryActions, setShowCategoryActions] = useState<number | null>(
     null,
@@ -262,7 +251,6 @@ function MainApp() {
   });
   const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
   const [showShareLoader, setShowShareLoader] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
   const [projectSearchQuery, setProjectSearchQuery] = useState("");
   const debouncedProjectSearch = useDebounce(projectSearchQuery, 500);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
