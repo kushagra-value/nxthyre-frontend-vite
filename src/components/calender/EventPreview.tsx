@@ -27,19 +27,19 @@ export default function EventPreview({ event, candidate, onClose, isOpen = true 
     weekday: 'long',
     month: 'long',
     day: 'numeric',
-    timeZone: event.timezone || 'Asia/Kolkata'
+    timeZone: 'UTC'
   });
   const startTime = new Date(event.start_at).toLocaleTimeString('en-GB', {
     hour: '2-digit',
     minute: '2-digit',
     hour12: true,
-    timeZone: event.timezone || 'Asia/Kolkata'
+    timeZone: 'UTC'
   });
   const endTime = new Date(event.end_at).toLocaleTimeString('en-GB', {
     hour: '2-digit',
     minute: '2-digit',
     hour12: true,
-    timeZone: event.timezone || 'Asia/Kolkata'
+    timeZone: 'UTC'
   });
   const location = event.location_type === 'VIRTUAL' ? "Virtual " + event.virtual_conference_url : "Hybrid" + event.location_details || 'TBD';
   const attachment = event.attachments_summary?.[0];
