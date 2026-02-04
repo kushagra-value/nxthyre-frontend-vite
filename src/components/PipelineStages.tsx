@@ -2064,98 +2064,81 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
   const handleEditSave = async () => {
     if (!editingCandidate) return;
+
+    const uuid = editingCandidate.candidate.id;
+
+    const payload: any = {};
+    let valid = true;
+
+    if (editForm.notice_period_days !== "") {
+      const days = parseInt(editForm.notice_period_days, 10);
+      if (isNaN(days) || days < 0) {
+        showToast.error("Notice period must be a non-negative number");
+        valid = false;
+      } else {
+        payload.notice_period_days = days;
+      }
+    }
+
+    if (editForm.current_ctc_lpa !== "") {
+      const lpa = parseFloat(editForm.current_ctc_lpa);
+      if (isNaN(lpa) || lpa < 0) {
+        showToast.error("Current CTC must be a non-negative number");
+        valid = false;
+      } else {
+        payload.current_salary = lpa; // assuming backend expects LPA as float
+      }
+    }
+
+    if (editForm.expected_ctc_lpa !== "") {
+      const lpa = parseFloat(editForm.expected_ctc_lpa);
+      if (isNaN(lpa) || lpa < 0) {
+        showToast.error("Expected CTC must be a non-negative number");
+        valid = false;
+      } else {
+        payload.expected_ctc = lpa;
+      }
+    }
+
+    if (!valid) return;
+
+    if (Object.keys(payload).length === 0) {
+      showToast.info("No changes to save");
+      setShowEditModal(false);
+      return;
+    }
+
     try {
-      const uuid = editingCandidate.candidate.id;
-      const payload: any = {};
-
-      // Parse Notice Period
-      if (
-        editForm.notice !== editingCandidate.candidate.notice_period_summary
-      ) {
-        const noticeLower = editForm.notice.toLowerCase().trim();
-        let days: number | null = null;
-
-        if (noticeLower === "immediate" || noticeLower.includes("immediate")) {
-          days = 0;
-        } else {
-          const match = noticeLower.match(/(\d+)\s*(day|days|month|months)/);
-          if (match) {
-            const num = parseInt(match[1]);
-            days = match[2].startsWith("month") ? num * 30 : num;
-          }
-        }
-
-        if (days !== null) {
-          payload.notice_period_days = days;
-        } else if (editForm.notice.trim() !== "") {
-          showToast.error("Invalid notice period format");
-          return;
-        }
-      }
-
-      // Parse Current CTC
-      if (editForm.salary !== editingCandidate.candidate.current_salary_lpa) {
-        const salaryStr = editForm.salary.trim();
-        const lpaMatch = salaryStr.match(/([\d.]+)/);
-        if (lpaMatch) {
-          const lpa = parseFloat(lpaMatch[1]);
-          payload.current_salary = Math.round(lpa); // rupees
-        } else if (salaryStr !== "") {
-          showToast.error(
-            "Invalid Current CTC format (use numbers, e.g. 15 or 15 LPA)",
-          );
-          return;
-        }
-      }
-
-      // Parse Expected CTC
-      if (editForm.expected !== "--" && editForm.expected.trim() !== "") {
-        const expStr = editForm.expected.trim();
-        const lpaMatch = expStr.match(/([\d.]+)/);
-        if (lpaMatch) {
-          const lpa = parseFloat(lpaMatch[1]);
-          payload.expected_ctc = Math.round(lpa);
-        } else {
-          showToast.error("Invalid Expected CTC format");
-          return;
-        }
-      }
-
-      if (Object.keys(payload).length === 0) {
-        showToast.info("No changes to save");
-        setShowEditModal(false);
-        return;
-      }
-
-      // API Call
       await apiClient.patch(`/candidates/${uuid}/editable-fields/`, payload);
 
-      // Update local candidates list
       setCandidates((prev) =>
         prev.map((c) => {
           if (c.candidate.id === uuid) {
-            const updated = { ...c };
-            if ("notice_period_days" in payload) {
-              updated.candidate.notice_period_summary =
+            const updatedCand = { ...c.candidate };
+            if (payload.notice_period_days !== undefined) {
+              updatedCand.notice_period_days = payload.notice_period_days;
+              updatedCand.notice_period_summary =
                 payload.notice_period_days === 0
                   ? "Immediate"
                   : `${payload.notice_period_days} days`;
-              updated.candidate.notice_period_days = payload.notice_period_days;
             }
-            if ("current_salary" in payload) {
-              const lpa = payload.current_salary;
-              updated.candidate.current_salary_lpa = Number.isInteger(lpa)
-                ? `${lpa} LPA`
-                : `${lpa.toFixed(1)} LPA`;
+            if (payload.current_salary !== undefined) {
+              const lpaStr =
+                payload.current_salary % 1 === 0
+                  ? `${payload.current_salary}`
+                  : payload.current_salary.toFixed(1);
+              updatedCand.current_salary_lpa = `${lpaStr} LPA`;
             }
-            return updated;
+            // Expected CTC is not displayed in the list, so no local update needed
+            return { ...c, candidate: updatedCand };
           }
           return c;
-        }),
+        })
       );
 
-      if (selectedCandidate && selectedCandidate.candidate.id === uuid) {
-        await fetchCandidateDetails(editingCandidate.id); // application ID
+      // Refresh selected candidate details if open
+      if (selectedCandidate?.candidate.id === uuid) {
+        await fetchCandidateDetails(editingCandidate.id);
       }
 
       showToast.success("Candidate details updated successfully");
@@ -2163,7 +2146,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     } catch (error: any) {
       console.error("Edit save error:", error);
       showToast.error(
-        error.response?.data?.detail || "Failed to update candidate details",
+        error.response?.data?.detail || "Failed to update candidate details"
       );
     }
   };
@@ -2205,23 +2188,23 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     useState<CandidateListItem | null>(null);
 
   const [editForm, setEditForm] = useState({
-    experience: "--",
-    tenure: "--",
-    notice: "--",
-    salary: "--",
-    expected: "--",
+    notice_period_days: "",
+    current_ctc_lpa: "",
+    expected_ctc_lpa: "",
   });
 
   useEffect(() => {
     if (showEditModal && editingCandidate) {
+      const cand = editingCandidate.candidate;
+      const noticeDays =
+        cand.notice_period_days != null ? cand.notice_period_days.toString() : "";
+      const currentLpa = cand.current_salary_lpa
+        ? cand.current_salary_lpa.replace(/ LPA$/i, "").trim()
+        : "";
       setEditForm({
-        experience: editingCandidate.candidate.experience_years || "--",
-        tenure:
-          editingCandidate.candidate.experience_summary?.duration_years?.toString() ||
-          "--",
-        notice: editingCandidate.candidate.notice_period_summary || "--",
-        salary: editingCandidate.candidate.current_salary_lpa || "--",
-        expected: "--",
+        notice_period_days: noticeDays,
+        current_ctc_lpa: currentLpa,
+        expected_ctc_lpa: "", // Expected is always "--" initially
       });
     }
   }, [showEditModal, editingCandidate]);
@@ -4711,7 +4694,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 </label>
                 <input
                   type="text"
-                  value={editForm.experience}
+                  value={editingCandidate.candidate.experience_years || "--"}
                   disabled
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-100 cursor-not-allowed text-gray-500 sm:text-sm"
                 />
@@ -4720,14 +4703,16 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 </p>
               </div>
 
-              {/* Current Company Tenure - Read only */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Current Company Tenure (years)
                 </label>
                 <input
                   type="text"
-                  value={editForm.tenure}
+                  value={
+                    editingCandidate.candidate.experience_summary?.duration_years?.toString() ||
+                    "--"
+                  }
                   disabled
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-100 cursor-not-allowed text-gray-500 sm:text-sm"
                 />
@@ -4735,45 +4720,54 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   Calculated from current position (not editable)
                 </p>
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Notice Period
+                  Notice Period (days)
                 </label>
                 <input
-                  type="text"
-                  value={editForm.notice}
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={editForm.notice_period_days}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, notice: e.target.value })
+                    setEditForm({ ...editForm, notice_period_days: e.target.value })
                   }
-                  placeholder="e.g. Immediate, 30 days, 2 months"
+                  placeholder="0 for immediate joiner"
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Current CTC (LPA)
                 </label>
                 <input
-                  type="text"
-                  value={editForm.salary}
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={editForm.current_ctc_lpa}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, salary: e.target.value })
+                    setEditForm({ ...editForm, current_ctc_lpa: e.target.value })
                   }
-                  placeholder="e.g. 15 or 15 LPA"
+                  placeholder="e.g. 15.5"
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Expected CTC (LPA)
                 </label>
                 <input
-                  type="text"
-                  value={editForm.expected}
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={editForm.expected_ctc_lpa}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, expected: e.target.value })
+                    setEditForm({ ...editForm, expected_ctc_lpa: e.target.value })
                   }
-                  placeholder="e.g. 20 or 20 LPA"
+                  placeholder="e.g. 20"
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
