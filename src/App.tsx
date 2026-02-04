@@ -555,8 +555,6 @@ function MainApp() {
       if (mappedCategories.length === 0) {
         setActiveCategoryId(null);
         setHasSelectedJob(false);
-      } else {
-        setHasSelectedJob(false);
       }
     } catch (error) {
       showToast.error("Failed to fetch job categories");
