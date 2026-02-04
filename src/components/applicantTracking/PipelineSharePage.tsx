@@ -1997,12 +1997,12 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                 const payload = {
                   application: Number(eventData.applicationId), // We'll add this field next
                   title: eventData.title || `${eventData.attendee} - Interview`,
-                  start_at: `${eventData.date}T${eventData.startTime}:00Z`,
-                  end_at: `${eventData.date}T${eventData.endTime}:00Z`,
+                  start_at: new Date(`${eventData.date}T${eventData.startTime}`).toISOString(),
+                  end_at: new Date(`${eventData.date}T${eventData.endTime}`).toISOString(),
                   location_type: "VIRTUAL",
                   virtual_conference_url: "https://meet.google.com/placeholder-tbd",
                   status: "SCHEDULED",
-                  timezone: "Asia/Kolkata",
+                  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                   reminder_preferences: {
                     candidate: [24],
                     interviewers: [2],

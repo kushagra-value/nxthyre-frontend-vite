@@ -42,7 +42,7 @@ export const Calender: React.FC<CalenderProps> = ({ onCellClick, onEventClick, p
       attendee: apiEvent.candidate_name || 'Candidate',
       startTime: start.toTimeString().slice(0, 5),
       endTime: end.toTimeString().slice(0, 5),
-      date: start.toISOString().split('T')[0],
+      date: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`,
       confirmed: ['CONFIRMED', 'COMPLETED'].includes(apiEvent.status),
       roundName: stage?.name || apiEvent.round_name, // optional human name
     };
