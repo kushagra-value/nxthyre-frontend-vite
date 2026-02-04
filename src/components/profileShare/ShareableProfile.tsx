@@ -495,20 +495,24 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                           key={index}
                           className={`${getColorClass(item.color)} p-4 border border-gray-200 rounded-lg gap-2 w-full flex flex-col`}
                         >
-                          <div
-                            className={`flex gap-2 items-center font-semibold ${getColorClass(item.color)}`}
-                          >
-                            {item.priority === "CRITICAL" ? (
-                              <Sparkle
-                                className={`w-4 h-4 ${getColorClass(item.color)}`}
-                              />
-                            ) : null}
-                            {item.badge}
-                            {getIcon(item.color)}
-                          </div>
-                          <div className="text-gray-500 pl-1">
-                            {item.evidence}
-                          </div>
+                          {item.color === "green" ? (
+                            <div>
+                              <div
+                                className={`flex gap-2 items-center font-semibold ${getColorClass(item.color)}`}
+                              >
+                                {item.priority === "CRITICAL" ? (
+                                  <Sparkle
+                                    className={`w-4 h-4 ${getColorClass(item.color)}`}
+                                  />
+                                ) : null}
+                                {item.badge}
+                                {getIcon(item.color)}
+                              </div>
+                              <div className="text-gray-500 pl-1">
+                                {item.evidence}
+                              </div>
+                            </div>
+                          ) : null}
                         </div>
                       ))}
                     </div>
