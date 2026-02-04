@@ -152,14 +152,13 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
 
   {
     data.map((item, index) =>
-      item.color === "green" && count <= 5
+      item.color === "green" && count <= 5 && count++
         ? keySkills.push(item)
-        : item.color === "green" && count > 5
+        : item.color === "green" && count > 5 && count++
           ? moreSkills.push(item)
           : null,
     );
   }
-  count += 1;
 
   const toggleExpanded = () => setIsExpanded(!isExpanded);
 
