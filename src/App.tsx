@@ -328,33 +328,6 @@ function MainApp() {
     );
   }, [showPipelineStages]);
 
-  // Add this effect (runs once on mount)
-  useEffect(() => {
-    if (isAuthenticated && categories.length > 0) {
-      // Only restore if logged in (based on your code's isAuthenticated check)
-      const storedHasSelectedJob = sessionStorage.getItem("hasSelectedJob");
-      if (storedHasSelectedJob) {
-        setHasSelectedJob(JSON.parse(storedHasSelectedJob));
-      }
-
-      const storedActiveCategoryId = sessionStorage.getItem("activeCategoryId");
-      if (storedActiveCategoryId) {
-        setActiveCategoryId(JSON.parse(storedActiveCategoryId));
-        // Optionally re-fetch job details if needed
-        if (JSON.parse(storedActiveCategoryId)) {
-          fetchJobDetailsAndSetFilters(JSON.parse(storedActiveCategoryId));
-        }
-      }
-
-      const storedShowPipelineStages =
-        sessionStorage.getItem("showPipelineStages");
-      if (storedShowPipelineStages) {
-        setShowPipelineStages(JSON.parse(storedShowPipelineStages));
-        // If pipelines depend on activeCategoryId, ensure it's set first
-      }
-    }
-  }, [isAuthenticated, categories]);
-
   useEffect(() => {
     const fetchWorkspaces = async () => {
       try {
@@ -542,19 +515,44 @@ function MainApp() {
       setCategories(mappedCategories);
       setCurrentRequisitionPage(1);
 
-      // Validate activeCategoryId against fetched categories
-      if (
-        activeCategoryId &&
-        !mappedCategories.some((cat) => cat.id === activeCategoryId)
-      ) {
-        setActiveCategoryId(mappedCategories[0]?.id || null);
-        setHasSelectedJob(!!mappedCategories[0]);
-        setShowPipelineStages(false); // Reset pipelines if invalid job
-      }
+      setCategories(mappedCategories);
+      setCurrentRequisitionPage(1);
 
-      if (mappedCategories.length === 0) {
-        setActiveCategoryId(null);
-        setHasSelectedJob(false);
+      // ── RESTORE + VALIDATE HERE ──
+      if (isAuthenticated) {
+        // Restore from storage
+        const storedHas = sessionStorage.getItem("hasSelectedJob");
+        let restoredHas = storedHas ? JSON.parse(storedHas) : false;
+
+        const storedId = sessionStorage.getItem("activeCategoryId");
+        let restoredId = storedId ? JSON.parse(storedId) : null;
+
+        const storedStages = sessionStorage.getItem("showPipelineStages");
+        let restoredStages = storedStages ? JSON.parse(storedStages) : false;
+
+        // Validate restored job ID exists
+        if (restoredId && !mappedCategories.some((c) => c.id === restoredId)) {
+          restoredId = mappedCategories[0]?.id || null;
+          restoredHas = !!restoredId;
+          restoredStages = false;
+        }
+
+        // If no categories at all → force reset
+        if (mappedCategories.length === 0) {
+          restoredId = null;
+          restoredHas = false;
+          restoredStages = false;
+        }
+
+        // Apply validated values
+        setActiveCategoryId(restoredId);
+        setHasSelectedJob(restoredHas);
+        setShowPipelineStages(restoredStages);
+
+        // Re-fetch job details if we have a valid job
+        if (restoredId) {
+          fetchJobDetailsAndSetFilters(restoredId);
+        }
       }
     } catch (error) {
       showToast.error("Failed to fetch job categories");
