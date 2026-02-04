@@ -311,15 +311,18 @@ function MainApp() {
   const [hasSelectedJob, setHasSelectedJob] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem("hasSelectedJob", JSON.stringify(hasSelectedJob));
+    sessionStorage.setItem("hasSelectedJob", JSON.stringify(hasSelectedJob));
   }, [hasSelectedJob]);
 
   useEffect(() => {
-    localStorage.setItem("activeCategoryId", JSON.stringify(activeCategoryId));
+    sessionStorage.setItem(
+      "activeCategoryId",
+      JSON.stringify(activeCategoryId),
+    );
   }, [activeCategoryId]);
 
   useEffect(() => {
-    localStorage.setItem(
+    sessionStorage.setItem(
       "showPipelineStages",
       JSON.stringify(showPipelineStages),
     );
@@ -329,12 +332,12 @@ function MainApp() {
   useEffect(() => {
     if (isAuthenticated) {
       // Only restore if logged in (based on your code's isAuthenticated check)
-      const storedHasSelectedJob = localStorage.getItem("hasSelectedJob");
+      const storedHasSelectedJob = sessionStorage.getItem("hasSelectedJob");
       if (storedHasSelectedJob) {
         setHasSelectedJob(JSON.parse(storedHasSelectedJob));
       }
 
-      const storedActiveCategoryId = localStorage.getItem("activeCategoryId");
+      const storedActiveCategoryId = sessionStorage.getItem("activeCategoryId");
       if (storedActiveCategoryId) {
         setActiveCategoryId(JSON.parse(storedActiveCategoryId));
         // Optionally re-fetch job details if needed
@@ -344,7 +347,7 @@ function MainApp() {
       }
 
       const storedShowPipelineStages =
-        localStorage.getItem("showPipelineStages");
+        sessionStorage.getItem("showPipelineStages");
       if (storedShowPipelineStages) {
         setShowPipelineStages(JSON.parse(storedShowPipelineStages));
         // If pipelines depend on activeCategoryId, ensure it's set first
@@ -874,9 +877,9 @@ function MainApp() {
         boolQuery: "", // NEW
       });
       setDefaultBoolQuery("");
-      localStorage.removeItem("hasSelectedJob");
-      localStorage.removeItem("activeCategoryId");
-      localStorage.removeItem("showPipelineStages");
+      sessionStorage.removeItem("hasSelectedJob");
+      sessionStorage.removeItem("activeCategoryId");
+      sessionStorage.removeItem("showPipelineStages");
       showToast.success("Successfully logged out");
       navigate("/");
     } catch (error) {
