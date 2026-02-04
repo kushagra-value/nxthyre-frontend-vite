@@ -490,27 +490,29 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                       Key Skills (Top 5)
                     </h4> */}
                     <div className="flex flex-wrap gap-2">
-                      {keySkills.map((item, index) => (
-                        <div
-                          key={index}
-                          className={`${getColorClass(item.color)} p-4 border border-gray-200 rounded-lg gap-2 w-full flex flex-col`}
-                        >
+                      {keySkills.map((item, index) =>
+                        item.color === "green" ? (
                           <div
-                            className={`flex gap-2 items-center font-semibold ${getColorClass(item.color)}`}
+                            key={index}
+                            className={`${getColorClass(item.color)} p-4 border border-gray-200 rounded-lg gap-2 w-full flex flex-col`}
                           >
-                            {item.priority === "CRITICAL" ? (
-                              <Sparkle
-                                className={`w-4 h-4 ${getColorClass(item.color)}`}
-                              />
-                            ) : null}
-                            {item.badge}
-                            {getIcon(item.color)}
+                            <div
+                              className={`flex gap-2 items-center font-semibold ${getColorClass(item.color)}`}
+                            >
+                              {item.priority === "CRITICAL" ? (
+                                <Sparkle
+                                  className={`w-4 h-4 ${getColorClass(item.color)}`}
+                                />
+                              ) : null}
+                              {item.badge}
+                              {getIcon(item.color)}
+                            </div>
+                            <div className="text-gray-500 pl-1">
+                              {item.evidence}
+                            </div>
                           </div>
-                          <div className="text-gray-500 pl-1">
-                            {item.evidence}
-                          </div>
-                        </div>
-                      ))}
+                        ) : null,
+                      )}
                     </div>
                   </div>
 
@@ -534,27 +536,29 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                       </button>
                       {isExpanded && (
                         <div className="flex flex-wrap gap-2 animate-fade-in">
-                          {moreSkills.map((item, index) => (
-                            <div
-                              key={index}
-                              className={`${getColorClass(item.color)} p-4 border border-gray-200 rounded-lg gap-2 w-full flex flex-col`}
-                            >
+                          {moreSkills.map((item, index) =>
+                            item.color === "green" ? (
                               <div
-                                className={`flex gap-2 items-center font-semibold ${getColorClass(item.color)}`}
+                                key={index}
+                                className={`${getColorClass(item.color)} p-4 border border-gray-200 rounded-lg gap-2 w-full flex flex-col`}
                               >
-                                {item.priority === "CRITICAL" ? (
-                                  <Sparkle
-                                    className={`w-4 h-4 ${getColorClass(item.color)}`}
-                                  />
-                                ) : null}
-                                {item.badge}
-                                {getIcon(item.color)}
+                                <div
+                                  className={`flex gap-2 items-center font-semibold ${getColorClass(item.color)}`}
+                                >
+                                  {item.priority === "CRITICAL" ? (
+                                    <Sparkle
+                                      className={`w-4 h-4 ${getColorClass(item.color)}`}
+                                    />
+                                  ) : null}
+                                  {item.badge}
+                                  {getIcon(item.color)}
+                                </div>
+                                <div className="text-gray-500 pl-1">
+                                  {item.evidence}
+                                </div>
                               </div>
-                              <div className="text-gray-500 pl-1">
-                                {item.evidence}
-                              </div>
-                            </div>
-                          ))}
+                            ) : null,
+                          )}
                         </div>
                       )}
                     </div>
