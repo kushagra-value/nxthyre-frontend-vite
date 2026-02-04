@@ -55,8 +55,8 @@ export const EventForm = ({
       return;
     }
 
-    const startDateTime = new Date(`${formData.date}T${formData.startTime}`).toISOString();
-    const endDateTime = new Date(`${formData.date}T${formData.endTime}`).toISOString();
+    const startDateTime = `${formData.date}T${formData.startTime}:00Z`;
+    const endDateTime = `${formData.date}T${formData.endTime}:00Z`;
 
     const payload = {
       application: Number(formData.applicationId),
