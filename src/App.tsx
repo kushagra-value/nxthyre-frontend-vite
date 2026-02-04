@@ -546,6 +546,7 @@ function MainApp() {
 
         // Apply validated values
         setActiveCategoryId(restoredId);
+        console.log("Restored hasSelectedJob:", restoredHas);
         setHasSelectedJob(restoredHas);
         setShowPipelineStages(restoredStages);
 
