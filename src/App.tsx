@@ -330,7 +330,7 @@ function MainApp() {
 
   // Add this effect (runs once on mount)
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && categories.length > 0) {
       // Only restore if logged in (based on your code's isAuthenticated check)
       const storedHasSelectedJob = sessionStorage.getItem("hasSelectedJob");
       if (storedHasSelectedJob) {
@@ -353,7 +353,7 @@ function MainApp() {
         // If pipelines depend on activeCategoryId, ensure it's set first
       }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, categories]);
 
   useEffect(() => {
     const fetchWorkspaces = async () => {
@@ -540,6 +540,8 @@ function MainApp() {
         };
       });
       setCategories(mappedCategories);
+      setCurrentRequisitionPage(1);
+
       // Validate activeCategoryId against fetched categories
       if (
         activeCategoryId &&
@@ -549,13 +551,7 @@ function MainApp() {
         setHasSelectedJob(!!mappedCategories[0]);
         setShowPipelineStages(false); // Reset pipelines if invalid job
       }
-      setCurrentRequisitionPage(1);
-      if (mappedCategories.length === 0) {
-        setActiveCategoryId(null);
-        setHasSelectedJob(false);
-      } else {
-        setHasSelectedJob(false);
-      }
+
       if (mappedCategories.length === 0) {
         setActiveCategoryId(null);
         setHasSelectedJob(false);
