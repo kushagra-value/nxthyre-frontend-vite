@@ -4,7 +4,7 @@ import { getColorFromString } from '../../utils/stageColors';
 interface MonthViewProps {
   events: CalendarEvent[];
   currentDate: Date;
-  onCellClick: (date: string, time?: string) => void;  
+  onCellClick: (date: string, time?: string) => void;
   onEventClick?: (eventId: string) => void;
 }
 
@@ -44,13 +44,13 @@ const getDaysInMonth = (date: Date) => {
 };
 
 
-export const MonthView = ({ events, currentDate,onEventClick, onCellClick }: MonthViewProps) => {
+export const MonthView = ({ events, currentDate, onEventClick, onCellClick }: MonthViewProps) => {
   const days = getDaysInMonth(currentDate);
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   const getEventsForDate = (date: Date | null) => {
     if (!date) return [];
-    const dateString = date.toISOString().split('T')[0];
+    const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     return events.filter((e) => e.date === dateString);
   };
 
@@ -84,17 +84,16 @@ export const MonthView = ({ events, currentDate,onEventClick, onCellClick }: Mon
             return (
               <div
                 key={index}
-                onClick={() => day && onCellClick(day.toISOString().split('T')[0], '09:00')}
+                onClick={() => day && onCellClick(`${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`, '09:00')}
                 className="min-h-[120px] border-b border-r border-dashed border-gray-300 last:border-r-0 p-2 relative cursor-pointer hover:bg-blue-50 transition-colors"
               >
                 {day && (
                   <>
                     <div
-                      className={`text-lg mb-2 ${
-                        isToday(day)
-                          ? 'text-[#0F47F2] font-semibold'
-                          : 'text-gray-600'
-                      }`}
+                      className={`text-lg mb-2 ${isToday(day)
+                        ? 'text-[#0F47F2] font-semibold'
+                        : 'text-gray-600'
+                        }`}
                     >
                       {day.getDate()}
                     </div>

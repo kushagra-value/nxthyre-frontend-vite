@@ -40,6 +40,8 @@ import {
 } from "./services/organizationService";
 import { User } from "./types/auth";
 import type { Job } from "./services/jobPostService";
+import { useLocation } from "react-router-dom";
+import PipelineSkeletonLoader from "./components/skeletons/PipelineSkeletonLoader";
 import {
   Trash2,
   LogOut,
@@ -1332,32 +1334,40 @@ function MainApp() {
     );
   }
   if (authLoading) {
+    const location = useLocation();
+
+    if (location.pathname.startsWith("/pipelines/")) {
+      return <PipelineSkeletonLoader />;
+    }
+
     return (
-      <div className="min-h-screen bg-gray-50">
-        {/* Header skeleton */}
-        <div className="sticky top-0 bg-white shadow-sm z-40 animate-pulse">
-          <div className="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
-            <div className="h-10 bg-gray-200 rounded-lg w-64"></div>
-            <div className="flex items-center gap-8">
-              <div className="h-12 bg-gray-200 rounded-lg w-96"></div>
-              <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
-              <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
+      <div className="zoom-80-container">
+        <div className="min-h-screen bg-gray-50">
+          {/* Header skeleton */}
+          <div className="sticky top-0 bg-white shadow-sm z-40 animate-pulse">
+            <div className="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
+              <div className="h-10 bg-gray-200 rounded-lg w-64"></div>
+              <div className="flex items-center gap-8">
+                <div className="h-12 bg-gray-200 rounded-lg w-96"></div>
+                <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
+                <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Welcome + search bar skeleton */}
-        <div className="container mx-auto py-6">
-          <div className="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto mb-4">
-            <div className="h-10 bg-gray-200 rounded-lg w-48"></div>
-            <div className="h-10 bg-gray-200 rounded-lg w-96"></div>
-          </div>
+          {/* Welcome + search bar skeleton */}
+          <div className="container mx-auto py-6">
+            <div className="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto mb-4">
+              <div className="h-10 bg-gray-200 rounded-lg w-48"></div>
+              <div className="h-10 bg-gray-200 rounded-lg w-96"></div>
+            </div>
 
-          {/* Project grid skeleton */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <ProjectSkeletonCard key={i} />
-            ))}
+            {/* Project grid skeleton */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <ProjectSkeletonCard key={i} />
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -1432,6 +1442,10 @@ function MainApp() {
           element={
             <PipelineSharePage
               pipelineName={job?.name || "Pipeline Name"}
+              location={job?.location || "Location"}
+              experience={job?.experience || "Experience"}
+              workMode={job?.workApproach || "Work Mode"}
+              notice={job?.joiningTimeline || "Immidiate(max 15 days)"}
               onBack={handleBackFromPipelineShare}
             />
           }
@@ -1513,7 +1527,7 @@ function MainApp() {
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
                         searchQuery={""}
-                        setSearchQuery={() => {}}
+                        setSearchQuery={() => { }}
                         showCreateRoleButton={true}
                         showSearchBar={false}
                       />
@@ -1527,7 +1541,7 @@ function MainApp() {
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
                         searchQuery={""}
-                        setSearchQuery={() => {}}
+                        setSearchQuery={() => { }}
                         showCreateRoleButton={true}
                         showSearchBar={false}
                       />
@@ -1693,11 +1707,10 @@ function MainApp() {
                                           onClick={() =>
                                             setCurrentRequisitionPage(page)
                                           }
-                                          className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
-                                            page === currentRequisitionPage
-                                              ? "bg-blue-600 text-white"
-                                              : "bg-white text-black hover:bg-gray-200"
-                                          }`}
+                                          className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${page === currentRequisitionPage
+                                            ? "bg-blue-600 text-white"
+                                            : "bg-white text-black hover:bg-gray-200"
+                                            }`}
                                         >
                                           {page}
                                         </button>

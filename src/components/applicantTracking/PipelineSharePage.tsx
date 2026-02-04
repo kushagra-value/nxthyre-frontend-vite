@@ -84,13 +84,22 @@ const ProjectSkeletonCard = () => (
   </div>
 );
 
+
 interface PipelineSharePageProps {
   pipelineName: string;
+  location: string;
+  experience: string;
+  workMode: string;
+  notice: string;
   onBack?: () => void;
 }
 
 const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   pipelineName,
+  location,
+  experience,
+  workMode,
+  notice,
   onBack,
 }) => {
 
@@ -1457,13 +1466,6 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const getStageCount = (stageName: string) =>
     stageCandidates[stageName]?.length || 0;
 
-  const location = "Bangalore";
-  const experience = "4+ years";
-  const workMode = "Hybrid";
-  const notice = "Immediate (max 15 Days)";
-
-
-
 
   if (!isAuthenticated) {
     return <div>You need to be logged in to view this page.</div>;
@@ -1472,7 +1474,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
   return (
     <>
-      <div className="bg-[#FFFFFF]">
+      <div className="zoom-80-container bg-[#FFFFFF]">
         <div className="mb-4 bg-white shadow-sm border-b border-gray-200 flex items-center justify-between max-w-full mx-auto px-7 py-2">
 
           <div className="flex items-center">
@@ -1640,7 +1642,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                         return (
                           <div
                             key={stage.id}
-                            className="w-96 h-[80vh] min-h-max"
+                            className="w-96 h-[98vh] min-h-max"
                             onDragOver={handleDragOver}
                             onDrop={(e) => handleDrop(e, stage.name)}
                           >
@@ -1658,25 +1660,11 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                                 </button>
                               </div>
 
-                              <p className="text-gray-500 text-base ml-4">Nxthyre Shortlist</p>
-
-
-                              <div className="flex items-end justify-between mt-4 ml-4">
-                                <div>
-                                  <span className="text-3xl font-medium text-gray-700">8</span>
-                                  <span className="text-lg text-gray-400 ml-2">Rejected</span>
-                                </div>
-                                <div className="text-right">
-                                  <span className="text-3xl font-medium text-gray-700">{stageCount}</span>
-                                  <span className="text-lg text-gray-400 ml-2">Total</span>
-                                </div>
-                              </div>
-
                               <div className="mb-8 w-[95%] bg-white h-2 rounded-full mt-4 ml-4 mr-4">
                                 <div className="bg-blue-500 h-2 rounded-full" style={{ width: '91%' }}></div>
                               </div>
 
-                              <div className="pt-8 overflow-y-auto max-h-[70vh] hide-scrollbar">
+                              <div className="pt-8 overflow-y-auto max-h-[85vh] hide-scrollbar">
                                 <div className="space-y-3">
                                   {candidates.map((candidate: any) =>
                                     renderCandidateCard(candidate, stage.name)
@@ -2009,12 +1997,12 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                 const payload = {
                   application: Number(eventData.applicationId), // We'll add this field next
                   title: eventData.title || `${eventData.attendee} - Interview`,
-                  start_at: `${eventData.date}T${eventData.startTime}:00Z`,
-                  end_at: `${eventData.date}T${eventData.endTime}:00Z`,
+                  start_at: new Date(`${eventData.date}T${eventData.startTime}`).toISOString(),
+                  end_at: new Date(`${eventData.date}T${eventData.endTime}`).toISOString(),
                   location_type: "VIRTUAL",
                   virtual_conference_url: "https://meet.google.com/placeholder-tbd",
                   status: "SCHEDULED",
-                  timezone: "Asia/Kolkata",
+                  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                   reminder_preferences: {
                     candidate: [24],
                     interviewers: [2],
@@ -2041,6 +2029,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
               return s.sort_order > shortlistedOrder && s.slug !== 'archives';
             })}
             stagesLoading={stagesLoading}
+            candidates={Object.values(stageCandidates).flat()}
           />
 
         </div>

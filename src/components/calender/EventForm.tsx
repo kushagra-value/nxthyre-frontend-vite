@@ -11,6 +11,7 @@ interface EventFormProps {
   initialTime?: string;
   pipelineStages?: { id: number; name: string; slug: string; sort_order: number }[];
   stagesLoading?: boolean;
+  candidates?: { id: string; name: string }[];
 }
 
 export const EventForm = ({
@@ -21,6 +22,7 @@ export const EventForm = ({
   initialTime,
   pipelineStages,
   stagesLoading,
+  candidates = [],
 }: EventFormProps) => {
 
   const [formData, setFormData] = useState({
@@ -29,10 +31,13 @@ export const EventForm = ({
     location: '',
     stageId: '' as string | number,
     type: 'first-round' as CalendarEvent['type'],
-    date: initialDate || new Date().toISOString().split('T')[0],
+    date: initialDate || (() => {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    })(),
     startTime: initialTime || '09:00',
     endTime: '10:00',
-    applicationId: '', 
+    applicationId: '',
     description: '',
   });
 
@@ -50,8 +55,8 @@ export const EventForm = ({
       return;
     }
 
-    const startDateTime = `${formData.date}T${formData.startTime}:00Z`;
-    const endDateTime = `${formData.date}T${formData.endTime}:00Z`;
+    const startDateTime = new Date(`${formData.date}T${formData.startTime}`).toISOString();
+    const endDateTime = new Date(`${formData.date}T${formData.endTime}`).toISOString();
 
     const payload = {
       application: Number(formData.applicationId),
@@ -63,7 +68,7 @@ export const EventForm = ({
       location_type: "VIRTUAL", // You can make this dynamic later
       virtual_conference_url: "https://meet.google.com/placeholder", // Replace later
       status: "SCHEDULED",
-      timezone: "Asia/Kolkata", // Or detect from browser
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       participants: [],
       reminder_preferences: {
         candidate: [24], // 24 hours before
@@ -72,8 +77,8 @@ export const EventForm = ({
     };
 
     try {
-      const response = await apiClient.post('/jobs/interview-events/', payload);
-      
+      await apiClient.post('/jobs/interview-events/', payload);
+
       // Trigger parent refresh or toast
       onSubmit({
         title: formData.title || formData.attendee,
@@ -83,11 +88,11 @@ export const EventForm = ({
         endTime: formData.endTime,
         date: formData.date,
         confirmed: true,
-        applicationId: formData.applicationId, 
+        applicationId: formData.applicationId,
         description: formData.description,
       });
 
-      } catch (err: any) {
+    } catch (err: any) {
       console.error("Failed to create interview event:", err);
       const msg = err.response?.data?.detail || "Failed to schedule interview";
       alert(msg);
@@ -103,18 +108,21 @@ export const EventForm = ({
       location: '',
       stageId: '',
       type: 'first-round',
-      date: initialDate || new Date().toISOString().split('T')[0],
+      date: initialDate || (() => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      })(),
       startTime: initialTime || '09:00',
       endTime: '10:00',
-      applicationId:'',
-      description : ''
+      applicationId: '',
+      description: ''
     });
     onClose();
   };
 
   const formatDateDisplay = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00');
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('en-GB', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -166,16 +174,21 @@ export const EventForm = ({
             <div className="flex items-center gap-4">
               <User className="w-6 h-6 text-gray-600 flex-shrink-0" />
               <div className="flex-1">
-                
-                <input
-                  type="text"
+
+                <select
                   required
-                  placeholder="Select Candidate"
                   value={formData.applicationId || ''}
                   onChange={(e) => setFormData({ ...formData, applicationId: e.target.value })}
-                  className="w-full bg-transparent text-gray-600 placeholder-gray-400 outline-none pb-1"
-                />
-    
+                  className="w-full bg-transparent text-gray-600 outline-none pb-1 appearance-none"
+                >
+                  <option value="" disabled>Select Candidate</option>
+                  {candidates.map((candidate) => (
+                    <option key={candidate.id} value={candidate.id}>
+                      {candidate.name}
+                    </option>
+                  ))}
+                </select>
+
               </div>
             </div>
           </div>
@@ -201,34 +214,34 @@ export const EventForm = ({
             <div className="flex items-center gap-4">
               <Briefcase className="w-6 h-6 text-gray-600 flex-shrink-0" />
               <div className="flex-1">
-                
+
                 {stagesLoading ? (
-                <p className="text-gray-500">Loading rounds...</p>
-              ) : pipelineStages?.length === 0 ? (
-                <p className="text-gray-500">No rounds available</p>
-              ) : (
-                <select
-                  required
-                  value={formData.type}
-                  onChange={(e) =>{
-                    const selectedSlug = e.target.value;
-                    const selectedStage = pipelineStages?.find(stage => stage.slug === selectedSlug);
-                    setFormData({
-                      ...formData,
-                      type: e.target.value as CalendarEvent['type'],
-                      stageId: selectedStage ? selectedStage.id : '',
-                    })
-                  }}
-                  className="w-full  bg-transparent text-gray-600 outline-none appearance-none text-lg"
-                >
-                  <option value="">Select Round</option>
-                  {pipelineStages?.map((stage) => (
-                    <option key={stage.id} value={stage.slug}>
-                      {stage.name}
-                    </option>
-                  ))}
-                </select>
-              )}
+                  <p className="text-gray-500">Loading rounds...</p>
+                ) : pipelineStages?.length === 0 ? (
+                  <p className="text-gray-500">No rounds available</p>
+                ) : (
+                  <select
+                    required
+                    value={formData.type}
+                    onChange={(e) => {
+                      const selectedSlug = e.target.value;
+                      const selectedStage = pipelineStages?.find(stage => stage.slug === selectedSlug);
+                      setFormData({
+                        ...formData,
+                        type: e.target.value as CalendarEvent['type'],
+                        stageId: selectedStage ? selectedStage.id : '',
+                      })
+                    }}
+                    className="w-full  bg-transparent text-gray-600 outline-none appearance-none text-lg"
+                  >
+                    <option value="">Select Round</option>
+                    {pipelineStages?.map((stage) => (
+                      <option key={stage.id} value={stage.slug}>
+                        {stage.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
             </div>
           </div>
@@ -237,7 +250,7 @@ export const EventForm = ({
             <div className="flex items-center gap-4">
               <Calendar className="w-6 h-6 text-gray-600 flex-shrink-0" />
               <div className="flex items-center gap-2">
-                
+
                 <input
                   type="date"
                   value={formData.date}

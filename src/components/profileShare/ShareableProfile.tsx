@@ -145,8 +145,20 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
     return orderA - orderB;
   });
 
-  const keySkills = data.slice(0, 5);
-  const moreSkills = data.slice(5);
+  let count = 0;
+
+  const keySkills: any = [];
+  const moreSkills: any = [];
+
+  {
+    data.map((item, index) =>
+      item.color === "green" && count <= 5 && count++
+        ? keySkills.push(item)
+        : item.color === "green" && count > 5 && count++
+          ? moreSkills.push(item)
+          : null,
+    );
+  }
 
   const toggleExpanded = () => setIsExpanded(!isExpanded);
 
@@ -490,7 +502,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                       Key Skills (Top 5)
                     </h4> */}
                     <div className="flex flex-wrap gap-2">
-                      {keySkills.map((item, index) => (
+                      {keySkills.map((item: any, index: any) => (
                         <div
                           key={index}
                           className={`${getColorClass(item.color)} p-4 border border-gray-200 rounded-lg gap-2 w-full flex flex-col`}
@@ -534,7 +546,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                       </button>
                       {isExpanded && (
                         <div className="flex flex-wrap gap-2 animate-fade-in">
-                          {moreSkills.map((item, index) => (
+                          {moreSkills.map((item: any, index: any) => (
                             <div
                               key={index}
                               className={`${getColorClass(item.color)} p-4 border border-gray-200 rounded-lg gap-2 w-full flex flex-col`}
