@@ -231,7 +231,11 @@ function MainApp() {
   const [showEditJobRole, setShowEditJobRole] = useState(false);
   const [editingJobId, setEditingJobId] = useState<number | null>(null);
   const [showEditTemplate, setShowEditTemplate] = useState(false);
-  const [showPipelineStages, setShowPipelineStages] = useState(false);
+  // const [showPipelineStages, setShowPipelineStages] = useState(false);
+  const [showPipelineStages, setShowPipelineStages] = useState(() => {
+    const stored = sessionStorage.getItem("showPipelineStages");
+    return stored ? JSON.parse(stored) : false;
+  });
   const [editingTemplate, setEditingTemplate] = useState<string>("");
   const [activeTab, setActiveTab] = useState("outbound");
   const [searchTerm, setSearchTerm] = useState("");
@@ -254,7 +258,13 @@ function MainApp() {
   const [projectSearchQuery, setProjectSearchQuery] = useState("");
   const debouncedProjectSearch = useDebounce(projectSearchQuery, 500);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
+  // const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
+  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(
+    () => {
+      const stored = sessionStorage.getItem("activeCategoryId");
+      return stored ? JSON.parse(stored) : null;
+    },
+  );
   const [activeCategoryTotalCount, setActiveCategoryTotalCount] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
   const [logos, setLogos] = useState<Record<string, string | null | undefined>>(
@@ -307,8 +317,11 @@ function MainApp() {
     number | null
   >(null);
   const [defaultBoolQuery, setDefaultBoolQuery] = useState<string>("");
-  // Add this state near your other useState declarations
-  const [hasSelectedJob, setHasSelectedJob] = useState(false);
+  // Initialize hasSelectedJob from sessionStorage (or false if not present)
+  const [hasSelectedJob, setHasSelectedJob] = useState(() => {
+    const stored = sessionStorage.getItem("hasSelectedJob");
+    return stored ? JSON.parse(stored) : false;
+  });
 
   useEffect(() => {
     sessionStorage.setItem("hasSelectedJob", JSON.stringify(hasSelectedJob));
