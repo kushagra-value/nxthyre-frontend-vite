@@ -5,8 +5,6 @@ import {
   Route,
   useNavigate,
   useSearchParams,
-  useParams,
-  useLocation,
 } from "react-router-dom";
 import { AuthProvider, useAuthContext } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
@@ -324,9 +322,6 @@ function MainApp() {
   // Add this state near your other useState declarations
   const [hasSelectedJob, setHasSelectedJob] = useState(false);
 
-  // Tracks if in pipelines sub-view
-  const [isPipelinesView, setIsPipelinesView] = useState(false);
-
   useEffect(() => {
     const fetchWorkspaces = async () => {
       try {
@@ -417,27 +412,6 @@ function MainApp() {
       fetchJobDetailsAndSetFilters(activeCategoryId);
     }
   }, [activeCategoryId]);
-
-  // Tracks if in pipelines sub-view use Effect
-  useEffect(() => {
-    const { pathname } = useLocation();
-    const pathParts = pathname.split("/");
-    if (pathParts[1] === "jobs" && pathParts[2]) {
-      const jobId = parseInt(pathParts[2]);
-      if (!isNaN(jobId) && jobId !== activeCategoryId) {
-        setActiveCategoryId(jobId);
-        setHasSelectedJob(true);
-        fetchJobDetailsAndSetFilters(jobId);
-      }
-      setIsPipelinesView(pathParts[3] === "pipelines");
-      setShowPipelineStages(pathParts[3] === "pipelines");
-    } else if (pathname === "/") {
-      setActiveCategoryId(null);
-      setHasSelectedJob(false);
-      setIsPipelinesView(false);
-      setShowPipelineStages(false);
-    }
-  }, [useLocation, activeCategoryId]); // Dependencies: Re-run on path change or activeCategoryId
 
   const getTimeAgo = (dateString: string): string => {
     const past = new Date(dateString);
@@ -697,7 +671,6 @@ function MainApp() {
   };
 
   const handleBackToCategories = () => {
-    navigate("/");
     setActiveCategoryId(null);
     setHasSelectedJob(false);
     setSelectedCandidate(null);
@@ -1095,15 +1068,9 @@ function MainApp() {
     }
   };
   const handlePipelinesClick = () => {
-    if (activeCategoryId) {
-      navigate(`/jobs/${activeCategoryId}/pipelines`);
-      setIsPipelinesView(true);
-      setShowPipelineStages(true);
-    }
+    setShowPipelineStages(true);
   };
   const handleBackFromPipelines = () => {
-    navigate(`/jobs/${activeCategoryId}`);
-    setIsPipelinesView(false);
     setShowPipelineStages(false);
   };
   const handleBackFromPipelineShare = () => {
@@ -1629,7 +1596,6 @@ function MainApp() {
                                         onCopyJobID={handleCopyJobID}
                                         onUnpublishJob={handleUnpublishJobRole}
                                         onSelectCard={() => {
-                                          navigate(`/jobs/${job.id}`);
                                           setActiveCategoryId(job.id);
                                           setHasSelectedJob(true);
                                           fetchJobDetailsAndSetFilters(job.id);
@@ -3101,8 +3067,6 @@ function MainApp() {
             )
           }
         />
-        <Route path="/jobs/:jobId" element={<MainApp />} />
-        <Route path="/jobs/:jobId/pipelines" element={<MainApp />} />
       </Routes>
       {showLogoutModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
