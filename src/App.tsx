@@ -353,7 +353,7 @@ function MainApp() {
         // If pipelines depend on activeCategoryId, ensure it's set first
       }
     }
-  }, []); // Empty deps: runs once on mount
+  }, [isAuthenticated]); // Empty deps: runs once on mount
 
   useEffect(() => {
     const fetchWorkspaces = async () => {
