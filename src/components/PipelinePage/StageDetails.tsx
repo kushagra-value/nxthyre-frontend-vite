@@ -34,15 +34,12 @@ import {
   CheckCheck,
   UserRoundCheck,
   Sparkle,
-  PencilIcon,
-  CheckIcon,
-  XIcon,
+  Edit2,
 } from "lucide-react";
 import { PipelineCandidate } from "../../data/pipelineData";
 import candidateService from "../../services/candidateService";
 import { showToast } from "../../utils/toast";
 import { AnalysisResult } from "../../services/candidateService";
-import toast from "react-hot-toast";
 
 interface Stage {
   id: number;
@@ -95,16 +92,6 @@ interface Activity {
       via: string;
     }>;
   };
-}
-
-interface ProfileMatchDescriptionProps {
-  jobScoreObj: {
-    candidate_match_score: {
-      description: string;
-    };
-  };
-  candidateId: string; // UUID as string
-  jobId: number;
 }
 
 interface StageDetailsProps {
@@ -619,10 +606,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   // const [booleanData, setBooleanData] = useState<AnalysisResult | null>(null);
   // const [hasBooleanAnalysis, setHasBooleanAnalysis] = useState(false);
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [description, setDescription] = useState("");
-  const [tempDescription, setTempDescription] = useState(description);
-
   const renderTabContent = () => {
     switch (activeTab) {
       case "Score":
@@ -633,7 +616,72 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         const jobScoreObj =
           selectedCandidate.candidate.stageData?.[slug]?.job_score_obj;
 
-        setDescription("hello");
+        const [isEditingDescription, setIsEditingDescription] = useState(false);
+        const [editedDescription, setEditedDescription] = useState(
+          jobScoreObj?.candidate_match_score?.description || "",
+        );
+
+        // Reset edited value when candidate / job score changes
+        useEffect(() => {
+          setEditedDescription(
+            jobScoreObj?.candidate_match_score?.description || "",
+          );
+          setIsEditingDescription(false);
+        }, [jobScoreObj?.candidate_match_score?.description]);
+
+        const handleSaveDescription = async () => {
+          if (!selectedCandidate?.candidate?.id || !jobId) return;
+
+          try {
+            const payload = {
+              candidate_id: selectedCandidate.candidate.id,
+              job_id: jobId,
+              description: editedDescription.trim(),
+            };
+
+            // Replace with your actual API call
+            await candidateService.updateCandidateJobScoreDescription(payload);
+            // or axios.patch("/api/jobs/candidate-job-score/", payload)
+
+            // Update local candidate state (optimistic + real update)
+            if (!selectedCandidate) return;
+            setSelectedCandidate({
+              ...selectedCandidate,
+              candidate: {
+                ...selectedCandidate.candidate,
+                stageData: {
+                  ...selectedCandidate.candidate.stageData,
+                  [slug]: {
+                    ...selectedCandidate.candidate.stageData?.[slug],
+                    job_score_obj: {
+                      ...selectedCandidate.candidate.stageData?.[slug]
+                        ?.job_score_obj,
+                      candidate_match_score: {
+                        ...selectedCandidate.candidate.stageData?.[slug]
+                          ?.job_score_obj?.candidate_match_score,
+                        description: editedDescription.trim(),
+                      },
+                    },
+                  },
+                },
+              },
+            });
+
+            showToast.success("Profile match description updated");
+            setIsEditingDescription(false);
+          } catch (err) {
+            console.error("Failed to update description:", err);
+            showToast.error("Failed to update description");
+            // You may want to revert editedDescription here
+          }
+        };
+
+        const handleCancelEdit = () => {
+          setEditedDescription(
+            jobScoreObj?.candidate_match_score?.description || "",
+          );
+          setIsEditingDescription(false);
+        };
 
         let quickFitData = jobScoreObj.quick_fit_summary || [];
 
@@ -652,46 +700,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         });
 
         console.log("selectedCandidate:", selectedCandidate);
-
-        const handleEditClick = () => {
-          setTempDescription(description);
-          setIsEditing(true);
-        };
-
-        const handleCancel = () => {
-          setIsEditing(false);
-        };
-
-        const handleSave = async () => {
-          try {
-            const response = await fetch("/api/jobs/candidate-job-score/", {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                candidate_id: selectedCandidate.candidate.id,
-                job_id: jobId,
-                description: tempDescription,
-              }),
-            });
-
-            if (response.ok) {
-              setDescription(tempDescription);
-              setIsEditing(false);
-            } else {
-              console.error("Failed to update description");
-              // Optionally, show a user-facing error message
-              toast.error(
-                "Failed to update the description. Please try again.",
-              );
-            }
-          } catch (error) {
-            console.error("Error updating description:", error);
-            // Optionally, show a user-facing error message
-            toast.error("An error occurred while updating the description.");
-          }
-        };
 
         if (!jobScoreObj) {
           return (
@@ -718,45 +726,54 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   </span>
                 </div>
               </div>
-              <div className="text-gray-600 bg-gray-50 rounded-md px-2 py-3 mr-2 mb-3">
-                <div className="flex items-center justify-between mb-1">
-                  <h2 className="font-semibold text-md">
+              <div className="text-gray-600 bg-gray-50 rounded-md px-3 py-3 mr-2 mb-3 relative group">
+                <div className="flex items-start justify-between">
+                  <h2 className="font-semibold mb-1 text-md">
                     Profile Match Description
                   </h2>
-                  {!isEditing && (
+
+                  {!isEditingDescription && (
                     <button
-                      onClick={handleEditClick}
-                      className="focus:outline-none"
+                      onClick={() => setIsEditingDescription(true)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-200 rounded"
+                      title="Edit description"
                     >
-                      <PencilIcon className="h-5 w-5 text-gray-500 hover:text-gray-700" />
+                      <Edit2 className="w-4 h-4 text-gray-500" />
                     </button>
                   )}
                 </div>
-                {isEditing ? (
-                  <div>
+
+                {isEditingDescription ? (
+                  <div className="mt-1">
                     <textarea
-                      value={tempDescription}
-                      onChange={(e) => setTempDescription(e.target.value)}
-                      className="w-full h-24 border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      rows={4}
+                      value={editedDescription}
+                      onChange={(e) => setEditedDescription(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded text-sm min-h-[80px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      autoFocus
                     />
-                    <div className="flex justify-end mt-2 space-x-2">
+
+                    <div className="flex justify-end gap-2 mt-2">
                       <button
-                        onClick={handleSave}
-                        className="focus:outline-none"
+                        onClick={handleCancelEdit}
+                        className="p-1.5 hover:bg-gray-200 rounded text-gray-600"
+                        title="Cancel"
                       >
-                        <CheckIcon className="h-5 w-5 text-green-600 hover:text-green-800" />
+                        <XCircle className="w-5 h-5" />
                       </button>
                       <button
-                        onClick={handleCancel}
-                        className="focus:outline-none"
+                        onClick={handleSaveDescription}
+                        disabled={!editedDescription.trim()}
+                        className="p-1.5 hover:bg-green-100 rounded text-green-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                        title="Save"
                       >
-                        <XIcon className="h-5 w-5 text-red-600 hover:text-red-800" />
+                        <CheckCircle className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <span className="text-sm block">{description}</span>
+                  <span className="text-sm whitespace-pre-wrap">
+                    {jobScoreObj.candidate_match_score.description || "—"}
+                  </span>
                 )}
               </div>
             </div>

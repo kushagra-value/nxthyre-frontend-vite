@@ -1102,6 +1102,24 @@ class CandidateService {
     }
   }
 
+  async updateCandidateJobScoreDescription(payload: {
+    candidate_id: string;
+    job_id: number;
+    description: string;
+  }): Promise<any> {
+    try {
+      const response = await apiClient.patch(
+        `/api/jobs/candidate-job-score/`,
+        payload,
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to update match description",
+      );
+    }
+  }
+
   async getCandidateBooleanSearch(
     candidateId: string,
     jobId: string,
