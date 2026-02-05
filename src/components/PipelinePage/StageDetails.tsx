@@ -633,6 +633,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         const jobScoreObj =
           selectedCandidate.candidate.stageData?.[slug]?.job_score_obj;
 
+        setDescription(jobScoreObj.candidate_match_score.description || "");
+
         let quickFitData = jobScoreObj.quick_fit_summary || [];
 
         const priorityOrder = {
