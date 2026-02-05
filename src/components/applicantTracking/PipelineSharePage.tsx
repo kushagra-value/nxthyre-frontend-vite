@@ -53,6 +53,7 @@ import { useParams } from "react-router-dom";
 import { Calender } from '../calender/Calender';
 import { EventForm } from '../calender/EventForm';
 import { CalendarEvent } from '../../data/mockEvents';
+import { PipelineCandidate } from "../../data/pipelineData";
 import EventPreview from "../calender/EventPreview";
 
 interface DraggedCandidate {
@@ -1720,11 +1721,230 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     setDraggedCandidate({ candidate, fromStage });
   };
 
-  const fetchCandidateDetails = async (applicationId: string) => {
+  const mapStageData = (
+    slug: string,
+    contextualDetails: any,
+    aiInterviewReport?: any,
+  ) => {
+    switch (slug) {
+      case "applied":
+        return {
+          appliedDate: "", // Placeholder
+          resumeScore: 0, // Placeholder
+          skillsMatch:
+            contextualDetails.match_analysis?.skill_match_percentage || "N/A",
+          experienceMatch:
+            contextualDetails.match_analysis?.experience_match_percentage ||
+            "N/A",
+          highlights:
+            contextualDetails.match_analysis?.matched_skills?.join(", ") || "",
+          notes: contextualDetails.candidate_notes || [],
+          job_score_obj: contextualDetails.job_score_obj || {},
+        };
+      case "ai-interview":
+      case "shortlisted":
+      case "first-interview":
+      case "hr-round":
+      case "other-interview":
+      case "offer-sent":
+      case "offer-accepted":
+        const report =
+          aiInterviewReport || contextualDetails.ai_interview_report || {};
+        return {
+          interviewedDate: "", // Placeholder
+          resumeScore: Number(report.score?.resume) || 0,
+          knowledgeScore: Number(report.score?.knowledge) || 0,
+          technicalScore:
+            typeof report.score?.technical === "number"
+              ? Number(report.score?.technical)
+              : 0,
+          communicationScore: Number(report.score?.communication) || 0,
+          integrityScore: Number(report.integrity_score) || 0,
+          proctoring: {
+            deviceUsage: Number(report.integrity_score?.device_usage) || 0,
+            assistance: Number(report.integrity_score?.assistance) || 0,
+            referenceMaterial:
+              Number(report.integrity_score?.reference_materials) || 0,
+            environment:
+              Number(report.integrity_score?.environmental_assistance) || 0,
+          },
+          questions: report.QA_analysis || [],
+          notes: contextualDetails.candidate_notes || [],
+          feedbacks: report.feedbacks || {
+            overallFeedback: "",
+            communicationFeedback: "",
+            resumeScoreReason: "",
+            developmentAreas: [],
+          },
+          technicalSkills: report.technicalSkills || {
+            weakSkills: [{ skill: "", rating: 0, reason: "" }],
+            strongSkills: [{ skill: "", rating: 0, reason: "" }],
+            skillsCoverage: "",
+          },
+          potentialRedFlags: report.potential_red_flags || [],
+          job_score_obj: contextualDetails.job_score_obj || {},
+        };
+      default:
+        return contextualDetails; // Fallback for other stages
+    }
+  };
+
+  // Helper to map candidate details
+  const mapCandidateDetails = (data: any): PipelineCandidate => {
+    const candidateData = data.candidate;
+    const stageProperty = data.current_stage_details.slug; // Use slug directly
+    const mappedStageData = mapStageData(
+      data.current_stage_details.slug,
+      data.contextual_details,
+      data.candidate.ai_interview_report,
+    );
+
+    const premiumData = candidateData.premium_data || {};
+
+    return {
+      id: data.id,
+      candidate: {
+        id: candidateData.id,
+        full_name: candidateData.full_name,
+        avatar: candidateData.avatar,
+        headline: candidateData.headline,
+        location: candidateData.location,
+        linkedin_url: candidateData.linkedin_url,
+        experience_years: candidateData.experience_years,
+        experience_summary: candidateData.experience_summary,
+        education_summary: candidateData.education_summary,
+        notice_period_summary: candidateData.notice_period_summary,
+        skills_list: candidateData.skills_list,
+        social_links: candidateData.social_links,
+        resume_url: candidateData.resume_url,
+        current_salary_lpa: candidateData.current_salary_lpa,
+        profile_summary: candidateData.profile_summary,
+        source: candidateData.source,
+        profilePicture: {
+          displayImageUrl: candidateData.profile_picture_url || "",
+          artifacts: [],
+        },
+        gender: candidateData.gender,
+        is_recently_promoted: candidateData.is_recently_promoted,
+        is_background_verified: candidateData.is_background_verified,
+        is_active: candidateData.is_active,
+        is_prevetted: candidateData.is_prevetted,
+        notice_period_days: candidateData.notice_period_days,
+        current_salary: candidateData.current_salary,
+        application_type: candidateData.application_type,
+        total_experience: candidateData.total_experience,
+        email: premiumData.email || "",
+        phone: premiumData.phone || "",
+        positions: candidateData.experience.map((exp: any) => ({
+          title: exp.job_title,
+          companyName: exp.company,
+          companyUrn: "",
+          startDate: exp.start_date
+            ? {
+              month: new Date(exp.start_date).getMonth() + 1,
+              year: new Date(exp.start_date).getFullYear(),
+            }
+            : { month: 0, year: 0 },
+          endDate: exp.end_date
+            ? {
+              month: new Date(exp.end_date).getMonth() + 1,
+              year: new Date(exp.end_date).getFullYear(),
+            }
+            : undefined,
+          isCurrent: exp.is_current,
+          location: exp.location,
+          description: exp.description,
+        })),
+        educations: candidateData.education.map((edu: any) => ({
+          schoolName: edu.institution,
+          degreeName: edu.degree,
+          fieldOfStudy: edu.specialization,
+          startDate: edu.start_date
+            ? { year: new Date(edu.start_date).getFullYear() }
+            : { year: 0 },
+          endDate: edu.end_date
+            ? { year: new Date(edu.end_date).getFullYear() }
+            : { year: 0 },
+          activities: "",
+          description: "",
+          is_top_tier: edu.is_top_tier || false,
+        })),
+        certifications: candidateData.certifications.map((cert: any) => ({
+          name: cert.name,
+          authority: cert.authority,
+          licenseNumber: cert.licenseNumber,
+          startDate: cert.issued_date
+            ? {
+              month: new Date(cert.issued_date).getMonth() + 1,
+              year: new Date(cert.issued_date).getFullYear(),
+            }
+            : { month: 0, year: 0 },
+          endDate: cert.valid_until
+            ? {
+              month: new Date(cert.valid_until).getMonth() + 1,
+              year: new Date(cert.valid_until).getFullYear(),
+            }
+            : undefined,
+          url: cert.url,
+        })),
+        skills: candidateData.skills_data.skills_mentioned.map(
+          (skill: any) => ({
+            name: skill.skill,
+            endorsementCount: skill.number_of_endorsements,
+          }),
+        ),
+        endorsements: candidateData.skills_data.endorsements.map(
+          (end: any) => ({
+            endorser_name: end.endorser_name,
+            endorser_title: end.endorser_title,
+            endorser_profile_pic_url: end.endorser_profile_pic_url,
+            skill_endorsed: end.skill_endorsed,
+            endorser_company: end.endorser_company,
+            message: end.message,
+          }),
+        ),
+        recommendations: {
+          received: candidateData.recommendations,
+          given: [],
+        },
+        notes: candidateData.notes,
+        premium_data_unlocked: candidateData.premium_data_unlocked,
+        premium_data_availability: candidateData.premium_data_availability,
+        premium_data: {
+          email: premiumData.email,
+          phone: premiumData.phone,
+          linkedin_url: premiumData.linkedin_url,
+          github_url: premiumData.github_url,
+          twitter_url: premiumData.twitter_url,
+          resume_url: premiumData.resume_url,
+          resume_text: premiumData.resume_text,
+          portfolio_url: premiumData.portfolio_url,
+          dribble_username: premiumData.dribble_username,
+          behance_username: premiumData.behance_username,
+          instagram_username: premiumData.instagram_username,
+          pinterest_username: premiumData.pinterest_username,
+          all_emails: premiumData.all_emails || [],
+          all_phone_numbers: premiumData.all_phone_numbers || [],
+        },
+        stageData: {
+          [stageProperty]: mappedStageData,
+        },
+      },
+      status: data.status,
+      contextual_details: data.contextual_details,
+    };
+  };
+
+  const fetchCandidateDetails = async (applicationId: number) => {
     setLoadingCandidateDetails(true);
     try {
-      const details = await apiClient.get(`/jobs/applications/${applicationId}/kanban-detail/`);
-      setCandidateDetails(details.data);
+      const response = await apiClient.get(
+        `/jobs/applications/${applicationId}/`,
+      );
+      const data = response.data;
+      const mappedCandidate: PipelineCandidate = mapCandidateDetails(data);
+      setCandidateDetails(mappedCandidate);
+      setSelectedCandidate(mappedCandidate);
     } catch (error) {
       console.error("Error fetching candidate details:", error);
       showToast.error("Failed to load candidate details");
@@ -1922,6 +2142,10 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       <path d="M1 3.44368C1 2.29172 1 1.71574 1.32794 1.35786C1.65589 1 2.1837 1 3.23933 1H21.154C22.2096 1 22.7374 1 23.0654 1.35786C23.3933 1.71574 23.3933 2.29172 23.3933 3.44368C23.3933 4.59564 23.3933 5.17161 23.0654 5.52949C22.7374 5.88735 22.2096 5.88735 21.154 5.88735H3.23933C2.1837 5.88735 1.65589 5.88735 1.32794 5.52949C1 5.17161 1 4.59564 1 3.44368Z" stroke="currentColor" strokeWidth="1.2" />
     </svg>
   );
+
+
+
+
 
 
 
