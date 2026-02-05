@@ -2472,34 +2472,59 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                                     url.split(".").pop()?.toLowerCase() || "";
                                   if (ext === "pdf") {
                                     window.open(url, "_blank");
-                                  } else {
+                                  } else if (
+                                    ["docx", "txt", "doc", "rtf"].includes(ext)
+                                  ) {
+                                    // Add more extensions if needed
+                                    // Use Google Docs viewer for non-PDF formats
+                                    const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
                                     const newTab = window.open("", "_blank");
                                     if (newTab) {
                                       newTab.document.write(`
-            <html>
-              <head>
-                <title>Download Resume</title>
-                <style>
-                  body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f9f9f9; }
-                  .container { text-align: center; }
-                  h1 { color: #333; }
-                  button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-                  button:hover { background-color: #0056b3; }
-                </style>
-              </head>
-              <body>
-                <div class="container">
-                  <h1>Resume Download</h1>
-                  <p>Click the button below to download the resume.</p>
-                  <a href="${url}" download="resume.${ext}">
-                    <button>Download Resume</button>
-                  </a>
-                </div>
-              </body>
-            </html>
-          `);
+                  <html>
+                    <head>
+                      <title>View Resume</title>
+                      <style>
+                        body { margin: 0; overflow: hidden; }
+                        iframe { width: 100%; height: 100vh; border: none; }
+                      </style>
+                    </head>
+                    <body>
+                      <iframe src="${viewerUrl}" frameborder="0"></iframe>
+                    </body>
+                  </html>
+                `);
                                       newTab.document.close();
                                     }
+                                  } else {
+                                    // Fallback for unsupported extensions: Custom download page
+                                    // const newTab = window.open("", "_blank");
+                                    // if (newTab) {
+                                    //   newTab.document.write(`
+                                    //     <html>
+                                    //       <head>
+                                    //         <title>Download Resume</title>
+                                    //         <style>
+                                    //           body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f9f9f9; }
+                                    //           .container { text-align: center; }
+                                    //           h1 { color: #333; }
+                                    //           button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+                                    //           button:hover { background-color: #0056b3; }
+                                    //         </style>
+                                    //       </head>
+                                    //       <body>
+                                    //         <div class="container">
+                                    //           <h1>Resume Download</h1>
+                                    //           <p>Click the button below to download the resume.</p>
+                                    //           <a href="${url}" download="resume.${ext}">
+                                    //             <button>Download Resume</button>
+                                    //           </a>
+                                    //         </div>
+                                    //       </body>
+                                    //     </html>
+                                    //   `);
+                                    //   newTab.document.close();
+                                    // }
                                   }
                                 } else {
                                   toast.error("Resume not available");
