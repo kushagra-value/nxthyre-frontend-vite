@@ -2486,8 +2486,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-30 z-[60] flex">
-        <div className=" ml-auto w-2/5 bg-gray-100 shadow-xl h-full overflow-y-auto py-6">
-          <div className="max-w-2xl mx-auto">
+        <div className=" ml-auto w-2/3 bg-gray-100 shadow-xl h-full overflow-y-auto py-6">
+          <div className="max-w-4xl mx-auto">
             {/* Header Section */}
             <div className="flex items-center justify-between mb-6">
               <button
@@ -2600,6 +2600,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           </div>
         </div>
       </div>
+
     );
   };
 
@@ -2881,298 +2882,298 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
             </div>
           </div>
         </div>
-      </div>
-      {showAccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Share Pipeline Access
-              </h3>
-              <button
-                onClick={() => setShowAccessModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  value={accessEmail}
-                  onChange={(e) => setAccessEmail(e.target.value)}
-                  placeholder="Enter email address"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Access Level
-                </label>
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="view"
-                      checked={accessLevel === "view"}
-                      onChange={(e) =>
-                        setAccessLevel(e.target.value as "view" | "edit")
-                      }
-                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">
-                      View Only
-                    </span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="edit"
-                      checked={accessLevel === "edit"}
-                      onChange={(e) =>
-                        setAccessLevel(e.target.value as "view" | "edit")
-                      }
-                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Can Edit</span>
-                  </label>
-                </div>
-              </div>
-              <div className="flex space-x-3 pt-4">
+
+        {showAccessModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Share Pipeline Access
+                </h3>
                 <button
                   onClick={() => setShowAccessModal(false)}
-                  className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="p-2 hover:bg-gray-100 rounded-lg"
                 >
-                  Cancel
+                  <X className="w-5 h-5 text-gray-500" />
                 </button>
-                <button
-                  onClick={handleAccessSubmit}
-                  disabled={isSharing}
-                  className={`flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 ${isSharing ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                >
-                  {isSharing ? "Sharing..." : "Share Access"}
-                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    value={accessEmail}
+                    onChange={(e) => setAccessEmail(e.target.value)}
+                    placeholder="Enter email address"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Access Level
+                  </label>
+                  <div className="space-y-2">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        value="view"
+                        checked={accessLevel === "view"}
+                        onChange={(e) =>
+                          setAccessLevel(e.target.value as "view" | "edit")
+                        }
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">
+                        View Only
+                      </span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        value="edit"
+                        checked={accessLevel === "edit"}
+                        onChange={(e) =>
+                          setAccessLevel(e.target.value as "view" | "edit")
+                        }
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">Can Edit</span>
+                    </label>
+                  </div>
+                </div>
+                <div className="flex space-x-3 pt-4">
+                  <button
+                    onClick={() => setShowAccessModal(false)}
+                    className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAccessSubmit}
+                    disabled={isSharing}
+                    className={`flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 ${isSharing ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                  >
+                    {isSharing ? "Sharing..." : "Share Access"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-      {showFeedbackModal && feedbackData && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-md z-[60] flex justify-center items-center p-4">
-          <div className="bg-white w-full max-w-xl h-[70vh] shadow-2xl rounded-3xl overflow-hidden">
-            <div className="p-6">
-              {(feedbackData.toStage === "Archives") ? (
-                <div className="flex items-center text-center mb-6 gap-4">
-                  <h3 className="text-lg font-[400] text-gray-800 mb-1">
-                    Are you sure want to
-                    <span className="text-xl font-[400] text-[#0F47F2]">
-                      Archive Candidate?
-                    </span>
-                  </h3>
-
-                </div>
-              ) :
-                (
-                  <div className="text-center mb-6">
+        )}
+        {showFeedbackModal && feedbackData && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-md z-[60] flex justify-center items-center p-4">
+            <div className="bg-white w-full max-w-xl h-[70vh] shadow-2xl rounded-3xl overflow-hidden">
+              <div className="p-6">
+                {(feedbackData.toStage === "Archives") ? (
+                  <div className="flex items-center text-center mb-6 gap-4">
                     <h3 className="text-lg font-[400] text-gray-800 mb-1">
-                      Are you sure want to move this
+                      Are you sure want to
+                      <span className="text-xl font-[400] text-[#0F47F2]">
+                        Archive Candidate?
+                      </span>
                     </h3>
-                    <p className="text-lg font-[400] text-gray-800">
-                      candidate to next stage?
-                    </p>
+
                   </div>
-                )}
-
-              <div className="mb-6">
-                <div className="bg-blue-50 rounded-2xl p-4 border border-blue-100">
-                  <div className="grid grid-cols-12 gap-3 items-start">
-                    {/* Profile Initials */}
-                    <div className="col-span-2">
-                      <div className="w-10 h-10 rounded-full bg-[#0F47F2] flex items-center justify-center">
-                        <span className="text-white font-bold text-sm">
-                          {feedbackData.candidate.name.split(/\s+/).map((word: any) => word[0].toUpperCase()).join("").slice(0, 2)}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Name and Title */}
-                    <div className="col-span-7">
-                      <h4 className="text-sm font-semibold text-gray-900 mb-1">
-                        {feedbackData.candidate.name}
-                      </h4>
-                      <p className="text-xs text-blue-600">
-                        {feedbackData.candidate.role} | {feedbackData.candidate.company}
+                ) :
+                  (
+                    <div className="text-center mb-6">
+                      <h3 className="text-lg font-[400] text-gray-800 mb-1">
+                        Are you sure want to move this
+                      </h3>
+                      <p className="text-lg font-[400] text-gray-800">
+                        candidate to next stage?
                       </p>
                     </div>
+                  )}
 
-                    {/* Percentage Badge */}
-                    <div className="col-span-3 text-right">
-                      <span className="text-lg font-[400] text-blue-600 bg-blue-100 border border-blue-200 px-1 rounded-md">
-                        75%
-                      </span>
-                    </div>
+                <div className="mb-6">
+                  <div className="bg-blue-50 rounded-2xl p-4 border border-blue-100">
+                    <div className="grid grid-cols-12 gap-3 items-start">
+                      {/* Profile Initials */}
+                      <div className="col-span-2">
+                        <div className="w-10 h-10 rounded-full bg-[#0F47F2] flex items-center justify-center">
+                          <span className="text-white font-bold text-sm">
+                            {feedbackData.candidate.name.split(/\s+/).map((word: any) => word[0].toUpperCase()).join("").slice(0, 2)}
+                          </span>
+                        </div>
+                      </div>
 
-                    {/* Experience Info */}
-                    <div className="col-start-3 col-span-10">
-                      <div className="flex items-center gap-1 text-gray-500 text-xs mt-2">
-                        <span>5Y • 15 NP • 20 LPA • Bangalore</span>
+                      {/* Name and Title */}
+                      <div className="col-span-7">
+                        <h4 className="text-sm font-semibold text-gray-900 mb-1">
+                          {feedbackData.candidate.name}
+                        </h4>
+                        <p className="text-xs text-blue-600">
+                          {feedbackData.candidate.role} | {feedbackData.candidate.company}
+                        </p>
+                      </div>
+
+                      {/* Percentage Badge */}
+                      <div className="col-span-3 text-right">
+                        <span className="text-lg font-[400] text-blue-600 bg-blue-100 border border-blue-200 px-1 rounded-md">
+                          75%
+                        </span>
+                      </div>
+
+                      {/* Experience Info */}
+                      <div className="col-start-3 col-span-10">
+                        <div className="flex items-center gap-1 text-gray-500 text-xs mt-2">
+                          <span>5Y • 15 NP • 20 LPA • Bangalore</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Stage Transition */}
+                {/* Stage Transition */}
 
-              {(feedbackData.toStage !== "Archives") && (
-                <div className="flex items-center justify-center gap-3 mb-6">
-                  <span className="text-sm text-gray-600 font-medium">
-                    {feedbackData.fromStage}
-                  </span>
-                  <div className="flex items-center">
-                    <ChevronRight className="w-5 h-5 text-blue-600" />
+                {(feedbackData.toStage !== "Archives") && (
+                  <div className="flex items-center justify-center gap-3 mb-6">
+                    <span className="text-sm text-gray-600 font-medium">
+                      {feedbackData.fromStage}
+                    </span>
+                    <div className="flex items-center">
+                      <ChevronRight className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <span className="text-sm text-blue-600 font-medium">
+                      {feedbackData.toStage}
+                    </span>
                   </div>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {feedbackData.toStage}
-                  </span>
+                )}
+
+
+
+                {/* Comment Section */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Comment*
+                  </label>
+                  <textarea
+                    value={feedbackComment}
+                    onChange={(e) => setFeedbackComment(e.target.value)}
+                    placeholder="Type your feedback here!"
+                    className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-24 resize-none text-sm placeholder-gray-400"
+                  />
                 </div>
-              )}
 
-
-
-              {/* Comment Section */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Comment*
-                </label>
-                <textarea
-                  value={feedbackComment}
-                  onChange={(e) => setFeedbackComment(e.target.value)}
-                  placeholder="Type your feedback here!"
-                  className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-24 resize-none text-sm placeholder-gray-400"
-                />
-              </div>
-
-              {/* Action buttons */}
-              <div className="flex gap-3">
-                {feedbackData.toStage === "Archives" && (
+                {/* Action buttons */}
+                <div className="flex gap-3">
+                  {feedbackData.toStage === "Archives" && (
+                    <button
+                      onClick={handleFeedbackSubmit}
+                      disabled={!feedbackComment.trim()}
+                      className="flex-1 px-4 py-2.5 bg-[#CF272D] text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
+                    >
+                      Archive
+                    </button>
+                  )}
                   <button
-                    onClick={handleFeedbackSubmit}
-                    disabled={!feedbackComment.trim()}
-                    className="flex-1 px-4 py-2.5 bg-[#CF272D] text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
+                    onClick={() => setShowFeedbackModal(false)}
+                    className="flex-1 px-4 py-2.5 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                   >
-                    Archive
+                    Cancel
                   </button>
-                )}
-                <button
-                  onClick={() => setShowFeedbackModal(false)}
-                  className="flex-1 px-4 py-2.5 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-                >
-                  Cancel
-                </button>
 
-                {feedbackData.toStage !== "Archives" && (
+                  {feedbackData.toStage !== "Archives" && (
 
 
-                  <button
-                    onClick={handleFeedbackSubmit}
-                    disabled={!feedbackComment.trim()}
-                    className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
-                  >
-                    Move to Next Stage
-                  </button>
-                )}
+                    <button
+                      onClick={handleFeedbackSubmit}
+                      disabled={!feedbackComment.trim()}
+                      className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
+                    >
+                      Move to Next Stage
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-      {/* Add New Stage Form - Full Screen Overlay */}
-      {showAddStageForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
-          <div className="ml-auto">
-            <AddNewStageForm onClose={() => setShowAddStageForm(false)}
-              onStageCreated={() => setStagesRefreshKey(prev => prev + 1)}
-            />
+        )}
+        {/* Add New Stage Form - Full Screen Overlay */}
+        {showAddStageForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
+            <div className="ml-auto">
+              <AddNewStageForm onClose={() => setShowAddStageForm(false)}
+                onStageCreated={() => setStagesRefreshKey(prev => prev + 1)}
+              />
+            </div>
+
+
           </div>
+        )}
+        {showCandidateProfile && renderCandidateProfile()}
+        {showEventPreview && selectedEvent && eventCandidateDetails && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
+            <div className="ml-auto">
+              <EventPreview
+                event={selectedEvent}
+                candidate={eventCandidateDetails}
+                onClose={() => {
+                  setShowEventPreview(false);
+                  setSelectedEvent(null);
+                  setEventCandidateDetails(null);
+                }}
+              />
+            </div>
+          </div>
+        )}
+        {showAddEventForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
+            <div
+              className="flex-1"
+              onClick={() => setShowAddEventForm(false)}
+            />
+            <EventForm
+              isOpen={showAddEventForm}
+              onClose={() => setShowAddEventForm(false)}
+              onSubmit={async (eventData) => {
+                try {
+                  const payload = {
+                    application: Number(eventData.applicationId), // We'll add this field next
+                    title: eventData.title || `${eventData.attendee} - Interview`,
+                    start_at: `${eventData.date}T${eventData.startTime}:00Z`,
+                    end_at: `${eventData.date}T${eventData.endTime}:00Z`,
+                    location_type: "VIRTUAL",
+                    virtual_conference_url: "https://meet.google.com/placeholder-tbd",
+                    status: "SCHEDULED",
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    reminder_preferences: {
+                      candidate: [24],
+                      interviewers: [2],
+                    },
+                  };
 
+                  await apiClient.post('/jobs/interview-events/', payload);
+                  showToast.success("Interview scheduled successfully!");
 
-        </div>
-      )}
-      {showCandidateProfile && renderCandidateProfile()}
-      {showEventPreview && selectedEvent && eventCandidateDetails && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
-          <div className="ml-auto">
-            <EventPreview
-              event={selectedEvent}
-              candidate={eventCandidateDetails}
-              onClose={() => {
-                setShowEventPreview(false);
-                setSelectedEvent(null);
-                setEventCandidateDetails(null);
+                  // Trigger calendar refresh
+                  setCalendarRefreshTrigger(prev => prev + 1);
+                } catch (err: any) {
+                  const msg = err.response?.data?.detail || "Failed to schedule interview";
+                  showToast.error(msg);
+                } finally {
+                  setShowAddEventForm(false);
+                }
               }}
+              initialDate={selectedEventDate}
+              initialTime={selectedEventTime}
+              pipelineStages={pipelineStages.filter(s => {
+                const order = s.sort_order;
+                const shortlistedOrder = pipelineStages.find(st => st.slug === 'shortlisted')?.sort_order || 5;
+                return s.sort_order > shortlistedOrder && s.slug !== 'archives';
+              })}
+              stagesLoading={stagesLoading}
+              candidates={Object.values(stageCandidates).flat()}
             />
+
           </div>
-        </div>
-      )}
-      {showAddEventForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
-          <div
-            className="flex-1"
-            onClick={() => setShowAddEventForm(false)}
-          />
-          <EventForm
-            isOpen={showAddEventForm}
-            onClose={() => setShowAddEventForm(false)}
-            onSubmit={async (eventData) => {
-              try {
-                const payload = {
-                  application: Number(eventData.applicationId), // We'll add this field next
-                  title: eventData.title || `${eventData.attendee} - Interview`,
-                  start_at: `${eventData.date}T${eventData.startTime}:00Z`,
-                  end_at: `${eventData.date}T${eventData.endTime}:00Z`,
-                  location_type: "VIRTUAL",
-                  virtual_conference_url: "https://meet.google.com/placeholder-tbd",
-                  status: "SCHEDULED",
-                  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                  reminder_preferences: {
-                    candidate: [24],
-                    interviewers: [2],
-                  },
-                };
-
-                await apiClient.post('/jobs/interview-events/', payload);
-                showToast.success("Interview scheduled successfully!");
-
-                // Trigger calendar refresh
-                setCalendarRefreshTrigger(prev => prev + 1);
-              } catch (err: any) {
-                const msg = err.response?.data?.detail || "Failed to schedule interview";
-                showToast.error(msg);
-              } finally {
-                setShowAddEventForm(false);
-              }
-            }}
-            initialDate={selectedEventDate}
-            initialTime={selectedEventTime}
-            pipelineStages={pipelineStages.filter(s => {
-              const order = s.sort_order;
-              const shortlistedOrder = pipelineStages.find(st => st.slug === 'shortlisted')?.sort_order || 5;
-              return s.sort_order > shortlistedOrder && s.slug !== 'archives';
-            })}
-            stagesLoading={stagesLoading}
-            candidates={Object.values(stageCandidates).flat()}
-          />
-
-        </div>
-      )}
-
+        )}
+      </div>
     </>
   );
 };
