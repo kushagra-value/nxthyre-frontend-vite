@@ -31,8 +31,19 @@ import {
   Link,
   ChevronDown,
   File,
-  ChevronLeft
+  ChevronLeft,
+  Sparkle,
+  SignalMedium,
+  CheckCheck,
+  Minus,
+  Play,
+  Volume2,
+  Maximize,
+  Send,
+  MessageSquareText
 } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { showToast } from "../../utils/toast";
 import apiClient from "../../services/api";
 import AddNewStageForm from './AddNewStageForm';
@@ -43,7 +54,6 @@ import { Calender } from '../calender/Calender';
 import { EventForm } from '../calender/EventForm';
 import { CalendarEvent } from '../../data/mockEvents';
 import EventPreview from "../calender/EventPreview";
-
 
 interface DraggedCandidate {
   candidate: any;
@@ -115,7 +125,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
   const [currentStage, setCurrentStage] = useState<string>('');
   const [showCandidateProfile, setShowCandidateProfile] = useState(false);
-  const [activeProfileTab, setActiveProfileTab] = useState("profile");
+  const [activityReplies, setActivityReplies] = useState<string[]>([]);
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [accessEmail, setAccessEmail] = useState("");
   const [accessLevel, setAccessLevel] = useState<"view" | "edit">("view");
@@ -148,7 +158,19 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     }[]
   >([]);
 
+  const [activities, setActivities] = useState<any[]>([]);
+  const [notes, setNotes] = useState<any[]>([]);
+  const [isLoadingNotes, setIsLoadingNotes] = useState(false);
+  const [selectedActivityIndex, setSelectedActivityIndex] = useState<number | null>(null);
+  const [expandedIndices, setExpandedIndices] = useState(new Set([0]));
+  const [showMoreProfile, setShowMoreProfile] = useState(false);
+
   const [activeTab, setActiveTab] = useState("pipeline");
+
+  const [profileTab, setProfileTab] = useState<"Score" | "Profile" | "Coding" | "Interview" | "Activity" | "Notes">("Score");
+  const [notesView, setNotesView] = useState<"community" | "my">("my");
+  const [newComment, setNewComment] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const tabs = [
     { id: "pipeline", label: "Pipeline" },
@@ -172,6 +194,10 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [calendarRefreshTrigger, setCalendarRefreshTrigger] = useState(0);
 
   const [stagesRefreshKey, setStagesRefreshKey] = useState(0);
+
+  const [showMoreSummary, setShowMoreSummary] = useState(false);
+  const [expandedExperiences, setExpandedExperiences] = useState<Set<number>>(new Set());
+  const maxCharLength = 320;
   // UPDATED: Fully type-safe handleSearch - resolves 'id' does not exist on type 'never'
   const handleSearch = () => {
     if (!searchQuery.trim()) return;
@@ -245,6 +271,16 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     setSelectedSuggestionIndex(-1);
   };
 
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    showToast.success("Copied to clipboard");
+  };
+
+  const handleWhatsApp = (phone: string) => {
+    const cleaned = phone.replace(/[^\d+]/g, '');
+    window.open(`https://wa.me/${cleaned}`, '_blank');
+  };
+
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -291,6 +327,1249 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     if (status === "Accepted") return "Pass";
     if (status === "Wrong Answer") return "Fail";
     return "Skip";
+  };
+
+  const getColorClass = (color: string) => {
+    switch (color) {
+      case "green":
+        return "text-green-600";
+      case "yellow":
+        return "text-yellow-500 font-medium";
+      case "red":
+        return "text-red-600 font-medium";
+      default:
+        return "text-gray-600";
+    }
+  };
+
+  const getIcon = (color: string) => {
+    switch (color) {
+      case "green":
+        return (
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 17 17"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M8.5 15C11.5376 15 14 12.5376 14 9.5C14 6.46243 11.5376 4 8.5 4C5.46243 4 3 6.46243 3 9.5C3 12.5376 5.46243 15 8.5 15Z"
+              stroke="#009951"
+            />
+            <path
+              d="M6.57227 9.775L7.67227 10.875L10.4223 8.125"
+              stroke="#009951"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        );
+      case "yellow":
+        return (
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 17 17"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M8.5 4.84615C5.92975 4.84615 3.84615 6.92975 3.84615 9.5C3.84615 12.0703 5.92975 14.1538 8.5 14.1538C11.0703 14.1538 13.1538 12.0703 13.1538 9.5C13.1538 6.92975 11.0703 4.84615 8.5 4.84615ZM3 9.5C3 6.46243 5.46243 4 8.5 4C11.5375 4 14 6.46243 14 9.5C14 12.5375 11.5375 15 8.5 15C5.46243 15 3 12.5375 3 9.5Z"
+              fill="#CD9B05"
+            />
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M8.5 7C8.77613 7 9 7.18315 9 7.40909V9.59088C9 9.81684 8.77613 10 8.5 10C8.22387 10 8 9.81684 8 9.59088V7.40909C8 7.18315 8.22387 7 8.5 7Z"
+              fill="#CD9B05"
+            />
+            <path
+              d="M9 11.5C9 11.7761 8.77613 12 8.5 12C8.22387 12 8 11.7761 8 11.5C8 11.2239 8.22387 11 8.5 11C8.77613 11 9 11.2239 9 11.5Z"
+              fill="#CD9B05"
+            />
+          </svg>
+        );
+      case "red":
+        return (
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 17 17"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g clip-path="url(#clip0_4090_2502)">
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M8.5 14.3125C5.84212 14.3125 3.6875 12.1572 3.6875 9.5C3.6875 6.84281 5.84212 4.6875 8.5 4.6875C11.1579 4.6875 13.3125 6.84281 13.3125 9.5C13.3125 12.1572 11.1579 14.3125 8.5 14.3125ZM8.5 4C5.46228 4 3 6.46125 3 9.5C3 12.5387 5.46228 15 8.5 15C11.5377 15 14 12.5387 14 9.5C14 6.46125 11.5377 4 8.5 4ZM10.4652 7.53376C10.3298 7.3997 10.1108 7.3997 9.97537 7.53376L8.49794 9.01186L7.04181 7.55436C6.9074 7.4203 6.68947 7.4203 6.55575 7.55436C6.42134 7.68843 6.42134 7.90844 6.55575 8.0425L8.01188 9.49656L6.54545 10.9644C6.41035 11.0984 6.41035 11.3184 6.54545 11.4559C6.68088 11.59 6.90018 11.59 7.03562 11.4559L8.50206 9.98814L9.95819 11.4456C10.0926 11.5797 10.3105 11.5797 10.4446 11.4456C10.579 11.3116 10.579 11.0916 10.4446 10.9575L8.98812 9.50344L10.4652 8.0253C10.6003 7.8878 10.6003 7.67126 10.4652 7.53376Z"
+                fill="#CF272D"
+              />
+            </g>
+            <defs>
+              <clipPath id="clip0_4090_2502">
+                <rect
+                  width="11"
+                  height="11"
+                  fill="white"
+                  transform="translate(3 4)"
+                />
+              </clipPath>
+            </defs>
+          </svg>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const isValidNote = newComment.trim().length > 0;
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+    setIsLoading(true);
+    try {
+      // Mock note addition - replace with actual API call if available
+      const newNote = {
+        noteId: Date.now().toString(),
+        content: newComment,
+        is_team_note: notesView === 'my',
+        is_community_note: notesView === 'community',
+        postedBy: { userName: "You", email: "you@example.com" },
+        posted_at: new Date().toISOString(),
+        organisation: { orgName: "Your Org" }
+      };
+      setNotes([newNote, ...notes]);
+      setNewComment("");
+      showToast.success("Note added successfully");
+    } catch (error) {
+      console.error("Error adding note:", error);
+      showToast.error("Failed to add note");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const renderTabContent = () => {
+
+    const transferredStageData = selectedCandidate?.candidate?.stageData;
+    switch (profileTab) {
+      case "Score":
+        const currentStageData = pipelineStages.find(
+          (stage) => stage.name === currentStage,
+        );
+        const slug = currentStageData?.slug;
+        const jobScoreObj =
+          selectedCandidate.candidate.stageData?.[slug]?.job_score_obj;
+
+        let quickFitData = jobScoreObj.quick_fit_summary || [];
+
+        const priorityOrder = {
+          CRITICAL: 0,
+          IMPORTANT: 1,
+          LEADERSHIP: 2,
+          EXPERIENCE: 3,
+        };
+        quickFitData = quickFitData.sort((a: any, b: any) => {
+          const orderA =
+            priorityOrder[a.priority as keyof typeof priorityOrder] ?? 99;
+          const orderB =
+            priorityOrder[b.priority as keyof typeof priorityOrder] ?? 99;
+          return orderA - orderB;
+        });
+
+        console.log("selectedCandidate:", selectedCandidate);
+
+        if (!jobScoreObj) {
+          return (
+            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+              <div className="text-center text-gray-500 mt-6">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-base font-medium">Loading analysis...</p>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+            {/* Top Badge */}
+            <div className="mb-4">
+              <div className="flex items-center gap-4 bg-green-100 rounded-md px-2 py-3 mr-2 mb-3">
+                <span className="text-xl bg-green-600 text-white p-2 rounded-md">
+                  {jobScoreObj.candidate_match_score.score}
+                </span>
+                <div className="flex flex-col">
+                  <span className="text-black text-lg">
+                    {jobScoreObj.candidate_match_score.label}
+                  </span>
+                </div>
+              </div>
+              <div className="text-gray-600 bg-gray-50 rounded-md px-2 py-3 mr-2 mb-3">
+                <h2 className="font-semibold mb-1 text-md">
+                  Profile Match Description
+                </h2>
+                <span className="text-sm">
+                  {jobScoreObj.candidate_match_score.description}
+                </span>
+              </div>
+            </div>
+
+            {/* Quick Fit Summary */}
+            <div className="mb-4">
+              <h3 className="text-md font-semibold mb-3 text-gray-600">
+                Quick Fit Summary
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {quickFitData.map(
+                  (
+                    item: {
+                      badge: string;
+                      color: string;
+                      evidence: string;
+                      priority: string;
+                    },
+                    index: number,
+                  ) => (
+                    <span
+                      key={index}
+                      className={`bg-blue-50 ${getColorClass(
+                        item.color,
+                      )} px-3 py-1 rounded-full text-sm flex gap-1 items-center`}
+                      title={`${item.evidence}`}
+                    >
+                      {item.priority === "CRITICAL" ? (
+                        <Sparkle
+                          className={`w-4 h-4 text-${item.color} bg-${item.color}`}
+                        />
+                      ) : null}
+                      {item.badge}
+                      {getIcon(item.color)}
+                    </span>
+                  ),
+                )}
+              </div>
+            </div>
+
+            <div className="mb-3 border-b border-gray-200"></div>
+
+            {/* Gaps / Risks
+              <div className="mb-4">
+                <h4 className="text-md font-semibold mb-3 text-gray-600">
+                  Gaps / Risks
+                </h4>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  {jobScoreObj.gaps_risks.map((gap: string, index: number) => (
+                    <li key={index} className="bg-gray-50 p-2 rounded-md">
+                      {gap}
+                    </li>
+                  ))}
+                </ul>
+              </div> */}
+            {/* Gaps / Risks */}
+            <div className="mb-4">
+              <h4 className="text-md font-semibold mb-3 text-gray-600">
+                Gaps / Risks
+              </h4>
+              <div className="space-y-2 text-sm text-gray-600">
+                {jobScoreObj.gaps_risks.map((gap: string, index: number) => {
+                  const [category, description] = gap.split(/:\s*/, 2);
+                  return (
+                    <details
+                      key={index}
+                      open={index === 0}
+                      className="bg-gray-50 rounded-md overflow-hidden"
+                    >
+                      <summary className="px-3 py-4 font-medium cursor-pointer hover:bg-gray-100 text-gray-600">
+                        {category}
+                      </summary>
+                      <div className="px-3 py-4 border-t border-gray-200 text-gray-600">
+                        {description}
+                      </div>
+                    </details>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mb-3 border-b border-gray-200"></div>
+
+            {/* Recommended Message */}
+            <div className="mb-4">
+              <h4 className="text-md font-semibold mb-3 text-blue-600">
+                Recommended Message to Client
+              </h4>
+              <p className="text-sm text-gray-600">
+                {jobScoreObj.recommended_message}
+              </p>
+            </div>
+
+            <div className="mb-3 border-b border-gray-200"></div>
+
+            {/* Callout */}
+            <div className="bg-yellow-50 border rounded-md">
+              <div className="flex items-center gap-2 px-3 py-4 mb-1">
+                <svg
+                  className="h-5 w-5 text-yellow-600 mt-0.5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <h3 className="text-yellow-600">Call Attention</h3>
+              </div>
+              <div className="px-4 pb-4">
+                <ul className="text-sm text-gray-500 space-y-1 list-disc list-inside">
+                  {jobScoreObj.call_attention.map(
+                    (attention: string, index: number) => (
+                      <li key={index}>{attention}</li>
+                    ),
+                  )}
+                </ul>
+              </div>
+            </div>
+          </div>
+        );
+
+      case "Profile":
+        const positions = selectedCandidate.candidate.positions || [];
+        const educations = selectedCandidate.candidate.educations || [];
+        const certifications = selectedCandidate.candidate.certifications || [];
+        const skills = selectedCandidate.candidate.skills || [];
+        const endorsements = selectedCandidate.candidate.endorsements || [];
+        return (
+          <div className="bg-[#F5F9FB] py-4 px-2 rounded-xl space-y-6">
+            {/* UPDATED: Profile Summary with View More/Less for long text */}
+            {(selectedCandidate.candidate.profile_summary || selectedCandidate.candidate.headline) && (
+              <div>
+                <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                  <User className="w-4 h-4 mr-2 text-[#4B5563]" />
+                  Profile Summary
+                </h3>
+                <p className="text-sm pl-6 text-[#818283] leading-normal">
+                  {(() => {
+                    const summary =
+                      selectedCandidate.candidate.profile_summary ||
+                      selectedCandidate.candidate.headline ||
+                      "No summary available";
+
+                    const isLongSummary =
+                      selectedCandidate.candidate.profile_summary &&
+                      selectedCandidate.candidate.profile_summary.length > maxCharLength;
+
+                    const displaySummary = showMoreSummary || !isLongSummary
+                      ? summary
+                      : summary.slice(0, maxCharLength) + "...";
+
+                    return (
+                      <>
+                        {displaySummary}
+                        {isLongSummary && (
+                          <button
+                            onClick={() => setShowMoreSummary(!showMoreSummary)}
+                            className="ml-2 text-[#0F47F2] text-sm font-medium inline"
+                          >
+                            {showMoreSummary ? "View Less" : "View More"}
+                          </button>
+                        )}
+                      </>
+                    );
+                  })()}
+                </p>
+              </div>
+            )}
+
+
+            {positions.length > 0 && (
+              <div>
+                <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                  <Briefcase className="w-4 h-4 mr-2 text-[#4B5563]" />
+                  Experience
+                </h3>
+                {positions.length > 0 ? (
+                  (showMoreProfile ? positions : positions.slice(0, 1)).map(
+                    (exp: any, index: any) => (
+                      <div
+                        key={index}
+                        className="ml-2 border-l-2 border-gray-200 pl-4 mb-4"
+                      >
+                        <h4 className="text-sm font-medium text-[#4B5563]">
+                          {exp.title}
+                        </h4>
+                        <p className="text-sm text-[#818283]">
+                          {exp.companyName} | {exp.location}
+                        </p>
+                        <p className="text-sm text-[#818283]">
+                          {exp.startDate && (
+                            <span>
+                              {exp.startDate.month}/{exp.startDate.year} -{" "}
+                            </span>
+                          )}
+                          {exp.isCurrent ? (
+                            "Present"
+                          ) : exp.endDate ? (
+                            <span>
+                              {exp.endDate?.month}/{exp.endDate?.year}
+                            </span>
+                          ) : null}
+                        </p>
+                        <p className="text-sm text-[#818283] mt-1">
+                          {(() => {
+                            const desc = exp.description || "";
+                            const isLong = desc.length > maxCharLength;
+                            const isExpanded = expandedExperiences.has(index);
+
+                            const displayDesc = isExpanded || !isLong
+                              ? desc
+                              : desc.slice(0, maxCharLength) + "...";
+
+                            return (
+                              <>
+                                {displayDesc}
+                                {isLong && (
+                                  <button
+                                    onClick={() => {
+                                      const newSet = new Set(expandedExperiences);
+                                      if (isExpanded) {
+                                        newSet.delete(index);
+                                      } else {
+                                        newSet.add(index);
+                                      }
+                                      setExpandedExperiences(newSet);
+                                    }}
+                                    className="ml-2 text-[#0F47F2] text-sm font-medium inline"
+                                  >
+                                    {isExpanded ? "View Less" : "View More"}
+                                  </button>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </p>
+                      </div>
+                    ),
+                  )
+                ) : (
+                  <p className="text-sm text-[#818283] ml-4">
+                    No experience details available
+                  </p>
+                )}
+                {positions.length > 1 && !showMoreProfile && (
+                  <button
+                    onClick={() => setShowMoreProfile(true)}
+                    className="text-[#0F47F2] text-sm flex items-center ml-4"
+                  >
+                    View More <ChevronDown className="w-4 h-4 ml-1" />
+                  </button>
+                )}
+              </div>
+            )}
+            {educations.length > 0 && (
+              <div>
+                <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                  <GraduationCap className="w-4 h-4 mr-2 text-[#4B5563]" />
+                  Education
+                </h3>
+                {educations.length > 0 ? (
+                  educations.map((edu: any, index: any) => (
+                    <div
+                      key={index}
+                      className="ml-2 border-l-2 border-gray-200 pl-4 mb-4"
+                    >
+                      <h4 className="text-sm font-medium text-[#4B5563]">
+                        {edu.degreeName} in {edu.fieldOfStudy}
+                        {edu.is_top_tier && (
+                          <span className="ml-2 text-xs bg-blue-100 text-blue-800 rounded px-1">
+                            Top Tier
+                          </span>
+                        )}
+                      </h4>
+                      <p className="text-sm text-[#818283]">{edu.schoolName}</p>
+                      {edu.startDate?.year &&
+                        edu.endDate?.year &&
+                        edu.startDate.year !== 0 &&
+                        edu.endDate.year !== 0 ? (
+                        <p className="text-sm text-[#818283]">
+                          {edu.startDate.year} - {edu.endDate.year}
+                        </p>
+                      ) : (
+                        " "
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-[#818283] ml-4">
+                    No education details available
+                  </p>
+                )}
+              </div>
+            )}
+            {certifications.length > 0 && (
+              <div>
+                <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                  <Award className="w-4 h-4 mr-2 text-[#4B5563]" />
+                  Certifications
+                </h3>
+                {certifications.length > 0 ? (
+                  certifications.map((cert: any, index: any) => (
+                    <div
+                      key={index}
+                      className="ml-2 border-l-2 border-gray-200 pl-4 mb-4"
+                    >
+                      <h4 className="text-sm font-medium text-[#4B5563]">
+                        {cert.name}
+                      </h4>
+                      <p className="text-sm text-[#818283]">{cert.authority}</p>
+                      <p className="text-sm text-[#818283]">
+                        {cert.licenseNumber}
+                      </p>
+                      <a
+                        href={cert.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-[#0F47F2] hover:underline"
+                      >
+                        {cert.url}
+                      </a>
+                      <p className="text-sm text-[#818283]">
+                        {cert.startDate && (
+                          <span>
+                            {cert.startDate?.month}/{cert.startDate?.year}{" "}
+                            -{" "}
+                          </span>
+                        )}
+                        {cert.endDate && (
+                          <span>
+                            {cert.endDate?.month}/{cert.endDate?.year}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-[#818283] ml-4">
+                    No certifications available
+                  </p>
+                )}
+              </div>
+            )}
+            {skills.length > 0 && (
+              <div>
+                <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                  <Star className="w-4 h-4 mr-2 text-[#4B5563]" />
+                  Skills
+                </h3>
+                <div className="flex flex-wrap gap-2 ml-4">
+                  {skills.length > 0 ? (
+                    skills.map((skill: any, index: any) => (
+                      <span
+                        key={index}
+                        className="px-2 py-1 bg-[#ECF1FF] text-[#0F47F2] text-sm rounded-md"
+                      >
+                        {skill.name}{" "}
+                        {skill.endorsementCount > 0
+                          ? `(${skill.endorsementCount})`
+                          : ""}
+                      </span>
+                    ))
+                  ) : (
+                    <p className="text-sm text-[#818283]">
+                      No skills available
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+            {endorsements.length > 0 && (
+              <div>
+                <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                  <Star className="w-4 h-4 mr-2 text-[#4B5563]" />
+                  Endorsements
+                </h3>
+                <div className="space-y-2 ml-4">
+                  {endorsements.map((end: any, index: any) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <img
+                        src={end.endorser_profile_pic_url}
+                        alt={end.endorser_name}
+                        className="w-6 h-6 rounded-full"
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-[#4B5563]">
+                          {end.endorser_name}
+                        </p>
+                        <p className="text-xs text-[#818283]">
+                          {end.endorser_title} at {end.endorser_company}
+                        </p>
+                      </div>
+                      <p className="text-sm text-[#818283]">
+                        endorsed {end.skill_endorsed}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      case "Coding":
+        if (codingQuestions.length === 0) {
+          return (
+            <div className="flex justify-center items-center bg-[#F5F9FB] rounded-xl">
+              <div className="flex flex-col items-center justify-center h-full py-12 px-4">
+                <div className="relative inline-block">
+                  {/* First SVG (outer shape) */}
+                  <svg
+                    width="102"
+                    height="107"
+                    viewBox="0 0 102 107"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M101.056 97.7513L90.3618 81.0519C94.4809 77.6315 97.3464 72.9844 98.5103 67.6711C99.8948 61.3632 98.7376 54.8941 95.2526 49.4568C93.4288 46.6082 91.0719 44.236 88.3437 42.4097V9.40048C88.3437 4.74115 84.5523 0.949914 79.9049 0.949914L11.9709 0.626608C11.9653 0.626608 11.9607 0.625 11.9551 0.625C11.95 0.625 11.9457 0.626608 11.9406 0.626608L11.6104 0.625L11.6102 0.662382C4.39273 0.865369 0.599609 7.06472 0.599609 13.2224V15.9278H17.8995L17.8839 97.718C17.8839 102.377 21.674 106.169 26.3333 106.169H79.8918C84.5523 106.169 88.3437 102.377 88.3437 97.718V91.2884L94.9762 101.645L101.056 97.7513ZM90.6978 52.3735V52.3748C93.4007 56.5955 94.2989 61.6154 93.2262 66.5125C92.159 71.3837 89.2636 75.5485 85.0786 78.2526L84.2829 78.7136C81.5859 80.2747 78.6642 81.092 75.7546 81.2305C75.6745 81.2341 75.5941 81.2349 75.5137 81.2375C75.0363 81.2542 74.5597 81.2517 74.0845 81.2318C73.8927 81.2231 73.7009 81.2064 73.509 81.1918C73.1411 81.165 72.7736 81.1323 72.4085 81.0841C72.0909 81.0408 71.7739 80.9824 71.4566 80.9227C71.2029 80.8758 70.9479 80.8331 70.6963 80.7756C70.3154 80.6883 69.9427 80.5804 69.5709 80.471C69.3654 80.4104 69.1573 80.3583 68.9538 80.2907C68.5912 80.1706 68.2394 80.0273 67.8869 79.8862C67.6767 79.8018 67.4627 79.728 67.2555 79.636C66.945 79.4982 66.6468 79.3381 66.3454 79.1842C66.1089 79.0633 65.8672 78.9534 65.6354 78.8221C65.3909 78.6839 65.1599 78.525 64.9222 78.3758C64.6503 78.2053 64.3733 78.0443 64.1096 77.8593C63.9389 77.7394 63.7808 77.6022 63.6142 77.4765C63.3016 77.2408 62.9854 77.0109 62.6864 76.7542C62.6053 76.6845 62.5328 76.6049 62.4528 76.5339C61.189 75.4113 60.0496 74.108 59.0934 72.6145C58.7506 72.079 58.435 71.5265 58.1479 70.9592C58.1133 70.8912 58.0882 70.82 58.0544 70.7518C54.4801 63.4751 56.0375 54.7316 61.7258 49.1292C61.7534 49.102 61.7774 49.0718 61.8053 49.0448C62.1717 48.6884 62.5655 48.3537 62.9653 48.0245C63.055 47.9506 63.136 47.8688 63.2274 47.7964C63.724 47.4025 64.2401 47.0338 64.7739 46.6919C65.5153 46.2183 66.2887 45.7967 67.0885 45.4301C67.531 45.2271 67.9902 45.0826 68.4433 44.9159C68.8002 44.7842 69.1497 44.6265 69.5128 44.5171C70.0049 44.3695 70.5076 44.2797 71.0077 44.1735C71.3503 44.1006 71.6876 44.0036 72.0337 43.9504C72.5047 43.8779 72.9804 43.8587 73.4548 43.8224C73.8441 43.7928 74.2311 43.7441 74.6228 43.7391C75.4073 43.7285 76.193 43.7585 76.9748 43.8471C77.0098 43.8511 77.0449 43.8599 77.0799 43.8641C77.8406 43.9548 78.5971 44.0959 79.3462 44.2805C79.4699 44.3108 79.5907 44.3475 79.7135 44.3801C80.4445 44.5761 81.1693 44.807 81.88 45.0933C81.9071 45.1041 81.9349 45.1134 81.9619 45.1244C82.7611 45.4503 83.5373 45.8302 84.2852 46.2612L84.555 46.4169C87.0057 47.8862 89.1121 49.8973 90.6978 52.3735ZM6.42273 10.5167C7.09386 8.30462 8.68694 6.0467 11.9362 6.03746L11.9763 6.03759C15.2242 6.04778 16.8167 8.30515 17.4876 10.5167H6.42273ZM82.9327 97.7179C82.9327 99.3943 81.5694 100.758 79.8917 100.758H26.3333C24.6582 100.758 23.2949 99.3943 23.2949 97.7179L23.3105 15.9277H23.3107V13.2223C23.3107 10.7097 22.6531 8.20534 21.4189 6.08261L79.8918 6.3609C81.5696 6.3609 82.9329 7.7242 82.9329 9.40062V39.7024C82.8952 39.689 82.8562 39.6823 82.8184 39.669C82.1038 39.4225 81.3734 39.2117 80.6302 39.0306C80.4914 38.9964 80.355 38.9501 80.2155 38.9183C80.1666 38.9072 80.1204 38.89 80.0715 38.8793C79.2649 38.7031 78.45 38.5677 77.6299 38.4736C77.5243 38.4614 77.4182 38.4624 77.3127 38.4516C76.5557 38.3739 75.7996 38.3282 75.045 38.3221C74.8146 38.3205 74.5852 38.3372 74.3546 38.3422C73.7179 38.3552 73.0835 38.3855 72.452 38.4488C72.1954 38.4747 71.9413 38.5129 71.6856 38.547C71.0815 38.6265 70.4807 38.7293 69.8845 38.8551C69.619 38.9113 69.3555 38.9722 69.0918 39.0376C68.5075 39.1837 67.929 39.352 67.3575 39.542C67.096 39.628 66.8347 39.7102 66.5754 39.8054C65.991 40.0209 65.4177 40.2681 64.8482 40.53C64.6171 40.636 64.3824 40.7291 64.1537 40.8427C63.372 41.2325 62.603 41.6567 61.8571 42.1344C61.1818 42.5668 60.5279 43.032 59.8979 43.5282C59.2748 44.0189 58.6762 44.5399 58.1042 45.0893C54.6881 48.3712 52.3159 52.5872 51.2796 57.3182C49.8964 63.6261 51.0537 70.0951 54.5359 75.5325C54.9482 76.1762 55.3897 76.7894 55.8503 77.3806C56.0107 77.5865 56.1854 77.7768 56.3514 77.9767C56.6624 78.3502 56.9753 78.7214 57.3047 79.0721C57.519 79.3003 57.7439 79.5154 57.9662 79.7344C58.2704 80.0342 58.5771 80.3292 58.8946 80.6103C59.1412 80.8272 59.3922 81.0389 59.6476 81.2454C59.9657 81.5046 60.2905 81.7555 60.6217 81.9978C60.8839 82.1898 61.1469 82.3798 61.4169 82.5611C61.7805 82.8055 62.1523 83.0329 62.5273 83.256C62.7752 83.4035 63.0189 83.5564 63.2723 83.6948C63.7967 83.9819 64.3324 84.2434 64.8749 84.49C64.9905 84.5424 65.1008 84.6045 65.2174 84.655C65.9091 84.9564 66.6145 85.2207 67.3296 85.4556C67.4454 85.4934 67.5649 85.5219 67.6813 85.5581C68.2798 85.7453 68.8854 85.9092 69.4966 86.0494C69.572 86.0667 69.6438 86.0932 69.7197 86.1098C69.84 86.1362 69.9614 86.1447 70.0819 86.1693C70.6704 86.2884 71.2619 86.3855 71.8585 86.4605C72.1204 86.4941 72.3814 86.5296 72.6435 86.5548C73.1814 86.6046 73.7214 86.6288 74.2631 86.6424C74.4897 86.6489 74.7169 86.6793 74.9431 86.6793C75.0639 86.6793 75.1826 86.6553 75.3033 86.6536C76.1004 86.6391 76.8978 86.5773 77.6948 86.483C78.0608 86.4405 78.4251 86.3994 78.7884 86.3402C79.5852 86.2086 80.3748 86.0369 81.1542 85.8258C81.5755 85.7123 81.9887 85.5773 82.404 85.4406C82.5795 85.3826 82.7577 85.3398 82.9325 85.2778V97.7179H82.9327Z"
+                      fill="#0F47F2"
+                    />
+                  </svg>
+
+                  {/* Second SVG (inner, centered) */}
+                  <svg
+                    width="52"
+                    height="83"
+                    viewBox="0 0 52 83"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                  >
+                    <path
+                      d="M-0.0078125 0.304688H41.6383V8.92113H-0.0078125V0.304688ZM-0.0078125 24.719H19.6644V33.3355H-0.0078125V24.719ZM-0.0078125 49.1331H19.6644V57.7495H-0.0078125V49.1331ZM-0.0078125 73.667H8.36919V82.0441H-0.0078125V73.667ZM14.2302 73.667H22.6074V82.0441H14.2302V73.667ZM28.4683 73.667H36.8454V82.0441H28.4683V73.667ZM42.7063 73.667H51.0835V82.0441H42.7063V73.667Z"
+                      fill="#60A5FA"
+                    />
+                  </svg>
+                </div>
+
+                <h3 className="text-xl text-center text-gray-400 mt-4">
+                  Candidate coding round will shown here once they complete it
+                </h3>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="bg-[#F5F9FB] px-4 py-3 rounded-xl space-y-6">
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl text-[#4B5563]">
+                <span className="font-medium">Questions</span> ({totalQuestions}
+                )
+              </h3>
+              <p className="text-base text-[#818283]">{date}</p>
+            </div>
+            {codingQuestions.map((q, index) => {
+              // Split question into lines
+              const lines = q.question.split("\n");
+              const visibleLines = isExpanded ? lines : lines.slice(0, 2);
+              const hiddenLineCount = Math.max(0, lines.length - 2);
+
+              return (
+                <div
+                  key={index}
+                  className="border border-[#4B5563] bg-[#F5F9FB] rounded-xl overflow-hidden"
+                >
+                  <div className="p-2 flex items-start space-x-2">
+                    <span className="text-sm text-[#4B5563] font-medium">
+                      Q{index + 1}.
+                    </span>
+                    <div>
+                      <h3 className="text-sm font-medium text-[#4B5563] flex-1 mb-1">
+                        {q.name}
+                      </h3>
+                      <p className="text-sm text-[#818283] flex-1 whitespace-pre-line">
+                        {visibleLines.join("\n")}
+                        {!isExpanded && hiddenLineCount > 0 && " ..."}
+                      </p>
+                    </div>
+                  </div>
+                  <hr className="border-t border-[#818283]/50 rounded-full" />
+                  <div className="p-4 flex justify-between items-center text-xs bg-white">
+                    <span className="text-[#818283]">{q.language}</span>
+                    <div className="flex items-center space-x-4">
+                      <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="flex items-center text-[#818283]"
+                      >
+                        <div className="p-1 border border-[#818283] rounded-md mr-1">
+                          <svg
+                            width="8"
+                            height="8"
+                            viewBox="0 0 8 8"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M7 1.00781H5.2M7 1.00781V2.80781M7 1.00781L4.9 3.10781M1 7.00781H2.8M1 7.00781V5.20781M1 7.00781L3.1 4.90781"
+                              stroke="#818283"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                        </div>
+                        {isExpanded ? "Collapse" : "Expand"}{" "}
+                      </button>
+                      <div className="flex items-center text-[#818283]">
+                        <SignalMedium className="w-4 h-4 mr-1 pl-1 pb-1 border border-[#818283] rounded-md" />
+                        {q.difficulty}
+                      </div>
+                      <div className="flex items-center">
+                        {q.status === "Pass" && (
+                          <CheckCheck className="w-4 h-4 p-1 bg-[#007A5A] text-white mr-1 rounded-xl" />
+                        )}
+                        {q.status === "Fail" && (
+                          <X className="w-4 h-4 p-1 bg-[#ED051C] text-white mr-1 rounded-xl" />
+                        )}
+                        {q.status === "Skip" && (
+                          <Minus className="w-4 h-4 p-1 bg-[#818283] text-white mr-1 rounded-xl" />
+                        )}
+                        <span
+                          className={`${q.status === "Pass"
+                            ? "text-[#007A5A]"
+                            : q.status === "Fail"
+                              ? "text-[#ED051C]"
+                              : "text-[#818283]"
+                            } font-medium`}
+                        >
+                          {q.status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <hr className="mx-auto w-[95%] border-t border-[#818283]/50" />
+                  {!isExpanded && hiddenLineCount > 0 && (
+                    <p className="px-4 py-3 text-sm text-[#BCBCBC] bg-white">
+                      {hiddenLineCount} hidden lines
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        );
+      case "Interview":
+        const interviewData =
+          transferredStageData?.["ai-interview"] ||
+          transferredStageData?.shortlisted ||
+          transferredStageData?.["first-interview"] ||
+          transferredStageData?.["hr-round"] ||
+          transferredStageData?.["other-interview"] ||
+          transferredStageData?.["offer-sent"] ||
+          transferredStageData?.["offer-accepted"];
+        const vettedSkills = [
+          ...(interviewData?.technicalSkills?.strongSkills || []),
+          ...(interviewData?.technicalSkills?.weakSkills || []),
+        ];
+        const questions =
+          interviewData?.questions?.map((q: any, index: number) => ({
+            question: `Q${index + 1}: ${q.question}`,
+            answer: q.answer,
+          })) || [];
+
+        return (
+          <div className="space-y-3 bg-[#F5F9FB] p-2 rounded-xl">
+            {interviewData?.resumeScore ||
+              interviewData?.knowledgeScore ||
+              interviewData?.communicationScore ? (
+              <>
+                <div className="bg-white rounded-xl p-2">
+                  <h4 className="text-base font-medium text-[#4B5563] mb-4">
+                    Overall Score
+                  </h4>
+                  <div className="flex justify-between w-full">
+                    <div className="w-[27%] bg-[#ECF1FF] rounded-xl p-4 text-center">
+                      <p className="text-base text-[#4B5563]">Resume</p>
+                      <p className="text-2xl font-normal text-[#EAB308]">
+                        {(interviewData?.resumeScore &&
+                          interviewData?.resumeScore) ||
+                          "N/A"}
+                        %
+                      </p>
+                    </div>
+                    <div className="w-[27%] bg-[#ECF1FF] rounded-xl p-4 text-center">
+                      <p className="text-base text-[#4B5563]">Knowledge</p>
+                      <p className="text-2xl font-normal text-[#16A34A]">
+                        {(interviewData?.knowledgeScore &&
+                          interviewData?.knowledgeScore) ||
+                          "N/A"}
+                        %
+                      </p>
+                    </div>
+                    {/* <div className="bg-[#ECF1FF] rounded-xl p-4 text-center">
+                    <p className="text-base text-[#4B5563]">Technical</p>
+                    <p className="text-2xl font-normal text-[#16A34A]">
+                      {(interviewData?.technicalScore &&
+                        (interviewData.technicalScore * 10).toFixed(0)) ||
+                        "N/A"}
+                      %
+                    </p>
+                  </div> */}
+                    <div className="w-[37%] bg-[#ECF1FF] rounded-xl p-4 text-center">
+                      <p className="text-base text-[#4B5563]">Communication</p>
+                      <p className="text-2xl font-normal text-[#0F47F2]">
+                        {(interviewData?.communicationScore &&
+                          interviewData.communicationScore) ||
+                          "N/A"}
+                        %
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white rounded-xl p-2">
+                  <h4 className="text-base font-medium text-[#4B5563] mb-2">
+                    General Summary
+                  </h4>
+                  <p className="text-sm text-[#818283]">
+                    {interviewData?.feedbacks?.overallFeedback ||
+                      "No feedback provided"}
+                  </p>
+                </div>
+                <div className="bg-white rounded-xl p-2">
+                  <h4 className="text-base font-medium text-[#4B5563] mb-4">
+                    Vetted Skills
+                  </h4>
+                  <div className="flex flex-wrap gap-3">
+                    {vettedSkills.map((skill, index) => (
+                      <div
+                        key={index}
+                        className="relative group bg-[#ECF1FF] rounded-md p-2 flex items-center justify-center space-x-2"
+                      >
+                        <span className="text-sm text-[#0F47F2]">
+                          {skill.skill}
+                        </span>
+                        <Star className="w-4 h-4 text-[#FFC107] fill-[#FFC107]" />
+                        <span className="text-sm text-[#4B5563]">
+                          {skill.rating}
+                        </span>
+                        {skill.reason && (
+                          <div className="absolute z-1000 invisible group-hover:visible opacity-0 group-hover:opacity-100 group-hover:z-1000 transition-all duration-200 -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-blue-50 text-gray-600 text-xs rounded-md py-2 px-3 w-64 text-center">
+                            {skill.reason}
+                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent border-t-gray-600"></div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-yellow-100 rounded-xl py-2 px-3">
+                  <h4 className="text-base font-medium text-yellow-600 mb-2">
+                    Key Observations
+                  </h4>
+                  {interviewData?.potentialRedFlags?.length > 0 ? (
+                    <ul className="list-disc list-inside space-y-1">
+                      {interviewData.potentialRedFlags.map(
+                        (observation: any, index: number) => (
+                          <li
+                            key={index}
+                            className="text-sm text-[#4B5563] leading-relaxed"
+                          >
+                            {observation}
+                          </li>
+                        ),
+                      )}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-[#4B5563] leading-relaxed">
+                      No key observations provided
+                    </p>
+                  )}
+                </div>
+                <div className="bg-white rounded-xl p-4">
+                  <h4 className="text-base font-medium text-[#4B5563] mb-4">
+                    Interview Recording
+                  </h4>
+                  <div className="bg-[#F5F9FB] rounded-xl p-4 flex items-center space-x-4">
+                    <Play className="w-4 h-4 ml-1" />
+                    <div className="flex-1">
+                      <div className="h-0.5 bg-[#F0F0F0] rounded-full">
+                        <div className="w-1/3 h-0.5 bg-[#0F47F2] rounded-full"></div>
+                      </div>
+                    </div>
+                    <span className="text-sm text-[#4B5563]">1.01 / 5.40</span>
+                    <Volume2 className="w-5 h-5 text-[#4B5563]" />
+                    <Maximize className="w-5 h-5 text-[#4B5563]" />
+                  </div>
+                </div>
+                <div className="bg-white rounded-xl p-4">
+                  <h4 className="text-base font-medium text-[#4B5563] mb-4">
+                    Question Analysis
+                  </h4>
+                  <div className="space-y-4">
+                    {questions.map((q: any, index: number) => {
+                      const isExpanded = expandedIndices.has(index);
+                      return (
+                        <div
+                          key={index}
+                          className={`border ${isExpanded ? "border-[#0F47F2]" : "border-[#818283]"
+                            } bg-white rounded-md p-4`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <p
+                              className={`text-sm font-medium ${isExpanded ? "text-[#4B5563]" : "text-[#818283]"
+                                }`}
+                            >
+                              {q.question}
+                            </p>
+                            <button
+                              onClick={() => {
+                                const newExpanded = new Set(expandedIndices);
+                                if (isExpanded) {
+                                  newExpanded.delete(index);
+                                } else {
+                                  newExpanded.add(index);
+                                }
+                                setExpandedIndices(newExpanded);
+                              }}
+                            >
+                              {isExpanded ? (
+                                <Minus className="w-4 h-4 text-[#818283]" />
+                              ) : (
+                                <Plus className="w-4 h-4 text-[#818283]" />
+                              )}
+                            </button>
+                          </div>
+                          {isExpanded && (
+                            <p className="text-sm text-[#4B5563] mt-2">
+                              {q.answer}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="flex justify-center items-center bg-[#F5F9FB] rounded-xl">
+                <div className="flex flex-col items-center justify-center h-full py-12 px-4">
+                  <div className="relative inline-block">
+                    {/* First SVG (outer shape) */}
+                    <svg
+                      width="102"
+                      height="107"
+                      viewBox="0 0 102 107"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M101.056 97.7513L90.3618 81.0519C94.4809 77.6315 97.3464 72.9844 98.5103 67.6711C99.8948 61.3632 98.7376 54.8941 95.2526 49.4568C93.4288 46.6082 91.0719 44.236 88.3437 42.4097V9.40048C88.3437 4.74115 84.5523 0.949914 79.9049 0.949914L11.9709 0.626608C11.9653 0.626608 11.9607 0.625 11.9551 0.625C11.95 0.625 11.9457 0.626608 11.9406 0.626608L11.6104 0.625L11.6102 0.662382C4.39273 0.865369 0.599609 7.06472 0.599609 13.2224V15.9278H17.8995L17.8839 97.718C17.8839 102.377 21.674 106.169 26.3333 106.169H79.8918C84.5523 106.169 88.3437 102.377 88.3437 97.718V91.2884L94.9762 101.645L101.056 97.7513ZM90.6978 52.3735V52.3748C93.4007 56.5955 94.2989 61.6154 93.2262 66.5125C92.159 71.3837 89.2636 75.5485 85.0786 78.2526L84.2829 78.7136C81.5859 80.2747 78.6642 81.092 75.7546 81.2305C75.6745 81.2341 75.5941 81.2349 75.5137 81.2375C75.0363 81.2542 74.5597 81.2517 74.0845 81.2318C73.8927 81.2231 73.7009 81.2064 73.509 81.1918C73.1411 81.165 72.7736 81.1323 72.4085 81.0841C72.0909 81.0408 71.7739 80.9824 71.4566 80.9227C71.2029 80.8758 70.9479 80.8331 70.6963 80.7756C70.3154 80.6883 69.9427 80.5804 69.5709 80.471C69.3654 80.4104 69.1573 80.3583 68.9538 80.2907C68.5912 80.1706 68.2394 80.0273 67.8869 79.8862C67.6767 79.8018 67.4627 79.728 67.2555 79.636C66.945 79.4982 66.6468 79.3381 66.3454 79.1842C66.1089 79.0633 65.8672 78.9534 65.6354 78.8221C65.3909 78.6839 65.1599 78.525 64.9222 78.3758C64.6503 78.2053 64.3733 78.0443 64.1096 77.8593C63.9389 77.7394 63.7808 77.6022 63.6142 77.4765C63.3016 77.2408 62.9854 77.0109 62.6864 76.7542C62.6053 76.6845 62.5328 76.6049 62.4528 76.5339C61.189 75.4113 60.0496 74.108 59.0934 72.6145C58.7506 72.079 58.435 71.5265 58.1479 70.9592C58.1133 70.8912 58.0882 70.82 58.0544 70.7518C54.4801 63.4751 56.0375 54.7316 61.7258 49.1292C61.7534 49.102 61.7774 49.0718 61.8053 49.0448C62.1717 48.6884 62.5655 48.3537 62.9653 48.0245C63.055 47.9506 63.136 47.8688 63.2274 47.7964C63.724 47.4025 64.2401 47.0338 64.7739 46.6919C65.5153 46.2183 66.2887 45.7967 67.0885 45.4301C67.531 45.2271 67.9902 45.0826 68.4433 44.9159C68.8002 44.7842 69.1497 44.6265 69.5128 44.5171C70.0049 44.3695 70.5076 44.2797 71.0077 44.1735C71.3503 44.1006 71.6876 44.0036 72.0337 43.9504C72.5047 43.8779 72.9804 43.8587 73.4548 43.8224C73.8441 43.7928 74.2311 43.7441 74.6228 43.7391C75.4073 43.7285 76.193 43.7585 76.9748 43.8471C77.0098 43.8511 77.0449 43.8599 77.0799 43.8641C77.8406 43.9548 78.5971 44.0959 79.3462 44.2805C79.4699 44.3108 79.5907 44.3475 79.7135 44.3801C80.4445 44.5761 81.1693 44.807 81.88 45.0933C81.9071 45.1041 81.9349 45.1134 81.9619 45.1244C82.7611 45.4503 83.5373 45.8302 84.2852 46.2612L84.555 46.4169C87.0057 47.8862 89.1121 49.8973 90.6978 52.3735ZM6.42273 10.5167C7.09386 8.30462 8.68694 6.0467 11.9362 6.03746L11.9763 6.03759C15.2242 6.04778 16.8167 8.30515 17.4876 10.5167H6.42273ZM82.9327 97.7179C82.9327 99.3943 81.5694 100.758 79.8917 100.758H26.3333C24.6582 100.758 23.2949 99.3943 23.2949 97.7179L23.3105 15.9277H23.3107V13.2223C23.3107 10.7097 22.6531 8.20534 21.4189 6.08261L79.8918 6.3609C81.5696 6.3609 82.9329 7.7242 82.9329 9.40062V39.7024C82.8952 39.689 82.8562 39.6823 82.8184 39.669C82.1038 39.4225 81.3734 39.2117 80.6302 39.0306C80.4914 38.9964 80.355 38.9501 80.2155 38.9183C80.1666 38.9072 80.1204 38.89 80.0715 38.8793C79.2649 38.7031 78.45 38.5677 77.6299 38.4736C77.5243 38.4614 77.4182 38.4624 77.3127 38.4516C76.5557 38.3739 75.7996 38.3282 75.045 38.3221C74.8146 38.3205 74.5852 38.3372 74.3546 38.3422C73.7179 38.3552 73.0835 38.3855 72.452 38.4488C72.1954 38.4747 71.9413 38.5129 71.6856 38.547C71.0815 38.6265 70.4807 38.7293 69.8845 38.8551C69.619 38.9113 69.3555 38.9722 69.0918 39.0376C68.5075 39.1837 67.929 39.352 67.3575 39.542C67.096 39.628 66.8347 39.7102 66.5754 39.8054C65.991 40.0209 65.4177 40.2681 64.8482 40.53C64.6171 40.636 64.3824 40.7291 64.1537 40.8427C63.372 41.2325 62.603 41.6567 61.8571 42.1344C61.1818 42.5668 60.5279 43.032 59.8979 43.5282C59.2748 44.0189 58.6762 44.5399 58.1042 45.0893C54.6881 48.3712 52.3159 52.5872 51.2796 57.3182C49.8964 63.6261 51.0537 70.0951 54.5359 75.5325C54.9482 76.1762 55.3897 76.7894 55.8503 77.3806C56.0107 77.5865 56.1854 77.7768 56.3514 77.9767C56.6624 78.3502 56.9753 78.7214 57.3047 79.0721C57.519 79.3003 57.7439 79.5154 57.9662 79.7344C58.2704 80.0342 58.5771 80.3292 58.8946 80.6103C59.1412 80.8272 59.3922 81.0389 59.6476 81.2454C59.9657 81.5046 60.2905 81.7555 60.6217 81.9978C60.8839 82.1898 61.1469 82.3798 61.4169 82.5611C61.7805 82.8055 62.1523 83.0329 62.5273 83.256C62.7752 83.4035 63.0189 83.5564 63.2723 83.6948C63.7967 83.9819 64.3324 84.2434 64.8749 84.49C64.9905 84.5424 65.1008 84.6045 65.2174 84.655C65.9091 84.9564 66.6145 85.2207 67.3296 85.4556C67.4454 85.4934 67.5649 85.5219 67.6813 85.5581C68.2798 85.7453 68.8854 85.9092 69.4966 86.0494C69.572 86.0667 69.6438 86.0932 69.7197 86.1098C69.84 86.1362 69.9614 86.1447 70.0819 86.1693C70.6704 86.2884 71.2619 86.3855 71.8585 86.4605C72.1204 86.4941 72.3814 86.5296 72.6435 86.5548C73.1814 86.6046 73.7214 86.6288 74.2631 86.6424C74.4897 86.6489 74.7169 86.6793 74.9431 86.6793C75.0639 86.6793 75.1826 86.6553 75.3033 86.6536C76.1004 86.6391 76.8978 86.5773 77.6948 86.483C78.0608 86.4405 78.4251 86.3994 78.7884 86.3402C79.5852 86.2086 80.3748 86.0369 81.1542 85.8258C81.5755 85.7123 81.9887 85.5773 82.404 85.4406C82.5795 85.3826 82.7577 85.3398 82.9325 85.2778V97.7179H82.9327Z"
+                        fill="#0F47F2"
+                      />
+                    </svg>
+
+                    {/* Second SVG (inner, centered) */}
+                    <svg
+                      width="52"
+                      height="83"
+                      viewBox="0 0 52 83"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                    >
+                      <path
+                        d="M-0.0078125 0.304688H41.6383V8.92113H-0.0078125V0.304688ZM-0.0078125 24.719H19.6644V33.3355H-0.0078125V24.719ZM-0.0078125 49.1331H19.6644V57.7495H-0.0078125V49.1331ZM-0.0078125 73.667H8.36919V82.0441H-0.0078125V73.667ZM14.2302 73.667H22.6074V82.0441H14.2302V73.667ZM28.4683 73.667H36.8454V82.0441H28.4683V73.667ZM42.7063 73.667H51.0835V82.0441H42.7063V73.667Z"
+                        fill="#60A5FA"
+                      />
+                    </svg>
+                  </div>
+
+                  <h3 className="text-xl text-center text-gray-400 mt-4">
+                    Candidate interview round will shown here once they complete
+                    it
+                  </h3>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      case "Activity":
+        return (
+          <div className="bg-[#F5F9FB] p-4 rounded-xl space-y-4">
+            <h3 className="text-base font-medium text-[#4B5563]">Activity</h3>
+            <div className="space-y-6 border-l-2 border-gray-400">
+              {activities.map((activity, index) => (
+                <div key={index} className="">
+                  <div
+                    className="flex justify-start space-x-2 cursor-pointer"
+                    onClick={() =>
+                      setSelectedActivityIndex(
+                        selectedActivityIndex === index ? null : index,
+                      )
+                    }
+                  >
+                    <hr className="w-[10%] border-t-2 mt-2 border-gray-400" />
+                    <div>
+                      <p className="text-sm text-gray-400 leading-normal">
+                        {activity.date}{" "}
+                      </p>
+                      <p className="text-sm text-gray-400 leading-normal font-medium">
+                        {activity.description}
+                      </p>
+                      {activity.type === "communication_sent" &&
+                        activity.note && (
+                          <div>
+                            <div
+                              className="w-80 bg-white text-sm text-gray-800 p-2 rounded-md mt-1"
+                              dangerouslySetInnerHTML={{
+                                __html: activity.note,
+                              }}
+                            />
+                            <button
+                              onClick={() => { }}
+                              className="text-blue-500 mt-1"
+                            >
+                              Reply ?
+                            </button>
+                          </div>
+                        )}
+                      {/* {activity.note && selectedActivityIndex === index && (
+                          <div className="mt-2">
+                            <p className="text-xs text-gray-400 whitespace-pre-line">
+                              Replies: {activity.note}
+                            </p>
+                          </div>
+                        )} */}
+                    </div>
+                  </div>
+                  {selectedActivityIndex === index && (
+                    <div className="ml-10 mt-2 space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="text"
+                          value={activityReplies[index] || ""}
+                          onChange={(e) => {
+                            const newReplies = [...activityReplies];
+                            newReplies[index] = e.target.value;
+                            setActivityReplies(newReplies);
+                          }}
+                          placeholder="Add a reply..."
+                          className="flex-1 p-2 border border-gray-300 rounded-md text-sm"
+                        />
+                        <button
+                          onClick={() => {
+                            const newActivities = [...activities];
+                            newActivities[index].note =
+                              activityReplies[index] || "Replied via input";
+                            setActivities(newActivities);
+                            setActivityReplies([...activityReplies]);
+                            setSelectedActivityIndex(null);
+                          }}
+                          className="bg-blue-500 text-white p-2 rounded-md"
+                        >
+                          <Send className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case "Notes":
+        // Filter notes based on current view
+        const displayedNotes =
+          notesView === "my"
+            ? notes.filter((note: any) => note.is_team_note && !note.is_community_note)
+            : notes.filter((note: any) => note.is_team_note && note.is_community_note);
+        return (
+          <>
+            <div className="flex flex-col h-full bg-[#F0F0F0] p-3 rounded-lg">
+              {/* Header with Heading and Toggle */}
+              <div className="flex justify-between items-center mb-3 border-b-2 border-gray-200 px-3 pt-1 pb-3">
+                <div className="flex items-center space-x-2">
+                  <MessageSquareText className="w-5 h-5 text-[#4B5563] mt-1" />
+                  <h3 className="text-base font-medium text-[#4B5563]">
+                    Notes about the Person
+                  </h3>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-[#4B5563]">Community</span>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={notesView === "community"}
+                      onChange={(e) =>
+                        setNotesView(e.target.checked ? "community" : "my")
+                      }
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-600"></div>
+                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Notes List */}
+              <div className="flex-1 overflow-y-auto space-y-2 border-gray-200">
+                {isLoadingNotes ? (
+                  <p className="text-gray-500 text-center">Loading notes...</p>
+                ) : displayedNotes.length > 0 ? (
+                  displayedNotes.map((note: any) => (
+                    <div
+                      key={note.noteId}
+                      className="border-b border-gray-200 pb-2"
+                    >
+                      <div className="flex flex-col space-y-2 px-3 py-2 mb-0">
+                        <div className="flex justify-between items-center">
+                          <div className="flex space-x-3 items-center">
+                            <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                              <User className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="flex-1 space-y-0.5">
+                              <h4 className="font-medium text-[#111827] text-sm">
+                                {note.postedBy?.userName ||
+                                  note.organisation?.orgName ||
+                                  "Unknown"}
+                              </h4>
+                              <p className="text-sm text-[#4B5563]">
+                                {note.organisation?.orgName || "Company"}
+                              </p>
+                            </div>
+                          </div>
+                          <p className="text-xs text-[#818283] mt-1">
+                            {new Date(note.posted_at).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              },
+                            )}
+                          </p>
+                        </div>
+                        <div className="bg-white p-3 rounded-lg">
+                          <p className="text-sm text-[#818283] leading-normal">
+                            {note.content}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : notesView === "my" ? (
+                  <div className="flex justify-center items-center rounded-xl">
+                    <div className="flex flex-col items-center justify-center h-full py-12 px-4">
+                      <div className="relative inline-block">
+                        {/* First SVG (outer shape) */}
+                        <svg
+                          width="102"
+                          height="107"
+                          viewBox="0 0 102 107"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M101.056 97.7513L90.3618 81.0519C94.4809 77.6315 97.3464 72.9844 98.5103 67.6711C99.8948 61.3632 98.7376 54.8941 95.2526 49.4568C93.4288 46.6082 91.0719 44.236 88.3437 42.4097V9.40048C88.3437 4.74115 84.5523 0.949914 79.9049 0.949914L11.9709 0.626608C11.9653 0.626608 11.9607 0.625 11.9551 0.625C11.95 0.625 11.9457 0.626608 11.9406 0.626608L11.6104 0.625L11.6102 0.662382C4.39273 0.865369 0.599609 7.06472 0.599609 13.2224V15.9278H17.8995L17.8839 97.718C17.8839 102.377 21.674 106.169 26.3333 106.169H79.8918C84.5523 106.169 88.3437 102.377 88.3437 97.718V91.2884L94.9762 101.645L101.056 97.7513ZM90.6978 52.3735V52.3748C93.4007 56.5955 94.2989 61.6154 93.2262 66.5125C92.159 71.3837 89.2636 75.5485 85.0786 78.2526L84.2829 78.7136C81.5859 80.2747 78.6642 81.092 75.7546 81.2305C75.6745 81.2341 75.5941 81.2349 75.5137 81.2375C75.0363 81.2542 74.5597 81.2517 74.0845 81.2318C73.8927 81.2231 73.7009 81.2064 73.509 81.1918C73.1411 81.165 72.7736 81.1323 72.4085 81.0841C72.0909 81.0408 71.7739 80.9824 71.4566 80.9227C71.2029 80.8758 70.9479 80.8331 70.6963 80.7756C70.3154 80.6883 69.9427 80.5804 69.5709 80.471C69.3654 80.4104 69.1573 80.3583 68.9538 80.2907C68.5912 80.1706 68.2394 80.0273 67.8869 79.8862C67.6767 79.8018 67.4627 79.728 67.2555 79.636C66.945 79.4982 66.6468 79.3381 66.3454 79.1842C66.1089 79.0633 65.8672 78.9534 65.6354 78.8221C65.3909 78.6839 65.1599 78.525 64.9222 78.3758C64.6503 78.2053 64.3733 78.0443 64.1096 77.8593C63.9389 77.7394 63.7808 77.6022 63.6142 77.4765C63.3016 77.2408 62.9854 77.0109 62.6864 76.7542C62.6053 76.6845 62.5328 76.6049 62.4528 76.5339C61.189 75.4113 60.0496 74.108 59.0934 72.6145C58.7506 72.079 58.435 71.5265 58.1479 70.9592C58.1133 70.8912 58.0882 70.82 58.0544 70.7518C54.4801 63.4751 56.0375 54.7316 61.7258 49.1292C61.7534 49.102 61.7774 49.0718 61.8053 49.0448C62.1717 48.6884 62.5655 48.3537 62.9653 48.0245C63.055 47.9506 63.136 47.8688 63.2274 47.7964C63.724 47.4025 64.2401 47.0338 64.7739 46.6919C65.5153 46.2183 66.2887 45.7967 67.0885 45.4301C67.531 45.2271 67.9902 45.0826 68.4433 44.9159C68.8002 44.7842 69.1497 44.6265 69.5128 44.5171C70.0049 44.3695 70.5076 44.2797 71.0077 44.1735C71.3503 44.1006 71.6876 44.0036 72.0337 43.9504C72.5047 43.8779 72.9804 43.8587 73.4548 43.8224C73.8441 43.7928 74.2311 43.7441 74.6228 43.7391C75.4073 43.7285 76.193 43.7585 76.9748 43.8471C77.0098 43.8511 77.0449 43.8599 77.0799 43.8641C77.8406 43.9548 78.5971 44.0959 79.3462 44.2805C79.4699 44.3108 79.5907 44.3475 79.7135 44.3801C80.4445 44.5761 81.1693 44.807 81.88 45.0933C81.9071 45.1041 81.9349 45.1134 81.9619 45.1244C82.7611 45.4503 83.5373 45.8302 84.2852 46.2612L84.555 46.4169C87.0057 47.8862 89.1121 49.8973 90.6978 52.3735ZM6.42273 10.5167C7.09386 8.30462 8.68694 6.0467 11.9362 6.03746L11.9763 6.03759C15.2242 6.04778 16.8167 8.30515 17.4876 10.5167H6.42273ZM82.9327 97.7179C82.9327 99.3943 81.5694 100.758 79.8917 100.758H26.3333C24.6582 100.758 23.2949 99.3943 23.2949 97.7179L23.3105 15.9277H23.3107V13.2223C23.3107 10.7097 22.6531 8.20534 21.4189 6.08261L79.8918 6.3609C81.5696 6.3609 82.9329 7.7242 82.9329 9.40062V39.7024C82.8952 39.689 82.8562 39.6823 82.8184 39.669C82.1038 39.4225 81.3734 39.2117 80.6302 39.0306C80.4914 38.9964 80.355 38.9501 80.2155 38.9183C80.1666 38.9072 80.1204 38.89 80.0715 38.8793C79.2649 38.7031 78.45 38.5677 77.6299 38.4736C77.5243 38.4614 77.4182 38.4624 77.3127 38.4516C76.5557 38.3739 75.7996 38.3282 75.045 38.3221C74.8146 38.3205 74.5852 38.3372 74.3546 38.3422C73.7179 38.3552 73.0835 38.3855 72.452 38.4488C72.1954 38.4747 71.9413 38.5129 71.6856 38.547C71.0815 38.6265 70.4807 38.7293 69.8845 38.8551C69.619 38.9113 69.3555 38.9722 69.0918 39.0376C68.5075 39.1837 67.929 39.352 67.3575 39.542C67.096 39.628 66.8347 39.7102 66.5754 39.8054C65.991 40.0209 65.4177 40.2681 64.8482 40.53C64.6171 40.636 64.3824 40.7291 64.1537 40.8427C63.372 41.2325 62.603 41.6567 61.8571 42.1344C61.1818 42.5668 60.5279 43.032 59.8979 43.5282C59.2748 44.0189 58.6762 44.5399 58.1042 45.0893C54.6881 48.3712 52.3159 52.5872 51.2796 57.3182C49.8964 63.6261 51.0537 70.0951 54.5359 75.5325C54.9482 76.1762 55.3897 76.7894 55.8503 77.3806C56.0107 77.5865 56.1854 77.7768 56.3514 77.9767C56.6624 78.3502 56.9753 78.7214 57.3047 79.0721C57.519 79.3003 57.7439 79.5154 57.9662 79.7344C58.2704 80.0342 58.5771 80.3292 58.8946 80.6103C59.1412 80.8272 59.3922 81.0389 59.6476 81.2454C59.9657 81.5046 60.2905 81.7555 60.6217 81.9978C60.8839 82.1898 61.1469 82.3798 61.4169 82.5611C61.7805 82.8055 62.1523 83.0329 62.5273 83.256C62.7752 83.4035 63.0189 83.5564 63.2723 83.6948C63.7967 83.9819 64.3324 84.2434 64.8749 84.49C64.9905 84.5424 65.1008 84.6045 65.2174 84.655C65.9091 84.9564 66.6145 85.2207 67.3296 85.4556C67.4454 85.4934 67.5649 85.5219 67.6813 85.5581C68.2798 85.7453 68.8854 85.9092 69.4966 86.0494C69.572 86.0667 69.6438 86.0932 69.7197 86.1098C69.84 86.1362 69.9614 86.1447 70.0819 86.1693C70.6704 86.2884 71.2619 86.3855 71.8585 86.4605C72.1204 86.4941 72.3814 86.5296 72.6435 86.5548C73.1814 86.6046 73.7214 86.6288 74.2631 86.6424C74.4897 86.6489 74.7169 86.6793 74.9431 86.6793C75.0639 86.6793 75.1826 86.6553 75.3033 86.6536C76.1004 86.6391 76.8978 86.5773 77.6948 86.483C78.0608 86.4405 78.4251 86.3994 78.7884 86.3402C79.5852 86.2086 80.3748 86.0369 81.1542 85.8258C81.5755 85.7123 81.9887 85.5773 82.404 85.4406C82.5795 85.3826 82.7577 85.3398 82.9325 85.2778V97.7179H82.9327Z"
+                            fill="#0F47F2"
+                          />
+                        </svg>
+
+                        {/* Second SVG (inner, centered) */}
+                        <svg
+                          width="52"
+                          height="83"
+                          viewBox="0 0 52 83"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                        >
+                          <path
+                            d="M-0.0078125 0.304688H41.6383V8.92113H-0.0078125V0.304688ZM-0.0078125 24.719H19.6644V33.3355H-0.0078125V24.719ZM-0.0078125 49.1331H19.6644V57.7495H-0.0078125V49.1331ZM-0.0078125 73.667H8.36919V82.0441H-0.0078125V73.667ZM14.2302 73.667H22.6074V82.0441H14.2302V73.667ZM28.4683 73.667H36.8454V82.0441H28.4683V73.667ZM42.7063 73.667H51.0835V82.0441H42.7063V73.667Z"
+                            fill="#60A5FA"
+                          />
+                        </svg>
+                      </div>
+
+                      <h3 className="text-xl text-center text-gray-400 mt-4">
+                        No Team notes available. You can add a new note below.
+                      </h3>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex justify-center items-center rounded-xl">
+                    <div className="flex flex-col items-center justify-center h-full py-12 px-4">
+                      <div className="relative inline-block">
+                        {/* First SVG (outer shape) */}
+                        <svg
+                          width="102"
+                          height="107"
+                          viewBox="0 0 102 107"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M101.056 97.7513L90.3618 81.0519C94.4809 77.6315 97.3464 72.9844 98.5103 67.6711C99.8948 61.3632 98.7376 54.8941 95.2526 49.4568C93.4288 46.6082 91.0719 44.236 88.3437 42.4097V9.40048C88.3437 4.74115 84.5523 0.949914 79.9049 0.949914L11.9709 0.626608C11.9653 0.626608 11.9607 0.625 11.9551 0.625C11.95 0.625 11.9457 0.626608 11.9406 0.626608L11.6104 0.625L11.6102 0.662382C4.39273 0.865369 0.599609 7.06472 0.599609 13.2224V15.9278H17.8995L17.8839 97.718C17.8839 102.377 21.674 106.169 26.3333 106.169H79.8918C84.5523 106.169 88.3437 102.377 88.3437 97.718V91.2884L94.9762 101.645L101.056 97.7513ZM90.6978 52.3735V52.3748C93.4007 56.5955 94.2989 61.6154 93.2262 66.5125C92.159 71.3837 89.2636 75.5485 85.0786 78.2526L84.2829 78.7136C81.5859 80.2747 78.6642 81.092 75.7546 81.2305C75.6745 81.2341 75.5941 81.2349 75.5137 81.2375C75.0363 81.2542 74.5597 81.2517 74.0845 81.2318C73.8927 81.2231 73.7009 81.2064 73.509 81.1918C73.1411 81.165 72.7736 81.1323 72.4085 81.0841C72.0909 81.0408 71.7739 80.9824 71.4566 80.9227C71.2029 80.8758 70.9479 80.8331 70.6963 80.7756C70.3154 80.6883 69.9427 80.5804 69.5709 80.471C69.3654 80.4104 69.1573 80.3583 68.9538 80.2907C68.5912 80.1706 68.2394 80.0273 67.8869 79.8862C67.6767 79.8018 67.4627 79.728 67.2555 79.636C66.945 79.4982 66.6468 79.3381 66.3454 79.1842C66.1089 79.0633 65.8672 78.9534 65.6354 78.8221C65.3909 78.6839 65.1599 78.525 64.9222 78.3758C64.6503 78.2053 64.3733 78.0443 64.1096 77.8593C63.9389 77.7394 63.7808 77.6022 63.6142 77.4765C63.3016 77.2408 62.9854 77.0109 62.6864 76.7542C62.6053 76.6845 62.5328 76.6049 62.4528 76.5339C61.189 75.4113 60.0496 74.108 59.0934 72.6145C58.7506 72.079 58.435 71.5265 58.1479 70.9592C58.1133 70.8912 58.0882 70.82 58.0544 70.7518C54.4801 63.4751 56.0375 54.7316 61.7258 49.1292C61.7534 49.102 61.7774 49.0718 61.8053 49.0448C62.1717 48.6884 62.5655 48.3537 62.9653 48.0245C63.055 47.9506 63.136 47.8688 63.2274 47.7964C63.724 47.4025 64.2401 47.0338 64.7739 46.6919C65.5153 46.2183 66.2887 45.7967 67.0885 45.4301C67.531 45.2271 67.9902 45.0826 68.4433 44.9159C68.8002 44.7842 69.1497 44.6265 69.5128 44.5171C70.0049 44.3695 70.5076 44.2797 71.0077 44.1735C71.3503 44.1006 71.6876 44.0036 72.0337 43.9504C72.5047 43.8779 72.9804 43.8587 73.4548 43.8224C73.8441 43.7928 74.2311 43.7441 74.6228 43.7391C75.4073 43.7285 76.193 43.7585 76.9748 43.8471C77.0098 43.8511 77.0449 43.8599 77.0799 43.8641C77.8406 43.9548 78.5971 44.0959 79.3462 44.2805C79.4699 44.3108 79.5907 44.3475 79.7135 44.3801C80.4445 44.5761 81.1693 44.807 81.88 45.0933C81.9071 45.1041 81.9349 45.1134 81.9619 45.1244C82.7611 45.4503 83.5373 45.8302 84.2852 46.2612L84.555 46.4169C87.0057 47.8862 89.1121 49.8973 90.6978 52.3735ZM6.42273 10.5167C7.09386 8.30462 8.68694 6.0467 11.9362 6.03746L11.9763 6.03759C15.2242 6.04778 16.8167 8.30515 17.4876 10.5167H6.42273ZM82.9327 97.7179C82.9327 99.3943 81.5694 100.758 79.8917 100.758H26.3333C24.6582 100.758 23.2949 99.3943 23.2949 97.7179L23.3105 15.9277H23.3107V13.2223C23.3107 10.7097 22.6531 8.20534 21.4189 6.08261L79.8918 6.3609C81.5696 6.3609 82.9329 7.7242 82.9329 9.40062V39.7024C82.8952 39.689 82.8562 39.6823 82.8184 39.669C82.1038 39.4225 81.3734 39.2117 80.6302 39.0306C80.4914 38.9964 80.355 38.9501 80.2155 38.9183C80.1666 38.9072 80.1204 38.89 80.0715 38.8793C79.2649 38.7031 78.45 38.5677 77.6299 38.4736C77.5243 38.4614 77.4182 38.4624 77.3127 38.4516C76.5557 38.3739 75.7996 38.3282 75.045 38.3221C74.8146 38.3205 74.5852 38.3372 74.3546 38.3422C73.7179 38.3552 73.0835 38.3855 72.452 38.4488C72.1954 38.4747 71.9413 38.5129 71.6856 38.547C71.0815 38.6265 70.4807 38.7293 69.8845 38.8551C69.619 38.9113 69.3555 38.9722 69.0918 39.0376C68.5075 39.1837 67.929 39.352 67.3575 39.542C67.096 39.628 66.8347 39.7102 66.5754 39.8054C65.991 40.0209 65.4177 40.2681 64.8482 40.53C64.6171 40.636 64.3824 40.7291 64.1537 40.8427C63.372 41.2325 62.603 41.6567 61.8571 42.1344C61.1818 42.5668 60.5279 43.032 59.8979 43.5282C59.2748 44.0189 58.6762 44.5399 58.1042 45.0893C54.6881 48.3712 52.3159 52.5872 51.2796 57.3182C49.8964 63.6261 51.0537 70.0951 54.5359 75.5325C54.9482 76.1762 55.3897 76.7894 55.8503 77.3806C56.0107 77.5865 56.1854 77.7768 56.3514 77.9767C56.6624 78.3502 56.9753 78.7214 57.3047 79.0721C57.519 79.3003 57.7439 79.5154 57.9662 79.7344C58.2704 80.0342 58.5771 80.3292 58.8946 80.6103C59.1412 80.8272 59.3922 81.0389 59.6476 81.2454C59.9657 81.5046 60.2905 81.7555 60.6217 81.9978C60.8839 82.1898 61.1469 82.3798 61.4169 82.5611C61.7805 82.8055 62.1523 83.0329 62.5273 83.256C62.7752 83.4035 63.0189 83.5564 63.2723 83.6948C63.7967 83.9819 64.3324 84.2434 64.8749 84.49C64.9905 84.5424 65.1008 84.6045 65.2174 84.655C65.9091 84.9564 66.6145 85.2207 67.3296 85.4556C67.4454 85.4934 67.5649 85.5219 67.6813 85.5581C68.2798 85.7453 68.8854 85.9092 69.4966 86.0494C69.572 86.0667 69.6438 86.0932 69.7197 86.1098C69.84 86.1362 69.9614 86.1447 70.0819 86.1693C70.6704 86.2884 71.2619 86.3855 71.8585 86.4605C72.1204 86.4941 72.3814 86.5296 72.6435 86.5548C73.1814 86.6046 73.7214 86.6288 74.2631 86.6424C74.4897 86.6489 74.7169 86.6793 74.9431 86.6793C75.0639 86.6793 75.1826 86.6553 75.3033 86.6536C76.1004 86.6391 76.8978 86.5773 77.6948 86.483C78.0608 86.4405 78.4251 86.3994 78.7884 86.3402C79.5852 86.2086 80.3748 86.0369 81.1542 85.8258C81.5755 85.7123 81.9887 85.5773 82.404 85.4406C82.5795 85.3826 82.7577 85.3398 82.9325 85.2778V97.7179H82.9327Z"
+                            fill="#0F47F2"
+                          />
+                        </svg>
+
+                        {/* Second SVG (inner, centered) */}
+                        <svg
+                          width="52"
+                          height="83"
+                          viewBox="0 0 52 83"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                        >
+                          <path
+                            d="M-0.0078125 0.304688H41.6383V8.92113H-0.0078125V0.304688ZM-0.0078125 24.719H19.6644V33.3355H-0.0078125V24.719ZM-0.0078125 49.1331H19.6644V57.7495H-0.0078125V49.1331ZM-0.0078125 73.667H8.36919V82.0441H-0.0078125V73.667ZM14.2302 73.667H22.6074V82.0441H14.2302V73.667ZM28.4683 73.667H36.8454V82.0441H28.4683V73.667ZM42.7063 73.667H51.0835V82.0441H42.7063V73.667Z"
+                            fill="#60A5FA"
+                          />
+                        </svg>
+                      </div>
+
+                      <h3 className="text-xl text-center text-gray-400 mt-4">
+                        No community notes available. You can add a new note
+                        below.
+                      </h3>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Comment Input Section */}
+            <div className="mt-4 p-3 bg-white rounded-tr-lg rounded-tl-lg">
+              <div className="flex space-x-3 border border-gray-200 rounded-lg p-2">
+                <input
+                  type="text"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder={`Type your ${notesView === "my" ? "team" : "community"
+                    } comment!`}
+                  className={`flex-1 px-4 py-2 rounded-lg text-sm ${newComment && !isValidNote ? "border border-red-500" : ""
+                    }`}
+                  onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
+                />
+                <button
+                  onClick={handleAddComment}
+                  disabled={!newComment.trim() || isLoading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </>
+        );
+      default:
+        return null;
+    }
   };
 
 
@@ -483,7 +1762,35 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       }
     };
 
+    const fetchActivity = async () => {
+      try {
+        const apiActivities = await candidateService.getCandidateActivity(
+          candidateDetails.candidate.id,
+          Number(assessmentAppId)
+        );
+        setActivities(apiActivities);
+      } catch (error) {
+        console.error("Error fetching candidate activity:", error);
+      }
+    };
+
+    const fetchNotes = async () => {
+      try {
+        setIsLoadingNotes(true);
+        const fetchedNotes = await candidateService.getCandidateNotes(
+          candidateDetails.candidate.id
+        );
+        setNotes(fetchedNotes);
+      } catch (error) {
+        console.error("Failed to fetch notes:", error);
+      } finally {
+        setIsLoadingNotes(false);
+      }
+    };
+
     fetchAssessmentResults();
+    fetchActivity();
+    fetchNotes();
 
     // Clean-up: when the profile is closed we clear the trigger
     return () => {
@@ -618,12 +1925,11 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
 
 
-  const handleCandidateClick = (candidate: any) => {
+  const handleCandidateClick = async (candidate: any) => {
     setSelectedCandidate(candidate);
+    setProfileTab("Score");
     setShowCandidateProfile(true);
-    setActiveProfileTab("profile");
-    setAssessmentAppId(candidate.id);
-    fetchCandidateDetails(candidate.id);
+    await fetchCandidateDetails(candidate.id);
   };
 
   const handleAccessSubmit = async () => {
@@ -942,7 +2248,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     if (!selectedCandidate) return null;
 
     const details = candidateDetails;
-    const displayCandidate = details?.candidate || selectedCandidate;
+    const candidate = details?.candidate || selectedCandidate;
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-30 z-[60] flex">
@@ -964,496 +2270,112 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
             </div>
 
             {/* Main Content Card */}
-            <div className="overflow-hidden">
-              {/* Profile Header */}
-              <div className="bg-white rounded-3xl shadow-sm p-8 pb-6 mb-4">
-                <div className="flex items-start justify-between mb-4">
-                  {/* Profile Info */}
-                  <div className="flex items-start gap-6">
-                    <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200">
-                      {displayCandidate.profile_picture_url ? (
-                        <img
-                          src={displayCandidate.profile_picture_url}
-                          alt={displayCandidate.full_name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-blue-500 flex items-center justify-center text-white font-semibold text-lg">
-                          {selectedCandidate.avatar}
-                        </div>
-                      )}
-                    </div>
-
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <h1 className="text-2xl font-bold text-gray-900">{displayCandidate.full_name}</h1>
-                        {details?.assessment?.ai_interview?.overall_summary.knowledge && (
-                          <span className="bg-blue-100 text-blue-600 text-sm px-2 py-1 rounded-md font-medium">{details?.assessment?.ai_interview?.overall_summary.knowledge}</span>
-                        )}
-                      </div>
-                      <p className="text-gray-600 mb-2">
-                        {displayCandidate.headline}
-                      </p>
-                      <p className="text-gray-500 text-sm">{displayCandidate.location}</p>
-                    </div>
+            <div className="bg-white rounded-xl overflow-hidden h-full flex flex-col">
+              {/* Header - Mirrors PipelinesSideCard */}
+              <div className="p-4 border-b border-gray-200 space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-xl overflow-hidden flex-shrink-0">
+                    {candidate.profilePicture?.displayImageUrl ? (
+                      <img
+                        src={candidate.profilePicture.displayImageUrl}
+                        alt={candidate.full_name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      candidate.full_name
+                        ?.split(" ")
+                        .map((n: string) => n[0].toUpperCase())
+                        .join("")
+                        .slice(0, 2) || "NA"
+                    )}
                   </div>
-
-                  {/* Contact Info */}
-                  <div className="text-right text-gray-600">
-                    <div className="flex items-center justify-end gap-2 mb-1">
-                      <span className="text-gray-600">{displayCandidate?.premium_data?.email}</span>
-                      <svg width="18" height="18" viewBox="0 0 18 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M7.24465 3.7763e-07H10.672C12.2035 -1.6289e-05 13.4165 -2.45745e-05 14.3658 0.127617C15.3428 0.258967 16.1337 0.535734 16.7573 1.15937C17.3809 1.78301 17.6577 2.5738 17.7891 3.55082C17.9167 4.50016 17.9167 5.71317 17.9167 7.24467V7.33867C17.9167 8.87017 17.9167 10.0832 17.7891 11.0325C17.6577 12.0095 17.3809 12.8003 16.7573 13.424C16.1337 14.0476 15.3428 14.3243 14.3658 14.4558C13.4165 14.5833 12.2035 14.5833 10.672 14.5833H7.24466C5.71319 14.5833 4.50016 14.5833 3.55082 14.4558C2.5738 14.3243 1.78301 14.0476 1.15937 13.424C0.535734 12.8003 0.258967 12.0095 0.127617 11.0325C-2.46738e-05 10.0832 -1.6289e-05 8.87017 3.77668e-07 7.33867V7.24467C-1.6289e-05 5.71317 -2.46738e-05 4.50016 0.127617 3.55082C0.258967 2.5738 0.535734 1.78301 1.15937 1.15937C1.78301 0.535734 2.5738 0.258967 3.55082 0.127617C4.50016 -2.45745e-05 5.71318 -1.6289e-05 7.24465 3.7763e-07ZM3.71738 1.36647C2.87897 1.47918 2.39593 1.69058 2.04325 2.04325C1.69058 2.39593 1.47918 2.87897 1.36647 3.71738C1.25133 4.57376 1.25 5.70267 1.25 7.29167C1.25 8.88067 1.25133 10.0096 1.36647 10.866C1.47918 11.7043 1.69058 12.1874 2.04325 12.5401C2.39593 12.8927 2.87897 13.1042 3.71738 13.2168C4.57376 13.332 5.70265 13.3333 7.29167 13.3333H10.625C12.214 13.3333 13.3429 13.332 14.1993 13.2168C15.0377 13.1042 15.5207 12.8927 15.8734 12.5401C16.2261 12.1874 16.4375 11.7043 16.5502 10.866C16.6653 10.0096 16.6667 8.88067 16.6667 7.29167C16.6667 5.70267 16.6653 4.57376 16.5502 3.71738C16.4375 2.87897 16.2261 2.39593 15.8734 2.04325C15.5207 1.69058 15.0377 1.47918 14.1993 1.36647C13.3429 1.25133 12.214 1.25 10.625 1.25H7.29167C5.70265 1.25 4.57376 1.25133 3.71738 1.36647ZM3.47819 3.55822C3.69918 3.29304 4.09328 3.25722 4.35845 3.47819L6.15753 4.97743C6.93499 5.62533 7.47475 6.07367 7.9305 6.36675C8.37158 6.6505 8.67075 6.74575 8.95833 6.74575C9.24592 6.74575 9.54508 6.6505 9.98617 6.36675C10.4419 6.07367 10.9817 5.62533 11.7592 4.97743L13.5582 3.47819C13.8234 3.25722 14.2175 3.29304 14.4385 3.55822C14.6594 3.82339 14.6236 4.21749 14.3584 4.43848L12.528 5.96383C11.7894 6.57933 11.1907 7.07825 10.6623 7.41808C10.1119 7.77208 9.57592 7.99575 8.95833 7.99575C8.34075 7.99575 7.80475 7.77208 7.25432 7.41808C6.72593 7.07825 6.12727 6.57933 5.38863 5.96383L3.55822 4.43848C3.29304 4.21749 3.25722 3.82339 3.47819 3.55822Z" fill="#818283" />
-                      </svg>
-
-                    </div>
-                    <div className="flex items-center justify-end gap-2">
-                      <span className="text-gray-600">{displayCandidate?.premium_data?.phone}</span>
-                      <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M1.60696 1.05645C3.14316 -0.479744 5.73555 -0.362962 6.80518 1.55365L7.3986 2.617C8.09709 3.8686 7.79946 5.44777 6.77692 6.48281C6.7633 6.50147 6.69106 6.60656 6.6821 6.79017C6.67067 7.02455 6.75388 7.56658 7.59364 8.40633C8.43312 9.24581 8.97506 9.32929 9.2096 9.31786C9.39338 9.3089 9.49854 9.23675 9.51719 9.22304C10.5523 8.2006 12.1315 7.90288 13.383 8.60136L14.4464 9.19488C16.363 10.2645 16.4797 12.8568 14.9436 14.393C14.1218 15.2147 13.0293 15.9448 11.7453 15.9935C9.84261 16.0657 6.6832 15.5743 3.55447 12.4455C0.425696 9.31676 -0.0656668 6.15741 0.00645848 4.25469C0.0551394 2.97075 0.785252 1.87815 1.60696 1.05645ZM5.60754 2.22205C5.05977 1.24062 3.58792 1.01515 2.57679 2.02628C1.86783 2.73523 1.40694 3.51775 1.37703 4.30665C1.31687 5.89338 1.70863 8.66006 4.5243 11.4757C7.33999 14.2914 10.1066 14.6831 11.6934 14.6229C12.4823 14.593 13.2648 14.1322 13.9737 13.4232C14.9848 12.4121 14.7593 10.9402 13.778 10.3925L12.7146 9.79909C12.0532 9.42987 11.124 9.55587 10.4718 10.2081C10.4077 10.2721 9.99988 10.6526 9.27625 10.6878C8.53534 10.7239 7.63862 10.391 6.62386 9.37619C5.60873 8.36107 5.2759 7.46408 5.3122 6.7231C5.34768 5.99937 5.72824 5.59192 5.79188 5.52824C6.44409 4.87601 6.57009 3.94686 6.20096 3.2854L5.60754 2.22205Z" fill="#818283" />
-                      </svg>
-                    </div>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-lg font-bold text-gray-900 truncate">
+                      {candidate.full_name}
+                    </h2>
+                    <p className="text-sm text-gray-500 truncate">
+                      {candidate.headline || "No headline"}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {candidate.location || "No location"}
+                    </p>
                   </div>
                 </div>
 
-                {/* Stats and Actions */}
-                <div className=" flex items-center justify-between">
-                  <div className="flex items-center gap-6">
-                    <div className="w-20">
+                {/* Contact Info */}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <Mail className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-gray-500">
+                        {candidate.premium_data?.email || "—"}
+                      </span>
                     </div>
-
-                    <div className="flex items-center gap-6 text-sm text-gray-600">
-                      <div className="flex items-center gap-2">
-                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
-                          <g clip-path="url(#clip0_2718_9541)">
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M8.961 0.937501H9.039C9.71288 0.937478 10.2748 0.937463 10.7209 0.997433C11.1917 1.06074 11.6168 1.19999 11.9584 1.5416C12.3 1.8832 12.4393 2.3083 12.5026 2.77914C12.5469 3.10884 12.5584 3.50182 12.5615 3.9565C13.0478 3.97211 13.4814 4.00055 13.8668 4.05236C14.746 4.17057 15.4578 4.41966 16.0191 4.98093C16.5803 5.54221 16.8294 6.25392 16.9477 7.13324C17.0625 7.98765 17.0625 9.07935 17.0625 10.4577V10.5423C17.0625 11.9207 17.0625 13.0124 16.9477 13.8668C16.8294 14.7461 16.5803 15.4578 16.0191 16.0191C15.4578 16.5803 14.746 16.8294 13.8668 16.9477C13.0124 17.0625 11.9207 17.0625 10.5423 17.0625H7.45769C6.07937 17.0625 4.98764 17.0625 4.13324 16.9477C3.25392 16.8294 2.54221 16.5803 1.98093 16.0191C1.41966 15.4578 1.17057 14.7461 1.05236 13.8668C0.937478 13.0124 0.937485 11.9207 0.9375 10.5423V10.4577C0.937485 9.07935 0.937478 7.98765 1.05236 7.13324C1.17057 6.25392 1.41966 5.54221 1.98093 4.98093C2.54221 4.41966 3.25392 4.17057 4.13324 4.05236C4.51856 4.00055 4.95216 3.97211 5.43855 3.9565C5.44155 3.50182 5.45311 3.10884 5.49743 2.77914C5.56074 2.3083 5.69999 1.8832 6.0416 1.5416C6.3832 1.19999 6.8083 1.06074 7.27914 0.997433C7.72522 0.937463 8.28713 0.937478 8.961 0.937501ZM6.56385 3.93884C6.84745 3.93749 7.1452 3.9375 7.45768 3.9375H10.5423C10.8548 3.9375 11.1526 3.93749 11.4362 3.93884C11.433 3.5111 11.4225 3.18844 11.3876 2.92904C11.3411 2.58295 11.2606 2.43483 11.1629 2.33709C11.0652 2.23935 10.9171 2.15894 10.5709 2.11241C10.2087 2.0637 9.723 2.0625 9 2.0625C8.277 2.0625 7.7913 2.0637 7.42904 2.11241C7.08295 2.15894 6.93482 2.23935 6.83709 2.33709C6.73935 2.43483 6.65894 2.58295 6.61241 2.92904C6.57753 3.18844 6.56701 3.5111 6.56385 3.93884ZM4.28314 5.16732C3.52857 5.26877 3.09383 5.45903 2.77643 5.77643C2.45902 6.09383 2.26877 6.52857 2.16732 7.28314C2.06369 8.05388 2.0625 9.0699 2.0625 10.5C2.0625 11.9301 2.06369 12.9461 2.16732 13.7169C2.26877 14.4714 2.45902 14.9062 2.77643 15.2236C3.09383 15.541 3.52857 15.7313 4.28314 15.8327C5.05388 15.9363 6.06988 15.9375 7.5 15.9375H10.5C11.9301 15.9375 12.9461 15.9363 13.7169 15.8327C14.4714 15.7313 14.9062 15.541 15.2236 15.2236C15.541 14.9062 15.7313 14.4714 15.8327 13.7169C15.9363 12.9461 15.9375 11.9301 15.9375 10.5C15.9375 9.0699 15.9363 8.05388 15.8327 7.28314C15.7313 6.52857 15.541 6.09383 15.2236 5.77643C14.9062 5.45903 14.4714 5.26877 13.7169 5.16732C12.9461 5.0637 11.9301 5.0625 10.5 5.0625H7.5C6.06988 5.0625 5.05388 5.0637 4.28314 5.16732Z" fill="#4B5563" />
-                            <path d="M12.75 6.75C12.75 7.16422 12.4142 7.5 12 7.5C11.5858 7.5 11.25 7.16422 11.25 6.75C11.25 6.33579 11.5858 6 12 6C12.4142 6 12.75 6.33579 12.75 6.75Z" fill="#4B5563" />
-                            <path d="M6.75 6.75C6.75 7.16422 6.41422 7.5 6 7.5C5.58579 7.5 5.25 7.16422 5.25 6.75C5.25 6.33579 5.58579 6 6 6C6.41422 6 6.75 6.33579 6.75 6.75Z" fill="#4B5563" />
-                          </g>
-                          <defs>
-                            <clipPath id="clip0_2718_9541">
-                              <rect width="18" height="18" fill="white" />
-                            </clipPath>
-                          </defs>
-                        </svg>
-
-                        <span>{displayCandidate.total_experience} Years</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M5.01163 2C5.30061 2 5.53488 2.23985 5.53488 2.53571V3.08051C5.99677 3.07142 6.50563 3.07142 7.06529 3.07143H9.9347C10.4944 3.07142 11.0033 3.07142 11.4651 3.08051V2.53571C11.4651 2.23985 11.6994 2 11.9884 2C12.2773 2 12.5116 2.23985 12.5116 2.53571V3.12649C12.693 3.14065 12.8647 3.15844 13.0272 3.18081C13.8452 3.2934 14.5073 3.53063 15.0294 4.06517C15.5515 4.59972 15.7832 5.27754 15.8932 6.11499C15.9283 6.38262 15.9519 6.67471 15.9677 6.99291C15.9886 7.05076 16 7.11329 16 7.17857C16 7.22809 15.9934 7.27603 15.9812 7.32154C16 7.89436 16 8.54486 16 9.28114V10.75C16 11.0459 15.7657 11.2857 15.4767 11.2857C15.1878 11.2857 14.9535 11.0459 14.9535 10.75V9.32143C14.9535 8.71143 14.9533 8.1805 14.9443 7.71429H2.05564C2.04674 8.1805 2.04651 8.71143 2.04651 9.32143V10.75C2.04651 12.112 2.04762 13.0796 2.14402 13.8137C2.23839 14.5323 2.41537 14.9464 2.71063 15.2486C3.00589 15.5509 3.4103 15.7321 4.11222 15.8287C4.82919 15.9274 5.77431 15.9286 7.10465 15.9286H9.89535C10.1843 15.9286 10.4186 16.1684 10.4186 16.4643C10.4186 16.7601 10.1843 17 9.89535 17H7.0653C5.78314 17 4.76757 17 3.97278 16.8906C3.15481 16.778 2.49275 16.5408 1.97063 16.0063C1.44852 15.4717 1.21681 14.7939 1.10684 13.9564C0.999979 13.1427 0.999986 12.103 1 10.7903V9.28114C0.999993 8.54479 0.999986 7.89436 1.01884 7.32155C1.00657 7.27604 1 7.22809 1 7.17857C1 7.1133 1.0114 7.05075 1.03228 6.9929C1.0481 6.6747 1.07169 6.38261 1.10684 6.11499C1.21681 5.27754 1.44852 4.59972 1.97063 4.06517C2.49275 3.53063 3.15481 3.2934 3.97278 3.18081C4.13528 3.15844 4.30702 3.14065 4.48837 3.12649V2.53571C4.48837 2.23985 4.72264 2 5.01163 2ZM2.1035 6.64286H14.8965C14.8853 6.50758 14.8719 6.37945 14.856 6.25775C14.7616 5.53911 14.5846 5.12508 14.2894 4.82279C13.9941 4.52049 13.5897 4.3393 12.8878 4.24269C12.1708 4.14399 11.2257 4.14286 9.89535 4.14286H7.10465C5.77431 4.14286 4.82919 4.14399 4.11222 4.24269C3.4103 4.3393 3.00589 4.52049 2.71063 4.82279C2.41537 5.12508 2.23839 5.53911 2.14402 6.25775C2.12804 6.37945 2.11467 6.50758 2.1035 6.64286ZM12.686 12C11.8191 12 11.1163 12.7196 11.1163 13.6071C11.1163 14.4947 11.8191 15.2143 12.686 15.2143C13.553 15.2143 14.2558 14.4947 14.2558 13.6071C14.2558 12.7196 13.553 12 12.686 12ZM10.0698 13.6071C10.0698 12.1278 11.2411 10.9286 12.686 10.9286C14.131 10.9286 15.3023 12.1278 15.3023 13.6071C15.3023 14.1531 15.1428 14.6609 14.8689 15.0843L15.8467 16.0855C16.0511 16.2947 16.0511 16.6339 15.8467 16.8431C15.6424 17.0523 15.3111 17.0523 15.1068 16.8431L14.1288 15.8419C13.7153 16.1224 13.2193 16.2857 12.686 16.2857C11.2411 16.2857 10.0698 15.0865 10.0698 13.6071Z" fill="#4B5563" />
-                        </svg>
-                        <span>{displayCandidate.notice_period_days} Days</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
-                          <g clip-path="url(#clip0_2718_9537)">
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M8.961 0.937501H9.039C9.71288 0.937478 10.2748 0.937463 10.7209 0.997433C11.1917 1.06074 11.6168 1.19999 11.9584 1.5416C12.3 1.8832 12.4393 2.3083 12.5026 2.77914C12.5469 3.10884 12.5584 3.50182 12.5615 3.9565C13.0478 3.97211 13.4814 4.00055 13.8668 4.05236C14.746 4.17057 15.4578 4.41966 16.0191 4.98093C16.5803 5.54221 16.8294 6.25392 16.9477 7.13324C17.0625 7.98765 17.0625 9.07935 17.0625 10.4577V10.5423C17.0625 11.9207 17.0625 13.0124 16.9477 13.8668C16.8294 14.7461 16.5803 15.4578 16.0191 16.0191C15.4578 16.5803 14.746 16.8294 13.8668 16.9477C13.0124 17.0625 11.9207 17.0625 10.5423 17.0625H7.45769C6.07937 17.0625 4.98764 17.0625 4.13324 16.9477C3.25392 16.8294 2.54221 16.5803 1.98093 16.0191C1.41966 15.4578 1.17057 14.7461 1.05236 13.8668C0.937478 13.0124 0.937485 11.9207 0.9375 10.5423V10.4577C0.937485 9.07935 0.937478 7.98765 1.05236 7.13324C1.17057 6.25392 1.41966 5.54221 1.98093 4.98093C2.54221 4.41966 3.25392 4.17057 4.13324 4.05236C4.51856 4.00055 4.95216 3.97211 5.43855 3.9565C5.44155 3.50182 5.45311 3.10884 5.49743 2.77914C5.56074 2.3083 5.69999 1.8832 6.0416 1.5416C6.3832 1.19999 6.8083 1.06074 7.27914 0.997433C7.72522 0.937463 8.28713 0.937478 8.961 0.937501ZM6.56385 3.93884C6.84745 3.93749 7.1452 3.9375 7.45768 3.9375H10.5423C10.8548 3.9375 11.1526 3.93749 11.4362 3.93884C11.433 3.5111 11.4225 3.18844 11.3876 2.92904C11.3411 2.58295 11.2606 2.43483 11.1629 2.33709C11.0652 2.23935 10.9171 2.15894 10.5709 2.11241C10.2087 2.0637 9.723 2.0625 9 2.0625C8.277 2.0625 7.7913 2.0637 7.42904 2.11241C7.08295 2.15894 6.93482 2.23935 6.83709 2.33709C6.73935 2.43483 6.65894 2.58295 6.61241 2.92904C6.57753 3.18844 6.56701 3.5111 6.56385 3.93884ZM4.28314 5.16732C3.52857 5.26877 3.09383 5.45903 2.77643 5.77643C2.45902 6.09383 2.26877 6.52857 2.16732 7.28314C2.06369 8.05388 2.0625 9.0699 2.0625 10.5C2.0625 11.9301 2.06369 12.9461 2.16732 13.7169C2.26877 14.4714 2.45902 14.9062 2.77643 15.2236C3.09383 15.541 3.52857 15.7313 4.28314 15.8327C5.05388 15.9363 6.06988 15.9375 7.5 15.9375H10.5C11.9301 15.9375 12.9461 15.9363 13.7169 15.8327C14.4714 15.7313 14.9062 15.541 15.2236 15.2236C15.541 14.9062 15.7313 14.4714 15.8327 13.7169C15.9363 12.9461 15.9375 11.9301 15.9375 10.5C15.9375 9.0699 15.9363 8.05388 15.8327 7.28314C15.7313 6.52857 15.541 6.09383 15.2236 5.77643C14.9062 5.45903 14.4714 5.26877 13.7169 5.16732C12.9461 5.0637 11.9301 5.0625 10.5 5.0625H7.5C6.06988 5.0625 5.05388 5.0637 4.28314 5.16732ZM9 6.9375C9.31065 6.9375 9.5625 7.18934 9.5625 7.5V7.50765C10.3791 7.71338 11.0625 8.35725 11.0625 9.24998C11.0625 9.56063 10.8106 9.81248 10.5 9.81248C10.1894 9.81248 9.9375 9.56063 9.9375 9.24998C9.9375 8.96198 9.61815 8.56253 9 8.56253C8.38185 8.56253 8.0625 8.96198 8.0625 9.24998C8.0625 9.53805 8.38185 9.9375 9 9.9375C10.0387 9.9375 11.0625 10.6574 11.0625 11.75C11.0625 12.6428 10.3791 13.2866 9.5625 13.4924V13.5C9.5625 13.8107 9.31065 14.0625 9 14.0625C8.68935 14.0625 8.4375 13.8107 8.4375 13.5V13.4924C7.6209 13.2866 6.9375 12.6428 6.9375 11.75C6.9375 11.4394 7.18934 11.1875 7.5 11.1875C7.81065 11.1875 8.0625 11.4394 8.0625 11.75C8.0625 12.038 8.38185 12.4375 9 12.4375C9.61815 12.4375 9.9375 12.038 9.9375 11.75C9.9375 11.462 9.61815 11.0625 9 11.0625C7.96133 11.0625 6.9375 10.3427 6.9375 9.24998C6.9375 8.35725 7.6209 7.71338 8.4375 7.50765V7.5C8.4375 7.18934 8.68935 6.9375 9 6.9375Z" fill="#4B5563" />
-                          </g>
-                          <defs>
-                            <clipPath id="clip0_2718_9537">
-                              <rect width="18" height="18" fill="white" />
-                            </clipPath>
-                          </defs>
-                        </svg>
-                        <span>{displayCandidate.current_salary} LPA</span>
-                      </div>
+                    {candidate.premium_data?.email && (
+                      <button onClick={() => handleCopy(candidate.premium_data!.email!)}>
+                        <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <Phone className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-gray-500">
+                        {candidate.premium_data?.phone || "—"}
+                      </span>
                     </div>
+                    {candidate.premium_data?.phone && (
+                      <div className="flex space-x-2">
+                        <button onClick={() => handleWhatsApp(candidate.premium_data!.phone!)}>
+                          <FontAwesomeIcon icon={faWhatsapp} className="text-gray-400 hover:text-gray-600" />
+                        </button>
+                        <button onClick={() => handleCopy(candidate.premium_data!.phone!)}>
+                          <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                        </button>
+                      </div>
+                    )}
                   </div>
+                </div>
 
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={handleMoveToNext}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors">
-                      <MoveCandidateIcon />
-                      Move to Next Round
-                    </button>
-                    <button
-                      onClick={handleArchive}
-                      className="border border-gray-300 hover:bg-gray-50 p-2 rounded-lg transition-colors">
-                      <ArchiveIcon />
-                    </button>
-                  </div>
+                {/* Social Links (visible if available) */}
+                <div className="flex space-x-3">
+                  {candidate.premium_data?.linkedin_url && (
+                    <a href={candidate.premium_data.linkedin_url} target="_blank" rel="noopener noreferrer">
+                      <Linkedin className="w-6 h-6 text-gray-400 hover:text-blue-600" />
+                    </a>
+                  )}
+                  {candidate.premium_data?.github_url && (
+                    <a href={candidate.premium_data.github_url} target="_blank" rel="noopener noreferrer">
+                      <Github className="w-6 h-6 text-gray-400 hover:text-gray-600" />
+                    </a>
+                  )}
+                  {candidate.premium_data?.portfolio_url && (
+                    <a href={candidate.premium_data.portfolio_url} target="_blank" rel="noopener noreferrer">
+                      <Link className="w-6 h-6 text-gray-400 hover:text-gray-600" />
+                    </a>
+                  )}
                 </div>
               </div>
 
-              {/* Content Sections */}
-              <div className="">
-
-                {/* Profile Summary */}
-                <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Profile Summary</h2>
-                  <p className="text-gray-600 text-sm leading-relaxed">
-                    {displayCandidate.profile_summary}
-                  </p>
-                </section>
-
-                {/* Experience */}
-                <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-6">Experience</h2>
-
-                  {displayCandidate.experience?.map((exp: any, index: any) => {
-                    // Generate company initial for icon
-                    const companyInitial = exp.company.charAt(0).toUpperCase();
-                    const colors = ['bg-orange-500', 'bg-blue-500', 'bg-purple-500'];
-                    const colorClass = colors[index % colors.length];
-
-                    return (
-                      <div key={index} className="flex gap-4 mb-4">
-                        <div className={`w-8 h-8 ${index === 0 ? "" : "pt-3"} ${colorClass} rounded-full flex items-center justify-center flex-shrink-0`}>
-                          <span className="text-white font-bold text-lg">{companyInitial}</span>
-                        </div>
-                        <div className={`flex-1 ${index === 0 ? "" : "pt-3 border-t border-gray-200"}`}>
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h3 className="font-semibold text-gray-900">{exp.job_title}</h3>
-                              <p className="text-gray-600 text-sm">{exp.company} | {exp.location}</p>
-                              <span className="text-gray-500 text-sm">
-                                {exp.start_date} - {exp.is_current ? "Present" : exp.end_date}
-                              </span>
-                            </div>
-
-                          </div>
-                          <p className="text-gray-700 text-sm">{exp.description}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </section>
-
-                {/* Skills */}
-                <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Skills</h2>
-
-                  {/* Resume Skills */}
-                  <div className="mb-4">
-                    <h3 className="text-sm font-medium text-gray-700 mb-3">Resume Skills</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {displayCandidate.skills_data?.endorsements?.slice(0, 11).map((s: any, index: any) => (
-                        <span key={`resume-${index}`} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                          {s.skill_endorsed}
-                        </span>
-                      ))}
-                    </div>
-                    <button className="text-blue-600 text-sm mt-2 hover:underline">Show more verified skills</button>
-                  </div>
-
-                  {/* Resume Skills (Second Row) */}
-                  <div className="mb-6">
-                    <h3 className="text-sm font-medium text-gray-700 mb-3">Resume Skills</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {displayCandidate.skills_data?.skills_mentioned?.slice(0, 11).map((s: any, index: any) => (
-                        <span key={`resume-${index}`} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                          {s.skill}
-                        </span>
-                      ))}
-                    </div>
-                    <button className="text-blue-600 text-sm mt-2 hover:underline">Show more skills</button>
-                  </div>
-                </section>
-
-                {/* Assessment */}
-                <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold text-gray-900">Assessment</h2>
-                    <span className="text-gray-500 text-sm">{date}</span>
-                  </div>
-
-                  {/* Assessment Tabs */}
-                  <div className="flex mb-6 border-b border-gray-200">
+              {/* Tabbed Details - Exact copy of StageDetails.tsx logic */}
+              <div className="flex-1 overflow-hidden flex flex-col">
+                <div className="flex border-b border-gray-200">
+                  {["Score", "Profile", "Coding", "Interview", "Activity", "Notes"].map((tab: any) => (
                     <button
-                      className={`px-4 py-2 text-sm font-medium ${!showAssessmentModal ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"}`}
-                      onClick={() => setShowAssessmentModal(false)}
+                      key={tab}
+                      onClick={() => setProfileTab(tab)}
+                      className={`py-3 px-4 text-sm font-medium transition-colors ${profileTab === tab
+                        ? "text-blue-600 border-b-2 border-blue-600"
+                        : "text-gray-500 hover:text-gray-700"
+                        }`}
                     >
-                      Coding Round
+                      {tab}
                     </button>
-                    <button
-                      className={`px-4 py-2 text-sm font-medium ${showAssessmentModal ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"}`}
-                      onClick={() => setShowAssessmentModal(true)}
-                    >
-                      AI Interview
-                    </button>
-                  </div>
-
-                  {showAssessmentModal ? (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <h3 className="text-base font-medium text-gray-900 mb-6">Overall Score</h3>
-
-                        {/* Resume Score */}
-                        <div className="mb-6 flex justify-between items-center gap-4">
-                          <div className="flex flex-col items-center justify-center rounded-lg  w-48 p-4 bg-[#ECF1FF]">
-                            <span className="text-sm text-gray-600">Resume</span>
-                            <span className="text-xl font-[400] text-[#EAB308]">{displayCandidate.ai_interview_report?.score.resume}%</span>
-                          </div>
-                          <div className="flex flex-col items-center justify-center rounded-lg  w-48 p-4 bg-[#ECF1FF]">
-                            <span className="text-sm text-gray-600">Knowledge</span>
-                            <span className="text-xl font-[400] text-[#16A34A]">{details?.assessment?.ai_interview?.overall_summary.knowledge}%</span>
-                          </div>
-                          <div className="flex flex-col items-center justify-center rounded-lg  w-48 p-4 bg-[#ECF1FF]">
-                            <span className="text-sm text-gray-600">Communication</span>
-                            <span className="text-xl font-[400] text-[#0F47F2]">{details?.assessment?.ai_interview?.overall_summary?.communication}%</span>
-                          </div>
-                        </div>
-                        {/* Vetted Skills */}
-                        <div>
-                          <div className="flex items-center gap-2 mb-4">
-                            <h4 className="text-base font-medium text-gray-900">Vetted Skills</h4>
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
-                              <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-                              <path d="M8 7v4m0-6h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                            </svg>
-                          </div>
-                          <div className="flex flex-wrap gap-2 mb-4">
-                            {displayCandidate?.ai_interview_report?.technicalSkills?.strongSkills?.map((skill: any, index: any) => (
-                              <div key={index} className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-                                <span className="text-blue-800 text-sm font-medium mr-2">{skill.skill}</span>
-                                <div className="flex items-center">
-                                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M9.41171 2.75414C9.08354 3.1826 8.71321 3.84365 8.17527 4.80869L7.90218 5.29857C7.88572 5.3281 7.86947 5.35735 7.85338 5.38631C7.60277 5.83731 7.39125 6.21797 7.05041 6.47671C6.7059 6.73824 6.28592 6.83262 5.79783 6.94231C5.76647 6.94935 5.73482 6.95647 5.70288 6.9637L5.17259 7.08368C4.12649 7.32037 3.41484 7.48322 2.92739 7.67532C2.45172 7.86277 2.35132 8.01635 2.31305 8.13943C2.27266 8.26931 2.27146 8.46798 2.55582 8.91973C2.84445 9.37823 3.33136 9.95006 4.04347 10.7828L4.40498 11.2056C4.42599 11.2301 4.44682 11.2544 4.46742 11.2785C4.80327 11.6702 5.0833 11.9968 5.21175 12.4099C5.33942 12.8205 5.29711 13.2519 5.2458 13.775C5.24265 13.8071 5.23947 13.8395 5.23629 13.8723L5.18163 14.4363C5.07406 15.5465 5.00152 16.3109 5.02606 16.8615C5.05053 17.4111 5.16662 17.5631 5.25892 17.6331C5.34101 17.6954 5.49275 17.7644 5.98711 17.6227C6.4895 17.4788 7.1572 17.1733 8.13672 16.7223L8.63321 16.4937C8.66379 16.4796 8.69412 16.4656 8.72412 16.4517C9.17812 16.2419 9.57196 16.0597 10.0017 16.0597C10.4315 16.0597 10.8253 16.2419 11.2793 16.4517C11.3094 16.4656 11.3396 16.4796 11.3702 16.4937L11.8667 16.7223C12.8462 17.1733 13.514 17.4788 14.0164 17.6227C14.5107 17.7644 14.6625 17.6954 14.7445 17.6331C14.8368 17.5631 14.9529 17.4111 14.9774 16.8615C15.0019 16.3109 14.9294 15.5465 14.8218 14.4363L14.7671 13.8723C14.764 13.8395 14.7608 13.8071 14.7576 13.775C14.7064 13.2519 14.664 12.8205 14.7917 12.4099C14.9201 11.9968 15.2002 11.6702 15.536 11.2784C15.5566 11.2544 15.5775 11.2301 15.5985 11.2056L15.96 10.7828C16.672 9.95006 17.159 9.37823 17.4476 8.91973C17.732 8.46798 17.7308 8.26931 17.6904 8.13943C17.6521 8.01635 17.5517 7.86277 17.076 7.67532C16.5886 7.48322 15.877 7.32037 14.8309 7.08368L14.3005 6.9637C14.2686 6.95647 14.237 6.94935 14.2056 6.9423C13.7175 6.83262 13.2975 6.73824 12.953 6.47671C12.6122 6.21797 12.4007 5.83731 12.15 5.38631C12.134 5.35735 12.1177 5.3281 12.1013 5.29857L11.8282 4.80869C11.2902 3.84365 10.9199 3.1826 10.5918 2.75414C10.264 2.32609 10.0965 2.28906 10.0017 2.28906C9.90696 2.28906 9.73946 2.32609 9.41171 2.75414ZM8.41929 1.99415C8.81646 1.47542 9.30746 1.03906 10.0017 1.03906C10.696 1.03906 11.187 1.47542 11.5842 1.99415C11.9745 2.50384 12.3884 3.24636 12.8942 4.15386L13.193 4.68995C13.5202 5.27675 13.6039 5.40141 13.7089 5.4811C13.8099 5.55779 13.9402 5.60056 14.5764 5.74451L15.1598 5.8765C16.1395 6.09813 16.9465 6.28072 17.5344 6.51236C18.1445 6.75282 18.6785 7.10723 18.884 7.76825C19.0875 8.42248 18.8588 9.02431 18.5055 9.58565C18.1621 10.1311 17.6137 10.7722 16.9439 11.5556L16.5485 12.018C16.1176 12.5217 16.0276 12.6451 15.9853 12.7811C15.9422 12.9198 15.9462 13.0801 16.0113 13.7517L16.071 14.3668C16.1724 15.4136 16.2551 16.2671 16.2261 16.9171C16.1967 17.5788 16.0464 18.2141 15.5004 18.6287C14.944 19.051 14.2969 19.0034 13.672 18.8244C13.0662 18.6508 12.311 18.303 11.3938 17.8807L10.8475 17.6291C10.2496 17.3539 10.1216 17.3097 10.0017 17.3097C9.88179 17.3097 9.75379 17.3539 9.15604 17.6291L8.60962 17.8807C7.69252 18.303 6.93725 18.6508 6.33142 18.8244C5.7066 19.0034 5.05937 19.051 4.50311 18.6287C3.95704 18.2141 3.80677 17.5788 3.77729 16.9171C3.74833 16.2671 3.83107 15.4135 3.93252 14.3668L3.99212 13.7517C4.05721 13.0801 4.06127 12.9198 4.01813 12.7811C3.97582 12.6451 3.88582 12.5217 3.45498 12.018L3.05958 11.5556C2.38971 10.7723 1.84132 10.1311 1.49798 9.58565C1.14462 9.02431 0.91599 8.42248 1.11943 7.76825C1.32499 7.10723 1.85893 6.75282 2.46909 6.51236C3.05689 6.28072 3.86399 6.09813 4.84369 5.8765L4.89674 5.8645L5.42703 5.74451C6.06322 5.60057 6.19356 5.55779 6.29461 5.4811C6.39957 5.40141 6.48325 5.27675 6.81037 4.68995L7.1092 4.15385C7.61505 3.24636 8.02894 2.50384 8.41929 1.99415Z" fill="#FFC107" />
-                                  </svg>
-                                  <span className="text-blue-800 text-sm ml-1">{skill.rating}</span>
-                                </div>
-                              </div>
-                            )) || []}
-                            {displayCandidate?.ai_interview_report?.technicalSkills?.weakSkills?.map((skill: any, index: any) => (
-                              <div key={index} className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-                                <span className="text-blue-800 text-sm font-medium mr-2">{skill.skill}</span>
-                                <div className="flex items-center">
-                                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M9.41171 2.75414C9.08354 3.1826 8.71321 3.84365 8.17527 4.80869L7.90218 5.29857C7.88572 5.3281 7.86947 5.35735 7.85338 5.38631C7.60277 5.83731 7.39125 6.21797 7.05041 6.47671C6.7059 6.73824 6.28592 6.83262 5.79783 6.94231C5.76647 6.94935 5.73482 6.95647 5.70288 6.9637L5.17259 7.08368C4.12649 7.32037 3.41484 7.48322 2.92739 7.67532C2.45172 7.86277 2.35132 8.01635 2.31305 8.13943C2.27266 8.26931 2.27146 8.46798 2.55582 8.91973C2.84445 9.37823 3.33136 9.95006 4.04347 10.7828L4.40498 11.2056C4.42599 11.2301 4.44682 11.2544 4.46742 11.2785C4.80327 11.6702 5.0833 11.9968 5.21175 12.4099C5.33942 12.8205 5.29711 13.2519 5.2458 13.775C5.24265 13.8071 5.23947 13.8395 5.23629 13.8723L5.18163 14.4363C5.07406 15.5465 5.00152 16.3109 5.02606 16.8615C5.05053 17.4111 5.16662 17.5631 5.25892 17.6331C5.34101 17.6954 5.49275 17.7644 5.98711 17.6227C6.4895 17.4788 7.1572 17.1733 8.13672 16.7223L8.63321 16.4937C8.66379 16.4796 8.69412 16.4656 8.72412 16.4517C9.17812 16.2419 9.57196 16.0597 10.0017 16.0597C10.4315 16.0597 10.8253 16.2419 11.2793 16.4517C11.3094 16.4656 11.3396 16.4796 11.3702 16.4937L11.8667 16.7223C12.8462 17.1733 13.514 17.4788 14.0164 17.6227C14.5107 17.7644 14.6625 17.6954 14.7445 17.6331C14.8368 17.5631 14.9529 17.4111 14.9774 16.8615C15.0019 16.3109 14.9294 15.5465 14.8218 14.4363L14.7671 13.8723C14.764 13.8395 14.7608 13.8071 14.7576 13.775C14.7064 13.2519 14.664 12.8205 14.7917 12.4099C14.9201 11.9968 15.2002 11.6702 15.536 11.2784C15.5566 11.2544 15.5775 11.2301 15.5985 11.2056L15.96 10.7828C16.672 9.95006 17.159 9.37823 17.4476 8.91973C17.732 8.46798 17.7308 8.26931 17.6904 8.13943C17.6521 8.01635 17.5517 7.86277 17.076 7.67532C16.5886 7.48322 15.877 7.32037 14.8309 7.08368L14.3005 6.9637C14.2686 6.95647 14.237 6.94935 14.2056 6.9423C13.7175 6.83262 13.2975 6.73824 12.953 6.47671C12.6122 6.21797 12.4007 5.83731 12.15 5.38631C12.134 5.35735 12.1177 5.3281 12.1013 5.29857L11.8282 4.80869C11.2902 3.84365 10.9199 3.1826 10.5918 2.75414C10.264 2.32609 10.0965 2.28906 10.0017 2.28906C9.90696 2.28906 9.73946 2.32609 9.41171 2.75414ZM8.41929 1.99415C8.81646 1.47542 9.30746 1.03906 10.0017 1.03906C10.696 1.03906 11.187 1.47542 11.5842 1.99415C11.9745 2.50384 12.3884 3.24636 12.8942 4.15386L13.193 4.68995C13.5202 5.27675 13.6039 5.40141 13.7089 5.4811C13.8099 5.55779 13.9402 5.60056 14.5764 5.74451L15.1598 5.8765C16.1395 6.09813 16.9465 6.28072 17.5344 6.51236C18.1445 6.75282 18.6785 7.10723 18.884 7.76825C19.0875 8.42248 18.8588 9.02431 18.5055 9.58565C18.1621 10.1311 17.6137 10.7722 16.9439 11.5556L16.5485 12.018C16.1176 12.5217 16.0276 12.6451 15.9853 12.7811C15.9422 12.9198 15.9462 13.0801 16.0113 13.7517L16.071 14.3668C16.1724 15.4136 16.2551 16.2671 16.2261 16.9171C16.1967 17.5788 16.0464 18.2141 15.5004 18.6287C14.944 19.051 14.2969 19.0034 13.672 18.8244C13.0662 18.6508 12.311 18.303 11.3938 17.8807L10.8475 17.6291C10.2496 17.3539 10.1216 17.3097 10.0017 17.3097C9.88179 17.3097 9.75379 17.3539 9.15604 17.6291L8.60962 17.8807C7.69252 18.303 6.93725 18.6508 6.33142 18.8244C5.7066 19.0034 5.05937 19.051 4.50311 18.6287C3.95704 18.2141 3.80677 17.5788 3.77729 16.9171C3.74833 16.2671 3.83107 15.4135 3.93252 14.3668L3.99212 13.7517C4.05721 13.0801 4.06127 12.9198 4.01813 12.7811C3.97582 12.6451 3.88582 12.5217 3.45498 12.018L3.05958 11.5556C2.38971 10.7723 1.84132 10.1311 1.49798 9.58565C1.14462 9.02431 0.91599 8.42248 1.11943 7.76825C1.32499 7.10723 1.85893 6.75282 2.46909 6.51236C3.05689 6.28072 3.86399 6.09813 4.84369 5.8765L4.89674 5.8645L5.42703 5.74451C6.06322 5.60057 6.19356 5.55779 6.29461 5.4811C6.39957 5.40141 6.48325 5.27675 6.81037 4.68995L7.1092 4.15385C7.61505 3.24636 8.02894 2.50384 8.41929 1.99415Z" fill="#FFC107" />
-                                  </svg>
-                                  <span className="text-blue-800 text-sm ml-1">{skill.rating}</span>
-                                </div>
-                              </div>
-                            )) || []}
-                          </div>
-                          <button className="text-blue-600 text-sm hover:underline flex items-center gap-1">
-                            Show more skills
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Right Side - General Summary */}
-                      <div className="border-l border-gray-200 pl-4">
-                        <h3 className="text-base font-medium text-gray-900 mb-6">General Summary</h3>
-                        <p className="text-gray-700 text-sm leading-relaxed mb-8">
-                          {details.assessment?.ai_interview?.general_summary}
-                        </p>
-
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                          <h4 className="text-base font-medium text-red-800 mb-3">Potential Red Flags</h4>
-                          <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
-                            {displayCandidate.ai_interview_report?.potential_red_flags?.map((flag: any, index: any) => (
-                              <li key={index}>{flag}</li>
-                            )) || []}
-                          </ol>
-                        </div>
-
-                        <button className="text-blue-600 text-sm mt-6 hover:underline flex items-center gap-1">
-                          Show Interview Details
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <div className="flex items-center justify-between mb-6">
-                        <span className="text-base font-medium text-gray-900">Questions <span className="text-gray-500">({totalQuestions})</span></span>
-                        <span className="text-base font-medium">Score: <span className="text-xl text-blue-600 font-bold bg-blue-50 rounded-md px-2">{codingQuestions?.reduce((sum, item) => sum + item.score, 0)}</span>/{totalQuestions}</span>
-                      </div>
-
-                      {/* Question Items */}
-                      <div className="space-y-4">
-                        {codingQuestions?.map((item: any, index: any) => {
-                          const lines = item.question.split("\n");
-                          const visibleLines = isExpanded ? lines : lines.slice(0, 1);
-                          const hiddenLineCount = Math.max(0, lines.length - 2);
-
-                          return (
-                            <div key={item.id} className="bg-[#F5F9FB] border border-gray-400 rounded-lg">
-                              <div className="flex items-start justify-left gap-4 m-4">
-                                <span className="text-base font-[400] text-gray-600">Q{index + 1}.</span>
-                                <p className="text-sm text-gray-400 flex-1 whitespace-pre-line leading-relaxed">{visibleLines.join("\n")}{!isExpanded && hiddenLineCount > 0 && "... "}</p>
-                              </div>
-
-                              <div className="px-4 border border-gray-200 bg-white rounded-lg">
-                                <div className={`flex items-center justify-between text-sm text-gray-500 ml-2 pl-8 ${!isExpanded && hiddenLineCount > 0 && "border-b border-gray-200"} py-2`}>
-                                  <div className="text-sm text-gray-400">{item.language || ' '}</div>
-                                  <div className="flex items-center gap-3">
-                                    <button className="text-gray-400 hover:text-gray-600 flex items-center gap-1"
-                                      onClick={() => setIsExpanded(!isExpanded)}
-                                    >
-                                      <svg width="16" height="16" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
-                                        <path d="M1 9.5C1 5.49306 1 3.48959 2.2448 2.2448C3.48959 1 5.49306 1 9.5 1C13.5069 1 15.5104 1 16.7552 2.2448C18 3.48959 18 5.49306 18 9.5C18 13.5069 18 15.5104 16.7552 16.7552C15.5104 18 13.5069 18 9.5 18C5.49306 18 3.48959 18 2.2448 16.7552C1 15.5104 1 13.5069 1 9.5Z" stroke="#818283" />
-                                        <path d="M13.75 5.25781H11.2M13.75 5.25781V7.80781M13.75 5.25781L10.775 8.23281M5.25 13.7578H7.8M5.25 13.7578V11.2078M5.25 13.7578L8.225 10.7828" stroke="#818283" stroke-linecap="round" stroke-linejoin="round" />
-                                      </svg>
-
-                                      <span className="text-sm">{isExpanded ? "Collapse" : "Expand"}{" "}</span>
-                                    </button>
-                                    <button className="text-gray-400 hover:text-gray-600 flex items-center gap-1">
-                                      <svg width="16" height="16" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
-                                        <path d="M1 9C1 5.22876 1 3.34314 2.17158 2.17158C3.34314 1 5.22876 1 9 1C12.7712 1 14.6569 1 15.8284 2.17158C17 3.34314 17 5.22876 17 9C17 12.7712 17 14.6569 15.8284 15.8284C14.6569 17 12.7712 17 9 17C5.22876 17 3.34314 17 2.17158 15.8284C1 14.6569 1 12.7712 1 9Z" stroke="#818283" />
-                                        <path d="M5 13.8016V6.60156" stroke="#818283" stroke-linecap="round" />
-                                        <path d="M9 13.7797V4.17969" stroke="#818283" stroke-linecap="round" />
-                                        <path d="M13 13.8203V9.82031" stroke="#818283" stroke-linecap="round" />
-                                      </svg>
-                                      <span className="text-sm">{item.difficulty}</span>
-                                    </button>
-                                    <button className={`${item.status === 'Pass' ? 'text-[#007A5A]' : item.status === 'Fail' ? 'text-[#ED051C]' : 'text-yellow-600'} hover:text-gray-600 flex items-center gap-1`}>
-                                      {item.status === 'Pass' ? (
-                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
-                                          <g clip-path="url(#clip0_2726_638)">
-                                            <path d="M8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16Z" fill="#2FD08D" />
-                                            <path d="M6.068 7.983L7.809 9.7295L12.374 5.134L13 5.769L7.809 11L5.4415 8.6185L6.068 7.983ZM7.123 7.828L9.932 5L10.5585 5.635L7.75 8.465L7.123 7.828ZM5.985 10.243L5.367 10.866L3 8.485L3.6255 7.85L5.985 10.243Z" fill="white" />
-                                          </g>
-                                          <defs>
-                                            <clipPath id="clip0_2726_638">
-                                              <rect width="16" height="16" fill="white" />
-                                            </clipPath>
-                                          </defs>
-                                        </svg>
-                                      )
-                                        : item.status === 'Fail' ? (
-                                          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <g clip-path="url(#clip0_2216_8607)">
-                                              <path d="M6.5 13C10.0899 13 13 10.0899 13 6.5C13 2.91015 10.0899 0 6.5 0C2.91015 0 0 2.91015 0 6.5C0 10.0899 2.91015 13 6.5 13Z" fill="#FD374B" />
-                                              <path d="M8.30306 8.98304C8.21373 8.9834 8.12523 8.96594 8.04272 8.93169C7.96022 8.89745 7.88537 8.84709 7.82255 8.78358L7.33297 8.294C7.29382 8.25095 7.27273 8.1945 7.27406 8.13633C7.27539 8.07816 7.29903 8.02273 7.3401 7.98152C7.38117 7.9403 7.43652 7.91646 7.49468 7.91493C7.55285 7.91339 7.60937 7.93428 7.65256 7.97328L8.14327 8.46286C8.18574 8.50507 8.24318 8.52877 8.30306 8.52877C8.36294 8.52877 8.42039 8.50507 8.46286 8.46286C8.50507 8.42039 8.52877 8.36294 8.52877 8.30306C8.52877 8.24318 8.50507 8.18574 8.46286 8.14327L6.98052 6.65979C6.9383 6.61733 6.9146 6.55988 6.9146 6.5C6.9146 6.44012 6.9383 6.38267 6.98052 6.34021L8.46286 4.85673C8.50507 4.81426 8.52877 4.75682 8.52877 4.69694C8.52877 4.63706 8.50507 4.57961 8.46286 4.53714C8.42039 4.49493 8.36294 4.47123 8.30306 4.47123C8.24318 4.47123 8.18574 4.49493 8.14327 4.53714L6.65979 6.01949C6.61733 6.0617 6.55988 6.0854 6.5 6.0854C6.44012 6.0854 6.38267 6.0617 6.34021 6.01949L4.85673 4.53714C4.81426 4.49493 4.75682 4.47123 4.69694 4.47123C4.63706 4.47123 4.57961 4.49493 4.53714 4.53714C4.49493 4.57961 4.47123 4.63706 4.47123 4.69694C4.47123 4.75682 4.49493 4.81426 4.53714 4.85673L6.01949 6.34021C6.0617 6.38267 6.0854 6.44012 6.0854 6.5C6.0854 6.55988 6.0617 6.61733 6.01949 6.65979L4.53714 8.14327C4.49493 8.18574 4.47123 8.24318 4.47123 8.30306C4.47123 8.36294 4.49493 8.42039 4.53714 8.46286C4.57961 8.50507 4.63706 8.52877 4.69694 8.52877C4.75682 8.52877 4.81426 8.50507 4.85673 8.46286L6.34021 6.98052C6.38267 6.9383 6.44012 6.9146 6.5 6.9146C6.55988 6.9146 6.61733 6.9383 6.65979 6.98052L6.93632 7.25704C6.97885 7.29987 7.00262 7.35784 7.00241 7.4182C7.0022 7.47856 6.97801 7.53636 6.93518 7.57889C6.89235 7.62142 6.83438 7.6452 6.77402 7.64498C6.71366 7.64477 6.65586 7.62059 6.61333 7.57776L6.5 7.46443L5.17745 8.78358C5.1152 8.85039 5.04013 8.90397 4.95672 8.94113C4.87331 8.9783 4.78327 8.99828 4.69197 8.99989C4.60067 9.0015 4.50998 8.98471 4.42531 8.95051C4.34064 8.91631 4.26373 8.86541 4.19916 8.80084C4.13459 8.73627 4.08369 8.65936 4.04949 8.57469C4.01529 8.49002 3.99849 8.39933 4.00011 8.30803C4.00172 8.21673 4.0217 8.12669 4.05887 8.04328C4.09603 7.95987 4.14961 7.8848 4.21642 7.82255L5.53784 6.5L4.21642 5.17745C4.14961 5.1152 4.09603 5.04013 4.05887 4.95672C4.0217 4.87331 4.00172 4.78327 4.00011 4.69197C3.99849 4.60067 4.01529 4.50998 4.04949 4.42531C4.08369 4.34064 4.13459 4.26373 4.19916 4.19916C4.26373 4.13459 4.34064 4.08369 4.42531 4.04949C4.50998 4.01529 4.60067 3.99849 4.69197 4.00011C4.78327 4.00172 4.87331 4.0217 4.95672 4.05887C5.04013 4.09603 5.1152 4.14961 5.17745 4.21642L6.5 5.53784L7.82255 4.21642C7.8848 4.14961 7.95987 4.09603 8.04328 4.05887C8.12669 4.0217 8.21673 4.00172 8.30803 4.00011C8.39933 3.99849 8.49002 4.01529 8.57469 4.04949C8.65936 4.08369 8.73627 4.13459 8.80084 4.19916C8.86541 4.26373 8.91631 4.34064 8.95051 4.42531C8.98471 4.50998 9.0015 4.60067 8.99989 4.69197C8.99828 4.78327 8.9783 4.87331 8.94113 4.95672C8.90397 5.04013 8.85039 5.1152 8.78358 5.17745L7.46216 6.5L8.78358 7.82255C8.87856 7.91764 8.94322 8.03875 8.96941 8.17057C8.99559 8.3024 8.98213 8.43902 8.93071 8.5632C8.8793 8.68737 8.79224 8.79353 8.68052 8.86825C8.56881 8.94298 8.43746 8.98292 8.30306 8.98304Z" fill="white" />
-                                            </g>
-                                            <defs>
-                                              <clipPath id="clip0_2216_8607">
-                                                <rect width="13" height="13" fill="white" />
-                                              </clipPath>
-                                            </defs>
-                                          </svg>
-                                        ) : (
-                                          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" className="bg-yellow-300 rounded-full p-1 lucide lucide-skip-forward-icon lucide-skip-forward"><path d="M21 4v16" /><path d="M6.029 4.285A2 2 0 0 0 3 6v12a2 2 0 0 0 3.029 1.715l9.997-5.998a2 2 0 0 0 .003-3.432z" /></svg>
-                                        )}
-
-                                      <span
-                                        className={`${item.status === "Pass"
-                                          ? "text-[#007A5A]"
-                                          : item.status === "Fail"
-                                            ? "text-[#ED051C]"
-                                            : "text-[#818283]"
-                                          } font-medium`}
-                                      >
-                                        {item.status}
-                                      </span>
-                                    </button>
-
-                                  </div>
-                                </div>
-                                <div className={`flex items-center justify-between text-sm text-gray-400 ml-2 pl-8 ${!isExpanded && hiddenLineCount > 0 && "py-1"} `}>
-                                  {!isExpanded && hiddenLineCount > 0 && (
-                                    <p className="px-4 py-3 text-sm text-[#BCBCBC] bg-white">
-                                      {hiddenLineCount} hidden lines
-                                    </p>
-                                  )}
-                                </div>
-
-                              </div>
-
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </section>
-
-                {/* Notes */}
-                <section className="p-8 bg-white rounded-3xl shadow-sm mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Notes</h2>
-
-                  <div className="space-y-4">
-                    {(displayCandidate.notes || [])?.map((note: any, index: any) => (
-                      <div key={index} className="flex gap-3">
-                        <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-white text-xs font-bold">{note?.postedBy?.email.charAt(0).toUpperCase()}</span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-1">
-                            <div>
-                              <div>
-                                <span className="font-medium text-gray-900 text-sm">{note?.postedBy?.email}</span>
-                              </div>
-                              <div>
-                                <span className="text-gray-500 text-xs ml-2">{note?.organisation?.orgName}</span>
-                              </div>
-                            </div>
-
-                            <span className="text-gray-400 text-xs">{new Date(note?.posted_at).toLocaleDateString()}</span>
-                          </div>
-                          <p className="text-gray-700 text-sm">
-                            {note?.content}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                {/* References */}
-                <section className="p-8 bg-white rounded-3xl shadow-sm">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">References</h2>
-
-                  <div className="space-y-4">
-                    {(details?.references || [])?.map((ref: any, index: any) => (
-                      <div key={index} className="flex items-start gap-3">
-                        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-gray-900 text-sm font-bold">{ref?.hr_name?.split(' ').map((n: any) => n[0]).join('')}</span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h3 className="font-medium text-gray-900 text-sm">{ref?.hr_name}</h3>
-                              <p className="text-gray-500 text-xs">{ref?.hr_title} at {ref?.experience.company}</p>
-                              <p className="text-gray-700 text-sm mt-2">
-                                {ref?.comments}
-                              </p>
-
-                              {/* Contact Icons */}
-                              <div className="flex items-center gap-2 mt-3">
-                                <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
-                                  <svg width="12" height="12" viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M6.06529 3.62527e-07H8.9347C10.2169 -1.56375e-05 11.2324 -2.35867e-05 12.0272 0.122512C12.8452 0.248608 13.5073 0.514304 14.0294 1.11299C14.5515 1.71169 14.7832 2.47085 14.8932 3.40878C15 4.32015 15 5.48464 15 6.95488V7.04512C15 8.51536 15 9.67984 14.8932 10.5912C14.7832 11.5291 14.5515 12.2883 14.0294 12.887C13.5073 13.4857 12.8452 13.7514 12.0272 13.8775C11.2324 14 10.2169 14 8.9347 14H6.0653C4.78314 14 3.76757 14 2.97278 13.8775C2.15481 13.7514 1.49275 13.4857 0.970633 12.887C0.448521 12.2883 0.21681 11.5291 0.106842 10.5912C-2.06629e-05 9.67984 -1.36373e-05 8.51536 3.16189e-07 7.04512V6.95488C-1.36373e-05 5.48464 -2.06629e-05 4.32015 0.106842 3.40878C0.21681 2.47085 0.448521 1.71169 0.970633 1.11299C1.49275 0.514304 2.15481 0.248608 2.97278 0.122512C3.76757 -2.35867e-05 4.78313 -1.56375e-05 6.06529 3.62527e-07ZM3.11222 1.31181C2.4103 1.42002 2.00589 1.62295 1.71063 1.96152C1.41537 2.30009 1.23839 2.76381 1.14402 3.56868C1.04762 4.39081 1.04651 5.47456 1.04651 7C1.04651 8.52544 1.04762 9.6092 1.14402 10.4314C1.23839 11.2362 1.41537 11.6999 1.71063 12.0385C2.00589 12.377 2.4103 12.58 3.11222 12.6882C3.82919 12.7987 4.77431 12.8 6.10465 12.8H8.89535C10.2257 12.8 11.1708 12.7987 11.8878 12.6882C12.5897 12.58 12.9941 12.377 13.2894 12.0385C13.5846 11.6999 13.7616 11.2362 13.856 10.4314C13.9524 9.6092 13.9535 8.52544 13.9535 7C13.9535 5.47456 13.9524 4.39081 13.856 3.56868C13.7616 2.76381 13.5846 2.30009 13.2894 1.96152C12.9941 1.62295 12.5897 1.42002 11.8878 1.31181C11.1708 1.20127 10.2257 1.2 8.89535 1.2H6.10465C4.77431 1.2 3.82919 1.20127 3.11222 1.31181ZM2.91197 3.41589C3.09698 3.16132 3.42693 3.12693 3.64894 3.33906L5.15514 4.77833C5.80604 5.40032 6.25793 5.83072 6.63949 6.11208C7.00877 6.38448 7.25923 6.47592 7.5 6.47592C7.74077 6.47592 7.99123 6.38448 8.36051 6.11208C8.74207 5.83072 9.19395 5.40032 9.84488 4.77833L11.3511 3.33906C11.5731 3.12693 11.903 3.16132 12.088 3.41589C12.273 3.67046 12.243 4.04879 12.021 4.26094L10.4886 5.72528C9.87021 6.31616 9.369 6.79512 8.9266 7.12136C8.46579 7.4612 8.01705 7.67592 7.5 7.67592C6.98295 7.67592 6.53421 7.4612 6.07338 7.12136C5.63101 6.79512 5.12981 6.31616 4.51141 5.72528L2.97897 4.26094C2.75697 4.04879 2.72697 3.67046 2.91197 3.41589Z" fill="#F5F9FB" />
-                                  </svg>
-
-                                </div>
-                                <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
-                                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M1.40609 0.924395C2.75026 -0.419776 5.01861 -0.317592 5.95453 1.35945L6.47378 2.28987C7.08495 3.38502 6.82453 4.7668 5.92981 5.67246C5.91789 5.68879 5.85468 5.78074 5.84684 5.9414C5.83684 6.14648 5.90965 6.62075 6.64443 7.35554C7.37898 8.09008 7.85318 8.16313 8.0584 8.15313C8.21921 8.14529 8.31122 8.08216 8.32754 8.07016C9.23322 7.17552 10.615 6.91502 11.7102 7.52619L12.6406 8.04552C14.3176 8.98144 14.4198 11.2497 13.0756 12.5939C12.3566 13.3128 11.4006 13.9517 10.2772 13.9943C8.61229 14.0575 5.8478 13.6275 3.11016 10.8898C0.372484 8.15217 -0.0574584 5.38774 0.00565117 3.72285C0.0482469 2.5994 0.687096 1.64338 1.40609 0.924395ZM4.9066 1.9443C4.4273 1.08554 3.13943 0.888256 2.25469 1.773C1.63436 2.39333 1.23107 3.07804 1.2049 3.76832C1.15226 5.15671 1.49505 7.57756 3.95876 10.0412C6.42249 12.5049 8.84327 12.8477 10.2317 12.795C10.922 12.7689 11.6067 12.3656 12.227 11.7453C13.1117 10.8606 12.9144 9.57269 12.0557 9.09345L11.1253 8.5742C10.5465 8.25113 9.73351 8.36138 9.16281 8.93207C9.10673 8.98808 8.7499 9.32107 8.11672 9.35187C7.46842 9.38339 6.68379 9.09209 5.79588 8.20417C4.90764 7.31593 4.61641 6.53107 4.64817 5.88271C4.67922 5.24944 5.01221 4.89293 5.06789 4.83721C5.63858 4.2665 5.74883 3.4535 5.42584 2.87472L4.9066 1.9443Z" fill="white" />
-                                  </svg>
-                                </div>
-                                <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
-                                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M14 14H11.2V9.10068C11.2 7.75668 10.6071 7.00684 9.5438 7.00684C8.3867 7.00684 7.7 7.78818 7.7 9.10068V14H4.9V4.9H7.7V5.92334C7.7 5.92334 8.5785 4.38184 10.5581 4.38184C12.5384 4.38184 14 5.59027 14 8.09067V14ZM1.7094 3.44463C0.765101 3.44463 0 2.67327 0 1.72197C0 0.771373 0.765101 0 1.7094 0C2.653 0 3.4181 0.771373 3.4181 1.72197C3.4188 2.67327 2.653 3.44463 1.7094 3.44463ZM0 14H3.5V4.9H0V14Z" fill="white" />
-                                  </svg>
-                                </div>
-                              </div>
-
-                              <button className="flex items-center text-blue-600 text-sm mt-2 hover:underline">View Less <ChevronDown className="w-4 h-4 rotate-180" /></button>
-                            </div>
-                            <div className="w-10 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                              <span className="text-white text-sm"><svg width="12" height="15" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M5.23013 2.20782C5.08005 2.96783 4.8279 4.10778 3.90533 5.03033C3.82118 5.11449 3.72908 5.20331 3.63156 5.29737C2.77519 6.12337 1.5 7.3533 1.5 9.375C1.5 10.4726 1.97218 11.512 2.70071 12.2811C3.43375 13.0548 4.37196 13.5 5.25 13.5H9C9.26377 13.5 9.48458 13.4318 9.61522 13.3447C9.7236 13.2725 9.75 13.2091 9.75 13.125C9.75 13.0409 9.7236 12.9775 9.61522 12.9053C9.48458 12.8182 9.26377 12.75 9 12.75H8.25C7.83577 12.75 7.5 12.4142 7.5 12C7.5 11.5858 7.83577 11.25 8.25 11.25H9H9.375C9.63877 11.25 9.85958 11.1818 9.99022 11.0947C10.0986 11.0225 10.125 10.9591 10.125 10.875C10.125 10.7909 10.0986 10.7275 9.99022 10.6553C9.85958 10.5682 9.63877 10.5 9.375 10.5H8.625C8.21078 10.5 7.875 10.1642 7.875 9.75C7.875 9.33578 8.21078 9 8.625 9H9.375H9.75C10.0138 9 10.2346 8.93182 10.3652 8.84468C10.4736 8.77245 10.5 8.70907 10.5 8.625C10.5 8.54093 10.4736 8.47755 10.3652 8.40532C10.2346 8.31818 10.0138 8.25 9.75 8.25H9C8.58578 8.25 8.25 7.91423 8.25 7.5C8.25 7.08577 8.58578 6.75 9 6.75H9.75C10.0138 6.75 10.2346 6.68183 10.3652 6.59468C10.4736 6.52245 10.5 6.45907 10.5 6.375C10.5 6.29093 10.4736 6.22755 10.3652 6.15532C10.2346 6.06817 10.0138 6 9.75 6H6.375C6.1329 6 5.90573 5.88316 5.76495 5.68625C5.62425 5.48953 5.58705 5.23704 5.66505 5.00813L5.66752 5.00086L5.67758 4.96998C5.68665 4.94167 5.7003 4.89839 5.71702 4.84231C5.75047 4.72993 5.79623 4.56734 5.84325 4.37165C5.9385 3.97511 6.0336 3.46579 6.05212 2.9719C6.07132 2.45877 6.00322 2.0653 5.86605 1.82494C5.78482 1.68273 5.66235 1.5538 5.3778 1.51319C5.3421 1.63652 5.30925 1.80429 5.2611 2.05018C5.2515 2.09949 5.24123 2.15194 5.23013 2.20782ZM7.35262 4.5C7.4439 4.08152 7.53105 3.56029 7.551 3.0281C7.57395 2.41623 7.5132 1.6847 7.16873 1.08131C6.7854 0.409763 6.10987 0 5.175 0C4.88887 0 4.62037 0.0946951 4.40267 0.285105C4.20493 0.458085 4.09248 0.672337 4.02304 0.844657C3.91205 1.12004 3.84347 1.47684 3.78559 1.77796C3.77636 1.82597 3.7674 1.87256 3.75859 1.91718C3.61244 2.65717 3.42212 3.39222 2.84467 3.96967C2.77852 4.03582 2.69813 4.11203 2.60691 4.19851C1.7648 4.99685 0 6.6699 0 9.375C0 10.9025 0.652823 12.3005 1.61179 13.3127C2.56625 14.3202 3.87804 15 5.25 15H9C9.48623 15 10.0154 14.8807 10.4473 14.5928C10.9014 14.29 11.25 13.7909 11.25 13.125C11.25 12.7735 11.1529 12.4684 10.9943 12.2141C11.3615 11.9068 11.625 11.4539 11.625 10.875C11.625 10.5235 11.5279 10.2184 11.3693 9.96412C11.7365 9.65677 12 9.20393 12 8.625C12 8.1684 11.8361 7.79025 11.5867 7.5C11.8361 7.20975 12 6.8316 12 6.375C12 5.70907 11.6514 5.20995 11.1973 4.90721C10.7654 4.61929 10.2362 4.5 9.75 4.5H7.35262Z" fill="white" />
-                              </svg>
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
-
-                  </div>
-                </section>
+                  ))}
+                </div>
+                <div className="flex-1 overflow-y-auto p-4">
+                  {renderTabContent()}  {/* Paste exact renderTabContent() from StageDetails.tsx here */}
+                </div>
               </div>
             </div>
           </div>
