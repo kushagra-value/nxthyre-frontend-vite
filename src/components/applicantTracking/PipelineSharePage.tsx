@@ -455,7 +455,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
   const renderTabContent = () => {
 
-    const transferredStageData = selectedCandidate?.candidate?.stageData;
+    const transferredStageData = candidateDetails?.candidate?.stageData;
     switch (profileTab) {
       case "Score":
         const currentStageData = pipelineStages.find(
@@ -463,9 +463,9 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
         );
         const slug = currentStageData?.slug;
         const jobScoreObj =
-          selectedCandidate.candidate.stageData?.[slug]?.job_score_obj;
+          candidateDetails?.candidate?.stageData?.[slug]?.job_score_obj;
 
-        let quickFitData = jobScoreObj.quick_fit_summary || [];
+        let quickFitData = jobScoreObj?.quick_fit_summary || [];
 
         const priorityOrder = {
           CRITICAL: 0,
@@ -639,15 +639,15 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
         );
 
       case "Profile":
-        const positions = selectedCandidate.candidate.positions || [];
-        const educations = selectedCandidate.candidate.educations || [];
-        const certifications = selectedCandidate.candidate.certifications || [];
-        const skills = selectedCandidate.candidate.skills || [];
-        const endorsements = selectedCandidate.candidate.endorsements || [];
+        const positions = candidateDetails?.candidate?.positions || [];
+        const educations = candidateDetails?.candidate?.educations || [];
+        const certifications = candidateDetails?.candidate?.certifications || [];
+        const skills = candidateDetails?.candidate?.skills || [];
+        const endorsements = candidateDetails?.candidate?.endorsements || [];
         return (
           <div className="bg-[#F5F9FB] py-4 px-2 rounded-xl space-y-6">
             {/* UPDATED: Profile Summary with View More/Less for long text */}
-            {(selectedCandidate.candidate.profile_summary || selectedCandidate.candidate.headline) && (
+            {(candidateDetails?.candidate?.profile_summary || candidateDetails?.candidate?.headline) && (
               <div>
                 <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
                   <User className="w-4 h-4 mr-2 text-[#4B5563]" />
@@ -656,13 +656,13 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                 <p className="text-sm pl-6 text-[#818283] leading-normal">
                   {(() => {
                     const summary =
-                      selectedCandidate.candidate.profile_summary ||
-                      selectedCandidate.candidate.headline ||
+                      candidateDetails?.candidate?.profile_summary ||
+                      candidateDetails?.candidate?.headline ||
                       "No summary available";
 
                     const isLongSummary =
-                      selectedCandidate.candidate.profile_summary &&
-                      selectedCandidate.candidate.profile_summary.length > maxCharLength;
+                      candidateDetails?.candidate?.profile_summary &&
+                      candidateDetails?.candidate?.profile_summary.length > maxCharLength;
 
                     const displaySummary = showMoreSummary || !isLongSummary
                       ? summary
