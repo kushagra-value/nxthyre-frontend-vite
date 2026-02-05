@@ -2485,117 +2485,115 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     const candidate = details?.candidate || selectedCandidate;
 
     return (
-      <div className="zoom-80-container">
-        <div className="fixed inset-0 bg-black bg-opacity-30 z-[60] flex">
-          <div className=" ml-auto w-2/3 bg-gray-100 shadow-xl h-full overflow-y-auto py-6">
-            <div className="max-w-4xl mx-auto">
-              {/* Header Section */}
-              <div className="flex items-center justify-between mb-6">
-                <button
-                  onClick={() => handleCloseProfile()}
-                  className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
-                >
-                  <BackArrowIcon />
-                </button>
+      <div className="fixed inset-0 bg-black bg-opacity-30 z-[60] flex">
+        <div className=" ml-auto w-2/5 bg-gray-100 shadow-xl h-full overflow-y-auto py-6">
+          <div className="max-w-2xl mx-auto">
+            {/* Header Section */}
+            <div className="flex items-center justify-between mb-6">
+              <button
+                onClick={() => handleCloseProfile()}
+                className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                <BackArrowIcon />
+              </button>
 
-                <button className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors border border-gray-300 rounded-lg px-3 py-2 bg-[#ECF1FF]">
-                  <Share2 size={16} />
-                  <span className="text-sm">Share</span>
-                </button>
-              </div>
+              <button className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors border border-gray-300 rounded-lg px-3 py-2 bg-[#ECF1FF]">
+                <Share2 size={16} />
+                <span className="text-sm">Share</span>
+              </button>
+            </div>
 
-              {/* Main Content Card */}
-              <div className="bg-white rounded-xl overflow-hidden h-full flex flex-col">
-                {/* Header - Mirrors PipelinesSideCard */}
-                <div className="p-4 border-b border-gray-200 space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex-1 min-w-0">
-                      <h2 className="text-lg font-bold text-gray-900 truncate">
-                        {candidate.full_name}
-                      </h2>
-                      <p className="text-sm text-gray-500 truncate">
-                        {candidate.headline || "No headline"}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {candidate.location || "No location"}
-                      </p>
-                    </div>
+            {/* Main Content Card */}
+            <div className="bg-white rounded-xl overflow-hidden h-full flex flex-col">
+              {/* Header - Mirrors PipelinesSideCard */}
+              <div className="p-4 border-b border-gray-200 space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-lg font-bold text-gray-900 truncate">
+                      {candidate.full_name}
+                    </h2>
+                    <p className="text-sm text-gray-500 truncate">
+                      {candidate.headline || "No headline"}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {candidate.location || "No location"}
+                    </p>
                   </div>
+                </div>
 
-                  {/* Contact Info */}
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center space-x-2">
-                        <Mail className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm text-gray-500">
-                          {candidate.premium_data?.email || "—"}
-                        </span>
-                      </div>
-                      {candidate.premium_data?.email && (
-                        <button onClick={() => handleCopy(candidate.premium_data!.email!)}>
+                {/* Contact Info */}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <Mail className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-gray-500">
+                        {candidate.premium_data?.email || "—"}
+                      </span>
+                    </div>
+                    {candidate.premium_data?.email && (
+                      <button onClick={() => handleCopy(candidate.premium_data!.email!)}>
+                        <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <Phone className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-gray-500">
+                        {candidate.premium_data?.phone || "—"}
+                      </span>
+                    </div>
+                    {candidate.premium_data?.phone && (
+                      <div className="flex space-x-2">
+                        <button onClick={() => handleWhatsApp(candidate.premium_data!.phone!)}>
+                          <FontAwesomeIcon icon={faWhatsapp} className="text-gray-400 hover:text-gray-600" />
+                        </button>
+                        <button onClick={() => handleCopy(candidate.premium_data!.phone!)}>
                           <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600" />
                         </button>
-                      )}
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center space-x-2">
-                        <Phone className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm text-gray-500">
-                          {candidate.premium_data?.phone || "—"}
-                        </span>
                       </div>
-                      {candidate.premium_data?.phone && (
-                        <div className="flex space-x-2">
-                          <button onClick={() => handleWhatsApp(candidate.premium_data!.phone!)}>
-                            <FontAwesomeIcon icon={faWhatsapp} className="text-gray-400 hover:text-gray-600" />
-                          </button>
-                          <button onClick={() => handleCopy(candidate.premium_data!.phone!)}>
-                            <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Social Links (visible if available) */}
-                  <div className="flex space-x-3">
-                    {candidate.premium_data?.linkedin_url && (
-                      <a href={candidate.premium_data.linkedin_url} target="_blank" rel="noopener noreferrer">
-                        <Linkedin className="w-6 h-6 text-gray-400 hover:text-blue-600" />
-                      </a>
-                    )}
-                    {candidate.premium_data?.github_url && (
-                      <a href={candidate.premium_data.github_url} target="_blank" rel="noopener noreferrer">
-                        <Github className="w-6 h-6 text-gray-400 hover:text-gray-600" />
-                      </a>
-                    )}
-                    {candidate.premium_data?.portfolio_url && (
-                      <a href={candidate.premium_data.portfolio_url} target="_blank" rel="noopener noreferrer">
-                        <Link className="w-6 h-6 text-gray-400 hover:text-gray-600" />
-                      </a>
                     )}
                   </div>
                 </div>
 
-                {/* Tabbed Details - Exact copy of StageDetails.tsx logic */}
-                <div className="flex-1 overflow-hidden flex flex-col">
-                  <div className="flex border-b border-gray-200">
-                    {["Score", "Profile", "Coding", "Interview", "Activity", "Notes"].map((tab: any) => (
-                      <button
-                        key={tab}
-                        onClick={() => setProfileTab(tab)}
-                        className={`py-3 px-4 text-sm font-medium transition-colors ${profileTab === tab
-                          ? "text-blue-600 border-b-2 border-blue-600"
-                          : "text-gray-500 hover:text-gray-700"
-                          }`}
-                      >
-                        {tab}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="flex-1 overflow-y-auto p-4">
-                    {renderTabContent()}  {/* Paste exact renderTabContent() from StageDetails.tsx here */}
-                  </div>
+                {/* Social Links (visible if available) */}
+                <div className="flex space-x-3">
+                  {candidate.premium_data?.linkedin_url && (
+                    <a href={candidate.premium_data.linkedin_url} target="_blank" rel="noopener noreferrer">
+                      <Linkedin className="w-6 h-6 text-gray-400 hover:text-blue-600" />
+                    </a>
+                  )}
+                  {candidate.premium_data?.github_url && (
+                    <a href={candidate.premium_data.github_url} target="_blank" rel="noopener noreferrer">
+                      <Github className="w-6 h-6 text-gray-400 hover:text-gray-600" />
+                    </a>
+                  )}
+                  {candidate.premium_data?.portfolio_url && (
+                    <a href={candidate.premium_data.portfolio_url} target="_blank" rel="noopener noreferrer">
+                      <Link className="w-6 h-6 text-gray-400 hover:text-gray-600" />
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Tabbed Details - Exact copy of StageDetails.tsx logic */}
+              <div className="flex-1 overflow-hidden flex flex-col">
+                <div className="flex border-b border-gray-200">
+                  {["Score", "Profile", "Coding", "Interview", "Activity", "Notes"].map((tab: any) => (
+                    <button
+                      key={tab}
+                      onClick={() => setProfileTab(tab)}
+                      className={`py-3 px-4 text-sm font-medium transition-colors ${profileTab === tab
+                        ? "text-blue-600 border-b-2 border-blue-600"
+                        : "text-gray-500 hover:text-gray-700"
+                        }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex-1 overflow-y-auto p-4">
+                  {renderTabContent()}  {/* Paste exact renderTabContent() from StageDetails.tsx here */}
                 </div>
               </div>
             </div>
