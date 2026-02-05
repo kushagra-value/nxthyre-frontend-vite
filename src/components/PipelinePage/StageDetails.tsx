@@ -621,7 +621,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
   const [isEditing, setIsEditing] = useState(false);
   const [description, setDescription] = useState("");
-  const [tempDescription, setTempDescription] = useState(description);
+  const [tempDescription, setTempDescription] = useState("");
 
   const renderTabContent = () => {
     switch (activeTab) {
