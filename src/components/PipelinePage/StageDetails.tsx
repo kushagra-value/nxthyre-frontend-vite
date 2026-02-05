@@ -619,6 +619,10 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   // const [booleanData, setBooleanData] = useState<AnalysisResult | null>(null);
   // const [hasBooleanAnalysis, setHasBooleanAnalysis] = useState(false);
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [description, setDescription] = useState("");
+  const [tempDescription, setTempDescription] = useState(description);
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "Score":
@@ -646,12 +650,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         });
 
         console.log("selectedCandidate:", selectedCandidate);
-
-        const [isEditing, setIsEditing] = useState(false);
-        const [description, setDescription] = useState(
-          jobScoreObj.candidate_match_score.description,
-        );
-        const [tempDescription, setTempDescription] = useState(description);
 
         const handleEditClick = () => {
           setTempDescription(description);
