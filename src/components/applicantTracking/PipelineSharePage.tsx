@@ -2485,8 +2485,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     const candidate = details?.candidate || selectedCandidate;
 
     return (
-      <div className="zoom-80-container fixed inset-0 bg-black bg-opacity-30 z-[60] flex">
-        <div className="ml-auto w-2/3 bg-gray-100 shadow-xl h-full overflow-y-auto py-6">
+      <div className=" fixed inset-0 bg-black bg-opacity-30 z-[60] flex">
+        <div className="zoom-80-container ml-auto w-2/3 bg-gray-100 shadow-xl h-full overflow-y-auto py-6">
           <div className="max-w-4xl mx-auto">
             {/* Header Section */}
             <div className="flex items-center justify-between mb-6">
