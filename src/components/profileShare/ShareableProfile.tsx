@@ -576,34 +576,76 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
             </div>
           )}
 
-          {candidateData?.premium_data?.resume_url && (
-            <div className="bg-white p-8 rounded-xl mt-6">
-              <h3 className="text-lg font-semibold text-gray-600 mb-3">
-                Resume
-              </h3>
+          {candidateData?.premium_data?.resume_url &&
+            (() => {
+              const url = candidateData?.premium_data?.resume_url;
+              const ext = url.split(".").pop()?.toLowerCase() || "";
+              let viewerUrl = url;
+              let isPdf = false;
+              let isSupportedViewer = false;
 
-              <embed
-                src={candidateData?.premium_data?.resume_url}
-                type="application/pdf"
-                width="100%"
-                height="900px"
-                className="border border-gray-200 rounded-lg min-h-[800px]"
-              />
+              if (ext === "pdf") {
+                isPdf = true;
+              } else if (["docx", "doc", "txt", "rtf"].includes(ext)) {
+                // Use Google Docs viewer for non-PDF formats
+                viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+                isSupportedViewer = true;
+              }
 
-              <p className="mt-2 text-sm text-gray-500">
-                If the resume doesn't display,{" "}
-                <a
-                  href={candidateData?.premium_data?.resume_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 underline"
-                >
-                  open it in a new tab
-                </a>
-                .
-              </p>
-            </div>
-          )}
+              return (
+                <div className="bg-white p-8 rounded-xl mt-6">
+                  <h3 className="text-lg font-semibold text-gray-600 mb-3">
+                    Resume
+                  </h3>
+
+                  {isPdf ? (
+                    <embed
+                      src={viewerUrl}
+                      type="application/pdf"
+                      width="100%"
+                      height="900px"
+                      className="border border-gray-200 rounded-lg min-h-[800px]"
+                    />
+                  ) : isSupportedViewer ? (
+                    <iframe
+                      src={viewerUrl}
+                      width="100%"
+                      height="900px"
+                      className="border border-gray-200 rounded-lg min-h-[800px]"
+                      frameBorder="0"
+                    ></iframe>
+                  ) : (
+                    <div className="border border-gray-200 rounded-lg min-h-[800px] flex items-center justify-center">
+                      <p className="text-gray-500">
+                        Resume format not supported for inline viewing.{" "}
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline"
+                        >
+                          Download or open in a new tab
+                        </a>
+                        .
+                      </p>
+                    </div>
+                  )}
+
+                  <p className="mt-2 text-sm text-gray-500">
+                    If the resume doesn't display,{" "}
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline"
+                    >
+                      open it in a new tab
+                    </a>
+                    .
+                  </p>
+                </div>
+              );
+            })()}
 
           {/* Community Notes Section
           <div className="bg-white p-8 rounded-xl mt-6">
