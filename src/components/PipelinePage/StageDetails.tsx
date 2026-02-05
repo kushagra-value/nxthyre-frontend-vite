@@ -633,9 +633,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         const jobScoreObj =
           selectedCandidate.candidate.stageData?.[slug]?.job_score_obj;
 
-        setDescription(
-          jobScoreObj?.candidate_match_score?.description || "N/A",
-        );
+        setDescription("hello");
 
         let quickFitData = jobScoreObj.quick_fit_summary || [];
 
