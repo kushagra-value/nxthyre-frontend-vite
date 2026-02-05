@@ -34,11 +34,15 @@ import {
   CheckCheck,
   UserRoundCheck,
   Sparkle,
+  PencilIcon,
+  CheckIcon,
+  XIcon,
 } from "lucide-react";
 import { PipelineCandidate } from "../../data/pipelineData";
 import candidateService from "../../services/candidateService";
 import { showToast } from "../../utils/toast";
 import { AnalysisResult } from "../../services/candidateService";
+import toast from "react-hot-toast";
 
 interface Stage {
   id: number;
@@ -93,6 +97,16 @@ interface Activity {
   };
 }
 
+interface ProfileMatchDescriptionProps {
+  jobScoreObj: {
+    candidate_match_score: {
+      description: string;
+    };
+  };
+  candidateId: string; // UUID as string
+  jobId: number;
+}
+
 interface StageDetailsProps {
   selectedCandidate: PipelineCandidate | null;
   setSelectedCandidate: (candidate: PipelineCandidate | null) => void;
@@ -132,7 +146,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   const [expandedIndices, setExpandedIndices] = useState(new Set([0]));
 
   const [showMoreSummary, setShowMoreSummary] = useState(false);
-  const [expandedExperiences, setExpandedExperiences] = useState<Set<number>>(new Set());
+  const [expandedExperiences, setExpandedExperiences] = useState<Set<number>>(
+    new Set(),
+  );
   const maxCharLength = 320;
 
   const [codingQuestions, setCodingQuestions] = useState<
@@ -631,6 +647,52 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
         console.log("selectedCandidate:", selectedCandidate);
 
+        const [isEditing, setIsEditing] = useState(false);
+        const [description, setDescription] = useState(
+          jobScoreObj.candidate_match_score.description,
+        );
+        const [tempDescription, setTempDescription] = useState(description);
+
+        const handleEditClick = () => {
+          setTempDescription(description);
+          setIsEditing(true);
+        };
+
+        const handleCancel = () => {
+          setIsEditing(false);
+        };
+
+        const handleSave = async () => {
+          try {
+            const response = await fetch("/api/jobs/candidate-job-score/", {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                candidate_id: selectedCandidate.candidate.id,
+                job_id: jobId,
+                description: tempDescription,
+              }),
+            });
+
+            if (response.ok) {
+              setDescription(tempDescription);
+              setIsEditing(false);
+            } else {
+              console.error("Failed to update description");
+              // Optionally, show a user-facing error message
+              toast.error(
+                "Failed to update the description. Please try again.",
+              );
+            }
+          } catch (error) {
+            console.error("Error updating description:", error);
+            // Optionally, show a user-facing error message
+            toast.error("An error occurred while updating the description.");
+          }
+        };
+
         if (!jobScoreObj) {
           return (
             <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
@@ -657,12 +719,45 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 </div>
               </div>
               <div className="text-gray-600 bg-gray-50 rounded-md px-2 py-3 mr-2 mb-3">
-                <h2 className="font-semibold mb-1 text-md">
-                  Profile Match Description
-                </h2>
-                <span className="text-sm">
-                  {jobScoreObj.candidate_match_score.description}
-                </span>
+                <div className="flex items-center justify-between mb-1">
+                  <h2 className="font-semibold text-md">
+                    Profile Match Description
+                  </h2>
+                  {!isEditing && (
+                    <button
+                      onClick={handleEditClick}
+                      className="focus:outline-none"
+                    >
+                      <PencilIcon className="h-5 w-5 text-gray-500 hover:text-gray-700" />
+                    </button>
+                  )}
+                </div>
+                {isEditing ? (
+                  <div>
+                    <textarea
+                      value={tempDescription}
+                      onChange={(e) => setTempDescription(e.target.value)}
+                      className="w-full h-24 border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows={4}
+                    />
+                    <div className="flex justify-end mt-2 space-x-2">
+                      <button
+                        onClick={handleSave}
+                        className="focus:outline-none"
+                      >
+                        <CheckIcon className="h-5 w-5 text-green-600 hover:text-green-800" />
+                      </button>
+                      <button
+                        onClick={handleCancel}
+                        className="focus:outline-none"
+                      >
+                        <XIcon className="h-5 w-5 text-red-600 hover:text-red-800" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <span className="text-sm block">{description}</span>
+                )}
               </div>
             </div>
 
@@ -797,7 +892,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         return (
           <div className="bg-[#F5F9FB] py-4 px-2 rounded-xl space-y-6">
             {/* UPDATED: Profile Summary with View More/Less for long text */}
-            {(selectedCandidate.candidate.profile_summary || selectedCandidate.candidate.headline) && (
+            {(selectedCandidate.candidate.profile_summary ||
+              selectedCandidate.candidate.headline) && (
               <div>
                 <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
                   <User className="w-4 h-4 mr-2 text-[#4B5563]" />
@@ -812,11 +908,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
                     const isLongSummary =
                       selectedCandidate.candidate.profile_summary &&
-                      selectedCandidate.candidate.profile_summary.length > maxCharLength;
+                      selectedCandidate.candidate.profile_summary.length >
+                        maxCharLength;
 
-                    const displaySummary = showMoreSummary || !isLongSummary
-                      ? summary
-                      : summary.slice(0, maxCharLength) + "...";
+                    const displaySummary =
+                      showMoreSummary || !isLongSummary
+                        ? summary
+                        : summary.slice(0, maxCharLength) + "...";
 
                     return (
                       <>
@@ -835,7 +933,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 </p>
               </div>
             )}
-
 
             {positions.length > 0 && (
               <div>
@@ -876,9 +973,10 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                             const isLong = desc.length > maxCharLength;
                             const isExpanded = expandedExperiences.has(index);
 
-                            const displayDesc = isExpanded || !isLong
-                              ? desc
-                              : desc.slice(0, maxCharLength) + "...";
+                            const displayDesc =
+                              isExpanded || !isLong
+                                ? desc
+                                : desc.slice(0, maxCharLength) + "...";
 
                             return (
                               <>
@@ -886,7 +984,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                                 {isLong && (
                                   <button
                                     onClick={() => {
-                                      const newSet = new Set(expandedExperiences);
+                                      const newSet = new Set(
+                                        expandedExperiences,
+                                      );
                                       if (isExpanded) {
                                         newSet.delete(index);
                                       } else {
@@ -943,9 +1043,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       </h4>
                       <p className="text-sm text-[#818283]">{edu.schoolName}</p>
                       {edu.startDate?.year &&
-                        edu.endDate?.year &&
-                        edu.startDate.year !== 0 &&
-                        edu.endDate.year !== 0 ? (
+                      edu.endDate?.year &&
+                      edu.startDate.year !== 0 &&
+                      edu.endDate.year !== 0 ? (
                         <p className="text-sm text-[#818283]">
                           {edu.startDate.year} - {edu.endDate.year}
                         </p>
@@ -1188,12 +1288,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                           <Minus className="w-4 h-4 p-1 bg-[#818283] text-white mr-1 rounded-xl" />
                         )}
                         <span
-                          className={`${q.status === "Pass"
-                            ? "text-[#007A5A]"
-                            : q.status === "Fail"
-                              ? "text-[#ED051C]"
-                              : "text-[#818283]"
-                            } font-medium`}
+                          className={`${
+                            q.status === "Pass"
+                              ? "text-[#007A5A]"
+                              : q.status === "Fail"
+                                ? "text-[#ED051C]"
+                                : "text-[#818283]"
+                          } font-medium`}
                         >
                           {q.status}
                         </span>
@@ -1233,8 +1334,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         return (
           <div className="space-y-3 bg-[#F5F9FB] p-2 rounded-xl">
             {interviewData?.resumeScore ||
-              interviewData?.knowledgeScore ||
-              interviewData?.communicationScore ? (
+            interviewData?.knowledgeScore ||
+            interviewData?.communicationScore ? (
               <>
                 <div className="bg-white rounded-xl p-2">
                   <h4 className="text-base font-medium text-[#4B5563] mb-4">
@@ -1364,13 +1465,15 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       return (
                         <div
                           key={index}
-                          className={`border ${isExpanded ? "border-[#0F47F2]" : "border-[#818283]"
-                            } bg-white rounded-md p-4`}
+                          className={`border ${
+                            isExpanded ? "border-[#0F47F2]" : "border-[#818283]"
+                          } bg-white rounded-md p-4`}
                         >
                           <div className="flex justify-between items-start">
                             <p
-                              className={`text-sm font-medium ${isExpanded ? "text-[#4B5563]" : "text-[#818283]"
-                                }`}
+                              className={`text-sm font-medium ${
+                                isExpanded ? "text-[#4B5563]" : "text-[#818283]"
+                              }`}
                             >
                               {q.question}
                             </p>
@@ -1479,7 +1582,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                               }}
                             />
                             <button
-                              onClick={() => { }}
+                              onClick={() => {}}
                               className="text-blue-500 mt-1"
                             >
                               Reply ?
@@ -1695,10 +1798,12 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   type="text"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  placeholder={`Type your ${notesView === "my" ? "team" : "community"
-                    } comment!`}
-                  className={`flex-1 px-4 py-2 rounded-lg text-sm ${newComment && !isValidNote ? "border border-red-500" : ""
-                    }`}
+                  placeholder={`Type your ${
+                    notesView === "my" ? "team" : "community"
+                  } comment!`}
+                  className={`flex-1 px-4 py-2 rounded-lg text-sm ${
+                    newComment && !isValidNote ? "border border-red-500" : ""
+                  }`}
                   onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
                 />
                 <button
@@ -1837,10 +1942,11 @@ const StageDetails: React.FC<StageDetailsProps> = ({
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`py-2 px-2 text-sm font-medium ${activeTab === tab
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
-                  }`}
+                className={`py-2 px-2 text-sm font-medium ${
+                  activeTab === tab
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
               >
                 {tab}
                 {tab === "Notes" && (
