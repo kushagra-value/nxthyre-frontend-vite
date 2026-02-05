@@ -621,7 +621,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
   const [isEditing, setIsEditing] = useState(false);
   const [description, setDescription] = useState("");
-  const [tempDescription, setTempDescription] = useState("");
+  const [tempDescription, setTempDescription] = useState(description);
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -633,7 +633,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         const jobScoreObj =
           selectedCandidate.candidate.stageData?.[slug]?.job_score_obj;
 
-        setDescription(jobScoreObj.candidate_match_score.description || "");
+        setDescription(
+          jobScoreObj?.candidate_match_score?.description || "N/A",
+        );
 
         let quickFitData = jobScoreObj.quick_fit_summary || [];
 
