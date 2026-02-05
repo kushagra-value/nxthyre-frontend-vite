@@ -462,9 +462,18 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
         const currentStageData = pipelineStages.find(
           (stage) => stage.name === currentStage,
         );
-        const slug = currentStageData?.slug;
-        const jobScoreObj =
-          candidateDetails?.candidate?.stageData?.[slug]?.job_score_obj;
+        let slug = currentStageData?.slug;
+        let jobScoreObj =
+          candidateDetails?.candidate?.stageData?.[slug!]?.job_score_obj;
+
+        // Fallback: if currentStage state is out of sync or slug not found, try to find first available stage data
+        if (!jobScoreObj && candidateDetails?.candidate?.stageData) {
+          const keys = Object.keys(candidateDetails.candidate.stageData);
+          if (keys.length > 0) {
+            slug = keys[0];
+            jobScoreObj = candidateDetails.candidate.stageData[slug]?.job_score_obj;
+          }
+        }
 
         let quickFitData = jobScoreObj?.quick_fit_summary || [];
 
@@ -2149,7 +2158,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
 
 
-  const handleCandidateClick = async (candidate: any) => {
+  const handleCandidateClick = async (candidate: any, stageName: string) => {
+    setCurrentStage(stageName);
     setSelectedCandidate(candidate);
     setProfileTab("Score");
     setShowCandidateProfile(true);
@@ -2298,7 +2308,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           </div>
 
           <button
-            onClick={() => handleCandidateClick(candidate)}
+            onClick={() => handleCandidateClick(candidate, stage)}
             className="text-sm font-semibold text-gray-900 hover:text-blue-600 text-left block mb-1"
           >
             {candidate.name}
@@ -2498,21 +2508,6 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
               {/* Header - Mirrors PipelinesSideCard */}
               <div className="p-4 border-b border-gray-200 space-y-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-xl overflow-hidden flex-shrink-0">
-                    {candidate.profilePicture?.displayImageUrl ? (
-                      <img
-                        src={candidate.profilePicture.displayImageUrl}
-                        alt={candidate.full_name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      candidate.full_name
-                        ?.split(" ")
-                        .map((n: string) => n[0].toUpperCase())
-                        .join("")
-                        .slice(0, 2) || "NA"
-                    )}
-                  </div>
                   <div className="flex-1 min-w-0">
                     <h2 className="text-lg font-bold text-gray-900 truncate">
                       {candidate.full_name}
