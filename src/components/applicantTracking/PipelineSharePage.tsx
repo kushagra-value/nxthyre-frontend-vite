@@ -2790,7 +2790,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                       {dynamicShareableStages.map((stage) => {
                         const candidates = stageCandidates[stage.name] || [];
                         const totalCount = candidates.length;
-                        const rejectedCount = 8;
+                        const rejectedCount = 0;
                         const stageCount = getStageCount(stage.name);
                         return (
                           <div
@@ -2840,7 +2840,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
                               </div>
                               <p className="text-sm text-gray-500">Nxthyre Shortlist</p>
-                              <div className="flex items-center gap-8 mb-3">
+                              <div className="flex items-center justify-between mb-3">
                                 <div>
                                   <span className="text-3xl font-semibold text-gray-900">{rejectedCount}</span>
                                   <span className="text-sm text-gray-500 ml-2">Rejected</span>
