@@ -147,7 +147,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [showEventPreview, setShowEventPreview] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [eventCandidateDetails, setEventCandidateDetails] = useState<any>(null);
-
+  const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
+  const [showArchiveMenu, setShowArchiveMenu] = useState(false);
   const [codingQuestions, setCodingQuestions] = useState<
     {
       name: string;
@@ -199,6 +200,33 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [showMoreSummary, setShowMoreSummary] = useState(false);
   const [expandedExperiences, setExpandedExperiences] = useState<Set<number>>(new Set());
   const maxCharLength = 320;
+
+  const toggleCandidateSelection = (candidateId: string) => {
+    const newSelection = new Set(selectedCandidates);
+    if (newSelection.has(candidateId)) {
+      newSelection.delete(candidateId);
+    } else {
+      newSelection.add(candidateId);
+    }
+    setSelectedCandidates(newSelection);
+
+  };
+
+  // UPDATED: Add archive handler
+  const handleArchiveSelected = async () => {
+    if (selectedCandidates.size === 0) return;
+
+    // Show confirmation or directly archive
+    const candidateIds = Array.from(selectedCandidates);
+
+    try {
+      // TODO: Call API to archive candidates
+      showToast.success(`${candidateIds.length} candidates moved to archive`);
+      setSelectedCandidates(new Set());
+    } catch (error) {
+      showToast.error("Failed to archive candidates");
+    }
+  };
   // UPDATED: Fully type-safe handleSearch - resolves 'id' does not exist on type 'never'
   const handleSearch = () => {
     if (!searchQuery.trim()) return;
@@ -2268,171 +2296,102 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   }, [jobId, stagesRefreshKey]);
 
 
-  const renderCandidateCard = (candidate: any, stage: string) => (
-    <div
-      id={`candidate-${candidate.id}`}
-      key={candidate.id}
-      draggable
-      onDragStart={() => handleDragStart(candidate, stage)}
-      className={`relative bg-white rounded-2xl mb-2 cursor-move hover:shadow-lg transition-all duration-200 border ${highlightedCandidateId === candidate.id ? "border-blue-500 border-2" : ""
-        } hover:border-gray-300`}
-    >
-      <div className="absolute top-4 right-4 w-3 h-3 border border-gray-300 rounded"></div>
+  const renderCandidateCard = (candidate: any, stage: string) => {
 
-      {/* Main Grid Container - 12 columns */}
-      <div className="px-4 pt-4 grid grid-cols-12 items-center">
+    const isSelected = selectedCandidates?.has(candidate.id) || false;
 
-        {/* Profile Initials */}
-        <div className="col-span-2">
-          <div className="w-10 h-10 rounded-full bg-[#0F47F2] flex items-center justify-center">
-            <span className="text-white font-bold text-sm">
-              {candidate.profile_picture_url ? (
-                <img
-                  src={candidate.profile_picture_url}
-                  alt={candidate.name}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-              ) : (candidate.name.split(/\s+/).map((word: any) => word[0].toUpperCase()).join("").slice(0, 2))
-              }
-            </span>
-          </div>
-        </div>
-
-        {/* Name and Title */}
-        <div className="flex items-center col-span-8">
-
-          <div className="flex items-end gap-0.5 mr-2">
-            <div className={`w-0.5 h-4 bg-green-600 rounded`}></div>
-            <div className={`w-0.5 h-3 bg-green-600 rounded`}></div>
-            <div className={`w-0.5 h-2 bg-green-600 rounded`}></div>
-          </div>
-
-          <button
-            onClick={() => handleCandidateClick(candidate, stage)}
-            className="text-sm font-semibold text-gray-900 hover:text-blue-600 text-left block mb-1"
+    return (
+      <div
+        id={`candidate-${candidate.id}`}
+        key={candidate.id}
+        draggable
+        onDragStart={() => handleDragStart(candidate, stage)}
+        className={`relative bg-white rounded-xl p-4 mb-3 cursor-move hover:shadow-lg transition-all duration-200 ${isSelected ? "border-2 border-blue-500" : "border border-gray-200"
+          } ${highlightedCandidateId === candidate.id ? "ring-2 ring-blue-400" : ""}`}
+      >
+        <div className="absolute top-4 left-4">
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleCandidateSelection(candidate.id);
+            }}
+            className={`w-5 h-5 rounded border-2 cursor-pointer flex items-center justify-center transition-colors ${isSelected ? "bg-blue-600 border-blue-600" : "border-gray-300 bg-white"
+              }`}
           >
-            {candidate.name}
-          </button>
-
-        </div>
-
-
-
-
-        {/* Experience Info - starts from column 3 */}
-        <div className="col-start-3 col-span-10">
-          <div className="flex items-center gap-1 text-gray-500 text-xs mt-2">
-            <span>{candidate.total_experience}{candidate.total_experience >= 0 && (" Y • ")} {candidate.notice_period_days} {candidate.notice_period_days && (" NP • ")}{candidate.current_salary} {candidate.current_salary && (" LPA • ")} {candidate.location}</span>
+            {isSelected && (
+              // SVG: White checkmark
+              <span className="text-white text-xs font-bold">✓</span>
+            )}
           </div>
         </div>
+        {/* Main Grid Container - 12 columns */}
+        <div className="pl-8">
 
-        {/* Social Icons - starts from column 3 */}
-        <div className="col-start-3 col-span-7">
-          <div className="flex gap-2 mt-4">
-            {candidate.socials.linkedin_url && (
+          {/* Profile Initials */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => window.open(candidate.socials.linkedin_url, '_blank')}
-                className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-blue-50 transition-colors"
+                onClick={() => handleCandidateClick(candidate, stage)}
+                className="text-base font-semibold text-gray-900 hover:text-blue-600"
               >
-                <Linkedin className="w-3 h-3 text-gray-500" />
+                {candidate.name}
               </button>
-            )}
-            {candidate.socials.github_url && (
-              <button
-                onClick={() => window.open(candidate.socials.github_url, '_blank')}
-                className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-blue-50 transition-colors"
-              >
-                <Github className="w-3 h-3 text-gray-500" />
-              </button>
-            )}
-            {candidate.socials.resume_url && (
-              <button
-                onClick={() => window.open(candidate.socials.resume_url, '_blank')}
-                className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-blue-50 transition-colors"
-              >
-                <File className="w-3 h-3 text-gray-500" />
-              </button>
-            )}
-            <button
-              onClick={() => handleCopyProfile(candidate.id)}
-              // UPDATED: Disable during loading and add opacity for visual feedback
-              disabled={copyingCandidates.has(candidate.id)}
-              className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-waiting"
-            >
-              {/* UPDATED: Show spinner (simple CSS) during loading, else Copy icon */}
-              {copyingCandidates.has(candidate.id) ? (
-                <div className="w-3 h-3 border-2 border-gray-200 border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <Copy className="w-3 h-3 text-gray-500" />
-              )}
-            </button>
-            <button
-              onClick={() => {
-                setFeedbackData({
-                  candidate,
-                  fromStage: stage,
-                  toStage: "Archives",
-                  isMovingForward: true
-                });
-                setShowFeedbackModal(true);
-              }}
-              className="w-6 h-6 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
-            >
-              <CustomFileIcon />
-            </button>
-          </div>
-        </div>
-
-
-      </div>
-      <div className="border-t border-gray-200 my-3"></div>
-      <div className="px-4 pb-4 flex items-center justify-between">
-        <div className="flex gap-6 text-gray-900">
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="18" height="18" fill="white" />
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M7.9976 2H10.0024C11.0464 1.99999 11.8649 1.99999 12.5188 2.06217C13.1853 2.12554 13.731 2.25693 14.2122 2.55174C14.716 2.86047 15.1396 3.28405 15.4483 3.78785C15.7431 4.26894 15.8745 4.81469 15.9378 5.48119C16 6.13507 16 6.95356 16 7.9976V8.69252C16 9.43569 16 10.0184 15.9679 10.4891C15.9352 10.968 15.8677 11.3666 15.715 11.7351C15.335 12.6526 14.6061 13.3815 13.6886 13.7615C13.1645 13.9786 12.5675 14.0268 11.7501 14.0408C11.4641 14.0458 11.283 14.0494 11.145 14.0647C11.016 14.079 10.966 14.0999 10.9367 14.117C10.9058 14.1349 10.8638 14.1676 10.7908 14.2678C10.7117 14.3763 10.6224 14.5261 10.4809 14.7653L10.1279 15.3617C9.62414 16.2127 8.37586 16.2127 7.87212 15.3617L7.51912 14.7653C7.37753 14.5261 7.28824 14.3763 7.20921 14.2678C7.13619 14.1676 7.09413 14.1349 7.06326 14.117C7.034 14.0999 6.98399 14.079 6.85499 14.0647C6.71694 14.0494 6.53584 14.0458 6.24992 14.0408C5.43253 14.0268 4.83551 13.9786 4.31135 13.7615C3.39392 13.3815 2.66502 12.6526 2.28501 11.7351C2.13234 11.3666 2.06479 10.968 2.03212 10.4891C1.99999 10.0184 2 9.43569 2 8.69252V7.9976C1.99999 6.95356 1.99999 6.13507 2.06217 5.48119C2.12554 4.81469 2.25693 4.26894 2.55174 3.78785C2.86047 3.28405 3.28405 2.86047 3.78785 2.55174C4.26894 2.25693 4.81469 2.12554 5.48119 2.06217C6.13507 1.99999 6.95356 1.99999 7.9976 2ZM5.57364 3.03452C4.97864 3.0911 4.60003 3.19959 4.2982 3.38455C3.92583 3.61275 3.61275 3.92583 3.38455 4.2982C3.19959 4.60003 3.0911 4.97864 3.03452 5.57364C2.97726 6.17591 2.97674 6.94803 2.97674 8.02326V8.67442C2.97674 9.4396 2.97701 9.98905 3.00659 10.4226C3.03588 10.8518 3.09224 11.1316 3.1874 11.3614C3.46828 12.0395 4.00703 12.5782 4.68513 12.8591C5.02089 12.9982 5.44925 13.0502 6.26674 13.0643L6.28746 13.0646C6.54663 13.0691 6.77373 13.073 6.96249 13.0939C7.16532 13.1163 7.36369 13.1617 7.55433 13.2726C7.74339 13.3826 7.87967 13.5294 7.99858 13.6925C8.10836 13.8432 8.22121 14.0339 8.3491 14.2499L8.71264 14.8642C8.83819 15.0762 9.16181 15.0762 9.28729 14.8642L9.6509 14.2499C9.77873 14.0339 9.89157 13.8432 10.0014 13.6925C10.1203 13.5294 10.2566 13.3826 10.4456 13.2726C10.6363 13.1617 10.8347 13.1163 11.0375 13.0939C11.2263 13.073 11.4533 13.0691 11.7125 13.0646L11.7333 13.0643C12.5507 13.0502 12.9791 12.9982 13.3149 12.8591C13.993 12.5782 14.5317 12.0395 14.8126 11.3614C14.9077 11.1316 14.9641 10.8518 14.9934 10.4226C15.023 9.98905 15.0233 9.4396 15.0233 8.67442V8.02326C15.0233 6.94803 15.0227 6.17591 14.9655 5.57364C14.9089 4.97864 14.8004 4.60003 14.6154 4.2982C14.3873 3.92583 14.0742 3.61275 13.7018 3.38455C13.4 3.19959 13.0214 3.0911 12.4264 3.03452C11.8241 2.97726 11.0519 2.97674 9.97674 2.97674H8.02326C6.94803 2.97674 6.17591 2.97726 5.57364 3.03452ZM5.90698 7.04651C5.90698 6.77679 6.12563 6.55814 6.39535 6.55814H11.6047C11.8744 6.55814 12.093 6.77679 12.093 7.04651C12.093 7.31623 11.8744 7.53488 11.6047 7.53488H6.39535C6.12563 7.53488 5.90698 7.31623 5.90698 7.04651ZM5.90698 9.32558C5.90698 9.05587 6.12563 8.83721 6.39535 8.83721H9.97674C10.2465 8.83721 10.4651 9.05587 10.4651 9.32558C10.4651 9.59529 10.2465 9.81395 9.97674 9.81395H6.39535C6.12563 9.81395 5.90698 9.59529 5.90698 9.32558Z" fill="#818283" />
-                <circle cx="16" cy="5" r="2" fill="#0F47F2" />
-              </svg>
-
-              <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+              {/* SVG: Blue "nxt" badge */}
+              <div className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded">
+                nxt
+              </div>
             </div>
-            <span className="text-base">1</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="18" height="18" fill="white" />
-              <g clip-path="url(#clip0_3861_2370)">
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M8.29623 1.83203H9.70116C10.4564 1.83202 11.0736 1.832 11.5608 1.89751C12.0701 1.96598 12.5116 2.11417 12.8641 2.46663C13.2166 2.8191 13.3648 3.26066 13.4332 3.76996C13.4669 4.02042 13.4832 4.30522 13.4912 4.62546C14.1967 4.73927 14.7748 4.96331 15.2379 5.42632C15.7368 5.92523 15.9582 6.55787 16.0633 7.33948C16.1654 8.09897 16.1654 9.06937 16.1654 10.2946V10.3698C16.1654 11.595 16.1654 12.5654 16.0633 13.3248C15.9582 14.1064 15.7368 14.7391 15.2379 15.238C14.739 15.7369 14.1063 15.9583 13.3247 16.0634C12.5652 16.1655 11.5948 16.1655 10.3696 16.1655H7.62776C6.40258 16.1655 5.43216 16.1655 4.67268 16.0634C3.89107 15.9583 3.25844 15.7369 2.75952 15.238C2.26062 14.7391 2.0392 14.1064 1.93412 13.3248C1.83201 12.5654 1.83202 11.595 1.83203 10.3698V10.2946C1.83202 9.06937 1.83201 8.09897 1.93412 7.33948C2.0392 6.55787 2.26062 5.92523 2.75952 5.42632C3.22254 4.96331 3.80071 4.73927 4.50619 4.62546C4.51414 4.30522 4.5305 4.02042 4.56418 3.76996C4.63265 3.26066 4.78084 2.8191 5.1333 2.46663C5.48576 2.11417 5.92732 1.96598 6.43662 1.89751C6.92386 1.832 7.54102 1.83202 8.29623 1.83203ZM4.4987 5.64278C4.01137 5.74062 3.70253 5.89753 3.46663 6.13343C3.18449 6.41557 3.01538 6.802 2.9252 7.47272C2.83309 8.15783 2.83203 9.06097 2.83203 10.3322C2.83203 11.6034 2.83309 12.5065 2.9252 13.1916C3.01538 13.8623 3.18449 14.2488 3.46663 14.5309C3.74877 14.813 4.1352 14.9822 4.80593 15.0723C5.49104 15.1644 6.39415 15.1655 7.66536 15.1655H10.332C11.6032 15.1655 12.5064 15.1644 13.1915 15.0723C13.8622 14.9822 14.2486 14.813 14.5308 14.5309C14.8129 14.2488 14.982 13.8623 15.0722 13.1916C15.1643 12.5065 15.1654 11.6034 15.1654 10.3322C15.1654 9.06097 15.1643 8.15783 15.0722 7.47272C14.982 6.802 14.8129 6.41557 14.5308 6.13343C14.2949 5.89753 13.986 5.74062 13.4987 5.64278V6.41637C13.4987 6.44712 13.4987 6.47751 13.4988 6.50755C13.4993 7.03158 13.4998 7.44666 13.3256 7.8185C13.1514 8.1903 12.8323 8.4557 12.4294 8.79077C12.4063 8.80997 12.3829 8.82937 12.3593 8.8491L11.8545 9.26977C11.2636 9.76217 10.7846 10.1613 10.3619 10.4332C9.92156 10.7164 9.49276 10.8953 8.9987 10.8953C8.50463 10.8953 8.07583 10.7164 7.63548 10.4332C7.21278 10.1613 6.73384 9.76217 6.14294 9.26977L5.63811 8.8491C5.61448 8.82937 5.59112 8.80997 5.56804 8.79077C5.1651 8.4557 4.84594 8.1903 4.67178 7.8185C4.49763 7.44666 4.49807 7.03158 4.49863 6.50754C4.49866 6.47751 4.4987 6.44712 4.4987 6.41637V5.64278ZM6.56987 2.88859C6.17146 2.94216 5.9761 3.03804 5.8404 3.17374C5.70471 3.30943 5.60882 3.50479 5.55526 3.9032C5.49976 4.316 5.4987 4.86556 5.4987 5.66536V6.41637C5.4987 7.07724 5.50974 7.24994 5.57737 7.39433C5.645 7.53872 5.7706 7.65777 6.2783 8.08083L6.75805 8.48063C7.38002 8.99897 7.81183 9.35763 8.17643 9.5921C8.5293 9.8191 8.76863 9.8953 8.9987 9.8953C9.22876 9.8953 9.4681 9.8191 9.82096 9.5921C10.1856 9.35763 10.6174 8.99897 11.2394 8.48063L11.7191 8.08083C12.2268 7.65777 12.3524 7.53872 12.42 7.39433C12.4876 7.24994 12.4987 7.07724 12.4987 6.41637V5.66536C12.4987 4.86556 12.4976 4.316 12.4422 3.9032C12.3886 3.50479 12.2927 3.30943 12.157 3.17374C12.0213 3.03804 11.826 2.94216 11.4275 2.88859C11.0148 2.83309 10.4652 2.83203 9.66536 2.83203H8.33203C7.53222 2.83203 6.98266 2.83309 6.56987 2.88859ZM7.16536 4.9987C7.16536 4.72256 7.38922 4.4987 7.66536 4.4987H10.332C10.6082 4.4987 10.832 4.72256 10.832 4.9987C10.832 5.27485 10.6082 5.4987 10.332 5.4987H7.66536C7.38922 5.4987 7.16536 5.27485 7.16536 4.9987ZM7.83203 6.9987C7.83203 6.72256 8.0559 6.4987 8.33203 6.4987H9.66536C9.9415 6.4987 10.1654 6.72256 10.1654 6.9987C10.1654 7.27485 9.9415 7.4987 9.66536 7.4987H8.33203C8.0559 7.4987 7.83203 7.27485 7.83203 6.9987Z" fill="#818283" />
-              </g>
-              <defs>
-                <clipPath id="clip0_3861_2370">
-                  <rect width="16" height="16" fill="white" transform="translate(1 1)" />
-                </clipPath>
-              </defs>
-            </svg>
 
-            <span className="text-base">1</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="18" height="18" fill="white" />
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M8.49998 3C6.16573 3 4.27343 4.93663 4.27343 7.32558V7.71857C4.27343 8.10753 4.16092 8.48785 3.9501 8.81146L3.32369 9.77308C2.59667 10.8892 3.15169 12.4062 4.41617 12.7591C4.82825 12.8742 5.24381 12.9714 5.66178 13.051L5.66282 13.0539C6.0822 14.1991 7.20309 15 8.49998 15C9.79686 15 10.9177 14.1991 11.3371 13.0539L11.3382 13.051C11.7561 12.9714 12.1718 12.8742 12.5838 12.7591C13.8483 12.4062 14.4033 10.8892 13.6763 9.77308L13.0499 8.81146C12.8391 8.48785 12.7266 8.10753 12.7266 7.71857V7.32558C12.7266 4.93663 10.8343 3 8.49998 3ZM10.3414 13.2067C9.11815 13.3563 7.88176 13.3562 6.65855 13.2066C7.04628 13.7768 7.72066 14.1628 8.49998 14.1628C9.27925 14.1628 9.95365 13.7768 10.3414 13.2067ZM5.09147 7.32558C5.09147 5.39901 6.61752 3.83721 8.49998 3.83721C10.3825 3.83721 11.9085 5.39901 11.9085 7.32558V7.71857C11.9085 8.27286 12.0688 8.8147 12.3692 9.27589L12.9956 10.2375C13.413 10.8781 13.0944 11.7488 12.3686 11.9514C9.8358 12.6584 7.16422 12.6584 4.6314 11.9514C3.90562 11.7488 3.58705 10.8781 4.00434 10.2375L4.63075 9.27589C4.93116 8.8147 5.09147 8.27286 5.09147 7.71857V7.32558Z" fill="#818283" />
-              </svg>
-
-              <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+            {/* UPDATED: Status badge on right */}
+            <div className="flex items-center gap-1.5 bg-green-50 text-green-600 px-2.5 py-1 rounded-full">
+              {/* SVG: Green checkmark wave icon */}
+              <span className="text-xs font-medium">On Track</span>
             </div>
-            <span className="text-base">7</span>
           </div>
-        </div>
-        <div className={`text-2xl font-medium text-[#1CB977]`}>
-          75%
+
+          {/* Name and Title */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-1.5 text-gray-600">
+              {/* SVG: Bar chart icon (green) */}
+              <span className="text-sm">{candidate.location}</span>
+            </div>
+            <div className="text-2xl font-semibold text-green-600">
+              98%
+            </div>
+          </div>
+
+          <div className="border-t border-gray-200 my-3"></div>
+
+          <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+            <div className="flex items-center gap-1">
+              {/* SVG: Briefcase icon */}
+              <span>{candidate.total_experience}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {/* SVG: Currency icon */}
+              <span>{candidate.current_salary} LPA</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {/* SVG: Currency icon */}
+              <span>20 LPA</span>
+            </div>
+          </div>
+
+          {/* UPDATED: Notice period and last updated */}
+          <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+            <div className="flex items-center gap-1">
+              {/* SVG: Calendar icon */}
+              <span>{candidate.notice_period_days} Month</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {/* SVG: Clock icon */}
+              <span>18 days ago</span>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   const handleGoToDashboard = () => {
     window.location.href = "/";
@@ -2780,6 +2739,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                     <div className="flex space-x-4 min-w-max pb-2">
                       {dynamicShareableStages.map((stage) => {
                         const candidates = stageCandidates[stage.name] || [];
+                        const totalCount = candidates.length;
+                        const rejectedCount = 8;
                         const stageCount = getStageCount(stage.name);
                         return (
                           <div
@@ -2793,15 +2754,59 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                               <div className="flex relative items-center mb-2">
                                 <div className={`absolute left-[-10px] w-1 h-6 ${stage.bgColor} rounded-r mr-3`}></div>
                                 <h1 className="pl-3 text-xl font-medium text-gray-700"> {stage.name}</h1>
-                                <button className="ml-auto">
+                                <button
+                                  onClick={() => setShowArchiveMenu(!showArchiveMenu)}
+                                  className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors"
+                                >
                                   <div className="flex flex-col gap-0.5">
                                     <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
                                     <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
                                     <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
                                   </div>
                                 </button>
+                                {showArchiveMenu && (
+                                  <div className="absolute top-12 right-4 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50 w-56">
+                                    <button
+                                      onClick={() => {
+                                        // Handle archive selected
+                                        setShowArchiveMenu(false);
+                                      }}
+                                      className="w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                                    >
+                                      <span className="text-sm font-medium">Archive Candidates</span>
+                                    </button>
+                                    <div className="border-t border-gray-200 my-1"></div>
+                                    <button
+                                      onClick={() => {
+                                        // Handle show archive list
+                                        setShowArchiveMenu(false);
+                                      }}
+                                      className="w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                                    >
+                                      <span className="text-sm font-medium">Show Archive List</span>
+                                    </button>
+                                  </div>
+                                )}
+
+                              </div>
+                              <p className="text-sm text-gray-500">Nxthyre Shortlist</p>
+                              <div className="flex items-center gap-8 mb-3">
+                                <div>
+                                  <span className="text-3xl font-semibold text-gray-900">{rejectedCount}</span>
+                                  <span className="text-sm text-gray-500 ml-2">Rejected</span>
+                                </div>
+                                <div>
+                                  <span className="text-3xl font-semibold text-gray-900">{totalCount}</span>
+                                  <span className="text-sm text-gray-500 ml-2">Total</span>
+                                </div>
                               </div>
 
+                              <div className="w-full h-1.5 bg-gray-200 rounded-full mb-6">
+                                <div
+                                  className="h-full bg-blue-500 rounded-full transition-all"
+                                  style={{ width: `${((totalCount - rejectedCount) / totalCount) * 100}%` }}
+                                ></div>
+                              </div>
 
                               <div className="pt-8 overflow-y-auto max-h-[85vh] hide-scrollbar">
                                 <div className="space-y-3">
@@ -2816,6 +2821,30 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                                   )}
                                 </div>
                               </div>
+                              // UPDATED: Add at the bottom of the component, before closing tags
+                              {selectedCandidates.size > 0 && (
+                                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg py-4 px-6 z-50">
+                                  <div className="max-w-7xl mx-auto flex items-center justify-between">
+                                    <p className="text-sm text-gray-600">
+                                      Selected candidates for archive list
+                                    </p>
+                                    <div className="flex items-center gap-3">
+                                      <button
+                                        onClick={() => setSelectedCandidates(new Set())}
+                                        className="px-6 py-2.5 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        onClick={handleArchiveSelected}
+                                        className="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                                      >
+                                        Move to Archive
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         );
