@@ -148,7 +148,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [eventCandidateDetails, setEventCandidateDetails] = useState<any>(null);
   const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
-  const [showArchiveMenu, setShowArchiveMenu] = useState(false);
+  const [selectionStage, setSelectionStage] = useState<string | null>(null);
+  const [archiveMenuStage, setArchiveMenuStage] = useState<string | null>(null);
   const [codingQuestions, setCodingQuestions] = useState<
     {
       name: string;
@@ -201,15 +202,24 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [expandedExperiences, setExpandedExperiences] = useState<Set<number>>(new Set());
   const maxCharLength = 320;
 
-  const toggleCandidateSelection = (candidateId: string) => {
-    const newSelection = new Set(selectedCandidates);
-    if (newSelection.has(candidateId)) {
-      newSelection.delete(candidateId);
+  const toggleCandidateSelection = (candidateId: string, stageName: string) => {
+    if (selectionStage && selectionStage !== stageName) {
+      setSelectedCandidates(new Set([candidateId]));
+      setSelectionStage(stageName);
     } else {
-      newSelection.add(candidateId);
+      const newSelection = new Set(selectedCandidates);
+      if (newSelection.has(candidateId)) {
+        newSelection.delete(candidateId);
+      } else {
+        newSelection.add(candidateId);
+      }
+      setSelectedCandidates(newSelection);
+      if (newSelection.size === 0) {
+        setSelectionStage(null);
+      } else {
+        setSelectionStage(stageName);
+      }
     }
-    setSelectedCandidates(newSelection);
-
   };
 
   // UPDATED: Add archive handler
@@ -223,6 +233,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       // TODO: Call API to archive candidates
       showToast.success(`${candidateIds.length} candidates moved to archive`);
       setSelectedCandidates(new Set());
+      setSelectionStage(null);
     } catch (error) {
       showToast.error("Failed to archive candidates");
     }
@@ -2313,7 +2324,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           <div
             onClick={(e) => {
               e.stopPropagation();
-              toggleCandidateSelection(candidate.id);
+              toggleCandidateSelection(candidate.id, stage);
             }}
             className={`w-5 h-5 rounded border-2 cursor-pointer flex items-center justify-center transition-colors ${isSelected ? "bg-blue-600 border-blue-600" : "border-gray-300 bg-white"
               }`}
@@ -2794,7 +2805,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                                 <div className={`absolute left-[-10px] w-1 h-6 ${stage.bgColor} rounded-r mr-3`}></div>
                                 <h1 className="pl-3 text-xl font-medium text-gray-700"> {stage.name}</h1>
                                 <button
-                                  onClick={() => setShowArchiveMenu(!showArchiveMenu)}
+                                  onClick={() => setArchiveMenuStage(archiveMenuStage === stage.name ? null : stage.name)}
                                   className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors"
                                 >
                                   <div className="flex flex-col gap-0.5">
@@ -2803,12 +2814,12 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                                     <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
                                   </div>
                                 </button>
-                                {showArchiveMenu && (
+                                {archiveMenuStage === stage.name && (
                                   <div className="absolute top-12 right-4 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50 w-56">
                                     <button
                                       onClick={() => {
                                         // Handle archive selected
-                                        setShowArchiveMenu(false);
+                                        setArchiveMenuStage(null);
                                       }}
                                       className="w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors"
                                     >
@@ -2818,7 +2829,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                                     <button
                                       onClick={() => {
                                         // Handle show archive list
-                                        setShowArchiveMenu(false);
+                                        setArchiveMenuStage(null);
                                       }}
                                       className="w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors"
                                     >
@@ -2858,7 +2869,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                                       <p className="text-sm">No candidates</p>
                                     </div>
                                   )}
-                                  {selectedCandidates.size > 0 && (
+                                  {selectedCandidates.size > 0 && selectionStage === stage.name && (
                                     <div className=" bg-white border-t border-gray-200 shadow-lg py-4 px-6 z-50">
                                       <div className="max-w-7xl mx-auto">
 
