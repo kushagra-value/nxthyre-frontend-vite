@@ -2799,7 +2799,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                             onDragOver={handleDragOver}
                             onDrop={(e) => handleDrop(e, stage.name)}
                           >
-                            <div className={`bg-[#F5F9FB] h-full rounded-lg p-3 space-y-3`}>
+                            <div className={`relative bg-[#F5F9FB] h-full rounded-lg p-3 space-y-3`}>
 
                               <div className="flex relative justify-between items-center mb-2">
                                 <div className={`absolute left-[-10px] w-1 h-6 ${stage.bgColor} rounded-r mr-3`}></div>
@@ -2869,33 +2869,32 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                                       <p className="text-sm">No candidates</p>
                                     </div>
                                   )}
-                                  {selectedCandidates.size > 0 && selectionStage === stage.name && (
-                                    <div className=" bg-white border-t border-gray-200 shadow-lg py-4 px-6 z-50">
-                                      <div className="max-w-7xl mx-auto">
 
-                                        <div className="flex items-center justify-between">
-
-                                          <button
-                                            onClick={handleArchiveSelected}
-                                            className="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
-                                          >
-                                            Move to Archive
-                                          </button>
-                                          <button
-                                            onClick={() => setSelectedCandidates(new Set())}
-                                            className="px-6 py-2.5 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-                                          >
-                                            Cancel
-                                          </button>
-                                        </div>
-                                        <p className="text-sm text-gray-600">
-                                          Selected candidates for archive list
-                                        </p>
-                                      </div>
-                                    </div>
-                                  )}
                                 </div>
                               </div>
+                              {selectedCandidates.size > 0 && selectionStage === stage.name && (
+                                <div className="absolute bottom-0 left-0 w-full bg-white border-t border-gray-200 shadow-lg py-4 px-6 z-50 rounded-b-lg">
+                                  <div className="max-w-7xl mx-auto">
+                                    <div className="flex items-center justify-between">
+                                      <button
+                                        onClick={handleArchiveSelected}
+                                        className="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                                      >
+                                        Move to Archive
+                                      </button>
+                                      <button
+                                        onClick={() => setSelectedCandidates(new Set())}
+                                        className="px-6 py-2.5 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                    <p className="text-sm text-gray-600">
+                                      Selected candidates for archive list
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
 
                             </div>
                           </div>
