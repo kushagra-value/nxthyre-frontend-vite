@@ -2381,7 +2381,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
               <span className="text-sm">{candidate.location}</span>
             </div>
             <div className="text-2xl font-semibold text-green-600">
-              98%
+              --%
             </div>
           </div>
 
@@ -2395,7 +2395,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                 <path d="M7.4987 9.5013C7.4987 9.96154 7.12561 10.3346 6.66536 10.3346C6.20513 10.3346 5.83203 9.96154 5.83203 9.5013C5.83203 9.04107 6.20513 8.66797 6.66536 8.66797C7.12561 8.66797 7.4987 9.04107 7.4987 9.5013Z" fill="#818283" />
               </svg>
 
-              <span>{candidate.total_experience}</span>
+              <span>{candidate.total_experience} years</span>
             </div>
             <div className="flex items-center gap-1">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2417,7 +2417,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                 <path d="M3.05469 12.2231V7.91753C3.05469 5.48698 4.44358 4.44531 6.52691 4.44531H13.4714C15.5547 4.44531 16.9436 5.48698 16.9436 7.91753V12.0842C16.9436 14.5148 15.5547 15.5564 13.4714 15.5564H7.56858" stroke="#818283" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
 
-              <span>20 LPA</span>
+              <span>-- LPA</span>
             </div>
           </div>
 
@@ -2435,7 +2435,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M10 3.97674C6.67345 3.97674 3.97674 6.67345 3.97674 10C3.97674 13.3265 6.67345 16.0233 10 16.0233C13.3265 16.0233 16.0233 13.3265 16.0233 10C16.0233 6.67345 13.3265 3.97674 10 3.97674ZM3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10ZM10 6.90698C10.2697 6.90698 10.4884 7.12563 10.4884 7.39535V9.79768L11.9732 11.2826C12.1639 11.4733 12.1639 11.7825 11.9732 11.9732C11.7825 12.1639 11.4733 12.1639 11.2826 11.9732L9.65469 10.3453C9.56307 10.2538 9.51163 10.1295 9.51163 10V7.39535C9.51163 7.12563 9.73029 6.90698 10 6.90698Z" fill="#818283" />
               </svg>
 
-              <span>18 days ago</span>
+              <span>-- days ago</span>
             </div>
           </div>
         </div>
