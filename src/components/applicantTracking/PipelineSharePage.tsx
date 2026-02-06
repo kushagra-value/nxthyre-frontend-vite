@@ -2790,7 +2790,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                           >
                             <div className={`bg-[#F5F9FB] h-full rounded-lg p-3 space-y-3`}>
 
-                              <div className="flex relative items-center mb-2">
+                              <div className="flex relative justify-between items-center mb-2">
                                 <div className={`absolute left-[-10px] w-1 h-6 ${stage.bgColor} rounded-r mr-3`}></div>
                                 <h1 className="pl-3 text-xl font-medium text-gray-700"> {stage.name}</h1>
                                 <button
@@ -2859,7 +2859,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                                     </div>
                                   )}
                                   {selectedCandidates.size > 0 && (
-                                    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg py-4 px-6 z-50">
+                                    <div className=" bg-white border-t border-gray-200 shadow-lg py-4 px-6 z-50">
                                       <div className="max-w-7xl mx-auto flex items-center justify-between">
                                         <p className="text-sm text-gray-600">
                                           Selected candidates for archive list
