@@ -1498,6 +1498,18 @@ function MainApp() {
           element={
             isAuthenticated ? (
               <div className="zoom-80-container">
+                {/* 🔔 Toast container */}
+                <Toaster
+                  toastOptions={{
+                    style: {
+                      marginBottom: "1rem",
+                    },
+                  }}
+                  containerStyle={{
+                    bottom: "16px",
+                    right: "16px",
+                  }}
+                />
                 {showPipelineSharePage ? (
                   <PipelineSharePage
                     pipelineName={job?.name || "Pipeline Name"}
