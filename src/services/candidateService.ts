@@ -1168,6 +1168,25 @@ class CandidateService {
   //     );
   //   }
   // }
+
+  async updateCandidateJobScoreDescription(
+    candidateId: string,
+    jobId: number,
+    description: string,
+  ): Promise<boolean> {
+    try {
+      await apiClient.patch("/api/jobs/candidate-job-score/", {
+        candidate_id: candidateId,
+        job_id: jobId,
+        description,
+      });
+
+      return true;
+    } catch (error: any) {
+      console.error("Error updating profile match description:", error);
+      return false;
+    }
+  }
 }
 
 export const candidateService = new CandidateService();

@@ -132,7 +132,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   const [expandedIndices, setExpandedIndices] = useState(new Set([0]));
 
   const [showMoreSummary, setShowMoreSummary] = useState(false);
-  const [expandedExperiences, setExpandedExperiences] = useState<Set<number>>(new Set());
+  const [expandedExperiences, setExpandedExperiences] = useState<Set<number>>(
+    new Set(),
+  );
   const maxCharLength = 320;
 
   const [codingQuestions, setCodingQuestions] = useState<
@@ -603,6 +605,10 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   // const [booleanData, setBooleanData] = useState<AnalysisResult | null>(null);
   // const [hasBooleanAnalysis, setHasBooleanAnalysis] = useState(false);
 
+  const [isEditingMatchDesc, setIsEditingMatchDesc] = useState(false);
+  const [editedMatchDesc, setEditedMatchDesc] = useState("");
+  const [isSavingMatchDesc, setIsSavingMatchDesc] = useState(false);
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "Score":
@@ -613,7 +619,54 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         const jobScoreObj =
           selectedCandidate.candidate.stageData?.[slug]?.job_score_obj;
 
+        if (!jobScoreObj) {
+          return (
+            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+              <div className="text-center text-gray-500 mt-6">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-base font-medium">Loading analysis...</p>
+              </div>
+            </div>
+          );
+        }
+
         let quickFitData = jobScoreObj.quick_fit_summary || [];
+
+        useEffect(() => {
+          if (jobScoreObj?.candidate_match_score?.description) {
+            setEditedMatchDesc(jobScoreObj.candidate_match_score.description);
+          }
+        }, [jobScoreObj]);
+
+        const handleSaveMatchDescription = async () => {
+          if (!selectedCandidate?.candidate.id || !jobId) return;
+
+          try {
+            setIsSavingMatchDesc(true);
+
+            const success =
+              await candidateService.updateCandidateJobScoreDescription(
+                selectedCandidate.candidate.id,
+                jobId,
+                editedMatchDesc,
+              );
+
+            if (!success) {
+              throw new Error("Update failed");
+            }
+
+            // 🔥 Safe here — jobScoreObj is in scope
+            jobScoreObj.candidate_match_score.description = editedMatchDesc;
+
+            showToast.success("Profile match description updated");
+            setIsEditingMatchDesc(false);
+          } catch (error) {
+            console.error(error);
+            showToast.error("Failed to update description");
+          } finally {
+            setIsSavingMatchDesc(false);
+          }
+        };
 
         const priorityOrder = {
           CRITICAL: 0,
@@ -631,17 +684,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
         console.log("selectedCandidate:", selectedCandidate);
 
-        if (!jobScoreObj) {
-          return (
-            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-              <div className="text-center text-gray-500 mt-6">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-base font-medium">Loading analysis...</p>
-              </div>
-            </div>
-          );
-        }
-
         return (
           <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
             {/* Top Badge */}
@@ -657,12 +699,57 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 </div>
               </div>
               <div className="text-gray-600 bg-gray-50 rounded-md px-2 py-3 mr-2 mb-3">
-                <h2 className="font-semibold mb-1 text-md">
-                  Profile Match Description
-                </h2>
-                <span className="text-sm">
-                  {jobScoreObj.candidate_match_score.description}
-                </span>
+                <div className="flex justify-between items-center mb-1">
+                  <h2 className="font-semibold text-md">
+                    Profile Match Description
+                  </h2>
+
+                  {!isEditingMatchDesc && (
+                    <button
+                      onClick={() => setIsEditingMatchDesc(true)}
+                      className="text-blue-600 text-sm font-medium hover:underline"
+                    >
+                      Edit
+                    </button>
+                  )}
+                </div>
+
+                {!isEditingMatchDesc ? (
+                  <span className="text-sm">
+                    {jobScoreObj.candidate_match_score.description}
+                  </span>
+                ) : (
+                  <div className="space-y-2">
+                    <textarea
+                      value={editedMatchDesc}
+                      onChange={(e) => setEditedMatchDesc(e.target.value)}
+                      rows={4}
+                      className="w-full p-2 border border-gray-300 rounded-md text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => {
+                          setEditedMatchDesc(
+                            jobScoreObj.candidate_match_score.description,
+                          );
+                          setIsEditingMatchDesc(false);
+                        }}
+                        className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300"
+                      >
+                        Cancel
+                      </button>
+
+                      <button
+                        onClick={handleSaveMatchDescription}
+                        disabled={isSavingMatchDesc}
+                        className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {isSavingMatchDesc ? "Saving..." : "Save"}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -797,7 +884,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         return (
           <div className="bg-[#F5F9FB] py-4 px-2 rounded-xl space-y-6">
             {/* UPDATED: Profile Summary with View More/Less for long text */}
-            {(selectedCandidate.candidate.profile_summary || selectedCandidate.candidate.headline) && (
+            {(selectedCandidate.candidate.profile_summary ||
+              selectedCandidate.candidate.headline) && (
               <div>
                 <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
                   <User className="w-4 h-4 mr-2 text-[#4B5563]" />
@@ -812,11 +900,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
                     const isLongSummary =
                       selectedCandidate.candidate.profile_summary &&
-                      selectedCandidate.candidate.profile_summary.length > maxCharLength;
+                      selectedCandidate.candidate.profile_summary.length >
+                        maxCharLength;
 
-                    const displaySummary = showMoreSummary || !isLongSummary
-                      ? summary
-                      : summary.slice(0, maxCharLength) + "...";
+                    const displaySummary =
+                      showMoreSummary || !isLongSummary
+                        ? summary
+                        : summary.slice(0, maxCharLength) + "...";
 
                     return (
                       <>
@@ -835,7 +925,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 </p>
               </div>
             )}
-
 
             {positions.length > 0 && (
               <div>
@@ -876,9 +965,10 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                             const isLong = desc.length > maxCharLength;
                             const isExpanded = expandedExperiences.has(index);
 
-                            const displayDesc = isExpanded || !isLong
-                              ? desc
-                              : desc.slice(0, maxCharLength) + "...";
+                            const displayDesc =
+                              isExpanded || !isLong
+                                ? desc
+                                : desc.slice(0, maxCharLength) + "...";
 
                             return (
                               <>
@@ -886,7 +976,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                                 {isLong && (
                                   <button
                                     onClick={() => {
-                                      const newSet = new Set(expandedExperiences);
+                                      const newSet = new Set(
+                                        expandedExperiences,
+                                      );
                                       if (isExpanded) {
                                         newSet.delete(index);
                                       } else {
@@ -943,9 +1035,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       </h4>
                       <p className="text-sm text-[#818283]">{edu.schoolName}</p>
                       {edu.startDate?.year &&
-                        edu.endDate?.year &&
-                        edu.startDate.year !== 0 &&
-                        edu.endDate.year !== 0 ? (
+                      edu.endDate?.year &&
+                      edu.startDate.year !== 0 &&
+                      edu.endDate.year !== 0 ? (
                         <p className="text-sm text-[#818283]">
                           {edu.startDate.year} - {edu.endDate.year}
                         </p>
@@ -1188,12 +1280,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                           <Minus className="w-4 h-4 p-1 bg-[#818283] text-white mr-1 rounded-xl" />
                         )}
                         <span
-                          className={`${q.status === "Pass"
-                            ? "text-[#007A5A]"
-                            : q.status === "Fail"
-                              ? "text-[#ED051C]"
-                              : "text-[#818283]"
-                            } font-medium`}
+                          className={`${
+                            q.status === "Pass"
+                              ? "text-[#007A5A]"
+                              : q.status === "Fail"
+                                ? "text-[#ED051C]"
+                                : "text-[#818283]"
+                          } font-medium`}
                         >
                           {q.status}
                         </span>
@@ -1233,8 +1326,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         return (
           <div className="space-y-3 bg-[#F5F9FB] p-2 rounded-xl">
             {interviewData?.resumeScore ||
-              interviewData?.knowledgeScore ||
-              interviewData?.communicationScore ? (
+            interviewData?.knowledgeScore ||
+            interviewData?.communicationScore ? (
               <>
                 <div className="bg-white rounded-xl p-2">
                   <h4 className="text-base font-medium text-[#4B5563] mb-4">
@@ -1364,13 +1457,15 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       return (
                         <div
                           key={index}
-                          className={`border ${isExpanded ? "border-[#0F47F2]" : "border-[#818283]"
-                            } bg-white rounded-md p-4`}
+                          className={`border ${
+                            isExpanded ? "border-[#0F47F2]" : "border-[#818283]"
+                          } bg-white rounded-md p-4`}
                         >
                           <div className="flex justify-between items-start">
                             <p
-                              className={`text-sm font-medium ${isExpanded ? "text-[#4B5563]" : "text-[#818283]"
-                                }`}
+                              className={`text-sm font-medium ${
+                                isExpanded ? "text-[#4B5563]" : "text-[#818283]"
+                              }`}
                             >
                               {q.question}
                             </p>
@@ -1479,7 +1574,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                               }}
                             />
                             <button
-                              onClick={() => { }}
+                              onClick={() => {}}
                               className="text-blue-500 mt-1"
                             >
                               Reply ?
@@ -1695,10 +1790,12 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   type="text"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  placeholder={`Type your ${notesView === "my" ? "team" : "community"
-                    } comment!`}
-                  className={`flex-1 px-4 py-2 rounded-lg text-sm ${newComment && !isValidNote ? "border border-red-500" : ""
-                    }`}
+                  placeholder={`Type your ${
+                    notesView === "my" ? "team" : "community"
+                  } comment!`}
+                  className={`flex-1 px-4 py-2 rounded-lg text-sm ${
+                    newComment && !isValidNote ? "border border-red-500" : ""
+                  }`}
                   onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
                 />
                 <button
@@ -1837,10 +1934,11 @@ const StageDetails: React.FC<StageDetailsProps> = ({
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`py-2 px-2 text-sm font-medium ${activeTab === tab
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
-                  }`}
+                className={`py-2 px-2 text-sm font-medium ${
+                  activeTab === tab
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
               >
                 {tab}
                 {tab === "Notes" && (
