@@ -660,6 +660,11 @@ function MainApp() {
           });
           setDefaultBoolQuery(""); // NEW
         } else {
+          // Auth token approach here ::
+          if (authLoading || !isAuthenticated) {
+            // Do NOT call API yet
+            return;
+          }
           response = await candidateService.getCandidates(appliedFilters, page);
           if (response.boolean_search_terms) {
             // Assume API returns 'bool_query' field
@@ -685,7 +690,7 @@ function MainApp() {
           }
         }
       } catch (error) {
-        showToast.error("Failed to fetch online fuckimgg candidates");
+        showToast.error("Failed to fetch candidates");
         console.error("Error fetching candidates:", error);
         setCandidates([]);
         setTotalCount(0);
@@ -1498,18 +1503,6 @@ function MainApp() {
           element={
             isAuthenticated ? (
               <div className="zoom-80-container">
-                {/* 🔔 Toast container */}
-                <Toaster
-                  toastOptions={{
-                    style: {
-                      marginBottom: "1rem",
-                    },
-                  }}
-                  containerStyle={{
-                    bottom: "16px",
-                    right: "16px",
-                  }}
-                />
                 {showPipelineSharePage ? (
                   <PipelineSharePage
                     pipelineName={job?.name || "Pipeline Name"}
