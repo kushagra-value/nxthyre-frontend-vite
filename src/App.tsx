@@ -594,7 +594,7 @@ function MainApp() {
         sort_by: sortBy,
       };
       setFilters(newFilters);
-      await fetchCandidates(1, newFilters);
+      // await fetchCandidates(1, newFilters);
     } catch (error) {
       showToast.error("Failed to fetch job details");
       console.error("Error fetching job details:", error);
@@ -703,13 +703,14 @@ function MainApp() {
     [selectedCandidate, debouncedSearchQuery, sortBy, filters, activeTab],
   );
 
-  useEffect(() => {
-    if (!authLoading && isAuthenticated && filters.jobId) {
-      fetchCandidates(1, filters);
+  const isCandidatesFetchReady =
+    !authLoading && isAuthenticated && !!filters.jobId;
 
-      console.log("Fetching candidates here after auth is loaded");
-    }
-  }, [authLoading, isAuthenticated, filters.jobId]);
+  useEffect(() => {
+    if (!isCandidatesFetchReady) return;
+
+    fetchCandidates(1, filters);
+  }, [isCandidatesFetchReady]);
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
