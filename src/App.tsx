@@ -685,11 +685,8 @@ function MainApp() {
           }
         }
       } catch (error) {
-        // ⏳ wait 3 seconds
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+        showToast.error("Failed to fetch online fuckimgg candidates");
         console.error("Error fetching candidates:", error);
-
-        showToast.error("Failed to fetch candidates");
         setCandidates([]);
         setTotalCount(0);
         setSelectedCandidate(null);
