@@ -765,7 +765,15 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     if (isUploading) return;
 
     if (!uploadFiles || uploadFiles.length === 0 || !activeJobId) {
-      showToast.error("Please select PDF files and ensure a job is selected");
+      toast.error("Please select PDF files and ensure a job is selected", {
+        duration: 5000,
+        position: "top-center",
+        style: {
+          background: "#0abc1eff",
+          color: "#fff",
+          fontWeight: "500",
+        },
+      });
       return;
     }
 
@@ -776,7 +784,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         "Resumes queued for analysis. Refresh after 10 mins to check status.",
         {
           duration: 7000,
-          position: "bottom-right",
+          position: "top-center",
           style: {
             background: "#0abc1eff",
             color: "#fff",
@@ -791,7 +799,15 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       fetchStages(activeJobId);
     } catch (error) {
       console.error(error);
-      showToast.error("Failed to upload candidates");
+      toast.error("Failed to upload candidates", {
+        duration: 5000,
+        position: "top-center",
+        style: {
+          background: "#0abc1eff",
+          color: "#fff",
+          fontWeight: "500",
+        },
+      });
     } finally {
       setIsUploading(false);
     }
