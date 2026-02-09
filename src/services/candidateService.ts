@@ -667,15 +667,9 @@ class CandidateService {
       }
       return response.data;
     } catch (error: any) {
-      setTimeout(() => {
-        console.error("Error fetching candidates:", {
-          message: error.message,
-          response: error.response?.data,
-        });
-      }, 3000);
-      // throw new Error(
-      //   error.response?.data?.error || "Failed to fetch candidates",
-      // );
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch candidates",
+      );
     }
   }
 

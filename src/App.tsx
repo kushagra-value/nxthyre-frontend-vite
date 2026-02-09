@@ -685,8 +685,11 @@ function MainApp() {
           }
         }
       } catch (error) {
-        showToast.error("Failed to fetch candidates");
+        // ⏳ wait 3 seconds
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         console.error("Error fetching candidates:", error);
+
+        showToast.error("Failed to fetch candidates");
         setCandidates([]);
         setTotalCount(0);
         setSelectedCandidate(null);
@@ -1527,7 +1530,7 @@ function MainApp() {
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
                         searchQuery={""}
-                        setSearchQuery={() => { }}
+                        setSearchQuery={() => {}}
                         showCreateRoleButton={true}
                         showSearchBar={false}
                       />
@@ -1541,7 +1544,7 @@ function MainApp() {
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
                         searchQuery={""}
-                        setSearchQuery={() => { }}
+                        setSearchQuery={() => {}}
                         showCreateRoleButton={true}
                         showSearchBar={false}
                       />
@@ -1707,10 +1710,11 @@ function MainApp() {
                                           onClick={() =>
                                             setCurrentRequisitionPage(page)
                                           }
-                                          className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${page === currentRequisitionPage
-                                            ? "bg-blue-600 text-white"
-                                            : "bg-white text-black hover:bg-gray-200"
-                                            }`}
+                                          className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
+                                            page === currentRequisitionPage
+                                              ? "bg-blue-600 text-white"
+                                              : "bg-white text-black hover:bg-gray-200"
+                                          }`}
                                         >
                                           {page}
                                         </button>
