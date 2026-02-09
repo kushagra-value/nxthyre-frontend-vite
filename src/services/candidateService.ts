@@ -653,7 +653,7 @@ class CandidateService {
         requestBody.enable_boolean_analysis = true;
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 5000));
       const response = await apiClient.post(
         `/candidates/search/?page=${page}`,
         requestBody,
@@ -669,7 +669,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch candidates",
+        error.response?.data?.error || "Failed to fetch service candidates",
       );
     }
   }

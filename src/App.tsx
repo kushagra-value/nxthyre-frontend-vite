@@ -686,7 +686,7 @@ function MainApp() {
           }
         }
       } catch (error) {
-        showToast.error("Failed to fetch candidates");
+        showToast.error("Failed to fetch app candidates");
         console.error("Error fetching candidates:", error);
         setCandidates([]);
         setTotalCount(0);
