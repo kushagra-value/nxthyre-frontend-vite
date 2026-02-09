@@ -609,6 +609,20 @@ const StageDetails: React.FC<StageDetailsProps> = ({
   const [editedMatchDesc, setEditedMatchDesc] = useState("");
   const [isSavingMatchDesc, setIsSavingMatchDesc] = useState(false);
 
+  useEffect(() => {
+    if (activeTab !== "Score") return;
+
+    const currentStage = stages.find((stage) => stage.name === selectedStage);
+    const slug = currentStage?.slug;
+
+    const jobScoreObj =
+      selectedCandidate?.candidate.stageData?.[slug]?.job_score_obj;
+
+    if (jobScoreObj?.candidate_match_score?.description) {
+      setEditedMatchDesc(jobScoreObj.candidate_match_score.description);
+    }
+  }, [activeTab, selectedStage, selectedCandidate, stages]);
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "Score":
@@ -631,12 +645,6 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         }
 
         let quickFitData = jobScoreObj.quick_fit_summary || [];
-
-        useEffect(() => {
-          if (jobScoreObj?.candidate_match_score?.description) {
-            setEditedMatchDesc(jobScoreObj.candidate_match_score.description);
-          }
-        }, [jobScoreObj]);
 
         const handleSaveMatchDescription = async () => {
           if (!selectedCandidate?.candidate.id || !jobId) return;
