@@ -663,6 +663,7 @@ function MainApp() {
           // Auth token approach here ::
           if (authLoading || !isAuthenticated) {
             // Do NOT call API yet
+            setLoadingCandidates(false);
             return;
           }
           response = await candidateService.getCandidates(appliedFilters, page);
@@ -701,6 +702,13 @@ function MainApp() {
     },
     [selectedCandidate, debouncedSearchQuery, sortBy, filters, activeTab],
   );
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && filters.jobId) {
+      fetchCandidates(1, filters);
+    }
+  }, [authLoading, isAuthenticated, filters.jobId]);
+
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
