@@ -660,6 +660,9 @@ function MainApp() {
           });
           setDefaultBoolQuery(""); // NEW
         } else {
+          setTimeout(() => {
+            console.log("Simulating loading delay for candidate fetch...");
+          }, 3000);
           response = await candidateService.getCandidates(appliedFilters, page);
           if (response.boolean_search_terms) {
             // Assume API returns 'bool_query' field
