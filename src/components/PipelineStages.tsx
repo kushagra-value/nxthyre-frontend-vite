@@ -495,6 +495,45 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   // Upload candidates button states
   const [isUploading, setIsUploading] = useState(false);
 
+  // Upload status states
+  const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<any | null>(null);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Start Polling
+  const startPolling = (batchId: string) => {
+    if (pollingRef.current) clearInterval(pollingRef.current);
+
+    pollingRef.current = setInterval(async () => {
+      try {
+        const status = await jobPostService.getUploadStatus(batchId);
+
+        setUploadStatus(status);
+
+        if (status.status === "completed") {
+          clearInterval(pollingRef.current!);
+          pollingRef.current = null;
+
+          showToast.success(
+            status.failed === 0
+              ? `All ${status.success} resumes processed successfully`
+              : `${status.success} succeeded, ${status.failed} failed`,
+          );
+        }
+      } catch (error) {
+        console.error("Polling failed", error);
+      }
+    }, 2500);
+  };
+
+  // Stop Polling
+  useEffect(() => {
+    if (!showUploadModal && pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+  }, [showUploadModal]);
+
   const navigate = useNavigate();
 
   const handleSendInvite = async (applicationId: number) => {
@@ -779,7 +818,20 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
     try {
       setIsUploading(true);
-      await jobPostService.uploadResumes(activeJobId, uploadFiles);
+
+      // await jobPostService.uploadResumes(activeJobId, uploadFiles);
+      const response = await jobPostService.uploadResumes(
+        activeJobId,
+        uploadFiles,
+      );
+
+      const { batch_id } = response;
+
+      setActiveBatchId(batch_id);
+      setUploadStatus(null);
+
+      startPolling(batch_id);
+
       toast.success(
         "Resumes queued for analysis. Refresh after 10 mins to check status.",
         {
@@ -792,7 +844,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           },
         },
       );
-      setShowUploadModal(false);
+      // setShowUploadModal(false);
       setUploadFiles(null);
       // Refresh candidates for Uncontacted stage
       fetchCandidates(activeJobId, "uncontacted");
@@ -4766,6 +4818,85 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               onChange={handleFileChange}
               className="mb-4 w-full"
             />
+
+            {/* Upload status (accordion)  */}
+            {uploadStatus && (
+              <div className="mt-4 border rounded-md p-3">
+                <details open>
+                  <summary className="cursor-pointer font-medium text-sm flex justify-between">
+                    <span>Upload Status</span>
+                    <span className="text-gray-500">{uploadStatus.status}</span>
+                  </summary>
+
+                  <div className="mt-3 space-y-3 text-sm">
+                    {/* Counts */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>Processed: {uploadStatus.processed}</div>
+                      <div>Total: {uploadStatus.total_files}</div>
+                      <div>Success: {uploadStatus.success}</div>
+                      <div>Failed: {uploadStatus.failed}</div>
+                      <div>Pending: {uploadStatus.pending}</div>
+                      <div>Processing: {uploadStatus.processing}</div>
+                    </div>
+
+                    {/* Progress bar */}
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span>
+                          {uploadStatus.processed} / {uploadStatus.total_files}{" "}
+                          completed
+                        </span>
+                        <span>
+                          {Math.round(
+                            (uploadStatus.processed /
+                              uploadStatus.total_files) *
+                              100,
+                          )}
+                          %
+                        </span>
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded">
+                        <div
+                          className="h-2 bg-blue-600 rounded"
+                          style={{
+                            width: `${
+                              (uploadStatus.processed /
+                                uploadStatus.total_files) *
+                              100
+                            }%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Failed files */}
+                    {uploadStatus.failed_details?.length > 0 && (
+                      <div className="bg-red-50 p-2 rounded">
+                        <p className="font-semibold text-red-600 mb-1">
+                          Failed Files
+                        </p>
+                        <ul className="list-disc ml-4 text-xs space-y-1">
+                          {uploadStatus.failed_details.map(
+                            (file: any, index: number) => (
+                              <li key={index}>
+                                <span className="font-medium">
+                                  {file.file_name}
+                                </span>
+                                <br />
+                                <span className="text-gray-600">
+                                  {file.error}
+                                </span>
+                              </li>
+                            ),
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </details>
+              </div>
+            )}
+
             <div className="flex justify-end space-x-2">
               <button
                 onClick={() => !isUploading && setShowUploadModal(false)}
