@@ -492,6 +492,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     { id: string; name: string }[]
   >([]);
 
+  // Upload candidates button states
+  const [isUploading, setIsUploading] = useState(false);
+
   const navigate = useNavigate();
 
   const handleSendInvite = async (applicationId: number) => {
@@ -758,11 +761,16 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   };
 
   const handleUploadCandidates = async () => {
+    // 🔒 Prevent duplicate clicks
+    if (isUploading) return;
+
     if (!uploadFiles || uploadFiles.length === 0 || !activeJobId) {
       showToast.error("Please select PDF files and ensure a job is selected");
       return;
     }
+
     try {
+      setIsUploading(true);
       await jobPostService.uploadResumes(activeJobId, uploadFiles);
       toast.success(
         "Resumes queued for analysis. Refresh after 10 mins to check status.",
@@ -782,7 +790,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       fetchCandidates(activeJobId, "uncontacted");
       fetchStages(activeJobId);
     } catch (error) {
+      console.error(error);
       showToast.error("Failed to upload candidates");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -4741,16 +4752,20 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             />
             <div className="flex justify-end space-x-2">
               <button
-                onClick={() => setShowUploadModal(false)}
-                className="px-4 py-2 bg-gray-200 rounded-md"
+                onClick={() => !isUploading && setShowUploadModal(false)}
+                disabled={isUploading}
+                className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50"
               >
                 Cancel
               </button>
+
               <button
                 onClick={handleUploadCandidates}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                disabled={isUploading}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md
+               disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Upload
+                {isUploading ? "Uploading..." : "Upload"}
               </button>
             </div>
           </div>
