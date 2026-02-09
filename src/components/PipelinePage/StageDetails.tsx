@@ -731,7 +731,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     <textarea
                       value={editedMatchDesc}
                       onChange={(e) => setEditedMatchDesc(e.target.value)}
-                      rows={4}
+                      rows={7}
                       className="w-full p-2 border border-gray-300 rounded-md text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
 
