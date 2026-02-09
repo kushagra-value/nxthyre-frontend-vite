@@ -660,12 +660,6 @@ function MainApp() {
           });
           setDefaultBoolQuery(""); // NEW
         } else {
-          // Auth token approach here ::
-          if (authLoading || !isAuthenticated) {
-            // Do NOT call API yet
-            // setLoadingCandidates(false);
-            return;
-          }
           response = await candidateService.getCandidates(appliedFilters, page);
           if (response.boolean_search_terms) {
             // Assume API returns 'bool_query' field
@@ -702,17 +696,6 @@ function MainApp() {
     },
     [selectedCandidate, debouncedSearchQuery, sortBy, filters, activeTab],
   );
-
-  const isCandidatesFetchReady = !authLoading && isAuthenticated;
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!isCandidatesFetchReady) return;
-      fetchCandidates(1, filters);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, [isCandidatesFetchReady]);
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
