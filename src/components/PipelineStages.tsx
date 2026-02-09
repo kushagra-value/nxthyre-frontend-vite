@@ -4821,7 +4821,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
             {/* Upload status (accordion)  */}
             {uploadStatus && (
-              <div className="mt-4 border rounded-md p-3">
+              <div className="mt-2 mb-4 border rounded-md p-3">
                 <details open>
                   <summary className="cursor-pointer font-medium text-sm flex justify-between">
                     <span>Upload Status</span>
