@@ -594,7 +594,7 @@ function MainApp() {
         sort_by: sortBy,
       };
       setFilters(newFilters);
-      // await fetchCandidates(1, newFilters);
+      await fetchCandidates(1, newFilters);
     } catch (error) {
       showToast.error("Failed to fetch job details");
       console.error("Error fetching job details:", error);
@@ -663,7 +663,7 @@ function MainApp() {
           // Auth token approach here ::
           if (authLoading || !isAuthenticated) {
             // Do NOT call API yet
-            setLoadingCandidates(false);
+            // setLoadingCandidates(false);
             return;
           }
           response = await candidateService.getCandidates(appliedFilters, page);
@@ -703,13 +703,15 @@ function MainApp() {
     [selectedCandidate, debouncedSearchQuery, sortBy, filters, activeTab],
   );
 
-  const isCandidatesFetchReady =
-    !authLoading && isAuthenticated && !!filters.jobId;
+  const isCandidatesFetchReady = !authLoading && isAuthenticated;
 
   useEffect(() => {
-    if (!isCandidatesFetchReady) return;
+    const timer = setTimeout(() => {
+      if (!isCandidatesFetchReady) return;
+      fetchCandidates(1, filters);
+    }, 3000);
 
-    fetchCandidates(1, filters);
+    return () => clearTimeout(timer);
   }, [isCandidatesFetchReady]);
 
   const handleSearchChange = (query: string) => {
