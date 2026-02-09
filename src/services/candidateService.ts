@@ -1175,7 +1175,7 @@ class CandidateService {
     description: string,
   ): Promise<boolean> {
     try {
-      await apiClient.patch("/api/jobs/candidate-job-score/", {
+      await apiClient.patch("/jobs/candidate-job-score/", {
         candidate_id: candidateId,
         job_id: jobId,
         description,
