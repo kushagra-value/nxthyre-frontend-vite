@@ -1727,6 +1727,13 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                     .toUpperCase(),
                 profile_picture_url: app.candidate.profile_picture_url || null,
                 notes: "",
+                job_score: app.job_score,
+                expected_salary: app.candidate.expected_ctc_lpa || "--",
+                time_added: (() => {
+                  const date = new Date(app.created_at || app.applied_at || app.last_active_at || Date.now());
+                  const days = getDaysAgo(date);
+                  return days === 0 ? "Today" : days === 1 ? "1 day ago" : `${days} days ago`;
+                })(),
                 lastUpdated: new Date(app.last_active_at || Date.now()),
                 socials: {
                   github_url: app.candidate.premium_data_availability?.github_username ? "" : null,
@@ -2381,7 +2388,10 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
               <span className="text-sm">{candidate.location}</span>
             </div>
             <div className="text-2xl font-semibold text-green-600">
-              --%
+              {candidate?.job_score
+                ?.candidate_match_score?.score
+                ? `${candidate.job_score.candidate_match_score.score}`
+                : "--%"}
             </div>
           </div>
 
@@ -2413,11 +2423,11 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                 <path d="M10.0017 11.7378C10.9606 11.7378 11.7378 10.9606 11.7378 10.0017C11.7378 9.04292 10.9606 8.26562 10.0017 8.26562C9.04292 8.26562 8.26562 9.04292 8.26562 10.0017C8.26562 10.9606 9.04292 11.7378 10.0017 11.7378Z" stroke="#818283" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
                 <path d="M14.5156 8.26562V11.7378" stroke="#818283" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
                 <path d="M5.13715 16.9462C6.67128 16.9462 7.91493 15.7025 7.91493 14.1684C7.91493 12.6343 6.67128 11.3906 5.13715 11.3906C3.60303 11.3906 2.35938 12.6343 2.35938 14.1684C2.35938 15.7025 3.60303 16.9462 5.13715 16.9462Z" stroke="#818283" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M5.31337 13.2969V13.9427C5.31337 14.1858 5.18837 14.4149 4.9731 14.5399L4.44531 14.8594" stroke="#818283" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M5.31337 13.2969V13.9427C5.31337 14.1858 5.18837 14.4149 4.97310 14.5399L4.44531 14.8594" stroke="#818283" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
                 <path d="M3.05469 12.2231V7.91753C3.05469 5.48698 4.44358 4.44531 6.52691 4.44531H13.4714C15.5547 4.44531 16.9436 5.48698 16.9436 7.91753V12.0842C16.9436 14.5148 15.5547 15.5564 13.4714 15.5564H7.56858" stroke="#818283" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
 
-              <span>-- LPA</span>
+              <span>{candidate.expected_salary === "--" ? "--" : `${candidate.expected_salary} LPA`}</span>
             </div>
           </div>
 
@@ -2435,7 +2445,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M10 3.97674C6.67345 3.97674 3.97674 6.67345 3.97674 10C3.97674 13.3265 6.67345 16.0233 10 16.0233C13.3265 16.0233 16.0233 13.3265 16.0233 10C16.0233 6.67345 13.3265 3.97674 10 3.97674ZM3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10ZM10 6.90698C10.2697 6.90698 10.4884 7.12563 10.4884 7.39535V9.79768L11.9732 11.2826C12.1639 11.4733 12.1639 11.7825 11.9732 11.9732C11.7825 12.1639 11.4733 12.1639 11.2826 11.9732L9.65469 10.3453C9.56307 10.2538 9.51163 10.1295 9.51163 10V7.39535C9.51163 7.12563 9.73029 6.90698 10 6.90698Z" fill="#818283" />
               </svg>
 
-              <span>-- days ago</span>
+              <span>{candidate.time_added}</span>
             </div>
             <div>
             </div>
