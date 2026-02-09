@@ -706,6 +706,8 @@ function MainApp() {
   useEffect(() => {
     if (!authLoading && isAuthenticated && filters.jobId) {
       fetchCandidates(1, filters);
+
+      console.log("Fetching candidates here after auth is loaded");
     }
   }, [authLoading, isAuthenticated, filters.jobId]);
 
