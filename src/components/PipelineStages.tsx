@@ -4911,7 +4911,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                   </summary>
 
                   <div className="mt-3 space-y-2 text-sm">
-                    {uploadHistory.map((batch: any) => {
+                    {uploadHistory.map((batch: any, index: number) => {
                       const processed = batch.success + batch.failed;
                       const percent =
                         batch.total_files > 0
@@ -4920,19 +4920,44 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
                       return (
                         <div
-                          key={batch.batch_id}
-                          className="border rounded p-2 flex justify-between items-center"
+                          key={index}
+                          className="border rounded-md p-3 space-y-2 bg-gray-50"
                         >
-                          <div>
-                            <div className="font-medium">
+                          {/* Top Row */}
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium text-xs text-gray-700">
+                              Batch: {batch.batch_id ?? "Legacy Batch"}
+                            </span>
+
+                            <span className="text-xs text-gray-500">
                               {new Date(batch.created_at).toLocaleString()}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {processed}/{batch.total_files} • {batch.status}
-                            </div>
+                            </span>
                           </div>
 
-                          <div className="text-xs font-medium">{percent}%</div>
+                          {/* Counts */}
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>Total: {batch.total_files}</div>
+                            <div>Processed: {processed}</div>
+                            <div>Success: {batch.success}</div>
+                            <div>Failed: {batch.failed}</div>
+                            <div>Pending: {batch.pending}</div>
+                            <div>Processing: {batch.processing}</div>
+                          </div>
+
+                          {/* Progress */}
+                          <div>
+                            <div className="flex justify-between text-xs mb-1">
+                              <span>Status: {batch.status}</span>
+                              <span>{percent}%</span>
+                            </div>
+
+                            <div className="h-2 bg-gray-200 rounded">
+                              <div
+                                className="h-2 bg-blue-500 rounded"
+                                style={{ width: `${percent}%` }}
+                              />
+                            </div>
+                          </div>
                         </div>
                       );
                     })}
