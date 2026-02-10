@@ -4936,12 +4936,24 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
                           {/* Counts */}
                           <div className="grid grid-cols-2 gap-2 text-[14px]">
-                            <div>Total: {batch.total_files}</div>
-                            <div>Processed: {processed}</div>
-                            <div>Success: {batch.success}</div>
-                            <div>Failed: {batch.failed}</div>
-                            <div>Pending: {batch.pending}</div>
-                            <div>Processing: {batch.processing}</div>
+                            <div className="text-gray-500">
+                              Total: {batch.total_files}
+                            </div>
+                            <div className="text-blue-500">
+                              Processed: {processed}
+                            </div>
+                            <div className="text-green-500">
+                              Success: {batch.success}
+                            </div>
+                            <div className="text-red-500">
+                              Failed: {batch.failed}
+                            </div>
+                            <div className="text-yellow-500">
+                              Pending: {batch.pending}
+                            </div>
+                            <div className="text-orange-500">
+                              Processing: {batch.processing}
+                            </div>
                           </div>
 
                           {/* Progress */}
