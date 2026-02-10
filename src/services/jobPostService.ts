@@ -356,12 +356,15 @@ class JobPostService {
   // Upload history for a job
   async getUploadHistory(jobId: number): Promise<any[]> {
     try {
-      const response = await apiClient.get("/candidates/upload-status/", {
-        params: {
-          job_id: jobId,
-          time_range: "all",
+      const response = await apiClient.get(
+        `/candidates/upload-status/?job_id=${jobId}&time_range=all`,
+        {
+          params: {
+            job_id: jobId,
+            time_range: "all",
+          },
         },
-      });
+      );
       return response.data;
     } catch (error: any) {
       throw new Error(
