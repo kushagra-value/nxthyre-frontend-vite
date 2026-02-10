@@ -4856,7 +4856,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                     : 0;
 
                 return (
-                  <div className="mt-2 mb-4 border rounded-md p-3 max-h-[180px] overflow-y-auto">
+                  <div className="mt-2 mb-4 border rounded-md p-3 max-h-[240px] overflow-y-auto">
                     <details open>
                       <summary className="cursor-pointer font-medium text-lg flex justify-between">
                         <span>Active Upload</span>
