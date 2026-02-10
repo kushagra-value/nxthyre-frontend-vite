@@ -669,7 +669,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch service candidates",
+        error.response?.data?.error || "Failed to fetch candidates",
       );
     }
   }
