@@ -18,8 +18,8 @@ import {
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import { jobPostService, Job, CreateJobData } from "../services/jobPostService";
-import {candidateService} from "../services/candidateService"
-import  {CKEditor}  from "@ckeditor/ckeditor5-react";
+import { candidateService } from "../services/candidateService";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { debounce } from "lodash";
 
@@ -121,7 +121,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     Admin: 7,
     Others: 8,
   };
-const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [competencies, setCompetencies] = useState<string[]>([]);
   const [editableJD, setEditableJD] = useState("");
   const [aiJdResponse, setAiJdResponse] = useState<any>(null);
@@ -183,11 +183,12 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
     debounce(async (query: string) => {
       if (query.length >= 2) {
         try {
-          const suggestions = await candidateService.getKeywordSuggestions(query);
+          const suggestions =
+            await candidateService.getKeywordSuggestions(query);
           const currentSkills = formData.skills.map((s) => s.toLowerCase());
           const filteredSuggestions = suggestions.filter(
             (suggestion: string) =>
-              !currentSkills.includes(suggestion.toLowerCase())
+              !currentSkills.includes(suggestion.toLowerCase()),
           );
           setSkillSuggestions(filteredSuggestions);
           setShowSkillSuggestions(filteredSuggestions.length > 0);
@@ -202,7 +203,7 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
         setShowSkillSuggestions(false);
       }
     }, 300),
-    [formData.skills]
+    [formData.skills],
   );
 
   // Updated useEffect for click outside skills (add)
@@ -224,28 +225,28 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
 
   // Updated fetchLocationSuggestions (change to Geoapify like create, add useCallback)
   // UPDATED: Replace Geoapify fetch with jobPostService.getLocationSuggestions for consistency and to use backend API
-const fetchLocationSuggestions = useCallback(
-  debounce(async (query: string) => {
-    if (query.length < 2) {
-      setLocationSuggestions([]);
-      setIsLoadingLocation(false);
-      return;
-    }
+  const fetchLocationSuggestions = useCallback(
+    debounce(async (query: string) => {
+      if (query.length < 2) {
+        setLocationSuggestions([]);
+        setIsLoadingLocation(false);
+        return;
+      }
 
-    setIsLoadingLocation(true);
-    try {
-      const suggestions = await candidateService.getCitySuggestions(query);
-      setLocationSuggestions(suggestions);
-    } catch (error) {
-      console.error("Error fetching location suggestions:", error);
-      setLocationSuggestions([]);
-      showToast.error("Failed to fetch location suggestions");
-    } finally {
-      setIsLoadingLocation(false);
-    }
-  }, 300),
-  []
-);
+      setIsLoadingLocation(true);
+      try {
+        const suggestions = await candidateService.getCitySuggestions(query);
+        setLocationSuggestions(suggestions);
+      } catch (error) {
+        console.error("Error fetching location suggestions:", error);
+        setLocationSuggestions([]);
+        showToast.error("Failed to fetch location suggestions");
+      } finally {
+        setIsLoadingLocation(false);
+      }
+    }, 300),
+    [],
+  );
 
   // Updated handleSkillInputChange (add replace and fetch, like create)
   const handleSkillInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -258,7 +259,7 @@ const fetchLocationSuggestions = useCallback(
   const handleSkillSelect = (suggestion: string) => {
     if (!isValidTextInput(suggestion)) {
       showToast.error(
-        "Skills can only contain letters, numbers, commas, and spaces."
+        "Skills can only contain letters, numbers, commas, and spaces.",
       );
       return;
     }
@@ -270,7 +271,6 @@ const fetchLocationSuggestions = useCallback(
     setSkillSuggestions([]);
     setShowSkillSuggestions(false);
   };
-
 
   const validateStep1 = () => {
     const requiredFields = {
@@ -318,18 +318,18 @@ const fetchLocationSuggestions = useCallback(
       errors.push("Maximum salary is required unless confidential.");
     if (!requiredFields.jobDescription)
       errors.push(
-        "Job description is required when pasting text. or uploading a file."
+        "Job description is required when pasting text. or uploading a file.",
       );
     if (!requiredFields.jobDescription)
       errors.push(
-        "Job description is required when pasting text or uploading a file."
+        "Job description is required when pasting text or uploading a file.",
       );
     if (
       formData.uploadType === "paste" &&
       formData.jobDescription.trim().length < MIN_DESCRIPTION_LENGTH
     ) {
       errors.push(
-        `Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`
+        `Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`,
       );
     }
 
@@ -341,7 +341,7 @@ const fetchLocationSuggestions = useCallback(
         errors.push("Experience fields must be valid numbers.");
       } else if (minExp > maxExp) {
         errors.push(
-          "Minimum experience cannot be greater than maximum experience."
+          "Minimum experience cannot be greater than maximum experience.",
         );
       } else if (
         minExp < 0 ||
@@ -350,7 +350,7 @@ const fetchLocationSuggestions = useCallback(
         maxExp > MAX_SAFE_INTEGER
       ) {
         errors.push(
-          "Experience values must be within valid integer range (0 to 999999999999)."
+          "Experience values must be within valid integer range (0 to 999999999999).",
         );
       }
     }
@@ -374,7 +374,7 @@ const fetchLocationSuggestions = useCallback(
         maxSalary > MAX_SAFE_INTEGER
       ) {
         errors.push(
-          "Salary values must be within valid integer range (1000 to 999999999999)."
+          "Salary values must be within valid integer range (1000 to 999999999999).",
         );
       }
     }
@@ -387,7 +387,7 @@ const fetchLocationSuggestions = useCallback(
     if (e.key === "Enter" && skillInput.trim()) {
       if (!isValidTextInput(skillInput)) {
         showToast.error(
-          "Skills can only contain letters, numbers, commas, and spaces."
+          "Skills can only contain letters, numbers, commas, and spaces.",
         );
         return;
       }
@@ -413,7 +413,7 @@ const fetchLocationSuggestions = useCallback(
     if (e.key === "Enter" && locationInput[0]?.trim()) {
       if (!isValidTextInput(locationInput[0])) {
         showToast.error(
-          "Location can only contain letters, numbers, commas, and spaces."
+          "Location can only contain letters, numbers, commas, and spaces.",
         );
         return;
       }
@@ -427,10 +427,11 @@ const fetchLocationSuggestions = useCallback(
   };
 
   // Updated handleLocationSelect (single string, set [location])
-  const handleLocationSelect = (location: string) => { // Changed param to string
+  const handleLocationSelect = (location: string) => {
+    // Changed param to string
     if (!isValidTextInput(location)) {
       showToast.error(
-        "Location can only contain letters, numbers, commas, and spaces."
+        "Location can only contain letters, numbers, commas, and spaces.",
       );
       return;
     }
@@ -548,7 +549,7 @@ const fetchLocationSuggestions = useCallback(
       formData.jobDescription.trim().length < MIN_DESCRIPTION_LENGTH
     ) {
       showToast.error(
-        `Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`
+        `Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`,
       );
       return;
     }
@@ -565,7 +566,10 @@ const fetchLocationSuggestions = useCallback(
       const jobData: Partial<CreateJobData> = {
         title: formData.title,
         location: location,
-        work_approach: formData.workApproach.toUpperCase() as "ONSITE" | "REMOTE" | "HYBRID",
+        work_approach: formData.workApproach.toUpperCase() as
+          | "ONSITE"
+          | "REMOTE"
+          | "HYBRID",
         seniority: formData.seniority,
         department: departmentNameToId[formData.department] || 8,
         experience_min_years: parseInt(formData.minExp) || 0, // String parse
@@ -590,7 +594,7 @@ const fetchLocationSuggestions = useCallback(
       showToast.success(
         formData.keepPrivate
           ? "Job role updated successfully!"
-          : "Job role updated and published successfully!"
+          : "Job role updated and published successfully!",
       );
       onJobUpdated?.();
       onClose();
@@ -601,10 +605,10 @@ const fetchLocationSuggestions = useCallback(
       const errorMessage = error.response?.data?.description
         ? `Description error: ${error.response.data.description}`
         : error.response?.data?.description_file
-        ? `File upload error: ${error.response.data.description_file}`
-        : error.response?.data?.department
-        ? `Department error: ${error.response.data.department.join(" ")}`
-        : error.message || "Failed to update job role";
+          ? `File upload error: ${error.response.data.description_file}`
+          : error.response?.data?.department
+            ? `Department error: ${error.response.data.department.join(" ")}`
+            : error.message || "Failed to update job role";
       showToast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -627,7 +631,7 @@ const fetchLocationSuggestions = useCallback(
       formData.jobDescription.trim().length < MIN_DESCRIPTION_LENGTH
     ) {
       showToast.error(
-        `Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`
+        `Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`,
       );
       return;
     }
@@ -650,7 +654,10 @@ const fetchLocationSuggestions = useCallback(
         experience_max_years: parseInt(formData.maxExp) || 0,
         salary_min: formData.minSalary,
         salary_max: formData.maxSalary,
-        work_approach: formData.workApproach.toUpperCase() as "ONSITE" | "REMOTE" | "HYBRID", // Added
+        work_approach: formData.workApproach.toUpperCase() as
+          | "ONSITE"
+          | "REMOTE"
+          | "HYBRID", // Added
         is_salary_confidential: formData.confidential,
         visibility: formData.keepPrivate ? "PRIVATE" : "PUBLIC",
         has_coding_contest_stage: formData.codingRound,
@@ -669,7 +676,7 @@ const fetchLocationSuggestions = useCallback(
       showToast.success(
         formData.keepPrivate
           ? "Job role updated successfully!"
-          : "Job role updated and published successfully!"
+          : "Job role updated and published successfully!",
       );
       onJobUpdated?.();
       onClose();
@@ -680,10 +687,10 @@ const fetchLocationSuggestions = useCallback(
       const errorMessage = error.response?.data?.description
         ? `Description error: ${error.response.data.description}`
         : error.response?.data?.description_file
-        ? `File upload error: ${error.response.data.description_file}`
-        : error.response?.data?.department
-        ? `Department error: ${error.response.data.department.join(" ")}`
-        : error.message || "Failed to update job role";
+          ? `File upload error: ${error.response.data.description_file}`
+          : error.response?.data?.department
+            ? `Department error: ${error.response.data.department.join(" ")}`
+            : error.message || "Failed to update job role";
       showToast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -758,7 +765,7 @@ const fetchLocationSuggestions = useCallback(
       jobDescription: "",
       uploadType: "paste",
       codingRound: false,
-      shareExternally:false,
+      shareExternally: false,
       workspace: workspaceId.toString(),
     });
     setSkillInput("");
@@ -790,7 +797,8 @@ const fetchLocationSuggestions = useCallback(
             workApproach = "Onsite";
           }
 
-          const locationFirst = job.location.length > 0 ? [job.location[0]] : []; 
+          const locationFirst =
+            job.location.length > 0 ? [job.location[0]] : [];
 
           setFormData({
             allowInbound: job.visibility === "PUBLIC",
@@ -804,14 +812,18 @@ const fetchLocationSuggestions = useCallback(
             aiInterviews: job.has_ai_interview_stage || false,
             minExp: job.experience_min_years?.toString() || "",
             maxExp: job.experience_max_years?.toString() || "",
-            minSalary: job.salary_min ? job.salary_min.toString().replace(/.00$/, '') : "",
-            maxSalary: job.salary_max ? job.salary_max.toString().replace(/.00$/, '') : "",
+            minSalary: job.salary_min
+              ? job.salary_min.toString().replace(/.00$/, "")
+              : "",
+            maxSalary: job.salary_max
+              ? job.salary_max.toString().replace(/.00$/, "")
+              : "",
             confidential: job.is_salary_confidential,
             jobDescription: job.description || "",
             uploadType: job.description ? "paste" : "upload",
             codingRound: job.has_coding_contest_stage || false,
             workspace: job.workspace_details.id.toString(),
-            shareExternally:false,
+            shareExternally: false,
           });
           setOriginalDescription(job.description || "");
           setOriginalUploadType("paste");
@@ -905,7 +917,7 @@ const fetchLocationSuggestions = useCallback(
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4 min-h-[150vh]">
       <div className="bg-white relative rounded-2xl shadow-xl w-full max-w-6xl max-h-[98vh]  flex flex-col overflow-hidden">
         <div className="p-10">
           <div className="flex items-center justify-between">
@@ -1002,7 +1014,9 @@ const fetchLocationSuggestions = useCallback(
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Add to Workspace <span className="text-red-500">*</span>
-                  <p className="text-xs text-gray-500 mt-1">Default workspace selected. Choose another to switch.</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Default workspace selected. Choose another to switch.
+                  </p>
                 </label>
                 <select
                   value={formData.workspace}
@@ -1058,22 +1072,23 @@ const fetchLocationSuggestions = useCallback(
                     className="w-full border-none outline-none text-sm text-blue-600 placeholder-gray-400 mb-3"
                     disabled={isLoading}
                   />
-                  {showSkillSuggestions && skillSuggestions.length > 0 && ( // Added
-                    <div
-                      ref={skillSuggestionsRef}
-                      className="absolute left-0 z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto"
-                    >
-                      {skillSuggestions.map((suggestion, index) => (
-                        <div
-                          key={index}
-                          onClick={() => handleSkillSelect(suggestion)}
-                          className="px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 cursor-pointer"
-                        >
-                          {suggestion}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  {showSkillSuggestions &&
+                    skillSuggestions.length > 0 && ( // Added
+                      <div
+                        ref={skillSuggestionsRef}
+                        className="absolute left-0 z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto"
+                      >
+                        {skillSuggestions.map((suggestion, index) => (
+                          <div
+                            key={index}
+                            onClick={() => handleSkillSelect(suggestion)}
+                            className="px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 cursor-pointer"
+                          >
+                            {suggestion}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   <div className="flex flex-wrap gap-2">
                     {formData.skills.map((skill, index) => (
                       <span
@@ -1106,25 +1121,26 @@ const fetchLocationSuggestions = useCallback(
                     className=" w-full border-none outline-none text-sm text-blue-600 placeholder-gray-400 mb-3"
                     disabled={isLoading}
                   />
-                  {(locationInput[0]?.length >= 2 && (isLoadingLocation || locationSuggestions.length > 0)) && (
-                    <div className="absolute left-0 z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-40 overflow-y-auto shadow-lg">
-                      {isLoadingLocation ? (
-                        <div className="px-4 py-3 text-sm text-gray-500 text-center">
-                          Loading locations...
-                        </div>
-                      ) : (
-                        locationSuggestions.map((suggestion, index) => (
-                          <div
-                            key={index}
-                            className="px-4 py-3 text-md text-gray-700 hover:bg-blue-100 cursor-pointer"
-                            onClick={() => handleLocationSelect(suggestion)}
-                          >
-                            {suggestion}
+                  {locationInput[0]?.length >= 2 &&
+                    (isLoadingLocation || locationSuggestions.length > 0) && (
+                      <div className="absolute left-0 z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-40 overflow-y-auto shadow-lg">
+                        {isLoadingLocation ? (
+                          <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                            Loading locations...
                           </div>
-                        ))
-                      )}
-                    </div>
-                  )}
+                        ) : (
+                          locationSuggestions.map((suggestion, index) => (
+                            <div
+                              key={index}
+                              className="px-4 py-3 text-md text-gray-700 hover:bg-blue-100 cursor-pointer"
+                              onClick={() => handleLocationSelect(suggestion)}
+                            >
+                              {suggestion}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
                   <div className="flex flex-wrap gap-2">
                     {formData.location.length > 0 && ( // Updated to length
                       <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center">
@@ -1676,8 +1692,8 @@ const fetchLocationSuggestions = useCallback(
                 {isLoading
                   ? "Loading..."
                   : formData.allowInbound
-                  ? "Update & Publish"
-                  : "Update"}
+                    ? "Update & Publish"
+                    : "Update"}
               </button>
 
               <button

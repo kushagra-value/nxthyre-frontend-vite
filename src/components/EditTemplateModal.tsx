@@ -74,9 +74,9 @@ Best regards,
   const [loading, setLoading] = useState(false);
   const [isBodyExpanded, setIsBodyExpanded] = useState(false);
   const [isFollowUpsExpanded, setIsFollowUpsExpanded] = useState(false);
-const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
+  const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
   const [isEditingFollowUp, setIsEditingFollowUp] = useState(false);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);  
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [newFollowUp, setNewFollowUp] = useState<{
     send_after_hours: number;
     followup_mode: "EMAIL" | "WHATSAPP" | "CALL";
@@ -239,7 +239,8 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
       });
       showToast.success(response.success);
       if (response.results.email) showToast.success(response.results.email);
-      if (response.results.whatsapp) showToast.success(response.results.whatsapp);
+      if (response.results.whatsapp)
+        showToast.success(response.results.whatsapp);
       if (response.results.call) showToast.success(response.results.call);
       setShowTestEmail(false);
     } catch (error) {
@@ -253,13 +254,12 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
     setFormData({
       ...formData,
       followUpTemplates: formData.followUpTemplates.filter(
-        (_, i) => i !== index
+        (_, i) => i !== index,
       ),
     });
     setDeleteConfirmation({ isOpen: false, index: null });
   };
 
-  
   const openDeleteConfirmation = (index: number) => {
     setDeleteConfirmation({ isOpen: true, index });
   };
@@ -298,11 +298,10 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
     onClose();
   };
 
-
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end min-h-[150vh]">
       <div
         className={`bg-white w-[40%] h-full transform transition-transform overflow-y-auto duration-300 ease-out p-10 space-y-4 ${
           isOpen ? "translate-x-0" : "translate-x-full"
@@ -382,7 +381,8 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
             Body
           </label>
           <p className="text-sm text-gray-400 mb-2">
-            Candidate Name and Signature are already prefilled. Editable access only for body
+            Candidate Name and Signature are already prefilled. Editable access
+            only for body
           </p>
           <CKEditor
             key={formData.body}
@@ -423,7 +423,10 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
           <div className="flex space-x-3">
             <button
               onClick={() =>
-                setFormData({ ...formData, sendViaEmail: !formData.sendViaEmail })
+                setFormData({
+                  ...formData,
+                  sendViaEmail: !formData.sendViaEmail,
+                })
               }
               className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 formData.sendViaEmail
@@ -470,7 +473,10 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
             </button>
             <button
               onClick={() =>
-                setFormData({ ...formData, sendViaPhone: !formData.sendViaPhone })
+                setFormData({
+                  ...formData,
+                  sendViaPhone: !formData.sendViaPhone,
+                })
               }
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 formData.sendViaPhone
@@ -533,7 +539,7 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
         </div>
 
         <div className="space-y-8 pt-2">
-            <div>
+          <div>
             <div className="pb-2 mb-4 border-b border-dashed border-gray-300"></div>
             <div className="text-sm font-medium text-gray-700 mb-2">
               <div
@@ -631,7 +637,9 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
                                 </select>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-500">Via</span>
+                                <span className="text-xs text-gray-500">
+                                  Via
+                                </span>
                                 <select
                                   value={newFollowUp.followup_mode}
                                   onChange={(e) =>
@@ -698,7 +706,9 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
                             <div className="flex items-center text-gray-600">
                               <p>Will be sent around</p>{" "}
                               <span className="pl-1"></span>
-                              <span>{followUp.send_after_hours} hrs from now</span>
+                              <span>
+                                {followUp.send_after_hours} hrs from now
+                              </span>
                               <span className="pl-1"> </span>
                               <p>via {followUp.followup_mode}.</p>
                             </div>
@@ -729,7 +739,9 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
                             disabled={loading}
                           >
                             <span className="w-4 h-4 flex items-center justify-center rounded-full border-2 border-red-500 text-red-500">
-                              <span className="text-xs mb-1 font-semibold">x</span>
+                              <span className="text-xs mb-1 font-semibold">
+                                x
+                              </span>
                             </span>
                           </button>
                           <button
@@ -754,7 +766,8 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
                                     {
                                       ...newFollowUp,
                                       followup_mode: newFollowUp.followup_mode,
-                                      order_no: formData.followUpTemplates.length,
+                                      order_no:
+                                        formData.followUpTemplates.length,
                                     },
                                   ],
                                 });
@@ -781,7 +794,9 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
                       <div className="px-8 pb-4 flex flex-col items-start space-y-3">
                         <div className="flex items-center space-x-4">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-500">Send After</span>
+                            <span className="text-xs text-gray-500">
+                              Send After
+                            </span>
                             <select
                               value={newFollowUp.send_after_hours}
                               onChange={(e) =>
@@ -851,252 +866,250 @@ const [isAddingFollowUp, setIsAddingFollowUp] = useState(false);
                   </button>
                 </div>
               )}
+            </div>
+          </div>
+          <div className="flex justify-between mt-6">
+            <button
+              onClick={() => setShowTestEmail(true)}
+              className="w-[25%] px-3 py-2 text-xs text-blue-600 border border-blue-600 rounded-lg flex items-center justify-center"
+              disabled={loading}
+            >
+              Send Test
+            </button>
+            <button
+              onClick={handleSave}
+              className="w-[30%] px-3 py-2 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center font-medium"
+              disabled={
+                loading ||
+                !formData.templateName.trim() ||
+                (!formData.sendViaEmail &&
+                  !formData.sendViaWhatsApp &&
+                  !formData.sendViaPhone)
+              }
+            >
+              Save Template <Send className="w-4 h-4 ml-2" />
+            </button>
+          </div>
+        </div>
+      </div>
+      {showTestEmail && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+          <div
+            className={`bg-white w-[40%] h-full transform transition-transform duration-300 ease-out p-10 space-y-4 ${
+              showTestEmail ? "translate-x-0" : "translate-x-full"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setShowTestEmail(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <ArrowLeft className="w-7 h-7 text-gray-700" />
+                </button>
+                <h2 className="text-lg font-semibold text-gray-700">
+                  Send Test Email
+                </h2>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-2">
+                  Test Email Address
+                </label>
+                <input
+                  type="email"
+                  value={testEmail}
+                  onChange={(e) => setTestEmail(e.target.value)}
+                  placeholder="Enter email address"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-2">
+                  Test Phone Number
+                </label>
+                <input
+                  type="text"
+                  value={testNumber}
+                  onChange={(e) => setTestNumber(e.target.value)}
+                  placeholder="Enter Phone number"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+            <div>
+              <p className="block text-sm font-medium text-gray-600 mb-2">
+                Reachout Channels
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setSendTestViaEmail(!sendTestViaEmail)}
+                  className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    sendTestViaEmail
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                  disabled={loading}
+                >
+                  Email{" "}
+                  {sendTestViaEmail ? (
+                    <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-blue-800 rounded-full ml-1">
+                      <Check className="w-3 h-3 text-semibold pt-[1px]" />
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-gray-600 rounded-full ml-1">
+                      <Plus className="w-3 h-3 text-semibold pl-[1px]" />
+                    </div>
+                  )}
+                </button>
+                <button
+                  onClick={() => setSendTestViaWhatsApp(!sendTestViaWhatsApp)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    sendTestViaWhatsApp
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                  disabled={loading}
+                >
+                  WhatsApp{" "}
+                  {sendTestViaWhatsApp ? (
+                    <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-blue-800 rounded-full ml-1">
+                      <Check className="w-3 h-3 text-semibold pt-[1px]" />
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-gray-600 rounded-full ml-1">
+                      <Plus className="w-3 h-3 text-semibold pr-[1px]" />
+                    </div>
+                  )}
+                </button>
+                <button
+                  onClick={() => setSendTestViaPhone(!sendTestViaPhone)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    sendTestViaPhone
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                  disabled={loading}
+                >
+                  Phone{" "}
+                  {sendTestViaPhone ? (
+                    <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-blue-800 rounded-full ml-1">
+                      <Check className="w-3 h-3 text-semibold pt-[1px]" />
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-gray-600 rounded-full ml-1">
+                      <Plus className="w-3 h-3 text-semibold pl-[1px]" />
+                    </div>
+                  )}
+                </button>
+              </div>
+              <div className="p-3 bg-blue-50 text-sm font-medium text-blue-500 rounded-lg mt-3">
+                {sendTestViaEmail && sendTestViaWhatsApp && sendTestViaPhone ? (
+                  <div>
+                    Note: Email will be sent to candidate’s inbox, with WhatsApp
+                    message and bot phone alert to check mail.
+                  </div>
+                ) : sendTestViaEmail && sendTestViaWhatsApp ? (
+                  <div>
+                    Note: Email will be sent to candidate’s inbox, with WhatsApp
+                    message to check mail.
+                  </div>
+                ) : sendTestViaEmail && sendTestViaPhone ? (
+                  <div>
+                    Note: Email will be sent to candidate’s inbox, with AI phone
+                    alert to check mail.
+                  </div>
+                ) : sendTestViaWhatsApp && sendTestViaPhone ? (
+                  <div>
+                    Note: WhatsApp message and AI-generated call will be sent to
+                    the candidate.
+                  </div>
+                ) : sendTestViaEmail ? (
+                  <div>Note: Email will be sent to candidate's inbox.</div>
+                ) : sendTestViaWhatsApp ? (
+                  <div>
+                    Note: WhatsApp message will be sent to the candidate's
+                    WhatsApp number.
+                  </div>
+                ) : sendTestViaPhone ? (
+                  <div>
+                    Note: An AI-generated call will be made to the candidate's
+                    phone number.
+                  </div>
+                ) : (
+                  <div className="text-sm font-medium text-gray-400 mb-2">
+                    {" "}
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex justify-between mt-6">
               <button
-                onClick={() => setShowTestEmail(true)}
+                onClick={() => setShowTestEmail(false)}
                 className="w-[25%] px-3 py-2 text-xs text-blue-600 border border-blue-600 rounded-lg flex items-center justify-center"
                 disabled={loading}
               >
-                Send Test
+                Cancel
               </button>
               <button
-                onClick={handleSave}
+                onClick={handleSendTest}
                 className="w-[30%] px-3 py-2 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center font-medium"
-                disabled={
-                  loading ||
-                  !formData.templateName.trim() ||
-                  (!formData.sendViaEmail &&
-                    !formData.sendViaWhatsApp &&
-                    !formData.sendViaPhone)
-                }
+                disabled={loading}
               >
-                Save Template <Send className="w-4 h-4 ml-2" />
+                Send Test <Send className="w-4 h-4 ml-2" />
               </button>
             </div>
+          </div>
         </div>
-      
-        
+      )}
 
-        
-      </div>
-      {showTestEmail && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-            <div
-              className={`bg-white w-[40%] h-full transform transition-transform duration-300 ease-out p-10 space-y-4 ${
-                showTestEmail ? "translate-x-0" : "translate-x-full"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <button
-                    onClick={() => setShowTestEmail(false)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <ArrowLeft className="w-7 h-7 text-gray-700" />
-                  </button>
-                  <h2 className="text-lg font-semibold text-gray-700">
-                    Send Test Email
-                  </h2>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-2">
-                    Test Email Address
-                  </label>
-                  <input
-                    type="email"
-                    value={testEmail}
-                    onChange={(e) => setTestEmail(e.target.value)}
-                    placeholder="Enter email address"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    disabled={loading}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-2">
-                    Test Phone Number
-                  </label>
-                  <input
-                    type="text"
-                    value={testNumber}
-                    onChange={(e) => setTestNumber(e.target.value)}
-                    placeholder="Enter Phone number"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-              <div>
-                <p className="block text-sm font-medium text-gray-600 mb-2">
-                  Reachout Channels
-                </p>
-                <div className="flex space-x-3">
-                  <button
-                    onClick={() => setSendTestViaEmail(!sendTestViaEmail)}
-                    className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      sendTestViaEmail
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                    disabled={loading}
-                  >
-                    Email{" "}
-                    {sendTestViaEmail ? (
-                      <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-blue-800 rounded-full ml-1">
-                        <Check className="w-3 h-3 text-semibold pt-[1px]" />
-                      </div>
-                    ) : (
-                      <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-gray-600 rounded-full ml-1">
-                        <Plus className="w-3 h-3 text-semibold pl-[1px]" />
-                      </div>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setSendTestViaWhatsApp(!sendTestViaWhatsApp)}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      sendTestViaWhatsApp
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                    disabled={loading}
-                  >
-                    WhatsApp{" "}
-                    {sendTestViaWhatsApp ? (
-                      <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-blue-800 rounded-full ml-1">
-                        <Check className="w-3 h-3 text-semibold pt-[1px]" />
-                      </div>
-                    ) : (
-                      <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-gray-600 rounded-full ml-1">
-                        <Plus className="w-3 h-3 text-semibold pr-[1px]" />
-                      </div>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setSendTestViaPhone(!sendTestViaPhone)}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      sendTestViaPhone
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                    disabled={loading}
-                  >
-                    Phone{" "}
-                    {sendTestViaPhone ? (
-                      <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-blue-800 rounded-full ml-1">
-                        <Check className="w-3 h-3 text-semibold pt-[1px]" />
-                      </div>
-                    ) : (
-                      <div className="inline-flex items-center justify-center w-4 h-4 border-2 border-gray-600 rounded-full ml-1">
-                        <Plus className="w-3 h-3 text-semibold pl-[1px]" />
-                      </div>
-                    )}
-                  </button>
-                </div>
-                <div className="p-3 bg-blue-50 text-sm font-medium text-blue-500 rounded-lg mt-3">
-                  {sendTestViaEmail && sendTestViaWhatsApp && sendTestViaPhone ? (
-                    <div>
-                      Note: Email will be sent to candidate’s inbox, with WhatsApp
-                      message and bot phone alert to check mail.
-                    </div>
-                  ) : sendTestViaEmail && sendTestViaWhatsApp ? (
-                    <div>
-                      Note: Email will be sent to candidate’s inbox, with WhatsApp
-                      message to check mail.
-                    </div>
-                  ) : sendTestViaEmail && sendTestViaPhone ? (
-                    <div>
-                      Note: Email will be sent to candidate’s inbox, with AI phone
-                      alert to check mail.
-                    </div>
-                  ) : sendTestViaWhatsApp && sendTestViaPhone ? (
-                    <div>
-                      Note: WhatsApp message and AI-generated call will be sent to the
-                      candidate.
-                    </div>
-                  ) : sendTestViaEmail ? (
-                    <div>Note: Email will be sent to candidate's inbox.</div>
-                  ) : sendTestViaWhatsApp ? (
-                    <div>
-                      Note: WhatsApp message will be sent to the candidate's WhatsApp
-                      number.
-                    </div>
-                  ) : sendTestViaPhone ? (
-                    <div>
-                      Note: An AI-generated call will be made to the candidate's phone
-                      number.
-                    </div>
-                  ) : (
-                    <div className="text-sm font-medium text-gray-400 mb-2"> </div>
-                  )}
-                </div>
-              </div>
-              <div className="flex justify-between mt-6">
-                <button
-                  onClick={() => setShowTestEmail(false)}
-                  className="w-[25%] px-3 py-2 text-xs text-blue-600 border border-blue-600 rounded-lg flex items-center justify-center"
-                  disabled={loading}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSendTest}
-                  className="w-[30%] px-3 py-2 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center font-medium"
-                  disabled={loading}
-                >
-                  Send Test <Send className="w-4 h-4 ml-2" />
-                </button>
-              </div>
+      {deleteConfirmation.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Delete Follow Up
+              </h3>
+              <button
+                onClick={() =>
+                  setDeleteConfirmation({ isOpen: false, index: null })
+                }
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <X className="w-4 h-4 text-gray-500" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to delete this follow-up? This action cannot
+              be undone.
+            </p>
+            <div className="flex space-x-3 justify-end">
+              <button
+                onClick={() =>
+                  setDeleteConfirmation({ isOpen: false, index: null })
+                }
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (deleteConfirmation.index !== null) {
+                    removeFollowUp(deleteConfirmation.index);
+                  }
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
             </div>
           </div>
-        )}
-
-        {deleteConfirmation.isOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Delete Follow Up
-                </h3>
-                <button
-                  onClick={() =>
-                    setDeleteConfirmation({ isOpen: false, index: null })
-                  }
-                  className="p-1 hover:bg-gray-100 rounded"
-                >
-                  <X className="w-4 h-4 text-gray-500" />
-                </button>
-              </div>
-              <p className="text-sm text-gray-600 mb-6">
-                Are you sure you want to delete this follow-up? This action cannot
-                be undone.
-              </p>
-              <div className="flex space-x-3 justify-end">
-                <button
-                  onClick={() =>
-                    setDeleteConfirmation({ isOpen: false, index: null })
-                  }
-                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    if (deleteConfirmation.index !== null) {
-                      removeFollowUp(deleteConfirmation.index);
-                    }
-                  }}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
+    </div>
   );
 };
 
