@@ -917,7 +917,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4 min-h-[150vh]">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-start pt-20 justify-center p-4 min-h-[150vh]">
       <div className="bg-white relative rounded-2xl shadow-xl w-full max-w-6xl max-h-[98vh]  flex flex-col overflow-hidden">
         <div className="p-10">
           <div className="flex items-center justify-between">
