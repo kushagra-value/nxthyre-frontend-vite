@@ -4867,12 +4867,24 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
                       <div className="mt-3 space-y-3 text-[14px]">
                         <div className="grid grid-cols-2 gap-2">
-                          <div>Processed: {processed}</div>
-                          <div>Total: {uploadStatus.total_files}</div>
-                          <div>Success: {uploadStatus.success}</div>
-                          <div>Failed: {uploadStatus.failed}</div>
-                          <div>Pending: {uploadStatus.pending}</div>
-                          <div>Processing: {uploadStatus.processing}</div>
+                          <div className="text-black">
+                            Total: {uploadStatus.total_files}
+                          </div>
+                          <div className="text-gray-600">
+                            Processed: {processed}
+                          </div>
+                          <div className="text-green-500">
+                            Success: {uploadStatus.success}
+                          </div>
+                          <div className="text-red-500">
+                            Failed: {uploadStatus.failed}
+                          </div>
+                          <div className="text-yellow-500">
+                            Pending: {uploadStatus.pending}
+                          </div>
+                          <div className="text-blue-500">
+                            Processing: {uploadStatus.processing}
+                          </div>
                         </div>
 
                         <div>
@@ -4936,10 +4948,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
                           {/* Counts */}
                           <div className="grid grid-cols-2 gap-2 text-[14px]">
-                            <div className="text-gray-500">
+                            <div className="text-black">
                               Total: {batch.total_files}
                             </div>
-                            <div className="text-blue-500">
+                            <div className="text-gray-600">
                               Processed: {processed}
                             </div>
                             <div className="text-green-500">
@@ -4951,7 +4963,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                             <div className="text-yellow-500">
                               Pending: {batch.pending}
                             </div>
-                            <div className="text-orange-500">
+                            <div className="text-blue-500">
                               Processing: {batch.processing}
                             </div>
                           </div>
