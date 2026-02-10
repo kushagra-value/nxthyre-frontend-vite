@@ -4833,7 +4833,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
       {showUploadModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 min-h-[125vh]">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[40%] max-h-[80vh] overflow-y-auto">
             <h2 className="text-lg font-semibold mb-4">
               Upload Resumes (PDF, DOC, DOCX)
             </h2>
@@ -4858,14 +4858,14 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 return (
                   <div className="mt-2 mb-4 border rounded-md p-3 max-h-[180px] overflow-y-auto">
                     <details open>
-                      <summary className="cursor-pointer font-medium text-sm flex justify-between">
+                      <summary className="cursor-pointer font-medium text-lg flex justify-between">
                         <span>Active Upload</span>
                         <span className="text-gray-500">
                           {uploadStatus.status}
                         </span>
                       </summary>
 
-                      <div className="mt-3 space-y-3 text-sm">
+                      <div className="mt-3 space-y-3 text-md">
                         <div className="grid grid-cols-2 gap-2">
                           <div>Processed: {processed}</div>
                           <div>Total: {uploadStatus.total_files}</div>
@@ -4876,7 +4876,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         </div>
 
                         <div>
-                          <div className="flex justify-between text-xs mb-1">
+                          <div className="flex justify-between text-md mb-1">
                             <span>
                               {processed} / {uploadStatus.total_files} completed
                             </span>
@@ -4892,7 +4892,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         </div>
 
                         {uploadStatus.failed > 0 && (
-                          <div className="bg-red-50 p-2 rounded text-xs text-red-600">
+                          <div className="bg-red-50 p-2 rounded text-md text-red-600">
                             {uploadStatus.failed} file(s) failed
                           </div>
                         )}
@@ -4906,11 +4906,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
             {uploadHistory.length > 0 && (
               <div className="mb-4 border rounded-md p-3 max-h-[300px] overflow-y-auto">
                 <details>
-                  <summary className="cursor-pointer font-medium text-sm">
+                  <summary className="cursor-pointer font-medium text-lg">
                     Upload History
                   </summary>
 
-                  <div className="mt-3 space-y-2 text-sm">
+                  <div className="mt-3 space-y-2 text-md">
                     {uploadHistory.map((batch: any, index: number) => {
                       const processed = batch.success + batch.failed;
                       const percent =
@@ -4925,11 +4925,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                         >
                           {/* Top Row */}
                           <div className="flex justify-between items-center">
-                            <span className="font-medium text-xs text-gray-700">
+                            <span className="font-medium text-md text-gray-700">
                               Batch: {batch.batch_id ?? "Legacy Batch"}
                             </span>
 
-                            <span className="text-xs text-gray-500">
+                            <span className="text-md text-gray-500">
                               {new Date(batch.created_at).toLocaleString()}
                             </span>
                           </div>
@@ -4946,7 +4946,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
                           {/* Progress */}
                           <div>
-                            <div className="flex justify-between text-xs mb-1">
+                            <div className="flex justify-between text-md mb-1">
                               <span>Status: {batch.status}</span>
                               <span>{percent}%</span>
                             </div>
