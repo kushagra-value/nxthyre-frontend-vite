@@ -342,16 +342,30 @@ class JobPostService {
   }
 
   // Get upload status (polling API)
-  async getUploadStatus(batchId: string): Promise<any> {
+  async getUploadStatus(): Promise<any[]> {
     try {
-      const response = await apiClient.get("/candidates/upload-status/", {
-        params: { batch_id: batchId },
-      });
-
+      const response = await apiClient.get("/candidates/upload-status/");
       return response.data;
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error || "Failed to fetch upload status",
+      );
+    }
+  }
+
+  // Upload history for a job
+  async getUploadHistory(jobId: number): Promise<any[]> {
+    try {
+      const response = await apiClient.get("/candidates/upload-status/", {
+        params: {
+          job_id: jobId,
+          time_range: "all",
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch upload history",
       );
     }
   }

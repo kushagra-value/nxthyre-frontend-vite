@@ -653,7 +653,7 @@ class CandidateService {
         requestBody.enable_boolean_analysis = true;
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       const response = await apiClient.post(
         `/candidates/search/?page=${page}`,
         requestBody,
