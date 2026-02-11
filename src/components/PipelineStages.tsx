@@ -492,6 +492,74 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     { id: string; name: string }[]
   >([]);
 
+  // Upload candidates button states
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Upload status and history states
+  const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<any | null>(null);
+  const [uploadHistory, setUploadHistory] = useState<any[]>([]);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Start Polling
+  const startPolling = (batchId: string) => {
+    setActiveBatchId(batchId);
+
+    if (pollingRef.current) clearInterval(pollingRef.current);
+
+    pollingRef.current = setInterval(async () => {
+      try {
+        const batches = await jobPostService.getUploadStatus();
+
+        // find active batch
+        const activeBatch = batches.find((b: any) => b.batch_id === batchId);
+
+        if (!activeBatch) return;
+
+        setUploadStatus(activeBatch);
+
+        if (activeBatch.status === "completed") {
+          clearInterval(pollingRef.current!);
+          pollingRef.current = null;
+
+          showToast.success(
+            activeBatch.failed === 0
+              ? `All ${activeBatch.success} resumes processed successfully`
+              : `${activeBatch.success} succeeded, ${activeBatch.failed} failed`,
+          );
+
+          // refresh history once completed
+          fetchUploadHistory();
+        }
+      } catch (error) {
+        console.error("Polling failed", error);
+      }
+    }, 2500);
+  };
+
+  // Stop Polling
+  useEffect(() => {
+    if (!showUploadModal && pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+  }, [showUploadModal]);
+
+  const fetchUploadHistory = async () => {
+    try {
+      const history = await jobPostService.getUploadHistory(activeJobId || 0);
+      setUploadHistory(history);
+    } catch (error) {
+      console.error("Failed to fetch upload history", error);
+    }
+  };
+
+  useEffect(() => {
+    if (showUploadModal) {
+      fetchUploadHistory();
+    }
+  }, [showUploadModal]);
+
   const navigate = useNavigate();
 
   const handleSendInvite = async (applicationId: number) => {
@@ -758,17 +826,43 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   };
 
   const handleUploadCandidates = async () => {
+    // 🔒 Prevent duplicate clicks
+    if (isUploading) return;
+
     if (!uploadFiles || uploadFiles.length === 0 || !activeJobId) {
-      showToast.error("Please select PDF files and ensure a job is selected");
+      toast.error("Please select PDF files and ensure a job is selected", {
+        duration: 5000,
+        position: "top-center",
+        style: {
+          background: "#0abc1eff",
+          color: "#fff",
+          fontWeight: "500",
+        },
+      });
       return;
     }
+
     try {
-      await jobPostService.uploadResumes(activeJobId, uploadFiles);
+      setIsUploading(true);
+
+      // await jobPostService.uploadResumes(activeJobId, uploadFiles);
+      const response = await jobPostService.uploadResumes(
+        activeJobId,
+        uploadFiles,
+      );
+
+      const { batch_id } = response;
+
+      setActiveBatchId(batch_id);
+      setUploadStatus(null);
+
+      startPolling(batch_id);
+
       toast.success(
         "Resumes queued for analysis. Refresh after 10 mins to check status.",
         {
           duration: 7000,
-          position: "bottom-right",
+          position: "top-center",
           style: {
             background: "#0abc1eff",
             color: "#fff",
@@ -776,13 +870,24 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           },
         },
       );
-      setShowUploadModal(false);
+      // setShowUploadModal(false);
       setUploadFiles(null);
       // Refresh candidates for Uncontacted stage
       fetchCandidates(activeJobId, "uncontacted");
       fetchStages(activeJobId);
     } catch (error) {
-      showToast.error("Failed to upload candidates");
+      console.error(error);
+      toast.error("Failed to upload candidates", {
+        duration: 5000,
+        position: "top-center",
+        style: {
+          background: "#0abc1eff",
+          color: "#fff",
+          fontWeight: "500",
+        },
+      });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -4673,7 +4778,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       )}
 
       {showExportDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 min-h-[150vh]">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-semibold text-gray-900">
               Export {selectedCandidates.length} Candidate
@@ -4727,8 +4832,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       )}
 
       {showUploadModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 min-h-[150vh]">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[40%] max-h-[80vh] overflow-y-auto">
             <h2 className="text-lg font-semibold mb-4">
               Upload Resumes (PDF, DOC, DOCX)
             </h2>
@@ -4739,18 +4844,168 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
               onChange={handleFileChange}
               className="mb-4 w-full"
             />
+
+            {/* Upload status (accordion)  */}
+            {/* Active Upload Status */}
+            {uploadStatus &&
+              (() => {
+                const processed = uploadStatus.success + uploadStatus.failed;
+                const percent =
+                  uploadStatus.total_files > 0
+                    ? Math.round((processed / uploadStatus.total_files) * 100)
+                    : 0;
+
+                return (
+                  <div className="mt-2 mb-4 border rounded-md p-3 max-h-[240px] overflow-y-auto">
+                    <details open>
+                      <summary className="cursor-pointer font-medium text-lg flex justify-between">
+                        <span>Active Upload</span>
+                        <span className="text-gray-500">
+                          {uploadStatus.status}
+                        </span>
+                      </summary>
+
+                      <div className="mt-3 space-y-3 text-[14px]">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="text-black">
+                            Total: {uploadStatus.total_files}
+                          </div>
+                          <div className="text-gray-600">
+                            Processed: {processed}
+                          </div>
+                          <div className="text-green-500">
+                            Success: {uploadStatus.success}
+                          </div>
+                          <div className="text-red-500">
+                            Failed: {uploadStatus.failed}
+                          </div>
+                          <div className="text-yellow-500">
+                            Pending: {uploadStatus.pending}
+                          </div>
+                          <div className="text-blue-500">
+                            Processing: {uploadStatus.processing}
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="flex justify-between text-md mb-1">
+                            <span>
+                              {processed} / {uploadStatus.total_files} completed
+                            </span>
+                            <span>{percent}%</span>
+                          </div>
+
+                          <div className="h-2 bg-gray-200 rounded">
+                            <div
+                              className="h-2 bg-blue-600 rounded"
+                              style={{ width: `${percent}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {uploadStatus.failed > 0 && (
+                          <div className="bg-red-50 p-2 rounded text-md text-red-600">
+                            {uploadStatus.failed} file(s) failed
+                          </div>
+                        )}
+                      </div>
+                    </details>
+                  </div>
+                );
+              })()}
+
+            {/* Upload History */}
+            {uploadHistory.length > 0 && (
+              <div className="mb-4 border rounded-md p-3 max-h-[300px] overflow-y-auto">
+                <details>
+                  <summary className="cursor-pointer font-medium text-lg">
+                    Upload History
+                  </summary>
+
+                  <div className="mt-3 space-y-2 text-md">
+                    {uploadHistory.map((batch: any, index: number) => {
+                      const processed = batch.success + batch.failed;
+                      const percent =
+                        batch.total_files > 0
+                          ? Math.round((processed / batch.total_files) * 100)
+                          : 0;
+
+                      return (
+                        <div
+                          key={index}
+                          className="border rounded-md p-3 space-y-2 bg-gray-50"
+                        >
+                          {/* Top Row */}
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium text-md text-gray-700">
+                              Batch: {batch.batch_id ?? "Legacy Batch"}
+                            </span>
+
+                            <span className="text-md text-gray-500">
+                              {new Date(batch.created_at).toLocaleString()}
+                            </span>
+                          </div>
+
+                          {/* Counts */}
+                          <div className="grid grid-cols-2 gap-2 text-[14px]">
+                            <div className="text-black">
+                              Total: {batch.total_files}
+                            </div>
+                            <div className="text-gray-600">
+                              Processed: {processed}
+                            </div>
+                            <div className="text-green-500">
+                              Success: {batch.success}
+                            </div>
+                            <div className="text-red-500">
+                              Failed: {batch.failed}
+                            </div>
+                            <div className="text-yellow-500">
+                              Pending: {batch.pending}
+                            </div>
+                            <div className="text-blue-500">
+                              Processing: {batch.processing}
+                            </div>
+                          </div>
+
+                          {/* Progress */}
+                          <div>
+                            <div className="flex justify-between text-md mb-1">
+                              <span>Status: {batch.status}</span>
+                              <span>{percent}%</span>
+                            </div>
+
+                            <div className="h-2 bg-gray-200 rounded">
+                              <div
+                                className="h-2 bg-blue-500 rounded"
+                                style={{ width: `${percent}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </details>
+              </div>
+            )}
+
             <div className="flex justify-end space-x-2">
               <button
-                onClick={() => setShowUploadModal(false)}
-                className="px-4 py-2 bg-gray-200 rounded-md"
+                onClick={() => !isUploading && setShowUploadModal(false)}
+                disabled={isUploading}
+                className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50"
               >
                 Cancel
               </button>
+
               <button
                 onClick={handleUploadCandidates}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                disabled={isUploading}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md
+               disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Upload
+                {isUploading ? "Uploading..." : "Upload"}
               </button>
             </div>
           </div>

@@ -9,7 +9,7 @@
   transform: scale(0.8);
   transform-origin: top left;
   width: 124.5vw;
-  min-height: 100vh;
+  max-height: 100vh;
   margin: 0 auto;
   /* overflow-x: hidden; */
   position: relative;

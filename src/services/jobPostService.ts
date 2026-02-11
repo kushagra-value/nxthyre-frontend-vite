@@ -109,6 +109,15 @@ export interface CreateJobData {
   technical_competencies?: string[];
 }
 
+export interface UploadResumesResponse {
+  message: string;
+  batch_id: string;
+  total_files: number;
+  successful_count: number;
+  failed_count: number;
+  failed_files: string[];
+}
+
 class JobPostService {
   async getJobs(): Promise<Job[]> {
     try {
@@ -131,12 +140,12 @@ class JobPostService {
   async getLocationSuggestions(query: string): Promise<string[]> {
     try {
       const response = await apiClient.get(
-        `/jobs/location-suggestions/?q=${encodeURIComponent(query)}`
+        `/jobs/location-suggestions/?q=${encodeURIComponent(query)}`,
       );
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch location suggestions"
+        error.response?.data?.error || "Failed to fetch location suggestions",
       );
     }
   }
@@ -175,26 +184,26 @@ class JobPostService {
       formData.append("department", String(data.department));
       formData.append(
         "experience_min_years",
-        String(data.experience_min_years)
+        String(data.experience_min_years),
       );
       formData.append(
         "experience_max_years",
-        String(data.experience_max_years)
+        String(data.experience_max_years),
       );
       formData.append("salary_min", data.salary_min);
       formData.append("salary_max", data.salary_max);
       formData.append(
         "is_salary_confidential",
-        String(data.is_salary_confidential)
+        String(data.is_salary_confidential),
       );
       formData.append("visibility", data.visibility);
       formData.append(
         "has_coding_contest_stage",
-        String(data.has_coding_contest_stage)
+        String(data.has_coding_contest_stage),
       );
       formData.append(
         "has_ai_interview_stage",
-        String(data.has_ai_interview_stage)
+        String(data.has_ai_interview_stage),
       );
       formData.append("status", data.status);
       formData.append("workspace", String(data.workspace));
@@ -246,30 +255,30 @@ class JobPostService {
       if (data.experience_min_years !== undefined)
         formData.append(
           "experience_min_years",
-          String(data.experience_min_years)
+          String(data.experience_min_years),
         );
       if (data.experience_max_years !== undefined)
         formData.append(
           "experience_max_years",
-          String(data.experience_max_years)
+          String(data.experience_max_years),
         );
       if (data.salary_min) formData.append("salary_min", data.salary_min);
       if (data.salary_max) formData.append("salary_max", data.salary_max);
       if (data.is_salary_confidential !== undefined)
         formData.append(
           "is_salary_confidential",
-          String(data.is_salary_confidential)
+          String(data.is_salary_confidential),
         );
       if (data.visibility) formData.append("visibility", data.visibility);
       if (data.has_ai_interview_stage !== undefined)
         formData.append(
           "has_ai_interview_stage",
-          String(data.has_ai_interview_stage)
+          String(data.has_ai_interview_stage),
         );
       if (data.has_coding_contest_stage !== undefined)
         formData.append(
           "has_coding_contest_stage",
-          String(data.has_coding_contest_stage)
+          String(data.has_coding_contest_stage),
         );
       if (data.status) formData.append("status", data.status);
       if (data.workspace) formData.append("workspace", String(data.workspace));
@@ -285,7 +294,7 @@ class JobPostService {
       if (data.technical_competencies) {
         formData.append(
           "technical_competencies",
-          JSON.stringify(data.technical_competencies)
+          JSON.stringify(data.technical_competencies),
         );
       }
       if (data.description_text) {
@@ -305,7 +314,10 @@ class JobPostService {
     }
   }
 
-  async uploadResumes(jobId: number | string, resumes: File[]): Promise<void> {
+  async uploadResumes(
+    jobId: number | string,
+    resumes: File[],
+  ): Promise<UploadResumesResponse> {
     try {
       const formData = new FormData();
       formData.append("job_id", String(jobId));
@@ -319,12 +331,44 @@ class JobPostService {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to upload resumes"
+        error.response?.data?.error || "Failed to upload resumes",
+      );
+    }
+  }
+
+  // Get upload status (polling API)
+  async getUploadStatus(): Promise<any[]> {
+    try {
+      const response = await apiClient.get("/candidates/upload-status/");
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch upload status",
+      );
+    }
+  }
+
+  // Upload history for a job
+  async getUploadHistory(jobId: number): Promise<any[]> {
+    try {
+      const response = await apiClient.get(
+        `/candidates/upload-status/?job_id=${jobId}&time_range=all`,
+        {
+          params: {
+            job_id: jobId,
+            time_range: "all",
+          },
+        },
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch upload history",
       );
     }
   }
@@ -332,7 +376,7 @@ class JobPostService {
   async updateCutoff(
     jobId: number,
     stageType: string,
-    cutoffScore: number
+    cutoffScore: number,
   ): Promise<void> {
     try {
       const response = await apiClient.patch(`/jobs/cutoff-score/`, {
@@ -343,23 +387,23 @@ class JobPostService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to update cutoff score"
+        error.response?.data?.error || "Failed to update cutoff score",
       );
     }
   }
 
   async getCutOff(
     jobId: number,
-    stageType: string
+    stageType: string,
   ): Promise<{ cutoff_score: number }> {
     try {
       const response = await apiClient.get(
-        `/jobs/cutoff-score/?job_id=${jobId}&stage_type=${stageType}`
+        `/jobs/cutoff-score/?job_id=${jobId}&stage_type=${stageType}`,
       );
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch cutoff score"
+        error.response?.data?.error || "Failed to fetch cutoff score",
       );
     }
   }
@@ -367,7 +411,7 @@ class JobPostService {
   async unpublishJob(id: number): Promise<void> {
     try {
       const response = await apiClient.post(
-        `/jobs/roles/${id}/unpublish-from-pyjamahr/`
+        `/jobs/roles/${id}/unpublish-from-pyjamahr/`,
       );
       return response.data;
     } catch (error: any) {
@@ -385,32 +429,32 @@ class JobPostService {
 
   async searchAutosuggest(
     query: string,
-    jobId: number
+    jobId: number,
   ): Promise<{ id: string; name: string }[]> {
     try {
       const response = await apiClient.get(
-        `/jobs/search/autosuggest/?q=${query}&job_id=${jobId}`
+        `/jobs/search/autosuggest/?q=${query}&job_id=${jobId}`,
       );
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch autosuggest"
+        error.response?.data?.error || "Failed to fetch autosuggest",
       );
     }
   }
 
   async getSearchedCandidate(
     candidateId: string,
-    jobId: number
+    jobId: number,
   ): Promise<SearchedCandidateItem> {
     try {
       const response = await apiClient.get(
-        `/jobs/search/candidates/?candidate_id=${candidateId}&job_id=${jobId}`
+        `/jobs/search/candidates/?candidate_id=${candidateId}&job_id=${jobId}`,
       );
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch searched candidate"
+        error.response?.data?.error || "Failed to fetch searched candidate",
       );
     }
   }
@@ -421,7 +465,7 @@ class JobPostService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch job competencies"
+        error.response?.data?.error || "Failed to fetch job competencies",
       );
     }
   }
@@ -437,7 +481,7 @@ class JobPostService {
       expectedCTA: string;
       noticePeriod: string;
       resume: File;
-    }
+    },
   ): Promise<any> {
     try {
       const formData = new FormData();

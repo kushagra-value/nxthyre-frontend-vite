@@ -660,6 +660,7 @@ function MainApp() {
           });
           setDefaultBoolQuery(""); // NEW
         } else {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
           response = await candidateService.getCandidates(appliedFilters, page);
           if (response.boolean_search_terms) {
             // Assume API returns 'bool_query' field
@@ -696,6 +697,7 @@ function MainApp() {
     },
     [selectedCandidate, debouncedSearchQuery, sortBy, filters, activeTab],
   );
+
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
@@ -1527,7 +1529,7 @@ function MainApp() {
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
                         searchQuery={""}
-                        setSearchQuery={() => { }}
+                        setSearchQuery={() => {}}
                         showCreateRoleButton={true}
                         showSearchBar={false}
                       />
@@ -1541,7 +1543,7 @@ function MainApp() {
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
                         searchQuery={""}
-                        setSearchQuery={() => { }}
+                        setSearchQuery={() => {}}
                         showCreateRoleButton={true}
                         showSearchBar={false}
                       />
@@ -1707,10 +1709,11 @@ function MainApp() {
                                           onClick={() =>
                                             setCurrentRequisitionPage(page)
                                           }
-                                          className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${page === currentRequisitionPage
-                                            ? "bg-blue-600 text-white"
-                                            : "bg-white text-black hover:bg-gray-200"
-                                            }`}
+                                          className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
+                                            page === currentRequisitionPage
+                                              ? "bg-blue-600 text-white"
+                                              : "bg-white text-black hover:bg-gray-200"
+                                          }`}
                                         >
                                           {page}
                                         </button>
