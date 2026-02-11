@@ -477,10 +477,15 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       const newCompetency = competencyInput.trim();
       setCompetencies((prev) => {
         const updated = [...prev, newCompetency];
-        setAiJdResponse((prevAi: any) => ({
-          ...prevAi,
-          technical_competencies: updated,
-        }));
+        setAiJdResponse((prevAi: any) => {
+          if (prevAi) {
+            return {
+              ...prevAi,
+              technical_competencies: updated,
+            };
+          }
+          return null;
+        });
         return updated;
       });
       setCompetencyInput("");
@@ -490,10 +495,15 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
   const removeCompetency = (index: number) => {
     const newCompetencies = competencies.filter((_, i) => i !== index);
     setCompetencies(newCompetencies);
-    setAiJdResponse((prev: any) => ({
-      ...prev,
-      technical_competencies: newCompetencies,
-    }));
+    setAiJdResponse((prev: any) => {
+      if (prev) {
+        return {
+          ...prev,
+          technical_competencies: newCompetencies,
+        };
+      }
+      return null;
+    });
   };
 
   const handleNext = async () => {
@@ -830,10 +840,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
           setOriginalUploadType("paste");
           setEditableJD(job.ai_jd || "");
           setCompetencies(job.technical_competencies || []);
-          setAiJdResponse({
-            job_description_markdown: job.ai_jd || "",
-            technical_competencies: job.technical_competencies || [],
-          });
+          setAiJdResponse(job.ai_jd_object || null);
           setIsLoading(false);
           setIsFetching(false);
         })

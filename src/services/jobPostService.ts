@@ -38,6 +38,7 @@ export interface Job {
   job_description_markdown: string;
   ai_jd: string;
   technical_competencies: string[];
+  ai_jd_object?: any;
   count: number;
 }
 
