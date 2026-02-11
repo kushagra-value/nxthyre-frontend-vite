@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import { jobPostService, Job, CreateJobData } from "../services/jobPostService";
-import { candidateService } from "../services/candidateService"
+import { candidateService } from "../services/candidateService";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { debounce } from "lodash";
@@ -150,10 +150,11 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       disabled={disabled}
       className={`
           flex items-center justify-start px-4 py-2 rounded-lg  text-md font-[400] transition-all duration-200
-          ${isSelected
-          ? "bg-[#ECF1FF] text-blue-700"
-          : "bg-[#F0F0F0]  text-gray-700 hover:bg-gray-100"
-        }
+          ${
+            isSelected
+              ? "bg-[#ECF1FF] text-blue-700"
+              : "bg-[#F0F0F0]  text-gray-700 hover:bg-gray-100"
+          }
           ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
         `}
     >
@@ -161,10 +162,11 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
         <div
           className={`
               w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center transition-all duration-200
-              ${isSelected
-              ? "border-blue-500 bg-white"
-              : "border-gray-300 bg-white"
-            }
+              ${
+                isSelected
+                  ? "border-blue-500 bg-white"
+                  : "border-gray-300 bg-white"
+              }
             `}
         >
           {isSelected && (
@@ -181,11 +183,12 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     debounce(async (query: string) => {
       if (query.length >= 2) {
         try {
-          const suggestions = await candidateService.getKeywordSuggestions(query);
+          const suggestions =
+            await candidateService.getKeywordSuggestions(query);
           const currentSkills = formData.skills.map((s) => s.toLowerCase());
           const filteredSuggestions = suggestions.filter(
             (suggestion: string) =>
-              !currentSkills.includes(suggestion.toLowerCase())
+              !currentSkills.includes(suggestion.toLowerCase()),
           );
           setSkillSuggestions(filteredSuggestions);
           setShowSkillSuggestions(filteredSuggestions.length > 0);
@@ -200,7 +203,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
         setShowSkillSuggestions(false);
       }
     }, 300),
-    [formData.skills]
+    [formData.skills],
   );
 
   // Updated useEffect for click outside skills (add)
@@ -242,7 +245,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
         setIsLoadingLocation(false);
       }
     }, 300),
-    []
+    [],
   );
 
   // Updated handleSkillInputChange (add replace and fetch, like create)
@@ -256,7 +259,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
   const handleSkillSelect = (suggestion: string) => {
     if (!isValidTextInput(suggestion)) {
       showToast.error(
-        "Skills can only contain letters, numbers, commas, and spaces."
+        "Skills can only contain letters, numbers, commas, and spaces.",
       );
       return;
     }
@@ -268,7 +271,6 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     setSkillSuggestions([]);
     setShowSkillSuggestions(false);
   };
-
 
   const validateStep1 = () => {
     const requiredFields = {
@@ -316,18 +318,18 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       errors.push("Maximum salary is required unless confidential.");
     if (!requiredFields.jobDescription)
       errors.push(
-        "Job description is required when pasting text. or uploading a file."
+        "Job description is required when pasting text. or uploading a file.",
       );
     if (!requiredFields.jobDescription)
       errors.push(
-        "Job description is required when pasting text or uploading a file."
+        "Job description is required when pasting text or uploading a file.",
       );
     if (
       formData.uploadType === "paste" &&
       formData.jobDescription.trim().length < MIN_DESCRIPTION_LENGTH
     ) {
       errors.push(
-        `Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`
+        `Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`,
       );
     }
 
@@ -339,7 +341,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
         errors.push("Experience fields must be valid numbers.");
       } else if (minExp > maxExp) {
         errors.push(
-          "Minimum experience cannot be greater than maximum experience."
+          "Minimum experience cannot be greater than maximum experience.",
         );
       } else if (
         minExp < 0 ||
@@ -348,7 +350,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
         maxExp > MAX_SAFE_INTEGER
       ) {
         errors.push(
-          "Experience values must be within valid integer range (0 to 999999999999)."
+          "Experience values must be within valid integer range (0 to 999999999999).",
         );
       }
     }
@@ -372,7 +374,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
         maxSalary > MAX_SAFE_INTEGER
       ) {
         errors.push(
-          "Salary values must be within valid integer range (1000 to 999999999999)."
+          "Salary values must be within valid integer range (1000 to 999999999999).",
         );
       }
     }
@@ -385,7 +387,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     if (e.key === "Enter" && skillInput.trim()) {
       if (!isValidTextInput(skillInput)) {
         showToast.error(
-          "Skills can only contain letters, numbers, commas, and spaces."
+          "Skills can only contain letters, numbers, commas, and spaces.",
         );
         return;
       }
@@ -411,7 +413,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     if (e.key === "Enter" && locationInput[0]?.trim()) {
       if (!isValidTextInput(locationInput[0])) {
         showToast.error(
-          "Location can only contain letters, numbers, commas, and spaces."
+          "Location can only contain letters, numbers, commas, and spaces.",
         );
         return;
       }
@@ -425,10 +427,11 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
   };
 
   // Updated handleLocationSelect (single string, set [location])
-  const handleLocationSelect = (location: string) => { // Changed param to string
+  const handleLocationSelect = (location: string) => {
+    // Changed param to string
     if (!isValidTextInput(location)) {
       showToast.error(
-        "Location can only contain letters, numbers, commas, and spaces."
+        "Location can only contain letters, numbers, commas, and spaces.",
       );
       return;
     }
@@ -569,7 +572,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       formData.jobDescription.trim().length < MIN_DESCRIPTION_LENGTH
     ) {
       showToast.error(
-        `Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`
+        `Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`,
       );
       return;
     }
@@ -586,7 +589,10 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       const jobData: Partial<CreateJobData> = {
         title: formData.title,
         location: location,
-        work_approach: formData.workApproach.toUpperCase() as "ONSITE" | "REMOTE" | "HYBRID",
+        work_approach: formData.workApproach.toUpperCase() as
+          | "ONSITE"
+          | "REMOTE"
+          | "HYBRID",
         seniority: formData.seniority,
         department: departmentNameToId[formData.department] || 8,
         experience_min_years: parseInt(formData.minExp) || 0, // String parse
@@ -612,7 +618,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       showToast.success(
         formData.keepPrivate
           ? "Job role updated successfully!"
-          : "Job role updated and published successfully!"
+          : "Job role updated and published successfully!",
       );
       onJobUpdated?.();
       onClose();
@@ -649,7 +655,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       formData.jobDescription.trim().length < MIN_DESCRIPTION_LENGTH
     ) {
       showToast.error(
-        `Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`
+        `Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`,
       );
       return;
     }
@@ -672,7 +678,10 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
         experience_max_years: parseInt(formData.maxExp) || 0,
         salary_min: formData.minSalary,
         salary_max: formData.maxSalary,
-        work_approach: formData.workApproach.toUpperCase() as "ONSITE" | "REMOTE" | "HYBRID", // Added
+        work_approach: formData.workApproach.toUpperCase() as
+          | "ONSITE"
+          | "REMOTE"
+          | "HYBRID", // Added
         is_salary_confidential: formData.confidential,
         visibility: formData.keepPrivate ? "PRIVATE" : "PUBLIC",
         has_coding_contest_stage: formData.codingRound,
@@ -692,7 +701,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       showToast.success(
         formData.keepPrivate
           ? "Job role updated successfully!"
-          : "Job role updated and published successfully!"
+          : "Job role updated and published successfully!",
       );
       onJobUpdated?.();
       onClose();
@@ -813,7 +822,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
             workApproach = "Onsite";
           }
 
-          const locationFirst = job.location.length > 0 ? [job.location[0]] : [];
+          const locationFirst =
+            job.location.length > 0 ? [job.location[0]] : [];
 
           setFormData({
             allowInbound: job.visibility === "PUBLIC",
@@ -827,8 +837,12 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
             aiInterviews: job.has_ai_interview_stage || false,
             minExp: job.experience_min_years?.toString() || "",
             maxExp: job.experience_max_years?.toString() || "",
-            minSalary: job.salary_min ? job.salary_min.toString().replace(/.00$/, '') : "",
-            maxSalary: job.salary_max ? job.salary_max.toString().replace(/.00$/, '') : "",
+            minSalary: job.salary_min
+              ? job.salary_min.toString().replace(/.00$/, "")
+              : "",
+            maxSalary: job.salary_max
+              ? job.salary_max.toString().replace(/.00$/, "")
+              : "",
             confidential: job.is_salary_confidential,
             jobDescription: job.description || "",
             uploadType: job.description ? "paste" : "upload",
@@ -928,7 +942,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-start pt-20 justify-center p-4 min-h-[150vh]">
       <div className="bg-white relative rounded-2xl shadow-xl w-full max-w-6xl max-h-[98vh]  flex flex-col overflow-hidden">
         <div className="p-10">
           <div className="flex items-center justify-between">
@@ -957,37 +971,42 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
             <div className="flex items-center space-x-64">
               <div className="flex flex-col justify-center gap-2 items-center">
                 <span
-                  className={`ml-2 text-sm ${currentStep >= 1
-                    ? "text-blue-500 font-medium"
-                    : "text-gray-500"
-                    }`}
+                  className={`ml-2 text-sm ${
+                    currentStep >= 1
+                      ? "text-blue-500 font-medium"
+                      : "text-gray-500"
+                  }`}
                 >
                   Basic Info
                 </span>
                 <div
-                  className={`w-3 h-3 rounded-full ${currentStep >= 1 ? "bg-blue-500" : "bg-gray-300"
-                    }`}
+                  className={`w-3 h-3 rounded-full ${
+                    currentStep >= 1 ? "bg-blue-500" : "bg-gray-300"
+                  }`}
                 ></div>
               </div>
               <div className="flex flex-col justify-center gap-2 items-center">
                 <span
-                  className={`ml-2 text-sm ${currentStep >= 2
-                    ? "text-blue-500 font-medium"
-                    : "text-gray-500"
-                    }`}
+                  className={`ml-2 text-sm ${
+                    currentStep >= 2
+                      ? "text-blue-500 font-medium"
+                      : "text-gray-500"
+                  }`}
                 >
                   Update and Refine JD
                 </span>
                 <div
-                  className={`w-3 h-3 rounded-full ${currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
-                    }`}
+                  className={`w-3 h-3 rounded-full ${
+                    currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
+                  }`}
                 ></div>
               </div>
             </div>
             <div className="relative top-[-6px] right-[25px]">
               <div
-                className={`w-[351px] h-px ${currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
-                  }`}
+                className={`w-[351px] h-px ${
+                  currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
+                }`}
               ></div>
             </div>
             <div className="flex-1 overflow-y-auto mt-2 pr-10">
@@ -1020,7 +1039,9 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Add to Workspace <span className="text-red-500">*</span>
-                  <p className="text-xs text-gray-500 mt-1">Default workspace selected. Choose another to switch.</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Default workspace selected. Choose another to switch.
+                  </p>
                 </label>
                 <select
                   value={formData.workspace}
@@ -1076,22 +1097,23 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                     className="w-full border-none outline-none text-sm text-blue-600 placeholder-gray-400 mb-3"
                     disabled={isLoading}
                   />
-                  {showSkillSuggestions && skillSuggestions.length > 0 && ( // Added
-                    <div
-                      ref={skillSuggestionsRef}
-                      className="absolute left-0 z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto"
-                    >
-                      {skillSuggestions.map((suggestion, index) => (
-                        <div
-                          key={index}
-                          onClick={() => handleSkillSelect(suggestion)}
-                          className="px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 cursor-pointer"
-                        >
-                          {suggestion}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  {showSkillSuggestions &&
+                    skillSuggestions.length > 0 && ( // Added
+                      <div
+                        ref={skillSuggestionsRef}
+                        className="absolute left-0 z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto"
+                      >
+                        {skillSuggestions.map((suggestion, index) => (
+                          <div
+                            key={index}
+                            onClick={() => handleSkillSelect(suggestion)}
+                            className="px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 cursor-pointer"
+                          >
+                            {suggestion}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   <div className="flex flex-wrap gap-2">
                     {formData.skills.map((skill, index) => (
                       <span
@@ -1124,25 +1146,26 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                     className=" w-full border-none outline-none text-sm text-blue-600 placeholder-gray-400 mb-3"
                     disabled={isLoading}
                   />
-                  {(locationInput[0]?.length >= 2 && (isLoadingLocation || locationSuggestions.length > 0)) && (
-                    <div className="absolute left-0 z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-40 overflow-y-auto shadow-lg">
-                      {isLoadingLocation ? (
-                        <div className="px-4 py-3 text-sm text-gray-500 text-center">
-                          Loading locations...
-                        </div>
-                      ) : (
-                        locationSuggestions.map((suggestion, index) => (
-                          <div
-                            key={index}
-                            className="px-4 py-3 text-md text-gray-700 hover:bg-blue-100 cursor-pointer"
-                            onClick={() => handleLocationSelect(suggestion)}
-                          >
-                            {suggestion}
+                  {locationInput[0]?.length >= 2 &&
+                    (isLoadingLocation || locationSuggestions.length > 0) && (
+                      <div className="absolute left-0 z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-40 overflow-y-auto shadow-lg">
+                        {isLoadingLocation ? (
+                          <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                            Loading locations...
                           </div>
-                        ))
-                      )}
-                    </div>
-                  )}
+                        ) : (
+                          locationSuggestions.map((suggestion, index) => (
+                            <div
+                              key={index}
+                              className="px-4 py-3 text-md text-gray-700 hover:bg-blue-100 cursor-pointer"
+                              onClick={() => handleLocationSelect(suggestion)}
+                            >
+                              {suggestion}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
                   <div className="flex flex-wrap gap-2">
                     {formData.location.length > 0 && ( // Updated to length
                       <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center">
@@ -1313,8 +1336,9 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                           }));
                         }
                       }}
-                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg text-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500  ${formData.confidential ? "bg-gray-100 text-gray-400" : ""
-                        }`}
+                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg text-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500  ${
+                        formData.confidential ? "bg-gray-100 text-gray-400" : ""
+                      }`}
                       disabled={isLoading || formData.confidential}
                     />
                     <input
@@ -1329,8 +1353,9 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                           }));
                         }
                       }}
-                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg text-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${formData.confidential ? "bg-gray-100 text-gray-400" : ""
-                        }`}
+                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg text-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        formData.confidential ? "bg-gray-100 text-gray-400" : ""
+                      }`}
                       disabled={isLoading || formData.confidential}
                     />
                     <button
@@ -1341,10 +1366,11 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                           confidential: !prev.confidential,
                         }))
                       }
-                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-md font-[400] transition-all duration-200 ${formData.confidential
-                        ? "bg-[#ECF1FF] text-blue-600"
-                        : "bg-[#F0F0F0] text-gray-400"
-                        }`}
+                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-md font-[400] transition-all duration-200 ${
+                        formData.confidential
+                          ? "bg-[#ECF1FF] text-blue-600"
+                          : "bg-[#F0F0F0] text-gray-400"
+                      }`}
                       disabled={isLoading}
                     >
                       {formData.confidential ? (
@@ -1379,10 +1405,11 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                           jobDescription: "",
                         }))
                       }
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${formData.uploadType === "paste"
-                        ? "bg-white text-blue-600 shadow-sm"
-                        : "text-gray-600"
-                        }`}
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                        formData.uploadType === "paste"
+                          ? "bg-white text-blue-600 shadow-sm"
+                          : "text-gray-600"
+                      }`}
                       disabled={isLoading}
                     >
                       Paste Text
@@ -1395,10 +1422,11 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                           jobDescription: "",
                         }))
                       }
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${formData.uploadType === "upload"
-                        ? "bg-white text-blue-600 shadow-sm"
-                        : "text-gray-600"
-                        }`}
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                        formData.uploadType === "upload"
+                          ? "bg-white text-blue-600 shadow-sm"
+                          : "text-gray-600"
+                      }`}
                       disabled={isLoading}
                     >
                       Upload File
