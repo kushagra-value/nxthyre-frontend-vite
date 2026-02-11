@@ -1729,11 +1729,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                 notes: "",
                 job_score: app.job_score,
                 expected_salary: app.candidate.expected_ctc_lpa || "--",
-                time_added: (() => {
-                  const date = new Date(app.created_at || app.applied_at || app.last_active_at || Date.now());
-                  const days = getDaysAgo(date);
-                  return days === 0 ? "Today" : days === 1 ? "1 day ago" : `${days} days ago`;
-                })(),
+                time_added: app.time_added || "-- days ago",
                 lastUpdated: new Date(app.last_active_at || Date.now()),
                 socials: {
                   github_url: app.candidate.premium_data_availability?.github_username ? "" : null,
