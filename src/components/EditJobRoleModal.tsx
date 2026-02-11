@@ -18,8 +18,8 @@ import {
 } from "lucide-react";
 import { showToast } from "../utils/toast";
 import { jobPostService, Job, CreateJobData } from "../services/jobPostService";
-import {candidateService} from "../services/candidateService"
-import  {CKEditor}  from "@ckeditor/ckeditor5-react";
+import { candidateService } from "../services/candidateService"
+import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { debounce } from "lodash";
 
@@ -121,7 +121,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     Admin: 7,
     Others: 8,
   };
-const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [competencies, setCompetencies] = useState<string[]>([]);
   const [editableJD, setEditableJD] = useState("");
   const [aiJdResponse, setAiJdResponse] = useState<any>(null);
@@ -150,11 +150,10 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
       disabled={disabled}
       className={`
           flex items-center justify-start px-4 py-2 rounded-lg  text-md font-[400] transition-all duration-200
-          ${
-            isSelected
-              ? "bg-[#ECF1FF] text-blue-700"
-              : "bg-[#F0F0F0]  text-gray-700 hover:bg-gray-100"
-          }
+          ${isSelected
+          ? "bg-[#ECF1FF] text-blue-700"
+          : "bg-[#F0F0F0]  text-gray-700 hover:bg-gray-100"
+        }
           ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
         `}
     >
@@ -162,11 +161,10 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
         <div
           className={`
               w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center transition-all duration-200
-              ${
-                isSelected
-                  ? "border-blue-500 bg-white"
-                  : "border-gray-300 bg-white"
-              }
+              ${isSelected
+              ? "border-blue-500 bg-white"
+              : "border-gray-300 bg-white"
+            }
             `}
         >
           {isSelected && (
@@ -224,28 +222,28 @@ const [isLoadingLocation, setIsLoadingLocation] = useState(false);
 
   // Updated fetchLocationSuggestions (change to Geoapify like create, add useCallback)
   // UPDATED: Replace Geoapify fetch with jobPostService.getLocationSuggestions for consistency and to use backend API
-const fetchLocationSuggestions = useCallback(
-  debounce(async (query: string) => {
-    if (query.length < 2) {
-      setLocationSuggestions([]);
-      setIsLoadingLocation(false);
-      return;
-    }
+  const fetchLocationSuggestions = useCallback(
+    debounce(async (query: string) => {
+      if (query.length < 2) {
+        setLocationSuggestions([]);
+        setIsLoadingLocation(false);
+        return;
+      }
 
-    setIsLoadingLocation(true);
-    try {
-      const suggestions = await candidateService.getCitySuggestions(query);
-      setLocationSuggestions(suggestions);
-    } catch (error) {
-      console.error("Error fetching location suggestions:", error);
-      setLocationSuggestions([]);
-      showToast.error("Failed to fetch location suggestions");
-    } finally {
-      setIsLoadingLocation(false);
-    }
-  }, 300),
-  []
-);
+      setIsLoadingLocation(true);
+      try {
+        const suggestions = await candidateService.getCitySuggestions(query);
+        setLocationSuggestions(suggestions);
+      } catch (error) {
+        console.error("Error fetching location suggestions:", error);
+        setLocationSuggestions([]);
+        showToast.error("Failed to fetch location suggestions");
+      } finally {
+        setIsLoadingLocation(false);
+      }
+    }, 300),
+    []
+  );
 
   // Updated handleSkillInputChange (add replace and fetch, like create)
   const handleSkillInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -476,13 +474,26 @@ const fetchLocationSuggestions = useCallback(
 
   const addCompetency = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && competencyInput.trim()) {
-      setCompetencies((prev) => [...prev, competencyInput.trim()]);
+      const newCompetency = competencyInput.trim();
+      setCompetencies((prev) => {
+        const updated = [...prev, newCompetency];
+        setAiJdResponse((prevAi: any) => ({
+          ...prevAi,
+          technical_competencies: updated,
+        }));
+        return updated;
+      });
       setCompetencyInput("");
     }
   };
 
   const removeCompetency = (index: number) => {
-    setCompetencies((prev) => prev.filter((_, i) => i !== index));
+    const newCompetencies = competencies.filter((_, i) => i !== index);
+    setCompetencies(newCompetencies);
+    setAiJdResponse((prev: any) => ({
+      ...prev,
+      technical_competencies: newCompetencies,
+    }));
   };
 
   const handleNext = async () => {
@@ -579,6 +590,7 @@ const fetchLocationSuggestions = useCallback(
         skills: formData.skills,
         status: formData.keepPrivate ? "DRAFT" : "PUBLISHED",
         workspace: parseInt(formData.workspace),
+        ai_jd_object: aiJdResponse,
         ai_jd: editableJD,
         technical_competencies: competencies,
         ...(formData.uploadType === "paste"
@@ -601,10 +613,10 @@ const fetchLocationSuggestions = useCallback(
       const errorMessage = error.response?.data?.description
         ? `Description error: ${error.response.data.description}`
         : error.response?.data?.description_file
-        ? `File upload error: ${error.response.data.description_file}`
-        : error.response?.data?.department
-        ? `Department error: ${error.response.data.department.join(" ")}`
-        : error.message || "Failed to update job role";
+          ? `File upload error: ${error.response.data.description_file}`
+          : error.response?.data?.department
+            ? `Department error: ${error.response.data.department.join(" ")}`
+            : error.message || "Failed to update job role";
       showToast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -658,6 +670,7 @@ const fetchLocationSuggestions = useCallback(
         skills: formData.skills,
         status: formData.keepPrivate ? "DRAFT" : "PUBLISHED",
         workspace: parseInt(formData.workspace),
+        ai_jd_object: aiJdResponse,
         ai_jd: editableJD,
         technical_competencies: competencies,
         ...(formData.uploadType === "paste"
@@ -680,10 +693,10 @@ const fetchLocationSuggestions = useCallback(
       const errorMessage = error.response?.data?.description
         ? `Description error: ${error.response.data.description}`
         : error.response?.data?.description_file
-        ? `File upload error: ${error.response.data.description_file}`
-        : error.response?.data?.department
-        ? `Department error: ${error.response.data.department.join(" ")}`
-        : error.message || "Failed to update job role";
+          ? `File upload error: ${error.response.data.description_file}`
+          : error.response?.data?.department
+            ? `Department error: ${error.response.data.department.join(" ")}`
+            : error.message || "Failed to update job role";
       showToast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -758,7 +771,7 @@ const fetchLocationSuggestions = useCallback(
       jobDescription: "",
       uploadType: "paste",
       codingRound: false,
-      shareExternally:false,
+      shareExternally: false,
       workspace: workspaceId.toString(),
     });
     setSkillInput("");
@@ -790,7 +803,7 @@ const fetchLocationSuggestions = useCallback(
             workApproach = "Onsite";
           }
 
-          const locationFirst = job.location.length > 0 ? [job.location[0]] : []; 
+          const locationFirst = job.location.length > 0 ? [job.location[0]] : [];
 
           setFormData({
             allowInbound: job.visibility === "PUBLIC",
@@ -811,13 +824,16 @@ const fetchLocationSuggestions = useCallback(
             uploadType: job.description ? "paste" : "upload",
             codingRound: job.has_coding_contest_stage || false,
             workspace: job.workspace_details.id.toString(),
-            shareExternally:false,
+            shareExternally: false,
           });
           setOriginalDescription(job.description || "");
           setOriginalUploadType("paste");
           setEditableJD(job.ai_jd || "");
           setCompetencies(job.technical_competencies || []);
-          setAiJdResponse(job.ai_jd || null);
+          setAiJdResponse({
+            job_description_markdown: job.ai_jd || "",
+            technical_competencies: job.technical_competencies || [],
+          });
           setIsLoading(false);
           setIsFetching(false);
         })
@@ -934,42 +950,37 @@ const fetchLocationSuggestions = useCallback(
             <div className="flex items-center space-x-64">
               <div className="flex flex-col justify-center gap-2 items-center">
                 <span
-                  className={`ml-2 text-sm ${
-                    currentStep >= 1
-                      ? "text-blue-500 font-medium"
-                      : "text-gray-500"
-                  }`}
+                  className={`ml-2 text-sm ${currentStep >= 1
+                    ? "text-blue-500 font-medium"
+                    : "text-gray-500"
+                    }`}
                 >
                   Basic Info
                 </span>
                 <div
-                  className={`w-3 h-3 rounded-full ${
-                    currentStep >= 1 ? "bg-blue-500" : "bg-gray-300"
-                  }`}
+                  className={`w-3 h-3 rounded-full ${currentStep >= 1 ? "bg-blue-500" : "bg-gray-300"
+                    }`}
                 ></div>
               </div>
               <div className="flex flex-col justify-center gap-2 items-center">
                 <span
-                  className={`ml-2 text-sm ${
-                    currentStep >= 2
-                      ? "text-blue-500 font-medium"
-                      : "text-gray-500"
-                  }`}
+                  className={`ml-2 text-sm ${currentStep >= 2
+                    ? "text-blue-500 font-medium"
+                    : "text-gray-500"
+                    }`}
                 >
                   Update and Refine JD
                 </span>
                 <div
-                  className={`w-3 h-3 rounded-full ${
-                    currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
-                  }`}
+                  className={`w-3 h-3 rounded-full ${currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
+                    }`}
                 ></div>
               </div>
             </div>
             <div className="relative top-[-6px] right-[25px]">
               <div
-                className={`w-[351px] h-px ${
-                  currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
-                }`}
+                className={`w-[351px] h-px ${currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
+                  }`}
               ></div>
             </div>
             <div className="flex-1 overflow-y-auto mt-2 pr-10">
@@ -1232,133 +1243,6 @@ const fetchLocationSuggestions = useCallback(
                 </div>
               </div>
 
-              <div className="flex flex-col items-start space-y-3">
-                <span className="text-sm font-medium text-gray-700">
-                  Job Post Control
-                </span>
-                <div className="flex relative">
-                  <RadioToggle
-                    label="Allow Inbound Applications"
-                    isSelected={formData.allowInbound}
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        allowInbound: true,
-                        keepPrivate: false,
-                      }))
-                    }
-                    disabled={isLoading}
-                  />
-                  <label
-                    className="flex items-center cursor-pointer"
-                    onMouseEnter={() => setShowTooltip("inbound")}
-                    onMouseLeave={() => setShowTooltip(null)}
-                  >
-                    <span className="ml-2  px-2 text-sm bg-gray-200 rounded-full font-medium text-gray-700">
-                      !
-                    </span>
-                  </label>
-                  {showTooltip === "inbound" && (
-                    <div className="absolute top-full left-0 mt-2 w-80 p-3 bg-gray-50 text-gray-500 text-sm rounded-lg shadow-lg z-10">
-                      NxtHyre can post your jobs on social sites like LinkedIn
-                      to get a high number of job applicants (along with your
-                      LinkedIn as hiring POC)
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex relative">
-                  <RadioToggle
-                    label="Keep It Private"
-                    isSelected={formData.keepPrivate}
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        allowInbound: false,
-                        keepPrivate: true,
-                      }))
-                    }
-                    disabled={isLoading}
-                  />
-                  <label
-                    className="flex items-center cursor-pointer"
-                    onMouseEnter={() => setShowTooltip("private")}
-                    onMouseLeave={() => setShowTooltip(null)}
-                  >
-                    <span className="ml-2  px-2 text-sm bg-gray-200 rounded-full font-medium text-gray-700">
-                      !
-                    </span>
-                  </label>
-                  {showTooltip === "private" && (
-                    <div className="absolute top-full left-0 mt-2 w-80 p-3 bg-gray-50 text-gray-500 text-sm rounded-lg shadow-lg z-10">
-                      NxtHyre will not post LinkedIn on NxtHyre job portal
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="border-y-2 border-dotted border-gray-400 py-6 mt-6">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">
-                    AI Interviews
-                  </span>
-                  <button
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        aiInterviews: !prev.aiInterviews,
-                      }))
-                    }
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      formData.aiInterviews ? "bg-blue-600" : "bg-gray-300"
-                    }`}
-                    disabled={isLoading}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        formData.aiInterviews
-                          ? "translate-x-6"
-                          : "translate-x-1"
-                      }`}
-                    />
-                  </button>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Turning on this feature will enable AI interview, as a
-                  secondary screening round
-                </p>
-              </div>
-
-              <div className="border-b-2 border-dotted border-gray-400 pb-6 mt-6">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">
-                    Coding Round
-                  </span>
-                  <button
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        codingRound: !prev.codingRound,
-                      }))
-                    }
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      formData.codingRound ? "bg-blue-600" : "bg-gray-300"
-                    }`}
-                    disabled={isLoading}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        formData.codingRound ? "translate-x-6" : "translate-x-1"
-                      }`}
-                    />
-                  </button>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Turning on this feature will enable Coding round, as a initial
-                  screening round to make more efficient screening
-                </p>
-              </div>
-
               <div className="grid grid-cols-12 gap-4">
                 <div className="col-span-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1422,9 +1306,8 @@ const fetchLocationSuggestions = useCallback(
                           }));
                         }
                       }}
-                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg text-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500  ${
-                        formData.confidential ? "bg-gray-100 text-gray-400" : ""
-                      }`}
+                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg text-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500  ${formData.confidential ? "bg-gray-100 text-gray-400" : ""
+                        }`}
                       disabled={isLoading || formData.confidential}
                     />
                     <input
@@ -1439,9 +1322,8 @@ const fetchLocationSuggestions = useCallback(
                           }));
                         }
                       }}
-                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg text-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        formData.confidential ? "bg-gray-100 text-gray-400" : ""
-                      }`}
+                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg text-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${formData.confidential ? "bg-gray-100 text-gray-400" : ""
+                        }`}
                       disabled={isLoading || formData.confidential}
                     />
                     <button
@@ -1452,11 +1334,10 @@ const fetchLocationSuggestions = useCallback(
                           confidential: !prev.confidential,
                         }))
                       }
-                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-md font-[400] transition-all duration-200 ${
-                        formData.confidential
-                          ? "bg-[#ECF1FF] text-blue-600"
-                          : "bg-[#F0F0F0] text-gray-400"
-                      }`}
+                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-md font-[400] transition-all duration-200 ${formData.confidential
+                        ? "bg-[#ECF1FF] text-blue-600"
+                        : "bg-[#F0F0F0] text-gray-400"
+                        }`}
                       disabled={isLoading}
                     >
                       {formData.confidential ? (
@@ -1491,11 +1372,10 @@ const fetchLocationSuggestions = useCallback(
                           jobDescription: "",
                         }))
                       }
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                        formData.uploadType === "paste"
-                          ? "bg-white text-blue-600 shadow-sm"
-                          : "text-gray-600"
-                      }`}
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${formData.uploadType === "paste"
+                        ? "bg-white text-blue-600 shadow-sm"
+                        : "text-gray-600"
+                        }`}
                       disabled={isLoading}
                     >
                       Paste Text
@@ -1508,11 +1388,10 @@ const fetchLocationSuggestions = useCallback(
                           jobDescription: "",
                         }))
                       }
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                        formData.uploadType === "upload"
-                          ? "bg-white text-blue-600 shadow-sm"
-                          : "text-gray-600"
-                      }`}
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${formData.uploadType === "upload"
+                        ? "bg-white text-blue-600 shadow-sm"
+                        : "text-gray-600"
+                        }`}
                       disabled={isLoading}
                     >
                       Upload File
@@ -1676,8 +1555,8 @@ const fetchLocationSuggestions = useCallback(
                 {isLoading
                   ? "Loading..."
                   : formData.allowInbound
-                  ? "Update & Publish"
-                  : "Update"}
+                    ? "Update & Publish"
+                    : "Update"}
               </button>
 
               <button

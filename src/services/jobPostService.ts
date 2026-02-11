@@ -303,6 +303,10 @@ class JobPostService {
         formData.append("description_file", data.description_file);
       }
 
+      if (data.ai_jd_object) {
+        formData.append("ai_jd_object", JSON.stringify(data.ai_jd_object));
+      }
+
       const response = await apiClient.patch(`/jobs/roles/${id}/`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
