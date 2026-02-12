@@ -65,9 +65,11 @@ interface Activity {
   type: "stage_move" | "communication_sent";
   date: string;
   job_title: string;
+  time?: string;
   description: string;
   via?: string;
   note?: string;
+  actor?: string;
   data: {
     id: number;
     // Stage move fields
@@ -677,6 +679,21 @@ const StageDetails: React.FC<StageDetailsProps> = ({
       setEditedMatchDesc(jobScoreObj.candidate_match_score.description);
     }
   }, [activeTab, selectedStage, selectedCandidate, stages]);
+
+  const formatActor = (actor?: string) => {
+    if (!actor) return "Unknown";
+    if (actor === "System" || actor === "External Upload") return actor;
+
+    if (actor.includes("@")) {
+      const localPart = actor.split("@")[0];
+      return localPart
+        .split(/[\._-]/) // handles ., _, -
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(" ");
+    }
+
+    return actor;
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -1619,11 +1636,18 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                     <hr className="w-[10%] border-t-2 mt-2 border-gray-400" />
                     <div>
                       <p className="text-sm text-gray-400 leading-normal">
-                        {activity.date}{" "}
+                        {activity.date}{activity.time && ` · ${activity.time}`}
                       </p>
                       <p className="text-sm text-gray-400 leading-normal font-medium">
                         {activity.description}
                       </p>
+                      {(activity.via || activity.actor) && (
+                        <p className="mt-1 text-xs text-gray-500">
+                          {activity.via && `via ${activity.via}`}
+                          {activity.via && activity.actor && " · "}
+                          {activity.actor && `by ${formatActor(activity.actor)}`}
+                        </p>
+                      )}
                       {activity.type === "communication_sent" &&
                         activity.note && (
                           <div>
@@ -1683,6 +1707,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 </div>
               ))}
             </div>
+            {activities.length === 0 && (
+              <p className="text-center text-gray-500 text-sm">No activity recorded yet.</p>
+            )}
           </div>
         );
       case "Notes":
