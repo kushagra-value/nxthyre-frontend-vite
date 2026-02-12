@@ -2847,7 +2847,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                                 )}
 
                               </div>
-                              <p className="text-sm text-gray-500">Nxthyre Shortlist</p>
+                              <p className="text-sm text-gray-500">Nxthyre {stage.name}</p>
                               <div className="flex items-center justify-between mb-3">
                                 <div>
                                   <span className="text-3xl font-semibold text-gray-900">{rejectedCount}</span>

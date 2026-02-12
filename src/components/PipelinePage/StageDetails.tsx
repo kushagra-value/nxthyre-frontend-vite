@@ -286,52 +286,99 @@ const StageDetails: React.FC<StageDetailsProps> = ({
 
           const mappedActivities: Activity[] = apiActivities.map(
             (item: any) => {
-              const date = new Date(item.timestamp).toLocaleDateString(
-                "en-US",
-                {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                },
-              );
+              const timestamp = new Date(item.timestamp);
+              const date = timestamp.toLocaleDateString("en-US", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              });
+              const time = timestamp.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+
               let description = "";
               let via = "";
               let note = "";
+              let actor: string = "System";
+
+              const d = item.data;
 
               if (item.type === "stage_move") {
-                const d = item.data;
-                description = `${selectedCandidate.candidate.full_name} has been moved from ${d.from_stage_name} to ${d.to_stage_name}`;
+                actor = d.moved_by_name || d.external_mover_email || "System";
+                description = `Moved from ${d.from_stage_name} to ${d.to_stage_name}`;
                 via = "system";
               } else if (item.type === "communication_sent") {
-                const d = item.data;
-                description = `${selectedCandidate.candidate.full_name} sent you a message `;
-                via = d.mode.toLowerCase();
+                description = `${selectedCandidate.candidate.full_name} sent you a message`;
+                via = d.mode?.toLowerCase() || "";
+                actor = selectedCandidate.candidate.full_name;
+
                 if (d.replies?.length > 0) {
                   note = d.replies
                     .map((r: any) => {
                       if (r.via === "call") {
                         return `
-                          <div class="w-full flex justify-between">
-                            <span>The call was instantiated</span>
-                            <span class="text-gray-500">${r.via}</span>
-                          </div>
-                        `;
+                        <div class="w-full flex justify-between">
+                          <span>The call was instantiated</span>
+                          <span class="text-gray-500">${r.via}</span>
+                        </div>
+                      `;
                       } else {
                         return `
-                          <div class="flex justify-between">
-                            <span>${r.body}</span>
-                            <span class="text-gray-500">${r.via}</span>
-                          </div>
-                        `;
+                        <div class="flex justify-between">
+                          <span>${r.body}</span>
+                          <span class="text-gray-500">${r.via}</span>
+                        </div>
+                      `;
                       }
                     })
                     .join("");
                 }
+              } else if (item.type === "recruiter_message_sent") {
+                actor = d.sent_by_name || "Recruiter";
+                description = d.body?.trim() || "Message sent";
+                via = d.mode?.toLowerCase() || "whatsapp";
+
+                if (d.replies?.length > 0) {
+                  note = d.replies
+                    .map((r: any) => {
+                      if (r.via === "call") {
+                        return `
+                        <div class="w-full flex justify-between">
+                          <span>The call was instantiated</span>
+                          <span class="text-gray-500">${r.via}</span>
+                        </div>
+                      `;
+                      } else {
+                        return `
+                        <div class="flex justify-between">
+                          <span>${r.body}</span>
+                          <span class="text-gray-500">${r.via}</span>
+                        </div>
+                      `;
+                      }
+                    })
+                    .join("");
+                }
+              } else if (item.type === "interview_event") {
+                actor = "System";
+                const round = d.round_name || d.stage || "Interview";
+                description = `${round} scheduled`;
+                via = d.location_type?.toLowerCase() || "virtual";
+              } else if (item.type === "interview_event_audit") {
+                actor = d.actor_id ? "Recruiter" : "System";
+                const reason = d.payload.reason
+                  ? ` (${d.payload.reason.replace(/_/g, " ")})`
+                  : "";
+                description = `Interview ${d.action.toLowerCase()}${reason}`;
+                via = "email";
               } else {
-                const d = item.data;
+                // Fallback for any other type (e.g., older email-style communications)
                 const subjectBody = (d.subject || "") + " " + (d.body || "");
                 description = subjectBody.trim() || "Activity recorded";
                 via = d.mode ? d.mode.toLowerCase() : "";
+                actor = d.sent_by_name || actor;
+
                 if (d.replies?.length > 0) {
                   note = d.replies
                     .map((r: any) => {
@@ -355,13 +402,20 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                 }
               }
 
+              // Conditional: if actor is undefined/empty/string "undefined" → treat as external upload
+              if (!actor || actor === "undefined" || actor.trim() === "") {
+                actor = "External Upload";
+              }
+
               return {
                 type: item.type,
                 date,
+                time,                    // ← NEW: time of the activity
                 job_title: item.job_title,
                 description,
                 via,
                 note,
+                actor,                   // ← NEW: who performed the action
                 data: item.data,
               };
             },
@@ -373,6 +427,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         }
       }
     };
+
     fetchActivity();
   }, [selectedCandidate?.candidate.id, selectedCandidate?.id]);
 
@@ -894,45 +949,45 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             {/* UPDATED: Profile Summary with View More/Less for long text */}
             {(selectedCandidate.candidate.profile_summary ||
               selectedCandidate.candidate.headline) && (
-              <div>
-                <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
-                  <User className="w-4 h-4 mr-2 text-[#4B5563]" />
-                  Profile Summary
-                </h3>
-                <p className="text-sm pl-6 text-[#818283] leading-normal">
-                  {(() => {
-                    const summary =
-                      selectedCandidate.candidate.profile_summary ||
-                      selectedCandidate.candidate.headline ||
-                      "No summary available";
+                <div>
+                  <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                    <User className="w-4 h-4 mr-2 text-[#4B5563]" />
+                    Profile Summary
+                  </h3>
+                  <p className="text-sm pl-6 text-[#818283] leading-normal">
+                    {(() => {
+                      const summary =
+                        selectedCandidate.candidate.profile_summary ||
+                        selectedCandidate.candidate.headline ||
+                        "No summary available";
 
-                    const isLongSummary =
-                      selectedCandidate.candidate.profile_summary &&
-                      selectedCandidate.candidate.profile_summary.length >
+                      const isLongSummary =
+                        selectedCandidate.candidate.profile_summary &&
+                        selectedCandidate.candidate.profile_summary.length >
                         maxCharLength;
 
-                    const displaySummary =
-                      showMoreSummary || !isLongSummary
-                        ? summary
-                        : summary.slice(0, maxCharLength) + "...";
+                      const displaySummary =
+                        showMoreSummary || !isLongSummary
+                          ? summary
+                          : summary.slice(0, maxCharLength) + "...";
 
-                    return (
-                      <>
-                        {displaySummary}
-                        {isLongSummary && (
-                          <button
-                            onClick={() => setShowMoreSummary(!showMoreSummary)}
-                            className="ml-2 text-[#0F47F2] text-sm font-medium inline"
-                          >
-                            {showMoreSummary ? "View Less" : "View More"}
-                          </button>
-                        )}
-                      </>
-                    );
-                  })()}
-                </p>
-              </div>
-            )}
+                      return (
+                        <>
+                          {displaySummary}
+                          {isLongSummary && (
+                            <button
+                              onClick={() => setShowMoreSummary(!showMoreSummary)}
+                              className="ml-2 text-[#0F47F2] text-sm font-medium inline"
+                            >
+                              {showMoreSummary ? "View Less" : "View More"}
+                            </button>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </p>
+                </div>
+              )}
 
             {positions.length > 0 && (
               <div>
@@ -1043,9 +1098,9 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       </h4>
                       <p className="text-sm text-[#818283]">{edu.schoolName}</p>
                       {edu.startDate?.year &&
-                      edu.endDate?.year &&
-                      edu.startDate.year !== 0 &&
-                      edu.endDate.year !== 0 ? (
+                        edu.endDate?.year &&
+                        edu.startDate.year !== 0 &&
+                        edu.endDate.year !== 0 ? (
                         <p className="text-sm text-[#818283]">
                           {edu.startDate.year} - {edu.endDate.year}
                         </p>
@@ -1288,13 +1343,12 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                           <Minus className="w-4 h-4 p-1 bg-[#818283] text-white mr-1 rounded-xl" />
                         )}
                         <span
-                          className={`${
-                            q.status === "Pass"
-                              ? "text-[#007A5A]"
-                              : q.status === "Fail"
-                                ? "text-[#ED051C]"
-                                : "text-[#818283]"
-                          } font-medium`}
+                          className={`${q.status === "Pass"
+                            ? "text-[#007A5A]"
+                            : q.status === "Fail"
+                              ? "text-[#ED051C]"
+                              : "text-[#818283]"
+                            } font-medium`}
                         >
                           {q.status}
                         </span>
@@ -1334,8 +1388,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
         return (
           <div className="space-y-3 bg-[#F5F9FB] p-2 rounded-xl">
             {interviewData?.resumeScore ||
-            interviewData?.knowledgeScore ||
-            interviewData?.communicationScore ? (
+              interviewData?.knowledgeScore ||
+              interviewData?.communicationScore ? (
               <>
                 <div className="bg-white rounded-xl p-2">
                   <h4 className="text-base font-medium text-[#4B5563] mb-4">
@@ -1465,15 +1519,13 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                       return (
                         <div
                           key={index}
-                          className={`border ${
-                            isExpanded ? "border-[#0F47F2]" : "border-[#818283]"
-                          } bg-white rounded-md p-4`}
+                          className={`border ${isExpanded ? "border-[#0F47F2]" : "border-[#818283]"
+                            } bg-white rounded-md p-4`}
                         >
                           <div className="flex justify-between items-start">
                             <p
-                              className={`text-sm font-medium ${
-                                isExpanded ? "text-[#4B5563]" : "text-[#818283]"
-                              }`}
+                              className={`text-sm font-medium ${isExpanded ? "text-[#4B5563]" : "text-[#818283]"
+                                }`}
                             >
                               {q.question}
                             </p>
@@ -1582,7 +1634,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                               }}
                             />
                             <button
-                              onClick={() => {}}
+                              onClick={() => { }}
                               className="text-blue-500 mt-1"
                             >
                               Reply ?
@@ -1798,12 +1850,10 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                   type="text"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  placeholder={`Type your ${
-                    notesView === "my" ? "team" : "community"
-                  } comment!`}
-                  className={`flex-1 px-4 py-2 rounded-lg text-sm ${
-                    newComment && !isValidNote ? "border border-red-500" : ""
-                  }`}
+                  placeholder={`Type your ${notesView === "my" ? "team" : "community"
+                    } comment!`}
+                  className={`flex-1 px-4 py-2 rounded-lg text-sm ${newComment && !isValidNote ? "border border-red-500" : ""
+                    }`}
                   onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
                 />
                 <button
@@ -1942,11 +1992,10 @@ const StageDetails: React.FC<StageDetailsProps> = ({
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`py-2 px-2 text-sm font-medium ${
-                  activeTab === tab
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
+                className={`py-2 px-2 text-sm font-medium ${activeTab === tab
+                  ? "text-blue-600 border-b-2 border-blue-600"
+                  : "text-gray-500 hover:text-gray-700"
+                  }`}
               >
                 {tab}
                 {tab === "Notes" && (
