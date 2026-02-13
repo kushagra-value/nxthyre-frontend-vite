@@ -2848,7 +2848,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                                 )}
 
                               </div>
-                              <p className="text-sm text-gray-500">{stage.custom_stage_type}</p>
+                              <p className="text-sm text-gray-500">{stage.custom_stage_type ? stage.custom_stage_type : "NXTHYRE_SHORTLIST"}</p>
                               <div className="flex items-center justify-between mb-3">
                                 <div>
                                   <span className="text-3xl font-semibold text-gray-900">{rejectedCount}</span>
