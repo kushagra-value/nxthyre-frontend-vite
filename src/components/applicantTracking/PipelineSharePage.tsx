@@ -1655,6 +1655,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       const color = colorPalette[index % colorPalette.length];
       return {
         name: stage.name,
+        custom_stage_type: stage.custom_stage_type,
         slug: stage.slug,
         id: stage.id,
         bgColor: color.bgColor,
@@ -2847,7 +2848,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                                 )}
 
                               </div>
-                              <p className="text-sm text-gray-500">Nxthyre {stage.name}</p>
+                              <p className="text-sm text-gray-500">{stage.custom_stage_type}</p>
                               <div className="flex items-center justify-between mb-3">
                                 <div>
                                   <span className="text-3xl font-semibold text-gray-900">{rejectedCount}</span>
