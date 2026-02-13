@@ -1812,9 +1812,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const [isLoading, setIsLoading] = useState(false);
 
     // Regex to allow only alphanumeric and spaces
-    const validNoteRegex = /^[A-Za-z0-9 ]+$/;
-    const isValidNote =
-      newComment.trim() !== "" && validNoteRegex.test(newComment.trim());
+    // const validNoteRegex = /^[A-Za-z0-9 ]+$/;
+    // const isValidNote =
+    //   newComment.trim() !== "" && validNoteRegex.test(newComment.trim());
 
     // Fetch notes when component mounts or candidateId changes
     useEffect(() => {
@@ -1838,7 +1838,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     // Handle adding a new note
     const handleAddComment = async () => {
       if (!newComment.trim()) return;
-      if (!isValidNote) return;
+      // if (!isValidNote) return;
       try {
         setIsLoading(true);
         const payload =
@@ -1960,7 +1960,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 notesView === "my" ? "team" : "community"
               } comment!`}
               className={`flex-1 px-4 py-2 rounded-lg text-sm ${
-                newComment && !isValidNote ? "border border-red-500" : ""
+                newComment ? "border border-red-500" : ""
               }`}
               onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
             />
