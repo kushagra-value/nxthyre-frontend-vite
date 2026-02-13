@@ -660,7 +660,7 @@ function MainApp() {
           });
           setDefaultBoolQuery(""); // NEW
         } else {
-          await new Promise((resolve) => setTimeout(resolve, 2000));
+          // await new Promise((resolve) => setTimeout(resolve, 2000));
           response = await candidateService.getCandidates(appliedFilters, page);
           if (response.boolean_search_terms) {
             // Assume API returns 'bool_query' field
@@ -686,7 +686,7 @@ function MainApp() {
           }
         }
       } catch (error) {
-        showToast.error("Failed to fetch candidates");
+        // showToast.error("Failed to fetch candidates");
         console.error("Error fetching candidates:", error);
         setCandidates([]);
         setTotalCount(0);
