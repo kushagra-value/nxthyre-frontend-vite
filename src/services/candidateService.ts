@@ -60,7 +60,7 @@ export interface CandidateListItem {
     all_emails: string[];
     all_phone_numbers: string[];
   } | null;
-  expected_ctc?: number;
+  expected_ctc?: string;
   job_score?: AnalysisResult;
   time_applied: string;
 }
@@ -1098,7 +1098,7 @@ class CandidateService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error ||
-          "Failed to fetch background verifications",
+        "Failed to fetch background verifications",
       );
     }
   }
