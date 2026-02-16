@@ -1958,7 +1958,6 @@ function MainApp() {
                             </div>
                             {/* Tabs */}
                             <div className="flex border-b border-gray-200 mb-6">
-                              Hello
                               <button
                                 className={`pb-2 px-4 text-sm font-medium transition-colors ${requisitionModalTab === "info"
                                   ? "text-blue-600 border-b-2 border-blue-600"
@@ -1966,7 +1965,7 @@ function MainApp() {
                                   }`}
                                 onClick={() => setRequisitionModalTab("info")}
                               >
-                                Requisition Info
+                                Requisition Info Hello
                               </button>
                               <button
                                 className={`pb-2 px-4 text-sm font-medium transition-colors ${requisitionModalTab === "company"
