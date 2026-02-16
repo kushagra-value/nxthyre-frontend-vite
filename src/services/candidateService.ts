@@ -1202,7 +1202,7 @@ class CandidateService {
           },
         },
       );
-      return response.data; // returns the array of applications
+      return response.data.results || []; // returns the array of applications
     } catch (error: any) {
       console.error("Error fetching public pipeline applications:", error);
       throw error;
