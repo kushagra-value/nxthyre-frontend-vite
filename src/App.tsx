@@ -121,7 +121,6 @@ interface Filters {
 interface Workspace {
   id: number;
   name: string;
-  company_research_data?: CompanyResearchData;
 }
 
 const ProjectSkeletonCard = () => (
@@ -319,6 +318,9 @@ function MainApp() {
   const [currentAnalysis, setCurrentAnalysis] = useState<AnalysisResult | null>(
     null,
   );
+  const [companyResearchData, setCompanyResearchData] =
+    useState<CompanyResearchData | null>(null);
+  const [loadingCompanyResearch, setLoadingCompanyResearch] = useState(false);
   const [currentRequisitionPage, setCurrentRequisitionPage] =
     useState<number>(1);
   const [currentJobIdForModal, setCurrentJobIdForModal] = useState<
@@ -357,7 +359,6 @@ function MainApp() {
           (ws: MyWorkspace) => ({
             id: ws.id,
             name: ws.name,
-            company_research_data: ws.company_research_data,
           }),
         );
         setWorkspaces(mappedWorkspaces);
@@ -940,6 +941,7 @@ function MainApp() {
 
   const handleRequisitionInfo = async (jobId: number) => {
     setRequisitionModalTab("info");
+    setCompanyResearchData(null);
     setCurrentJobIdForModal(jobId);
     setLoadingCompetencies(true);
     setJobDataForModal(null);
@@ -965,6 +967,7 @@ function MainApp() {
     setShowRequisitionInfoModal(false);
     setJobDataForModal(null);
     setCompetenciesData(null);
+    setCompanyResearchData(null);
     setLoadingCompetencies(false);
     setCurrentJobIdForModal(null);
   };
@@ -1972,9 +1975,29 @@ function MainApp() {
                                   ? "text-blue-600 border-b-2 border-blue-600"
                                   : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
                                   }`}
-                                onClick={() =>
-                                  setRequisitionModalTab("company")
-                                }
+                                onClick={async () => {
+                                  setRequisitionModalTab("company");
+                                  if (
+                                    jobDataForModal?.workspace_details?.id &&
+                                    !companyResearchData
+                                  ) {
+                                    setLoadingCompanyResearch(true);
+                                    try {
+                                      const data =
+                                        await organizationService.getCompanyResearchData(
+                                          jobDataForModal.workspace_details.id,
+                                        );
+                                      setCompanyResearchData(data);
+                                    } catch (error) {
+                                      console.error(
+                                        "Failed to fetch company research data",
+                                        error,
+                                      );
+                                    } finally {
+                                      setLoadingCompanyResearch(false);
+                                    }
+                                  }
+                                }}
                               >
                                 About Company
                               </button>
@@ -2214,15 +2237,21 @@ function MainApp() {
 
                                 {/* ABOUT COMPANY TAB CONTENT */}
                                 {requisitionModalTab === "company" && (
-                                  <CompanyInfoTab
-                                    data={
-                                      workspaces.find(
-                                        (w) =>
-                                          w.id ===
-                                          jobDataForModal.workspace_details?.id,
-                                      )?.company_research_data!
-                                    }
-                                  />
+                                  <>
+                                    {loadingCompanyResearch ? (
+                                      <div className="flex justify-center items-center py-12">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                      </div>
+                                    ) : companyResearchData ? (
+                                      <CompanyInfoTab
+                                        data={companyResearchData}
+                                      />
+                                    ) : (
+                                      <div className="text-center py-8 text-gray-500">
+                                        No company details available.
+                                      </div>
+                                    )}
+                                  </>
                                 )}
                               </>
                             ) : (
@@ -2928,9 +2957,29 @@ function MainApp() {
                                   ? "text-blue-600 border-b-2 border-blue-600"
                                   : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
                                   }`}
-                                onClick={() =>
-                                  setRequisitionModalTab("company")
-                                }
+                                onClick={async () => {
+                                  setRequisitionModalTab("company");
+                                  if (
+                                    jobDataForModal?.workspace_details?.id &&
+                                    !companyResearchData
+                                  ) {
+                                    setLoadingCompanyResearch(true);
+                                    try {
+                                      const data =
+                                        await organizationService.getCompanyResearchData(
+                                          jobDataForModal.workspace_details.id,
+                                        );
+                                      setCompanyResearchData(data);
+                                    } catch (error) {
+                                      console.error(
+                                        "Failed to fetch company research data",
+                                        error,
+                                      );
+                                    } finally {
+                                      setLoadingCompanyResearch(false);
+                                    }
+                                  }
+                                }}
                               >
                                 About Company
                               </button>
@@ -3185,15 +3234,21 @@ function MainApp() {
                                     </>
                                   )}
                                 {requisitionModalTab === "company" && (
-                                  <CompanyInfoTab
-                                    data={
-                                      workspaces.find(
-                                        (w) =>
-                                          w.id ===
-                                          jobDataForModal.workspace_details?.id,
-                                      )?.company_research_data!
-                                    }
-                                  />
+                                  <>
+                                    {loadingCompanyResearch ? (
+                                      <div className="flex justify-center items-center py-12">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                      </div>
+                                    ) : companyResearchData ? (
+                                      <CompanyInfoTab
+                                        data={companyResearchData}
+                                      />
+                                    ) : (
+                                      <div className="text-center py-8 text-gray-500">
+                                        No company details available.
+                                      </div>
+                                    )}
+                                  </>
                                 )}
                               </>
                             ) : (

@@ -383,6 +383,18 @@ class OrganizationService {
       );
     }
   }
+  async getCompanyResearchData(workspaceId: number): Promise<CompanyResearchData> {
+    try {
+      const response = await apiClient.get(
+        `/organization/workspaces/${workspaceId}/company-research/`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch company research data"
+      );
+    }
+  }
 }
 
 export const organizationService = new OrganizationService();
