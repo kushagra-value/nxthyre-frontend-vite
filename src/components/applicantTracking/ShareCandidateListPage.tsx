@@ -42,12 +42,10 @@ const ShareCandidateListPage = () => {
           currentPage,
           pageSize,
         );
-        console.log(
-          `✅ Fetched page ${currentPage}: ${data.length || 0} items`,
-        );
+        console.log(`✅ Fetched page ${currentPage}: ${data.count || 0} items`);
 
-        setApplications(data || []); // Adjust based on actual API response structure
-        setTotalCount(data.length || 0); // Set total count for pagination
+        setApplications(data.results || []); // Adjust based on actual API response structure
+        setTotalCount(data.count || 0); // Set total count for pagination
       } catch (err) {
         console.error("❌ Fetch error:", err);
         setError("Failed to load pipeline. Try again.");
