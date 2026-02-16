@@ -1191,12 +1191,17 @@ class CandidateService {
 
   // services/applicationService.ts (or wherever your apiClient calls live)
 
-  async getPublicPipelineApplications(workspaceId: number, pageSize: number) {
+  async getPublicPipelineApplications(
+    workspaceId: number,
+    page: number,
+    pageSize: number,
+  ) {
     try {
       const response = await apiClient.get(
         `/jobs/public/workspaces/${workspaceId}/applications/`,
         {
           params: {
+            page,
             page_size: pageSize,
           },
         },

@@ -1,20 +1,29 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 import candidateService from "../../services/candidateService"; // adjust path
 
 const ShareCandidateListPage = () => {
   const { workspaceId } = useParams<{ workspaceId: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Get current page from URL query param (defaults to 1)
+  const currentPage = useMemo(() => {
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    return isNaN(page) || page < 1 ? 1 : page;
+  }, [searchParams]);
+
   const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
 
   const pageSize = 8; // should match the page_size used in the API call
 
   useEffect(() => {
     const fetchData = async () => {
-      //   console.log("🔍 Public page loaded. Workspace ID:", workspaceId); // Debug log
+      console.log(
+        `🔍 Fetching page ${currentPage} for workspace ${workspaceId}`,
+      );
 
       setLoading(true);
       setError(null);
@@ -30,10 +39,13 @@ const ShareCandidateListPage = () => {
       try {
         const data = await candidateService.getPublicPipelineApplications(
           Number(workspaceId),
+          currentPage,
           pageSize,
         );
-        console.log("✅ Fetched applications:", data); // Debug
-        console.log("✅ Fetched applications result :", data.length, "items"); // Debug
+        console.log(
+          `✅ Fetched page ${currentPage}: ${responseData.results?.length || 0} items`,
+        );
+
         setApplications(data || []); // Adjust based on actual API response structure
         setTotalCount(data.length || 0); // Set total count for pagination
       } catch (err) {
@@ -51,10 +63,10 @@ const ShareCandidateListPage = () => {
   const startIdx = (currentPage - 1) * pageSize + 1;
   const endIdx = Math.min(currentPage * pageSize, totalCount);
 
+  // Update URL on page change (makes shareable pages)
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-      // Smooth scroll to top of list
+      setSearchParams({ page: page.toString() });
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
