@@ -32,14 +32,10 @@ const ShareCandidateListPage = () => {
           Number(workspaceId),
           pageSize,
         );
-        console.log("✅ Fetched applications:", data.results); // Debug
-        console.log(
-          "✅ Fetched applications result :",
-          data.results?.length,
-          "items",
-        ); // Debug
-        setApplications(data.results || []); // Adjust based on actual API response structure
-        setTotalCount(data.results?.length || 0); // Set total count for pagination
+        console.log("✅ Fetched applications:", data); // Debug
+        console.log("✅ Fetched applications result :", data.length, "items"); // Debug
+        setApplications(data || []); // Adjust based on actual API response structure
+        setTotalCount(data.length || 0); // Set total count for pagination
       } catch (err) {
         console.error("❌ Fetch error:", err);
         setError("Failed to load pipeline. Try again.");
