@@ -10,7 +10,7 @@ const ShareCandidateListPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      console.log("🔍 Public page loaded. Workspace ID:", workspaceId); // Debug log
+      //   console.log("🔍 Public page loaded. Workspace ID:", workspaceId); // Debug log
 
       setLoading(true);
       setError(null);
@@ -26,7 +26,7 @@ const ShareCandidateListPage = () => {
         const data = await candidateService.getPublicPipelineApplications(
           Number(workspaceId),
         );
-        console.log("✅ Fetched applications:", data.length, "items"); // Debug
+        // console.log("✅ Fetched applications:", data.length, "items"); // Debug
         setApplications(data);
       } catch (err) {
         console.error("❌ Fetch error:", err);

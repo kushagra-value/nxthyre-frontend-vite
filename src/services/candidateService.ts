@@ -1195,12 +1195,6 @@ class CandidateService {
     try {
       const response = await apiClient.get(
         `/jobs/public/workspaces/${workspaceId}/applications/`,
-        {
-          params: {
-            page_size: 8, // adjust as needed (remove for all results)
-            // page: 1,            // if you want pagination later
-          },
-        },
       );
       return response.data.results || []; // returns the array of applications
     } catch (error: any) {
