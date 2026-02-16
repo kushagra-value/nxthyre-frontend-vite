@@ -43,7 +43,7 @@ const ShareCandidateListPage = () => {
           pageSize,
         );
         console.log(
-          `✅ Fetched page ${currentPage}: ${responseData.results?.length || 0} items`,
+          `✅ Fetched page ${currentPage}: ${data.length || 0} items`,
         );
 
         setApplications(data || []); // Adjust based on actual API response structure
