@@ -30,7 +30,7 @@ const ShareCandidateListPage = () => {
       try {
         const data = await candidateService.getPublicPipelineApplications(
           Number(workspaceId),
-          currentPage,
+          pageSize,
         );
         console.log("✅ Fetched applications:", data.results); // Debug
         console.log(
