@@ -1965,7 +1965,7 @@ function MainApp() {
                                   }`}
                                 onClick={() => setRequisitionModalTab("info")}
                               >
-                                Requisition Info Hello
+                                Requisition Info
                               </button>
                               <button
                                 className={`pb-2 px-4 text-sm font-medium transition-colors ${requisitionModalTab === "company"
@@ -2913,142 +2913,98 @@ function MainApp() {
                                 </h1>
                               </div>
                             </div>
+                            <div className="flex border-b border-gray-200 mb-6">
+                              <button
+                                className={`pb-2 px-4 text-sm font-medium transition-colors ${requisitionModalTab === "info"
+                                  ? "text-blue-600 border-b-2 border-blue-600"
+                                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                  }`}
+                                onClick={() => setRequisitionModalTab("info")}
+                              >
+                                Requisition Info
+                              </button>
+                              <button
+                                className={`pb-2 px-4 text-sm font-medium transition-colors ${requisitionModalTab === "company"
+                                  ? "text-blue-600 border-b-2 border-blue-600"
+                                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                  }`}
+                                onClick={() =>
+                                  setRequisitionModalTab("company")
+                                }
+                              >
+                                About Company
+                              </button>
+                            </div>
                             {loadingCompetencies ? (
-                              <div className="flex items-center justify-center py-8">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                                <span className="ml-2 text-gray-600">
-                                  Loading...
-                                </span>
-                              </div>
-                            ) : jobDataForModal && competenciesData ? (
+                              <RequisitionSkeleton />
+                            ) : jobDataForModal ? (
                               <>
-                                <h2 className="text-2xl font-semibold text-gray-900 mb-1">
-                                  {jobDataForModal.title}
-                                </h2>
-                                <div className="flex space-x-8 mt-2 mb-6">
-                                  <span className="flex items-center text-gray-500">
-                                    <Briefcase className="w-4 h-4 mr-1" />{" "}
-                                    {jobDataForModal.experience_min_years}+
-                                    years
-                                  </span>
-                                  <span className="flex items-center text-gray-500">
-                                    <LocateIcon className="w-4 h-4 mr-1" />{" "}
-                                    {jobDataForModal.work_approach}
-                                  </span>
-                                  <span className="flex items-center text-gray-500">
-                                    <FileSearch className="w-4 h-4 mr-1" />{" "}
-                                    Immediate
-                                  </span>
-                                </div>
+                                {/* REQUISITION INFO TAB CONTENT */}
+                                {requisitionModalTab === "info" &&
+                                  competenciesData && (
+                                    <>
+                                      <h2 className="text-2xl font-semibold text-gray-900 mb-1">
+                                        {jobDataForModal.title}
+                                      </h2>
+                                      <div className="flex space-x-8 mt-2 mb-6">
+                                        <span className="flex items-center text-gray-500">
+                                          <Briefcase className="w-4 h-4 mr-1" />{" "}
+                                          {jobDataForModal.experience_min_years}+
+                                          years
+                                        </span>
+                                        <span className="flex items-center text-gray-500">
+                                          <LocateIcon className="w-4 h-4 mr-1" />{" "}
+                                          {jobDataForModal.work_approach}
+                                        </span>
+                                        <span className="flex items-center text-gray-500">
+                                          <FileSearch className="w-4 h-4 mr-1" />{" "}
+                                          Immediate
+                                        </span>
+                                      </div>
 
-                                {/* Role Overview */}
-                                <div className="mb-6">
-                                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                                    Role Overview
-                                  </h3>
-                                  <p className="text-gray-600 text-sm">
-                                    {competenciesData.role_overview}
-                                  </p>
-                                </div>
+                                      {/* Role Overview */}
+                                      <div className="mb-6">
+                                        <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                                          Role Overview
+                                        </h3>
+                                        <p className="text-gray-600 text-sm">
+                                          {competenciesData.role_overview}
+                                        </p>
+                                      </div>
 
-                                {/* The Core Expectation */}
-                                <div className="mb-6">
-                                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                                    The Core Expectation
-                                  </h3>
-                                  <ul className="text-gray-600 text-sm list-disc pl-5 space-y-1">
-                                    {competenciesData.the_core_expectation.map(
-                                      (item: string, idx: number) => (
-                                        <li key={idx}>{item}</li>
-                                      ),
-                                    )}
-                                  </ul>
-                                </div>
+                                      {/* The Core Expectation */}
+                                      <div className="mb-6">
+                                        <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                                          The Core Expectation
+                                        </h3>
+                                        <ul className="text-gray-600 text-sm list-disc pl-5 space-y-1">
+                                          {competenciesData.the_core_expectation.map(
+                                            (item: string, idx: number) => (
+                                              <li key={idx}>{item}</li>
+                                            ),
+                                          )}
+                                        </ul>
+                                      </div>
 
-                                {/* Key Responsibilities Explained */}
-                                <div className="mb-6">
-                                  <h3 className="text-lg font-semibold text-gray-700 mb-3">
-                                    Key Responsibilities Explained
-                                  </h3>
-                                  <div className="space-y-3">
-                                    {/* Functional */}
-                                    {competenciesData.key_responsibilities_explained.functional.map(
-                                      (item: any, idx: number) => (
-                                        <div
-                                          key={idx}
-                                          className="bg-blue-50 rounded-lg p-4"
-                                        >
-                                          <div className="flex items-start space-x-3">
-                                            <div>
-                                              <div className="flex items-center space-x-2 mb-1">
-                                                <h4 className="font-medium text-gray-600">
-                                                  {item.competency}
-                                                </h4>
-                                                {item.why_it_matters && (
-                                                  <div className="relative group inline-block ml-2">
-                                                    <svg
-                                                      className="w-4 h-4 text-gray-400 group-hover:text-blue-500 cursor-help transition-colors duration-200"
-                                                      fill="none"
-                                                      stroke="currentColor"
-                                                      viewBox="0 0 24 24"
-                                                      xmlns="http://www.w3.org/2000/svg"
-                                                    >
-                                                      <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                      />
-                                                    </svg>
-                                                    <div className="absolute z-20 hidden group-hover:block bg-white border border-blue-200 rounded-lg p-3 text-xs shadow-md whitespace-normal w-64 left-full ml-2 top-0">
-                                                      <span className="font-semibold text-gray-800 mb-1">
-                                                        Why it matters
-                                                      </span>{" "}
-                                                      <br />
-                                                      <span className="text-gray-500">
-                                                        {item.why_it_matters}
-                                                      </span>
-                                                    </div>
-                                                  </div>
-                                                )}
-                                              </div>
-                                              <p className="text-sm text-gray-400">
-                                                {item.context}
-                                              </p>
-                                              {item.priority && (
-                                                <p className="text-xs text-gray-500 mt-1">
-                                                  Priority: {item.priority} |
-                                                  Depth: {item.depth_required}
-                                                </p>
-                                              )}
-                                            </div>
-                                          </div>
-                                        </div>
-                                      ),
-                                    )}
-                                    {/* Leadership (new subsection for API structure) */}
-                                    {competenciesData
-                                      .key_responsibilities_explained
-                                      .leadership &&
-                                      competenciesData
-                                        .key_responsibilities_explained
-                                        .leadership.length > 0 && (
-                                        <div className="mt-6 pt-4 border-t border-gray-200">
-                                          <h4 className="font-semibold text-gray-700 mb-3">
-                                            Leadership Responsibilities
-                                          </h4>
-                                          {competenciesData.key_responsibilities_explained.leadership.map(
+                                      {/* Key Responsibilities Explained */}
+                                      <div className="mb-6">
+                                        <h3 className="text-lg font-semibold text-gray-700 mb-3">
+                                          Key Responsibilities Explained
+                                        </h3>
+                                        <div className="space-y-3">
+                                          {/* Functional */}
+                                          {competenciesData.key_responsibilities_explained.functional.map(
                                             (item: any, idx: number) => (
                                               <div
                                                 key={idx}
-                                                className="bg-green-50 rounded-lg p-4"
+                                                className="bg-blue-50 rounded-lg p-4"
                                               >
                                                 <div className="flex items-start space-x-3">
                                                   <div>
                                                     <div className="flex items-center space-x-2 mb-1">
-                                                      <h5 className="font-medium text-gray-600">
-                                                        {item.responsibility}
-                                                      </h5>
+                                                      <h4 className="font-medium text-gray-600">
+                                                        {item.competency}
+                                                      </h4>
                                                       {item.why_it_matters && (
                                                         <div className="relative group inline-block ml-2">
                                                           <svg
@@ -3071,9 +3027,7 @@ function MainApp() {
                                                             </span>{" "}
                                                             <br />
                                                             <span className="text-gray-500">
-                                                              {
-                                                                item.why_it_matters
-                                                              }
+                                                              {item.why_it_matters}
                                                             </span>
                                                           </div>
                                                         </div>
@@ -3082,10 +3036,10 @@ function MainApp() {
                                                     <p className="text-sm text-gray-400">
                                                       {item.context}
                                                     </p>
-                                                    {item.evidence && (
+                                                    {item.priority && (
                                                       <p className="text-xs text-gray-500 mt-1">
-                                                        Evidence:{" "}
-                                                        {item.evidence}
+                                                        Priority: {item.priority} |
+                                                        Depth: {item.depth_required}
                                                       </p>
                                                     )}
                                                   </div>
@@ -3093,74 +3047,154 @@ function MainApp() {
                                               </div>
                                             ),
                                           )}
-                                        </div>
-                                      )}
-                                  </div>
-                                </div>
-
-                                {/* Required Technical Skills & Purpose */}
-                                <div className="mb-6">
-                                  <h3 className="text-lg font-semibold text-gray-700 mb-3">
-                                    Required Technical Skills & Purpose
-                                  </h3>
-                                  <div className="space-y-3">
-                                    {competenciesData.required_technical_skills_purpose.map(
-                                      (item: any, idx: number) => (
-                                        <div
-                                          key={idx}
-                                          className="bg-blue-50 rounded-lg p-4"
-                                        >
-                                          <div className="flex items-center space-x-2 mb-1">
-                                            <h4 className="font-medium text-gray-600">
-                                              {item.skill}
-                                            </h4>
-                                            {item.why_it_matters && (
-                                              <div className="relative group inline-block ml-2">
-                                                <svg
-                                                  className="w-4 h-4 text-gray-400 group-hover:text-blue-500 cursor-help transition-colors duration-200"
-                                                  fill="none"
-                                                  stroke="currentColor"
-                                                  viewBox="0 0 24 24"
-                                                  xmlns="http://www.w3.org/2000/svg"
-                                                >
-                                                  <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                  />
-                                                </svg>
-                                                <div className="absolute z-20 hidden group-hover:block bg-white border border-blue-200 rounded-lg p-3 text-xs shadow-md whitespace-normal w-64 left-full ml-2 top-0">
-                                                  <span className="font-semibold text-gray-800 mb-1">
-                                                    Why it matters
-                                                  </span>{" "}
-                                                  <br />
-                                                  <span className="text-gray-500">
-                                                    {item.why_it_matters}
-                                                  </span>
-                                                </div>
+                                          {/* Leadership (new subsection for API structure) */}
+                                          {competenciesData
+                                            .key_responsibilities_explained
+                                            .leadership &&
+                                            competenciesData
+                                              .key_responsibilities_explained
+                                              .leadership.length > 0 && (
+                                              <div className="mt-6 pt-4 border-t border-gray-200">
+                                                <h4 className="font-semibold text-gray-700 mb-3">
+                                                  Leadership Responsibilities
+                                                </h4>
+                                                {competenciesData.key_responsibilities_explained.leadership.map(
+                                                  (item: any, idx: number) => (
+                                                    <div
+                                                      key={idx}
+                                                      className="bg-green-50 rounded-lg p-4"
+                                                    >
+                                                      <div className="flex items-start space-x-3">
+                                                        <div>
+                                                          <div className="flex items-center space-x-2 mb-1">
+                                                            <h5 className="font-medium text-gray-600">
+                                                              {item.responsibility}
+                                                            </h5>
+                                                            {item.why_it_matters && (
+                                                              <div className="relative group inline-block ml-2">
+                                                                <svg
+                                                                  className="w-4 h-4 text-gray-400 group-hover:text-blue-500 cursor-help transition-colors duration-200"
+                                                                  fill="none"
+                                                                  stroke="currentColor"
+                                                                  viewBox="0 0 24 24"
+                                                                  xmlns="http://www.w3.org/2000/svg"
+                                                                >
+                                                                  <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    strokeWidth={2}
+                                                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                                  />
+                                                                </svg>
+                                                                <div className="absolute z-20 hidden group-hover:block bg-white border border-blue-200 rounded-lg p-3 text-xs shadow-md whitespace-normal w-64 left-full ml-2 top-0">
+                                                                  <span className="font-semibold text-gray-800 mb-1">
+                                                                    Why it matters
+                                                                  </span>{" "}
+                                                                  <br />
+                                                                  <span className="text-gray-500">
+                                                                    {
+                                                                      item.why_it_matters
+                                                                    }
+                                                                  </span>
+                                                                </div>
+                                                              </div>
+                                                            )}
+                                                          </div>
+                                                          <p className="text-sm text-gray-400">
+                                                            {item.context}
+                                                          </p>
+                                                          {item.evidence && (
+                                                            <p className="text-xs text-gray-500 mt-1">
+                                                              Evidence:{" "}
+                                                              {item.evidence}
+                                                            </p>
+                                                          )}
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  ),
+                                                )}
                                               </div>
                                             )}
-                                          </div>
-                                          <p className="text-sm text-gray-400">
-                                            {item.context}
-                                          </p>
-                                          {item.priority && (
-                                            <p className="text-xs text-gray-500 mt-1">
-                                              Priority: {item.priority}
-                                            </p>
-                                          )}
-                                          {item.assessment_guidance && (
-                                            <p className="text-xs text-gray-500 mt-1">
-                                              Assessment:{" "}
-                                              {item.assessment_guidance}
-                                            </p>
+                                        </div>
+                                      </div>
+
+                                      {/* Required Technical Skills & Purpose */}
+                                      <div className="mb-6">
+                                        <h3 className="text-lg font-semibold text-gray-700 mb-3">
+                                          Required Technical Skills & Purpose
+                                        </h3>
+                                        <div className="space-y-3">
+                                          {competenciesData.required_technical_skills_purpose.map(
+                                            (item: any, idx: number) => (
+                                              <div
+                                                key={idx}
+                                                className="bg-blue-50 rounded-lg p-4"
+                                              >
+                                                <div className="flex items-center space-x-2 mb-1">
+                                                  <h4 className="font-medium text-gray-600">
+                                                    {item.skill}
+                                                  </h4>
+                                                  {item.why_it_matters && (
+                                                    <div className="relative group inline-block ml-2">
+                                                      <svg
+                                                        className="w-4 h-4 text-gray-400 group-hover:text-blue-500 cursor-help transition-colors duration-200"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                      >
+                                                        <path
+                                                          strokeLinecap="round"
+                                                          strokeLinejoin="round"
+                                                          strokeWidth={2}
+                                                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                        />
+                                                      </svg>
+                                                      <div className="absolute z-20 hidden group-hover:block bg-white border border-blue-200 rounded-lg p-3 text-xs shadow-md whitespace-normal w-64 left-full ml-2 top-0">
+                                                        <span className="font-semibold text-gray-800 mb-1">
+                                                          Why it matters
+                                                        </span>{" "}
+                                                        <br />
+                                                        <span className="text-gray-500">
+                                                          {item.why_it_matters}
+                                                        </span>
+                                                      </div>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                                <p className="text-sm text-gray-400">
+                                                  {item.context}
+                                                </p>
+                                                {item.priority && (
+                                                  <p className="text-xs text-gray-500 mt-1">
+                                                    Priority: {item.priority}
+                                                  </p>
+                                                )}
+                                                {item.assessment_guidance && (
+                                                  <p className="text-xs text-gray-500 mt-1">
+                                                    Assessment:{" "}
+                                                    {item.assessment_guidance}
+                                                  </p>
+                                                )}
+                                              </div>
+                                            ),
                                           )}
                                         </div>
-                                      ),
-                                    )}
-                                  </div>
-                                </div>
+                                      </div>
+                                    </>
+                                  )}
+                                {requisitionModalTab === "company" && (
+                                  <CompanyInfoTab
+                                    data={
+                                      workspaces.find(
+                                        (w) =>
+                                          w.id ===
+                                          jobDataForModal.workspace_details?.id,
+                                      )?.company_research_data!
+                                    }
+                                  />
+                                )}
                               </>
                             ) : (
                               <div className="text-center py-8 text-gray-500">
