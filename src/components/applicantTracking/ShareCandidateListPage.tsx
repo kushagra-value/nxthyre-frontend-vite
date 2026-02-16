@@ -235,7 +235,7 @@ const ShareCandidateListPage = () => {
 
                   {/* Right: Match Score + Time */}
                   <div className="flex flex-col items-end gap-4 w-48">
-                    {/* Match Badge */}
+                    {/* Match Badge
                     <div
                       className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap ${
                         matchScore.label?.includes("Strong")
@@ -246,14 +246,14 @@ const ShareCandidateListPage = () => {
                       }`}
                     >
                       {matchScore.label} • {matchScore.score}
-                    </div>
+                    </div> */}
 
                     {/* Time Added */}
                     <div className="text-[11px] text-gray-400 text-right">
                       {app.time_added}
                     </div>
 
-                    {/* Quick skills */}
+                    {/* Quick skills
                     {app.job_score?.quick_fit_summary?.length > 0 && (
                       <div className="flex flex-wrap gap-1 justify-end max-w-[160px]">
                         {app.job_score.quick_fit_summary
@@ -273,7 +273,7 @@ const ShareCandidateListPage = () => {
                             </div>
                           ))}
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </div>
               </div>
