@@ -55,9 +55,42 @@ const ShareCandidateListPage = () => {
     };
 
     fetchData();
-  }, [workspaceId]);
+  }, [workspaceId, currentPage]);
 
   const totalPages = Math.ceil(totalCount / pageSize);
+
+  const getVisiblePages = () => {
+    const pages: (number | string)[] = [];
+    const delta = 2; // Controls how many pages around current (adjust if needed)
+
+    // First page
+    pages.push(1);
+
+    // Ellipsis after first if current is far
+    if (currentPage > 4) {
+      pages.push("...");
+    }
+
+    // Pages around current (3 pages before/after, but clipped)
+    const start = Math.max(2, currentPage - delta);
+    const end = Math.min(totalPages - 1, currentPage + delta);
+    for (let i = start; i <= end; i++) {
+      if (!pages.includes(i)) pages.push(i);
+    }
+
+    // Ellipsis before last if needed
+    if (currentPage < totalPages - 3) {
+      pages.push("...");
+    }
+
+    // Last page
+    if (totalPages > 1 && !pages.includes(totalPages)) {
+      pages.push(totalPages);
+    }
+
+    return pages;
+  };
+
   const startIdx = (currentPage - 1) * pageSize + 1;
   const endIdx = Math.min(currentPage * pageSize, totalCount);
 
@@ -270,11 +303,21 @@ const ShareCandidateListPage = () => {
               </button>
 
               {/* Page Numbers */}
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
+              {getVisiblePages().map((page, idx) => {
+                if (page === "...") {
+                  return (
+                    <span
+                      key={`ellipsis-${idx}`}
+                      className="w-9 h-9 flex items-center justify-center text-gray-400 text-sm"
+                    >
+                      ...
+                    </span>
+                  );
+                }
+                return (
                   <button
                     key={page}
-                    onClick={() => handlePageChange(page)}
+                    onClick={() => handlePageChange(page as number)}
                     className={`w-9 h-9 flex items-center justify-center rounded-xl text-sm font-medium transition-all ${
                       currentPage === page
                         ? "bg-blue-600 text-white shadow-sm"
@@ -283,8 +326,8 @@ const ShareCandidateListPage = () => {
                   >
                     {page}
                   </button>
-                ),
-              )}
+                );
+              })}
 
               {/* Next */}
               <button
