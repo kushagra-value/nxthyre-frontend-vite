@@ -383,6 +383,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   };
 
   const handleSharePipelineCandidates = () => {
+    console.log("Sharing pipeline candidates for workspace ID:", workspaceId);
+
     if (!workspaceId) {
       console.error("Workspace ID not found");
       // optional: show toast "Something went wrong"
