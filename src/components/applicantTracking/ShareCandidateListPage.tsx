@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import candidateService from "../../services/candidateService"; // adjust path
 
 interface ShareCandidateListPageProps {
@@ -179,6 +179,11 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
     setSearchParams(newParams);
   };
 
+  const handleShareClick = (candidateId: string, jobId: string) => {
+    const profileUrl = `${window.location.origin}/candidate-profiles/${candidateId}?job_id=${jobId}`;
+    window.open(profileUrl, "_blank");
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -266,6 +271,8 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
               ? `${candidate.expected_ctc}LPA`
               : "-LPA";
 
+            const profileUrl = `/candidate-profiles/${candidate.id}?job_id=${job.id}`;
+
             return (
               <div
                 key={app.id}
@@ -283,9 +290,38 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
 
                       {/* Name + Headline */}
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold text-xl text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+                        {/* <h3 className="font-semibold text-xl text-gray-900 truncate group-hover:text-blue-600 transition-colors">
                           {candidate.full_name}
-                        </h3>
+                        </h3> */}
+                        <div className="flex items-center gap-2 mb-1">
+                          <Link
+                            to={profileUrl}
+                            className="font-semibold text-xl text-gray-900 truncate hover:text-blue-600 transition-colors group/link"
+                          >
+                            {candidate.full_name}
+                          </Link>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleShareClick(candidate.id, job.id);
+                            }}
+                            className="p-1 text-gray-500 hover:text-blue-600 transition-colors ml-auto"
+                            title="Share Profile"
+                          >
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M7 17V21H11V17H7ZM14 17V21H18V17H14ZM17 9C17 11.1 15.1 13 13 13S9 11.1 9 9 10.9 5 13 5 17 6.9 17 9Z"
+                                fill="currentColor"
+                              />
+                            </svg>
+                          </button>
+                        </div>
                         <p className="text-gray-600 text-sm mt-0.5 line-clamp-2">
                           {candidate.headline}
                         </p>
