@@ -388,12 +388,41 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                     </div>
                   </div>
 
-                  {/* Right: Match Score + Time */}
+                  {/* Right: Match Score + Time
                   <div className="flex flex-col items-end gap-4 w-48">
-                    {/* Time Added */}
                     <div className="text-[11px] text-gray-400 text-right">
                       {app.time_added}
                     </div>
+                  </div> */}
+
+                  {/* Right: Activity Timeline */}
+                  <div className="flex flex-col items-end gap-2 w-48">
+                    {app.activities
+                      ?.filter(
+                        (activity: any) => activity.type === "stage_move",
+                      )
+                      .slice(0, 3) // Limit to top 3 recent activities
+                      .map((activity: any, idx: number) => {
+                        const movedAt = new Date(
+                          activity.data.moved_at,
+                        ).toLocaleDateString("en-GB");
+                        return (
+                          <div
+                            key={idx}
+                            className="text-[11px] text-gray-500 text-right leading-tight"
+                          >
+                            Moved to{" "}
+                            <span className="font-medium text-gray-900">
+                              {activity.data.to_stage_name}
+                            </span>{" "}
+                            on {movedAt}
+                          </div>
+                        );
+                      }) || (
+                      <div className="text-[11px] text-gray-400 text-right">
+                        No recent activity
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
