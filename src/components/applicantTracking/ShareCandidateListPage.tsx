@@ -412,7 +412,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                             className="text-[11px] text-gray-500 text-right leading-tight"
                           >
                             Moved to{" "}
-                            <span className="font-medium text-gray-900">
+                            <span className="font-medium text-gray-800">
                               {activity.data.to_stage_name}
                             </span>{" "}
                             on {movedAt}
