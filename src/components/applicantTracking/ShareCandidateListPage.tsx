@@ -309,16 +309,19 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                             title="Share Profile"
                           >
                             <svg
-                              width="16"
-                              height="16"
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
                               viewBox="0 0 24 24"
                               fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              className="lucide lucide-arrow-up-right-icon lucide-arrow-up-right"
                             >
-                              <path
-                                d="M7 17V21H11V17H7ZM14 17V21H18V17H14ZM17 9C17 11.1 15.1 13 13 13S9 11.1 9 9 10.9 5 13 5 17 6.9 17 9Z"
-                                fill="currentColor"
-                              />
+                              <path d="M7 7h10v10" />
+                              <path d="M7 17 17 7" />
                             </svg>
                           </button>
                         </div>
