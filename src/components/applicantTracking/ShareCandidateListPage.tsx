@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import candidateService from "../../services/candidateService"; // adjust path
+import { MapPin } from "lucide-react";
 
 interface ShareCandidateListPageProps {
   workspaceName: string; // Optional, can be used for display or logging
@@ -330,7 +331,9 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                           {candidate.headline}
                         </p>
                         <p className="text-gray-500 text-xs flex items-center gap-1.5 mt-2">
-                          <span>📍</span>
+                          <span>
+                            <MapPin className="w-4 h-4" />
+                          </span>
                           {candidate.location}
                         </p>
                       </div>
