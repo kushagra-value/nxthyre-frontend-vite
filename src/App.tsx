@@ -80,6 +80,10 @@ interface Category {
   visibility: "PRIVATE" | "PUBLIC";
   invites_sent: number;
   postedAgo: string;
+  workspace_details?: {
+    id: number;
+    name: string;
+  };
 }
 interface Filters {
   keywords: string;
@@ -376,6 +380,7 @@ function MainApp() {
   const [workspaceId, setWorkspaceId] = useState<number | null>(
     selectedWorkspaceId,
   );
+  const [workspaceName, setWorkspaceName] = useState<string>("");
   const [filters, setFilters] = useState<Filters>({
     keywords: "",
     booleanSearch: false,
@@ -608,6 +613,7 @@ function MainApp() {
       };
       setFilters(newFilters);
       setWorkspaceId(job.workspace_details?.id);
+      setWorkspaceName(job.workspace_details?.name || "Unknown");
       console.log(
         "Selected Workspace id ",
         selectedWorkspaceId + " job workspace id " + workspaceId,
@@ -1477,11 +1483,7 @@ function MainApp() {
         />
         <Route
           path="/public/workspaces/:workspaceId/applications"
-          element={
-            <ShareCandidateListPage
-              workspaceName={job.workspace_details?.name || "Unknown"}
-            />
-          }
+          element={<ShareCandidateListPage workspaceName={workspaceName} />}
         />
         <Route path="/jobs/:id" element={<JobApplicationForm />} />
         <Route
