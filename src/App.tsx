@@ -63,6 +63,7 @@ import CandidateBackGroundCheck from "./components/CandidateBackGroundCheck";
 import SuperAdminDashboard from "./components/SuperAdmin/SuperAdminDashboard";
 import ProjectCard from "./components/ProjectCard";
 import { AnalysisResult } from "./services/candidateService";
+import ShareCandidateListPage from "./components/applicantTracking/ShareCandidateListPage";
 interface Category {
   id: number;
   name: string; // Job title
@@ -371,6 +372,10 @@ function MainApp() {
       fetchWorkspaces();
     }
   }, [isAuthenticated]);
+
+  const [workspaceId, setWorkspaceId] = useState<number | null>(
+    selectedWorkspaceId,
+  );
   const [filters, setFilters] = useState<Filters>({
     keywords: "",
     booleanSearch: false,
@@ -602,6 +607,11 @@ function MainApp() {
         sort_by: sortBy,
       };
       setFilters(newFilters);
+      setWorkspaceId(job.workspace_details?.id);
+      console.log(
+        "Selected Workspace id ",
+        selectedWorkspaceId + " job workspace id " + workspaceId,
+      );
       await fetchCandidates(1, newFilters);
     } catch (error) {
       showToast.error("Failed to fetch job details");
@@ -1460,9 +1470,14 @@ function MainApp() {
               experience={job?.experience || "Experience"}
               workMode={job?.workApproach || "Work Mode"}
               notice={job?.joiningTimeline || "Immidiate(max 15 days)"}
+              workspaceId={workspaceId || 0}
               onBack={handleBackFromPipelineShare}
             />
           }
+        />
+        <Route
+          path="/public/workspaces/:workspaceId/applications"
+          element={<ShareCandidateListPage />}
         />
         <Route path="/jobs/:id" element={<JobApplicationForm />} />
         <Route

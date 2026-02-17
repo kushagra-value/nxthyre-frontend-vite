@@ -1098,7 +1098,7 @@ class CandidateService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error ||
-        "Failed to fetch background verifications",
+          "Failed to fetch background verifications",
       );
     }
   }
@@ -1186,6 +1186,30 @@ class CandidateService {
     } catch (error: any) {
       console.error("Error updating profile match description:", error);
       return false;
+    }
+  }
+
+  // services/applicationService.ts (or wherever your apiClient calls live)
+
+  async getPublicPipelineApplications(
+    workspaceId: number,
+    page: number,
+    pageSize: number,
+  ) {
+    try {
+      const response = await apiClient.get(
+        `/jobs/public/workspaces/${workspaceId}/applications/`,
+        {
+          params: {
+            page,
+            page_size: pageSize,
+          },
+        },
+      );
+      return response.data || []; // returns the array of applications
+    } catch (error: any) {
+      console.error("Error fetching public pipeline applications:", error);
+      throw error;
     }
   }
 }
