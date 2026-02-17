@@ -12,22 +12,30 @@ const ShareCandidateListPage = () => {
     return isNaN(page) || page < 1 ? 1 : page;
   }, [searchParams]);
 
-  const [applications, setApplications] = useState<any[]>([]);
+  // Filter values from URL
+  const selectedPipeline = useMemo(
+    () => searchParams.get("pipeline") || "",
+    [searchParams],
+  );
+  const selectedStage = useMemo(
+    () => searchParams.get("stage") || "",
+    [searchParams],
+  );
+
+  const [allApplications, setAllApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [totalCount, setTotalCount] = useState(0);
 
-  const pageSize = 8; // should match the page_size used in the API call
+  const pageSize = 8;
+  const largePageSize = 1000; // Adjust based on expected max candidates; assumes API supports large fetches
 
+  // Fetch all applications once (no pagination or filters)
   useEffect(() => {
     const fetchData = async () => {
-      console.log(
-        `🔍 Fetching page ${currentPage} for workspace ${workspaceId}`,
-      );
+      console.log(`🔍 Fetching all applications for workspace ${workspaceId}`);
 
       setLoading(true);
       setError(null);
-      //   setCurrentPage(1); // Reset to page 1 on new load
 
       if (!workspaceId) {
         console.error("❌ No workspaceId in URL params");
@@ -39,13 +47,12 @@ const ShareCandidateListPage = () => {
       try {
         const data = await candidateService.getPublicPipelineApplications(
           Number(workspaceId),
-          currentPage,
-          pageSize,
+          1,
+          largePageSize,
         );
-        console.log(`✅ Fetched page ${currentPage}: ${data.count || 0} items`);
+        console.log(`✅ Fetched all: ${data.count || 0} items`);
 
-        setApplications(data.results || []); // Adjust based on actual API response structure
-        setTotalCount(data.count || 0); // Set total count for pagination
+        setAllApplications(data.results || []);
       } catch (err) {
         console.error("❌ Fetch error:", err);
         setError("Failed to load pipeline. Try again.");
@@ -55,35 +62,72 @@ const ShareCandidateListPage = () => {
     };
 
     fetchData();
-  }, [workspaceId, currentPage]);
+  }, [workspaceId]);
 
+  // Filtered applications
+  const filteredApplications = useMemo(() => {
+    let filtered = allApplications;
+    if (selectedPipeline) {
+      filtered = filtered.filter((app) => app.job?.title === selectedPipeline);
+    }
+    if (selectedStage) {
+      filtered = filtered.filter(
+        (app) => (app.current_stage?.name || app.stage_slug) === selectedStage,
+      );
+    }
+    return filtered;
+  }, [allApplications, selectedPipeline, selectedStage]);
+
+  // Paginated applications
+  const applications = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredApplications.slice(start, start + pageSize);
+  }, [filteredApplications, currentPage, pageSize]);
+
+  const totalCount = filteredApplications.length;
   const totalPages = Math.ceil(totalCount / pageSize);
+
+  // Available options from all data
+  const availablePipelines = useMemo(
+    () =>
+      [
+        ...new Set(allApplications.map((a) => a.job?.title).filter(Boolean)),
+      ].sort(),
+    [allApplications],
+  );
+
+  const availableStages = useMemo(
+    () =>
+      [
+        ...new Set(
+          allApplications
+            .map((a) => a.current_stage?.name || a.stage_slug)
+            .filter(Boolean),
+        ),
+      ].sort(),
+    [allApplications],
+  );
 
   const getVisiblePages = () => {
     const pages: (number | string)[] = [];
-    const delta = 2; // Controls how many pages around current (adjust if needed)
+    const delta = 2;
 
-    // First page
     pages.push(1);
 
-    // Ellipsis after first if current is far
     if (currentPage > 4) {
       pages.push("...");
     }
 
-    // Pages around current (3 pages before/after, but clipped)
     const start = Math.max(2, currentPage - delta);
     const end = Math.min(totalPages - 1, currentPage + delta);
     for (let i = start; i <= end; i++) {
       if (!pages.includes(i)) pages.push(i);
     }
 
-    // Ellipsis before last if needed
     if (currentPage < totalPages - 3) {
       pages.push("...");
     }
 
-    // Last page
     if (totalPages > 1 && !pages.includes(totalPages)) {
       pages.push(totalPages);
     }
@@ -94,12 +138,37 @@ const ShareCandidateListPage = () => {
   const startIdx = (currentPage - 1) * pageSize + 1;
   const endIdx = Math.min(currentPage * pageSize, totalCount);
 
-  // Update URL on page change (makes shareable pages)
+  // Update URL on page change (preserves filters)
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
-      setSearchParams({ page: page.toString() });
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("page", page.toString());
+      setSearchParams(newParams);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
+  };
+
+  // Handle filter changes (resets page to 1)
+  const handlePipelineChange = (value: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (value) {
+      newParams.set("pipeline", value);
+    } else {
+      newParams.delete("pipeline");
+    }
+    newParams.set("page", "1");
+    setSearchParams(newParams);
+  };
+
+  const handleStageChange = (value: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (value) {
+      newParams.set("stage", value);
+    } else {
+      newParams.delete("stage");
+    }
+    newParams.set("page", "1");
+    setSearchParams(newParams);
   };
 
   if (loading) {
@@ -139,7 +208,46 @@ const ShareCandidateListPage = () => {
           </p>
         </div>
 
-        {/* Candidate List (matches screenshot list style) */}
+        {/* Filters */}
+        <div className="flex gap-4 mb-6">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Pipeline
+            </label>
+            <select
+              value={selectedPipeline}
+              onChange={(e) => handlePipelineChange(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Pipelines</option>
+              {availablePipelines.map((pipeline) => (
+                <option key={pipeline} value={pipeline}>
+                  {pipeline}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Stage
+            </label>
+            <select
+              value={selectedStage}
+              onChange={(e) => handleStageChange(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Stages</option>
+              {availableStages.map((stage) => (
+                <option key={stage} value={stage}>
+                  {stage}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Candidate List */}
         <div className="space-y-4">
           {applications.map((app) => {
             const candidate = app.candidate || {};
@@ -180,7 +288,7 @@ const ShareCandidateListPage = () => {
                       </div>
                     </div>
 
-                    {/* Stats Row (Experience, Notice, CTCs) */}
+                    {/* Stats Row */}
                     <div className="grid grid-cols-4 gap-6 mt-6 text-xs">
                       <div>
                         <div className="text-gray-400 font-medium uppercase tracking-widest text-[10px]">
@@ -216,7 +324,7 @@ const ShareCandidateListPage = () => {
                       </div>
                     </div>
 
-                    {/* Pipeline & Stage (as requested) */}
+                    {/* Pipeline & Stage */}
                     <div className="mt-6 pt-4 border-t border-gray-100 flex items-center gap-8 text-xs">
                       <div>
                         <span className="text-gray-400">Pipeline:</span>{" "}
@@ -235,45 +343,10 @@ const ShareCandidateListPage = () => {
 
                   {/* Right: Match Score + Time */}
                   <div className="flex flex-col items-end gap-4 w-48">
-                    {/* Match Badge
-                    <div
-                      className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap ${
-                        matchScore.label?.includes("Strong")
-                          ? "bg-emerald-100 text-emerald-700"
-                          : matchScore.label?.includes("Good")
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-amber-100 text-amber-700"
-                      }`}
-                    >
-                      {matchScore.label} • {matchScore.score}
-                    </div> */}
-
                     {/* Time Added */}
                     <div className="text-[11px] text-gray-400 text-right">
                       {app.time_added}
                     </div>
-
-                    {/* Quick skills
-                    {app.job_score?.quick_fit_summary?.length > 0 && (
-                      <div className="flex flex-wrap gap-1 justify-end max-w-[160px]">
-                        {app.job_score.quick_fit_summary
-                          .slice(0, 3)
-                          .map((skill: any, idx: number) => (
-                            <div
-                              key={idx}
-                              className={`text-[10px] px-2.5 py-px rounded-full font-medium ${
-                                skill.color === "green"
-                                  ? "bg-emerald-50 text-emerald-700"
-                                  : skill.color === "yellow"
-                                    ? "bg-amber-50 text-amber-700"
-                                    : "bg-rose-50 text-rose-700"
-                              }`}
-                            >
-                              {skill.badge}
-                            </div>
-                          ))}
-                      </div>
-                    )} */}
                   </div>
                 </div>
               </div>
@@ -281,7 +354,7 @@ const ShareCandidateListPage = () => {
           })}
         </div>
 
-        {/* Pagination (exact match to screenshot) */}
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="mt-10 flex items-center justify-between bg-white border border-gray-200 rounded-2xl px-6 py-4">
             <div className="text-sm text-gray-500">
@@ -345,7 +418,7 @@ const ShareCandidateListPage = () => {
         {totalCount === 0 && (
           <div className="text-center py-20 bg-white border border-dashed border-gray-200 rounded-3xl">
             <p className="text-gray-400 text-lg">
-              No candidates in this pipeline yet.
+              No candidates matching the filters.
             </p>
           </div>
         )}
