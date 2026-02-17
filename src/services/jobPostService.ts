@@ -40,6 +40,7 @@ export interface Job {
   technical_competencies: string[];
   ai_jd_object?: any;
   count: number;
+  jobrole_company: string;
 }
 
 export interface SearchedCandidateItem {
