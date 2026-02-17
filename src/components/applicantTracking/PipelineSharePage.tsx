@@ -3318,8 +3318,11 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                     <div className="flex space-x-4 min-w-max pb-2">
                       {dynamicShareableStages.map((stage) => {
                         const candidates = stageCandidates[stage.name] || [];
-                        const totalCount = candidates.length;
-                        const rejectedCount = 0;
+                        const stageArchivedCandidates = archivedCandidates.filter(
+                          (c) => c.stage_slug === stage.slug,
+                        );
+                        const rejectedCount = stageArchivedCandidates.length;
+                        const totalCount = candidates.length + rejectedCount;
                         const stageCount = getStageCount(stage.name);
                         return (
                           <div
