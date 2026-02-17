@@ -227,6 +227,7 @@ interface Category {
   id: number;
   name: string;
   count: number;
+  jobrole_company: string;
 }
 
 interface Note {
@@ -2458,7 +2459,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               }}
                             >
                               <span className="text-[#4B5563] px-2 py-1 rounded text-sm">
-                                {category.name}
+                                {category.jobrole_company}
                               </span>{" "}
                               {/* UPDATED: Exact gray for names */}
                               <span className="text-[#818283] bg-gray-100 px-2 py-1 rounded text-sm">
