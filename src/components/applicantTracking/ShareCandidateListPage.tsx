@@ -2,7 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import candidateService from "../../services/candidateService"; // adjust path
 
-const ShareCandidateListPage = () => {
+interface ShareCandidateListPageProps {
+  workspaceName: string; // Optional, can be used for display or logging
+}
+
+const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
+  workspaceName,
+}) => {
   const { workspaceId } = useParams<{ workspaceId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -32,7 +38,9 @@ const ShareCandidateListPage = () => {
   // Fetch all applications once (no pagination or filters)
   useEffect(() => {
     const fetchData = async () => {
-      console.log(`🔍 Fetching all applications for workspace ${workspaceId}`);
+      console.log(
+        `🔍 Fetching all applications for workspace ${workspaceId} - ${workspaceName}`,
+      );
 
       setLoading(true);
       setError(null);
@@ -204,7 +212,7 @@ const ShareCandidateListPage = () => {
             Pipeline Candidates
           </h1>
           <p className="text-gray-500 mt-1">
-            {totalCount} candidates • Shared from workspace {workspaceId}
+            {totalCount} candidates • Shared from workspace {workspaceName}
           </p>
         </div>
 

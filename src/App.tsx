@@ -1477,7 +1477,11 @@ function MainApp() {
         />
         <Route
           path="/public/workspaces/:workspaceId/applications"
-          element={<ShareCandidateListPage />}
+          element={
+            <ShareCandidateListPage
+              workspaceName={job.workspace_details?.name || "Unknown"}
+            />
+          }
         />
         <Route path="/jobs/:id" element={<JobApplicationForm />} />
         <Route
@@ -1556,7 +1560,7 @@ function MainApp() {
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
                         searchQuery={""}
-                        setSearchQuery={() => { }}
+                        setSearchQuery={() => {}}
                         showCreateRoleButton={true}
                         showSearchBar={false}
                       />
@@ -1570,7 +1574,7 @@ function MainApp() {
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
                         searchQuery={""}
-                        setSearchQuery={() => { }}
+                        setSearchQuery={() => {}}
                         showCreateRoleButton={true}
                         showSearchBar={false}
                       />
@@ -1736,10 +1740,11 @@ function MainApp() {
                                           onClick={() =>
                                             setCurrentRequisitionPage(page)
                                           }
-                                          className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${page === currentRequisitionPage
-                                            ? "bg-blue-600 text-white"
-                                            : "bg-white text-black hover:bg-gray-200"
-                                            }`}
+                                          className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
+                                            page === currentRequisitionPage
+                                              ? "bg-blue-600 text-white"
+                                              : "bg-white text-black hover:bg-gray-200"
+                                          }`}
                                         >
                                           {page}
                                         </button>
@@ -1977,19 +1982,21 @@ function MainApp() {
                             {/* Tabs */}
                             <div className="flex border-b border-gray-200 mb-6">
                               <button
-                                className={`pb-2 px-4 text-sm font-medium transition-colors ${requisitionModalTab === "info"
-                                  ? "text-blue-600 border-b-2 border-blue-600"
-                                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                                  }`}
+                                className={`pb-2 px-4 text-sm font-medium transition-colors ${
+                                  requisitionModalTab === "info"
+                                    ? "text-blue-600 border-b-2 border-blue-600"
+                                    : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                }`}
                                 onClick={() => setRequisitionModalTab("info")}
                               >
                                 Requisition Info
                               </button>
                               <button
-                                className={`pb-2 px-4 text-sm font-medium transition-colors ${requisitionModalTab === "company"
-                                  ? "text-blue-600 border-b-2 border-blue-600"
-                                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                                  }`}
+                                className={`pb-2 px-4 text-sm font-medium transition-colors ${
+                                  requisitionModalTab === "company"
+                                    ? "text-blue-600 border-b-2 border-blue-600"
+                                    : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                }`}
                                 onClick={async () => {
                                   setRequisitionModalTab("company");
                                   if (
@@ -2032,8 +2039,8 @@ function MainApp() {
                                       <div className="flex space-x-8 mt-2 mb-6">
                                         <span className="flex items-center text-gray-500">
                                           <Briefcase className="w-4 h-4 mr-1" />{" "}
-                                          {jobDataForModal.experience_min_years}+
-                                          years
+                                          {jobDataForModal.experience_min_years}
+                                          + years
                                         </span>
                                         <span className="flex items-center text-gray-500">
                                           <LocateIcon className="w-4 h-4 mr-1" />{" "}
@@ -2105,7 +2112,9 @@ function MainApp() {
                                                             />
                                                           </svg>
                                                           <div className="absolute z-20 hidden group-hover:block bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-gray-700 shadow-md whitespace-normal w-64 left-full ml-2 top-0">
-                                                            {item.why_it_matters}
+                                                            {
+                                                              item.why_it_matters
+                                                            }
                                                           </div>
                                                         </div>
                                                       )}
@@ -2115,8 +2124,9 @@ function MainApp() {
                                                     </p>
                                                     {item.priority && (
                                                       <p className="text-xs text-gray-500 mt-1">
-                                                        Priority: {item.priority} |
-                                                        Depth: {item.depth_required}
+                                                        Priority:{" "}
+                                                        {item.priority} | Depth:{" "}
+                                                        {item.depth_required}
                                                       </p>
                                                     )}
                                                   </div>
@@ -2145,7 +2155,9 @@ function MainApp() {
                                                         <div>
                                                           <div className="flex items-center space-x-2 mb-1">
                                                             <h5 className="font-medium text-gray-600">
-                                                              {item.responsibility}
+                                                              {
+                                                                item.responsibility
+                                                              }
                                                             </h5>
                                                             {item.why_it_matters && (
                                                               <div className="relative group inline-block ml-2">
@@ -2159,7 +2171,9 @@ function MainApp() {
                                                                   <path
                                                                     strokeLinecap="round"
                                                                     strokeLinejoin="round"
-                                                                    strokeWidth={2}
+                                                                    strokeWidth={
+                                                                      2
+                                                                    }
                                                                     d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                                                                   />
                                                                 </svg>
@@ -2959,19 +2973,21 @@ function MainApp() {
                             </div>
                             <div className="flex border-b border-gray-200 mb-6">
                               <button
-                                className={`pb-2 px-4 text-sm font-medium transition-colors ${requisitionModalTab === "info"
-                                  ? "text-blue-600 border-b-2 border-blue-600"
-                                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                                  }`}
+                                className={`pb-2 px-4 text-sm font-medium transition-colors ${
+                                  requisitionModalTab === "info"
+                                    ? "text-blue-600 border-b-2 border-blue-600"
+                                    : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                }`}
                                 onClick={() => setRequisitionModalTab("info")}
                               >
                                 Requisition Info
                               </button>
                               <button
-                                className={`pb-2 px-4 text-sm font-medium transition-colors ${requisitionModalTab === "company"
-                                  ? "text-blue-600 border-b-2 border-blue-600"
-                                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                                  }`}
+                                className={`pb-2 px-4 text-sm font-medium transition-colors ${
+                                  requisitionModalTab === "company"
+                                    ? "text-blue-600 border-b-2 border-blue-600"
+                                    : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                }`}
                                 onClick={async () => {
                                   setRequisitionModalTab("company");
                                   if (
@@ -3013,8 +3029,8 @@ function MainApp() {
                                       <div className="flex space-x-8 mt-2 mb-6">
                                         <span className="flex items-center text-gray-500">
                                           <Briefcase className="w-4 h-4 mr-1" />{" "}
-                                          {jobDataForModal.experience_min_years}+
-                                          years
+                                          {jobDataForModal.experience_min_years}
+                                          + years
                                         </span>
                                         <span className="flex items-center text-gray-500">
                                           <LocateIcon className="w-4 h-4 mr-1" />{" "}
@@ -3091,7 +3107,9 @@ function MainApp() {
                                                             </span>{" "}
                                                             <br />
                                                             <span className="text-gray-500">
-                                                              {item.why_it_matters}
+                                                              {
+                                                                item.why_it_matters
+                                                              }
                                                             </span>
                                                           </div>
                                                         </div>
@@ -3102,8 +3120,9 @@ function MainApp() {
                                                     </p>
                                                     {item.priority && (
                                                       <p className="text-xs text-gray-500 mt-1">
-                                                        Priority: {item.priority} |
-                                                        Depth: {item.depth_required}
+                                                        Priority:{" "}
+                                                        {item.priority} | Depth:{" "}
+                                                        {item.depth_required}
                                                       </p>
                                                     )}
                                                   </div>
@@ -3132,7 +3151,9 @@ function MainApp() {
                                                         <div>
                                                           <div className="flex items-center space-x-2 mb-1">
                                                             <h5 className="font-medium text-gray-600">
-                                                              {item.responsibility}
+                                                              {
+                                                                item.responsibility
+                                                              }
                                                             </h5>
                                                             {item.why_it_matters && (
                                                               <div className="relative group inline-block ml-2">
@@ -3146,13 +3167,16 @@ function MainApp() {
                                                                   <path
                                                                     strokeLinecap="round"
                                                                     strokeLinejoin="round"
-                                                                    strokeWidth={2}
+                                                                    strokeWidth={
+                                                                      2
+                                                                    }
                                                                     d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                                                                   />
                                                                 </svg>
                                                                 <div className="absolute z-20 hidden group-hover:block bg-white border border-blue-200 rounded-lg p-3 text-xs shadow-md whitespace-normal w-64 left-full ml-2 top-0">
                                                                   <span className="font-semibold text-gray-800 mb-1">
-                                                                    Why it matters
+                                                                    Why it
+                                                                    matters
                                                                   </span>{" "}
                                                                   <br />
                                                                   <span className="text-gray-500">
