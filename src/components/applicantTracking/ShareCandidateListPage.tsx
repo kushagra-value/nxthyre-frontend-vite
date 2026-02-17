@@ -396,7 +396,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                   </div> */}
 
                   {/* Right: Activity Timeline */}
-                  <div className="flex flex-col items-end gap-2 w-48">
+                  <div className="flex flex-col items-end gap-2">
                     {app.activities
                       ?.filter(
                         (activity: any) => activity.type === "stage_move",
