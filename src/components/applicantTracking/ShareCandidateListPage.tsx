@@ -293,7 +293,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                         {/* <h3 className="font-semibold text-xl text-gray-900 truncate group-hover:text-blue-600 transition-colors">
                           {candidate.full_name}
                         </h3> */}
-                        <div className="flex items-center justify-start gap-2 mb-1">
+                        <div className="mb-1">
                           <Link
                             to={profileUrl}
                             className="font-semibold text-xl text-gray-900 truncate hover:text-blue-600 transition-colors group/link"
@@ -315,7 +315,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                               viewBox="0 0 24 16"
                               fill="none"
                               stroke="currentColor"
-                              stroke-width="2"
+                              stroke-width="1"
                               stroke-linecap="round"
                               stroke-linejoin="round"
                               className="lucide lucide-arrow-up-right-icon lucide-arrow-up-right"
