@@ -112,6 +112,15 @@ export default function ProjectCard({
               )}
             </div>
 
+            <div className="flex flex-row items-center gap-4 mb-[20px]">
+              <h3 className="text-[18px] font-semibold text-[#181D25]">
+                {companyName}
+              </h3>
+              <p className={`text-[16px] ${subtitleClass} mt-[4px]`}>
+                {postedAgo}
+              </p>
+            </div>
+
             {/* {badgeText && (
             <div className="flex items-center gap-[5px] px-[10px] py-[7px] bg-[#F4F4F4] rounded-full">
               <div className="w-[18px] h-[18px] bg-[#A8E8CD] rounded-[12px] flex items-center justify-center">
@@ -125,13 +134,6 @@ export default function ProjectCard({
             </div>
           )} */}
           </div>
-        </div>
-
-        <div className="flex flex-row items-center gap-4 mb-[20px]">
-          <h3 className="text-[18px] font-semibold text-[#181D25]">
-            {companyName}
-          </h3>
-          <p className={`text-[16px] ${subtitleClass} mt-[4px]`}>{postedAgo}</p>
         </div>
 
         {/* Job title */}
