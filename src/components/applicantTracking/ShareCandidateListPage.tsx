@@ -337,40 +337,46 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
 
                     {/* Stats Row */}
                     <div className="grid grid-cols-4 gap-6 mt-6 text-xs">
-                      {candidate.experience_years} && (
-                      <div>
-                        <div className="text-gray-400 font-medium uppercase tracking-widest text-[10px]">
-                          Experience
+                      {candidate.experience_years && (
+                        <div>
+                          <div className="text-gray-400 font-medium uppercase tracking-widest text-[10px]">
+                            Experience
+                          </div>
+                          <div className="font-semibold text-gray-900 mt-0.5">
+                            {candidate.experience_years}
+                          </div>
                         </div>
-                        <div className="font-semibold text-gray-900 mt-0.5">
-                          {candidate.experience_years}
+                      )}
+                      {candidate.notice_period_summary && (
+                        <div>
+                          <div className="text-gray-400 font-medium uppercase tracking-widest text-[10px]">
+                            Notice Period
+                          </div>
+                          <div className="font-semibold text-gray-900 mt-0.5">
+                            {candidate.notice_period_summary}
+                          </div>
                         </div>
-                      </div>
-                      )
-                      <div>
-                        <div className="text-gray-400 font-medium uppercase tracking-widest text-[10px]">
-                          Notice Period
+                      )}
+                      {candidate.current_salary_lpa && (
+                        <div>
+                          <div className="text-gray-400 font-medium uppercase tracking-widest text-[10px]">
+                            Current CTC
+                          </div>
+                          <div className="font-semibold text-gray-900 mt-0.5">
+                            {candidate.current_salary_lpa}
+                          </div>
                         </div>
-                        <div className="font-semibold text-gray-900 mt-0.5">
-                          {candidate.notice_period_summary}
+                      )}
+                      {expectedCtc !== "-LPA" && (
+                        <div>
+                          <div className="text-gray-400 font-medium uppercase tracking-widest text-[10px]">
+                            Expected CTC
+                          </div>
+                          <div className="font-semibold text-gray-900 mt-0.5">
+                            {expectedCtc}
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <div className="text-gray-400 font-medium uppercase tracking-widest text-[10px]">
-                          Current CTC
-                        </div>
-                        <div className="font-semibold text-gray-900 mt-0.5">
-                          {candidate.current_salary_lpa}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-gray-400 font-medium uppercase tracking-widest text-[10px]">
-                          Expected CTC
-                        </div>
-                        <div className="font-semibold text-gray-900 mt-0.5">
-                          {expectedCtc}
-                        </div>
-                      </div>
+                      )}
                     </div>
 
                     {/* Pipeline & Stage */}
