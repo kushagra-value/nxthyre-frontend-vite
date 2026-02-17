@@ -243,13 +243,28 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
     // Show confirmation or directly archive
     const candidateIds = Array.from(selectedCandidates);
+    const archiveStageId = 5136;
 
     try {
-      // TODO: Call API to archive candidates
+      await Promise.all(
+        candidateIds.map((id) =>
+          apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
+            current_stage: archiveStageId,
+            feedback: {
+              subject: "Moved to Archive",
+              comment: "Bulk archived",
+            },
+          }),
+        ),
+      );
+
       showToast.success(`${candidateIds.length} candidates moved to archive`);
       setSelectedCandidates(new Set());
       setSelectionStage(null);
+      // Trigger refresh
+      setStagesRefreshKey((prev) => prev + 1);
     } catch (error) {
+      console.error("Archive error:", error);
       showToast.error("Failed to archive candidates");
     }
   };
@@ -2874,16 +2889,6 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     setShowFeedbackModal(true);
   };
 
-  const handleArchive = () => {
-    if (!selectedCandidate || !currentStage) return;
-    setFeedbackData({
-      candidate: selectedCandidate,
-      fromStage: currentStage,
-      toStage: "Archives",
-      isMovingForward: true,
-    });
-    setShowFeedbackModal(true);
-  };
 
   const renderCandidateProfile = () => {
     if (!selectedCandidate) return null;
