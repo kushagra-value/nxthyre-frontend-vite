@@ -337,6 +337,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
 
                     {/* Stats Row */}
                     <div className="grid grid-cols-4 gap-6 mt-6 text-xs">
+                      {candidate.experience_years} && (
                       <div>
                         <div className="text-gray-400 font-medium uppercase tracking-widest text-[10px]">
                           Experience
@@ -345,6 +346,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                           {candidate.experience_years}
                         </div>
                       </div>
+                      )
                       <div>
                         <div className="text-gray-400 font-medium uppercase tracking-widest text-[10px]">
                           Notice Period
