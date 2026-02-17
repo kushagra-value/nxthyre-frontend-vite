@@ -203,6 +203,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   const [highlightedCandidateId, setHighlightedCandidateId] = useState<
     string | null
   >(null);
+  const [archivedCandidates, setArchivedCandidates] = useState<any[]>([]);
 
   const [showAddStageForm, setShowAddStageForm] = useState(false);
 
@@ -741,45 +742,45 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
             {/* UPDATED: Profile Summary with View More/Less for long text */}
             {(candidateDetails?.candidate?.profile_summary ||
               candidateDetails?.candidate?.headline) && (
-              <div>
-                <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
-                  <User className="w-4 h-4 mr-2 text-[#4B5563]" />
-                  Profile Summary
-                </h3>
-                <p className="text-sm pl-6 text-[#818283] leading-normal">
-                  {(() => {
-                    const summary =
-                      candidateDetails?.candidate?.profile_summary ||
-                      candidateDetails?.candidate?.headline ||
-                      "No summary available";
+                <div>
+                  <h3 className="text-base font-medium text-[#4B5563] flex items-center mb-2">
+                    <User className="w-4 h-4 mr-2 text-[#4B5563]" />
+                    Profile Summary
+                  </h3>
+                  <p className="text-sm pl-6 text-[#818283] leading-normal">
+                    {(() => {
+                      const summary =
+                        candidateDetails?.candidate?.profile_summary ||
+                        candidateDetails?.candidate?.headline ||
+                        "No summary available";
 
-                    const isLongSummary =
-                      candidateDetails?.candidate?.profile_summary &&
-                      candidateDetails?.candidate?.profile_summary.length >
+                      const isLongSummary =
+                        candidateDetails?.candidate?.profile_summary &&
+                        candidateDetails?.candidate?.profile_summary.length >
                         maxCharLength;
 
-                    const displaySummary =
-                      showMoreSummary || !isLongSummary
-                        ? summary
-                        : summary.slice(0, maxCharLength) + "...";
+                      const displaySummary =
+                        showMoreSummary || !isLongSummary
+                          ? summary
+                          : summary.slice(0, maxCharLength) + "...";
 
-                    return (
-                      <>
-                        {displaySummary}
-                        {isLongSummary && (
-                          <button
-                            onClick={() => setShowMoreSummary(!showMoreSummary)}
-                            className="ml-2 text-[#0F47F2] text-sm font-medium inline"
-                          >
-                            {showMoreSummary ? "View Less" : "View More"}
-                          </button>
-                        )}
-                      </>
-                    );
-                  })()}
-                </p>
-              </div>
-            )}
+                      return (
+                        <>
+                          {displaySummary}
+                          {isLongSummary && (
+                            <button
+                              onClick={() => setShowMoreSummary(!showMoreSummary)}
+                              className="ml-2 text-[#0F47F2] text-sm font-medium inline"
+                            >
+                              {showMoreSummary ? "View Less" : "View More"}
+                            </button>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </p>
+                </div>
+              )}
 
             {positions.length > 0 && (
               <div>
@@ -890,9 +891,9 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                       </h4>
                       <p className="text-sm text-[#818283]">{edu.schoolName}</p>
                       {edu.startDate?.year &&
-                      edu.endDate?.year &&
-                      edu.startDate.year !== 0 &&
-                      edu.endDate.year !== 0 ? (
+                        edu.endDate?.year &&
+                        edu.startDate.year !== 0 &&
+                        edu.endDate.year !== 0 ? (
                         <p className="text-sm text-[#818283]">
                           {edu.startDate.year} - {edu.endDate.year}
                         </p>
@@ -1135,13 +1136,12 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                           <Minus className="w-4 h-4 p-1 bg-[#818283] text-white mr-1 rounded-xl" />
                         )}
                         <span
-                          className={`${
-                            q.status === "Pass"
-                              ? "text-[#007A5A]"
-                              : q.status === "Fail"
-                                ? "text-[#ED051C]"
-                                : "text-[#818283]"
-                          } font-medium`}
+                          className={`${q.status === "Pass"
+                            ? "text-[#007A5A]"
+                            : q.status === "Fail"
+                              ? "text-[#ED051C]"
+                              : "text-[#818283]"
+                            } font-medium`}
                         >
                           {q.status}
                         </span>
@@ -1181,8 +1181,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
         return (
           <div className="space-y-3 bg-[#F5F9FB] p-2 rounded-xl">
             {interviewData?.resumeScore ||
-            interviewData?.knowledgeScore ||
-            interviewData?.communicationScore ? (
+              interviewData?.knowledgeScore ||
+              interviewData?.communicationScore ? (
               <>
                 <div className="bg-white rounded-xl p-2">
                   <h4 className="text-base font-medium text-[#4B5563] mb-4">
@@ -1312,15 +1312,13 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                       return (
                         <div
                           key={index}
-                          className={`border ${
-                            isExpanded ? "border-[#0F47F2]" : "border-[#818283]"
-                          } bg-white rounded-md p-4`}
+                          className={`border ${isExpanded ? "border-[#0F47F2]" : "border-[#818283]"
+                            } bg-white rounded-md p-4`}
                         >
                           <div className="flex justify-between items-start">
                             <p
-                              className={`text-sm font-medium ${
-                                isExpanded ? "text-[#4B5563]" : "text-[#818283]"
-                              }`}
+                              className={`text-sm font-medium ${isExpanded ? "text-[#4B5563]" : "text-[#818283]"
+                                }`}
                             >
                               {q.question}
                             </p>
@@ -1429,7 +1427,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                               }}
                             />
                             <button
-                              onClick={() => {}}
+                              onClick={() => { }}
                               className="text-blue-500 mt-1"
                             >
                               Reply ?
@@ -1485,11 +1483,11 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
         const displayedNotes =
           notesView === "my"
             ? notes.filter(
-                (note: any) => note.is_team_note && !note.is_community_note,
-              )
+              (note: any) => note.is_team_note && !note.is_community_note,
+            )
             : notes.filter(
-                (note: any) => note.is_team_note && note.is_community_note,
-              );
+              (note: any) => note.is_team_note && note.is_community_note,
+            );
         return (
           <>
             <div className="flex flex-col h-full bg-[#F0F0F0] p-3 rounded-lg">
@@ -1654,12 +1652,10 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                   type="text"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  placeholder={`Type your ${
-                    notesView === "my" ? "team" : "community"
-                  } comment!`}
-                  className={`flex-1 px-4 py-2 rounded-lg text-sm ${
-                    newComment && !isValidNote ? "border border-red-500" : ""
-                  }`}
+                  placeholder={`Type your ${notesView === "my" ? "team" : "community"
+                    } comment!`}
+                  className={`flex-1 px-4 py-2 rounded-lg text-sm ${newComment && !isValidNote ? "border border-red-500" : ""
+                    }`}
                   onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
                 />
                 <button
@@ -1740,6 +1736,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           stageIdMapTemp[stage.name] = stage.id;
           stageSlugMap[stage.name] = stage.slug;
         });
+        stageIdMapTemp["Archives"] = 5136;
         setStageIdMap(stageIdMapTemp);
 
         // Fetch candidates for each shareable stage in parallel
@@ -1829,9 +1826,74 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       }
     };
 
+
+    const fetchArchivedCandidates = async () => {
+      try {
+        const res = await apiClient.get(
+          `/jobs/roles/${jobId}/archived-applications/`,
+        );
+        const results = res.data.results || [];
+        const mappedArchived = results.map((app: any) => {
+          const headline = app.candidate.headline || "";
+          const [role = "", company = ""] = headline.split(" at ");
+          const city = app.candidate.location?.split(",")[0] || "";
+
+          return {
+            id: app.id,
+            name: app.candidate.full_name || "Unknown",
+            company: (company || "").trim(),
+            role: (role || "").trim(),
+            location: city || "",
+            notice_period_days: (app.candidate.notice_period_summary || "")
+              .toString()
+              .replace(" days", ""),
+            current_salary: app.candidate.current_salary_lpa || "",
+            total_experience: (app.candidate.experience_years || "")
+              .toString()
+              .replace(/[^0-9+]/g, ""),
+            avatar:
+              app.candidate.avatar ||
+              (app.candidate.full_name || "")
+                .split(" ")
+                .map((n: string) => n[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase(),
+            profile_picture_url: app.candidate.profile_picture_url || null,
+            notes: "",
+            job_score: app.job_score_obj || app.job_score, // Use job_score_obj if available
+            expected_salary:
+              app.candidate.expected_ctc_lpa ||
+              app.candidate.expected_ctc ||
+              "--",
+            time_added: app.time_added || "-- days ago",
+            lastUpdated: new Date(app.last_active_at || Date.now()),
+            stage_slug: app.stage_slug,
+            socials: {
+              github_url: app.candidate.premium_data_availability
+                ?.github_username
+                ? ""
+                : null,
+              linkedin_url: app.candidate.premium_data_availability
+                ?.linkedin_url
+                ? ""
+                : null,
+              resume_url: app.candidate.premium_data_availability?.resume_url
+                ? ""
+                : null,
+            },
+          };
+        });
+        setArchivedCandidates(mappedArchived);
+      } catch (err) {
+        console.error("Error fetching archived candidates:", err);
+      }
+    };
+
     // Only run if pipelineStages are already loaded
     if (pipelineStages.length > 0) {
       fetchCandidates();
+      fetchArchivedCandidates();
     }
   }, [jobId, isAuthenticated, pipelineStages]);
 
@@ -1959,15 +2021,15 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           companyUrn: "",
           startDate: exp.start_date
             ? {
-                month: new Date(exp.start_date).getMonth() + 1,
-                year: new Date(exp.start_date).getFullYear(),
-              }
+              month: new Date(exp.start_date).getMonth() + 1,
+              year: new Date(exp.start_date).getFullYear(),
+            }
             : { month: 0, year: 0 },
           endDate: exp.end_date
             ? {
-                month: new Date(exp.end_date).getMonth() + 1,
-                year: new Date(exp.end_date).getFullYear(),
-              }
+              month: new Date(exp.end_date).getMonth() + 1,
+              year: new Date(exp.end_date).getFullYear(),
+            }
             : undefined,
           isCurrent: exp.is_current,
           location: exp.location,
@@ -1993,15 +2055,15 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           licenseNumber: cert.licenseNumber,
           startDate: cert.issued_date
             ? {
-                month: new Date(cert.issued_date).getMonth() + 1,
-                year: new Date(cert.issued_date).getFullYear(),
-              }
+              month: new Date(cert.issued_date).getMonth() + 1,
+              year: new Date(cert.issued_date).getFullYear(),
+            }
             : { month: 0, year: 0 },
           endDate: cert.valid_until
             ? {
-                month: new Date(cert.valid_until).getMonth() + 1,
-                year: new Date(cert.valid_until).getFullYear(),
-              }
+              month: new Date(cert.valid_until).getMonth() + 1,
+              year: new Date(cert.valid_until).getFullYear(),
+            }
             : undefined,
           url: cert.url,
         })),
@@ -2453,18 +2515,21 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     if (jobId) fetchStages();
   }, [jobId, stagesRefreshKey]);
 
-  const renderCandidateCard = (candidate: any, stage: string) => {
+  const renderCandidateCard = (
+    candidate: any,
+    stage: string,
+    isArchived: boolean = false,
+  ) => {
     const isSelected = selectedCandidates?.has(candidate.id) || false;
 
     return (
       <div
         id={`candidate-${candidate.id}`}
         key={candidate.id}
-        draggable
+        draggable={!isArchived}
         onDragStart={() => handleDragStart(candidate, stage)}
-        className={`relative bg-white rounded-xl p-4 mb-3 cursor-move hover:shadow-lg transition-all duration-200 ${
-          isSelected ? "border-2 border-blue-500" : "border border-gray-200"
-        } ${highlightedCandidateId === candidate.id ? "ring-2 ring-blue-400" : ""}`}
+        className={`relative bg-white rounded-xl p-4 mb-3 cursor-move hover:shadow-lg transition-all duration-200 ${isSelected ? "border-2 border-blue-500" : "border border-gray-200"
+          } ${highlightedCandidateId === candidate.id ? "ring-2 ring-blue-400" : ""} ${isArchived ? "opacity-60 grayscale" : ""}`}
       >
         <div className="absolute top-4 left-4">
           <div
@@ -2472,11 +2537,10 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
               e.stopPropagation();
               toggleCandidateSelection(candidate.id, stage);
             }}
-            className={`w-5 h-5 rounded border-2 cursor-pointer flex items-center justify-center transition-colors ${
-              isSelected
-                ? "bg-blue-600 border-blue-600"
-                : "border-gray-300 bg-white"
-            }`}
+            className={`w-5 h-5 rounded border-2 cursor-pointer flex items-center justify-center transition-colors ${isSelected
+              ? "bg-blue-600 border-blue-600"
+              : "border-gray-300 bg-white"
+              }`}
           >
             {isSelected && (
               // SVG: White checkmark
@@ -2960,11 +3024,10 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                     <button
                       key={tab}
                       onClick={() => setProfileTab(tab)}
-                      className={`py-3 px-4 text-sm font-medium transition-colors ${
-                        profileTab === tab
-                          ? "text-blue-600 border-b-2 border-blue-600"
-                          : "text-gray-500 hover:text-gray-700"
-                      }`}
+                      className={`py-3 px-4 text-sm font-medium transition-colors ${profileTab === tab
+                        ? "text-blue-600 border-b-2 border-blue-600"
+                        : "text-gray-500 hover:text-gray-700"
+                        }`}
                     >
                       {tab}
                     </button>
@@ -3169,11 +3232,10 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                         <div
                           key={suggestion.id}
                           onClick={() => handleSelectSuggestion(suggestion)}
-                          className={`p-3 cursor-pointer hover:bg-gray-100 flex items-center gap-3 border-b border-gray-100 last:border-b-0 ${
-                            index === selectedSuggestionIndex
-                              ? "bg-blue-50"
-                              : ""
-                          }`}
+                          className={`p-3 cursor-pointer hover:bg-gray-100 flex items-center gap-3 border-b border-gray-100 last:border-b-0 ${index === selectedSuggestionIndex
+                            ? "bg-blue-50"
+                            : ""
+                            }`}
                         >
                           <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-bold">
                             {suggestion.name
@@ -3226,11 +3288,10 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`relative pb-4 text-xl font-semibold transition-colors duration-200 ${
-                      activeTab === tab.id
-                        ? "text-[#0F47F2]"
-                        : "text-[#818283] hover:text-gray-500"
-                    }`}
+                    className={`relative pb-4 text-xl font-semibold transition-colors duration-200 ${activeTab === tab.id
+                      ? "text-[#0F47F2]"
+                      : "text-[#818283] hover:text-gray-500"
+                      }`}
                   >
                     {tab.label}
                     {activeTab === tab.id && (
@@ -3355,6 +3416,15 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                                   {candidates.map((candidate: any) =>
                                     renderCandidateCard(candidate, stage.name),
                                   )}
+                                  {archivedCandidates
+                                    .filter((c) => c.stage_slug === stage.slug)
+                                    .map((c) =>
+                                      renderCandidateCard(
+                                        c,
+                                        stage.name,
+                                        true, // isArchived
+                                      ),
+                                    )}
                                   {candidates.length === 0 && (
                                     <div className="text-center py-8 text-gray-400">
                                       <User className="w-8 h-8 mx-auto mb-2" />
@@ -3547,9 +3617,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                   <button
                     onClick={handleAccessSubmit}
                     disabled={isSharing}
-                    className={`flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 ${
-                      isSharing ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
+                    className={`flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 ${isSharing ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
                   >
                     {isSharing ? "Sharing..." : "Share Access"}
                   </button>
