@@ -737,6 +737,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           id: job.id,
           name: job.title,
           count: job.pipeline_candidate_count || 0,
+          jobrole_company: job.jobrole_company,
         }));
         setCategories(mappedCategories);
         if (mappedCategories.length > 0) {
