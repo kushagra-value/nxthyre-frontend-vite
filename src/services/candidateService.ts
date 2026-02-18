@@ -1212,6 +1212,22 @@ class CandidateService {
       throw error;
     }
   }
+
+  // Add this to candidateService
+  async updateStageTransition(transitionId: number, movedAt: string) {
+    try {
+      const response = await apiClient.patch(
+        `/jobs/stage-transitions/${transitionId}/`,
+        {
+          moved_at: movedAt,
+        },
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Error updating stage transition:", error);
+      throw error;
+    }
+  }
 }
 
 export const candidateService = new CandidateService();
