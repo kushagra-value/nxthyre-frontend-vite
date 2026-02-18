@@ -233,6 +233,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
       setEditingActivity(null);
       setCurrentAppId(null);
       setNewMovedAt("");
+      window.location.reload();
     } catch (err) {
       console.error("Error in save", err);
     }
