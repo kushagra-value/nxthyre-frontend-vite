@@ -190,10 +190,23 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
     window.open(profileUrl, "_blank");
   };
 
-  // Add this function after the existing handleShareClick function
   const handleSave = async () => {
-    if (!currentAppId || !editingActivity) return;
+    console.log("handleSave called", {
+      currentAppId,
+      editingActivity,
+      newMovedAt,
+    });
+    if (!currentAppId || !editingActivity) {
+      console.log("Missing currentAppId or editingActivity");
+      return;
+    }
     try {
+      console.log(
+        "Calling API with id",
+        editingActivity,
+        "moved_at",
+        newMovedAt,
+      );
       await candidateService.updateStageTransition(
         Number(editingActivity),
         newMovedAt,
@@ -221,7 +234,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
       setCurrentAppId(null);
       setNewMovedAt("");
     } catch (err) {
-      console.error(err);
+      console.error("Error in save", err);
     }
   };
 
@@ -504,6 +517,10 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                                 on {movedAt}
                                 <button
                                   onClick={() => {
+                                    console.log(
+                                      "Edit clicked for activity",
+                                      activity,
+                                    );
                                     setEditingActivity(activity.id);
                                     setCurrentAppId(app.id);
                                     setNewMovedAt(activity.data.moved_at);
