@@ -275,6 +275,53 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
       showToast.error("Failed to archive candidates");
     }
   };
+
+  const handleUnarchiveSelected = async () => {
+    if (selectedCandidates.size === 0) return;
+
+    const candidateIds = Array.from(selectedCandidates);
+    const candidatesToUnarchive = archivedCandidates.filter((c) =>
+      selectedCandidates.has(c.id),
+    );
+
+    if (candidatesToUnarchive.length === 0) return;
+
+    try {
+      await Promise.all(
+        candidatesToUnarchive.map((candidate) => {
+          const targetStage = pipelineStages.find(
+            (s) => s.slug === candidate.stage_slug,
+          );
+          const targetStageId = targetStage
+            ? targetStage.id
+            : pipelineStages.find((s) => s.slug === "shortlisted")?.id;
+
+          if (!targetStageId) return Promise.resolve();
+
+          return apiClient.patch(
+            `/jobs/applications/${candidate.id}/?view=kanban`,
+            {
+              current_stage: targetStageId,
+              feedback: {
+                subject: "Unarchived",
+                comment: "Moved from Archive",
+              },
+            },
+          );
+        }),
+      );
+
+      showToast.success(
+        `${candidatesToUnarchive.length} candidates unarchived`,
+      );
+      setSelectedCandidates(new Set());
+      setSelectionStage(null);
+      setStagesRefreshKey((prev) => prev + 1);
+    } catch (error) {
+      console.error("Unarchive error:", error);
+      showToast.error("Failed to unarchive candidates");
+    }
+  };
   // UPDATED: Fully type-safe handleSearch - resolves 'id' does not exist on type 'never'
   const handleSearch = () => {
     if (!searchQuery.trim()) return;
@@ -3459,12 +3506,26 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                                   <div className="absolute bottom-0 left-0 w-full bg-white border-t border-gray-200 shadow-lg py-4 px-6 z-50 rounded-b-lg">
                                     <div className="max-w-7xl mx-auto">
                                       <div className="flex items-center justify-between">
-                                        <button
-                                          onClick={handleArchiveSelected}
-                                          className="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
-                                        >
-                                          Move to Archive
-                                        </button>
+                                        {Array.from(selectedCandidates).every(
+                                          (id) =>
+                                            archivedCandidates.some(
+                                              (ac) => ac.id === id,
+                                            ),
+                                        ) ? (
+                                          <button
+                                            onClick={handleUnarchiveSelected}
+                                            className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                                          >
+                                            Unarchive Candidates
+                                          </button>
+                                        ) : (
+                                          <button
+                                            onClick={handleArchiveSelected}
+                                            className="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                                          >
+                                            Move to Archive
+                                          </button>
+                                        )}
                                         <button
                                           onClick={() =>
                                             setSelectedCandidates(new Set())
