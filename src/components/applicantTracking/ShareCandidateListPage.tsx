@@ -33,6 +33,11 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Add these states after the existing useState declarations
+  const [editingActivity, setEditingActivity] = useState<string | null>(null);
+  const [currentAppId, setCurrentAppId] = useState<string | null>(null);
+  const [newMovedAt, setNewMovedAt] = useState<string>("");
+
   const pageSize = 8;
   const largePageSize = 1000; // Adjust based on expected max candidates; assumes API supports large fetches
 
@@ -183,6 +188,41 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
   const handleShareClick = (candidateId: string, jobId: string) => {
     const profileUrl = `${window.location.origin}/candidate-profiles/${candidateId}?job_id=${jobId}`;
     window.open(profileUrl, "_blank");
+  };
+
+  // Add this function after the existing handleShareClick function
+  const handleSave = async () => {
+    if (!currentAppId || !editingActivity) return;
+    try {
+      await candidateService.updateStageTransition(
+        Number(editingActivity),
+        newMovedAt,
+      );
+      setAllApplications((prev) =>
+        prev.map((app) => {
+          if (app.id === currentAppId) {
+            return {
+              ...app,
+              activities: app.activities.map((act: any) => {
+                if (act.id === editingActivity) {
+                  return {
+                    ...act,
+                    data: { ...act.data, moved_at: newMovedAt },
+                  };
+                }
+                return act;
+              }),
+            };
+          }
+          return app;
+        }),
+      );
+      setEditingActivity(null);
+      setCurrentAppId(null);
+      setNewMovedAt("");
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   if (loading) {
@@ -413,21 +453,67 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                       ?.filter(
                         (activity: any) => activity.type === "stage_move",
                       )
-                      .slice(0, 3) // Limit to top 3 recent activities
+                      .slice(0, 3)
                       .map((activity: any, idx: number) => {
+                        const isEditing = editingActivity === activity.id;
                         const movedAt = new Date(
                           activity.data.moved_at,
                         ).toLocaleDateString("en-GB");
                         return (
                           <div
-                            key={idx}
+                            key={activity.id || idx}
                             className="text-[11px] text-gray-500 text-right leading-tight"
                           >
-                            Moved to{" "}
-                            <span className="font-medium text-gray-800">
-                              {activity.data.to_stage_name}
-                            </span>{" "}
-                            on {movedAt}
+                            {isEditing ? (
+                              <>
+                                Moved to{" "}
+                                <span className="font-medium text-gray-800">
+                                  {activity.data.to_stage_name}
+                                </span>{" "}
+                                on{" "}
+                                <input
+                                  type="datetime-local"
+                                  value={newMovedAt.slice(0, 16)}
+                                  onChange={(e) =>
+                                    setNewMovedAt(`${e.target.value}:00Z`)
+                                  }
+                                />
+                                <button
+                                  onClick={handleSave}
+                                  className="ml-2 text-blue-500 hover:text-blue-700 text-xs"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setEditingActivity(null);
+                                    setCurrentAppId(null);
+                                    setNewMovedAt("");
+                                  }}
+                                  className="ml-2 text-gray-500 hover:text-gray-700 text-xs"
+                                >
+                                  Cancel
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                Moved to{" "}
+                                <span className="font-medium text-gray-800">
+                                  {activity.data.to_stage_name}
+                                </span>{" "}
+                                on {movedAt}
+                                <button
+                                  onClick={() => {
+                                    setEditingActivity(activity.id);
+                                    setCurrentAppId(app.id);
+                                    setNewMovedAt(activity.data.moved_at);
+                                  }}
+                                  className="ml-2 text-blue-500 hover:text-blue-700 text-xs"
+                                >
+                                  Edit
+                                </button>
+                              </>
+                            )}
                           </div>
                         );
                       }) || (
