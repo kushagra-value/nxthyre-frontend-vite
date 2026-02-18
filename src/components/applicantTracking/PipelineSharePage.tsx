@@ -46,7 +46,7 @@ import {
   MessageSquareText,
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
+import { faWhatsapp, faWindows } from "@fortawesome/free-brands-svg-icons";
 import { showToast } from "../../utils/toast";
 import apiClient from "../../services/api";
 import AddNewStageForm from "./AddNewStageForm";
@@ -236,6 +236,11 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
         setSelectionStage(stageName);
       }
     }
+  };
+
+  const goToHomepage = () => {
+    onHomepage?.();
+    window.location.href = "/";
   };
 
   // UPDATED: Add archive handler
@@ -2997,7 +3002,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
         <div className="mb-4 bg-white shadow-sm border-b border-gray-200 flex items-center justify-between max-w-full mx-auto px-7 py-2">
           <div
             className="flex items-center cursor-pointer"
-            onClick={onHomepage}
+            onClick={goToHomepage}
           >
             <svg
               width="124"
@@ -3109,7 +3114,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           <div>
             <button
               className="bg-blue-600 text-white px-4 py-2 font-semibold text-sm hover:bg-blue-700 rounded-lg"
-              onClick={onHomepage}
+              onClick={goToHomepage}
             >
               Explore Nxthyre
             </button>
