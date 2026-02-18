@@ -29,18 +29,18 @@ import {
   Template,
   candidateService,
 } from "../services/candidateService";
-import  {CKEditor}  from "@ckeditor/ckeditor5-react";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
-import {has} from "lodash";
+import { has } from "lodash";
 interface TemplateSelectorProps {
   candidate: CandidateListItem;
   onBack: () => void;
   updateCandidateEmail: (
     candidateId: string,
     candidate_email: string,
-    candidate_phone: string
+    candidate_phone: string,
   ) => void;
   jobId: string;
 }
@@ -137,7 +137,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
       setTemplateName(template.name);
       setSubject(template.initial_subject);
       setBody(
-        template.initial_body.replace("[candidateName]", candidate.full_name)
+        template.initial_body.replace("[candidateName]", candidate.full_name),
       );
       setSendViaEmail(template.can_be_sent_via_email);
       setSendViaWhatsApp(template.can_be_sent_via_whatsapp);
@@ -148,7 +148,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           followup_mode: step.mode as "EMAIL" | "WHATSAPP" | "CALL",
           followup_body: step.body,
           order_no: step.order,
-        }))
+        })),
       );
     } else {
       console.log("Template not found for ID:", templateId);
@@ -156,42 +156,45 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   };
 
   const handleSendTestEmail = async () => {
-  if (!testEmail) {
-    showToast.error("Please enter a test email address");
-    return;
-  }
-  if (!testNumber) {
-    showToast.error("Please enter a test phone number");
-    return;
-  }
-  if (!jobId || !candidate.id) {
-    showToast.error("Job ID and Candidate ID are required");
-    return;
-  }
-  setLoading(true);
-  try {
-    const response = await candidateService.sendTestEmail({
-      job_id: jobId,
-      candidate_id: candidate.id,
-      email: testEmail,
-      phone: testNumber,
-      subject: subject || "Test Invitation: Software Engineer Role",
-      message_body: body || "Hello, this is a test from Acme Corp regarding the Software Engineer position.",
-      send_via_email: sendTestViaEmail,
-      send_via_phone: sendTestViaPhone,
-      send_via_whatsapp: sendTestViaWhatsApp,
-    });
-    showToast.success(response.success);
-    if (response.results.email) showToast.success(response.results.email);
-    if (response.results.whatsapp) showToast.success(response.results.whatsapp);
-    if (response.results.call) showToast.success(response.results.call);
-    setShowTestEmail(false);
-  } catch (error) {
-    showToast.error("Failed to send test email");
-  } finally {
-    setLoading(false);
-  }
-};
+    if (!testEmail) {
+      showToast.error("Please enter a test email address");
+      return;
+    }
+    if (!testNumber) {
+      showToast.error("Please enter a test phone number");
+      return;
+    }
+    if (!jobId || !candidate.id) {
+      showToast.error("Job ID and Candidate ID are required");
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await candidateService.sendTestEmail({
+        job_id: jobId,
+        candidate_id: candidate.id,
+        email: testEmail,
+        phone: testNumber,
+        subject: subject || "Test Invitation: Software Engineer Role",
+        message_body:
+          body ||
+          "Hello, this is a test from Acme Corp regarding the Software Engineer position.",
+        send_via_email: sendTestViaEmail,
+        send_via_phone: sendTestViaPhone,
+        send_via_whatsapp: sendTestViaWhatsApp,
+      });
+      showToast.success(response.success);
+      if (response.results.email) showToast.success(response.results.email);
+      if (response.results.whatsapp)
+        showToast.success(response.results.whatsapp);
+      if (response.results.call) showToast.success(response.results.call);
+      setShowTestEmail(false);
+    } catch (error) {
+      showToast.error("Failed to send test email");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSaveTemplate = async () => {
     if (!templateName.trim()) {
@@ -262,12 +265,12 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         followups: followUpTemplates,
       });
       showToast.success(
-        `Invite sent successfully! Invite ID: ${response.invite_id}. Follow-ups scheduled.`
+        `Invite sent successfully! Invite ID: ${response.invite_id}. Follow-ups scheduled.`,
       );
       updateCandidateEmail(
         candidate.id,
         response.candidate_email,
-        response.candidate_phone
+        response.candidate_phone,
       );
       if (selectedTemplate) {
         const updatedTemplate: Template = {
@@ -356,7 +359,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     if (detailedCandidate && detailedCandidate.candidate) {
       window.open(
         `/candidate-profiles/${detailedCandidate.candidate.id}`,
-        "_blank"
+        "_blank",
       );
     }
   };
@@ -421,7 +424,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         <div className="flex space-x-3 items-center mt-1">
           <div
             className={`w-12 h-12 ${getAvatarColor(
-              detailedCandidate?.candidate?.full_name || ""
+              detailedCandidate?.candidate?.full_name || "",
             )} rounded-full flex items-center justify-center text-white`}
           >
             <User className="w-6 h-6" />
@@ -1124,12 +1127,15 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 Body
               </label>
               <p className="text-sm text-gray-400 mb-2">
-                Candidate Name and Signature are already prefilled. Editable access only for body
+                Candidate Name and Signature are already prefilled. Editable
+                access only for body
               </p>
               <CKEditor
                 editor={ClassicEditor}
                 data={body}
-                onChange={(event: any, editor: any) => setBody(editor.getData())}
+                onChange={(event: any, editor: any) =>
+                  setBody(editor.getData())
+                }
                 className={`${isBodyExpanded ? "h-96" : "h-48"} w-full rounded-lg`}
                 onFocus={() => setIsBodyExpanded(true)}
                 onBlur={() => setIsBodyExpanded(false)}
@@ -1238,23 +1244,25 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                   </div>
                 ) : sendViaWhatsApp && sendViaPhone ? (
                   <div>
-                    Note: WhatsApp message and AI-generated call will be sent to the
-                    candidate.
+                    Note: WhatsApp message and AI-generated call will be sent to
+                    the candidate.
                   </div>
                 ) : sendViaEmail ? (
                   <div>Note: Email will be sent to candidate's inbox.</div>
                 ) : sendViaWhatsApp ? (
                   <div>
-                    Note: WhatsApp message will be sent to the candidate's WhatsApp
-                    number.
+                    Note: WhatsApp message will be sent to the candidate's
+                    WhatsApp number.
                   </div>
                 ) : sendViaPhone ? (
                   <div>
-                    Note: An AI-generated call will be made to the candidate's phone
-                    number.
+                    Note: An AI-generated call will be made to the candidate's
+                    phone number.
                   </div>
                 ) : (
-                  <div className="text-sm font-medium text-gray-400 mb-2"> </div>
+                  <div className="text-sm font-medium text-gray-400 mb-2">
+                    {" "}
+                  </div>
                 )}
               </div>
             </div>
@@ -1304,7 +1312,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                   </button>
                                   <button
                                     onClick={() => {
-                                      const updatedFollowUps = [...followUpTemplates];
+                                      const updatedFollowUps = [
+                                        ...followUpTemplates,
+                                      ];
                                       updatedFollowUps[index] = {
                                         ...updatedFollowUps[index],
                                         ...newFollowUp,
@@ -1340,7 +1350,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                       onChange={(e) =>
                                         setNewFollowUp({
                                           ...newFollowUp,
-                                          send_after_hours: Number(e.target.value),
+                                          send_after_hours: Number(
+                                            e.target.value,
+                                          ),
                                         })
                                       }
                                       className="text-sm w-24 px-2 py-1 text-blue-600 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -1352,13 +1364,18 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                     </select>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <span className="text-xs text-gray-500">Via</span>
+                                    <span className="text-xs text-gray-500">
+                                      Via
+                                    </span>
                                     <select
                                       value={newFollowUp.followup_mode}
                                       onChange={(e) =>
                                         setNewFollowUp({
                                           ...newFollowUp,
-                                          followup_mode: e.target.value as "EMAIL" | "WHATSAPP" | "CALL",
+                                          followup_mode: e.target.value as
+                                            | "EMAIL"
+                                            | "WHATSAPP"
+                                            | "CALL",
                                         })
                                       }
                                       className="text-sm w-24 px-2 py-1 text-blue-600 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -1404,7 +1421,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                     <Edit className="w-4 h-4 text-gray-500" />
                                   </button>
                                   <button
-                                    onClick={() => openDeleteConfirmation(index)}
+                                    onClick={() =>
+                                      openDeleteConfirmation(index)
+                                    }
                                     className="p-1 text-gray-500 hover:text-gray-600"
                                   >
                                     <Trash2 className="w-4 h-4 text-gray-500" />
@@ -1416,7 +1435,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                 <div className="flex items-center text-gray-600">
                                   <p>Will be sent around</p>{" "}
                                   <span className="pl-1"></span>
-                                  <span>{followUp.send_after_hours} hrs from now</span>
+                                  <span>
+                                    {followUp.send_after_hours} hrs from now
+                                  </span>
                                   <span className="pl-1"> </span>
                                   <p>via {followUp.followup_mode}.</p>
                                 </div>
@@ -1434,7 +1455,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                         <div className="my-4 bg-blue-50 rounded-lg">
                           <div className="px-8 pt-2 flex justify-between items-center">
                             <span className="text-sm font-medium text-blue-600">
-                              {isEditingFollowUp ? "Edit Follow Up" : "Follow Up"}
+                              {isEditingFollowUp
+                                ? "Edit Follow Up"
+                                : "Follow Up"}
                             </span>
                             <div className="flex space-x-2 mt-2">
                               <button
@@ -1447,13 +1470,20 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                 disabled={loading}
                               >
                                 <span className="w-4 h-4 flex items-center justify-center rounded-full border-2 border-red-500 text-red-500">
-                                  <span className="text-xs mb-1 font-semibold">x</span>
+                                  <span className="text-xs mb-1 font-semibold">
+                                    x
+                                  </span>
                                 </span>
                               </button>
                               <button
                                 onClick={() => {
-                                  if (isEditingFollowUp && editingIndex !== null) {
-                                    const updatedFollowUps = [...followUpTemplates];
+                                  if (
+                                    isEditingFollowUp &&
+                                    editingIndex !== null
+                                  ) {
+                                    const updatedFollowUps = [
+                                      ...followUpTemplates,
+                                    ];
                                     updatedFollowUps[editingIndex] = {
                                       ...updatedFollowUps[editingIndex],
                                       ...newFollowUp,
@@ -1464,7 +1494,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                       ...followUpTemplates,
                                       {
                                         ...newFollowUp,
-                                        followup_mode: newFollowUp.followup_mode,
+                                        followup_mode:
+                                          newFollowUp.followup_mode,
                                         order_no: followUpTemplates.length,
                                       },
                                     ]);
@@ -1491,7 +1522,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                           <div className="px-8 pb-4 flex flex-col items-start space-y-3">
                             <div className="flex items-center space-x-4">
                               <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-500">Send After</span>
+                                <span className="text-xs text-gray-500">
+                                  Send After
+                                </span>
                                 <select
                                   value={newFollowUp.send_after_hours}
                                   onChange={(e) =>
@@ -1509,13 +1542,18 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                                 </select>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-500">Via</span>
+                                <span className="text-xs text-gray-500">
+                                  Via
+                                </span>
                                 <select
                                   value={newFollowUp.followup_mode}
                                   onChange={(e) =>
                                     setNewFollowUp({
                                       ...newFollowUp,
-                                      followup_mode: e.target.value as "EMAIL" | "WHATSAPP" | "CALL",
+                                      followup_mode: e.target.value as
+                                        | "EMAIL"
+                                        | "WHATSAPP"
+                                        | "CALL",
                                     })
                                   }
                                   className="text-sm w-24 px-2 py-1 text-blue-600 bg-blue-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -1582,7 +1620,6 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 </button>
               </div>
             </div>
-          
           </div>
         </div>
       )}
@@ -1603,7 +1640,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 >
                   <ArrowLeft className="w-7 h-7 text-gray-700" />
                 </button>
-                <h2 className="text-lg font-semibold text-gray-700">Send Test Email</h2>
+                <h2 className="text-lg font-semibold text-gray-700">
+                  Send Test Email
+                </h2>
               </div>
             </div>
             <div className="space-y-4">
@@ -1718,23 +1757,25 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                   </div>
                 ) : sendTestViaWhatsApp && sendTestViaPhone ? (
                   <div>
-                    Note: WhatsApp message and AI-generated call will be sent to the
-                    candidate.
+                    Note: WhatsApp message and AI-generated call will be sent to
+                    the candidate.
                   </div>
                 ) : sendTestViaEmail ? (
                   <div>Note: Email will be sent to candidate's inbox.</div>
                 ) : sendTestViaWhatsApp ? (
                   <div>
-                    Note: WhatsApp message will be sent to the candidate's WhatsApp
-                    number.
+                    Note: WhatsApp message will be sent to the candidate's
+                    WhatsApp number.
                   </div>
                 ) : sendTestViaPhone ? (
                   <div>
-                    Note: An AI-generated call will be made to the candidate's phone
-                    number.
+                    Note: An AI-generated call will be made to the candidate's
+                    phone number.
                   </div>
                 ) : (
-                  <div className="text-sm font-medium text-gray-400 mb-2"> </div>
+                  <div className="text-sm font-medium text-gray-400 mb-2">
+                    {" "}
+                  </div>
                 )}
               </div>
             </div>

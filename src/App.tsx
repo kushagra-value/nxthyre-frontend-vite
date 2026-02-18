@@ -752,6 +752,13 @@ function MainApp() {
     setSelectedCandidate(null);
   };
 
+  const handleBackToHomepage = () => {
+    setActiveCategoryId(null);
+    setHasSelectedJob(false);
+    setSelectedCandidate(null);
+    setShowPipelineStages(false);
+  };
+
   const handleJobCreatedOrUpdated = () => {
     fetchCategories();
   };
@@ -1478,6 +1485,7 @@ function MainApp() {
               notice={job?.joiningTimeline || "Immidiate(max 15 days)"}
               workspaceId={workspaceId || 0}
               onBack={handleBackFromPipelineShare}
+              onHomepage={handleBackToHomepage}
             />
           }
         />
@@ -1537,6 +1545,7 @@ function MainApp() {
                   <PipelineSharePage
                     pipelineName={job?.name || "Pipeline Name"}
                     onBack={handleBackFromPipelineShare}
+                    onHomepage={handleBackToHomepage}
                   />
                 ) : showShareableProfile ? (
                   <ShareableProfile
@@ -1552,6 +1561,7 @@ function MainApp() {
                       onSendInvite={handleSendInvite}
                       deductCredits={deductCredits}
                       initialJobId={activeCategoryId}
+                      onHomepage={handleBackToHomepage}
                     />
                   </>
                 ) : categories.length === 0 ? (
@@ -1561,10 +1571,14 @@ function MainApp() {
                         onCreateRole={handleCreateJobRole}
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
+                        onBack={handleBackToHomepage}
                         searchQuery={""}
                         setSearchQuery={() => {}}
                         showCreateRoleButton={true}
                         showSearchBar={false}
+                        candidates={candidates}
+                        onSelectCandidate={setSelectedCandidate}
+                        jobId={activeCategoryId ?? undefined} // Changed: Pass jobId prop
                       />
                     </div>
                   </div>
@@ -1575,10 +1589,14 @@ function MainApp() {
                         onCreateRole={handleCreateJobRole}
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
+                        onBack={handleBackToHomepage}
                         searchQuery={""}
                         setSearchQuery={() => {}}
                         showCreateRoleButton={true}
                         showSearchBar={false}
+                        candidates={candidates}
+                        onSelectCandidate={setSelectedCandidate}
+                        jobId={activeCategoryId ?? undefined} // Changed: Pass jobId prop
                       />
                     </div>
 
@@ -2304,6 +2322,7 @@ function MainApp() {
                           onCreateRole={handleCreateJobRole}
                           onOpenLogoutModal={handleOpenLogoutModal}
                           credits={credits}
+                          onBack={handleBackToHomepage}
                           searchQuery={searchQuery}
                           setSearchQuery={setSearchQuery}
                           showLinkedinSearchButton={true}
