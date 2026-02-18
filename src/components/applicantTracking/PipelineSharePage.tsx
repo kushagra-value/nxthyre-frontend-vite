@@ -46,7 +46,7 @@ import {
   MessageSquareText,
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
+import { faWhatsapp, faWindows } from "@fortawesome/free-brands-svg-icons";
 import { showToast } from "../../utils/toast";
 import apiClient from "../../services/api";
 import AddNewStageForm from "./AddNewStageForm";
@@ -100,12 +100,13 @@ const ProjectSkeletonCard = () => (
 
 interface PipelineSharePageProps {
   pipelineName: string;
-  location: string;
-  experience: string;
-  workMode: string;
-  notice: string;
-  workspaceId: number;
+  location?: string;
+  experience?: string;
+  workMode?: string;
+  notice?: string;
+  workspaceId?: number;
   onBack?: () => void;
+  onHomepage?: () => void; // New prop for navigating back to homepage
 }
 
 const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
@@ -116,6 +117,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   notice,
   workspaceId,
   onBack,
+  onHomepage,
 }) => {
   const [assessmentAppId, setAssessmentAppId] = useState<string | null>(null);
   const { pipelineId } = useParams<{ pipelineId: string }>();
@@ -235,6 +237,11 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
         setSelectionStage(stageName);
       }
     }
+  };
+
+  const goToHomepage = () => {
+    onHomepage?.();
+    window.location.href = "/";
   };
 
   // UPDATED: Add archive handler
@@ -3061,7 +3068,10 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     <>
       <div className="zoom-80-container bg-[#FFFFFF]">
         <div className="mb-4 bg-white shadow-sm border-b border-gray-200 flex items-center justify-between max-w-full mx-auto px-7 py-2">
-          <div className="flex items-center">
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={goToHomepage}
+          >
             <svg
               width="124"
               height="61"
@@ -3170,7 +3180,10 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
             </svg>
           </div>
           <div>
-            <button className="bg-blue-600 text-white px-4 py-2 font-semibold text-sm hover:bg-blue-700 rounded-lg">
+            <button
+              className="bg-blue-600 text-white px-4 py-2 font-semibold text-sm hover:bg-blue-700 rounded-lg"
+              onClick={goToHomepage}
+            >
               Explore Nxthyre
             </button>
           </div>
