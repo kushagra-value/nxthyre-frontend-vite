@@ -106,6 +106,7 @@ interface PipelineSharePageProps {
   notice?: string;
   workspaceId?: number;
   onBack?: () => void;
+  onHomepage?: () => void; // New prop for navigating back to homepage
 }
 
 const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
@@ -116,6 +117,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
   notice,
   workspaceId,
   onBack,
+  onHomepage,
 }) => {
   const [assessmentAppId, setAssessmentAppId] = useState<string | null>(null);
   const { pipelineId } = useParams<{ pipelineId: string }>();
@@ -2993,7 +2995,10 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     <>
       <div className="zoom-80-container bg-[#FFFFFF]">
         <div className="mb-4 bg-white shadow-sm border-b border-gray-200 flex items-center justify-between max-w-full mx-auto px-7 py-2">
-          <div className="flex items-center">
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={onHomepage}
+          >
             <svg
               width="124"
               height="61"
@@ -3102,7 +3107,10 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
             </svg>
           </div>
           <div>
-            <button className="bg-blue-600 text-white px-4 py-2 font-semibold text-sm hover:bg-blue-700 rounded-lg">
+            <button
+              className="bg-blue-600 text-white px-4 py-2 font-semibold text-sm hover:bg-blue-700 rounded-lg"
+              onClick={onHomepage}
+            >
               Explore Nxthyre
             </button>
           </div>

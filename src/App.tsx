@@ -1485,6 +1485,7 @@ function MainApp() {
               notice={job?.joiningTimeline || "Immidiate(max 15 days)"}
               workspaceId={workspaceId || 0}
               onBack={handleBackFromPipelineShare}
+              onHomepage={handleBackToHomepage}
             />
           }
         />
@@ -1544,6 +1545,7 @@ function MainApp() {
                   <PipelineSharePage
                     pipelineName={job?.name || "Pipeline Name"}
                     onBack={handleBackFromPipelineShare}
+                    onHomepage={handleBackToHomepage}
                   />
                 ) : showShareableProfile ? (
                   <ShareableProfile
