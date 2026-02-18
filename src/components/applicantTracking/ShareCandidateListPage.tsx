@@ -488,6 +488,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                                 <input
                                   type="datetime-local"
                                   value={newMovedAt.slice(0, 16)}
+                                  className="cursor-pointer text-[16px]"
                                   onChange={(e) =>
                                     setNewMovedAt(`${e.target.value}:00Z`)
                                   }
