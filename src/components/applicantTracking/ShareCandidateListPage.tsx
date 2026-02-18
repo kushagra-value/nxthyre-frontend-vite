@@ -256,7 +256,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
         <div className="text-center text-red-600">
           <p className="text-xl font-medium">{error}</p>
           <p className="text-sm mt-2">
-            URL should be: /public/workspaces/YOUR_ID/applications
+            URL should be: /public/workspaces/Workspace_ID/applications
           </p>
         </div>
       </div>
