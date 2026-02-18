@@ -468,13 +468,13 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                       )
                       .slice(0, 3)
                       .map((activity: any, idx: number) => {
-                        const isEditing = editingActivity === activity.id;
+                        const isEditing = editingActivity === activity.data.id;
                         const movedAt = new Date(
                           activity.data.moved_at,
                         ).toLocaleDateString("en-GB");
                         return (
                           <div
-                            key={activity.id || idx}
+                            key={activity.data.id || idx}
                             className="text-[11px] text-gray-500 text-right leading-tight"
                           >
                             {isEditing ? (
@@ -521,7 +521,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                                       "Edit clicked for activity",
                                       activity,
                                     );
-                                    setEditingActivity(activity.id);
+                                    setEditingActivity(activity.data.id);
                                     setCurrentAppId(app.id);
                                     setNewMovedAt(activity.data.moved_at);
                                   }}
