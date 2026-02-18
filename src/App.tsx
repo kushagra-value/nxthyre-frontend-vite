@@ -1552,7 +1552,6 @@ function MainApp() {
                       onSendInvite={handleSendInvite}
                       deductCredits={deductCredits}
                       initialJobId={activeCategoryId}
-                      onHomePage={handleBackToCategories}
                     />
                   </>
                 ) : categories.length === 0 ? (

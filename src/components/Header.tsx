@@ -30,7 +30,6 @@ interface HeaderProps {
   candidates?: CandidateListItem[];
   onSelectCandidate?: (candidate: CandidateListItem) => void;
   jobId?: number; // Changed: Added jobId prop
-  onHomePage?: () => void; // Optional prop for home button
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -46,7 +45,6 @@ const Header: React.FC<HeaderProps> = ({
   candidates,
   onSelectCandidate,
   jobId, // Changed: Destructured jobId
-  onHomePage,
 }) => {
   const { isAuthenticated, user, signOut } = useAuthContext();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -118,7 +116,10 @@ const Header: React.FC<HeaderProps> = ({
         <div className="max-w-full mx-auto px-7 py-1.5">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <div className="flex items-center cursor-pointer" onClick={onBack}>
+            <div
+              className="flex items-center cursor-pointer"
+              onClick={() => (window.location.href = "/")}
+            >
               <svg
                 width="124"
                 height="61"
