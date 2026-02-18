@@ -18,18 +18,19 @@ import { CandidateListItem } from "../services/candidateService";
 import { Invitation } from "../services/organizationService";
 
 interface HeaderProps {
-  onCreateRole: () => void;
+  onCreateRole?: () => void;
   onOpenLogoutModal: () => void;
   credits: number;
   onBack?: () => void; // Optional prop for back button
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
+  searchQuery?: string;
+  setSearchQuery?: (query: string) => void;
   showCreateRoleButton?: boolean;
   showSearchBar?: boolean;
   showLinkedinSearchButton?: boolean;
-  candidates: CandidateListItem[];
-  onSelectCandidate: (candidate: CandidateListItem) => void;
+  candidates?: CandidateListItem[];
+  onSelectCandidate?: (candidate: CandidateListItem) => void;
   jobId?: number; // Changed: Added jobId prop
+  onHomePage?: () => void; // Optional prop for home button
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -45,6 +46,7 @@ const Header: React.FC<HeaderProps> = ({
   candidates,
   onSelectCandidate,
   jobId, // Changed: Destructured jobId
+  onHomePage,
 }) => {
   const { isAuthenticated, user, signOut } = useAuthContext();
   const [showUserMenu, setShowUserMenu] = useState(false);

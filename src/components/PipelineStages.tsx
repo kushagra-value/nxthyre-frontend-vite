@@ -249,6 +249,7 @@ interface PipelineStagesProps {
   onSendInvite: () => void;
   deductCredits: () => Promise<void>;
   initialJobId?: number | null;
+  onHomePage?: () => void; // Optional prop for home button
 }
 
 const PipelineStages: React.FC<PipelineStagesProps> = ({
@@ -257,6 +258,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   onSendInvite,
   deductCredits,
   initialJobId,
+  onHomePage,
 }) => {
   const { user } = useAuthContext();
   const [selectedStage, setSelectedStage] = useState("Uncontacted");
@@ -2380,6 +2382,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           showCreateRoleButton={false}
           showLinkedinSearchButton={false}
           showSearchBar={false}
+          onHomePage={onHomePage}
         />
       </div>
 

@@ -100,11 +100,11 @@ const ProjectSkeletonCard = () => (
 
 interface PipelineSharePageProps {
   pipelineName: string;
-  location: string;
-  experience: string;
-  workMode: string;
-  notice: string;
-  workspaceId: number;
+  location?: string;
+  experience?: string;
+  workMode?: string;
+  notice?: string;
+  workspaceId?: number;
   onBack?: () => void;
 }
 
