@@ -39,7 +39,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
   const [newMovedAt, setNewMovedAt] = useState<string>("");
 
   const pageSize = 8;
-  const largePageSize = 1000; // Adjust based on expected max candidates; assumes API supports large fetches
+  const largePageSize = 10; // Adjust based on expected max candidates; assumes API supports large fetches
 
   // Fetch all applications once (no pagination or filters)
   useEffect(() => {
