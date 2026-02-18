@@ -752,6 +752,13 @@ function MainApp() {
     setSelectedCandidate(null);
   };
 
+  const handleBackToHomepage = () => {
+    setActiveCategoryId(null);
+    setHasSelectedJob(false);
+    setSelectedCandidate(null);
+    setShowPipelineStages(false);
+  };
+
   const handleJobCreatedOrUpdated = () => {
     fetchCategories();
   };
@@ -1552,6 +1559,7 @@ function MainApp() {
                       onSendInvite={handleSendInvite}
                       deductCredits={deductCredits}
                       initialJobId={activeCategoryId}
+                      onHomepage={handleBackToHomepage}
                     />
                   </>
                 ) : categories.length === 0 ? (
@@ -1561,7 +1569,7 @@ function MainApp() {
                         onCreateRole={handleCreateJobRole}
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
-                        onBack={handleBackToCategories}
+                        onBack={handleBackToHomepage}
                         searchQuery={""}
                         setSearchQuery={() => {}}
                         showCreateRoleButton={true}
@@ -1579,7 +1587,7 @@ function MainApp() {
                         onCreateRole={handleCreateJobRole}
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
-                        onBack={handleBackToCategories}
+                        onBack={handleBackToHomepage}
                         searchQuery={""}
                         setSearchQuery={() => {}}
                         showCreateRoleButton={true}
@@ -2312,7 +2320,7 @@ function MainApp() {
                           onCreateRole={handleCreateJobRole}
                           onOpenLogoutModal={handleOpenLogoutModal}
                           credits={credits}
-                          onBack={handleBackToCategories}
+                          onBack={handleBackToHomepage}
                           searchQuery={searchQuery}
                           setSearchQuery={setSearchQuery}
                           showLinkedinSearchButton={true}
