@@ -116,7 +116,7 @@ const Header: React.FC<HeaderProps> = ({
         <div className="max-w-full mx-auto px-7 py-1.5">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <div className="flex items-center" onClick={handleGoToDashboard}>
+            <div className="flex items-center cursor-pointer" onClick={onBack}>
               <svg
                 width="124"
                 height="61"

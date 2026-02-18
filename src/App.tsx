@@ -2312,6 +2312,7 @@ function MainApp() {
                           candidates={candidates}
                           onSelectCandidate={setSelectedCandidate}
                           jobId={activeCategoryId ?? undefined} // Changed: Pass jobId prop
+                          onBack={handleBackToCategories}
                         />
                       </div>
                       <div className="max-w-full mx-auto px-3 py-2 lg:px-6 lg:py-3 ">
