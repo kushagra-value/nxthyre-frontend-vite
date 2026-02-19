@@ -2717,7 +2717,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
               <div className="group relative max-w-[160px] overflow-hidden">
                 <div className={`
                       whitespace-nowrap text-sm text-gray-600
-                      ${candidate.location.length > 16 ? 'animate-[slide_5s_linear_infinite]' : ''}
+                      ${candidate.location.length > 16 ? 'animate-[slide_10s_linear_infinite]' : ''}
                     `}>
                   {candidate.location || "—"}
                   {candidate.location.length > 16 && <span className="ml-6">{candidate.location}</span>}
