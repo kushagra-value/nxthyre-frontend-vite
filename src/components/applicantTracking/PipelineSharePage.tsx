@@ -2723,7 +2723,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                       </defs>
                     </svg>
                   );
-                } else if (src === "EXTERNAL") {
+                } else if (src === "EXTERNAL" || src === "External") {
                   return (
                     <svg
                       width="13"
