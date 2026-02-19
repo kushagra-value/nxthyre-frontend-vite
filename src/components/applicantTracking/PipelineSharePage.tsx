@@ -2714,21 +2714,13 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                 <rect y="8" width="3" height="7" rx="1.5" fill="#1CB977" />
               </svg>
 
-              <div className="group">
+              <div className="group relative max-w-[160px] overflow-hidden">
                 <div className={`
-                    relative max-w-[180px] overflow-hidden
-                    before:content-[''] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-8 
-                    before:bg-gradient-to-r before:from-white before:to-transparent before:z-10
-                    after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-8 
-                    after:bg-gradient-to-l after:from-white after:to-transparent after:z-10
-                  `}>
-                  <div className={`
                       whitespace-nowrap text-sm text-gray-600
-                      transition-transform duration-500
-                      group-hover:translate-x-[calc(-100%+180px)] 
+                      ${candidate.location.length > 16 ? 'group-hover:animate-[slide_10s_linear_infinite]' : ''}
                     `}>
-                    {candidate.location || "—"}
-                  </div>
+                  {candidate.location || "—"}
+                  {candidate.location.length > 16 && <span className="ml-6">{candidate.location}</span>}
                 </div>
               </div>
             </div>
