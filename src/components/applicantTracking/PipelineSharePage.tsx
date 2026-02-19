@@ -1852,7 +1852,9 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                 profile_picture_url: app.candidate.profile_picture_url || null,
                 notes: "",
                 job_score: app.job_score,
-                expected_salary: app.candidate.expected_ctc_lpa || "--",
+                expected_salary:
+                  app.candidate.expected_ctc ||
+                  "--",
                 time_added: app.time_added || "-- days ago",
                 lastUpdated: new Date(app.last_active_at || Date.now()),
                 socials: {
