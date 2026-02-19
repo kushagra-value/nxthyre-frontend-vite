@@ -1826,7 +1826,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
             candidates: rawCandidates.map((app: any) => {
               const headline = app.candidate.headline || "";
               const [role = "", company = ""] = headline.split(" at ");
-              const city = app.candidate.location?.split(",")[0] || "";
+              const city = app.candidate.location || "";
 
               return {
                 id: app.id,
@@ -2714,7 +2714,23 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                 <rect y="8" width="3" height="7" rx="1.5" fill="#1CB977" />
               </svg>
 
-              <span className="text-sm">{candidate.location}</span>
+              <div className="group">
+                <div className={`
+                    relative max-w-[180px] overflow-hidden
+                    before:content-[''] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-8 
+                    before:bg-gradient-to-r before:from-white before:to-transparent before:z-10
+                    after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-8 
+                    after:bg-gradient-to-l after:from-white after:to-transparent after:z-10
+                  `}>
+                  <div className={`
+                      whitespace-nowrap text-sm text-gray-600
+                      transition-transform duration-500
+                      group-hover:translate-x-[calc(-100%+180px)] 
+                    `}>
+                    {candidate.location || "—"}
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="text-2xl font-semibold text-green-600">
               {candidate?.job_score?.candidate_match_score?.score
