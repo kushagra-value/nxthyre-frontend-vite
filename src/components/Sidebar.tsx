@@ -185,7 +185,7 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
         style={{
           height: 86,
           padding: isCollapsed ? '24px 26px' : '24px 30px',
-          justifyContent: isCollapsed ? 'center' : 'flex-start',
+          justifyContent: isCollapsed ? 'center' : 'space-between',
         }}
       >
         {isCollapsed ? <LogoCollapsed /> : <LogoExpanded />}
@@ -193,23 +193,28 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
         {/* ── Collapse / Expand Toggle ── */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute cursor-pointer hover:bg-neutral-100 rounded-md transition-colors duration-150 flex items-center justify-center"
+          className="cursor-pointer hover:bg-neutral-100 rounded-lg flex items-center justify-center"
           style={{
-            width: 18,
-            height: 18,
-            bottom: 8,
-            right: isCollapsed ? 8 : 10,
+            width: isCollapsed ? 18 : 24,
+            height: isCollapsed ? 18 : 24,
+            padding: isCollapsed ? 2 : 0,
+            transition: 'all 0.3s ease',
+            ...(isCollapsed
+              ? { position: 'absolute' as const, bottom: 6, right: 6 }
+              : { position: 'relative' as const }),
           }}
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           <svg
-            width="14"
-            height="14"
+            width={isCollapsed ? 14 : 24}
+            height={isCollapsed ? 14 : 24}
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="transition-transform duration-300"
-            style={{ transform: isCollapsed ? 'rotate(180deg)' : 'none' }}
+            style={{
+              transition: 'transform 0.3s ease, width 0.3s ease, height 0.3s ease',
+              transform: isCollapsed ? 'rotate(180deg)' : 'none',
+            }}
           >
             <path
               d="M21.9707 15V9C21.9707 4 19.9707 2 14.9707 2H8.9707C3.9707 2 1.9707 4 1.9707 9V15C1.9707 20 3.9707 22 8.9707 22H14.9707C19.9707 22 21.9707 20 21.9707 15Z"
