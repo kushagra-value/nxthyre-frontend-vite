@@ -281,7 +281,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                 }
                 className="mt-0.5 w-4 h-4 text-blue-600 font-['Gellix',_sans-serif] bg-gray-50 border-gray-300 rounded focus:ring-blue-500 flex-shrink-0"
               />
-              <label htmlFor="terms" className="text-[18px] font-['Gellix',_sans-serif] sm:text-sm text-[#AEAEB2] cursor-pointer leading-tight" >
+              <label htmlFor="terms" className="text-[18px] font-['Gellix',_sans-serif] sm:text-[18px] text-[#AEAEB2] cursor-pointer leading-tight" >
                 I agree to the Terms of Service and Privacy Policy
               </label>
             </div>
