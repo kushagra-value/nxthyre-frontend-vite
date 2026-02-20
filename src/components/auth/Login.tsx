@@ -296,7 +296,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
               <button
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="w-full bg-[#0F47F2] text-white py-3 px-4 rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2.5 sm:py-2 h-10 sm:h-11 bg-[#0F47F2] rounded-[7px] text-[#F5F9FB] text-sm sm:text-base font-medium font-['Gellix',_sans-serif] flex items-center justify-center whitespace-nowrap"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">
