@@ -179,7 +179,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
 
   return (
     <div className="relative w-full h-[920px] bg-white flex justify-between">
-      <div className="w-full lg:w-[45%] flex flex-col px-6 sm:px-8 lg:px-16 py-6 sm:py-8 lg:py-12 justify-between">
+      <div className="w-full lg:w-[45%] flex flex-col mx-auto px-6 sm:px-8 lg:px-16 py-6 sm:py-8 lg:py-12 justify-between">
         <div>
           <div className="mb-8 lg:mb-12">
             <NxtHyreLogo />
@@ -449,7 +449,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
       </div>
 
       <div
-        className="hidden lg:flex w-[45%] bg-cover bg-center items-center justify-center"
+        className="hidden lg:flex w-[40%] bg-cover bg-center items-center justify-center"
         style={{
           backgroundImage: 'url(/assets/nxtHyreGradient.png)',
           borderRadius: '250px 0px'
@@ -486,11 +486,11 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
           </svg>
 
           <div className="flex gap-8 text-center">
-            <div className="text-2xl font-['Gellix',_sans-serif] text-[#0F47F2]" >
-              Built for <span className="font-medium">Agencies</span>
+            <div className="text-2xl font-['Gellix',_sans-serif] text-[#333333] " >
+              Built for <span className="font-medium text-[#0F47F2]">Agencies</span>
             </div>
-            <div className="text-2xl font-['Gellix',_sans-serif] text-[#0F47F2]" >
-              Loved by <span className="font-medium">Recruiters</span>
+            <div className="text-2xl font-['Gellix',_sans-serif] text-[#333333] " >
+              Loved by <span className="font-medium text-[#0F47F2]">Recruiters</span>
             </div>
           </div>
         </div>
