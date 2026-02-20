@@ -66,16 +66,16 @@ import { AnalysisResult } from "./services/candidateService";
 import ShareCandidateListPage from "./components/applicantTracking/ShareCandidateListPage";
 interface Category {
   id: number;
-  name: string; // Job title
+  name: string;
   location: string;
-  companyName: string; // e.g., "Debitte"
-  experience: string; // e.g., "8+ years"
-  workApproach: string; // "Hybrid", "Remote", "Onsite"
-  joiningTimeline: string; // "Immediate", "15 days", etc.
-  inboundCount: number; // 556 in image
-  shortlistedCount: number; // NEW
-  totalApplied: number; // 61 in image
-  totalReplied: number; // 21 in image
+  companyName: string;
+  experience: string;
+  workApproach: string;
+  joiningTimeline: string;
+  inboundCount: number;
+  shortlistedCount: number;
+  totalApplied: number;
+  totalReplied: number;
   status: "DRAFT" | "PUBLISHED";
   visibility: "PRIVATE" | "PUBLIC";
   invites_sent: number;
@@ -131,28 +131,19 @@ interface Workspace {
 const ProjectSkeletonCard = () => (
   <div className="bg-white rounded-[10px] shadow-lg overflow-hidden animate-pulse hover:shadow-xl transition-shadow duration-300">
     <div className="p-12">
-      {/* Top row: Status badge + hover actions placeholder */}
       <div className="flex items-center justify-between mb-8">
         <div className="h-7 bg-gray-200 rounded-full w-28"></div>
         <div className="flex items-center gap-2">
           <div className="w-24 h-8 bg-gray-200 rounded-full"></div>
         </div>
       </div>
-
-      {/* Company name */}
       <div className="h-5 bg-gray-200 rounded w-3/5 mb-6"></div>
-
-      {/* Job title */}
       <div className="h-8 bg-gray-200 rounded-lg w-4/5 mb-3"></div>
-
-      {/* Chips row: Experience, Work Approach, Joining Timeline */}
       <div className="flex flex-wrap gap-2 mb-8">
         <div className="h-8 bg-gray-200 rounded-full px-4 w-24"></div>
         <div className="h-8 bg-gray-200 rounded-full px-4 w-24"></div>
         <div className="h-8 bg-gray-200 rounded-full px-4 w-24"></div>
       </div>
-
-      {/* Bottom row: Featured badge + Posted ago + Interviews */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="h-8 bg-gray-200 rounded-full w-8"></div>
@@ -240,7 +231,6 @@ function MainApp() {
   const [showEditJobRole, setShowEditJobRole] = useState(false);
   const [editingJobId, setEditingJobId] = useState<number | null>(null);
   const [showEditTemplate, setShowEditTemplate] = useState(false);
-  // const [showPipelineStages, setShowPipelineStages] = useState(false);
   const [showPipelineStages, setShowPipelineStages] = useState(() => {
     const stored = sessionStorage.getItem("showPipelineStages");
     return stored ? JSON.parse(stored) : false;
@@ -267,7 +257,6 @@ function MainApp() {
   const [projectSearchQuery, setProjectSearchQuery] = useState("");
   const debouncedProjectSearch = useDebounce(projectSearchQuery, 500);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  // const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(
     () => {
       const stored = sessionStorage.getItem("activeCategoryId");
@@ -332,7 +321,6 @@ function MainApp() {
     number | null
   >(null);
   const [defaultBoolQuery, setDefaultBoolQuery] = useState<string>("");
-  // Initialize hasSelectedJob from sessionStorage (or false if not present)
   const [hasSelectedJob, setHasSelectedJob] = useState(() => {
     const stored = sessionStorage.getItem("hasSelectedJob");
     return stored ? JSON.parse(stored) : false;
@@ -514,17 +502,11 @@ function MainApp() {
             ? "1+ year"
             : `${minExp}+ years`;
         const location = job.location[0];
-
-        // Map work approach
         let workApproach = "Hybrid";
         if (job.work_approach === "ONSITE") workApproach = "Onsite";
         else if (job.work_approach === "REMOTE") workApproach = "Remote";
-
-        // Joining timeline - you can customize this logic
-        // For now, assuming "Immediate" if not specified otherwise
-        const joiningTimeline = "Immediate"; // You can enhance this later
+        const joiningTimeline = "Immediate";
         const postedAgo = job.created_at ? getTimeAgo(job.created_at) : "today";
-        // Company name
         const companyName = job.workspace_details?.name || "Confidential";
 
         return {
@@ -551,9 +533,7 @@ function MainApp() {
       setCategories(mappedCategories);
       setCurrentRequisitionPage(1);
 
-      // ── RESTORE + VALIDATE HERE ──
       if (isAuthenticated) {
-        // Restore from storage
         const storedHas = sessionStorage.getItem("hasSelectedJob");
         let restoredHas = storedHas ? JSON.parse(storedHas) : false;
 
@@ -563,27 +543,23 @@ function MainApp() {
         const storedStages = sessionStorage.getItem("showPipelineStages");
         let restoredStages = storedStages ? JSON.parse(storedStages) : false;
 
-        // Validate restored job ID exists
         if (restoredId && !mappedCategories.some((c) => c.id === restoredId)) {
           restoredId = mappedCategories[0]?.id || null;
           restoredHas = !!restoredId;
           restoredStages = false;
         }
 
-        // If no categories at all → force reset
         if (mappedCategories.length === 0) {
           restoredId = null;
           restoredHas = false;
           restoredStages = false;
         }
 
-        // Apply validated values
         setActiveCategoryId(restoredId);
         console.log("Restored hasSelectedJob:", restoredHas);
         setHasSelectedJob(restoredHas);
         setShowPipelineStages(restoredStages);
 
-        // Re-fetch job details if we have a valid job
         if (restoredId) {
           fetchJobDetailsAndSetFilters(restoredId);
         }
@@ -1181,7 +1157,6 @@ function MainApp() {
     }
   };
   const handleApplyFilters = (newFilters: any) => {
-    // Validate numeric inputs if provided
     const isValidNumber = (value: string) => /^\d+$/.test(value);
     if (
       (newFilters.minTotalExp && !isValidNumber(newFilters.minTotalExp)) ||
@@ -1199,7 +1174,6 @@ function MainApp() {
       setSelectedCandidate(null);
       return;
     }
-    // Validate range logic if provided
     if (
       newFilters.minTotalExp &&
       newFilters.maxTotalExp &&
@@ -1231,7 +1205,6 @@ function MainApp() {
       }));
       return;
     }
-    // Update filters and fetch candidates
     setFilters({ ...newFilters });
     fetchCandidates(1, newFilters);
   };
@@ -1245,7 +1218,7 @@ function MainApp() {
       userStatus,
       isAuthenticated,
       signOut,
-      loading: authLoading, // UPDATED: Add authLoading
+      loading: authLoading,
     } = useAuth();
     const { setSelectedWorkspaceId: contextSetSelectedWorkspaceId } =
       useAuthContext();
@@ -1257,11 +1230,10 @@ function MainApp() {
         navigate("/");
         return;
       }
-      // UPDATED: Trigger claim only after auth fully resolves and user is authenticated
       if (!authLoading && isAuthenticated && !claiming && !successData) {
         handleClaimInvite();
       }
-    }, [authLoading, isAuthenticated, inviteToken]); // UPDATED: Add authLoading to deps
+    }, [authLoading, isAuthenticated, inviteToken]);
     const handleClaimInvite = async () => {
       if (!inviteToken || claiming) return;
       setClaiming(true);
@@ -1300,7 +1272,6 @@ function MainApp() {
         setClaiming(false);
       }
     };
-    // UPDATED: Show loading if authLoading (prevents flash of fallback)
     if (authLoading) {
       return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -1352,7 +1323,6 @@ function MainApp() {
         </div>
       );
     }
-    // UPDATED: Fallback only after authLoading resolves and !isAuthenticated
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 text-center">
@@ -1380,7 +1350,6 @@ function MainApp() {
     return (
       <div className="zoom-80-container">
         <div className="min-h-screen bg-gray-50">
-          {/* Header skeleton */}
           <div className="sticky top-0 bg-white shadow-sm z-40 animate-pulse">
             <div className="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
               <div className="h-10 bg-gray-200 rounded-lg w-64"></div>
@@ -1391,15 +1360,11 @@ function MainApp() {
               </div>
             </div>
           </div>
-
-          {/* Welcome + search bar skeleton */}
           <div className="container mx-auto py-6">
             <div className="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto mb-4">
               <div className="h-10 bg-gray-200 rounded-lg w-48"></div>
               <div className="h-10 bg-gray-200 rounded-lg w-96"></div>
             </div>
-
-            {/* Project grid skeleton */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
               {[...Array(8)].map((_, i) => (
                 <ProjectSkeletonCard key={i} />
@@ -1411,13 +1376,10 @@ function MainApp() {
     );
   }
 
-  // Guard component for super admin (adjusted for your role-based auth)
   const SuperAdminRoute: React.FC<{ children: React.ReactNode }> = ({
     children,
   }) => {
-    const { user, loading, isAuthenticated } = useAuthContext(); // Uses your context
-
-    // Wait for BOTH loading AND user to be ready (prevents race/flash)
+    const { user, loading, isAuthenticated } = useAuthContext();
     if (loading || !user) {
       return (
         <div className="flex justify-center items-center h-screen">
@@ -1429,27 +1391,24 @@ function MainApp() {
       );
     }
 
-    // Adjusted check: Use your user.role instead of customClaims.is_staff
-    // Change 'admin' to your actual super admin role (e.g., 'super_admin')
     if (!isAuthenticated || !user.isSuperAdmin) {
-      window.location.href = "/"; // Redirect to home/login
+      window.location.href = "/";
     }
 
     return <>{children}</>;
   };
 
-  // Logout handler (ties into your context)
+
   const handleLogout = async () => {
     const { signOut } = useAuthContext();
-    await signOut(); // Uses your existing signOut
-    window.location.href = "/"; // Or use <Navigate> if in a component
+    await signOut();
+    window.location.href = "/";
   };
 
   const job = categories.find((cat) => cat.id === Number(currentPipelineId));
   return (
     <>
       <Routes>
-        {/* New super admin route (guarded) */}
         <Route
           path="/super-admin"
           element={
@@ -1803,511 +1762,7 @@ function MainApp() {
                         onClose={() => setShowCreateJobRole(false)}
                         onJobCreated={handleJobCreatedOrUpdated}
                       />
-                      <EditJobRoleModal
-                        isOpen={showEditJobRole}
-                        onClose={() => {
-                          setShowEditJobRole(false);
-                          setEditingJobId(null);
-                        }}
-                        handlePipelinesClick={handlePipelinesClick}
-                        workspaces={workspaces}
-                        workspaceId={selectedWorkspaceId || 1}
-                        jobId={editingJobId || 0}
-                        onJobUpdated={handleJobCreatedOrUpdated}
-                      />
-                      <EditTemplateModal
-                        jobId={String(activeCategoryId)}
-                        isOpen={showEditTemplate}
-                        onClose={() => setShowEditTemplate(false)}
-                        templateName={editingTemplate}
-                      />
 
-                      {showLogoutModal && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
-                          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-                            <div className="text-center">
-                              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <LogOut className="w-6 h-6 text-red-600" />
-                              </div>
-                              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                Confirm Logout
-                              </h3>
-                              <p className="text-gray-600 mb-6">
-                                Are you sure you want to sign out? You'll need
-                                to log in again to access your account.
-                              </p>
-                              <div className="flex space-x-3">
-                                <button
-                                  onClick={handleCloseLogoutModal}
-                                  className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  onClick={handleLogoutConfirm}
-                                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                                >
-                                  Sign Out
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      {showPublishModal && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
-                          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-                            <div className="text-center">
-                              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Globe className="w-6 h-6 text-green-600" />
-                              </div>
-                              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                Confirm Publish Job
-                              </h3>
-                              <p className="text-gray-600 mb-6">
-                                Are you sure you want to publish{" "}
-                                {
-                                  categories.find(
-                                    (cat) => cat.id === showPublishModal,
-                                  )?.name
-                                }
-                                ? This action will publish job on LinkedIn,
-                                Google Jobs,Times Ascent, Cutshort and others.
-                              </p>
-                              <span className="text-gray-400 text-sm mb-6">
-                                (Note: Once published, the job will be visible
-                                on both platforms within 24–48 hours.)
-                              </span>
-                              <div className="flex space-x-3">
-                                <button
-                                  onClick={() => setShowPublishModal(null)}
-                                  className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handlePublishJobRole(showPublishModal)
-                                  }
-                                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                                >
-                                  Publish
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      {showUnpublishModal && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
-                          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-                            <div className="text-center">
-                              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Pause className="w-6 h-6 text-red-600" />
-                              </div>
-                              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                Confirm Unpublish Job
-                              </h3>
-                              <p className="text-gray-600 mb-6">
-                                Are you sure you want to Unpublish
-                                {
-                                  categories.find(
-                                    (cat) => cat.id === showUnpublishModal,
-                                  )?.name
-                                }
-                                ? This action cannot be undone.
-                              </p>
-                              <span className="text-gray-400 text-sm mb-6">
-                                (Note: this action will unpublish job on
-                                published over LinkedIn, Google Jobs,Times
-                                Ascent, Cutshort and others within 24–48 hours.)
-                              </span>
-                              <div className="flex space-x-3">
-                                <button
-                                  onClick={() => setShowUnpublishModal(null)}
-                                  className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleUnpublishJobRole(showUnpublishModal)
-                                  }
-                                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                                >
-                                  Unpublish
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      {showDeleteModal && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
-                          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-                            <div className="text-center">
-                              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Trash2 className="w-6 h-6 text-red-600" />
-                              </div>
-                              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                Confirm Delete Job
-                              </h3>
-                              <p className="text-gray-600 mb-6">
-                                Are you sure you want to delete{" "}
-                                {
-                                  categories.find(
-                                    (cat) => cat.id === showDeleteModal,
-                                  )?.name
-                                }
-                                ? This action cannot be undone.
-                              </p>
-                              <div className="flex space-x-3">
-                                <button
-                                  onClick={() => setShowDeleteModal(null)}
-                                  className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleDeleteJobRole(showDeleteModal)
-                                  }
-                                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      {showRequisitionInfoModal && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-                          <div className="bg-white rounded-3xl shadow-xl max-w-2xl w-full max-h-[100vh] overflow-y-auto p-6">
-                            {/* Header */}
-                            <div className="flex items-center justify-between mb-4">
-                              <div className="flex items-center gap-2">
-                                <button
-                                  className="w-8 h-8 text-gray-800"
-                                  onClick={handleCloseRequisitionModal}
-                                >
-                                  <ArrowLeft className="w-8 h-8" />
-                                </button>
-                                <h1 className="text-lg font-semibold text-gray-800">
-                                  Requisition Info
-                                </h1>
-                              </div>
-                            </div>
-                            {/* Tabs */}
-                            <div className="flex border-b border-gray-200 mb-6">
-                              <button
-                                className={`pb-2 px-4 text-sm font-medium transition-colors ${requisitionModalTab === "info"
-                                  ? "text-blue-600 border-b-2 border-blue-600"
-                                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                                  }`}
-                                onClick={() => setRequisitionModalTab("info")}
-                              >
-                                Requisition Info
-                              </button>
-                              <button
-                                className={`pb-2 px-4 text-sm font-medium transition-colors ${requisitionModalTab === "company"
-                                  ? "text-blue-600 border-b-2 border-blue-600"
-                                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                                  }`}
-                                onClick={async () => {
-                                  setRequisitionModalTab("company");
-                                  if (
-                                    jobDataForModal?.workspace_details?.id &&
-                                    !companyResearchData
-                                  ) {
-                                    setLoadingCompanyResearch(true);
-                                    try {
-                                      const data =
-                                        await organizationService.getCompanyResearchData(
-                                          jobDataForModal.workspace_details.id,
-                                        );
-                                      setCompanyResearchData(data);
-                                    } catch (error) {
-                                      console.error(
-                                        "Failed to fetch company research data",
-                                        error,
-                                      );
-                                    } finally {
-                                      setLoadingCompanyResearch(false);
-                                    }
-                                  }
-                                }}
-                              >
-                                About Company
-                              </button>
-                            </div>
-
-                            {loadingCompetencies ? (
-                              <RequisitionSkeleton />
-                            ) : jobDataForModal ? (
-                              <>
-                                {/* REQUISITION INFO TAB CONTENT */}
-                                {requisitionModalTab === "info" &&
-                                  competenciesData && (
-                                    <>
-                                      <h2 className="text-2xl font-semibold text-gray-900 mb-1">
-                                        {jobDataForModal.title}
-                                      </h2>
-                                      <div className="flex space-x-8 mt-2 mb-6">
-                                        <span className="flex items-center text-gray-500">
-                                          <Briefcase className="w-4 h-4 mr-1" />{" "}
-                                          {jobDataForModal.experience_min_years}
-                                          + years
-                                        </span>
-                                        <span className="flex items-center text-gray-500">
-                                          <LocateIcon className="w-4 h-4 mr-1" />{" "}
-                                          {jobDataForModal.work_approach}
-                                        </span>
-                                        <span className="flex items-center text-gray-500">
-                                          <FileSearch className="w-4 h-4 mr-1" />{" "}
-                                          Immediate
-                                        </span>
-                                      </div>
-
-                                      {/* Role Overview */}
-                                      <div className="mb-6">
-                                        <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                                          Role Overview
-                                        </h3>
-                                        <p className="text-gray-600 text-sm">
-                                          {competenciesData.role_overview}
-                                        </p>
-                                      </div>
-
-                                      {/* The Core Expectation */}
-                                      <div className="mb-6">
-                                        <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                                          The Core Expectation
-                                        </h3>
-                                        <ul className="text-gray-600 text-sm list-disc pl-5 space-y-1">
-                                          {competenciesData.the_core_expectation.map(
-                                            (item: string, idx: number) => (
-                                              <li key={idx}>{item}</li>
-                                            ),
-                                          )}
-                                        </ul>
-                                      </div>
-
-                                      {/* Key Responsibilities Explained */}
-                                      <div className="mb-6">
-                                        <h3 className="text-lg font-semibold text-gray-700 mb-3">
-                                          Key Responsibilities Explained
-                                        </h3>
-                                        <div className="space-y-3">
-                                          {/* Functional */}
-                                          {competenciesData.key_responsibilities_explained.functional.map(
-                                            (item: any, idx: number) => (
-                                              <div
-                                                key={idx}
-                                                className="bg-blue-50 rounded-lg p-4"
-                                              >
-                                                <div className="flex items-start space-x-3">
-                                                  <div>
-                                                    <div className="flex items-center space-x-2 mb-1">
-                                                      <h4 className="font-medium text-gray-600">
-                                                        {item.competency}
-                                                      </h4>
-                                                      {item.why_it_matters && (
-                                                        <div className="relative group inline-block ml-2">
-                                                          <svg
-                                                            className="w-4 h-4 text-gray-400 group-hover:text-blue-500 cursor-help transition-colors duration-200"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                          >
-                                                            <path
-                                                              strokeLinecap="round"
-                                                              strokeLinejoin="round"
-                                                              strokeWidth={2}
-                                                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                            />
-                                                          </svg>
-                                                          <div className="absolute z-20 hidden group-hover:block bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-gray-700 shadow-md whitespace-normal w-64 left-full ml-2 top-0">
-                                                            {
-                                                              item.why_it_matters
-                                                            }
-                                                          </div>
-                                                        </div>
-                                                      )}
-                                                    </div>
-                                                    <p className="text-sm text-gray-400">
-                                                      {item.context}
-                                                    </p>
-                                                    {item.priority && (
-                                                      <p className="text-xs text-gray-500 mt-1">
-                                                        Priority:{" "}
-                                                        {item.priority} | Depth:{" "}
-                                                        {item.depth_required}
-                                                      </p>
-                                                    )}
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            ),
-                                          )}
-                                          {/* Leadership (new subsection for API structure) */}
-                                          {competenciesData
-                                            .key_responsibilities_explained
-                                            .leadership &&
-                                            competenciesData
-                                              .key_responsibilities_explained
-                                              .leadership.length > 0 && (
-                                              <div className="mt-6 pt-4 border-t border-gray-200">
-                                                <h4 className="font-semibold text-gray-700 mb-3">
-                                                  Leadership Responsibilities
-                                                </h4>
-                                                {competenciesData.key_responsibilities_explained.leadership.map(
-                                                  (item: any, idx: number) => (
-                                                    <div
-                                                      key={idx}
-                                                      className="bg-green-50 rounded-lg p-4"
-                                                    >
-                                                      <div className="flex items-start space-x-3">
-                                                        <div>
-                                                          <div className="flex items-center space-x-2 mb-1">
-                                                            <h5 className="font-medium text-gray-600">
-                                                              {
-                                                                item.responsibility
-                                                              }
-                                                            </h5>
-                                                            {item.why_it_matters && (
-                                                              <div className="relative group inline-block ml-2">
-                                                                <svg
-                                                                  className="w-4 h-4 text-gray-400 group-hover:text-blue-500 cursor-help transition-colors duration-200"
-                                                                  fill="none"
-                                                                  stroke="currentColor"
-                                                                  viewBox="0 0 24 24"
-                                                                  xmlns="http://www.w3.org/2000/svg"
-                                                                >
-                                                                  <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    strokeWidth={
-                                                                      2
-                                                                    }
-                                                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                                  />
-                                                                </svg>
-                                                                <div className="absolute z-20 hidden group-hover:block bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-gray-700 shadow-md whitespace-normal w-64 left-full ml-2 top-0">
-                                                                  {
-                                                                    item.why_it_matters
-                                                                  }
-                                                                </div>
-                                                              </div>
-                                                            )}
-                                                          </div>
-                                                          <p className="text-sm text-gray-400">
-                                                            {item.context}
-                                                          </p>
-                                                          {item.evidence && (
-                                                            <p className="text-xs text-gray-500 mt-1">
-                                                              Evidence:{" "}
-                                                              {item.evidence}
-                                                            </p>
-                                                          )}
-                                                        </div>
-                                                      </div>
-                                                    </div>
-                                                  ),
-                                                )}
-                                              </div>
-                                            )}
-                                        </div>
-                                      </div>
-
-                                      {/* Required Technical Skills & Purpose */}
-                                      <div className="mb-6">
-                                        <h3 className="text-lg font-semibold text-gray-700 mb-3">
-                                          Required Technical Skills & Purpose
-                                        </h3>
-                                        <div className="space-y-3">
-                                          {competenciesData.required_technical_skills_purpose.map(
-                                            (item: any, idx: number) => (
-                                              <div
-                                                key={idx}
-                                                className="bg-blue-50 rounded-lg p-4"
-                                              >
-                                                <div className="flex items-center space-x-2 mb-1">
-                                                  <h4 className="font-medium text-gray-600">
-                                                    {item.skill}
-                                                  </h4>
-                                                  {item.why_it_matters && (
-                                                    <div className="relative group inline-block ml-2">
-                                                      <svg
-                                                        className="w-4 h-4 text-gray-400 group-hover:text-blue-500 cursor-help transition-colors duration-200"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                      >
-                                                        <path
-                                                          strokeLinecap="round"
-                                                          strokeLinejoin="round"
-                                                          strokeWidth={2}
-                                                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                        />
-                                                      </svg>
-                                                      <div className="absolute z-20 hidden group-hover:block bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-gray-700 shadow-md whitespace-normal w-64 left-full ml-2 top-0">
-                                                        {item.why_it_matters}
-                                                      </div>
-                                                    </div>
-                                                  )}
-                                                </div>
-                                                <p className="text-sm text-gray-400">
-                                                  {item.context}
-                                                </p>
-                                                {item.priority && (
-                                                  <p className="text-xs text-gray-500 mt-1">
-                                                    Priority: {item.priority}
-                                                  </p>
-                                                )}
-                                                {item.assessment_guidance && (
-                                                  <p className="text-xs text-gray-500 mt-1">
-                                                    Assessment:{" "}
-                                                    {item.assessment_guidance}
-                                                  </p>
-                                                )}
-                                              </div>
-                                            ),
-                                          )}
-                                        </div>
-                                      </div>
-                                    </>
-                                  )}
-
-                                {/* ABOUT COMPANY TAB CONTENT */}
-                                {requisitionModalTab === "company" && (
-                                  <>
-                                    {loadingCompanyResearch ? (
-                                      <div className="flex justify-center items-center py-12">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                                      </div>
-                                    ) : companyResearchData ? (
-                                      <CompanyInfoTab
-                                        data={companyResearchData}
-                                      />
-                                    ) : (
-                                      <div className="text-center py-8 text-gray-500">
-                                        No company details available.
-                                      </div>
-                                    )}
-                                  </>
-                                )}
-                              </>
-                            ) : (
-                              <div className="text-center py-8 text-gray-500">
-                                Failed to load data. Please try again.
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </div>
                 ) : (
