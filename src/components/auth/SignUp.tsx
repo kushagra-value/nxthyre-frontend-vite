@@ -178,7 +178,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
   const passwordStrength = getPasswordStrength();
 
   return (
-    <div className="relative w-full h-[900px] bg-white">
+    <div className="relative w-full h-[900px] bg-white flex">
       <div className="w-full lg:w-[49%] flex flex-col px-6 sm:px-8 lg:px-16 py-6 sm:py-8 lg:py-12 justify-between">
         <div>
           <div className="mb-8 lg:mb-12">
