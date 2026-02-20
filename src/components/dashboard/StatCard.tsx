@@ -1,3 +1,4 @@
+import { ArrowUpRight } from 'lucide-react';
 import React from 'react';
 
 interface StatCardProps {
@@ -19,8 +20,7 @@ export default function StatCard({ icon, label, value, trend, dateText, trendTex
         border: '0.5px solid #D1D1D6',
       }}
     >
-      {/* Top: Icon + Trend */}
-      <div className="flex items-center w-full" style={{ gap: '4px' }}>
+      <div className="flex justify-between items-center w-full">
         <div
           className="flex items-center justify-center rounded-lg shrink-0"
           style={{
@@ -45,6 +45,7 @@ export default function StatCard({ icon, label, value, trend, dateText, trendTex
               }}
             >
               {trend}
+              <ArrowUpRight className="w-1 h-1" />
             </span>
             <span
               className="ml-auto whitespace-nowrap"
@@ -63,7 +64,6 @@ export default function StatCard({ icon, label, value, trend, dateText, trendTex
         )}
       </div>
 
-      {/* Bottom: Label + Value */}
       <div className="flex flex-col w-full" style={{ gap: '4px' }}>
         <span
           style={{
