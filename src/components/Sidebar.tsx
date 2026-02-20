@@ -163,9 +163,9 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
 
   const menuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
-    { id: 'jobs', label: 'Companies', icon: CompaniesIcon },
+    { id: 'companies', label: 'Companies', icon: JobsIcon },
+    { id: 'jobs', label: 'Jobs', icon: CompaniesIcon },
     { id: 'candidatePool', label: 'Candidates', icon: CandidatesIcon },
-    { id: 'candidates', label: 'Jobs', icon: JobsIcon },
     { id: 'calendar', label: 'Schedule', icon: ScheduleIcon, badge: 4 },
   ];
 
