@@ -46,9 +46,8 @@ const IdCard: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     strokeWidth={2}
     strokeLinecap="round"
     strokeLinejoin="round"
-    className={`lucide lucide-id-card-icon lucide-id-card ${
-      props.className || ""
-    }`}
+    className={`lucide lucide-id-card-icon lucide-id-card ${props.className || ""
+      }`}
     {...props}
   >
     <path d="M16 10h2" />
@@ -260,14 +259,14 @@ const NotesIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
-import { showToast } from "../utils/toast";
+import { showToast } from "../../utils/toast";
 import {
   candidateService,
   CandidateDetailData,
   CandidateListItem,
   Note,
   AnalysisResult,
-} from "../services/candidateService";
+} from "../../services/candidateService";
 import { CompanyHoverCard } from "./CompanyHoverCard";
 
 interface HighlightedTextProps {
@@ -494,18 +493,18 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   // In ProfileTab or where email/phone shown, update display
   const displayEmail =
     detailedCandidate?.candidate?.premium_data_unlocked &&
-    detailedCandidate?.candidate?.premium_data_availability?.email &&
-    detailedCandidate?.candidate?.premium_data?.email
+      detailedCandidate?.candidate?.premium_data_availability?.email &&
+      detailedCandidate?.candidate?.premium_data?.email
       ? detailedCandidate.candidate.premium_data.email
       : `${(detailedCandidate?.candidate?.full_name || "")
-          .slice(0, 3)
-          .toLowerCase()}***********@gmail.com`;
+        .slice(0, 3)
+        .toLowerCase()}***********@gmail.com`;
 
   // Updated display logic for phone
   const displayPhone =
     detailedCandidate?.candidate?.premium_data_unlocked &&
-    detailedCandidate?.candidate?.premium_data_availability?.phone_number &&
-    detailedCandidate?.candidate?.premium_data?.phone
+      detailedCandidate?.candidate?.premium_data_availability?.phone_number &&
+      detailedCandidate?.candidate?.premium_data?.phone
       ? detailedCandidate.candidate.premium_data.phone
       : `95********89`;
 
@@ -529,13 +528,13 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     name: string;
     icon: React.ComponentType<{ className?: string }>;
   }[] = [
-    { name: "Boolean-Search", icon: BooleanSearchIcon },
-    { name: "Profile", icon: ProfileIcon },
-    { name: "Education", icon: EducationIcon },
-    { name: "Skills", icon: SkillsIcon },
-    { name: "References", icon: ReferencesIcon },
-    { name: "Notes", icon: NotesIcon },
-  ];
+      { name: "Boolean-Search", icon: BooleanSearchIcon },
+      { name: "Profile", icon: ProfileIcon },
+      { name: "Education", icon: EducationIcon },
+      { name: "Skills", icon: SkillsIcon },
+      { name: "References", icon: ReferencesIcon },
+      { name: "Notes", icon: NotesIcon },
+    ];
 
   // Now filter the tabs dynamically
   const visibleTabs = tabs.filter(
@@ -985,7 +984,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         <div className="mb-4">
           <div
             className="flex items-center gap-4 bg-green-100 rounded-md px-2 py-3 mr-2 mb-3"
-            // title={`${booleanData.candidate_match_score.note}`}
+          // title={`${booleanData.candidate_match_score.note}`}
           >
             <span className="text-xl bg-green-600 text-white p-2 rounded-md">
               {booleanData.candidate_match_score.score}
@@ -1157,9 +1156,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </h3>
           <div className="relative">
             <div
-              className={`relative ${
-                !showMore && experiences.length > 1 ? "overflow-hidden" : ""
-              }`}
+              className={`relative ${!showMore && experiences.length > 1 ? "overflow-hidden" : ""
+                }`}
               style={{
                 maskImage:
                   !showMore && experiences.length > 1
@@ -1238,11 +1236,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                         )}
                       </p>
                       <p
-                        className={`text-sm text-[#4B5563] mt-1 ${
-                          !showMore && experiences.length > 1
-                            ? "relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-12 after:bg-gradient-to-t after:from-[#F0F0F0] after:to-transparent"
-                            : ""
-                        }`}
+                        className={`text-sm text-[#4B5563] mt-1 ${!showMore && experiences.length > 1
+                          ? "relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-12 after:bg-gradient-to-t after:from-[#F0F0F0] after:to-transparent"
+                          : ""
+                          }`}
                       >
                         {
                           <HighlightedText
@@ -1546,11 +1543,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 .map((skill, index) => (
                   <span
                     key={index}
-                    className={`p-2 text-blue-500 text-xs rounded-lg ${
-                      keywords.includes(skill)
-                        ? "bg-blue-600 font-medium text-white"
-                        : "bg-white"
-                    }`}
+                    className={`p-2 text-blue-500 text-xs rounded-lg ${keywords.includes(skill)
+                      ? "bg-blue-600 font-medium text-white"
+                      : "bg-white"
+                      }`}
                   >
                     {skill}
                   </span>
@@ -1956,12 +1952,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               type="text"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder={`Type your ${
-                notesView === "my" ? "team" : "community"
-              } comment!`}
-              className={`flex-1 px-4 py-2 rounded-lg text-sm ${
-                newComment ? "border border-red-500" : ""
-              }`}
+              placeholder={`Type your ${notesView === "my" ? "team" : "community"
+                } comment!`}
+              className={`flex-1 px-4 py-2 rounded-lg text-sm ${newComment ? "border border-red-500" : ""
+                }`}
               onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
             />
             <button
@@ -2007,9 +2001,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   return (
     <div
-      className={`bg-white rounded-xl p-3 lg:p-3 ${
-        showConfirm ? "space-y-0" : "space-y-6"
-      } min-h-[81vh] relative`}
+      className={`bg-white rounded-xl p-3 lg:p-3 ${showConfirm ? "space-y-0" : "space-y-6"
+        } min-h-[81vh] relative`}
     >
       <style>{tabStyles}</style>
       <div className="flex space-x-3 items-center mt-1">
@@ -2072,11 +2065,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             </span>
           </div>
           <button
-            className={`flex space-x-2 ml-auto p-1 ${
-              finalEmail
-                ? "text-gray-400 hover:text-gray-600"
-                : "text-gray-300 cursor-not-allowed"
-            }`}
+            className={`flex space-x-2 ml-auto p-1 ${finalEmail
+              ? "text-gray-400 hover:text-gray-600"
+              : "text-gray-300 cursor-not-allowed"
+              }`}
             onClick={() => finalEmail && handleCopy(finalEmail)}
             disabled={!finalEmail}
           >
@@ -2098,22 +2090,20 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           </div>
           <div>
             <button
-              className={`p-1 ${
-                finalPhone
-                  ? "text-gray-400 hover:text-gray-600"
-                  : "text-gray-300 cursor-not-allowed"
-              }`}
+              className={`p-1 ${finalPhone
+                ? "text-gray-400 hover:text-gray-600"
+                : "text-gray-300 cursor-not-allowed"
+                }`}
               onClick={() => finalPhone && handleWhatsApp(finalPhone)}
               disabled={!finalPhone}
             >
               <FontAwesomeIcon icon={faWhatsapp} />
             </button>
             <button
-              className={`p-1 ${
-                finalPhone
-                  ? "text-gray-400 hover:text-gray-600"
-                  : "text-gray-300 cursor-not-allowed"
-              }`}
+              className={`p-1 ${finalPhone
+                ? "text-gray-400 hover:text-gray-600"
+                : "text-gray-300 cursor-not-allowed"
+                }`}
               onClick={() => finalPhone && handleCopy(finalPhone)}
               disabled={!finalPhone}
             >
@@ -2140,22 +2130,19 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <div key={tab.name} className="tab-button">
             <button
               onClick={() => setActiveTab(tab.name)}
-              className={`py-2 px-2 text-sm font-medium flex items-center space-x-1 relative ${
-                activeTab === tab.name
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
+              className={`py-2 px-2 text-sm font-medium flex items-center space-x-1 relative ${activeTab === tab.name
+                ? "text-blue-600 border-b-2 border-blue-600"
+                : "text-gray-500 hover:text-gray-700"
+                }`}
             >
               <tab.icon
-                className={`w-4 h-4 flex-shrink-0 ${
-                  activeTab === tab.name ? "text-blue-600" : ""
-                }`}
+                className={`w-4 h-4 flex-shrink-0 ${activeTab === tab.name ? "text-blue-600" : ""
+                  }`}
               />
               {tab.name === "Notes" && (
                 <span
-                  className={`text-xs ${
-                    activeTab === tab.name ? "text-blue-600" : "text-gray-500"
-                  }`}
+                  className={`text-xs ${activeTab === tab.name ? "text-blue-600" : "text-gray-500"
+                    }`}
                 >
                   ({detailedCandidate?.candidate?.notes?.length || 0})
                 </span>

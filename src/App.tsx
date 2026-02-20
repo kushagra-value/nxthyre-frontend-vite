@@ -18,28 +18,28 @@ import {
   CandidateListItem,
   CandidateSearchResponse,
 } from "./services/candidateService";
-import Header from "./components/Header";
+import Header from "./components/candidatePool/Header";
 import TermsAndConditions from "./components/TermsAndConditions";
-import FiltersSidebar from "./components/FiltersSidebar";
-import JobApplicationForm from "./components/JobApplicationForm";
-import CandidatesMain from "./components/CandidatesMain";
-import CandidateDetail from "./components/CandidateDetail";
+import FiltersSidebar from "./components/candidatePool/FiltersSidebar";
+import JobApplicationForm from "./pages/JobApplicationForm";
+import CandidatesMain from "./components/candidatePool/CandidatesMain";
+import CandidateDetail from "./components/candidatePool/CandidateDetail";
 import TemplateSelector from "./components/TemplateSelector";
-import CreateJobRoleModal from "./components/CreateJobRoleModal";
-import EditJobRoleModal from "./components/EditJobRoleModal";
-import EditTemplateModal from "./components/EditTemplateModal";
-import PipelineStages from "./components/PipelineStages";
+import CreateJobRoleModal from "./components/candidatePool/CreateJobRoleModal";
+import EditJobRoleModal from "./components/candidatePool/EditJobRoleModal";
+import EditTemplateModal from "./components/candidatePool/EditTemplateModal";
+import PipelineStages from "./pages/PipelineStages";
 import AuthApp from "./components/AuthApp";
 import LinkedInAuth from "./components/auth/LinkedInAuth";
 import Settings from "./components/Settings";
 import ShareableProfile from "./components/profileShare/ShareableProfile";
-import PipelineSharePage from "./components/applicantTracking/PipelineSharePage";
+import PipelineSharePage from "./pages/PipelineSharePage";
 import {
   organizationService,
   MyWorkspace,
   CompanyResearchData,
 } from "./services/organizationService";
-import CompanyInfoTab from "./components/CompanyInfoTab";
+import CompanyInfoTab from "./components/candidatePool/CompanyInfoTab";
 import { User } from "./types/auth";
 import type { Job } from "./services/jobPostService";
 import { useLocation } from "react-router-dom";
@@ -59,9 +59,9 @@ import {
   Search,
 } from "lucide-react";
 import { showToast } from "./utils/toast";
-import CandidateBackGroundCheck from "./components/CandidateBackGroundCheck";
+import CandidateBackGroundCheck from "./pages/CandidateBackGroundCheck";
 import SuperAdminDashboard from "./components/SuperAdmin/SuperAdminDashboard";
-import ProjectCard from "./components/ProjectCard";
+import ProjectCard from "./components/jobListing/ProjectCard";
 import { AnalysisResult } from "./services/candidateService";
 import ShareCandidateListPage from "./components/applicantTracking/ShareCandidateListPage";
 interface Category {
@@ -1562,7 +1562,7 @@ function MainApp() {
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
                         searchQuery={""}
-                        setSearchQuery={() => {}}
+                        setSearchQuery={() => { }}
                         showCreateRoleButton={true}
                         showSearchBar={false}
                       />
@@ -1576,7 +1576,7 @@ function MainApp() {
                         onOpenLogoutModal={handleOpenLogoutModal}
                         credits={credits}
                         searchQuery={""}
-                        setSearchQuery={() => {}}
+                        setSearchQuery={() => { }}
                         showCreateRoleButton={true}
                         showSearchBar={false}
                       />
@@ -1742,11 +1742,10 @@ function MainApp() {
                                           onClick={() =>
                                             setCurrentRequisitionPage(page)
                                           }
-                                          className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
-                                            page === currentRequisitionPage
-                                              ? "bg-blue-600 text-white"
-                                              : "bg-white text-black hover:bg-gray-200"
-                                          }`}
+                                          className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${page === currentRequisitionPage
+                                            ? "bg-blue-600 text-white"
+                                            : "bg-white text-black hover:bg-gray-200"
+                                            }`}
                                         >
                                           {page}
                                         </button>
@@ -1984,21 +1983,19 @@ function MainApp() {
                             {/* Tabs */}
                             <div className="flex border-b border-gray-200 mb-6">
                               <button
-                                className={`pb-2 px-4 text-sm font-medium transition-colors ${
-                                  requisitionModalTab === "info"
-                                    ? "text-blue-600 border-b-2 border-blue-600"
-                                    : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                                }`}
+                                className={`pb-2 px-4 text-sm font-medium transition-colors ${requisitionModalTab === "info"
+                                  ? "text-blue-600 border-b-2 border-blue-600"
+                                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                  }`}
                                 onClick={() => setRequisitionModalTab("info")}
                               >
                                 Requisition Info
                               </button>
                               <button
-                                className={`pb-2 px-4 text-sm font-medium transition-colors ${
-                                  requisitionModalTab === "company"
-                                    ? "text-blue-600 border-b-2 border-blue-600"
-                                    : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                                }`}
+                                className={`pb-2 px-4 text-sm font-medium transition-colors ${requisitionModalTab === "company"
+                                  ? "text-blue-600 border-b-2 border-blue-600"
+                                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                  }`}
                                 onClick={async () => {
                                   setRequisitionModalTab("company");
                                   if (
@@ -2975,21 +2972,19 @@ function MainApp() {
                             </div>
                             <div className="flex border-b border-gray-200 mb-6">
                               <button
-                                className={`pb-2 px-4 text-sm font-medium transition-colors ${
-                                  requisitionModalTab === "info"
-                                    ? "text-blue-600 border-b-2 border-blue-600"
-                                    : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                                }`}
+                                className={`pb-2 px-4 text-sm font-medium transition-colors ${requisitionModalTab === "info"
+                                  ? "text-blue-600 border-b-2 border-blue-600"
+                                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                  }`}
                                 onClick={() => setRequisitionModalTab("info")}
                               >
                                 Requisition Info
                               </button>
                               <button
-                                className={`pb-2 px-4 text-sm font-medium transition-colors ${
-                                  requisitionModalTab === "company"
-                                    ? "text-blue-600 border-b-2 border-blue-600"
-                                    : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                                }`}
+                                className={`pb-2 px-4 text-sm font-medium transition-colors ${requisitionModalTab === "company"
+                                  ? "text-blue-600 border-b-2 border-blue-600"
+                                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                  }`}
                                 onClick={async () => {
                                   setRequisitionModalTab("company");
                                   if (

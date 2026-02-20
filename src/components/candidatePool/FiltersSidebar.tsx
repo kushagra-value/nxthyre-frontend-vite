@@ -21,8 +21,8 @@ import { debounce } from "lodash";
 import {
   candidateService,
   CandidateListItem,
-} from "../services/candidateService";
-import { showToast } from "../utils/toast";
+} from "../../services/candidateService";
+import { showToast } from "../../utils/toast";
 
 interface FiltersSidebarProps {
   filters: {
@@ -69,92 +69,6 @@ interface FiltersSidebarProps {
   activeTab: string;
   isSearchMode: boolean;
 }
-
-// interface FilterMenuProps {
-//   filters: FiltersSidebarProps["filters"];
-//   updateTempFilters: (key: string, value: any) => void;
-// }
-
-// const FilterMenu: React.FC<FilterMenuProps> = ({
-//   filters,
-//   updateTempFilters,
-// }) => {
-//   const [isMenuOpen, setIsMenuOpen] = useState(false);
-//   const dropdownRef = useRef<HTMLDivElement>(null);
-
-//   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-
-//   useEffect(() => {
-//     const handleClickOutside = (event: MouseEvent) => {
-//       if (
-//         dropdownRef.current &&
-//         !dropdownRef.current.contains(event.target as Node)
-//       ) {
-//         setIsMenuOpen(false);
-//       }
-//     };
-
-//     document.addEventListener("mousedown", handleClickOutside);
-//     return () => {
-//       document.removeEventListener("mousedown", handleClickOutside);
-//     };
-//   }, []);
-
-//   return (
-//     <div className="relative flex items-center justify-end px-2 pb-1">
-//       <button onClick={toggleMenu}>
-//         <CircleEllipsis className="h-5 w-5 text-gray-500" />
-//       </button>
-//       {isMenuOpen && (
-//         <div
-//           ref={dropdownRef}
-//           className="absolute right-0 top-full mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out z-10"
-//           style={{
-//             opacity: isMenuOpen ? 1 : 0,
-//             transform: `translateY(${isMenuOpen ? 0 : -10}px)`,
-//           }}
-//         >
-//           <div className="py-1">
-//             {/* <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-700">
-//               <span>Semantic Search</span>
-//               <button
-//                 onClick={() =>
-//                   updateTempFilters("semanticSearch", !filters.semanticSearch)
-//                 }
-//                 className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
-//                   filters.semanticSearch ? "bg-blue-500" : "bg-gray-300"
-//                 }`}
-//               >
-//                 <span
-//                   className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${
-//                     filters.semanticSearch ? "translate-x-4" : "translate-x-1"
-//                   }`}
-//                 />
-//               </button>
-//             </div> */}
-//             {/* <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-700">
-//               <span>Boolean Search</span>
-//               <button
-//                 onClick={() =>
-//                   updateTempFilters("booleanSearch", !filters.booleanSearch)
-//                 }
-//                 className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
-//                   filters.booleanSearch ? "bg-blue-500" : "bg-gray-300"
-//                 }`}
-//               >
-//                 <span
-//                   className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${
-//                     filters.booleanSearch ? "translate-x-4" : "translate-x-1"
-//                   }`}
-//                 />
-//               </button>
-//             </div> */}
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
 
 const BooleanSearchComponent: React.FC<{
   boolQuery: string;
@@ -533,16 +447,14 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
                 onClick={() =>
                   updateTempFilters("booleanSearch", !tempFilters.booleanSearch)
                 }
-                className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
-                  tempFilters.booleanSearch ? "bg-blue-500" : "bg-gray-300"
-                }`}
+                className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${tempFilters.booleanSearch ? "bg-blue-500" : "bg-gray-300"
+                  }`}
               >
                 <span
-                  className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${
-                    tempFilters.booleanSearch
+                  className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${tempFilters.booleanSearch
                       ? "translate-x-4"
                       : "translate-x-1"
-                  }`}
+                    }`}
                 />
               </button>
             </div>
@@ -589,16 +501,14 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       <div className="max-h-[calc(100vh-60px)] overflow-y-auto hide-scrollbar">
         {/* Total Experience */}
         <div
-          className={`bg-[#F5F9FB] rounded-t-lg  p-4 ${
-            expandedSections.totalExp
+          className={`bg-[#F5F9FB] rounded-t-lg  p-4 ${expandedSections.totalExp
               ? "mb-4 rounded-lg"
               : "border-b border-gray-200"
-          }`}
+            }`}
         >
           <div
-            className={`flex items-center justify-between cursor-pointer ${
-              expandedSections.totalExp ? "mb-2" : ""
-            }`}
+            className={`flex items-center justify-between cursor-pointer ${expandedSections.totalExp ? "mb-2" : ""
+              }`}
             onClick={() => toggleSection("totalExp")}
           >
             <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
@@ -684,16 +594,14 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
         {/* Location */}
         <div
-          className={`bg-[#F5F9FB]  p-4 ${
-            expandedSections.location
+          className={`bg-[#F5F9FB]  p-4 ${expandedSections.location
               ? "my-4 rounded-lg"
               : "border-b border-gray-200"
-          }`}
+            }`}
         >
           <div
-            className={`flex items-center justify-between cursor-pointer ${
-              expandedSections.location ? "mb-2" : ""
-            }`}
+            className={`flex items-center justify-between cursor-pointer ${expandedSections.location ? "mb-2" : ""
+              }`}
             onClick={() => toggleSection("location")}
           >
             <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
@@ -826,16 +734,14 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
         {/* Companies/Industries */}
         <div
-          className={`bg-[#F5F9FB]  p-4 ${
-            expandedSections.companies
+          className={`bg-[#F5F9FB]  p-4 ${expandedSections.companies
               ? "my-4 rounded-lg"
               : "border-b border-gray-200"
-          }`}
+            }`}
         >
           <div
-            className={`flex items-center justify-between cursor-pointer ${
-              expandedSections.companies ? "mb-2" : ""
-            } `}
+            className={`flex items-center justify-between cursor-pointer ${expandedSections.companies ? "mb-2" : ""
+              } `}
             onClick={() => toggleSection("companies")}
           >
             <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
@@ -885,16 +791,14 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
         {/* Salary Range */}
         <div
-          className={`bg-[#F5F9FB] p-4  ${
-            expandedSections.salary
+          className={`bg-[#F5F9FB] p-4  ${expandedSections.salary
               ? "my-4 rounded-lg"
               : "border-b border-gray-200"
-          }`}
+            }`}
         >
           <div
-            className={`flex items-center justify-between cursor-pointer ${
-              expandedSections.salary ? "mb-2" : ""
-            } `}
+            className={`flex items-center justify-between cursor-pointer ${expandedSections.salary ? "mb-2" : ""
+              } `}
             onClick={() => toggleSection("salary")}
           >
             <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
@@ -975,16 +879,14 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
         {/* Notice Period */}
         <div
-          className={`bg-[#F5F9FB] p-4 ${
-            expandedSections.notice
+          className={`bg-[#F5F9FB] p-4 ${expandedSections.notice
               ? "my-4 rounded-lg"
               : "border-b border-gray-200"
-          }`}
+            }`}
         >
           <div
-            className={`flex items-center justify-between cursor-pointer ${
-              expandedSections.notice ? "mb-2" : ""
-            } `}
+            className={`flex items-center justify-between cursor-pointer ${expandedSections.notice ? "mb-2" : ""
+              } `}
             onClick={() => toggleSection("notice")}
           >
             <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
@@ -1019,16 +921,14 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
         {/* Colleges */}
         <div
-          className={`bg-[#F5F9FB] p-4 ${
-            expandedSections.colleges
+          className={`bg-[#F5F9FB] p-4 ${expandedSections.colleges
               ? "my-4  rounded-lg"
               : "border-b border-gray-200"
-          }`}
+            }`}
         >
           <div
-            className={`flex items-center justify-between cursor-pointer ${
-              expandedSections.colleges ? "mb-2" : ""
-            } `}
+            className={`flex items-center justify-between cursor-pointer ${expandedSections.colleges ? "mb-2" : ""
+              } `}
             onClick={() => toggleSection("colleges")}
           >
             <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
@@ -1085,16 +985,14 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
         {/* Spotlight */}
         <div
-          className={`bg-[#F5F9FB] p-4 ${
-            expandedSections.spotlight
+          className={`bg-[#F5F9FB] p-4 ${expandedSections.spotlight
               ? "my-4 rounded-lg"
               : "border-b border-gray-200"
-          }`}
+            }`}
         >
           <div
-            className={`flex items-center justify-between cursor-pointer ${
-              expandedSections.spotlight ? "mb-2" : ""
-            } `}
+            className={`flex items-center justify-between cursor-pointer ${expandedSections.spotlight ? "mb-2" : ""
+              } `}
             onClick={() => toggleSection("spotlight")}
           >
             <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
@@ -1154,14 +1052,12 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 
         {/* More Filters */}
         <div
-          className={`bg-[#F5F9FB] rounded-b-lg p-4 mb-4 ${
-            expandedSections.moreFilters ? "my-4 rounded-lg" : ""
-          }`}
+          className={`bg-[#F5F9FB] rounded-b-lg p-4 mb-4 ${expandedSections.moreFilters ? "my-4 rounded-lg" : ""
+            }`}
         >
           <div
-            className={`flex items-center justify-between cursor-pointer ${
-              expandedSections.moreFilters ? "mb-2" : ""
-            } `}
+            className={`flex items-center justify-between cursor-pointer ${expandedSections.moreFilters ? "mb-2" : ""
+              } `}
             onClick={() => toggleSection("moreFilters")}
           >
             <h3 className="text-sm lg:text-base font-[400] text-gray-700 flex items-center">
@@ -1240,11 +1136,10 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           <button
             onClick={applyFilters}
             disabled={isSearchMode}
-            className={`w-full p-2 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center ${
-              isSearchMode
+            className={`w-full p-2 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center ${isSearchMode
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700"
-            }`}
+              }`}
           >
             <Filter className="w-4 h-4 mr-2" />
             Apply Filters
@@ -1257,11 +1152,10 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             <button
               onClick={resetFilters}
               disabled={isSearchMode}
-              className={`w-full p-2 text-sm rounded-lg transition-colors flex items-center justify-center ${
-                isSearchMode
+              className={`w-full p-2 text-sm rounded-lg transition-colors flex items-center justify-center ${isSearchMode
                   ? "border border-gray-400 text-gray-400 cursor-not-allowed"
                   : "border border-blue-600 text-blue-600 hover:bg-blue-700 hover:text-white"
-              }`}
+                }`}
             >
               Clear All Filters
             </button>

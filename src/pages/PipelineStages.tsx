@@ -42,7 +42,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import Header from "./Header";
+import Header from "../components/candidatePool/Header";
 import { creditService } from "../services/creditService";
 import { useAuth } from "../hooks/useAuth";
 import {
@@ -54,12 +54,12 @@ import { useAuthContext } from "../context/AuthContext";
 import apiClient from "../services/api";
 import { jobPostService } from "../services/jobPostService"; // Import jobPostService
 import { showToast } from "../utils/toast";
-import PipelinesSideCard from "./PipelinePage/PipelinesSideCard";
+import PipelinesSideCard from "../components/PipelinePage/PipelinesSideCard";
 import {
   candidateService,
   ExportCandidateResponse,
 } from "../services/candidateService";
-import TemplateSelector from "./TemplateSelector";
+import TemplateSelector from "../components/TemplateSelector";
 import toast from "react-hot-toast";
 
 import { useNavigate } from "react-router-dom";

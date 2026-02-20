@@ -16,9 +16,9 @@ import {
   Bold,
   Italic,
 } from "lucide-react";
-import { showToast } from "../utils/toast";
-import { jobPostService, Job, CreateJobData } from "../services/jobPostService";
-import { candidateService } from "../services/candidateService";
+import { showToast } from "../../utils/toast";
+import { jobPostService, Job, CreateJobData } from "../../services/jobPostService";
+import { candidateService } from "../../services/candidateService";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { debounce } from "lodash";
@@ -150,11 +150,10 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       disabled={disabled}
       className={`
           flex items-center justify-start px-4 py-2 rounded-lg  text-md font-[400] transition-all duration-200
-          ${
-            isSelected
-              ? "bg-[#ECF1FF] text-blue-700"
-              : "bg-[#F0F0F0]  text-gray-700 hover:bg-gray-100"
-          }
+          ${isSelected
+          ? "bg-[#ECF1FF] text-blue-700"
+          : "bg-[#F0F0F0]  text-gray-700 hover:bg-gray-100"
+        }
           ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
         `}
     >
@@ -162,11 +161,10 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
         <div
           className={`
               w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center transition-all duration-200
-              ${
-                isSelected
-                  ? "border-blue-500 bg-white"
-                  : "border-gray-300 bg-white"
-              }
+              ${isSelected
+              ? "border-blue-500 bg-white"
+              : "border-gray-300 bg-white"
+            }
             `}
         >
           {isSelected && (
@@ -971,42 +969,37 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
             <div className="flex items-center space-x-64">
               <div className="flex flex-col justify-center gap-2 items-center">
                 <span
-                  className={`ml-2 text-sm ${
-                    currentStep >= 1
+                  className={`ml-2 text-sm ${currentStep >= 1
                       ? "text-blue-500 font-medium"
                       : "text-gray-500"
-                  }`}
+                    }`}
                 >
                   Basic Info
                 </span>
                 <div
-                  className={`w-3 h-3 rounded-full ${
-                    currentStep >= 1 ? "bg-blue-500" : "bg-gray-300"
-                  }`}
+                  className={`w-3 h-3 rounded-full ${currentStep >= 1 ? "bg-blue-500" : "bg-gray-300"
+                    }`}
                 ></div>
               </div>
               <div className="flex flex-col justify-center gap-2 items-center">
                 <span
-                  className={`ml-2 text-sm ${
-                    currentStep >= 2
+                  className={`ml-2 text-sm ${currentStep >= 2
                       ? "text-blue-500 font-medium"
                       : "text-gray-500"
-                  }`}
+                    }`}
                 >
                   Update and Refine JD
                 </span>
                 <div
-                  className={`w-3 h-3 rounded-full ${
-                    currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
-                  }`}
+                  className={`w-3 h-3 rounded-full ${currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
+                    }`}
                 ></div>
               </div>
             </div>
             <div className="relative top-[-6px] right-[25px]">
               <div
-                className={`w-[351px] h-px ${
-                  currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
-                }`}
+                className={`w-[351px] h-px ${currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
+                  }`}
               ></div>
             </div>
             <div className="flex-1 overflow-y-auto mt-2 pr-10">
@@ -1336,9 +1329,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                           }));
                         }
                       }}
-                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg text-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500  ${
-                        formData.confidential ? "bg-gray-100 text-gray-400" : ""
-                      }`}
+                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg text-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500  ${formData.confidential ? "bg-gray-100 text-gray-400" : ""
+                        }`}
                       disabled={isLoading || formData.confidential}
                     />
                     <input
@@ -1353,9 +1345,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                           }));
                         }
                       }}
-                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg text-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        formData.confidential ? "bg-gray-100 text-gray-400" : ""
-                      }`}
+                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg text-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${formData.confidential ? "bg-gray-100 text-gray-400" : ""
+                        }`}
                       disabled={isLoading || formData.confidential}
                     />
                     <button
@@ -1366,11 +1357,10 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                           confidential: !prev.confidential,
                         }))
                       }
-                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-md font-[400] transition-all duration-200 ${
-                        formData.confidential
+                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-md font-[400] transition-all duration-200 ${formData.confidential
                           ? "bg-[#ECF1FF] text-blue-600"
                           : "bg-[#F0F0F0] text-gray-400"
-                      }`}
+                        }`}
                       disabled={isLoading}
                     >
                       {formData.confidential ? (
@@ -1405,11 +1395,10 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                           jobDescription: "",
                         }))
                       }
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                        formData.uploadType === "paste"
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${formData.uploadType === "paste"
                           ? "bg-white text-blue-600 shadow-sm"
                           : "text-gray-600"
-                      }`}
+                        }`}
                       disabled={isLoading}
                     >
                       Paste Text
@@ -1422,11 +1411,10 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                           jobDescription: "",
                         }))
                       }
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                        formData.uploadType === "upload"
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${formData.uploadType === "upload"
                           ? "bg-white text-blue-600 shadow-sm"
                           : "text-gray-600"
-                      }`}
+                        }`}
                       disabled={isLoading}
                     >
                       Upload File

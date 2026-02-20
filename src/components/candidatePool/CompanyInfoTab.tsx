@@ -1,5 +1,5 @@
 import React from 'react';
-import { CompanyResearchData } from '../services/organizationService';
+import { CompanyResearchData } from '../../services/organizationService';
 import {
     Building2,
     Users,

@@ -14,8 +14,8 @@ import {
   Edit,
   Check,
 } from "lucide-react";
-import { showToast } from "../utils/toast";
-import { Template, candidateService } from "../services/candidateService";
+import { showToast } from "../../utils/toast";
+import { Template, candidateService } from "../../services/candidateService";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
@@ -303,9 +303,8 @@ Best regards,
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end min-h-[150vh]">
       <div
-        className={`bg-white w-[40%] h-full transform transition-transform overflow-y-auto duration-300 ease-out p-10 space-y-4 ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`bg-white w-[40%] h-full transform transition-transform overflow-y-auto duration-300 ease-out p-10 space-y-4 ${isOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -428,11 +427,10 @@ Best regards,
                   sendViaEmail: !formData.sendViaEmail,
                 })
               }
-              className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                formData.sendViaEmail
+              className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${formData.sendViaEmail
                   ? "bg-blue-100 text-blue-800"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
+                }`}
               disabled={loading}
             >
               Email{" "}
@@ -453,11 +451,10 @@ Best regards,
                   sendViaWhatsApp: !formData.sendViaWhatsApp,
                 })
               }
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                formData.sendViaWhatsApp
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${formData.sendViaWhatsApp
                   ? "bg-blue-100 text-blue-800"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
+                }`}
               disabled={loading}
             >
               WhatsApp{" "}
@@ -478,11 +475,10 @@ Best regards,
                   sendViaPhone: !formData.sendViaPhone,
                 })
               }
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                formData.sendViaPhone
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${formData.sendViaPhone
                   ? "bg-blue-100 text-blue-800"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
+                }`}
               disabled={loading}
             >
               Phone{" "}
@@ -499,8 +495,8 @@ Best regards,
           </div>
           <div className="p-3 bg-blue-50 text-sm font-medium text-blue-500 rounded-lg mt-3">
             {formData.sendViaEmail &&
-            formData.sendViaWhatsApp &&
-            formData.sendViaPhone ? (
+              formData.sendViaWhatsApp &&
+              formData.sendViaPhone ? (
               <div>
                 Note: Email will be sent to candidate’s inbox, with WhatsApp
                 message and bot phone alert to check mail.
@@ -895,9 +891,8 @@ Best regards,
       {showTestEmail && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
           <div
-            className={`bg-white w-[40%] h-full transform transition-transform duration-300 ease-out p-10 space-y-4 ${
-              showTestEmail ? "translate-x-0" : "translate-x-full"
-            }`}
+            className={`bg-white w-[40%] h-full transform transition-transform duration-300 ease-out p-10 space-y-4 ${showTestEmail ? "translate-x-0" : "translate-x-full"
+              }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -947,11 +942,10 @@ Best regards,
               <div className="flex space-x-3">
                 <button
                   onClick={() => setSendTestViaEmail(!sendTestViaEmail)}
-                  className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    sendTestViaEmail
+                  className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendTestViaEmail
                       ? "bg-blue-100 text-blue-800"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
+                    }`}
                   disabled={loading}
                 >
                   Email{" "}
@@ -967,11 +961,10 @@ Best regards,
                 </button>
                 <button
                   onClick={() => setSendTestViaWhatsApp(!sendTestViaWhatsApp)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    sendTestViaWhatsApp
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendTestViaWhatsApp
                       ? "bg-blue-100 text-blue-800"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
+                    }`}
                   disabled={loading}
                 >
                   WhatsApp{" "}
@@ -987,11 +980,10 @@ Best regards,
                 </button>
                 <button
                   onClick={() => setSendTestViaPhone(!sendTestViaPhone)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    sendTestViaPhone
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendTestViaPhone
                       ? "bg-blue-100 text-blue-800"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
+                    }`}
                   disabled={loading}
                 >
                   Phone{" "}

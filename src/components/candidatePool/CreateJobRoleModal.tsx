@@ -16,9 +16,9 @@ import {
   Plus,
   Copy,
 } from "lucide-react";
-import { showToast } from "../utils/toast";
-import { jobPostService, CreateJobData } from "../services/jobPostService";
-import { candidateService } from "../services/candidateService";
+import { showToast } from "../../utils/toast";
+import { jobPostService, CreateJobData } from "../../services/jobPostService";
+import { candidateService } from "../../services/candidateService";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { debounce } from "lodash";
