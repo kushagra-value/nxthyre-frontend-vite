@@ -1,7 +1,7 @@
-import { LucideIcon } from 'lucide-react';
+import React from 'react';
 
 interface StatCardProps {
-  icon: LucideIcon;
+  icon: React.ReactNode;
   label: string;
   value: string | number;
   trend?: string;
@@ -9,7 +9,7 @@ interface StatCardProps {
   trendText?: string;
 }
 
-export default function StatCard({ icon: Icon, label, value, trend, dateText, trendText }: StatCardProps) {
+export default function StatCard({ icon, label, value, trend, dateText, trendText }: StatCardProps) {
   return (
     <div
       className="bg-white flex flex-col items-start rounded-xl"
@@ -29,36 +29,36 @@ export default function StatCard({ icon: Icon, label, value, trend, dateText, tr
             border: '0.5px solid rgba(0, 0, 0, 0.2)',
           }}
         >
-          <Icon className="w-5 h-5" style={{ color: '#0F47F2' }} />
+          {icon}
         </div>
         {trend && trendText && (
           <div className="flex items-center gap-2">
-          <span
-            className="ml-auto whitespace-nowrap"
-            style={{
-              fontFamily: 'Gellix, sans-serif',
-              fontWeight: 300,
-              fontSize: '12px',
-              lineHeight: '20px',
-              textAlign: 'right',
-              color: '#069855',
-            }}
-          >
-            {trend}
-          </span>
-          <span
-            className="ml-auto whitespace-nowrap"
-            style={{
-              fontFamily: 'Gellix, sans-serif',
-              fontWeight: 300,
-              fontSize: '10px',
-              lineHeight: '20px',
-              textAlign: 'right',
-              color: '#8E8E93',
-            }}
-          >
-            {trendText}
-          </span>
+            <span
+              className="ml-auto whitespace-nowrap"
+              style={{
+                fontFamily: 'Gellix, sans-serif',
+                fontWeight: 300,
+                fontSize: '12px',
+                lineHeight: '20px',
+                textAlign: 'right',
+                color: '#069855',
+              }}
+            >
+              {trend}
+            </span>
+            <span
+              className="ml-auto whitespace-nowrap"
+              style={{
+                fontFamily: 'Gellix, sans-serif',
+                fontWeight: 300,
+                fontSize: '10px',
+                lineHeight: '20px',
+                textAlign: 'right',
+                color: '#8E8E93',
+              }}
+            >
+              {trendText}
+            </span>
           </div>
         )}
       </div>
