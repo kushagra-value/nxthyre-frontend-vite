@@ -195,9 +195,8 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="cursor-pointer hover:bg-neutral-100 rounded-lg flex items-center justify-center"
           style={{
-            width: isCollapsed ? 18 : 24,
-            height: isCollapsed ? 18 : 24,
-            padding: isCollapsed ? 2 : 0,
+            width: 24,
+            height: 24,
             transition: 'all 0.3s ease',
             ...(isCollapsed
               ? { position: 'absolute' as const, bottom: 6, right: 6 }
@@ -206,8 +205,8 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           <svg
-            width={isCollapsed ? 14 : 24}
-            height={isCollapsed ? 14 : 24}
+            width={24}
+            height={24}
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
