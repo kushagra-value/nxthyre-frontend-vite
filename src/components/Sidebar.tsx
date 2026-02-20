@@ -12,6 +12,7 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'jobs', label: 'Jobs', icon: Briefcase },
+    { id: 'candidatePool', label: 'Candidate Pool', icon: Users },
     { id: 'candidates', label: 'Candidates', icon: Users },
     { id: 'requests', label: 'Requests', icon: FileEdit },
     { id: 'calendar', label: 'Calendar', icon: Calendar },
@@ -24,9 +25,8 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
 
   return (
     <aside
-      className={`${
-        isCollapsed ? 'w-20' : 'w-64'
-      } flex flex-col py-6 bg-white border-r border-neutral-100 shrink-0 transition-all duration-300`}
+      className={`${isCollapsed ? 'w-20' : 'w-64'
+        } flex flex-col py-6 bg-white border-r border-neutral-100 shrink-0 transition-all duration-300`}
     >
       <div className="px-6 mb-8 flex items-center justify-between">
         {!isCollapsed && (
@@ -55,9 +55,8 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
         )}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className={`p-1.5 hover:bg-neutral-50 rounded-lg transition-colors ${
-            isCollapsed ? 'mx-auto' : ''
-          }`}
+          className={`p-1.5 hover:bg-neutral-50 rounded-lg transition-colors ${isCollapsed ? 'mx-auto' : ''
+            }`}
         >
           <svg
             width="24"
@@ -120,11 +119,10 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
-                isActive
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${isActive
                   ? 'bg-primary/5 text-primary font-semibold'
                   : 'text-neutral-400 hover:bg-neutral-50 hover:text-neutral-600'
-              } ${isCollapsed ? 'justify-center' : ''}`}
+                } ${isCollapsed ? 'justify-center' : ''}`}
             >
               <Icon className="w-5 h-5" />
               {!isCollapsed && <span className="text-sm">{item.label}</span>}
@@ -139,9 +137,8 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
           return (
             <button
               key={item.id}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-neutral-400 hover:bg-neutral-50 transition-colors ${
-                isCollapsed ? 'justify-center' : ''
-              }`}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-neutral-400 hover:bg-neutral-50 transition-colors ${isCollapsed ? 'justify-center' : ''
+                }`}
             >
               <Icon className="w-5 h-5" />
               {!isCollapsed && <span className="text-sm">{item.label}</span>}
