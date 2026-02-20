@@ -179,7 +179,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
 
   return (
     <div className="relative w-[1440px] h-[900px] bg-white mx-auto overflow-hidden">
-      <div className="w-full lg:w-[49%] flex flex-col px-6 sm:px-8 lg:px-16 py-6 sm:py-8 lg:py-12 justify-between">
+      <div className="w-full lg:w-[55%] flex flex-col px-6 sm:px-8 lg:px-16 py-6 sm:py-8 lg:py-12 justify-between">
         <div>
           <div className="mb-8 lg:mb-12">
             <NxtHyreLogo />
@@ -449,7 +449,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
       </div>
 
       <div
-        className="hidden lg:flex w-[51%] bg-cover bg-center items-center justify-center"
+        className="hidden lg:flex w-[45%] bg-cover bg-center items-center justify-center"
         style={{
           backgroundImage: 'url(/assets/nxtHyreGradient.png)',
           borderRadius: '250px 0px'
