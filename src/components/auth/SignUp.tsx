@@ -161,7 +161,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
 
   return (
     <div className="relative w-full min-h-screen bg-white flex justify-between">
-      <div className="w-full lg:w-[40%] flex flex-col mx-auto px-6 sm:px-8 lg:px-16 py-6 sm:py-8 lg:py-12 justify-between min-h-screen">
+      <div className="w-full lg:w-[40%] flex flex-col mx-auto px-6 sm:px-8 lg:px-16 py-6 sm:py-8 lg:py-12 justify-center min-h-screen relative">
         <div>
           <div className="mb-8 lg:mb-12">
             <NxtHyreLogo />
@@ -281,7 +281,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                 }
                 className="mt-0.5 w-4 h-4 text-blue-600 font-['Gellix',_sans-serif] bg-gray-50 border-gray-300 rounded focus:ring-blue-500 flex-shrink-0"
               />
-              <label htmlFor="terms" className="text-xs font-['Gellix',_sans-serif] sm:text-sm text-[#AEAEB2] cursor-pointer leading-tight" >
+              <label htmlFor="terms" className="text-[18px] font-['Gellix',_sans-serif] sm:text-sm text-[#AEAEB2] cursor-pointer leading-tight" >
                 I agree to the Terms of Service and Privacy Policy
               </label>
             </div>
@@ -319,7 +319,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
             </div>
 
             <div className="pt-2">
-              <p className="text-xs font-['Gellix',_sans-serif] text-[#AEAEB2] leading-relaxed">
+              <p className="text-[18px] font-['Gellix',_sans-serif] text-[#AEAEB2] leading-relaxed">
                 By creating an account you agree to
                 <br />
                 our{" "}
@@ -343,7 +343,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
           </form>
         </div>
 
-        <div className="mt-auto pt-8">
+        <div className="absolute bottom-0 left-0 right-0">
           <p className="text-sm font-['Gellix',_sans-serif] sm:text-base text-[#333333]" >
             Facing any issue? <a href="#" className="underline">Contact Support</a>
           </p>
