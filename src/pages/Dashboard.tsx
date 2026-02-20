@@ -75,79 +75,78 @@ export default function Dashboard() {
             />
           </div>
 
-          <section className="bg-white rounded-3xl p-4 border border-neutral-100 shadow-sm flex flex-col gap-4">
+          <section className="bg-white rounded-xl p-5 flex flex-col gap-5" style={{ border: '0.5px solid #D1D1D6' }}>
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-neutral-800">Priority Actions</h2>
-              <div className="flex gap-3">
-                <div className="flex items-center gap-2 px-4 py-2 bg-white border border-neutral-100 rounded-xl text-xs font-bold text-neutral-600">
-                  All Companies <ChevronDown className="w-4 h-4" />
+              <h2 className="text-[22px] font-medium leading-6 text-black">Priority Actions</h2>
+              <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2 px-[18px] py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563]" style={{ border: '0.5px solid #D1D1D6' }}>
+                  All Companies <ChevronDown className="w-5 h-5 opacity-60" />
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-white border border-neutral-100 rounded-xl text-xs font-bold text-neutral-600">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                <div className="flex items-center gap-3 px-[18px] py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563]" style={{ border: '0.5px solid #D1D1D6' }}>
+                  <svg className="w-5 h-5" fill="none" stroke="#4B5563" strokeWidth="1.5" viewBox="0 0 24 24">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                     <line x1="16" y1="2" x2="16" y2="6" />
                     <line x1="8" y1="2" x2="8" y2="6" />
                     <line x1="3" y1="10" x2="21" y2="10" />
-                  </svg>{' '}
+                  </svg>
                   13 Jan, 2024
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-[#F8F9FB] rounded-2xl p-6 flex flex-col gap-6">
-                <div className="flex items-center justify-between">
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {/* Sourcing Column */}
+              <div className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 overflow-y-auto max-h-[400px] hide-scrollbar">
+                <div className="flex items-center justify-between px-1 py-1">
                   <div className="flex items-center gap-2">
-                    <div className="size-2 rounded-full bg-primary"></div>
-                    <span className="text-xs font-bold text-neutral-800 uppercase tracking-tight">
-                      Sourcing
-                    </span>
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#6155F5]"></div>
+                    <span className="text-sm font-normal text-[#4B5563] leading-[17px]">Sourcing</span>
                   </div>
-                  <div className="flex gap-1.5">
-                    <span className="size-5 rounded-full bg-neutral-50 flex items-center justify-center text-[10px] font-bold text-neutral-400">
-                      1
-                    </span>
-                    <span className="size-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-                      4
-                    </span>
+                  <div className="flex items-center gap-1">
+                    <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#4B5563]">1</span>
+                    <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#6155F5]">4</span>
                   </div>
                 </div>
-                <div className="flex flex-col gap-4">
-                  <PriorityCard
-                    name="Dwija Patel"
-                    role="Senior Product Designer"
-                    daysAgo={4}
-                    status="Follow up required"
-                    statusColor="blue"
-                  />
-                  <PriorityCard
-                    name="Ana De Armas"
-                    role="Product Manager"
-                    daysAgo={4}
-                    status="Outreach Required"
-                    statusColor="blue"
-                  />
-                </div>
+                <PriorityCard
+                  name="Dwija Patel"
+                  role="Senior Product Designer"
+                  daysAgo={4}
+                  status="Follow up required"
+                  statusColor="blue"
+                />
+                <PriorityCard
+                  name="Ana De Armas"
+                  role="Product Manager"
+                  daysAgo={4}
+                  status="Outreach Required"
+                  statusColor="blue"
+                />
+                <PriorityCard
+                  name="Charles Leclerc"
+                  role="Backend Engineer"
+                  daysAgo={4}
+                  status="Follow up required"
+                  statusColor="blue"
+                />
+                <PriorityCard
+                  name="Dwija Patel"
+                  role="Senior Product Designer"
+                  daysAgo={4}
+                  status="Follow up required"
+                  statusColor="grey"
+                />
               </div>
-              <div className="bg-[#F8F9FB] rounded-2xl p-6 flex flex-col gap-6">
-                <div className="flex items-center justify-between">
+
+              {/* Screening Column */}
+              <div className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 overflow-y-auto max-h-[400px] hide-scrollbar">
+                <div className="flex items-center justify-between px-1 py-1">
                   <div className="flex items-center gap-2">
-                    <div className="size-2 rounded-full bg-purple-500"></div>
-                    <span className="text-xs font-bold text-neutral-800 uppercase tracking-tight">
-                      Screening
-                    </span>
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#CB30E0]"></div>
+                    <span className="text-sm font-normal text-[#4B5563] leading-[17px]">Screening</span>
                   </div>
-                  <div className="flex gap-1.5">
-                    <span className="size-5 rounded-full bg-neutral-50 flex items-center justify-center text-[10px] font-bold text-neutral-400">
-                      0
-                    </span>
-                    <span className="size-5 rounded-full bg-purple-50 flex items-center justify-center text-[10px] font-bold text-purple-500">
-                      1
-                    </span>
+                  <div className="flex items-center gap-1">
+                    <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#4B5563]">0</span>
+                    <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#CB30E0]">1</span>
                   </div>
                 </div>
                 <PriorityCard
@@ -158,39 +157,40 @@ export default function Dashboard() {
                   statusColor="rose"
                 />
               </div>
-              <div className="bg-[#F8F9FB] rounded-2xl p-6 flex flex-col gap-6">
-                <div className="flex items-center justify-between">
+
+              {/* Interview Column */}
+              <div className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 overflow-y-auto max-h-[400px] hide-scrollbar">
+                <div className="flex items-center justify-between px-1 py-1">
                   <div className="flex items-center gap-2">
-                    <div className="size-2 rounded-full bg-cyan-400"></div>
-                    <span className="text-xs font-bold text-neutral-800 uppercase tracking-tight">
-                      Interview
-                    </span>
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#00C3D0]"></div>
+                    <span className="text-sm font-normal text-[#4B5563] leading-[17px]">Interview</span>
                   </div>
-                  <div className="flex gap-1.5">
-                    <span className="size-5 rounded-full bg-neutral-50 flex items-center justify-center text-[10px] font-bold text-neutral-400">
-                      0
-                    </span>
-                    <span className="size-5 rounded-full bg-cyan-50 flex items-center justify-center text-[10px] font-bold text-cyan-500">
-                      3
-                    </span>
+                  <div className="flex items-center gap-1">
+                    <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#4B5563]">0</span>
+                    <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#00C3D0]">3</span>
                   </div>
                 </div>
-                <div className="flex flex-col gap-4">
-                  <PriorityCard
-                    name="Dwija Patel"
-                    role="Senior Product Designer"
-                    daysAgo={4}
-                    status="HM Feedback missing"
-                    statusColor="amber"
-                  />
-                  <PriorityCard
-                    name="Ana De Armas"
-                    role="Product Manager"
-                    daysAgo={4}
-                    status="Required Scheduling"
-                    statusColor="blue"
-                  />
-                </div>
+                <PriorityCard
+                  name="Dwija Patel"
+                  role="Senior Product Designer"
+                  daysAgo={4}
+                  status="HM Feedback missing"
+                  statusColor="amber"
+                />
+                <PriorityCard
+                  name="Ana De Armas"
+                  role="Product Manager"
+                  daysAgo={4}
+                  status="Required Scheduling"
+                  statusColor="indigo"
+                />
+                <PriorityCard
+                  name="Charles Leclerc"
+                  role="Backend Engineer"
+                  daysAgo={4}
+                  status="Not Available"
+                  statusColor="rose"
+                />
               </div>
             </div>
           </section>
