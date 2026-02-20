@@ -449,7 +449,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
       </div>
 
       <div
-        className="hidden lg:flex w-[45%] bg-cover bg-center items-center justify-center"
+        className="hidden lg:flex w-[40%] bg-cover bg-center items-center justify-center"
         style={{
           backgroundImage: 'url(/assets/nxtHyreGradient.png)',
           borderRadius: '250px 0px'
