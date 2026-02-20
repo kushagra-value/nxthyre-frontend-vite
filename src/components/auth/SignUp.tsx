@@ -178,34 +178,34 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
   const passwordStrength = getPasswordStrength();
 
   return (
-    <div className="relative w-full h-[900px] bg-white flex">
-      <div className="w-full lg:w-[49%] flex flex-col px-6 sm:px-8 lg:px-16 py-6 sm:py-8 lg:py-12 justify-between">
+    <div className="relative w-full h-[920px] bg-white flex justify-between">
+      <div className="w-full lg:w-[45%] flex flex-col px-6 sm:px-8 lg:px-16 py-6 sm:py-8 lg:py-12 justify-between">
         <div>
           <div className="mb-8 lg:mb-12">
             <NxtHyreLogo />
           </div>
 
           <div className="mb-8 lg:mb-10">
-            <h1 className="text-xl sm:text-2xl lg:text-2xl font-medium text-[#0F47F2]" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+            <h1 className="text-xl sm:text-2xl lg:text-2xl font-medium text-[#0F47F2] font-['Gellix',_sans-serif]" >
               Sign up with your work email to enjoy
             </h1>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5 lg:space-y-6">
             <div>
-              <label className="block text-xs sm:text-sm text-[#4B5563] mb-2" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+              <label className="block text-xs sm:text-sm text-[#4B5563] mb-2 font-['Gellix',_sans-serif]" >
                 Enter your full name
               </label>
               <input
                 type="text"
                 value={formData.fullName}
                 onChange={(e) => handleFullNameChange(e.target.value)}
-                className={`w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${errors.fullName ? "border-red-500" : ""
+                className={`w-full px-4 py-3 bg-gray-50 font-['Gellix',_sans-serif] border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${errors.fullName ? "border-red-500" : ""
                   }`}
                 placeholder="Eg: John Doe"
               />
               {errors.fullName && (
-                <p className="mt-1 text-sm text-red-500 flex items-center">
+                <p className="mt-1 text-sm font-['Gellix',_sans-serif] text-red-500 flex items-center">
                   <XCircle className="w-4 h-4 mr-1" />
                   {errors.fullName}
                 </p>
@@ -213,7 +213,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
             </div>
 
             <div>
-              <label className="block text-xs sm:text-sm text-[#4B5563] mb-2" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+              <label className="block text-xs font-['Gellix',_sans-serif] sm:text-sm text-[#4B5563] mb-2" >
                 Enter your work email address
               </label>
               <input
@@ -222,12 +222,12 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                className={`w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${errors.email ? "border-red-500" : ""
+                className={`w-full px-4 py-3 font-['Gellix',_sans-serif] bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${errors.email ? "border-red-500" : ""
                   }`}
                 placeholder="Eg: johndoe@company.com"
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-500 flex items-center">
+                <p className="mt-1 text-sm font-['Gellix',_sans-serif] text-red-500 flex items-center">
                   <XCircle className="w-4 h-4 mr-1" />
                   {errors.email}
                 </p>
@@ -235,7 +235,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
             </div>
 
             <div>
-              <label className="block text-xs sm:text-sm text-[#4B5563] mb-2" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+              <label className="block text-xs font-['Gellix',_sans-serif] sm:text-sm text-[#4B5563] mb-2" >
                 Create a strong password
               </label>
               <div className="relative">
@@ -243,7 +243,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                   type={showPassword ? "text" : "password"}
                   value={formData.password}
                   onChange={handlePasswordChange}
-                  className={`w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${errors.password ? "border-red-500" : ""
+                  className={`w-full px-4 py-3 pr-12 bg-gray-50 font-['Gellix',_sans-serif] border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${errors.password ? "border-red-500" : ""
                     }`}
                   placeholder="Create a strong password"
                 />
@@ -271,7 +271,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                         }}
                       />
                     </div>
-                    <span className="text-xs font-medium text-gray-600">
+                    <span className="text-xs font-['Gellix',_sans-serif] font-medium text-gray-600">
                       {passwordStrength.text}
                     </span>
                   </div>
@@ -279,7 +279,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
               )}
 
               {errors.password && (
-                <p className="mt-1 text-sm text-red-500 flex items-center">
+                <p className="mt-1 text-sm font-['Gellix',_sans-serif] text-red-500 flex items-center">
                   <XCircle className="w-4 h-4 mr-1" />
                   {errors.password}
                 </p>
@@ -287,7 +287,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
             </div>
 
             <div>
-              <label className="block text-xs sm:text-sm text-[#4B5563] mb-2" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+              <label className="block text-xs font-['Gellix',_sans-serif] sm:text-sm text-[#4B5563] mb-2" >
                 Confirm password
               </label>
               <div className="relative">
@@ -300,7 +300,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                       confirmPassword: e.target.value,
                     })
                   }
-                  className={`w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${errors.confirmPassword ? "border-red-500" : ""
+                  className={`w-full px-4 py-3 font-['Gellix',_sans-serif] pr-12 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${errors.confirmPassword ? "border-red-500" : ""
                     }`}
                   placeholder="Confirm your password"
                 />
@@ -320,19 +320,19 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
               </div>
               {formData.confirmPassword &&
                 formData.password === formData.confirmPassword && (
-                  <p className="mt-1 text-sm text-green-600 flex items-center">
+                  <p className="mt-1 text-sm font-['Gellix',_sans-serif] text-green-600 flex items-center">
                     <CheckCircle className="w-4 h-4 mr-1" />
                     Passwords match
                   </p>
                 )}
               {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-500 flex items-center">
+                <p className="mt-1 text-sm font-['Gellix',_sans-serif] text-red-500 flex items-center">
                   <XCircle className="w-4 h-4 mr-1" />
                   {errors.confirmPassword}
                 </p>
               )}
               {isPasswordLimitReached && (
-                <p className="mt-1 text-sm text-red-500 flex items-center">
+                <p className="mt-1 text-sm font-['Gellix',_sans-serif] text-red-500 flex items-center">
                   <XCircle className="w-4 h-4 mr-1" />
                   Password cannot exceed 32 characters
                 </p>
@@ -349,13 +349,13 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                     agreeToTerms: e.target.checked,
                   })
                 }
-                className="mt-1 w-4 h-4 text-blue-600 bg-gray-50 border-gray-300 rounded focus:ring-blue-500"
+                className="mt-1 w-4 h-4 text-blue-600 font-['Gellix',_sans-serif] bg-gray-50 border-gray-300 rounded focus:ring-blue-500"
               />
-              <label htmlFor="terms" className="text-xs sm:text-sm text-[#AEAEB2] cursor-pointer" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+              <label htmlFor="terms" className="text-xs font-['Gellix',_sans-serif] sm:text-sm text-[#AEAEB2] cursor-pointer" >
                 I agree to the Terms of Service and Privacy Policy
               </label>
               {errors.agreeToTerms && (
-                <p className="mt-1 text-sm text-red-500 flex items-center">
+                <p className="mt-1 text-sm font-['Gellix',_sans-serif] text-red-500 flex items-center">
                   <XCircle className="w-4 h-4 mr-1" />
                   {errors.agreeToTerms}
                 </p>
@@ -367,10 +367,10 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                 type="submit"
                 disabled={isLoading}
                 className="px-6 py-2.5 sm:py-2 h-10 sm:h-11 bg-[#0F47F2] rounded-[7px] text-[#F5F9FB] text-sm sm:text-base font-medium flex items-center justify-center whitespace-nowrap"
-                style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+
               >
                 {isLoading ? (
-                  <div className="flex items-center justify-center">
+                  <div className="flex items-center justify-center font-['Gellix',_sans-serif]">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                     Creating Account...
                   </div>
@@ -382,7 +382,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-300" />
                 </div>
-                <div className="relative flex justify-center text-sm">
+                <div className="relative flex justify-center text-sm font-['Gellix',_sans-serif]">
                   <span className="px-2 bg-white text-gray-500">
                     Or continue with
                   </span>
@@ -393,7 +393,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
               <button
                 type="button"
                 onClick={() => onNavigate("linkedin-auth")}
-                className="w-full bg-gray-100 text-gray-900 py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center border border-gray-300"
+                className="w-full bg-gray-100 text-gray-900 py-3 font-['Gellix',_sans-serif] px-4 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center border border-gray-300"
               >
                 <svg
                   className="w-5 h-5 mr-3"
@@ -407,7 +407,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
 
               {/* Login Link */}
               <div className="text-center mt-6">
-                <span className="text-sm text-gray-600">
+                <span className="text-sm font-['Gellix',_sans-serif] text-gray-600">
                   Already have an account?{" "}
                   <button
                     type="button"
@@ -421,7 +421,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
             </div>
 
             <div className="pt-2">
-              <p className="text-xs text-gray-500">
+              <p className="text-xs font-['Gellix',_sans-serif] text-gray-500">
                 By creating an account you agree to our{" "}
                 <button
                   onClick={() => navigate('/terms-and-policies?tab=terms')}  // UPDATED: Add onClick to navigate to terms tab
@@ -442,14 +442,14 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
         </div>
 
         <div>
-          <p className="text-sm sm:text-base text-[#333333]" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+          <p className="text-sm font-['Gellix',_sans-serif] sm:text-base text-[#333333]" >
             Facing any issue? <a href="#" className="underline">Contact Support</a>
           </p>
         </div>
       </div>
 
       <div
-        className="hidden lg:flex w-[51%] bg-cover bg-center items-center justify-center"
+        className="hidden lg:flex w-[45%] bg-cover bg-center items-center justify-center"
         style={{
           backgroundImage: 'url(/assets/nxtHyreGradient.png)',
           borderRadius: '250px 0px'
@@ -485,11 +485,11 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
             <path d="M219.96 81.9301C222.714 85.136 226.46 87.3313 230.603 88.1685C234.746 89.0056 239.05 88.4366 242.833 86.5516C246.616 84.6667 249.662 81.5735 251.489 77.7619C253.316 73.9503 253.819 69.6382 252.918 65.5084L247.402 66.7111C248.035 69.6131 247.682 72.6433 246.398 75.3218C245.114 78.0002 242.974 80.1738 240.315 81.4984C237.657 82.823 234.632 83.2229 231.721 82.6346C228.809 82.0464 226.177 80.5036 224.242 78.2508L219.96 81.9301Z" fill="#0F47F2" />
           </svg>
 
-          <div className="flex flex-col gap-8 text-center">
-            <div className="text-2xl text-[#333333]" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+          <div className="flex gap-8 text-center">
+            <div className="text-2xl font-['Gellix',_sans-serif] text-[#0F47F2]" >
               Built for <span className="font-medium">Agencies</span>
             </div>
-            <div className="text-2xl text-[#333333]" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+            <div className="text-2xl font-['Gellix',_sans-serif] text-[#0F47F2]" >
               Loved by <span className="font-medium">Recruiters</span>
             </div>
           </div>
