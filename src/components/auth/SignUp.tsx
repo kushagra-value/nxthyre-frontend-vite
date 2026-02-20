@@ -308,14 +308,6 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                 )}
               </button>
 
-              {/* Login Link */}
-              <button
-                type="button"
-                onClick={() => onNavigate("login")}
-                className="text-sm font-['Gellix',_sans-serif] text-[#0F47F2] hover:text-blue-500 font-medium"
-              >
-                Sign in?
-              </button>
             </div>
 
             <div className="pt-2">
@@ -340,13 +332,19 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                 </button>
               </p>
             </div>
+            <div className="flex flex-row items-center gap-4 pt-2">
+              <p className="text-[18px] font-['Gellix',_sans-serif] text-[#AEAEB2] leading-relaxed">
+                Already have an account?
+              </p>
+              <button
+                type="button"
+                onClick={() => onNavigate("login")}
+                className="text-blue-600 hover:text-blue-500 font-medium underline"
+              >
+                Sign in
+              </button>
+            </div>
           </form>
-        </div>
-
-        <div className="mb-10 ml-10 pl-6 absolute bottom-0 left-0 right-0">
-          <p className="text-sm font-['Gellix',_sans-serif] sm:text-base text-[#333333]" >
-            Facing any issue? <a href="#" className="underline">Contact Support</a>
-          </p>
         </div>
       </div>
 

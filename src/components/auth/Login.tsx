@@ -224,32 +224,34 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
               <label className="block text-xs font-['Gellix',_sans-serif] sm:text-sm text-[#4B5563] mb-2" >
                 Password
               </label>
-              <input
-                type={showPassword ? "text" : "password"}
-                value={formData.password}
-                onChange={handlePasswordChange}
-                maxLength={32}
-                className={`w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${errors.password ? "border-red乡-500" : ""
-                  }`}
-                placeholder="Eg: John@123"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                {showPassword ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
-                {errors.email && (
-                  <p className="mt-1 text-sm font-['Gellix',_sans-serif] text-red-500 flex items-center">
-                    <XCircle className="w-4 h-4 mr-1" />
-                    {errors.email}
-                  </p>
-                )}
-              </button>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={formData.password}
+                  onChange={handlePasswordChange}
+                  maxLength={32}
+                  className={`w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${errors.password ? "border-red乡-500" : ""
+                    }`}
+                  placeholder="Eg: John@123"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                  {errors.email && (
+                    <p className="mt-1 text-sm font-['Gellix',_sans-serif] text-red-500 flex items-center">
+                      <XCircle className="w-4 h-4 mr-1" />
+                      {errors.email}
+                    </p>
+                  )}
+                </button>
+              </div>
             </div>
             {errors.password && (
               <p className="mt-1 text-sm text-red-500 flex items-center">
@@ -305,18 +307,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                   "Sign In"
                 )}
               </button>
-
-              {/* Login Link */}
-              <button
-                type="button"
-                onClick={() => onNavigate("signup")}
-                className="text-blue-600 hover:text-blue-500 font-medium underline"
-              >
-                Create an account?
-              </button>
             </div>
-
-
 
             <div className="pt-2">
               <p className="text-[18px] font-['Gellix',_sans-serif] text-[#AEAEB2] leading-relaxed">
@@ -340,14 +331,22 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                 </button>
               </p>
             </div>
+            <div className="flex flex-row items-center gap-4 pt-2">
+              <p className="text-[18px] font-['Gellix',_sans-serif] text-[#AEAEB2] leading-relaxed">
+                New to NxThyre?
+              </p>
+              <button
+                type="button"
+                onClick={() => onNavigate("signup")}
+                className="text-blue-600 hover:text-blue-500 font-medium underline"
+              >
+                Create an account
+              </button>
+            </div>
           </form>
         </div>
 
-        <div className="mb-10 ml-10 pl-6 absolute bottom-0 left-0 right-0">
-          <p className="text-sm font-['Gellix',_sans-serif] sm:text-base text-[#333333]" >
-            Facing any issue? <a href="#" className="underline">Contact Support</a>
-          </p>
-        </div>
+
       </div>
 
       <div
