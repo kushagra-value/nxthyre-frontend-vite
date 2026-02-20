@@ -86,11 +86,11 @@ export default function Dashboard() {
                   All Companies <ChevronDown className="w-5 h-5 opacity-60" />
                 </div>
                 <div className="flex items-center gap-3 px-[18px] py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563]" style={{ border: '0.5px solid #D1D1D6' }}>
-                  <svg className="w-5 h-5" fill="none" stroke="#4B5563" strokeWidth="1.5" viewBox="0 0 24 24">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                    <line x1="16" y1="2" x2="16" y2="6" />
-                    <line x1="8" y1="2" x2="8" y2="6" />
-                    <line x1="3" y1="10" x2="21" y2="10" />
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 1.66666V3.33332M5 1.66666V3.33332" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M8.33333 14.1667L8.33332 11.1227C8.33332 10.9629 8.21938 10.8333 8.07882 10.8333H7.5M11.358 14.1667L12.4868 11.1243C12.5396 10.9821 12.4274 10.8333 12.2672 10.8333H10.8333" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" />
+                    <path d="M2.08325 10.2027C2.08325 6.57161 2.08325 4.75607 3.12668 3.62803C4.17012 2.5 5.84949 2.5 9.20825 2.5H10.7916C14.1503 2.5 15.8297 2.5 16.8732 3.62803C17.9166 4.75607 17.9166 6.57161 17.9166 10.2027V10.6306C17.9166 14.2617 17.9166 16.0773 16.8732 17.2053C15.8297 18.3333 14.1503 18.3333 10.7916 18.3333H9.20825C5.84949 18.3333 4.17012 18.3333 3.12668 17.2053C2.08325 16.0773 2.08325 14.2617 2.08325 10.6306V10.2027Z" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M5 6.66666H15" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                   </svg>
                   13 Jan, 2024
                 </div>
@@ -223,7 +223,7 @@ export default function Dashboard() {
                 position="Software Developer"
                 experience="7 years"
                 matchPercentage={85}
-                showNxtLogo
+                source="nxt"
               />
               <TalentMatchCard
                 name="Fernando Alonso"
@@ -231,12 +231,13 @@ export default function Dashboard() {
                 position="F1 Race Technical Engineer"
                 experience="7 years"
                 matchPercentage={85}
+                source="naukri"
               />
             </div>
           </section>
         </div>
 
-        <aside className="w-96 flex flex-col gap-8 shrink-0">
+        <aside className="w-96 flex flex-col gap-4 shrink-0">
           <CalendarWidget />
           <ScheduleWidget />
           <RecentActivities />

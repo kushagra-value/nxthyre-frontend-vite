@@ -36,7 +36,9 @@ export default function PriorityCard({ name, role, daysAgo, status, statusColor 
           {status}
         </span>
         <div className="w-5 h-5 flex items-center justify-center rounded-[3px]">
-          <ArrowUpRight className="w-3.5 h-3.5 text-[#AEAEB2]" />
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2.92893 10.0711H17.0711M17.0711 10.0711L11.7678 4.76777M17.0711 10.0711L11.7678 15.3744" stroke="#AEAEB2" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
         </div>
       </div>
     </div>

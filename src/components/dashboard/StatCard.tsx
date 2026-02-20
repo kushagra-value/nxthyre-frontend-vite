@@ -32,7 +32,7 @@ export default function StatCard({ icon, label, value, trend, dateText, trendTex
           {icon}
         </div>
         {trend && trendText && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center">
             <span
               className="ml-auto whitespace-nowrap"
               style={{
@@ -48,7 +48,7 @@ export default function StatCard({ icon, label, value, trend, dateText, trendTex
             </span>
             <ArrowUpRight className="w-3 h-3 text-[#069855]" />
             <span
-              className="ml-auto whitespace-nowrap"
+              className="ml-1 whitespace-nowrap"
               style={{
                 fontFamily: 'Gellix, sans-serif',
                 fontWeight: 300,

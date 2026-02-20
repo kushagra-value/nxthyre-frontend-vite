@@ -1,11 +1,35 @@
-import { UserCheck, Phone, CheckCircle } from 'lucide-react';
+import React from 'react';
 
 interface Activity {
-  icon: 'user' | 'phone' | 'check';
+  icon: 'calendar' | 'phone' | 'check';
   text: string;
   time: string;
-  color: 'blue' | 'emerald';
 }
+
+const CalendarIcon = (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="1.5" y="2" width="11" height="10.5" rx="1.5" stroke="#0F47F2" strokeWidth="1" fill="none" />
+    <line x1="3.5" y1="1" x2="3.5" y2="3" stroke="#0F47F2" strokeWidth="1" strokeLinecap="round" />
+    <line x1="10.5" y1="1" x2="10.5" y2="3" stroke="#0F47F2" strokeWidth="1" strokeLinecap="round" />
+    <line x1="1.5" y1="5" x2="12.5" y2="5" stroke="#0F47F2" strokeWidth="1" />
+    <line x1="5" y1="7.5" x2="5" y2="7.5" stroke="#0F47F2" strokeWidth="1" strokeLinecap="round" />
+  </svg>
+);
+
+const PhoneIcon = (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M8.5 1.5C9.5 1.7 10.4 2.2 11.1 2.9C11.8 3.6 12.3 4.5 12.5 5.5" stroke="#0F47F2" strokeWidth="1" strokeLinecap="round" />
+    <path d="M8.5 3.5C9.1 3.7 9.6 4 10 4.4C10.4 4.8 10.6 5.3 10.7 5.9" stroke="#0F47F2" strokeWidth="1" strokeLinecap="round" />
+    <path d="M5.2 6.8C5.8 7.9 6.7 8.8 7.8 9.4L8.8 8.4C8.9 8.3 9.1 8.3 9.2 8.3L11.5 9.1C11.7 9.2 11.8 9.4 11.8 9.6V11.8C11.8 12 11.6 12.2 11.4 12.2C5.8 11.8 1.8 7.2 2 2.6C2 2.4 2.2 2.2 2.4 2.2H4.4C4.6 2.2 4.8 2.3 4.9 2.5L5.7 4.8C5.7 4.9 5.7 5.1 5.6 5.2L4.6 6.2C4.5 6.4 4.5 6.6 5.2 6.8Z" fill="#0F47F2" />
+  </svg>
+);
+
+const CheckIcon = (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4.5 7L6.5 9L10 5" stroke="#0F47F2" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    <rect x="1" y="1" width="12" height="12" rx="3" stroke="#0F47F2" strokeWidth="1" fill="none" />
+  </svg>
+);
 
 export default function RecentActivities() {
   const activities: { label: string; items: Activity[] }[] = [
@@ -13,16 +37,14 @@ export default function RecentActivities() {
       label: 'Today',
       items: [
         {
-          icon: 'user',
+          icon: 'calendar',
           text: 'Sarah Jenkins shortlisted for next round',
           time: '10:45 AM',
-          color: 'blue',
         },
         {
           icon: 'phone',
           text: 'Mark Anderson follow up is done',
           time: '10:25 AM',
-          color: 'blue',
         },
       ],
     },
@@ -33,59 +55,73 @@ export default function RecentActivities() {
           icon: 'check',
           text: 'Steve Smith profile got shortlisted for final round',
           time: '11:11 PM',
-          color: 'emerald',
         },
       ],
     },
   ];
 
-  const getIcon = (icon: string, color: string) => {
-    const iconClass = 'w-4 h-4';
-    const colorClass = color === 'blue' ? 'text-primary' : 'text-emerald-500';
-
+  const getIcon = (icon: string): React.ReactNode => {
     switch (icon) {
-      case 'user':
-        return <UserCheck className={`${iconClass} ${colorClass}`} />;
+      case 'calendar':
+        return CalendarIcon;
       case 'phone':
-        return <Phone className={`${iconClass} ${colorClass}`} />;
+        return PhoneIcon;
       case 'check':
-        return <CheckCircle className={`${iconClass} ${colorClass}`} />;
+        return CheckIcon;
       default:
         return null;
     }
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 border border-neutral-100 shadow-sm flex-1">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-sm font-bold text-neutral-800">Recent Activities</h3>
-        <span className="px-3 py-1 bg-neutral-50 border border-neutral-100 rounded-lg text-[10px] font-bold text-neutral-400">
+    <div className="bg-white rounded-[10px] flex flex-col overflow-hidden">
+      <div className="flex items-center justify-between px-5 pt-5 pb-3">
+        <span className="text-sm font-normal text-black leading-[17px]">Recent Activities</span>
+        <span
+          className="px-3 py-1 text-sm font-normal text-[#4B5563] leading-[17px] rounded-md"
+          style={{ border: '0.5px solid #D1D1D6' }}
+        >
           Today
         </span>
       </div>
-      <div className="flex flex-col gap-4">
-        {activities.map((section, sectionIdx) => (
-          <div key={sectionIdx}>
-            <p className="text-[10px] font-bold text-neutral-300 uppercase mb-3">{section.label}</p>
-            <div className="flex flex-col gap-3">
-              {section.items.map((activity, idx) => (
-                <div key={idx} className="flex gap-2.5">
+
+      <div className="overflow-y-auto max-h-[260px] hide-scrollbar px-5 pb-5">
+        <div className="flex flex-col gap-4">
+          {activities.map((section, sectionIdx) => (
+            <div key={sectionIdx}>
+              <p className="text-sm font-normal text-[#4B5563] leading-[17px] mb-3">
+                {section.label}
+              </p>
+              <div className="flex flex-col">
+                {section.items.map((activity, idx) => (
                   <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                      activity.color === 'blue' ? 'bg-blue-50' : 'bg-emerald-50'
-                    }`}
+                    key={idx}
+                    className="flex items-start gap-1.5 rounded-[5px] px-2.5 py-1.5"
+                    style={{ borderBottom: '0.5px dashed #C7C7CC' }}
                   >
-                    {getIcon(activity.icon, activity.color)}
+                    <div
+                      className="w-6 h-6 rounded-[5px] flex items-center justify-center shrink-0"
+                      style={{
+                        backgroundColor: '#E7EDFF',
+                        border: '0.5px solid #FFFFFF',
+                      }}
+                    >
+                      {getIcon(activity.icon)}
+                    </div>
+                    <div className="flex flex-col gap-1 flex-1 min-w-0">
+                      <span className="text-sm font-normal text-[#4B5563] leading-[17px]">
+                        {activity.text}
+                      </span>
+                      <span className="text-xs font-normal text-[#AEAEB2] leading-[14px]">
+                        {activity.time}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                    <p className="text-[11px] font-medium text-neutral-700 leading-snug">{activity.text}</p>
-                    <span className="text-[10px] text-neutral-400">{activity.time}</span>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
