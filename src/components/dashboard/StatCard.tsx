@@ -45,8 +45,8 @@ export default function StatCard({ icon, label, value, trend, dateText, trendTex
               }}
             >
               {trend}
-              <ArrowUpRight className="w-1 h-1" />
             </span>
+            <ArrowUpRight className="w-3 h-3 text-[#069855]" />
             <span
               className="ml-auto whitespace-nowrap"
               style={{

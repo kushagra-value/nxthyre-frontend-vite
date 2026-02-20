@@ -78,7 +78,7 @@ export default function Dashboard() {
             />
           </div>
 
-          <section className="bg-white rounded-xl p-5 flex flex-col gap-5" style={{ border: '0.5px solid #D1D1D6' }}>
+          <section className="bg-white rounded-xl p-5 flex flex-col gap-5">
             <div className="flex items-center justify-between">
               <h2 className="text-[22px] font-medium leading-6 text-black">Priority Actions</h2>
               <div className="flex items-center gap-2.5">
@@ -198,25 +198,32 @@ export default function Dashboard() {
             </div>
           </section>
 
-          <section className="bg-white rounded-3xl p-8 border border-neutral-100 shadow-sm flex flex-col gap-6">
+          <section className="bg-white rounded-[10px] p-5 flex flex-col gap-5">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-neutral-800">New Talent Matches</h2>
-              <div className="flex gap-3">
-                <div className="flex items-center gap-2 px-4 py-2 bg-white border border-neutral-100 rounded-xl text-xs font-bold text-neutral-600">
-                  All Jobs <ChevronDown className="w-4 h-4" />
+              <h2 className="text-[22px] font-medium leading-6 text-black">New Talent Matches</h2>
+              <div className="flex items-end gap-3">
+                <div
+                  className="flex items-center gap-2 px-3.5 py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563] leading-[17px]"
+                  style={{ border: '0.5px solid #D1D1D6' }}
+                >
+                  All Jobs <ChevronDown className="w-5 h-5 opacity-60" />
                 </div>
-                <div className="px-4 py-2 bg-white border border-neutral-100 rounded-xl text-xs font-bold text-neutral-600">
+                <div
+                  className="flex items-center px-[18px] py-[11px] rounded-lg text-sm font-normal text-[#4B5563] leading-[17px]"
+                  style={{ border: '0.5px solid #D1D1D6' }}
+                >
                   Last 24 Hours
                 </div>
               </div>
             </div>
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-5">
               <TalentMatchCard
                 name="Oscar Piastri"
                 company="Deloitte"
                 position="Software Developer"
                 experience="7 years"
                 matchPercentage={85}
+                showNxtLogo
               />
               <TalentMatchCard
                 name="Fernando Alonso"

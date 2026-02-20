@@ -94,7 +94,7 @@ export default function ScheduleWidget() {
   ];
 
   return (
-    <div className="bg-white rounded-[10px] flex flex-col overflow-hidden">
+    <div className="bg-white rounded-[10px] flex flex-col overflow-hidden" >
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <span className="text-sm font-normal text-black leading-[17px]">Schedule</span>
         <span
