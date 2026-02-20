@@ -343,7 +343,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
           </form>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0">
+        <div className="mb-10 ml-10 pl-6 absolute bottom-0 left-0 right-0">
           <p className="text-sm font-['Gellix',_sans-serif] sm:text-base text-[#333333]" >
             Facing any issue? <a href="#" className="underline">Contact Support</a>
           </p>
