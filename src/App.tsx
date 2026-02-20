@@ -411,7 +411,7 @@ function MainApp() {
           path="/"
           element={
             isAuthenticated ? (
-              <div className="flex h-screen overflow-hidden bg-background-light">
+              <div className="flex h-screen overflow-hidden bg-[#F8F9FB]">
                 <Sidebar
                   currentPage={currentPage}
                   onNavigate={setCurrentPage}
