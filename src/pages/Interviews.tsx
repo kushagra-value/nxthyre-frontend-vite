@@ -9,9 +9,9 @@ export default function Interviews() {
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-1 flex flex-col gap-8">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <StatCard icon={Calendar} label="Scheduled Interviews" value="12" trend="10% vs last month" />
-            <StatCard icon={Clock} label="Pending Feedback" value="5" trend="10% vs last month" />
-            <StatCard icon={Users} label="Candidates Interviewed" value="87" trend="10% vs last month" />
+            <StatCard icon={Calendar} label="Scheduled Interviews" value="12" trend="10%" trendText="vs last month" />
+            <StatCard icon={Clock} label="Pending Feedback" value="5" trend="10%" trendText="vs last month" />
+            <StatCard icon={Users} label="Candidates Interviewed" value="87" trend="10%" trendText="vs last month" />
           </div>
 
           <section className="bg-white rounded-3xl p-8 border border-neutral-100 shadow-sm flex flex-col gap-6">

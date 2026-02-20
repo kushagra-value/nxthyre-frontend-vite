@@ -16,25 +16,30 @@ export default function Dashboard() {
               icon={Briefcase}
               label="Active Jobs"
               value="68"
-              trend="10% vs last month"
+              trend="10%"
+              trendText="vs last month"
             />
             <StatCard
               icon={Building2}
               label="Active Companies"
               value="25"
-              trend="10% vs last month"
+              trend="10%"
+              trendText="vs last month"
             />
             <StatCard
               icon={UserPlus}
               label="Hired Candidates"
               value="4"
-              trend="10% vs last month"
+              trend="10%"
+              trendText="vs last month"
             />
             <StatCard
               icon={Clock}
               label="Autopilot Saved Time"
-              value="3 Days"
-              trend="10% vs last month"
+              value="3"
+              dateText="Days"
+              trend="10%"
+              trendText="vs last month"
             />
           </div>
 

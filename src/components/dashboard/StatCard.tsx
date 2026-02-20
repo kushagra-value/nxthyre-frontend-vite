@@ -5,9 +5,11 @@ interface StatCardProps {
   label: string;
   value: string | number;
   trend?: string;
+  dateText?: string;
+  trendText?: string;
 }
 
-export default function StatCard({ icon: Icon, label, value, trend }: StatCardProps) {
+export default function StatCard({ icon: Icon, label, value, trend, dateText, trendText }: StatCardProps) {
   return (
     <div
       className="bg-white flex flex-col items-start rounded-xl"
@@ -29,7 +31,8 @@ export default function StatCard({ icon: Icon, label, value, trend }: StatCardPr
         >
           <Icon className="w-5 h-5" style={{ color: '#0F47F2' }} />
         </div>
-        {trend && (
+        {trend && trendText && (
+          <div className="flex items-center gap-2">
           <span
             className="ml-auto whitespace-nowrap"
             style={{
@@ -43,6 +46,20 @@ export default function StatCard({ icon: Icon, label, value, trend }: StatCardPr
           >
             {trend}
           </span>
+          <span
+            className="ml-auto whitespace-nowrap"
+            style={{
+              fontFamily: 'Gellix, sans-serif',
+              fontWeight: 300,
+              fontSize: '10px',
+              lineHeight: '20px',
+              textAlign: 'right',
+              color: '#8E8E93',
+            }}
+          >
+            {trendText}
+          </span>
+          </div>
         )}
       </div>
 
@@ -69,6 +86,20 @@ export default function StatCard({ icon: Icon, label, value, trend }: StatCardPr
           }}
         >
           {value}
+          {dateText && (
+            <span
+              style={{
+                fontFamily: 'Gellix, sans-serif',
+                fontWeight: 400,
+                fontSize: '12px',
+                lineHeight: '14px',
+                color: '#4B5563',
+                marginLeft: '4px',
+              }}
+            >
+              {dateText}
+            </span>
+          )}
         </span>
       </div>
     </div>
