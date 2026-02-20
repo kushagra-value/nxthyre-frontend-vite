@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import candidateService from "../../services/candidateService"; // adjust path
+import { MapPin } from "lucide-react";
 
 interface ShareCandidateListPageProps {
   workspaceName: string; // Optional, can be used for display or logging
@@ -32,6 +33,11 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Add these states after the existing useState declarations
+  const [editingActivity, setEditingActivity] = useState<string | null>(null);
+  const [currentAppId, setCurrentAppId] = useState<string | null>(null);
+  const [newMovedAt, setNewMovedAt] = useState<string>("");
+
   const pageSize = 8;
   const largePageSize = 1000; // Adjust based on expected max candidates; assumes API supports large fetches
 
@@ -39,7 +45,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
   useEffect(() => {
     const fetchData = async () => {
       console.log(
-        `🔍 Fetching all applications for workspace ${workspaceId} - ${workspaceName}`,
+        `🔍 Fetching all applications for workspace ${Number(workspaceId)} - ${workspaceName}`,
       );
 
       setLoading(true);
@@ -184,6 +190,55 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
     window.open(profileUrl, "_blank");
   };
 
+  const handleSave = async () => {
+    console.log("handleSave called", {
+      currentAppId,
+      editingActivity,
+      newMovedAt,
+    });
+    if (!currentAppId || !editingActivity) {
+      console.log("Missing currentAppId or editingActivity");
+      return;
+    }
+    try {
+      console.log(
+        "Calling API with id",
+        editingActivity,
+        "moved_at",
+        newMovedAt,
+      );
+      await candidateService.updateStageTransition(
+        Number(editingActivity),
+        newMovedAt,
+      );
+      setAllApplications((prev) =>
+        prev.map((app) => {
+          if (app.id === currentAppId) {
+            return {
+              ...app,
+              activities: app.activities.map((act: any) => {
+                if (act.id === editingActivity) {
+                  return {
+                    ...act,
+                    data: { ...act.data, moved_at: newMovedAt },
+                  };
+                }
+                return act;
+              }),
+            };
+          }
+          return app;
+        }),
+      );
+      setEditingActivity(null);
+      setCurrentAppId(null);
+      setNewMovedAt("");
+      window.location.reload();
+    } catch (err) {
+      console.error("Error in save", err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -201,7 +256,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
         <div className="text-center text-red-600">
           <p className="text-xl font-medium">{error}</p>
           <p className="text-sm mt-2">
-            URL should be: /public/workspaces/YOUR_ID/applications
+            URL should be: /public/workspaces/Workspace_ID/applications
           </p>
         </div>
       </div>
@@ -213,11 +268,12 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
       <div className="max-w-6xl mx-auto px-6">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-semibold text-gray-700">
             Pipeline Candidates
           </h1>
           <p className="text-gray-500 mt-1">
-            {totalCount} candidates • Shared from workspace {workspaceName}
+            {totalCount} candidates • Shared from workspace{" "}
+            <span className="font-semibold">{workspaceName}</span>
           </p>
         </div>
 
@@ -329,7 +385,9 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                           {candidate.headline}
                         </p>
                         <p className="text-gray-500 text-xs flex items-center gap-1.5 mt-2">
-                          <span>📍</span>
+                          <span>
+                            <MapPin className="w-4 h-4" />
+                          </span>
                           {candidate.location}
                         </p>
                       </div>
@@ -409,21 +467,72 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                       ?.filter(
                         (activity: any) => activity.type === "stage_move",
                       )
-                      .slice(0, 3) // Limit to top 3 recent activities
+                      .slice(0, 3)
                       .map((activity: any, idx: number) => {
+                        const isEditing = editingActivity === activity.data.id;
                         const movedAt = new Date(
                           activity.data.moved_at,
                         ).toLocaleDateString("en-GB");
                         return (
                           <div
-                            key={idx}
+                            key={activity.data.id || idx}
                             className="text-[11px] text-gray-500 text-right leading-tight"
                           >
-                            Moved to{" "}
-                            <span className="font-medium text-gray-800">
-                              {activity.data.to_stage_name}
-                            </span>{" "}
-                            on {movedAt}
+                            {isEditing ? (
+                              <>
+                                Moved to{" "}
+                                <span className="font-medium text-gray-800">
+                                  {activity.data.to_stage_name}
+                                </span>{" "}
+                                on{" "}
+                                <input
+                                  type="datetime-local"
+                                  value={newMovedAt.slice(0, 16)}
+                                  className="text-[16px]"
+                                  onChange={(e) =>
+                                    setNewMovedAt(`${e.target.value}:00Z`)
+                                  }
+                                />
+                                <button
+                                  onClick={handleSave}
+                                  className="ml-2 text-blue-500 hover:text-blue-700 text-xs"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setEditingActivity(null);
+                                    setCurrentAppId(null);
+                                    setNewMovedAt("");
+                                  }}
+                                  className="ml-2 text-gray-500 hover:text-gray-700 text-xs"
+                                >
+                                  Cancel
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                Moved to{" "}
+                                <span className="font-medium text-gray-800">
+                                  {activity.data.to_stage_name}
+                                </span>{" "}
+                                on {movedAt}
+                                <button
+                                  onClick={() => {
+                                    console.log(
+                                      "Edit clicked for activity",
+                                      activity,
+                                    );
+                                    setEditingActivity(activity.data.id);
+                                    setCurrentAppId(app.id);
+                                    setNewMovedAt(activity.data.moved_at);
+                                  }}
+                                  className="ml-2 text-blue-500 hover:text-blue-700 text-xs"
+                                >
+                                  Edit
+                                </button>
+                              </>
+                            )}
                           </div>
                         );
                       }) || (

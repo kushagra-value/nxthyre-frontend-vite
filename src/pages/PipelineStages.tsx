@@ -227,6 +227,7 @@ interface Category {
   id: number;
   name: string;
   count: number;
+  jobrole_company: string;
 }
 
 interface Note {
@@ -248,6 +249,7 @@ interface PipelineStagesProps {
   onSendInvite: () => void;
   deductCredits: () => Promise<void>;
   initialJobId?: number | null;
+  onHomepage: () => void; // New prop for navigating back to homepage
 }
 
 const PipelineStages: React.FC<PipelineStagesProps> = ({
@@ -256,6 +258,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   onSendInvite,
   deductCredits,
   initialJobId,
+  onHomepage, // Added onHomePage prop
 }) => {
   const { user } = useAuthContext();
   const [selectedStage, setSelectedStage] = useState("Uncontacted");
@@ -736,6 +739,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
           id: job.id,
           name: job.title,
           count: job.pipeline_candidate_count || 0,
+          jobrole_company: job.jobrole_company,
         }));
         setCategories(mappedCategories);
         if (mappedCategories.length > 0) {
@@ -2374,7 +2378,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         <Header
           onOpenLogoutModal={handleOpenLogoutModal}
           credits={credits}
-          onBack={onBack}
+          onBack={onHomepage}
           showCreateRoleButton={false}
           showLinkedinSearchButton={false}
           showSearchBar={false}
@@ -2458,7 +2462,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               }}
                             >
                               <span className="text-[#4B5563] px-2 py-1 rounded text-sm">
-                                {category.name}
+                                {category.jobrole_company}
                               </span>{" "}
                               {/* UPDATED: Exact gray for names */}
                               <span className="text-[#818283] bg-gray-100 px-2 py-1 rounded text-sm">
@@ -3335,8 +3339,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                           candidate.candidate.notice_period_summary;
                         const currentSalary =
                           candidate.candidate.current_salary_lpa;
-                        const expectedSalary =
-                          candidate.candidate.expected_ctc;
+                        const expectedSalary = candidate.candidate.expected_ctc;
                         const profilePicture =
                           candidate.candidate.profilePicture?.displayImageUrl;
                         const candidate_headline = candidate.candidate.headline;
@@ -3579,7 +3582,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                               </defs>
                                             </svg>
                                           );
-                                        } else if (src === "External") {
+                                        } else if (src === "EXTERNAL" || src === "External") {
                                           return (
                                             <svg
                                               width="13"
@@ -3802,7 +3805,9 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                                     <PencilLine size={10} />
                                   </button> */}
                                 </div>
-                                <p className="text-[#4B5563]">{expectedSalary || "--"}</p>
+                                <p className="text-[#4B5563]">
+                                  {expectedSalary || "--"}
+                                </p>
                               </div>
                             </div>
                             <div className="flex justify-between items-center border-t border-gray-200 mt-4">
@@ -4972,6 +4977,43 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                               />
                             </div>
                           </div>
+
+                          {/* Failed Details */}
+                          {batch.failed > 0 && batch.failed_details && (
+                            <div className="mt-2">
+                              <details>
+                                <summary className="cursor-pointer font-medium text-sm text-red-500">
+                                  Failed Files ({batch.failed})
+                                </summary>
+                                <div className="mt-2 space-y-2 text-sm">
+                                  {batch.failed_details.map(
+                                    (fail: any, fIdx: number) => (
+                                      <div
+                                        key={fIdx}
+                                        className="border rounded p-2 bg-red-50"
+                                      >
+                                        <div className="font-medium text-gray-800">
+                                          {fail.file_name}
+                                        </div>
+                                        <div className="text-red-600">
+                                          {fail.error}
+                                        </div>
+                                        <div className="text-gray-500">
+                                          Category: {fail.failure_category}
+                                        </div>
+                                        <div className="text-gray-500">
+                                          Failed at:{" "}
+                                          {new Date(
+                                            fail.failed_at,
+                                          ).toLocaleString()}
+                                        </div>
+                                      </div>
+                                    ),
+                                  )}
+                                </div>
+                              </details>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
