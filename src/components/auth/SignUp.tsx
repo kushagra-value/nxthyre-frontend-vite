@@ -178,7 +178,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
   const passwordStrength = getPasswordStrength();
 
   return (
-    <div className="relative w-full h-[920px] bg-white flex justify-between">
+    <div className="relative w-full min-h-screen bg-white flex justify-between">
       <div className="w-full lg:w-[45%] flex flex-col mx-auto px-6 sm:px-8 lg:px-16 py-6 sm:py-8 lg:py-12 justify-between">
         <div>
           <div className="mb-8 lg:mb-12">
@@ -449,7 +449,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
       </div>
 
       <div
-        className="hidden lg:flex w-[40%] bg-cover bg-center items-center justify-center"
+        className="hidden h-full lg:flex w-[40%] bg-cover bg-center items-center justify-center"
         style={{
           backgroundImage: 'url(/assets/nxtHyreGradient.png)',
           borderRadius: '250px 0px'
