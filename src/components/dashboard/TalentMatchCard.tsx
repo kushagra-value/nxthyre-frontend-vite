@@ -136,14 +136,22 @@ export default function TalentMatchCard({
           className="w-10 h-10 rounded-lg flex items-center justify-center"
           style={{ border: '0.5px solid #4B5563' }}
         >
-          <Eye className="w-5 h-5 text-[#4B5563]" />
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2.72916 12.7464C2.02088 11.8262 1.66675 11.3661 1.66675 9.99998C1.66675 8.63381 2.02088 8.17375 2.72916 7.25359C4.14338 5.41628 6.51517 3.33331 10.0001 3.33331C13.485 3.33331 15.8567 5.41628 17.271 7.25359C17.9792 8.17375 18.3334 8.63381 18.3334 9.99998C18.3334 11.3661 17.9792 11.8262 17.271 12.7464C15.8567 14.5836 13.485 16.6666 10.0001 16.6666C6.51517 16.6666 4.14338 14.5836 2.72916 12.7464Z" stroke="#4B5563" />
+            <path d="M12.5 10C12.5 11.3807 11.3807 12.5 10 12.5C8.61925 12.5 7.5 11.3807 7.5 10C7.5 8.61925 8.61925 7.5 10 7.5C11.3807 7.5 12.5 8.61925 12.5 10Z" stroke="#4B5563" />
+          </svg>
+
         </button>
 
         <button
           className="w-10 h-10 rounded-lg flex items-center justify-center"
           style={{ border: '0.5px solid #FF383C' }}
         >
-          <Trash2 className="w-5 h-5 text-[#FF383C]" />
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.0835 5H2.91675" stroke="#FF383C" stroke-linecap="round" />
+            <path d="M15.6943 7.08331L15.311 12.8326C15.1635 15.045 15.0898 16.1512 14.3689 16.8256C13.6481 17.5 12.5394 17.5 10.3221 17.5H9.67767C7.46029 17.5 6.35163 17.5 5.63079 16.8256C4.90995 16.1512 4.8362 15.045 4.6887 12.8326L4.30542 7.08331" stroke="#FF383C" stroke-linecap="round" />
+            <path d="M7.64233 3.33335C7.98553 2.36236 8.91158 1.66669 10.0001 1.66669C11.0886 1.66669 12.0147 2.36236 12.3578 3.33335" stroke="#FF383C" stroke-linecap="round" />
+          </svg>
         </button>
       </div>
     </div>
