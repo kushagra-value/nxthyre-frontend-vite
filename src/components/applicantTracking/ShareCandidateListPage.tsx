@@ -45,7 +45,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
   useEffect(() => {
     const fetchData = async () => {
       console.log(
-        `🔍 Fetching all applications for workspace ${workspaceId} - ${workspaceName}`,
+        `🔍 Fetching all applications for workspace ${Number(workspaceId)} - ${workspaceName}`,
       );
 
       setLoading(true);
