@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Eye,
   EyeOff,
-  CheckCircle,
   XCircle,
 } from "lucide-react";
 import { authService } from "../../services/authService";
@@ -23,26 +22,12 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
     agreeToTerms: false,
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [isPasswordLimitReached, setIsPasswordLimitReached] = useState(false);
-  const navigate = useNavigate();
-  // Keep the confirmPassword error in sync in real time:
-  useEffect(() => {
-    // if nothing typed yet, clear any stale error
-    if (!formData.confirmPassword) {
-      setErrors((e) => ({ ...e, confirmPassword: "" }));
-      return;
-    }
 
-    // if they match, clear the error; otherwise set it
-    if (formData.password === formData.confirmPassword) {
-      setErrors((e) => ({ ...e, confirmPassword: "" }));
-    } else {
-      setErrors((e) => ({ ...e, confirmPassword: "Passwords do not match" }));
-    }
-  }, [formData.password, formData.confirmPassword]);
+  const navigate = useNavigate();
+
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -64,10 +49,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
         "Password must be at least 8 characters with uppercase, lowercase, and number";
     }
 
-    // We still enforce on submit if they don't match
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
+
 
     if (!formData.agreeToTerms) {
       newErrors.agreeToTerms = "You must agree to the terms and privacy policy";
@@ -171,8 +153,8 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPassword = e.target.value;
-    setFormData({ ...formData, password: newPassword });
-    setIsPasswordLimitReached(newPassword.length >= 32);
+    // Auto-sync confirmPassword to match password (backend requires both)
+    setFormData({ ...formData, password: newPassword, confirmPassword: newPassword });
   };
 
   const passwordStrength = getPasswordStrength();
@@ -286,58 +268,6 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
               )}
             </div>
 
-            <div>
-              <label className="block text-xs font-['Gellix',_sans-serif] sm:text-sm text-[#4B5563] mb-2" >
-                Confirm password
-              </label>
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={formData.confirmPassword}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      confirmPassword: e.target.value,
-                    })
-                  }
-                  className={`w-full px-4 py-3 font-['Gellix',_sans-serif] pr-12 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${errors.confirmPassword ? "border-red-500" : ""
-                    }`}
-                  placeholder="Confirm your password"
-                />
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowConfirmPassword(!showConfirmPassword)
-                  }
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-              {formData.confirmPassword &&
-                formData.password === formData.confirmPassword && (
-                  <p className="mt-1 text-sm font-['Gellix',_sans-serif] text-green-600 flex items-center">
-                    <CheckCircle className="w-4 h-4 mr-1" />
-                    Passwords match
-                  </p>
-                )}
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm font-['Gellix',_sans-serif] text-red-500 flex items-center">
-                  <XCircle className="w-4 h-4 mr-1" />
-                  {errors.confirmPassword}
-                </p>
-              )}
-              {isPasswordLimitReached && (
-                <p className="mt-1 text-sm font-['Gellix',_sans-serif] text-red-500 flex items-center">
-                  <XCircle className="w-4 h-4 mr-1" />
-                  Password cannot exceed 32 characters
-                </p>
-              )}
-            </div>
 
             <div className="flex items-center gap-2 pt-1">
               <input
@@ -378,32 +308,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                   "Create Account"
                 )}
               </button>
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm font-['Gellix',_sans-serif]">
-                  <span className="px-2 bg-white text-gray-500">
-                    Or continue with
-                  </span>
-                </div>
-              </div>
 
-              {/* LinkedIn Auth */}
-              <button
-                type="button"
-                onClick={() => onNavigate("linkedin-auth")}
-                className="w-full bg-gray-100 text-gray-900 py-3 font-['Gellix',_sans-serif] px-4 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center border border-gray-300"
-              >
-                <svg
-                  className="w-5 h-5 mr-3"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                </svg>
-                Continue with LinkedIn
-              </button>
 
               {/* Login Link */}
               <div className="text-center mt-6">
@@ -452,11 +357,11 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
         className="hidden lg:flex w-[40%] bg-cover bg-center items-center justify-center"
         style={{
           backgroundImage: 'url(/assets/nxtHyreGradient.png)',
-          borderRadius: '250px 0px',
+          borderRadius: '300px 0px',
           marginLeft: '120px',
         }}
       >
-        <div className="flex flex-col items-center gap-16">
+        <div className="flex flex-col items-start gap-16">
           <svg width="324" height="128" viewBox="0 0 324 128" fill="none" xmlns="http://www.w3.org/2000/svg">
             <mask id="path-1-inside-1_49_105" fill="white">
               <path d="M0 74.1053C0 33.1781 33.3586 0 74.5085 0H162.564V47.1579C162.564 91.8057 126.173 128 81.282 128H0V74.1053Z" />
