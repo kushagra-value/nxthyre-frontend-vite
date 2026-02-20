@@ -161,7 +161,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
 
   return (
     <div className="relative w-full min-h-screen bg-white flex justify-between">
-      <div className="w-full lg:w-[40%] flex flex-col mx-auto px-6 sm:px-8 lg:px-16 py-6 sm:py-8 lg:py-12 justify-between">
+      <div className="w-full lg:w-[40%] flex flex-col mx-auto px-6 sm:px-8 lg:px-16 py-6 sm:py-8 lg:py-12 justify-between min-h-screen">
         <div>
           <div className="mb-8 lg:mb-12">
             <NxtHyreLogo />
@@ -269,7 +269,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
             </div>
 
 
-            <div className="flex items-center gap-2 pt-1">
+            <div className="flex items-start gap-2 pt-1">
               <input
                 type="checkbox"
                 checked={formData.agreeToTerms}
@@ -279,25 +279,24 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                     agreeToTerms: e.target.checked,
                   })
                 }
-                className="mt-1 w-4 h-4 text-blue-600 font-['Gellix',_sans-serif] bg-gray-50 border-gray-300 rounded focus:ring-blue-500"
+                className="mt-0.5 w-4 h-4 text-blue-600 font-['Gellix',_sans-serif] bg-gray-50 border-gray-300 rounded focus:ring-blue-500 flex-shrink-0"
               />
-              <label htmlFor="terms" className="text-xs font-['Gellix',_sans-serif] sm:text-sm text-[#AEAEB2] cursor-pointer" >
+              <label htmlFor="terms" className="text-xs font-['Gellix',_sans-serif] sm:text-sm text-[#AEAEB2] cursor-pointer leading-tight" >
                 I agree to the Terms of Service and Privacy Policy
               </label>
-              {errors.agreeToTerms && (
-                <p className="mt-1 text-sm font-['Gellix',_sans-serif] text-red-500 flex items-center">
-                  <XCircle className="w-4 h-4 mr-1" />
-                  {errors.agreeToTerms}
-                </p>
-              )}
             </div>
+            {errors.agreeToTerms && (
+              <p className="mt-1 text-sm font-['Gellix',_sans-serif] text-red-500 flex items-center">
+                <XCircle className="w-4 h-4 mr-1" />
+                {errors.agreeToTerms}
+              </p>
+            )}
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 pt-2">
+            <div className="flex flex-row items-center gap-4 pt-2">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="px-6 py-2.5 sm:py-2 h-10 sm:h-11 bg-[#0F47F2] rounded-[7px] text-[#F5F9FB] text-sm sm:text-base font-medium flex items-center justify-center whitespace-nowrap"
-
+                className="px-6 py-2.5 sm:py-2 h-10 sm:h-11 bg-[#0F47F2] rounded-[7px] text-[#F5F9FB] text-sm sm:text-base font-medium font-['Gellix',_sans-serif] flex items-center justify-center whitespace-nowrap"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center font-['Gellix',_sans-serif]">
@@ -309,35 +308,33 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
                 )}
               </button>
 
-
               {/* Login Link */}
-              <div className="text-center mt-6">
-                <span className="text-sm font-['Gellix',_sans-serif] text-gray-600">
-                  Already have an account?{" "}
-                  <button
-                    type="button"
-                    onClick={() => onNavigate("login")}
-                    className="text-blue-600 hover:text-blue-500 font-medium underline"
-                  >
-                    Sign In Here
-                  </button>
-                </span>
-              </div>
+              <button
+                type="button"
+                onClick={() => onNavigate("login")}
+                className="text-sm font-['Gellix',_sans-serif] text-[#0F47F2] hover:text-blue-500 font-medium"
+              >
+                Sign in?
+              </button>
             </div>
 
             <div className="pt-2">
-              <p className="text-xs font-['Gellix',_sans-serif] text-gray-500">
-                By creating an account you agree to our{" "}
+              <p className="text-xs font-['Gellix',_sans-serif] text-[#AEAEB2] leading-relaxed">
+                By creating an account you agree to
+                <br />
+                our{" "}
                 <button
-                  onClick={() => navigate('/terms-and-policies?tab=terms')}  // UPDATED: Add onClick to navigate to terms tab
-                  className=" hover:underline"
+                  type="button"
+                  onClick={() => navigate('/terms-and-policies?tab=terms')}
+                  className="hover:underline text-[#AEAEB2]"
                 >
                   Terms and Conditions
                 </button>{" "}
                 and{" "}
                 <button
-                  onClick={() => navigate('/terms-and-policies?tab=privacy')}  // UPDATED: Add onClick to navigate to privacy tab
-                  className=" hover:underline"
+                  type="button"
+                  onClick={() => navigate('/terms-and-policies?tab=privacy')}
+                  className="hover:underline text-[#AEAEB2]"
                 >
                   Privacy Policy
                 </button>
@@ -346,7 +343,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
           </form>
         </div>
 
-        <div>
+        <div className="mt-auto pt-8">
           <p className="text-sm font-['Gellix',_sans-serif] sm:text-base text-[#333333]" >
             Facing any issue? <a href="#" className="underline">Contact Support</a>
           </p>
