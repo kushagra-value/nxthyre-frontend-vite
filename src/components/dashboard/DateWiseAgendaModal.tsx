@@ -14,7 +14,7 @@ const DateWiseAgendaModal: React.FC<DateWiseAgendaModalProps> = ({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6">
             {/* Modal Container */}
-            <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
+            <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
 
                 {/* Modal Header */}
                 <div className="p-8 pb-5 border-b border-slate-100 relative">
