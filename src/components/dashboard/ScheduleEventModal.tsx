@@ -14,7 +14,7 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6">
             {/* Modal Container */}
-            <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
 
                 {/* Modal Header */}
                 <div className="p-8 pb-5 border-b border-slate-100 relative">
@@ -53,7 +53,7 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                 </div>
 
                 {/* Modal Body */}
-                <div className="p-8 overflow-y-auto space-y-8 flex-1">
+                <div className="p-8 space-y-8 flex-1 overflow-y-auto max-h-[calc(100vh-300px)]">
 
                     {/* Event Info */}
                     <div className="space-y-1">
