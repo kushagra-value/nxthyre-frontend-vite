@@ -12,171 +12,135 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="font-display bg-[#f7f7f7] dark:bg-[#191919] text-neutral-900 min-h-screen overflow-hidden">
-            {/* Blurred Background Dashboard Mockup */}
-            <div className="fixed inset-0 z-0 flex flex-col overflow-hidden opacity-50 pointer-events-none">
-                <header className="flex items-center justify-between border-b border-neutral-200 px-10 py-3 bg-white dark:bg-neutral-900">
-                    <div className="flex items-center gap-8">
-                        <div className="flex items-center gap-4 text-neutral-900 dark:text-white">
-                            <span className="material-symbols-outlined">database</span>
-                            <h2 className="text-lg font-bold tracking-tight">Recruitment Dashboard</h2>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-700" />
-                    </div>
-                </header>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[2px]">
+            <div className="bg-white w-full max-w-[520px] rounded-2xl shadow-[0_24px_80px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden mx-4">
 
-                <div className="flex flex-1">
-                    <aside className="w-20 border-r border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col items-center py-6 gap-6">
-                        <span className="material-symbols-outlined text-primary">dashboard</span>
-                        <span className="material-symbols-outlined text-primary">work</span>
-                        <span className="material-symbols-outlined text-primary">group</span>
-                        <span className="material-symbols-outlined text-primary">calendar_month</span>
-                    </aside>
-
-                    <main className="flex-1 p-10">
-                        <div className="h-12 w-1/3 bg-neutral-200 dark:bg-neutral-700 rounded mb-8" />
-                        <div className="grid grid-cols-3 gap-6">
-                            <div className="h-48 bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700" />
-                            <div className="h-48 bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700" />
-                            <div className="h-48 bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700" />
-                        </div>
-                    </main>
-                </div>
-            </div>
-
-            {/* Modal */}
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-                <div className="bg-white dark:bg-neutral-800 w-full max-w-[640px] rounded-lg shadow-2xl flex flex-col overflow-hidden">
-                    {/* Modal Header Utility Bar */}
-                    <div className="px-6 pt-4 flex justify-end items-center gap-4">
-                        <div className="flex items-center gap-3 text-neutral-500 dark:text-neutral-400 text-sm font-medium">
-                            <button className="hover:text-neutral-900 dark:hover:text-white transition-colors">
-                                <span className="material-symbols-outlined text-[20px] leading-none">chevron_left</span>
-                            </button>
-                            <span>1 of 24</span>
-                            <button className="hover:text-neutral-900 dark:hover:text-white transition-colors">
-                                <span className="material-symbols-outlined text-[20px] leading-none">chevron_right</span>
-                            </button>
-                        </div>
-                        <button
-                            onClick={onClose}
-                            className="text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
-                        >
-                            <span className="material-symbols-outlined">close</span>
+                {/* Top bar: pagination + close */}
+                <div className="flex items-center justify-end gap-4 px-7 pt-5 pb-1">
+                    <div className="flex items-center gap-2 text-[#8E8E93] text-sm select-none">
+                        <button className="hover:text-neutral-700 transition-colors p-0.5">
+                            <svg width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M6 1L1 6L6 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        </button>
+                        <span className="text-[13px] font-normal text-[#8E8E93]">1 of 24</span>
+                        <button className="hover:text-neutral-700 transition-colors p-0.5">
+                            <svg width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M1 1L6 6L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                         </button>
                     </div>
+                    <button
+                        onClick={onClose}
+                        className="text-[#C7C7CC] hover:text-neutral-600 transition-colors"
+                    >
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M14 4L4 14M4 4L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+                    </button>
+                </div>
 
-                    {/* Modal Header Content */}
-                    <div className="px-8 pb-4">
-                        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white leading-tight">
-                            Need Action on Senior DevOps Role
-                        </h1>
-                        <a
-                            href="#"
-                            className="text-[#2563eb] hover:underline text-sm font-semibold mt-1 inline-block"
-                        >
-                            Move all suitable candidates
-                        </a>
-                    </div>
+                {/* Title + link */}
+                <div className="px-7 pb-3">
+                    <h1 className="text-[22px] font-semibold text-[#1C1C1E] leading-tight tracking-[-0.02em]">
+                        Need Action on Senior DevOps Role
+                    </h1>
+                    <a
+                        href="#"
+                        className="text-[#2563eb] text-[13px] font-medium mt-1 inline-block hover:underline"
+                    >
+                        Move all suitable candidates
+                    </a>
+                </div>
 
-                    {/* Scrollable Content */}
-                    <div className="px-8 py-2 flex-1 overflow-y-auto max-h-[calc(100vh-220px)]">
-                        {/* Candidate Info Card */}
-                        <div className="flex items-start gap-4 mb-6">
-                            <div className="relative flex-shrink-0">
-                                <div className="size-16 rounded-lg bg-neutral-200 dark:bg-neutral-700 overflow-hidden">
-                                    <img
-                                        alt="Professional portrait of a male candidate Ram Gupta"
-                                        className="w-full h-full object-cover"
-                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBT3sqE6RS0WmeZC9ArbIb8MM0-p-S0-dOWpwKXbcGSUftawEeGPpMktD6ANae56887NK3bzR7kiWfds8A6-dzSGuJkS1Sl94WTahskERf3bPIyTVfkhilfvymlG1GgxTUL9Ziyn-kqE750oSaA97y7M_tuNFIEUG7s2bHSyQHKVykRaKgstr2aSKuNsQ0A9aWAIgt_Bwgfp9hWow4OkmXiH7MRT49H8h4VxFDnEE2A4uyy4g9KxBcX37YIMZtE8qnGWAPHSntdknZI"
-                                    />
-                                </div>
-                                <div
-                                    className="absolute -bottom-1 -right-1 size-4 bg-[#22c55e] border-2 border-white dark:border-neutral-800 rounded-full"
-                                    title="Active"
+                {/* Scrollable body */}
+                <div className="px-7 pb-2 flex-1 overflow-y-auto max-h-[calc(100vh-240px)]">
+
+                    {/* Candidate row */}
+                    <div className="flex items-start gap-4 mb-5">
+                        <div className="relative flex-shrink-0">
+                            <div className="w-[56px] h-[56px] rounded-xl bg-neutral-200 overflow-hidden">
+                                <img
+                                    alt="Ram Gupta"
+                                    className="w-full h-full object-cover"
+                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBT3sqE6RS0WmeZC9ArbIb8MM0-p-S0-dOWpwKXbcGSUftawEeGPpMktD6ANae56887NK3bzR7kiWfds8A6-dzSGuJkS1Sl94WTahskERf3bPIyTVfkhilfvymlG1GgxTUL9Ziyn-kqE750oSaA97y7M_tuNFIEUG7s2bHSyQHKVykRaKgstr2aSKuNsQ0A9aWAIgt_Bwgfp9hWow4OkmXiH7MRT49H8h4VxFDnEE2A4uyy4g9KxBcX37YIMZtE8qnGWAPHSntdknZI"
                                 />
                             </div>
+                            <div
+                                className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-[#34C759] border-2 border-white rounded-full"
+                                title="Active"
+                            />
+                        </div>
 
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-xl font-bold text-neutral-900 dark:text-white truncate">
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-baseline justify-between gap-3">
+                                <div>
+                                    <h3 className="text-base font-semibold text-[#1C1C1E] leading-tight">
                                         Ram Gupta
                                     </h3>
-                                    <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider whitespace-nowrap">
-                                        Source: Nxthyre
-                                    </span>
+                                    <p className="text-[13px] text-[#8E8E93] mt-0.5">Senior DevOps Role</p>
                                 </div>
-                                <p className="text-neutral-600 dark:text-neutral-400 text-sm">Senior DevOps Role</p>
-
-                                {/* Skill Tags */}
-                                <div className="flex flex-wrap gap-2 mt-3">
-                                    <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded">
-                                        Docker
-                                    </span>
-                                    <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded">
-                                        Kubernetes
-                                    </span>
-                                    <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded">
-                                        Terraform
-                                    </span>
-                                    <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded">
-                                        AWS
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* AI Match Summary */}
-                        <div className="bg-[#eff6ff] dark:bg-[#2563eb]/10 border border-[#2563eb]/20 rounded-lg p-5 mb-6">
-                            <div className="flex items-center justify-between mb-3">
-                                <h4 className="text-[11px] font-bold text-[#2563eb] uppercase tracking-widest">
-                                    AI Match Summary
-                                </h4>
-                                <span className="bg-[#2563eb] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                    95% MATCH
+                                <span className="text-[10px] font-semibold text-[#AEAEB2] uppercase tracking-[0.08em] whitespace-nowrap">
+                                    Source: Nxthyre
                                 </span>
                             </div>
-                            <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                                Ram Gupta is an exceptional match for this role due to his extensive experience in
-                                scaling infrastructure using Terraform and managing complex Kubernetes clusters. His
-                                past roles show a strong emphasis on automation and security, perfectly aligning
-                                with the team's current roadmap.
-                            </p>
-                        </div>
 
-                        {/* Quick Info Cards */}
-                        <div className="grid grid-cols-2 gap-4 mb-6">
-                            <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-3 flex flex-col gap-1">
-                                <span className="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase">
-                                    Experience
-                                </span>
-                                <span className="text-sm font-bold text-neutral-900 dark:text-white">8+ Years</span>
-                            </div>
-                            <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-3 flex flex-col gap-1">
-                                <span className="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase">
-                                    Notice Period
-                                </span>
-                                <span className="text-sm font-bold text-neutral-900 dark:text-white">Immediate</span>
+                            {/* Skill Tags — outlined style */}
+                            <div className="flex flex-wrap gap-1.5 mt-3">
+                                {['Docker', 'Kubernetes', 'Terraform', 'AWS'].map((skill) => (
+                                    <span
+                                        key={skill}
+                                        className="px-2.5 py-[3px] border border-[#E5E5EA] text-[#3C3C43] text-[11px] font-medium rounded-md"
+                                    >
+                                        {skill}
+                                    </span>
+                                ))}
                             </div>
                         </div>
                     </div>
 
-                    {/* Modal Footer */}
-                    <div className="px-8 py-6 border-t border-neutral-100 dark:border-neutral-700 flex items-center justify-between">
-                        <button className="text-neutral-500 hover:text-red-600 font-semibold text-sm transition-colors">
-                            Reject
-                        </button>
-
-                        <div className="flex items-center gap-3">
-                            <button className="px-5 h-10 border border-primary text-primary hover:bg-neutral-50 dark:hover:bg-neutral-700 font-bold text-sm rounded-lg transition-colors">
-                                View Full Profile
-                            </button>
-                            <button className="px-5 h-10 bg-[#2563eb] text-white hover:bg-blue-700 font-bold text-sm rounded-lg shadow-sm transition-colors">
-                                Move to Screening
-                            </button>
+                    {/* AI Match Summary */}
+                    <div className="border border-[#D1D5F0] bg-[#F5F7FF] rounded-xl p-5 mb-5">
+                        <div className="flex items-center justify-between mb-2.5">
+                            <span className="text-[10px] font-bold text-[#2563eb] uppercase tracking-[0.1em]">
+                                AI Match Summary
+                            </span>
+                            <span className="bg-[#2563eb] text-white text-[10px] font-bold px-2.5 py-[3px] rounded-full leading-none">
+                                95% Match
+                            </span>
                         </div>
+                        <p className="text-[13px] text-[#48484A] leading-[1.6]">
+                            Ram Gupta is an exceptional match for this role due to his extensive experience in
+                            scaling infrastructure using Terraform and managing complex Kubernetes clusters. His
+                            past roles show a strong emphasis on automation and security, perfectly aligning
+                            with the team's current roadmap.
+                        </p>
+                    </div>
+
+                    {/* Quick Info Cards */}
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                        <div className="border border-[#E5E5EA] rounded-xl px-4 py-3.5 flex flex-col gap-1">
+                            <span className="text-[10px] font-semibold text-[#AEAEB2] uppercase tracking-[0.08em]">
+                                Experience
+                            </span>
+                            <span className="text-[15px] font-semibold text-[#1C1C1E]">8+ Years</span>
+                        </div>
+                        <div className="border border-[#E5E5EA] rounded-xl px-4 py-3.5 flex flex-col gap-1">
+                            <span className="text-[10px] font-semibold text-[#AEAEB2] uppercase tracking-[0.08em]">
+                                Notice Period
+                            </span>
+                            <span className="text-[15px] font-semibold text-[#1C1C1E]">Immediate</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="px-7 py-5 flex items-center justify-between">
+                    <button className="text-[#8E8E93] hover:text-[#FF3B30] text-[13px] font-medium transition-colors">
+                        Reject
+                    </button>
+
+                    <div className="flex items-center gap-2.5">
+                        <button className="px-5 h-9 border border-[#D1D1D6] text-[#3C3C43] hover:bg-neutral-50 text-[13px] font-medium rounded-lg transition-colors">
+                            View Full Profile
+                        </button>
+                        <button className="px-5 h-9 bg-[#2563eb] text-white hover:bg-[#1d4ed8] text-[13px] font-semibold rounded-lg transition-colors">
+                            Move to Screening
+                        </button>
                     </div>
                 </div>
             </div>
