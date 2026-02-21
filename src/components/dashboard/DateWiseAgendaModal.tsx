@@ -20,12 +20,12 @@ const DateWiseAgendaModal: React.FC<DateWiseAgendaModalProps> = ({
                 <div className="p-8 pb-5 border-b border-slate-100 relative">
                     <div className="flex justify-between items-start">
                         <div className="flex flex-col items-start pr-8">
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600 mb-1">Daily Agenda</p>
                             <h2 className="text-2xl font-bold tracking-tight text-slate-900">February 13, 2024</h2>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600 mb-1">Daily Agenda</p>
                         </div>
                         <button
                             onClick={onClose}
-                            className="text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0 mt-1"
+                            className="mb-2 text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0 mt-1"
                         >
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                                 <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
