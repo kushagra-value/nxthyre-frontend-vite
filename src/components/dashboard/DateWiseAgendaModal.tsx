@@ -14,16 +14,26 @@ const DateWiseAgendaModal: React.FC<DateWiseAgendaModalProps> = ({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6">
             {/* Modal Container */}
-            <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
+            <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
 
                 {/* Modal Header */}
-                <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600 mb-1">Daily Agenda</p>
-                        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">February 13, 2024</h1>
+                <div className="p-8 pb-5 border-b border-slate-100 relative">
+                    <div className="flex justify-between items-start">
+                        <div className="flex flex-col items-start pr-8">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600 mb-1">Daily Agenda</p>
+                            <h2 className="text-2xl font-bold tracking-tight text-slate-900">February 13, 2024</h2>
+                        </div>
+                        <button
+                            onClick={onClose}
+                            className="text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0 mt-1"
+                        >
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                            </svg>
+                        </button>
                     </div>
-                    <div className="flex items-center gap-6">
-                        {/* Day navigation pill */}
+                    {/* Day navigation — bottom-right of header */}
+                    <div className="flex items-center gap-3 mt-4 text-slate-400 absolute right-8 bottom-5">
                         <div className="flex items-center gap-2 bg-slate-100 rounded-full p-1">
                             <button className="p-1.5 hover:bg-white rounded-full transition-all shadow-sm text-slate-600">
                                 <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
@@ -37,19 +47,11 @@ const DateWiseAgendaModal: React.FC<DateWiseAgendaModalProps> = ({
                                 </svg>
                             </button>
                         </div>
-                        <button
-                            onClick={onClose}
-                            className="text-slate-400 hover:text-slate-600 transition-colors"
-                        >
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                            </svg>
-                        </button>
                     </div>
                 </div>
 
                 {/* Modal Body */}
-                <div className="flex-1 overflow-y-auto p-8 space-y-8">
+                <div className="p-8 space-y-8 flex-1 overflow-y-auto max-h-[calc(100vh-300px)]">
 
                     {/* Section 1: Live Status + Summary */}
                     <section className="space-y-6">
@@ -269,7 +271,7 @@ const DateWiseAgendaModal: React.FC<DateWiseAgendaModalProps> = ({
                 </div>
 
                 {/* Modal Footer */}
-                <div className="bg-slate-50 px-8 py-5 border-t border-slate-100 flex items-center justify-between">
+                <div className="bg-slate-50 px-8 py-6 border-t border-slate-100 flex items-center justify-between">
                     <button className="flex items-center gap-2 text-slate-400 hover:text-blue-600 text-sm font-bold transition-colors">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="6 9 6 2 18 2 18 9" />
