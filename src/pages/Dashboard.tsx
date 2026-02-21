@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import StatCard from '../components/dashboard/StatCard';
 import PriorityCard from '../components/dashboard/PriorityCard';
@@ -5,6 +6,7 @@ import TalentMatchCard from '../components/dashboard/TalentMatchCard';
 import CalendarWidget from '../components/dashboard/CalendarWidget';
 import ScheduleWidget from '../components/dashboard/ScheduleWidget';
 import RecentActivities from '../components/dashboard/RecentActivities';
+import ActionReviewModal from '../components/dashboard/ActionReviewModal';
 
 const BriefcaseIcon = (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -42,6 +44,12 @@ const ClockIcon = (
 );
 
 export default function Dashboard() {
+  const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+
+  const handlePriorityCardClick = () => {
+    setIsActionModalOpen(true);
+  };
+
   return (
     <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
       <div className="flex flex-col lg:flex-row gap-4">
@@ -116,6 +124,7 @@ export default function Dashboard() {
                   daysAgo={4}
                   status="Follow up required"
                   statusColor="blue"
+                  onClick={handlePriorityCardClick}
                 />
                 <PriorityCard
                   name="Ana De Armas"
@@ -123,6 +132,7 @@ export default function Dashboard() {
                   daysAgo={4}
                   status="Outreach Required"
                   statusColor="blue"
+                  onClick={handlePriorityCardClick}
                 />
                 <PriorityCard
                   name="Charles Leclerc"
@@ -130,6 +140,7 @@ export default function Dashboard() {
                   daysAgo={4}
                   status="Follow up required"
                   statusColor="blue"
+                  onClick={handlePriorityCardClick}
                 />
                 <PriorityCard
                   name="Dwija Patel"
@@ -137,6 +148,7 @@ export default function Dashboard() {
                   daysAgo={4}
                   status="Follow up required"
                   statusColor="grey"
+                  onClick={handlePriorityCardClick}
                 />
               </div>
 
@@ -158,6 +170,7 @@ export default function Dashboard() {
                   daysAgo={4}
                   status="Availability Expires today"
                   statusColor="rose"
+                  onClick={handlePriorityCardClick}
                 />
               </div>
 
@@ -179,6 +192,7 @@ export default function Dashboard() {
                   daysAgo={4}
                   status="HM Feedback missing"
                   statusColor="amber"
+                  onClick={handlePriorityCardClick}
                 />
                 <PriorityCard
                   name="Ana De Armas"
@@ -186,6 +200,7 @@ export default function Dashboard() {
                   daysAgo={4}
                   status="Required Scheduling"
                   statusColor="indigo"
+                  onClick={handlePriorityCardClick}
                 />
                 <PriorityCard
                   name="Charles Leclerc"
@@ -193,6 +208,7 @@ export default function Dashboard() {
                   daysAgo={4}
                   status="Not Available"
                   statusColor="rose"
+                  onClick={handlePriorityCardClick}
                 />
               </div>
             </div>
@@ -243,6 +259,11 @@ export default function Dashboard() {
           <RecentActivities />
         </aside>
       </div>
+      {/* Action Review Modal */}
+      <ActionReviewModal
+        isOpen={isActionModalOpen}
+        onClose={() => setIsActionModalOpen(false)}
+      />
     </div>
   );
 }

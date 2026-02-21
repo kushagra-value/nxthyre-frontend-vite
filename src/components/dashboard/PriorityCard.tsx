@@ -1,4 +1,3 @@
-import { ArrowUpRight } from 'lucide-react';
 
 interface PriorityCardProps {
   name: string;
@@ -6,6 +5,7 @@ interface PriorityCardProps {
   daysAgo: number;
   status: string;
   statusColor: 'blue' | 'rose' | 'amber' | 'indigo' | 'grey';
+  onClick?: () => void;
 }
 
 const statusStyles: Record<string, { bg: string; text: string }> = {
@@ -16,11 +16,11 @@ const statusStyles: Record<string, { bg: string; text: string }> = {
   grey: { bg: 'bg-[#F3F5F7]', text: 'text-[#8E8E93]' },
 };
 
-export default function PriorityCard({ name, role, daysAgo, status, statusColor }: PriorityCardProps) {
+export default function PriorityCard({ name, role, daysAgo, status, statusColor, onClick }: PriorityCardProps) {
   const colors = statusStyles[statusColor] || statusStyles.grey;
 
   return (
-    <div className="bg-white rounded-lg p-2.5 flex flex-col gap-2.5 cursor-pointer">
+    <div className="bg-white rounded-lg p-2.5 flex flex-col gap-2.5 cursor-pointer" onClick={onClick}>
       {/* Top row: name + days */}
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
