@@ -8,6 +8,7 @@ import ScheduleWidget from '../components/dashboard/ScheduleWidget';
 import RecentActivities from '../components/dashboard/RecentActivities';
 import ActionReviewModal from '../components/dashboard/ActionReviewModal';
 import NewMatchCandidateModal from '../components/dashboard/NewMatchCandidateModal';
+import ScheduleEventModal from '../components/dashboard/ScheduleEventModal';
 
 const BriefcaseIcon = (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -47,6 +48,7 @@ const ClockIcon = (
 export default function Dashboard() {
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [isNewMatchModalOpen, setIsNewMatchModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
   const handlePriorityCardClick = () => {
     setIsActionModalOpen(true);
@@ -54,6 +56,10 @@ export default function Dashboard() {
 
   const handleTalentMatchClick = () => {
     setIsNewMatchModalOpen(true);
+  };
+
+  const handleScheduleEventClick = () => {
+    setIsScheduleModalOpen(true);
   };
 
   return (
@@ -263,7 +269,7 @@ export default function Dashboard() {
 
         <aside className="w-96 flex flex-col gap-4 shrink-0">
           <CalendarWidget />
-          <ScheduleWidget />
+          <ScheduleWidget onEventClick={handleScheduleEventClick} />
           <RecentActivities />
         </aside>
       </div>
@@ -276,6 +282,11 @@ export default function Dashboard() {
       <NewMatchCandidateModal
         isOpen={isNewMatchModalOpen}
         onClose={() => setIsNewMatchModalOpen(false)}
+      />
+      {/* Schedule Event Modal */}
+      <ScheduleEventModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
       />
     </div>
   );

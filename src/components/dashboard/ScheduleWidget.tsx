@@ -39,7 +39,11 @@ const colorConfig: Record<string, { bg: string; dot: string; nameColor: string; 
   },
 };
 
-export default function ScheduleWidget() {
+interface ScheduleWidgetProps {
+  onEventClick?: () => void;
+}
+
+export default function ScheduleWidget({ onEventClick }: ScheduleWidgetProps) {
   const scheduleItems: ScheduleItem[] = [
     {
       time: '09:30 PM',
@@ -116,7 +120,7 @@ export default function ScheduleWidget() {
             const config = colorConfig[item.color];
 
             return (
-              <div key={idx} className="flex items-center gap-2 relative">
+              <div key={idx} className={`flex items-center gap-2 relative ${!item.isDone ? 'cursor-pointer' : ''}`} onClick={!item.isDone ? onEventClick : undefined}>
                 <span className="w-[60px] shrink-0 text-sm font-normal text-[#4B5563] leading-5">
                   {item.time}
                 </span>
