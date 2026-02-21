@@ -8,7 +8,11 @@ interface CalendarDate {
   textDark?: boolean;
 }
 
-export default function CalendarWidget() {
+interface CalendarWidgetProps {
+  onDateClick?: () => void;
+}
+
+export default function CalendarWidget({ onDateClick }: CalendarWidgetProps) {
   const daysOfWeek = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
   const dates: CalendarDate[] = [
     { day: '01', type: 'normal' },
@@ -84,7 +88,8 @@ export default function CalendarWidget() {
           return (
             <div
               key={idx}
-              className="flex items-center justify-center"
+              className="flex items-center justify-center cursor-pointer"
+              onClick={onDateClick}
             >
               {isCircle ? (
                 <span
