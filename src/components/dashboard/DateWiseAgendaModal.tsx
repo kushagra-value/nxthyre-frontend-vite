@@ -54,7 +54,7 @@ const DateWiseAgendaModal: React.FC<DateWiseAgendaModalProps> = ({
                 <div className="p-8 space-y-6 flex-1 overflow-y-auto max-h-[calc(100vh-300px)]">
 
                     {/* Section 1: Live Status */}
-                    <section className="space-y-4">
+                    <section className="space-x-4 flex justify-between items-center ">
                         {/* Live Status Card */}
                         <div className="bg-gradient-to-br from-blue-600/10 to-blue-50/50 border border-blue-200 rounded-xl p-5">
                             <div className="flex items-center gap-2 mb-3">
