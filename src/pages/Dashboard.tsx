@@ -7,6 +7,7 @@ import CalendarWidget from '../components/dashboard/CalendarWidget';
 import ScheduleWidget from '../components/dashboard/ScheduleWidget';
 import RecentActivities from '../components/dashboard/RecentActivities';
 import ActionReviewModal from '../components/dashboard/ActionReviewModal';
+import NewMatchCandidateModal from '../components/dashboard/NewMatchCandidateModal';
 
 const BriefcaseIcon = (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -45,9 +46,14 @@ const ClockIcon = (
 
 export default function Dashboard() {
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+  const [isNewMatchModalOpen, setIsNewMatchModalOpen] = useState(false);
 
   const handlePriorityCardClick = () => {
     setIsActionModalOpen(true);
+  };
+
+  const handleTalentMatchClick = () => {
+    setIsNewMatchModalOpen(true);
   };
 
   return (
@@ -240,6 +246,7 @@ export default function Dashboard() {
                 experience="7 years"
                 matchPercentage={85}
                 source="nxt"
+                onClick={handleTalentMatchClick}
               />
               <TalentMatchCard
                 name="Fernando Alonso"
@@ -248,6 +255,7 @@ export default function Dashboard() {
                 experience="7 years"
                 matchPercentage={85}
                 source="naukri"
+                onClick={handleTalentMatchClick}
               />
             </div>
           </section>
@@ -263,6 +271,11 @@ export default function Dashboard() {
       <ActionReviewModal
         isOpen={isActionModalOpen}
         onClose={() => setIsActionModalOpen(false)}
+      />
+      {/* New Match Candidate Modal */}
+      <NewMatchCandidateModal
+        isOpen={isNewMatchModalOpen}
+        onClose={() => setIsNewMatchModalOpen(false)}
       />
     </div>
   );

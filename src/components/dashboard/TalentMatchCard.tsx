@@ -1,4 +1,4 @@
-import { Eye, Trash2 } from 'lucide-react';
+
 
 type CandidateSource = 'nxt' | 'naukri' | 'pyjama' | 'external';
 
@@ -9,6 +9,7 @@ interface TalentMatchCardProps {
   experience: string;
   matchPercentage: number;
   source?: CandidateSource;
+  onClick?: () => void;
 }
 
 const NxtLogo = (
@@ -77,14 +78,16 @@ export default function TalentMatchCard({
   experience,
   matchPercentage,
   source,
+  onClick,
 }: TalentMatchCardProps) {
   const circumference = 2 * Math.PI * 16;
   const strokeDashoffset = circumference - (matchPercentage / 100) * circumference;
 
   return (
     <div
-      className="bg-white p-5 rounded-[10px] flex items-center justify-between"
+      className="bg-white p-5 rounded-[10px] flex items-center justify-between cursor-pointer hover:shadow-md transition-shadow"
       style={{ border: '1px solid #D1D1D6' }}
+      onClick={onClick}
     >
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-1.5">
