@@ -1,12 +1,4 @@
-interface ScheduleItem {
-  time: string;
-  type: string;
-  name: string;
-  details: string;
-  location: string;
-  color: 'grey' | 'cyan' | 'purple' | 'orange';
-  isDone?: boolean;
-}
+import { ScheduleItemData } from '../../data/dashboardData';
 
 const colorConfig: Record<string, { bg: string; dot: string; nameColor: string; badgeBg: string; badgeText: string }> = {
   grey: {
@@ -40,63 +32,11 @@ const colorConfig: Record<string, { bg: string; dot: string; nameColor: string; 
 };
 
 interface ScheduleWidgetProps {
-  onEventClick?: () => void;
+  items: ScheduleItemData[];
+  onEventClick?: (item: ScheduleItemData) => void;
 }
 
-export default function ScheduleWidget({ onEventClick }: ScheduleWidgetProps) {
-  const scheduleItems: ScheduleItem[] = [
-    {
-      time: '09:30 PM',
-      type: 'Final Round',
-      name: 'Henry Cavil',
-      details: 'Deloitte | Full Stack Developer | 4 years',
-      location: 'Done',
-      color: 'grey',
-      isDone: true,
-    },
-    {
-      time: '09:30 PM',
-      type: 'Final Round',
-      name: 'Henry Cavil',
-      details: 'HGS | AI ML Engineer | 3 years',
-      location: 'Done',
-      color: 'grey',
-      isDone: true,
-    },
-    {
-      time: '11:30 PM',
-      type: '1st Round Interview',
-      name: 'Max Verstappen',
-      details: 'Deloitte | Full Stack Developer | 4 years',
-      location: 'Zoom',
-      color: 'cyan',
-    },
-    {
-      time: '12:30 PM',
-      type: 'Technical Round',
-      name: 'Brad Pitt',
-      details: 'HGS | Software Developer | 6 years',
-      location: 'Virtual',
-      color: 'purple',
-    },
-    {
-      time: '02:30 PM',
-      type: 'Technical Round',
-      name: 'Robert Pattinson',
-      details: 'Jupiter | Marketing Manager | 2 years',
-      location: 'F2F',
-      color: 'orange',
-    },
-    {
-      time: '02:30 PM',
-      type: 'Technical Round',
-      name: 'Max Verstappen',
-      details: 'HGS | Software Developer | 6 years',
-      location: 'F2F',
-      color: 'purple',
-    },
-  ];
-
+export default function ScheduleWidget({ items, onEventClick }: ScheduleWidgetProps) {
   return (
     <div className="bg-white rounded-[10px] flex flex-col overflow-hidden" >
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
@@ -116,11 +56,11 @@ export default function ScheduleWidget({ onEventClick }: ScheduleWidgetProps) {
             style={{ borderLeft: '1px dashed #D1D1D6' }}
           />
 
-          {scheduleItems.map((item, idx) => {
+          {items.map((item) => {
             const config = colorConfig[item.color];
 
             return (
-              <div key={idx} className={`flex items-center gap-2 relative ${!item.isDone ? 'cursor-pointer' : ''}`} onClick={!item.isDone ? onEventClick : undefined}>
+              <div key={item.id} className={`flex items-center gap-2 relative ${!item.isDone ? 'cursor-pointer' : ''}`} onClick={!item.isDone ? () => onEventClick?.(item) : undefined}>
                 <span className="w-[60px] shrink-0 text-sm font-normal text-[#4B5563] leading-5">
                   {item.time}
                 </span>

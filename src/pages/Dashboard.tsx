@@ -10,6 +10,18 @@ import ActionReviewModal from '../components/dashboard/ActionReviewModal';
 import NewMatchCandidateModal from '../components/dashboard/NewMatchCandidateModal';
 import ScheduleEventModal from '../components/dashboard/ScheduleEventModal';
 import DateWiseAgendaModal from '../components/dashboard/DateWiseAgendaModal';
+import {
+  statCardsData,
+  priorityColumnsData,
+  talentMatchesData,
+  scheduleItemsData,
+  recentActivitiesData,
+  actionReviewCandidates,
+  newMatchCandidates,
+  scheduleEventsData,
+  dailyAgendaData,
+  ScheduleItemData,
+} from '../data/dashboardData';
 
 const BriefcaseIcon = (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -46,6 +58,13 @@ const ClockIcon = (
   </svg>
 );
 
+const iconMap: Record<string, React.ReactNode> = {
+  briefcase: BriefcaseIcon,
+  building: BuildingIcon,
+  userPlus: UserPlusIcon,
+  clock: ClockIcon,
+};
+
 export default function Dashboard() {
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [isNewMatchModalOpen, setIsNewMatchModalOpen] = useState(false);
@@ -60,7 +79,7 @@ export default function Dashboard() {
     setIsNewMatchModalOpen(true);
   };
 
-  const handleScheduleEventClick = () => {
+  const handleScheduleEventClick = (_item: ScheduleItemData) => {
     setIsScheduleModalOpen(true);
   };
 
@@ -72,38 +91,22 @@ export default function Dashboard() {
     <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
       <div className="flex flex-col lg:flex-row gap-4">
         <div className="flex-1 flex flex-col gap-4">
+          {/* Stat Cards from data */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
-              icon={BriefcaseIcon}
-              label="Active Jobs"
-              value="68"
-              trend="10%"
-              trendText="vs last month"
-            />
-            <StatCard
-              icon={BuildingIcon}
-              label="Active Companies"
-              value="25"
-              trend="10%"
-              trendText="vs last month"
-            />
-            <StatCard
-              icon={UserPlusIcon}
-              label="Hired Candidates"
-              value="4"
-              trend="10%"
-              trendText="vs last month"
-            />
-            <StatCard
-              icon={ClockIcon}
-              label="Autopilot Saved Time"
-              value="3"
-              dateText="Days"
-              trend="10%"
-              trendText="vs last month"
-            />
+            {statCardsData.map((stat) => (
+              <StatCard
+                key={stat.id}
+                icon={iconMap[stat.iconType]}
+                label={stat.label}
+                value={stat.value}
+                trend={stat.trend}
+                trendText={stat.trendText}
+                dateText={stat.dateText}
+              />
+            ))}
           </div>
 
+          {/* Priority Actions from data */}
           <section className="bg-white rounded-xl p-5 flex flex-col gap-5">
             <div className="flex items-center justify-between">
               <h2 className="text-[22px] font-medium leading-6 text-black">Priority Actions</h2>
@@ -124,114 +127,35 @@ export default function Dashboard() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {/* Sourcing Column */}
-              <div className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 overflow-y-auto max-h-[400px] hide-scrollbar">
-                <div className="flex items-center justify-between px-1 py-1">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#6155F5]"></div>
-                    <span className="text-sm font-normal text-[#4B5563] leading-[17px]">Sourcing</span>
+              {priorityColumnsData.map((column) => (
+                <div key={column.id} className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 overflow-y-auto max-h-[400px] hide-scrollbar">
+                  <div className="flex items-center justify-between px-1 py-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: column.dotColor }}></div>
+                      <span className="text-sm font-normal text-[#4B5563] leading-[17px]">{column.title}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#4B5563]">{column.urgentCount}</span>
+                      <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal" style={{ color: column.accentColor }}>{column.totalCount}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#4B5563]">1</span>
-                    <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#6155F5]">4</span>
-                  </div>
+                  {column.cards.map((card) => (
+                    <PriorityCard
+                      key={card.id}
+                      name={card.name}
+                      role={card.role}
+                      daysAgo={card.daysAgo}
+                      status={card.status}
+                      statusColor={card.statusColor}
+                      onClick={handlePriorityCardClick}
+                    />
+                  ))}
                 </div>
-                <PriorityCard
-                  name="Dwija Patel"
-                  role="Senior Product Designer"
-                  daysAgo={4}
-                  status="Follow up required"
-                  statusColor="blue"
-                  onClick={handlePriorityCardClick}
-                />
-                <PriorityCard
-                  name="Ana De Armas"
-                  role="Product Manager"
-                  daysAgo={4}
-                  status="Outreach Required"
-                  statusColor="blue"
-                  onClick={handlePriorityCardClick}
-                />
-                <PriorityCard
-                  name="Charles Leclerc"
-                  role="Backend Engineer"
-                  daysAgo={4}
-                  status="Follow up required"
-                  statusColor="blue"
-                  onClick={handlePriorityCardClick}
-                />
-                <PriorityCard
-                  name="Dwija Patel"
-                  role="Senior Product Designer"
-                  daysAgo={4}
-                  status="Follow up required"
-                  statusColor="grey"
-                  onClick={handlePriorityCardClick}
-                />
-              </div>
-
-              {/* Screening Column */}
-              <div className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 overflow-y-auto max-h-[400px] hide-scrollbar">
-                <div className="flex items-center justify-between px-1 py-1">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#CB30E0]"></div>
-                    <span className="text-sm font-normal text-[#4B5563] leading-[17px]">Screening</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#4B5563]">0</span>
-                    <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#CB30E0]">1</span>
-                  </div>
-                </div>
-                <PriorityCard
-                  name="Max Verstappen"
-                  role="Senior Product Designer"
-                  daysAgo={4}
-                  status="Availability Expires today"
-                  statusColor="rose"
-                  onClick={handlePriorityCardClick}
-                />
-              </div>
-
-              {/* Interview Column */}
-              <div className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 overflow-y-auto max-h-[400px] hide-scrollbar">
-                <div className="flex items-center justify-between px-1 py-1">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#00C3D0]"></div>
-                    <span className="text-sm font-normal text-[#4B5563] leading-[17px]">Interview</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#4B5563]">0</span>
-                    <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#00C3D0]">3</span>
-                  </div>
-                </div>
-                <PriorityCard
-                  name="Dwija Patel"
-                  role="Senior Product Designer"
-                  daysAgo={4}
-                  status="HM Feedback missing"
-                  statusColor="amber"
-                  onClick={handlePriorityCardClick}
-                />
-                <PriorityCard
-                  name="Ana De Armas"
-                  role="Product Manager"
-                  daysAgo={4}
-                  status="Required Scheduling"
-                  statusColor="indigo"
-                  onClick={handlePriorityCardClick}
-                />
-                <PriorityCard
-                  name="Charles Leclerc"
-                  role="Backend Engineer"
-                  daysAgo={4}
-                  status="Not Available"
-                  statusColor="rose"
-                  onClick={handlePriorityCardClick}
-                />
-              </div>
+              ))}
             </div>
           </section>
 
+          {/* Talent Matches from data */}
           <section className="bg-white rounded-[10px] p-5 flex flex-col gap-5">
             <div className="flex items-center justify-between">
               <h2 className="text-[22px] font-medium leading-6 text-black">New Talent Matches</h2>
@@ -251,53 +175,53 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex flex-col gap-5">
-              <TalentMatchCard
-                name="Oscar Piastri"
-                company="Deloitte"
-                position="Software Developer"
-                experience="7 years"
-                matchPercentage={85}
-                source="nxt"
-                onClick={handleTalentMatchClick}
-              />
-              <TalentMatchCard
-                name="Fernando Alonso"
-                company="Racing Williams"
-                position="F1 Race Technical Engineer"
-                experience="7 years"
-                matchPercentage={85}
-                source="naukri"
-                onClick={handleTalentMatchClick}
-              />
+              {talentMatchesData.map((match) => (
+                <TalentMatchCard
+                  key={match.id}
+                  name={match.name}
+                  company={match.company}
+                  position={match.position}
+                  experience={match.experience}
+                  matchPercentage={match.matchPercentage}
+                  source={match.source}
+                  onClick={handleTalentMatchClick}
+                />
+              ))}
             </div>
           </section>
         </div>
 
+        {/* Right Sidebar */}
         <aside className="w-96 flex flex-col gap-4 shrink-0">
           <CalendarWidget onDateClick={handleDateClick} />
-          <ScheduleWidget onEventClick={handleScheduleEventClick} />
-          <RecentActivities />
+          <ScheduleWidget items={scheduleItemsData} onEventClick={handleScheduleEventClick} />
+          <RecentActivities activities={recentActivitiesData} />
         </aside>
       </div>
+
       {/* Action Review Modal */}
       <ActionReviewModal
         isOpen={isActionModalOpen}
         onClose={() => setIsActionModalOpen(false)}
+        candidates={actionReviewCandidates}
       />
       {/* New Match Candidate Modal */}
       <NewMatchCandidateModal
         isOpen={isNewMatchModalOpen}
         onClose={() => setIsNewMatchModalOpen(false)}
+        candidates={newMatchCandidates}
       />
       {/* Schedule Event Modal */}
       <ScheduleEventModal
         isOpen={isScheduleModalOpen}
         onClose={() => setIsScheduleModalOpen(false)}
+        events={scheduleEventsData}
       />
       {/* Date-Wise Agenda Modal */}
       <DateWiseAgendaModal
         isOpen={isAgendaModalOpen}
         onClose={() => setIsAgendaModalOpen(false)}
+        agenda={dailyAgendaData}
       />
     </div>
   );

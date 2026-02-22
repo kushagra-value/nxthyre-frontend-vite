@@ -1,15 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { ActionReviewCandidate } from '../../data/dashboardData';
 
 interface ActionReviewModalProps {
     isOpen?: boolean;
     onClose?: () => void;
+    candidates: ActionReviewCandidate[];
 }
 
 const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
     isOpen = true,
     onClose = () => { },
+    candidates = [],
 }) => {
-    if (!isOpen) return null;
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    if (!isOpen || candidates.length === 0) return null;
+
+    const candidate = candidates[currentIndex];
+    const total = candidates.length;
+
+    const goNext = () => setCurrentIndex((prev) => Math.min(prev + 1, total - 1));
+    const goPrev = () => setCurrentIndex((prev) => Math.max(prev - 1, 0));
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6">
@@ -21,7 +32,7 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                     <div className="flex justify-between items-start">
                         <div className="flex flex-col items-start pr-8">
                             <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-                                Need Action on Senior DevOps Role
+                                Need Action on {candidate.role}
                             </h2>
                             <a
                                 href="#"
@@ -41,13 +52,21 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                     </div>
                     {/* Pagination — bottom-right of header */}
                     <div className="flex items-center gap-3 mt-4 text-slate-400 absolute right-8 bottom-5">
-                        <button className="hover:text-slate-600 transition-colors">
+                        <button
+                            className="hover:text-slate-600 transition-colors disabled:opacity-30"
+                            onClick={goPrev}
+                            disabled={currentIndex === 0}
+                        >
                             <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
                                 <path d="M6 1L1 6L6 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                         </button>
-                        <span className="text-[11px] font-bold tracking-widest uppercase">1 of 24</span>
-                        <button className="hover:text-slate-600 transition-colors">
+                        <span className="text-[11px] font-bold tracking-widest uppercase">{currentIndex + 1} of {total}</span>
+                        <button
+                            className="hover:text-slate-600 transition-colors disabled:opacity-30"
+                            onClick={goNext}
+                            disabled={currentIndex === total - 1}
+                        >
                             <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
                                 <path d="M1 1L6 6L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
@@ -63,9 +82,9 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                         <div className="relative flex-shrink-0">
                             <div className="w-[56px] h-[56px] rounded-xl bg-neutral-200 overflow-hidden">
                                 <img
-                                    alt="Ram Gupta"
+                                    alt={candidate.name}
                                     className="w-full h-full object-cover"
-                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBT3sqE6RS0WmeZC9ArbIb8MM0-p-S0-dOWpwKXbcGSUftawEeGPpMktD6ANae56887NK3bzR7kiWfds8A6-dzSGuJkS1Sl94WTahskERf3bPIyTVfkhilfvymlG1GgxTUL9Ziyn-kqE750oSaA97y7M_tuNFIEUG7s2bHSyQHKVykRaKgstr2aSKuNsQ0A9aWAIgt_Bwgfp9hWow4OkmXiH7MRT49H8h4VxFDnEE2A4uyy4g9KxBcX37YIMZtE8qnGWAPHSntdknZI"
+                                    src={candidate.avatar}
                                 />
                             </div>
                             <div
@@ -77,17 +96,17 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-3 mb-2">
                                 <h3 className="text-xl font-semibold text-slate-900">
-                                    Ram Gupta
+                                    {candidate.name}
                                 </h3>
                                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
-                                    Source: Nxthyre
+                                    Source: {candidate.source}
                                 </span>
                             </div>
-                            <p className="text-sm text-slate-500 mb-3">Senior DevOps Role</p>
+                            <p className="text-sm text-slate-500 mb-3">{candidate.role}</p>
 
                             {/* Skill Tags — outlined style */}
                             <div className="flex flex-wrap gap-2">
-                                {['Docker', 'Kubernetes', 'Terraform', 'AWS'].map((skill) => (
+                                {candidate.skills.map((skill) => (
                                     <span
                                         key={skill}
                                         className="px-3 py-1 rounded-lg bg-slate-50 text-slate-600 text-xs font-medium border border-slate-200"
@@ -103,7 +122,7 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                     <div className="bg-blue-50/50 rounded-xl border border-blue-100 p-6 relative overflow-hidden">
                         <div className="absolute top-0 right-0">
                             <div className="bg-blue-600 px-4 py-1.5 text-white text-[10px] font-bold rounded-bl-xl tracking-widest">
-                                95% MATCH
+                                {candidate.matchPercentage}% MATCH
                             </div>
                         </div>
                         <div className="flex items-center gap-2 mb-3 text-blue-600">
@@ -114,10 +133,7 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                             <h4 className="font-bold text-sm uppercase tracking-widest">AI Match Summary</h4>
                         </div>
                         <p className="text-slate-600 text-sm leading-relaxed">
-                            Ram Gupta is an exceptional match for this role due to his extensive experience in
-                            scaling infrastructure using Terraform and managing complex Kubernetes clusters. His
-                            past roles show a strong emphasis on automation and security, perfectly aligning
-                            with the team's current roadmap.
+                            {candidate.aiSummary}
                         </p>
                     </div>
 
@@ -132,7 +148,7 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                             </div>
                             <div>
                                 <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Experience</p>
-                                <p className="font-bold text-slate-900 text-lg">8+ Years</p>
+                                <p className="font-bold text-slate-900 text-lg">{candidate.experience}</p>
                             </div>
                         </div>
                         <div className="p-5 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-4">
@@ -144,7 +160,7 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                             </div>
                             <div>
                                 <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Notice Period</p>
-                                <p className="font-bold text-slate-900 text-lg">Immediate</p>
+                                <p className="font-bold text-slate-900 text-lg">{candidate.noticePeriod}</p>
                             </div>
                         </div>
                     </div>

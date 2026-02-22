@@ -1,15 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { ScheduleEventData } from '../../data/dashboardData';
 
 interface ScheduleEventModalProps {
     isOpen?: boolean;
     onClose?: () => void;
+    events: ScheduleEventData[];
 }
 
 const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
     isOpen = true,
     onClose = () => { },
+    events = [],
 }) => {
-    if (!isOpen) return null;
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    if (!isOpen || events.length === 0) return null;
+
+    const event = events[currentIndex];
+    const total = events.length;
+
+    const goNext = () => setCurrentIndex((prev) => Math.min(prev + 1, total - 1));
+    const goPrev = () => setCurrentIndex((prev) => Math.max(prev - 1, 0));
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6">
@@ -21,7 +32,7 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                     <div className="flex justify-between items-start">
                         <div className="flex flex-col items-start pr-8">
                             <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-                                1st Technical Interview: Sarah Jenkins
+                                {event.title}
                             </h2>
                             <button className="text-sm font-semibold text-blue-600 underline underline-offset-4 hover:opacity-70 transition-opacity mt-2">
                                 Reschedule Event
@@ -38,13 +49,21 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                     </div>
                     {/* Pagination — bottom-right of header */}
                     <div className="flex items-center gap-3 mt-4 text-slate-400 absolute right-8 bottom-5">
-                        <button className="hover:text-slate-600 transition-colors">
+                        <button
+                            className="hover:text-slate-600 transition-colors disabled:opacity-30"
+                            onClick={goPrev}
+                            disabled={currentIndex === 0}
+                        >
                             <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
                                 <path d="M6 1L1 6L6 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                         </button>
-                        <span className="text-[11px] font-bold tracking-widest uppercase">1 of 4</span>
-                        <button className="hover:text-slate-600 transition-colors">
+                        <span className="text-[11px] font-bold tracking-widest uppercase">{currentIndex + 1} of {total}</span>
+                        <button
+                            className="hover:text-slate-600 transition-colors disabled:opacity-30"
+                            onClick={goNext}
+                            disabled={currentIndex === total - 1}
+                        >
                             <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
                                 <path d="M1 1L6 6L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
@@ -59,16 +78,16 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                     <div className="space-y-1">
                         <div className="flex items-center gap-2">
                             <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded uppercase tracking-wider">
-                                Live In 5 Mins
+                                {event.statusLabel}
                             </span>
-                            <h3 className="text-2xl font-bold text-slate-900">1st Technical Interview</h3>
+                            <h3 className="text-2xl font-bold text-slate-900">{event.interviewType}</h3>
                         </div>
-                        <p className="text-slate-500 font-medium text-sm">Oct 25, 2023 | 09:00 AM - 10:00 AM (EST)</p>
+                        <p className="text-slate-500 font-medium text-sm">{event.date} | {event.timeRange} ({event.timezone})</p>
                     </div>
 
                     {/* Description */}
                     <p className="text-slate-600 text-sm leading-relaxed">
-                        Deep dive into React internals, specifically focusing on Reconciliation, Hooks implementation, and Concurrent Mode. The interview will also include a short system design challenge focused on real-time data streaming architectures.
+                        {event.description}
                     </p>
 
                     {/* Primary Action */}
@@ -77,7 +96,7 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                             <polygon points="23 7 16 12 23 17 23 7" />
                             <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
                         </svg>
-                        Join Meeting (Google Meet)
+                        Join Meeting ({event.meetingPlatform})
                     </button>
 
                     {/* Details Grid */}
@@ -89,12 +108,12 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                                 <div
                                     className="w-12 h-12 rounded-full bg-cover bg-center border-2 border-white shadow-sm bg-slate-100"
                                     style={{
-                                        backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuAE_PSOqDBwLVeSV_V-WQ6k89ghwcB6WUjkj8C-F70jlcZ1FDTPqDEXMINeXvXwaVExHNXjaNOWGURwqRiKXWdlqpSTwHayrHPloDGTJ4bxWc7cY9yZwskyoOui_YbTHg06KlN4Hu0X_XMqSMTW9G9GPWAMEn9dvrCrTujlH7uqsmxIGGFLY4ZTp6W_e32LBdM5LQTWlQL5ynMl-eSyOwv1NJh4-i86cIiZyF-sfTbN-Yir_SO5_hVdR49hMmkdit3dfnrHnUFI8kKV')`
+                                        backgroundImage: `url('${event.recruiterAvatar}')`
                                     }}
                                 />
                                 <div>
-                                    <p className="font-bold text-slate-900 text-sm">Alex Rivera</p>
-                                    <p className="text-sm text-slate-500">Talent Acquisition Lead</p>
+                                    <p className="font-bold text-slate-900 text-sm">{event.recruiterName}</p>
+                                    <p className="text-sm text-slate-500">{event.recruiterRole}</p>
                                 </div>
                             </div>
                         </div>
@@ -105,19 +124,19 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                             <div className="space-y-1.5">
                                 <a
                                     className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:underline"
-                                    href="mailto:sarah.j@example.com"
+                                    href={`mailto:${event.candidateEmail}`}
                                 >
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                                         <polyline points="22,6 12,13 2,6" />
                                     </svg>
-                                    sarah.j@example.com
+                                    {event.candidateEmail}
                                 </a>
                                 <p className="flex items-center gap-2 text-sm font-medium text-slate-500">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                                     </svg>
-                                    +1 (555) 123-4567
+                                    {event.candidatePhone}
                                 </p>
                             </div>
                         </div>
