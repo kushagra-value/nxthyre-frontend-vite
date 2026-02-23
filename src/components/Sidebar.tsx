@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useAuthContext } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { Settings as SettingsReactIcon } from 'lucide-react';
 
 interface SidebarProps {
   currentPage: string;
@@ -89,6 +92,11 @@ const LogoutIcon = ({ active }: { active: boolean }) => {
   );
 };
 
+const SettingsIcon = ({ active }: { active: boolean }) => {
+  const color = active ? '#0F47F2' : '#4B5563';
+  return <SettingsReactIcon color={color} size={20} />;
+};
+
 /* ─── nxthyre Logo (Expanded) ─── */
 const LogoExpanded = () => (
   <svg width="96" height="38" viewBox="0 0 96 38" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -160,6 +168,8 @@ interface MenuItem {
 
 export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { signOut } = useAuthContext();
+  const navigate = useNavigate();
 
   const menuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
@@ -171,6 +181,7 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
 
   const bottomItems: MenuItem[] = [
     { id: 'help', label: 'Help', icon: HelpIcon },
+    { id: 'settings', label: 'Settings', icon: SettingsIcon },
     { id: 'logout', label: 'Logout', icon: LogoutIcon },
   ];
 
@@ -352,9 +363,16 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
           return (
             <button
               key={item.id}
-              onClick={() => {
+              onClick={async () => {
                 if (item.id === 'logout') {
-                  // handle logout if needed
+                  try {
+                    await signOut();
+                    navigate('/');
+                  } catch (e) {
+                    console.error("Logout error", e);
+                  }
+                } else if (item.id === 'settings') {
+                  navigate('/settings');
                 } else {
                   onNavigate(item.id);
                 }

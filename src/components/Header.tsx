@@ -1,4 +1,7 @@
-import { ChevronDown } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronDown, Building2, Settings, LogOut } from 'lucide-react';
+import { useAuthContext } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   title: string;
@@ -22,8 +25,12 @@ const NotificationIcon = (
 );
 
 export default function Header({ title, subtitle }: HeaderProps) {
+  const { user, signOut } = useAuthContext();
+  const navigate = useNavigate();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
   return (
-    <header className="bg-white flex items-center justify-between px-6 shrink-0" style={{ height: '88px', padding: '16px 24px' }}>
+    <header className="bg-white flex items-center justify-between px-6 shrink-0 relative" style={{ height: '88px', padding: '16px 24px' }}>
       <div className="flex flex-col gap-2.5">
         <h1 className="text-[22px] font-medium leading-6 text-black">{title}</h1>
         {subtitle && (
@@ -60,16 +67,70 @@ export default function Header({ title, subtitle }: HeaderProps) {
           </button>
         </div>
 
-        {/* User avatar */}
-        <div className="flex items-center gap-3 px-4 py-2 rounded-xl">
-          <div className="w-10 h-10 rounded-full overflow-hidden shrink-0">
-            <img
-              className="w-full h-full object-cover"
-              alt="User profile avatar"
-              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop"
-            />
-          </div>
-          <ChevronDown className="w-5 h-5 text-[#0F47F2]" />
+        {/* User profile Menu */}
+        <div className="relative">
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-10 h-10 bg-[#0F47F2] rounded-full flex items-center justify-center text-white font-medium uppercase shrink-0">
+              {user?.fullName ? user.fullName[0] : "U"}
+            </div>
+            <ChevronDown className="w-5 h-5 text-[#0F47F2]" />
+          </button>
+
+          {showUserMenu && (
+            <div className="absolute top-[100%] right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-[100]">
+              <div className="py-1">
+                <div className="px-4 py-3 border-b border-gray-100">
+                  <p className="text-sm font-medium text-gray-900">
+                    {user?.fullName || "User"}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {user?.email || "user@example.com"}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    navigate("/workspaces-org");
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center transition-colors"
+                >
+                  <Building2 className="w-4 h-4 mr-3 text-gray-400" />
+                  Workspaces & Organizations
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    navigate("/settings");
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center transition-colors"
+                >
+                  <Settings className="w-4 h-4 mr-3 text-gray-400" />
+                  Settings
+                </button>
+
+                <button
+                  onClick={async () => {
+                    setShowUserMenu(false);
+                    try {
+                      await signOut();
+                      navigate('/');
+                    } catch (e) {
+                      console.error("Logout error", e);
+                    }
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center transition-colors"
+                >
+                  <LogOut className="w-4 h-4 mr-3" />
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>
