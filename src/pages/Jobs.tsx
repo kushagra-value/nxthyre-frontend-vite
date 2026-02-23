@@ -11,6 +11,7 @@ import {
   MyWorkspace,
 } from "../services/organizationService";
 import {
+  Search,
   ChevronLeft,
   ChevronRight,
   Eye,
@@ -137,10 +138,11 @@ export default function Jobs({ onSelectJob }: JobsProps) {
   const [showEditJobRole, setShowEditJobRole] = useState(false);
   const [editingJobId, setEditingJobId] = useState<number | null>(null);
 
-  // Table filter
+  // Table filter & search
   const [activeFilter, setActiveFilter] = useState<
-    "All" | "Active" | "Paused" | "Closed"
+    "All" | "Active" | "Paused" | "Closed" | "Draft" | "Needs Attention"
   >("All");
+  const [jobSearchQuery, setJobSearchQuery] = useState("");
 
   const fetchLogo = async (query: string) => {
     if (!query || logos[query] !== undefined) return;
@@ -356,11 +358,35 @@ export default function Jobs({ onSelectJob }: JobsProps) {
     });
   }, [allRows, logos]);
 
-  // Filter
+  // Search + Filter
+  const searchedRows = jobSearchQuery.trim()
+    ? allRows.filter((r) =>
+      r.title.toLowerCase().includes(jobSearchQuery.toLowerCase()) ||
+      r.company.toLowerCase().includes(jobSearchQuery.toLowerCase()) ||
+      r.code.toLowerCase().includes(jobSearchQuery.toLowerCase())
+    )
+    : allRows;
+
   const filteredRows =
     activeFilter === "All"
-      ? allRows
-      : allRows.filter((r) => r.status === activeFilter);
+      ? searchedRows
+      : activeFilter === "Needs Attention"
+        ? searchedRows.filter((r) => r.pipeline.sourced === 0 || r.daysOpen > 30)
+        : activeFilter === "Draft"
+          ? searchedRows.filter((r) => r.status === "Paused") // Draft maps to Paused/unpublished
+          : searchedRows.filter((r) => r.status === activeFilter);
+
+  // Filter counts (computed from searchedRows)
+  const filterCounts = {
+    All: searchedRows.length,
+    Active: searchedRows.filter((r) => r.status === "Active").length,
+    Paused: searchedRows.filter((r) => r.status === "Paused").length,
+    Closed: searchedRows.filter((r) => r.status === "Closed").length,
+    Draft: searchedRows.filter((r) => r.status === "Paused").length,
+    "Needs Attention": searchedRows.filter(
+      (r) => r.pipeline.sourced === 0 || r.daysOpen > 30,
+    ).length,
+  };
 
   // Pagination
   const itemsPerPage = 10;
@@ -435,34 +461,64 @@ export default function Jobs({ onSelectJob }: JobsProps) {
           {/* ─── Left: All Jobs Table ─── */}
           <div className="lg:col-span-2 flex flex-col gap-6">
             <section className="bg-white rounded-xl overflow-hidden" style={{ border: "0.5px solid #D1D1D6" }}>
-              {/* Table Header */}
+              {/* Title Row */}
               <div
-                className="px-5 py-4 flex flex-wrap items-center justify-between gap-3"
-                style={{ borderBottom: "0.5px solid #E5E7EB" }}
+                className="px-5 pt-5 pb-3 flex items-center justify-between"
               >
                 <h2 className="text-base font-medium text-black">All Jobs</h2>
-                <div className="flex items-center gap-2">
-                  {(["All", "Active", "Paused", "Closed"] as const).map((f) => (
+                <button
+                  onClick={() => setShowCreateJobRole(true)}
+                  className="flex items-center gap-1.5 bg-[#0F47F2] text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
+                >
+                  <Plus className="w-4 h-4" /> Post New Job
+                </button>
+              </div>
+
+              {/* Filter + Search Row */}
+              <div
+                className="px-5 pb-4 flex flex-wrap items-center justify-between gap-3"
+                style={{ borderBottom: "0.5px solid #E5E7EB" }}
+              >
+                <div className="flex items-center gap-2 flex-wrap">
+                  {(["All", "Active", "Paused", "Closed", "Draft", "Needs Attention"] as const).map((f) => (
                     <button
                       key={f}
                       onClick={() => {
                         setActiveFilter(f);
                         setCurrentPage(1);
                       }}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${activeFilter === f
-                        ? "bg-[#0F47F2] text-white"
-                        : "text-[#8E8E93] hover:bg-[#F3F5F7]"
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeFilter === f
+                          ? "bg-[#0F47F2] text-white"
+                          : "text-[#4B5563] hover:bg-[#F3F5F7]"
                         }`}
+                      style={
+                        activeFilter !== f
+                          ? { border: "0.5px solid #D1D1D6" }
+                          : undefined
+                      }
                     >
-                      {f}
+                      {f}{" "}
+                      <span className={activeFilter === f ? "text-white/70" : "text-[#AEAEB2]"}>
+                        ({filterCounts[f]})
+                      </span>
                     </button>
                   ))}
-                  <button
-                    onClick={() => setShowCreateJobRole(true)}
-                    className="ml-3 flex items-center gap-1.5 bg-[#0F47F2] text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
-                  >
-                    <Plus className="w-4 h-4" /> New Job
-                  </button>
+                </div>
+
+                {/* Search */}
+                <div className="relative w-[200px]">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
+                  <input
+                    type="text"
+                    placeholder="Search jobs..."
+                    value={jobSearchQuery}
+                    onChange={(e) => {
+                      setJobSearchQuery(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="w-full h-9 pl-9 pr-3 rounded-lg bg-[#F9FAFB] text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow"
+                    style={{ border: "0.5px solid #D1D1D6" }}
+                  />
                 </div>
               </div>
 
