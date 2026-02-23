@@ -38,6 +38,7 @@ import Dashboard from "./pages/Dashboard";
 import Jobs from "./pages/Jobs";
 import Interviews from "./pages/Interviews";
 import CandidatesPool from "./pages/CandidatesPool";
+import JobPipeline from "./pages/JobPipeline";
 import Companies from "./pages/Companies";
 
 function MainApp() {
@@ -117,7 +118,7 @@ function MainApp() {
 
   const handleJobSelect = (jobId: number) => {
     setSelectedJobId(jobId);
-    setCurrentPage("candidatePool");
+    setCurrentPage("jobPipeline");
   };
 
   const getCurrentDateTime = () => {
@@ -147,6 +148,8 @@ function MainApp() {
         return "Interviews";
       case "candidatePool":
         return "Candidate Pool";
+      case "jobPipeline":
+        return "Pipeline Stage";
       default:
         return "Dashboard";
     }
@@ -164,6 +167,8 @@ function MainApp() {
         return <Interviews />;
       case "candidatePool":
         return <CandidatesPool initialJobId={selectedJobId} />;
+      case "jobPipeline":
+        return <JobPipeline jobId={selectedJobId} onBack={() => setCurrentPage("jobs")} />;
       default:
         return <Dashboard />;
     }
