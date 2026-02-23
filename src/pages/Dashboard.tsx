@@ -67,19 +67,31 @@ const iconMap: Record<string, React.ReactNode> = {
 
 export default function Dashboard() {
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+  const [actionInitialIndex, setActionInitialIndex] = useState(0);
+
   const [isNewMatchModalOpen, setIsNewMatchModalOpen] = useState(false);
+  const [newMatchInitialIndex, setNewMatchInitialIndex] = useState(0);
+
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [scheduleInitialIndex, setScheduleInitialIndex] = useState(0);
+
   const [isAgendaModalOpen, setIsAgendaModalOpen] = useState(false);
 
-  const handlePriorityCardClick = () => {
+  const handlePriorityCardClick = (name: string) => {
+    const idx = actionReviewCandidates.findIndex((c) => c.name === name);
+    setActionInitialIndex(idx >= 0 ? idx : 0);
     setIsActionModalOpen(true);
   };
 
-  const handleTalentMatchClick = () => {
+  const handleTalentMatchClick = (name: string) => {
+    const idx = newMatchCandidates.findIndex((c) => c.name === name);
+    setNewMatchInitialIndex(idx >= 0 ? idx : 0);
     setIsNewMatchModalOpen(true);
   };
 
-  const handleScheduleEventClick = (_item: ScheduleItemData) => {
+  const handleScheduleEventClick = (item: ScheduleItemData) => {
+    const idx = scheduleEventsData.findIndex((e) => e.candidateName === item.name);
+    setScheduleInitialIndex(idx >= 0 ? idx : 0);
     setIsScheduleModalOpen(true);
   };
 
@@ -147,7 +159,7 @@ export default function Dashboard() {
                       daysAgo={card.daysAgo}
                       status={card.status}
                       statusColor={card.statusColor}
-                      onClick={handlePriorityCardClick}
+                      onClick={() => handlePriorityCardClick(card.name)}
                     />
                   ))}
                 </div>
@@ -184,7 +196,7 @@ export default function Dashboard() {
                   experience={match.experience}
                   matchPercentage={match.matchPercentage}
                   source={match.source}
-                  onClick={handleTalentMatchClick}
+                  onClick={() => handleTalentMatchClick(match.name)}
                 />
               ))}
             </div>
@@ -204,18 +216,21 @@ export default function Dashboard() {
         isOpen={isActionModalOpen}
         onClose={() => setIsActionModalOpen(false)}
         candidates={actionReviewCandidates}
+        initialIndex={actionInitialIndex}
       />
       {/* New Match Candidate Modal */}
       <NewMatchCandidateModal
         isOpen={isNewMatchModalOpen}
         onClose={() => setIsNewMatchModalOpen(false)}
         candidates={newMatchCandidates}
+        initialIndex={newMatchInitialIndex}
       />
       {/* Schedule Event Modal */}
       <ScheduleEventModal
         isOpen={isScheduleModalOpen}
         onClose={() => setIsScheduleModalOpen(false)}
         events={scheduleEventsData}
+        initialIndex={scheduleInitialIndex}
       />
       {/* Date-Wise Agenda Modal */}
       <DateWiseAgendaModal

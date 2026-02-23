@@ -5,14 +5,22 @@ interface ActionReviewModalProps {
     isOpen?: boolean;
     onClose?: () => void;
     candidates: ActionReviewCandidate[];
+    initialIndex?: number;
 }
 
 const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
     isOpen = true,
     onClose = () => { },
     candidates = [],
+    initialIndex = 0,
 }) => {
-    const [currentIndex, setCurrentIndex] = useState(0);
+    const [currentIndex, setCurrentIndex] = useState(initialIndex);
+
+    React.useEffect(() => {
+        if (isOpen && candidates.length > 0) {
+            setCurrentIndex(initialIndex < candidates.length ? initialIndex : 0);
+        }
+    }, [isOpen, initialIndex, candidates.length]);
 
     if (!isOpen || candidates.length === 0) return null;
 

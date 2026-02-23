@@ -5,14 +5,22 @@ interface ScheduleEventModalProps {
     isOpen?: boolean;
     onClose?: () => void;
     events: ScheduleEventData[];
+    initialIndex?: number;
 }
 
 const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
     isOpen = true,
     onClose = () => { },
     events = [],
+    initialIndex = 0,
 }) => {
-    const [currentIndex, setCurrentIndex] = useState(0);
+    const [currentIndex, setCurrentIndex] = useState(initialIndex);
+
+    React.useEffect(() => {
+        if (isOpen && events.length > 0) {
+            setCurrentIndex(initialIndex < events.length ? initialIndex : 0);
+        }
+    }, [isOpen, initialIndex, events.length]);
 
     if (!isOpen || events.length === 0) return null;
 
