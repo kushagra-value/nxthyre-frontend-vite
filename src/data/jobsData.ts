@@ -31,7 +31,6 @@ export interface JobTableRow {
     pipeline: JobPipelineCounts;
     daysOpen: number;
     status: 'Active' | 'Paused' | 'Closed';
-    icon: 'code' | 'palette' | 'campaign' | 'engineering' | 'analytics' | 'storage';
 }
 
 export interface AIAutopilotItem {
@@ -111,7 +110,6 @@ export const jobTableRows: JobTableRow[] = [
         pipeline: { sourced: 12, screened: 4, interview: 3, hired: 0, highlightStage: 2 },
         daysOpen: 14,
         status: 'Active',
-        icon: 'code',
     },
     {
         id: 'jt-2',
@@ -124,7 +122,6 @@ export const jobTableRows: JobTableRow[] = [
         pipeline: { sourced: 25, screened: 8, interview: 2, hired: 0 },
         daysOpen: 8,
         status: 'Active',
-        icon: 'palette',
     },
     {
         id: 'jt-3',
@@ -137,7 +134,6 @@ export const jobTableRows: JobTableRow[] = [
         pipeline: { sourced: 18, screened: 6, interview: 4, hired: 1, highlightStage: 3 },
         daysOpen: 21,
         status: 'Paused',
-        icon: 'campaign',
     },
     {
         id: 'jt-4',
@@ -150,7 +146,6 @@ export const jobTableRows: JobTableRow[] = [
         pipeline: { sourced: 30, screened: 10, interview: 5, hired: 2, highlightStage: 3 },
         daysOpen: 35,
         status: 'Active',
-        icon: 'engineering',
     },
     {
         id: 'jt-5',
@@ -163,7 +158,6 @@ export const jobTableRows: JobTableRow[] = [
         pipeline: { sourced: 15, screened: 7, interview: 3, hired: 0, highlightStage: 2 },
         daysOpen: 10,
         status: 'Active',
-        icon: 'analytics',
     },
     {
         id: 'jt-6',
@@ -176,7 +170,6 @@ export const jobTableRows: JobTableRow[] = [
         pipeline: { sourced: 20, screened: 9, interview: 4, hired: 0, highlightStage: 2 },
         daysOpen: 46,
         status: 'Active',
-        icon: 'storage',
     },
     {
         id: 'jt-7',
@@ -189,7 +182,6 @@ export const jobTableRows: JobTableRow[] = [
         pipeline: { sourced: 8, screened: 3, interview: 1, hired: 0, highlightStage: 0 },
         daysOpen: 46,
         status: 'Paused',
-        icon: 'campaign',
     },
     {
         id: 'jt-8',
@@ -202,7 +194,6 @@ export const jobTableRows: JobTableRow[] = [
         pipeline: { sourced: 22, screened: 11, interview: 6, hired: 1, highlightStage: 3 },
         daysOpen: 28,
         status: 'Closed',
-        icon: 'engineering',
     },
 ];
 

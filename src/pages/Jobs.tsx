@@ -11,7 +11,6 @@ import {
   MyWorkspace,
 } from "../services/organizationService";
 import {
-  Search,
   ChevronLeft,
   ChevronRight,
   Eye,
@@ -29,31 +28,6 @@ import {
   jobRecentActivities,
   JobTableRow,
 } from "../data/jobsData";
-
-// ──────────────────────────────────────────────
-//  Shared icon SVGs per job type
-// ──────────────────────────────────────────────
-
-const jobIconMap: Record<string, React.ReactNode> = {
-  code: (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7 5L2 10L7 15" stroke="#8E8E93" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /><path d="M13 5L18 10L13 15" stroke="#8E8E93" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-  ),
-  palette: (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#8E8E93" strokeWidth="1.5" /><circle cx="7" cy="8" r="1.5" fill="#8E8E93" /><circle cx="13" cy="8" r="1.5" fill="#8E8E93" /><circle cx="10" cy="13" r="1.5" fill="#8E8E93" /></svg>
-  ),
-  campaign: (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M15 3L5 8H3V12H5L15 17V3Z" stroke="#8E8E93" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-  ),
-  engineering: (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L3 6V14L10 18L17 14V6L10 2Z" stroke="#8E8E93" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /><circle cx="10" cy="10" r="3" stroke="#8E8E93" strokeWidth="1.5" /></svg>
-  ),
-  analytics: (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="10" width="3" height="7" rx="0.5" stroke="#8E8E93" strokeWidth="1.5" /><rect x="8.5" y="6" width="3" height="11" rx="0.5" stroke="#8E8E93" strokeWidth="1.5" /><rect x="14" y="3" width="3" height="14" rx="0.5" stroke="#8E8E93" strokeWidth="1.5" /></svg>
-  ),
-  storage: (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><ellipse cx="10" cy="5" rx="7" ry="3" stroke="#8E8E93" strokeWidth="1.5" /><path d="M3 5V15C3 16.657 6.134 18 10 18C13.866 18 17 16.657 17 15V5" stroke="#8E8E93" strokeWidth="1.5" /><path d="M3 10C3 11.657 6.134 13 10 13C13.866 13 17 11.657 17 10" stroke="#8E8E93" strokeWidth="1.5" /></svg>
-  ),
-};
 
 const autopilotIconMap: Record<string, React.ReactNode> = {
   red: (
@@ -119,8 +93,8 @@ function PipelineBadge({
       </span>
       <span
         className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${highlight
-            ? "bg-[#0F47F2] text-white font-semibold"
-            : "bg-[#F3F5F7] text-[#4B5563]"
+          ? "bg-[#0F47F2] text-white font-semibold"
+          : "bg-[#F3F5F7] text-[#4B5563]"
           }`}
       >
         {count}
@@ -157,6 +131,7 @@ export default function Jobs({ onSelectJob }: JobsProps) {
   const [projectSearchQuery, setProjectSearchQuery] = useState("");
   const debouncedProjectSearch = useDebounce(projectSearchQuery, 500);
   const [currentPage, setCurrentPage] = useState(1);
+  const [logos, setLogos] = useState<Record<string, string | null | undefined>>({});
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [showCreateJobRole, setShowCreateJobRole] = useState(false);
   const [showEditJobRole, setShowEditJobRole] = useState(false);
@@ -166,6 +141,25 @@ export default function Jobs({ onSelectJob }: JobsProps) {
   const [activeFilter, setActiveFilter] = useState<
     "All" | "Active" | "Paused" | "Closed"
   >("All");
+
+  const fetchLogo = async (query: string) => {
+    if (!query || logos[query] !== undefined) return;
+    try {
+      const response = await fetch(
+        `https://api.logo.dev/search?q=${encodeURIComponent(query)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${import.meta.env.VITE_LOGO_DEV_API_KEY}`,
+          },
+        },
+      );
+      const data = await response.json();
+      const logoUrl = data.length > 0 ? data[0].logo_url : null;
+      setLogos((prev) => ({ ...prev, [query]: logoUrl }));
+    } catch (error) {
+      setLogos((prev) => ({ ...prev, [query]: undefined }));
+    }
+  };
 
   const getTimeAgo = (dateString: string): string => {
     const past = new Date(dateString);
@@ -256,6 +250,17 @@ export default function Jobs({ onSelectJob }: JobsProps) {
   }, [isAuthenticated, debouncedProjectSearch]);
 
   useEffect(() => {
+    if (categories.length > 0) {
+      const uniqueCompanies = Array.from(new Set(categories.map((c) => c.companyName)));
+      uniqueCompanies.forEach((company) => {
+        if (company && company !== "Confidential" && logos[company] === undefined) {
+          fetchLogo(company);
+        }
+      });
+    }
+  }, [categories, logos]);
+
+  useEffect(() => {
     const fetchWorkspaces = async () => {
       try {
         const workspaceData = await organizationService.getMyWorkspaces();
@@ -319,7 +324,7 @@ export default function Jobs({ onSelectJob }: JobsProps) {
   const buildTableRows = useCallback((): JobTableRow[] => {
     if (categories.length === 0) return jobTableRows;
 
-    const apiRows: JobTableRow[] = categories.map((cat, i) => ({
+    const apiRows: JobTableRow[] = categories.map((cat) => ({
       id: `api-${cat.id}`,
       jobId: cat.id,
       title: cat.name,
@@ -335,14 +340,21 @@ export default function Jobs({ onSelectJob }: JobsProps) {
       },
       daysOpen: 0,
       status: cat.status === "PUBLISHED" ? "Active" : "Paused",
-      icon: (["code", "palette", "campaign", "engineering", "analytics", "storage"] as const)[
-        i % 6
-      ],
     }));
     return apiRows;
   }, [categories]);
 
   const allRows = buildTableRows();
+
+  // Fetch logos for table row companies (works for both API and dummy data)
+  useEffect(() => {
+    const uniqueCompanies = Array.from(new Set(allRows.map((r) => r.company)));
+    uniqueCompanies.forEach((company) => {
+      if (company && company !== "Confidential" && logos[company] === undefined) {
+        fetchLogo(company);
+      }
+    });
+  }, [allRows, logos]);
 
   // Filter
   const filteredRows =
@@ -399,8 +411,8 @@ export default function Jobs({ onSelectJob }: JobsProps) {
                   {stat.trend && (
                     <span
                       className={`flex items-center text-xs font-medium px-1.5 py-0.5 rounded ${stat.trendColor === "green"
-                          ? "text-[#069855] bg-[#DEF7EC]"
-                          : "text-[#DC2626] bg-[#FEE2E2]"
+                        ? "text-[#069855] bg-[#DEF7EC]"
+                        : "text-[#DC2626] bg-[#FEE2E2]"
                         }`}
                     >
                       {stat.trend}
@@ -438,8 +450,8 @@ export default function Jobs({ onSelectJob }: JobsProps) {
                         setCurrentPage(1);
                       }}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${activeFilter === f
-                          ? "bg-[#0F47F2] text-white"
-                          : "text-[#8E8E93] hover:bg-[#F3F5F7]"
+                        ? "bg-[#0F47F2] text-white"
+                        : "text-[#8E8E93] hover:bg-[#F3F5F7]"
                         }`}
                     >
                       {f}
@@ -480,109 +492,60 @@ export default function Jobs({ onSelectJob }: JobsProps) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#F3F5F7]">
-                    {paginatedRows.map((row) => {
-                      const sty = statusStyles[row.status] || statusStyles.Active;
-                      return (
-                        <tr
-                          key={row.id}
-                          className="hover:bg-[#FAFBFC] transition-colors cursor-pointer"
-                          onClick={() => onSelectJob?.(row.jobId)}
-                        >
-                          {/* Job Title */}
+                    {loadingCategories ? (
+                      // Skeleton rows while loading
+                      [...Array(5)].map((_, i) => (
+                        <tr key={`skel-${i}`} className="animate-pulse">
                           <td className="px-5 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-md bg-[#F3F5F7] flex items-center justify-center shrink-0">
-                                {jobIconMap[row.icon]}
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-sm font-medium text-black truncate">
-                                  {row.title}
-                                </p>
-                                <p className="text-[11px] text-[#AEAEB2]">
-                                  {row.code} • {row.type} • {row.locationType}
-                                </p>
+                              <div className="w-8 h-8 rounded-md bg-gray-200 shrink-0" />
+                              <div className="flex-1 space-y-1.5">
+                                <div className="h-3.5 bg-gray-200 rounded w-36" />
+                                <div className="h-2.5 bg-gray-100 rounded w-28" />
                               </div>
                             </div>
                           </td>
-
-                          {/* Company */}
                           <td className="px-5 py-4">
-                            <p className="text-sm font-normal text-[#4B5563]">
-                              {row.company}
-                            </p>
+                            <div className="h-3.5 bg-gray-200 rounded w-24" />
                           </td>
-
-                          {/* Pipeline */}
                           <td className="px-5 py-4">
                             <div className="flex items-center gap-1.5">
-                              <PipelineBadge
-                                label="Src"
-                                count={row.pipeline.sourced}
-                                highlight={row.pipeline.highlightStage === 0}
-                              />
-                              <PipelineConnector />
-                              <PipelineBadge
-                                label="Scr"
-                                count={row.pipeline.screened}
-                                highlight={row.pipeline.highlightStage === 1}
-                              />
-                              <PipelineConnector />
-                              <PipelineBadge
-                                label="Int"
-                                count={row.pipeline.interview}
-                                highlight={row.pipeline.highlightStage === 2}
-                              />
-                              <PipelineConnector />
-                              <PipelineBadge
-                                label="Hird"
-                                count={row.pipeline.hired}
-                                highlight={row.pipeline.highlightStage === 3}
-                              />
+                              <div className="flex flex-col items-center gap-1">
+                                <div className="h-2 bg-gray-100 rounded w-5" />
+                                <div className="h-5 bg-gray-200 rounded-full w-8" />
+                              </div>
+                              <div className="h-[1px] w-3 bg-gray-200" />
+                              <div className="flex flex-col items-center gap-1">
+                                <div className="h-2 bg-gray-100 rounded w-5" />
+                                <div className="h-5 bg-gray-200 rounded-full w-8" />
+                              </div>
+                              <div className="h-[1px] w-3 bg-gray-200" />
+                              <div className="flex flex-col items-center gap-1">
+                                <div className="h-2 bg-gray-100 rounded w-5" />
+                                <div className="h-5 bg-gray-200 rounded-full w-8" />
+                              </div>
+                              <div className="h-[1px] w-3 bg-gray-200" />
+                              <div className="flex flex-col items-center gap-1">
+                                <div className="h-2 bg-gray-100 rounded w-5" />
+                                <div className="h-5 bg-gray-200 rounded-full w-8" />
+                              </div>
                             </div>
                           </td>
-
-                          {/* Days Open */}
                           <td className="px-5 py-4">
-                            <p className="text-sm font-normal text-[#4B5563]">
-                              {row.daysOpen} days
-                            </p>
+                            <div className="h-3.5 bg-gray-200 rounded w-14" />
                           </td>
-
-                          {/* Status */}
                           <td className="px-5 py-4">
-                            <span
-                              className={`px-2 py-1 rounded-full text-[10px] font-semibold uppercase ${sty.bg} ${sty.text}`}
-                            >
-                              {row.status}
-                            </span>
+                            <div className="h-5 bg-gray-200 rounded-full w-14" />
                           </td>
-
-                          {/* Actions */}
-                          <td className="px-5 py-4 text-right">
-                            <div
-                              className="flex items-center justify-end gap-2"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <button
-                                className="p-1.5 text-[#AEAEB2] hover:text-[#0F47F2] transition-colors"
-                                title="View"
-                                onClick={() => handleSharePipelines(row.jobId)}
-                              >
-                                <Eye className="w-[18px] h-[18px]" />
-                              </button>
-                              <button
-                                className="p-1.5 text-[#AEAEB2] hover:text-[#0F47F2] transition-colors"
-                                title="Edit"
-                                onClick={() => handleEditJobRole(row.jobId)}
-                              >
-                                <Pencil className="w-[18px] h-[18px]" />
-                              </button>
+                          <td className="px-5 py-4">
+                            <div className="flex items-center justify-end gap-2">
+                              <div className="w-6 h-6 bg-gray-200 rounded" />
+                              <div className="w-6 h-6 bg-gray-200 rounded" />
                             </div>
                           </td>
                         </tr>
-                      );
-                    })}
-                    {paginatedRows.length === 0 && (
+                      ))
+                    ) : paginatedRows.length === 0 ? (
                       <tr>
                         <td
                           colSpan={6}
@@ -591,6 +554,120 @@ export default function Jobs({ onSelectJob }: JobsProps) {
                           No jobs found.
                         </td>
                       </tr>
+                    ) : (
+                      paginatedRows.map((row) => {
+                        const sty = statusStyles[row.status] || statusStyles.Active;
+                        const companyLogo = logos[row.company];
+                        return (
+                          <tr
+                            key={row.id}
+                            className="hover:bg-[#FAFBFC] transition-colors cursor-pointer"
+                            onClick={() => onSelectJob?.(row.jobId)}
+                          >
+                            {/* Job Title */}
+                            <td className="px-5 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-md bg-[#F3F5F7] flex items-center justify-center shrink-0 overflow-hidden">
+                                  {companyLogo ? (
+                                    <img
+                                      src={companyLogo}
+                                      alt={row.company}
+                                      className="w-full h-full object-contain"
+                                    />
+                                  ) : (
+                                    <span className="text-[11px] font-semibold text-[#8E8E93]">
+                                      {row.company.charAt(0).toUpperCase()}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium text-black truncate">
+                                    {row.title}
+                                  </p>
+                                  <p className="text-[11px] text-[#AEAEB2]">
+                                    {row.code} • {row.type} • {row.locationType}
+                                  </p>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Company */}
+                            <td className="px-5 py-4">
+                              <p className="text-sm font-normal text-[#4B5563]">
+                                {row.company}
+                              </p>
+                            </td>
+
+                            {/* Pipeline */}
+                            <td className="px-5 py-4">
+                              <div className="flex items-center gap-1.5">
+                                <PipelineBadge
+                                  label="Src"
+                                  count={row.pipeline.sourced}
+                                  highlight={row.pipeline.highlightStage === 0}
+                                />
+                                <PipelineConnector />
+                                <PipelineBadge
+                                  label="Scr"
+                                  count={row.pipeline.screened}
+                                  highlight={row.pipeline.highlightStage === 1}
+                                />
+                                <PipelineConnector />
+                                <PipelineBadge
+                                  label="Int"
+                                  count={row.pipeline.interview}
+                                  highlight={row.pipeline.highlightStage === 2}
+                                />
+                                <PipelineConnector />
+                                <PipelineBadge
+                                  label="Hird"
+                                  count={row.pipeline.hired}
+                                  highlight={row.pipeline.highlightStage === 3}
+                                />
+                              </div>
+                            </td>
+
+                            {/* Days Open */}
+                            <td className="px-5 py-4">
+                              <p className="text-sm font-normal text-[#4B5563]">
+                                {row.daysOpen} days
+                              </p>
+                            </td>
+
+                            {/* Status */}
+                            <td className="px-5 py-4">
+                              <span
+                                className={`px-2 py-1 rounded-full text-[10px] font-semibold uppercase ${sty.bg} ${sty.text}`}
+                              >
+                                {row.status}
+                              </span>
+                            </td>
+
+                            {/* Actions */}
+                            <td className="px-5 py-4 text-right">
+                              <div
+                                className="flex items-center justify-end gap-2"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <button
+                                  className="p-1.5 text-[#AEAEB2] hover:text-[#0F47F2] transition-colors"
+                                  title="View"
+                                  onClick={() => handleSharePipelines(row.jobId)}
+                                >
+                                  <Eye className="w-[18px] h-[18px]" />
+                                </button>
+                                <button
+                                  className="p-1.5 text-[#AEAEB2] hover:text-[#0F47F2] transition-colors"
+                                  title="Edit"
+                                  onClick={() => handleEditJobRole(row.jobId)}
+                                >
+                                  <Pencil className="w-[18px] h-[18px]" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>
@@ -620,8 +697,8 @@ export default function Jobs({ onSelectJob }: JobsProps) {
                         key={p}
                         onClick={() => setCurrentPage(p)}
                         className={`w-8 h-8 flex items-center justify-center rounded text-xs font-medium transition-colors ${currentPage === p
-                            ? "bg-[#0F47F2] text-white"
-                            : "text-[#4B5563] hover:bg-[#F3F5F7]"
+                          ? "bg-[#0F47F2] text-white"
+                          : "text-[#4B5563] hover:bg-[#F3F5F7]"
                           }`}
                       >
                         {p}
@@ -655,7 +732,7 @@ export default function Jobs({ onSelectJob }: JobsProps) {
           <div className="lg:col-span-1 flex flex-col gap-6">
             {/* AI Autopilot */}
             <div
-              className="bg-white rounded-xl p-5 sticky top-24"
+              className="bg-white rounded-xl p-5"
               style={{ border: "0.5px solid #D1D1D6" }}
             >
               <div className="flex items-center justify-between mb-4">
