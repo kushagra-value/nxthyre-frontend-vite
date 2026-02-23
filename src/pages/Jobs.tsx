@@ -363,7 +363,7 @@ export default function Jobs({ onSelectJob }: JobsProps) {
       : allRows.filter((r) => r.status === activeFilter);
 
   // Pagination
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedRows = filteredRows.slice(startIndex, startIndex + itemsPerPage);
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
@@ -716,15 +716,6 @@ export default function Jobs({ onSelectJob }: JobsProps) {
                 </div>
               </div>
 
-              {/* Footer */}
-              <div
-                className="px-5 py-2.5 text-center bg-[#F9FAFB]"
-                style={{ borderTop: "0.5px solid #F3F5F7" }}
-              >
-                <button className="text-xs font-medium text-[#0F47F2] hover:underline">
-                  View all jobs list
-                </button>
-              </div>
             </section>
           </div>
 
