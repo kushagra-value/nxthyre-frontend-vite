@@ -12,8 +12,13 @@ import {
     Plus,
     Check,
     Pause,
-    Play
+    Play,
+    Users,
+    Settings
 } from "lucide-react";
+import CreateWorkspaceModal from "../components/workspace/CreateWorkspaceModal";
+import JoinWorkspaceModal from "../components/workspace/JoinWorkspaceModal";
+import PendingRequestsModal from "../components/workspace/PendingRequestsModal";
 import {
     companyStatCards,
     companyTableRows,
@@ -36,6 +41,10 @@ export default function Companies() {
     const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
     const [loading, setLoading] = useState(true);
     const [logos, setLogos] = useState<Record<string, string | null | undefined>>({});
+
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showJoinModal, setShowJoinModal] = useState(false);
+    const [showPendingModal, setShowPendingModal] = useState(false);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [activeFilter, setActiveFilter] = useState<
@@ -215,11 +224,26 @@ export default function Companies() {
                             {/* Title Row */}
                             <div className="px-5 pt-5 pb-3 flex items-center justify-between">
                                 <h2 className="text-base font-medium text-black">All Companies</h2>
-                                <button
-                                    className="flex items-center gap-1.5 bg-[#0F47F2] text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
-                                >
-                                    <Plus className="w-4 h-4" /> Add Company
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => setShowCreateModal(true)}
+                                        className="flex items-center gap-1.5 bg-[#0F47F2] text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
+                                    >
+                                        <Plus className="w-4 h-4" /> Create Workspace
+                                    </button>
+                                    <button
+                                        onClick={() => setShowJoinModal(true)}
+                                        className="flex items-center gap-1.5 bg-white text-[#4B5563] border border-[#D1D1D6] px-4 py-2 rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
+                                    >
+                                        <Users className="w-4 h-4" /> Join Workspace
+                                    </button>
+                                    <button
+                                        onClick={() => setShowPendingModal(true)}
+                                        className="flex items-center gap-1.5 bg-white text-[#4B5563] border border-[#D1D1D6] px-4 py-2 rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
+                                    >
+                                        <Settings className="w-4 h-4" /> Pending Requests
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Filter + Search Row */}
@@ -612,6 +636,21 @@ export default function Companies() {
                     </div>
                 </div>
             </div>
+
+            {/* Modals */}
+            <CreateWorkspaceModal
+                isOpen={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+                onSuccess={() => fetchWorkspaces()}
+            />
+            <JoinWorkspaceModal
+                isOpen={showJoinModal}
+                onClose={() => setShowJoinModal(false)}
+            />
+            <PendingRequestsModal
+                isOpen={showPendingModal}
+                onClose={() => setShowPendingModal(false)}
+            />
         </div>
     );
 }
