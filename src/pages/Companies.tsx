@@ -385,7 +385,7 @@ export default function Companies() {
                                                 // Skeleton rows while loading
                                                 [...Array(5)].map((_, i) => (
                                                     <tr key={`skel-${i}`} className="animate-pulse">
-                                                        <td className="px-5 py-4">
+                                                        <td className="px-4 py-4">
                                                             <div className="flex items-center gap-3">
                                                                 <div className="w-8 h-8 rounded-md bg-gray-200 shrink-0" />
                                                                 <div className="flex-1 space-y-1.5">
@@ -394,12 +394,12 @@ export default function Companies() {
                                                                 </div>
                                                             </div>
                                                         </td>
-                                                        <td className="px-5 py-4"><div className="h-3.5 bg-gray-200 rounded w-10" /></td>
-                                                        <td className="px-5 py-4"><div className="h-3.5 bg-gray-200 rounded w-10" /></td>
-                                                        <td className="px-5 py-4"><div className="h-3.5 bg-gray-200 rounded w-10" /></td>
-                                                        <td className="px-5 py-4"><div className="h-3.5 bg-gray-200 rounded w-10" /></td>
-                                                        <td className="px-5 py-4"><div className="h-5 bg-gray-200 rounded-full w-14" /></td>
-                                                        <td className="px-5 py-4">
+                                                        <td className="px-4 py-4"><div className="h-3.5 bg-gray-200 rounded w-10" /></td>
+                                                        <td className="px-4 py-4"><div className="h-3.5 bg-gray-200 rounded w-10" /></td>
+                                                        <td className="px-4 py-4"><div className="h-3.5 bg-gray-200 rounded w-10" /></td>
+                                                        <td className="px-4 py-4"><div className="h-3.5 bg-gray-200 rounded w-10" /></td>
+                                                        <td className="px-4 py-4"><div className="h-5 bg-gray-200 rounded-full w-14" /></td>
+                                                        <td className="px-4 py-4">
                                                             <div className="flex items-center justify-end gap-2">
                                                                 <div className="w-16 h-6 bg-gray-200 rounded" />
                                                                 <div className="w-16 h-6 bg-gray-200 rounded" />
@@ -411,7 +411,7 @@ export default function Companies() {
                                                 <tr>
                                                     <td
                                                         colSpan={7}
-                                                        className="px-5 py-12 text-center text-sm text-[#AEAEB2]"
+                                                        className="px-4 py-12 text-center text-sm text-[#AEAEB2]"
                                                     >
                                                         No companies found.
                                                     </td>
@@ -426,7 +426,7 @@ export default function Companies() {
                                                             className="hover:bg-[#FAFBFC] transition-colors cursor-pointer"
                                                         >
                                                             {/* Company Title */}
-                                                            <td className="px-5 py-4">
+                                                            <td className="px-4 py-4">
                                                                 <div className="flex items-center gap-3">
                                                                     <div className="w-8 h-8 rounded-md bg-[#F3F5F7] flex items-center justify-center shrink-0 overflow-hidden">
                                                                         {companyLogo ? (
@@ -453,35 +453,35 @@ export default function Companies() {
                                                             </td>
 
                                                             {/* Total Jobs */}
-                                                            <td className="px-5 py-4">
+                                                            <td className="px-4 py-4">
                                                                 <p className="text-sm font-semibold text-black">
                                                                     {row.totalJobs}
                                                                 </p>
                                                             </td>
 
                                                             {/* Total Candidates */}
-                                                            <td className="px-5 py-4">
+                                                            <td className="px-4 py-4">
                                                                 <p className="text-sm font-semibold text-black">
                                                                     {row.totalCandidates}
                                                                 </p>
                                                             </td>
 
                                                             {/* Shortlisted */}
-                                                            <td className="px-5 py-4">
+                                                            <td className="px-4 py-4">
                                                                 <p className="text-sm font-semibold text-black">
                                                                     {row.shortlisted}
                                                                 </p>
                                                             </td>
 
                                                             {/* Hired */}
-                                                            <td className="px-5 py-4">
+                                                            <td className="px-4 py-4">
                                                                 <p className="text-sm font-semibold text-black">
                                                                     {row.hired}
                                                                 </p>
                                                             </td>
 
                                                             {/* Status */}
-                                                            <td className="px-5 py-4">
+                                                            <td className="px-4 py-4">
                                                                 <span
                                                                     className={`px-2 py-1 rounded-full text-[10px] font-semibold uppercase ${sty.bg} ${sty.text}`}
                                                                 >
@@ -490,7 +490,7 @@ export default function Companies() {
                                                             </td>
 
                                                             {/* Actions */}
-                                                            <td className="px-5 py-4 text-right">
+                                                            <td className="px-4 py-4 text-right">
                                                                 <div
                                                                     className="flex items-center justify-end gap-2"
                                                                     onClick={(e) => e.stopPropagation()}
