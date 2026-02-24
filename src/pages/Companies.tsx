@@ -187,7 +187,7 @@ export default function Companies() {
                                 <div
                                     key={stat.id}
                                     className="bg-white rounded-xl flex flex-col"
-                                    style={{ padding: "20px", gap: "8px", border: "0.5px solid #D1D1D6" }}
+                                    style={{ padding: "20px", gap: "8px" }}
                                 >
                                     <div className="flex items-center justify-between">
                                         <p className="text-[12px] font-normal text-[#4B5563] leading-[14px]">
@@ -259,7 +259,7 @@ export default function Companies() {
                                 ))}
                             </div>
 
-                            <div className="flex flex-wrap items-center justify-between bg-white p-4 border border-y-[0.5px] border-[#D1D1D6]">
+                            <div className="flex flex-wrap items-center justify-between bg-white p-4 border-y-[0.5px] border-[#D1D1D6]">
                                 {/* Search */}
                                 <div className="relative w-full max-w-[240px]">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
@@ -442,7 +442,7 @@ export default function Companies() {
                                                                         )}
                                                                     </div>
                                                                     <div className="min-w-0">
-                                                                        <p className="text-sm font-medium text-black truncate">
+                                                                        <p className="text-sm font-medium text-black max-w-[24ch] truncate">
                                                                             {row.name}
                                                                         </p>
                                                                         <p className="text-[11px] text-[#AEAEB2]">
@@ -599,11 +599,10 @@ export default function Companies() {
                     </div>
                 </div>
                 {!isActionView && (
-                    <div className="lg:col-span-1 flex flex-col gap-6">
+                    <div className="flex flex-col gap-6">
                         {/* Immediate Actions */}
                         <div
                             className="bg-white rounded-xl p-5"
-                            style={{ border: "0.5px solid #D1D1D6" }}
                         >
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-sm font-semibold text-black">Immediate Actions</h3>
