@@ -602,6 +602,7 @@ export default function Companies() {
 
                     </div>
                 </div>
+                {!isActionView && (
                 <div className="lg:col-span-1 flex flex-col gap-6">
                     {/* Immediate Actions */}
                     <div
@@ -726,6 +727,7 @@ export default function Companies() {
                         </div>
                     </div>
                 </div>
+                )}
             </div>
 
             {/* Modals */}
