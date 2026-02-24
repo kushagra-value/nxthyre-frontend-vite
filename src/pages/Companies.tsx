@@ -599,7 +599,7 @@ export default function Companies() {
                     </div>
                 </div>
                 {!isActionView && (
-                    <div className="flex flex-col gap-6">
+                    <div className="w-96 flex flex-col gap-6">
                         {/* Immediate Actions */}
                         <div
                             className="bg-white rounded-xl p-5"
