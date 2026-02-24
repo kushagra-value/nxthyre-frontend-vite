@@ -225,11 +225,10 @@ export default function Companies() {
                     </div>
 
                     {/* ── Main Grid ── */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white rounded-xl">
                         {/* ─── Left: All Companies Table ─── */}
-                        <div className="lg:col-span-2 flex flex-col gap-6">
-                            {/* ─── Moved outside white box to match design, or kept inside? ─── */}
-                            {/* Actually in the image, pills are inside the grey background, but let's keep it here */}
+                        <div className="lg:col-span-2 flex flex-col gap-4">
+
                             <div className="flex items-center gap-2 flex-wrap mb-2">
                                 {(
                                     ["All", "Active", "Paused", "Inactive", "Needs Attention"] as const
@@ -260,7 +259,7 @@ export default function Companies() {
                                 ))}
                             </div>
 
-                            <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl border border-[#D1D1D6]">
+                            <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 border border-y-[0.5px] border-[#D1D1D6]">
                                 {/* Search */}
                                 <div className="relative w-full max-w-[240px]">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
@@ -350,14 +349,13 @@ export default function Companies() {
                             </div>
 
                             <section
-                                className="bg-white rounded-xl overflow-hidden"
-                                style={{ border: "0.5px solid #D1D1D6" }}
+                                className=" overflow-hidden"
                             >
 
                                 {/* Table */}
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left border-collapse">
-                                        <thead className="bg-[#F9FAFB]">
+                                        <thead className="bg-[#F3F5F7]">
                                             <tr>
                                                 <th className="px-5 py-3 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
                                                     Company
@@ -382,7 +380,7 @@ export default function Companies() {
                                                 </th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-[#F3F5F7]">
+                                        <tbody className="divide-y divide-[#D1D1D6]">
                                             {loading ? (
                                                 // Skeleton rows while loading
                                                 [...Array(5)].map((_, i) => (
@@ -603,130 +601,130 @@ export default function Companies() {
                     </div>
                 </div>
                 {!isActionView && (
-                <div className="lg:col-span-1 flex flex-col gap-6">
-                    {/* Immediate Actions */}
-                    <div
-                        className="bg-white rounded-xl p-5"
-                        style={{ border: "0.5px solid #D1D1D6" }}
-                    >
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-semibold text-black">Immediate Actions</h3>
-                            <button className="text-xs font-medium text-[#4B5563] border border-[#E5E7EB] bg-[#F9FAFB] px-2.5 py-1.5 rounded-md hover:bg-gray-100 transition-colors">
-                                Hide Activities
-                            </button>
+                    <div className="lg:col-span-1 flex flex-col gap-6">
+                        {/* Immediate Actions */}
+                        <div
+                            className="bg-white rounded-xl p-5"
+                            style={{ border: "0.5px solid #D1D1D6" }}
+                        >
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-sm font-semibold text-black">Immediate Actions</h3>
+                                <button className="text-xs font-medium text-[#4B5563] border border-[#E5E7EB] bg-[#F9FAFB] px-2.5 py-1.5 rounded-md hover:bg-gray-100 transition-colors">
+                                    Hide Activities
+                                </button>
+                            </div>
+                            <div className="flex flex-col gap-3">
+                                {/* Hardcoded or mapped items, we'll map dummy data but match image styling perfectly */}
+                                <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p className="text-sm font-semibold text-[#0F47F2]">Jupiter Money</p>
+                                        <div className="w-6 h-6 rounded-full bg-[#0F47F2] flex items-center justify-center shadow-sm">
+                                            <Star className="w-3 h-3 text-white fill-current" />
+                                        </div>
+                                    </div>
+                                    <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
+                                        Max Verstappen (85% match) hasn't been contacted for JD-112. Autopilot can send outreach now.
+                                    </p>
+                                    <div className="flex items-center gap-4">
+                                        <button className="py-1.5 px-3 bg-[#E7EDFF] text-[#0F47F2] text-xs font-semibold rounded-md hover:bg-[#D7E3FF] transition-colors">
+                                            Approve Outreach
+                                        </button>
+                                        <span className="text-xs text-[#AEAEB2] font-medium">09:00 AM</span>
+                                        <ArrowRight className="w-4 h-4 text-[#AEAEB2] ml-auto" />
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p className="text-sm font-semibold text-[#0F47F2]">Slice</p>
+                                    </div>
+                                    <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
+                                        Close Senior Dev role. 3 candidates in final stage, push to offer.
+                                    </p>
+                                    <div className="flex items-center gap-4">
+                                        <button className="py-1.5 px-3 bg-[#FFF7D6] text-[#D97706] text-xs font-semibold rounded-md hover:bg-[#FDE68A] transition-colors">
+                                            Take Action
+                                        </button>
+                                        <span className="text-xs text-[#AEAEB2] font-medium">4 Days ago</span>
+                                        <ArrowRight className="w-4 h-4 text-[#AEAEB2] ml-auto" />
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p className="text-sm font-semibold text-[#0F47F2]">Medcore Solutions</p>
+                                    </div>
+                                    <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
+                                        Client Check in needed. No updated in 2 weeks
+                                    </p>
+                                    <div className="flex items-center gap-4">
+                                        <button className="py-1.5 px-3 bg-[#E7EDFF] text-[#0F47F2] text-xs font-semibold rounded-md hover:bg-[#D7E3FF] transition-colors">
+                                            Take Actions
+                                        </button>
+                                        <span className="text-xs text-[#AEAEB2] font-medium">09:00 AM</span>
+                                        <ArrowRight className="w-4 h-4 text-[#AEAEB2] ml-auto" />
+                                    </div>
+                                </div>
+                                <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p className="text-sm font-semibold text-[#0F47F2]">Racing Williams</p>
+                                        <div className="w-6 h-6 rounded-full bg-[#0F47F2] flex items-center justify-center shadow-sm">
+                                            <Star className="w-3 h-3 text-white fill-current" />
+                                        </div>
+                                    </div>
+                                    <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
+                                        Candidates haven't responded to follow-up, Autopilot
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                        <div className="flex flex-col gap-3">
-                            {/* Hardcoded or mapped items, we'll map dummy data but match image styling perfectly */}
-                            <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
-                                <div className="flex items-center justify-between mb-2">
-                                    <p className="text-sm font-semibold text-[#0F47F2]">Jupiter Money</p>
-                                    <div className="w-6 h-6 rounded-full bg-[#0F47F2] flex items-center justify-center shadow-sm">
-                                        <Star className="w-3 h-3 text-white fill-current" />
-                                    </div>
-                                </div>
-                                <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
-                                    Max Verstappen (85% match) hasn't been contacted for JD-112. Autopilot can send outreach now.
-                                </p>
-                                <div className="flex items-center gap-4">
-                                    <button className="py-1.5 px-3 bg-[#E7EDFF] text-[#0F47F2] text-xs font-semibold rounded-md hover:bg-[#D7E3FF] transition-colors">
-                                        Approve Outreach
-                                    </button>
-                                    <span className="text-xs text-[#AEAEB2] font-medium">09:00 AM</span>
-                                    <ArrowRight className="w-4 h-4 text-[#AEAEB2] ml-auto" />
-                                </div>
+
+                        {/* Recent Activities */}
+                        <div
+                            className="bg-white rounded-xl p-5"
+                            style={{ border: "0.5px solid #D1D1D6" }}
+                        >
+                            <div className="flex items-center justify-between mb-5">
+                                <h3 className="text-sm font-semibold text-black">Recent Activities</h3>
+                                <button className="text-xs font-medium text-[#4B5563] border border-[#E5E7EB] bg-white px-3 py-1.5 rounded-md hover:bg-gray-50 transition-colors">
+                                    Today
+                                </button>
                             </div>
 
-                            <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
-                                <div className="flex items-center justify-between mb-2">
-                                    <p className="text-sm font-semibold text-[#0F47F2]">Slice</p>
-                                </div>
-                                <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
-                                    Close Senior Dev role. 3 candidates in final stage, push to offer.
-                                </p>
-                                <div className="flex items-center gap-4">
-                                    <button className="py-1.5 px-3 bg-[#FFF7D6] text-[#D97706] text-xs font-semibold rounded-md hover:bg-[#FDE68A] transition-colors">
-                                        Take Action
-                                    </button>
-                                    <span className="text-xs text-[#AEAEB2] font-medium">4 Days ago</span>
-                                    <ArrowRight className="w-4 h-4 text-[#AEAEB2] ml-auto" />
-                                </div>
+                            <div className="mb-3">
+                                <h4 className="text-xs font-semibold text-[#4B5563]">Today · Feb 20</h4>
                             </div>
 
-                            <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
-                                <div className="flex items-center justify-between mb-2">
-                                    <p className="text-sm font-semibold text-[#0F47F2]">Medcore Solutions</p>
-                                </div>
-                                <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
-                                    Client Check in needed. No updated in 2 weeks
-                                </p>
-                                <div className="flex items-center gap-4">
-                                    <button className="py-1.5 px-3 bg-[#E7EDFF] text-[#0F47F2] text-xs font-semibold rounded-md hover:bg-[#D7E3FF] transition-colors">
-                                        Take Actions
-                                    </button>
-                                    <span className="text-xs text-[#AEAEB2] font-medium">09:00 AM</span>
-                                    <ArrowRight className="w-4 h-4 text-[#AEAEB2] ml-auto" />
-                                </div>
-                            </div>
-                            <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
-                                <div className="flex items-center justify-between mb-2">
-                                    <p className="text-sm font-semibold text-[#0F47F2]">Racing Williams</p>
-                                    <div className="w-6 h-6 rounded-full bg-[#0F47F2] flex items-center justify-center shadow-sm">
-                                        <Star className="w-3 h-3 text-white fill-current" />
+                            <div className="flex flex-col gap-4">
+                                <div className="flex items-start justify-between pb-3 border-b border-[#F3F5F7]">
+                                    <div>
+                                        <p className="text-sm font-medium text-[#0F47F2] mb-0.5">RocketGrowth Inc</p>
+                                        <p className="text-[13px] text-[#4B5563]">New job posted - ML Engineer</p>
+                                        <p className="text-[11px] text-[#AEAEB2] mt-0.5">JD-108 · Full-time · Delhi</p>
                                     </div>
+                                    <span className="text-xs text-[#AEAEB2] font-medium mt-1">10:45 AM</span>
                                 </div>
-                                <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
-                                    Candidates haven't responded to follow-up, Autopilot
-                                </p>
+
+                                <div className="flex items-start justify-between pb-3 border-b border-[#F3F5F7]">
+                                    <div>
+                                        <p className="text-sm font-medium text-[#0F47F2] mb-0.5">Acme Technologies</p>
+                                        <p className="text-[13px] text-[#4B5563]">Priya Patel hired</p>
+                                        <p className="text-[11px] text-[#AEAEB2] mt-0.5">Senior Product Designer · JD-101</p>
+                                    </div>
+                                    <span className="text-xs text-[#AEAEB2] font-medium mt-1">09:45 AM</span>
+                                </div>
+
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-[#0F47F2] mb-0.5">Jupiter Money</p>
+                                        <p className="text-[13px] text-[#4B5563]">Shortlist sent to client</p>
+                                        <p className="text-[11px] text-[#AEAEB2] mt-0.5">4 candidates · ML Engineer · JD-102</p>
+                                    </div>
+                                    <span className="text-xs text-[#AEAEB2] font-medium mt-1">08:15 AM</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-
-                    {/* Recent Activities */}
-                    <div
-                        className="bg-white rounded-xl p-5"
-                        style={{ border: "0.5px solid #D1D1D6" }}
-                    >
-                        <div className="flex items-center justify-between mb-5">
-                            <h3 className="text-sm font-semibold text-black">Recent Activities</h3>
-                            <button className="text-xs font-medium text-[#4B5563] border border-[#E5E7EB] bg-white px-3 py-1.5 rounded-md hover:bg-gray-50 transition-colors">
-                                Today
-                            </button>
-                        </div>
-
-                        <div className="mb-3">
-                            <h4 className="text-xs font-semibold text-[#4B5563]">Today · Feb 20</h4>
-                        </div>
-
-                        <div className="flex flex-col gap-4">
-                            <div className="flex items-start justify-between pb-3 border-b border-[#F3F5F7]">
-                                <div>
-                                    <p className="text-sm font-medium text-[#0F47F2] mb-0.5">RocketGrowth Inc</p>
-                                    <p className="text-[13px] text-[#4B5563]">New job posted - ML Engineer</p>
-                                    <p className="text-[11px] text-[#AEAEB2] mt-0.5">JD-108 · Full-time · Delhi</p>
-                                </div>
-                                <span className="text-xs text-[#AEAEB2] font-medium mt-1">10:45 AM</span>
-                            </div>
-
-                            <div className="flex items-start justify-between pb-3 border-b border-[#F3F5F7]">
-                                <div>
-                                    <p className="text-sm font-medium text-[#0F47F2] mb-0.5">Acme Technologies</p>
-                                    <p className="text-[13px] text-[#4B5563]">Priya Patel hired</p>
-                                    <p className="text-[11px] text-[#AEAEB2] mt-0.5">Senior Product Designer · JD-101</p>
-                                </div>
-                                <span className="text-xs text-[#AEAEB2] font-medium mt-1">09:45 AM</span>
-                            </div>
-
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-[#0F47F2] mb-0.5">Jupiter Money</p>
-                                    <p className="text-[13px] text-[#4B5563]">Shortlist sent to client</p>
-                                    <p className="text-[11px] text-[#AEAEB2] mt-0.5">4 candidates · ML Engineer · JD-102</p>
-                                </div>
-                                <span className="text-xs text-[#AEAEB2] font-medium mt-1">08:15 AM</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 )}
             </div>
 
