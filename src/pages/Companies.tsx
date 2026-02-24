@@ -229,7 +229,7 @@ export default function Companies() {
                         {/* ─── Left: All Companies Table ─── */}
                         <div className="lg:col-span-4 flex flex-col">
 
-                            <div className="flex items-center gap-2 flex-wrap mb-4 p-4">
+                            <div className="flex items-center gap-2 flex-wrap p-4">
                                 {(
                                     ["All", "Active", "Paused", "Inactive", "Needs Attention"] as const
                                 ).map((f) => (
