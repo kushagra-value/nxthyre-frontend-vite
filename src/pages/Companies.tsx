@@ -14,7 +14,14 @@ import {
     Pause,
     Play,
     Users,
-    Settings
+    Settings,
+    Maximize,
+    DownloadCloud,
+    Calendar,
+    ChevronDown,
+    AlertCircle,
+    Star,
+    ArrowRight
 } from "lucide-react";
 import CreateWorkspaceModal from "../components/workspace/CreateWorkspaceModal";
 import JoinWorkspaceModal from "../components/workspace/JoinWorkspaceModal";
@@ -45,6 +52,9 @@ export default function Companies() {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showJoinModal, setShowJoinModal] = useState(false);
     const [showPendingModal, setShowPendingModal] = useState(false);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+
+    const [isActionView, setIsActionView] = useState(false);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [activeFilter, setActiveFilter] = useState<
@@ -217,86 +227,131 @@ export default function Companies() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* ─── Left: All Companies Table ─── */}
                     <div className="lg:col-span-2 flex flex-col gap-6">
+                        {/* ─── Moved outside white box to match design, or kept inside? ─── */}
+                        {/* Actually in the image, pills are inside the grey background, but let's keep it here */}
+                        <div className="flex items-center gap-2 flex-wrap mb-2">
+                            {(
+                                ["All", "Active", "Paused", "Inactive", "Needs Attention"] as const
+                            ).map((f) => (
+                                <button
+                                    key={f}
+                                    onClick={() => {
+                                        setActiveFilter(f);
+                                        setCurrentPage(1);
+                                    }}
+                                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeFilter === f
+                                        ? "bg-[#0F47F2] text-white"
+                                        : "text-[#4B5563] bg-white hover:bg-[#F3F5F7]"
+                                        }`}
+                                    style={
+                                        activeFilter !== f ? { border: "1px solid #D1D1D6" } : undefined
+                                    }
+                                >
+                                    {f}{" "}
+                                    <span
+                                        className={
+                                            activeFilter === f ? "text-white/80" : "text-[#AEAEB2]"
+                                        }
+                                    >
+                                        ({filterCounts[f as keyof typeof filterCounts]})
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl border border-[#D1D1D6]">
+                            {/* Search */}
+                            <div className="relative w-full max-w-[240px]">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
+                                <input
+                                    type="text"
+                                    placeholder="Search for companies"
+                                    value={searchQuery}
+                                    onChange={(e) => {
+                                        setSearchQuery(e.target.value);
+                                        setCurrentPage(1);
+                                    }}
+                                    className="w-full h-9 pl-9 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow"
+                                    style={{ border: "1px solid #E5E7EB" }}
+                                />
+                            </div>
+
+                            <div className="flex items-center gap-2 flex-wrap">
+                                {/* Expand View / Action View Toggle */}
+                                <button
+                                    onClick={() => setIsActionView(!isActionView)}
+                                    className="flex items-center gap-2 px-3 py-2 bg-white text-[#4B5563] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
+                                >
+                                    {isActionView ? (
+                                        <>
+                                            <AlertCircle className="w-4 h-4 text-[#AEAEB2]" /> Action View
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Maximize className="w-4 h-4 text-[#AEAEB2]" /> Expand View
+                                        </>
+                                    )}
+                                </button>
+
+                                {/* Export CSV */}
+                                <button
+                                    className="flex items-center gap-2 px-3 py-2 bg-white text-[#4B5563] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
+                                >
+                                    <DownloadCloud className="w-4 h-4 text-[#AEAEB2]" /> Export CSV
+                                </button>
+
+                                {/* Date Picker Mock */}
+                                <button
+                                    className="flex items-center gap-2 px-3 py-2 bg-white text-[#4B5563] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
+                                >
+                                    <Calendar className="w-4 h-4 text-[#AEAEB2]" /> 24 Feb, 2026
+                                </button>
+
+                                {/* Add Company Split Button */}
+                                <div className="flex items-center relative">
+                                    <button
+                                        className="bg-[#0F47F2] text-white px-4 py-2 rounded-l-lg text-xs font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5 h-9"
+                                    >
+                                        <Plus className="w-4 h-4" /> Add Company
+                                    </button>
+                                    <div className="w-[1px] bg-white/20 h-9"></div>
+                                    <button
+                                        onClick={() => setDropdownOpen(!dropdownOpen)}
+                                        className="bg-[#0F47F2] text-white px-2 py-2 rounded-r-lg hover:opacity-90 transition-opacity flex items-center h-9"
+                                    >
+                                        <ChevronDown className="w-4 h-4" />
+                                    </button>
+
+                                    {dropdownOpen && (
+                                        <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-[#E5E7EB] rounded-lg shadow-lg py-1 z-50">
+                                            <button
+                                                onClick={() => { setShowCreateModal(true); setDropdownOpen(false); }}
+                                                className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7]"
+                                            >
+                                                Create Workspace
+                                            </button>
+                                            <button
+                                                onClick={() => { setShowJoinModal(true); setDropdownOpen(false); }}
+                                                className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7]"
+                                            >
+                                                Join Workspace
+                                            </button>
+                                            <button
+                                                onClick={() => { setShowPendingModal(true); setDropdownOpen(false); }}
+                                                className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7]"
+                                            >
+                                                Pending Requests
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
                         <section
                             className="bg-white rounded-xl overflow-hidden"
                             style={{ border: "0.5px solid #D1D1D6" }}
                         >
-                            {/* Title Row */}
-                            <div className="px-5 pt-5 pb-3 flex items-center justify-between">
-                                <h2 className="text-base font-medium text-black">All Companies</h2>
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => setShowCreateModal(true)}
-                                        className="flex items-center gap-1.5 bg-[#0F47F2] text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
-                                    >
-                                        <Plus className="w-4 h-4" /> Create Workspace
-                                    </button>
-                                    <button
-                                        onClick={() => setShowJoinModal(true)}
-                                        className="flex items-center gap-1.5 bg-white text-[#4B5563] border border-[#D1D1D6] px-4 py-2 rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
-                                    >
-                                        <Users className="w-4 h-4" /> Join Workspace
-                                    </button>
-                                    <button
-                                        onClick={() => setShowPendingModal(true)}
-                                        className="flex items-center gap-1.5 bg-white text-[#4B5563] border border-[#D1D1D6] px-4 py-2 rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
-                                    >
-                                        <Settings className="w-4 h-4" /> Pending Requests
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Filter + Search Row */}
-                            <div
-                                className="px-5 pb-4 flex flex-wrap items-center justify-between gap-3"
-                                style={{ borderBottom: "0.5px solid #E5E7EB" }}
-                            >
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    {(
-                                        ["All", "Active", "Paused", "Inactive", "Has Open Jobs", "Needs Attention"] as const
-                                    ).map((f) => (
-                                        <button
-                                            key={f}
-                                            onClick={() => {
-                                                setActiveFilter(f);
-                                                setCurrentPage(1);
-                                            }}
-                                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeFilter === f
-                                                ? "bg-[#0F47F2] text-white"
-                                                : "text-[#4B5563] hover:bg-[#F3F5F7]"
-                                                }`}
-                                            style={
-                                                activeFilter !== f ? { border: "0.5px solid #D1D1D6" } : undefined
-                                            }
-                                        >
-                                            {f}{" "}
-                                            <span
-                                                className={
-                                                    activeFilter === f ? "text-white/70" : "text-[#AEAEB2]"
-                                                }
-                                            >
-                                                ({filterCounts[f]})
-                                            </span>
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {/* Search */}
-                                <div className="relative w-[200px]">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
-                                    <input
-                                        type="text"
-                                        placeholder="Search companies..."
-                                        value={searchQuery}
-                                        onChange={(e) => {
-                                            setSearchQuery(e.target.value);
-                                            setCurrentPage(1);
-                                        }}
-                                        className="w-full h-9 pl-9 pr-3 rounded-lg bg-[#F9FAFB] text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow"
-                                        style={{ border: "0.5px solid #D1D1D6" }}
-                                    />
-                                </div>
-                            </div>
 
                             {/* Table */}
                             <div className="overflow-x-auto">
@@ -442,30 +497,43 @@ export default function Companies() {
                                                                 onClick={(e) => e.stopPropagation()}
                                                             >
                                                                 <button
-                                                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#0F47F2] bg-[#E7EDFF] rounded-lg transition-colors hover:bg-[#D7E3FF]"
+                                                                    className="flex items-center justify-center w-7 h-7 text-[#0F47F2] bg-[#E7EDFF] rounded-md transition-colors hover:bg-[#D7E3FF]"
                                                                 >
-                                                                    <Eye className="w-3.5 h-3.5" /> View
+                                                                    <Eye className="w-4 h-4" />
                                                                 </button>
 
-                                                                {row.status === 'Active' && (
+                                                                {isActionView && row.status === 'Paused' ? (
                                                                     <button
-                                                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#92400E] bg-[#FFF7D6] rounded-lg transition-colors hover:bg-[#FDE68A]"
+                                                                        className="flex items-center justify-center w-7 h-7 text-[#069855] bg-transparent rounded-md transition-colors hover:bg-gray-50 border border-green-500"
                                                                     >
-                                                                        <Pause className="w-3.5 h-3.5 fill-current" /> Pause
+                                                                        <Play className="w-3.5 h-3.5 fill-current" />
                                                                     </button>
-                                                                )}
-                                                                {row.status === 'Paused' && (
+                                                                ) : row.status === 'Active' ? (
                                                                     <button
-                                                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#069855] bg-[#DEF7EC] rounded-lg transition-colors hover:bg-[#BCF0DA]"
+                                                                        className="flex items-center justify-center w-7 h-7 text-[#4B5563] bg-[#F3F5F7] rounded-md transition-colors hover:bg-[#E5E7EB]"
                                                                     >
-                                                                        <Play className="w-3.5 h-3.5 fill-current" /> Resume
+                                                                        <div className="flex gap-[2px]">
+                                                                            <div className="w-[3px] h-3 bg-[#8E8E93] rounded-full"></div>
+                                                                            <div className="w-[3px] h-3 bg-[#8E8E93] rounded-full"></div>
+                                                                        </div>
                                                                     </button>
-                                                                )}
-                                                                {row.status === 'Inactive' && (
+                                                                ) : row.status === 'Paused' ? (
                                                                     <button
-                                                                        className="px-3 py-1.5 text-xs font-semibold text-[#4B5563] bg-[#F3F5F7] rounded-lg transition-colors hover:bg-[#E5E7EB]"
+                                                                        className="flex items-center justify-center w-7 h-7 text-[#4B5563] bg-[#F3F5F7] rounded-md transition-colors hover:bg-[#E5E7EB]"
                                                                     >
-                                                                        ••• More
+                                                                        <div className="flex gap-[2px]">
+                                                                            <div className="w-[3px] h-3 bg-[#8E8E93] rounded-full"></div>
+                                                                            <div className="w-[3px] h-3 bg-[#8E8E93] rounded-full"></div>
+                                                                        </div>
+                                                                    </button>
+                                                                ) : (
+                                                                    <button
+                                                                        className="flex items-center justify-center w-7 h-7 text-[#4B5563] bg-[#F3F5F7] rounded-md transition-colors hover:bg-[#E5E7EB]"
+                                                                    >
+                                                                        <div className="flex gap-[2px]">
+                                                                            <div className="w-[3px] h-3 bg-[#8E8E93] rounded-full"></div>
+                                                                            <div className="w-[3px] h-3 bg-[#8E8E93] rounded-full"></div>
+                                                                        </div>
                                                                     </button>
                                                                 )}
                                                             </div>
@@ -531,106 +599,126 @@ export default function Companies() {
 
                     {/* ─── Right: AI Autopilot + Recent Activities ─── */}
                     <div className="lg:col-span-1 flex flex-col gap-6">
-                        {/* AI Autopilot */}
+                        {/* Immediate Actions */}
                         <div
                             className="bg-white rounded-xl p-5"
                             style={{ border: "0.5px solid #D1D1D6" }}
                         >
                             <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-[#3B82F6]" />
-                                    <h3 className="text-sm font-medium text-black">AI Autopilot Suggestions</h3>
-                                </div>
-                                <span className="px-1.5 py-0.5 bg-[#2563EB] text-[10px] text-white font-semibold rounded">
-                                    AI
-                                </span>
+                                <h3 className="text-sm font-semibold text-black">Immediate Actions</h3>
+                                <button className="text-xs font-medium text-[#4B5563] border border-[#E5E7EB] bg-[#F9FAFB] px-2.5 py-1.5 rounded-md hover:bg-gray-100 transition-colors">
+                                    Hide Activities
+                                </button>
                             </div>
                             <div className="flex flex-col gap-3">
-                                {companyAiAutopilotItems.map((item) => (
-                                    <div
-                                        key={item.id}
-                                        className="p-4 bg-[#F9FAFB] rounded-lg"
-                                        style={{ border: "0.5px solid #E5E7EB" }}
-                                    >
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <div className="w-6 h-6 rounded bg-white flex items-center justify-center shadow-sm overflow-hidden" style={{ border: "0.5px solid #E5E7EB" }}>
-                                                {logos[item.companyName] ? (
-                                                    <img src={logos[item.companyName]!} alt="" className="w-4 h-4 object-contain" />
-                                                ) : (
-                                                    <span className="text-[9px] font-bold text-[#4B5563]">{item.companyName.charAt(0)}</span>
-                                                )}
-                                            </div>
-                                            <p className="text-[12px] font-semibold text-black">
-                                                {item.companyName}
-                                            </p>
+                                {/* Hardcoded or mapped items, we'll map dummy data but match image styling perfectly */}
+                                <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p className="text-sm font-semibold text-[#0F47F2]">Jupiter Money</p>
+                                        <div className="w-6 h-6 rounded-full bg-[#0F47F2] flex items-center justify-center shadow-sm">
+                                            <Star className="w-3 h-3 text-white fill-current" />
                                         </div>
-                                        <p className="text-xs text-[#8E8E93] mb-3 leading-relaxed">
-                                            {item.description}
-                                        </p>
-
-                                        {item.actionType === "approve" && (
-                                            <button
-                                                className="w-full py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs font-semibold rounded flex items-center justify-center gap-1.5 hover:bg-[#D7E3FF] transition-colors"
-                                            >
-                                                <Check className="w-3.5 h-3.5" />
-                                                {item.actionLabel}
-                                            </button>
-                                        )}
-                                        {item.actionType === "review" && (
-                                            <button className="text-xs font-semibold text-[#D97706] hover:underline">
-                                                {item.actionLabel}
-                                            </button>
-                                        )}
-                                        {item.actionType === "auto" && (
-                                            <span className="text-[#03543F] text-xs font-semibold">
-                                                {item.actionLabel}
-                                            </span>
-                                        )}
                                     </div>
-                                ))}
+                                    <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
+                                        Max Verstappen (85% match) hasn't been contacted for JD-112. Autopilot can send outreach now.
+                                    </p>
+                                    <div className="flex items-center gap-4">
+                                        <button className="py-1.5 px-3 bg-[#E7EDFF] text-[#0F47F2] text-xs font-semibold rounded-md hover:bg-[#D7E3FF] transition-colors">
+                                            Approve Outreach
+                                        </button>
+                                        <span className="text-xs text-[#AEAEB2] font-medium">09:00 AM</span>
+                                        <ArrowRight className="w-4 h-4 text-[#AEAEB2] ml-auto" />
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p className="text-sm font-semibold text-[#0F47F2]">Slice</p>
+                                    </div>
+                                    <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
+                                        Close Senior Dev role. 3 candidates in final stage, push to offer.
+                                    </p>
+                                    <div className="flex items-center gap-4">
+                                        <button className="py-1.5 px-3 bg-[#FFF7D6] text-[#D97706] text-xs font-semibold rounded-md hover:bg-[#FDE68A] transition-colors">
+                                            Take Action
+                                        </button>
+                                        <span className="text-xs text-[#AEAEB2] font-medium">4 Days ago</span>
+                                        <ArrowRight className="w-4 h-4 text-[#AEAEB2] ml-auto" />
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p className="text-sm font-semibold text-[#0F47F2]">Medcore Solutions</p>
+                                    </div>
+                                    <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
+                                        Client Check in needed. No updated in 2 weeks
+                                    </p>
+                                    <div className="flex items-center gap-4">
+                                        <button className="py-1.5 px-3 bg-[#E7EDFF] text-[#0F47F2] text-xs font-semibold rounded-md hover:bg-[#D7E3FF] transition-colors">
+                                            Take Actions
+                                        </button>
+                                        <span className="text-xs text-[#AEAEB2] font-medium">09:00 AM</span>
+                                        <ArrowRight className="w-4 h-4 text-[#AEAEB2] ml-auto" />
+                                    </div>
+                                </div>
+                                <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p className="text-sm font-semibold text-[#0F47F2]">Racing Williams</p>
+                                        <div className="w-6 h-6 rounded-full bg-[#0F47F2] flex items-center justify-center shadow-sm">
+                                            <Star className="w-3 h-3 text-white fill-current" />
+                                        </div>
+                                    </div>
+                                    <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
+                                        Candidates haven't responded to follow-up, Autopilot
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Timeline */}
+                        {/* Recent Activities */}
                         <div
                             className="bg-white rounded-xl p-5"
                             style={{ border: "0.5px solid #D1D1D6" }}
                         >
                             <div className="flex items-center justify-between mb-5">
-                                <h3 className="text-sm font-medium text-black flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-[#F59E0B]" />
-                                    Timeline
-                                </h3>
-                                <button className="text-xs font-medium text-[#0F47F2]">+ Add</button>
+                                <h3 className="text-sm font-semibold text-black">Recent Activities</h3>
+                                <button className="text-xs font-medium text-[#4B5563] border border-[#E5E7EB] bg-white px-3 py-1.5 rounded-md hover:bg-gray-50 transition-colors">
+                                    Today
+                                </button>
                             </div>
 
-                            <div className="flex flex-col gap-6 relative ml-[15px] border-l border-[#E5E7EB]">
-                                {companyRecentActivities.map((act) => (
-                                    <div key={act.id} className="relative flex items-start gap-3 pl-4">
-                                        {/* Dot on timeline */}
-                                        <div
-                                            className="absolute -left-[12px] top-0 w-6 h-6 rounded-full bg-[#E7EDFF] flex items-center justify-center shrink-0 z-10"
-                                        >
-                                            <span className="text-[10px] font-semibold text-[#0F47F2]">
-                                                {act.index}
-                                            </span>
-                                        </div>
-                                        <div className="flex-1 ml-2">
-                                            <div className="flex items-center justify-between mb-0.5">
-                                                <p className="text-xs font-medium text-black">
-                                                    {act.companyName}
-                                                </p>
-                                                <button className="text-[10px] font-medium text-[#0F47F2] hover:underline">Act →</button>
-                                            </div>
-                                            <p className="text-[11px] text-[#4B5563] leading-relaxed mb-1.5">
-                                                {act.description}
-                                            </p>
-                                            <p className="text-[10px] text-[#AEAEB2]">
-                                                {act.addedBy} • {act.timeAgo}
-                                            </p>
-                                        </div>
+                            <div className="mb-3">
+                                <h4 className="text-xs font-semibold text-[#4B5563]">Today · Feb 20</h4>
+                            </div>
+
+                            <div className="flex flex-col gap-4">
+                                <div className="flex items-start justify-between pb-3 border-b border-[#F3F5F7]">
+                                    <div>
+                                        <p className="text-sm font-medium text-[#0F47F2] mb-0.5">RocketGrowth Inc</p>
+                                        <p className="text-[13px] text-[#4B5563]">New job posted - ML Engineer</p>
+                                        <p className="text-[11px] text-[#AEAEB2] mt-0.5">JD-108 · Full-time · Delhi</p>
                                     </div>
-                                ))}
+                                    <span className="text-xs text-[#AEAEB2] font-medium mt-1">10:45 AM</span>
+                                </div>
+
+                                <div className="flex items-start justify-between pb-3 border-b border-[#F3F5F7]">
+                                    <div>
+                                        <p className="text-sm font-medium text-[#0F47F2] mb-0.5">Acme Technologies</p>
+                                        <p className="text-[13px] text-[#4B5563]">Priya Patel hired</p>
+                                        <p className="text-[11px] text-[#AEAEB2] mt-0.5">Senior Product Designer · JD-101</p>
+                                    </div>
+                                    <span className="text-xs text-[#AEAEB2] font-medium mt-1">09:45 AM</span>
+                                </div>
+
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-[#0F47F2] mb-0.5">Jupiter Money</p>
+                                        <p className="text-[13px] text-[#4B5563]">Shortlist sent to client</p>
+                                        <p className="text-[11px] text-[#AEAEB2] mt-0.5">4 candidates · ML Engineer · JD-102</p>
+                                    </div>
+                                    <span className="text-xs text-[#AEAEB2] font-medium mt-1">08:15 AM</span>
+                                </div>
                             </div>
                         </div>
                     </div>
