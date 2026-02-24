@@ -227,7 +227,7 @@ export default function Companies() {
                     {/* ── Main Grid ── */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white rounded-xl">
                         {/* ─── Left: All Companies Table ─── */}
-                        <div className="flex flex-col">
+                        <div className="lg:col-span-4 flex flex-col">
 
                             <div className="flex items-center gap-2 flex-wrap mb-4 p-4">
                                 {(
