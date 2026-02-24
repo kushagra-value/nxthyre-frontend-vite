@@ -225,11 +225,11 @@ export default function Companies() {
                     </div>
 
                     {/* ── Main Grid ── */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white rounded-xl">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white rounded-xl p-5">
                         {/* ─── Left: All Companies Table ─── */}
-                        <div className="lg:col-span-2 flex flex-col gap-4">
+                        <div className="flex flex-col">
 
-                            <div className="flex items-center gap-2 flex-wrap mb-2">
+                            <div className="flex items-center gap-2 flex-wrap mb-4">
                                 {(
                                     ["All", "Active", "Paused", "Inactive", "Needs Attention"] as const
                                 ).map((f) => (
@@ -595,8 +595,6 @@ export default function Companies() {
                                 </div>
                             </section>
                         </div>
-
-                        {/* ─── Right: AI Autopilot + Recent Activities ─── */}
 
                     </div>
                 </div>
