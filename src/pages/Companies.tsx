@@ -225,11 +225,11 @@ export default function Companies() {
                     </div>
 
                     {/* ── Main Grid ── */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white rounded-xl p-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white rounded-xl">
                         {/* ─── Left: All Companies Table ─── */}
                         <div className="flex flex-col">
 
-                            <div className="flex items-center gap-2 flex-wrap mb-4">
+                            <div className="flex items-center gap-2 flex-wrap mb-4 p-4">
                                 {(
                                     ["All", "Active", "Paused", "Inactive", "Needs Attention"] as const
                                 ).map((f) => (
@@ -259,7 +259,7 @@ export default function Companies() {
                                 ))}
                             </div>
 
-                            <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 border border-y-[0.5px] border-[#D1D1D6]">
+                            <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 border border-y-[0.5px] border-[#D1D1D6]">
                                 {/* Search */}
                                 <div className="relative w-full max-w-[240px]">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
@@ -357,25 +357,25 @@ export default function Companies() {
                                     <table className="w-full text-left border-collapse">
                                         <thead className="bg-[#F3F5F7]">
                                             <tr>
-                                                <th className="px-5 py-3 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                                                <th className="px-5 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
                                                     Company
                                                 </th>
-                                                <th className="px-5 py-3 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                                                <th className="px-5 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
                                                     Total Jobs
                                                 </th>
-                                                <th className="px-5 py-3 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                                                <th className="px-5 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
                                                     Total Candidates
                                                 </th>
-                                                <th className="px-5 py-3 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                                                <th className="px-5 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
                                                     Shortlisted
                                                 </th>
-                                                <th className="px-5 py-3 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                                                <th className="px-5 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
                                                     Hired
                                                 </th>
-                                                <th className="px-5 py-3 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                                                <th className="px-5 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
                                                     Status
                                                 </th>
-                                                <th className="px-5 py-3 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider text-right">
+                                                <th className="px-5 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider text-right">
                                                     Actions
                                                 </th>
                                             </tr>
