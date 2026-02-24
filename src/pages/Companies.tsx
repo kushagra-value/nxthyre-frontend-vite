@@ -357,25 +357,25 @@ export default function Companies() {
                                     <table className="w-full text-left border-collapse">
                                         <thead className="bg-[#F3F5F7]">
                                             <tr>
-                                                <th className="px-5 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                                                <th className="px-4 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
                                                     Company
                                                 </th>
-                                                <th className="px-5 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                                                <th className="px-4 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
                                                     Total Jobs
                                                 </th>
-                                                <th className="px-5 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                                                <th className="px-4 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
                                                     Total Candidates
                                                 </th>
-                                                <th className="px-5 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                                                <th className="px-4 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
                                                     Shortlisted
                                                 </th>
-                                                <th className="px-5 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                                                <th className="px-4 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
                                                     Hired
                                                 </th>
-                                                <th className="px-5 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                                                <th className="px-4 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
                                                     Status
                                                 </th>
-                                                <th className="px-5 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider text-right">
+                                                <th className="px-4 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider text-right">
                                                     Actions
                                                 </th>
                                             </tr>
