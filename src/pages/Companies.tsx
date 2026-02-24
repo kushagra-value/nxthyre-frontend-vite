@@ -177,8 +177,8 @@ export default function Companies() {
 
     return (
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-            <div className="flex gap-4">
-                <div className="w-full space-y-6">
+            <div className="flex flex-col lg:flex-row gap-4">
+                <div className="flex-1 flex flex-col gap-4">
                     {/* ── Stats Grid ── */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         {companyStatCards.map((stat) => {
@@ -599,7 +599,7 @@ export default function Companies() {
                     </div>
                 </div>
                 {!isActionView && (
-                    <div className="w-96 flex flex-col gap-6">
+                    <aside className="w-96 flex flex-col gap-4 shrink-0">
                         {/* Immediate Actions */}
                         <div
                             className="bg-white rounded-xl p-5"
@@ -721,7 +721,7 @@ export default function Companies() {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </aside>
                 )}
             </div>
 
