@@ -259,7 +259,7 @@ export default function Companies() {
                                 ))}
                             </div>
 
-                            <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 border border-y-[0.5px] border-[#D1D1D6]">
+                            <div className="flex flex-wrap items-center justify-between bg-white p-4 border border-y-[0.5px] border-[#D1D1D6]">
                                 {/* Search */}
                                 <div className="relative w-full max-w-[240px]">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
