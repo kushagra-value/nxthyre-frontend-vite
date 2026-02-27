@@ -121,6 +121,18 @@ function MainApp() {
     setCurrentPage("jobPipeline");
   };
 
+  const [headerWorkspaceName, setHeaderWorkspaceName] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    const handleHeaderUpdate = () => {
+      setHeaderWorkspaceName((window as any).__selectedWorkspaceName);
+    };
+    window.addEventListener('header-update', handleHeaderUpdate);
+    // Initial check
+    handleHeaderUpdate();
+    return () => window.removeEventListener('header-update', handleHeaderUpdate);
+  }, []);
+
   const getCurrentDateTime = () => {
     const now = new Date();
     const date = now.toLocaleDateString("en-GB", {
@@ -141,7 +153,7 @@ function MainApp() {
       case "dashboard":
         return "Dashboard";
       case "companies":
-        return "Companies";
+        return headerWorkspaceName ? "Company Job Listing" : "Companies";
       case "jobs":
         return "Jobs";
       case "interviews":
@@ -429,7 +441,7 @@ function MainApp() {
                 <main className="flex-1 flex flex-col overflow-hidden">
                   <HeaderBar
                     title={getPageTitle()}
-                    subtitle={getCurrentDateTime()}
+                    subtitle={currentPage === 'companies' && headerWorkspaceName ? `Companies • ${headerWorkspaceName}` : getCurrentDateTime()}
                   />
                   {renderPage()}
                 </main>

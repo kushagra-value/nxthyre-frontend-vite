@@ -10,7 +10,6 @@ import {
     ChevronRight,
     Eye,
     Plus,
-    Check,
     Pause,
     Play,
     Users,
@@ -60,9 +59,20 @@ export default function Companies() {
     const [showPendingModal, setShowPendingModal] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
-    
-    const [isActionView, setIsActionView] = useState(true); 
+
+    const [isActionView, setIsActionView] = useState(true);
     const [selectedWorkspace, setSelectedWorkspace] = useState<MyWorkspace | null>(null);
+
+    // Sync selected workspace name with global state for header breadcrumbs
+    useEffect(() => {
+        if (selectedWorkspace) {
+            (window as any).__selectedWorkspaceName = selectedWorkspace.name;
+        } else {
+            delete (window as any).__selectedWorkspaceName;
+        }
+        window.dispatchEvent(new CustomEvent('header-update'));
+    }, [selectedWorkspace]);
+
     const [currentPage, setCurrentPage] = useState(1);
     const [activeFilter, setActiveFilter] = useState<
         "All" | "Active" | "Paused" | "Inactive" | "Has Open Jobs" | "Needs Attention"
@@ -192,17 +202,8 @@ export default function Companies() {
     if (selectedWorkspace) {
         return (
             <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-[#F3F5F7]">
-                {/* ── Header & Breadcrumbs ── */}
-                <div className="flex items-center justify-between mb-6">
-                    <div>
-                        <h1 className="text-2xl font-semibold text-black mb-1">Company Job Listing</h1>
-                        <div className="flex items-center gap-2 text-sm text-[#4B5563]">
-                            <button onClick={() => setSelectedWorkspace(null)} className="hover:underline">Companies</button>
-                            <span><ChevronRight className="w-4 h-4" /></span>
-                            <span className="font-light">{selectedWorkspace.name}</span>
-                        </div>
-                    </div>
-                </div>
+                {/* ── Header Spacer handle by global Header ── */}
+                <div className="mb-6 invisible h-1" />
 
                 {/* ── Company Info Card ── */}
                 <div className="bg-white rounded-xl p-6 mb-6 flex items-center justify-between shadow-sm">
