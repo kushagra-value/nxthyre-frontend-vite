@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScheduleEventData } from '../../data/dashboardData';
+import { ScheduleEventData } from '../dashboardData';
 
 interface ScheduleEventModalProps {
     isOpen?: boolean;

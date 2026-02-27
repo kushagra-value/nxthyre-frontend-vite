@@ -1,4 +1,4 @@
-import { ScheduleItemData } from '../../data/dashboardData';
+import { ScheduleItemData } from '../dashboardData';
 
 const colorConfig: Record<string, { bg: string; dot: string; nameColor: string; badgeBg: string; badgeText: string }> = {
   grey: {

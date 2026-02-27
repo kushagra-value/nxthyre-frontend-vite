@@ -28,7 +28,7 @@ import {
   aiAutopilotItems,
   jobRecentActivities,
   JobTableRow,
-} from "../data/jobsData";
+} from "./jobs/jobsData";
 
 const autopilotIconMap: Record<string, React.ReactNode> = {
   red: (

@@ -1,5 +1,5 @@
 import React from 'react';
-import { DailyAgendaData } from '../../data/dashboardData';
+import { DailyAgendaData } from '../dashboardData';
 
 interface DateWiseAgendaModalProps {
     isOpen?: boolean;

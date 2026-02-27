@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NewMatchCandidate } from '../../data/dashboardData';
+import { NewMatchCandidate } from '../dashboardData';
 
 interface NewMatchCandidateModalProps {
     isOpen?: boolean;

@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import StatCard from '../components/dashboard/StatCard';
-import PriorityCard from '../components/dashboard/PriorityCard';
-import TalentMatchCard from '../components/dashboard/TalentMatchCard';
-import CalendarWidget from '../components/dashboard/CalendarWidget';
-import ScheduleWidget from '../components/dashboard/ScheduleWidget';
-import RecentActivities from '../components/dashboard/RecentActivities';
-import ActionReviewModal from '../components/dashboard/ActionReviewModal';
-import NewMatchCandidateModal from '../components/dashboard/NewMatchCandidateModal';
-import ScheduleEventModal from '../components/dashboard/ScheduleEventModal';
-import DateWiseAgendaModal from '../components/dashboard/DateWiseAgendaModal';
+import StatCard from './dashboard/components/StatCard';
+import PriorityCard from './dashboard/components/PriorityCard';
+import TalentMatchCard from './dashboard/components/TalentMatchCard';
+import CalendarWidget from './dashboard/components/CalendarWidget';
+import ScheduleWidget from './dashboard/components/ScheduleWidget';
+import RecentActivities from './dashboard/components/RecentActivities';
+import ActionReviewModal from './dashboard/components/ActionReviewModal';
+import NewMatchCandidateModal from './dashboard/components/NewMatchCandidateModal';
+import ScheduleEventModal from './dashboard/components/ScheduleEventModal';
+import DateWiseAgendaModal from './dashboard/components/DateWiseAgendaModal';
 import {
   statCardsData,
   priorityColumnsData,
@@ -21,7 +21,7 @@ import {
   scheduleEventsData,
   dailyAgendaData,
   ScheduleItemData,
-} from '../data/dashboardData';
+} from './dashboard/dashboardData';
 
 const BriefcaseIcon = (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -1,7 +1,7 @@
 import { Clock, ChevronDown } from 'lucide-react';
-import StatCard from '../components/dashboard/StatCard';
-import ScheduleWidget from '../components/dashboard/ScheduleWidget';
-import CalendarWidget from '../components/dashboard/CalendarWidget';
+import StatCard from './dashboard/components/StatCard';
+import ScheduleWidget from './dashboard/components/ScheduleWidget';
+import CalendarWidget from './dashboard/components/CalendarWidget';
 
 const CalendarIcon = (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">

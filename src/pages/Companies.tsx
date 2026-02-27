@@ -32,7 +32,7 @@ import {
     companyAiAutopilotItems,
     companyRecentActivities,
     CompanyTableRow,
-} from "../data/companiesData";
+} from "./companies/companiesData";
 
 
 

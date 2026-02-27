@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ActionReviewCandidate } from '../../data/dashboardData';
+import { ActionReviewCandidate } from '../dashboardData';
 
 interface ActionReviewModalProps {
     isOpen?: boolean;

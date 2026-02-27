@@ -37,7 +37,7 @@ import {
     FileSearch, Search, Copy, Mail, Edit2, Info, Archive,
 } from "lucide-react";
 import { showToast } from "../utils/toast";
-import ProjectCard from "../components/jobListing/ProjectCard";
+import ProjectCard from "./jobs/components/ProjectCard";
 import { AnalysisResult } from "../services/candidateService";
 
 interface Category {
