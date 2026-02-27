@@ -3,6 +3,7 @@ import { useAuth } from "../hooks/useAuth";
 import {
     organizationService,
     MyWorkspace,
+    CompanyResearchData,
 } from "../services/organizationService";
 import { jobPostService, Job } from "../services/jobPostService";
 import {
@@ -65,6 +66,36 @@ export default function Companies() {
     const [showCreateJobRole, setShowCreateJobRole] = useState(false);
 
     const [infoWorkspace, setInfoWorkspace] = useState<MyWorkspace | null>(null);
+    const [companyResearchData, setCompanyResearchData] = useState<CompanyResearchData | null>(null);
+    const [loadingCompanyResearch, setLoadingCompanyResearch] = useState(false);
+
+    // Fetch company research data when infoWorkspace changes
+    useEffect(() => {
+        if (!infoWorkspace) {
+            setCompanyResearchData(null);
+            return;
+        }
+        // If already available on the workspace object, use it
+        if (infoWorkspace.company_research_data) {
+            setCompanyResearchData(infoWorkspace.company_research_data);
+            return;
+        }
+        // Otherwise fetch from API
+        let cancelled = false;
+        setLoadingCompanyResearch(true);
+        organizationService.getCompanyResearchData(infoWorkspace.id)
+            .then((data) => {
+                if (!cancelled) setCompanyResearchData(data);
+            })
+            .catch((err) => {
+                console.error('Failed to fetch company research data', err);
+                if (!cancelled) setCompanyResearchData(null);
+            })
+            .finally(() => {
+                if (!cancelled) setLoadingCompanyResearch(false);
+            });
+        return () => { cancelled = true; };
+    }, [infoWorkspace]);
 
 
     const [isActionView, setIsActionView] = useState(true);
@@ -459,12 +490,24 @@ export default function Companies() {
                             className="bg-white shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <CompanyInfoTab
-                                data={infoWorkspace.company_research_data as any}
-                                onBack={() => setInfoWorkspace(null)}
-                                onEdit={() => { }}
-                                onCreateJob={() => setShowCreateJobRole(true)}
-                            />
+                            {loadingCompanyResearch ? (
+                                <div className="flex flex-col items-center justify-center py-24 gap-3">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F47F2]"></div>
+                                    <span className="text-sm text-[#8E8E93]">Loading company info...</span>
+                                </div>
+                            ) : companyResearchData ? (
+                                <CompanyInfoTab
+                                    data={companyResearchData}
+                                    onBack={() => setInfoWorkspace(null)}
+                                    onEdit={() => { }}
+                                    onCreateJob={() => setShowCreateJobRole(true)}
+                                />
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-24 gap-2">
+                                    <span className="text-sm text-[#8E8E93]">No company details available.</span>
+                                    <button onClick={() => setInfoWorkspace(null)} className="text-sm text-[#0F47F2] hover:underline">Close</button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
@@ -1041,12 +1084,24 @@ export default function Companies() {
                         className="bg-white rounded-l-3xl shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <CompanyInfoTab
-                            data={infoWorkspace.company_research_data as any}
-                            onBack={() => setInfoWorkspace(null)}
-                            onEdit={() => { }}
-                            onCreateJob={() => { }}
-                        />
+                        {loadingCompanyResearch ? (
+                            <div className="flex flex-col items-center justify-center py-24 gap-3">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F47F2]"></div>
+                                <span className="text-sm text-[#8E8E93]">Loading company info...</span>
+                            </div>
+                        ) : companyResearchData ? (
+                            <CompanyInfoTab
+                                data={companyResearchData}
+                                onBack={() => setInfoWorkspace(null)}
+                                onEdit={() => { }}
+                                onCreateJob={() => { }}
+                            />
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-24 gap-2">
+                                <span className="text-sm text-[#8E8E93]">No company details available.</span>
+                                <button onClick={() => setInfoWorkspace(null)} className="text-sm text-[#0F47F2] hover:underline">Close</button>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
