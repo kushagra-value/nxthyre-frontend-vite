@@ -121,18 +121,6 @@ function MainApp() {
     setCurrentPage("jobPipeline");
   };
 
-  const [headerWorkspaceName, setHeaderWorkspaceName] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    const handleHeaderUpdate = () => {
-      setHeaderWorkspaceName((window as any).__selectedWorkspaceName);
-    };
-    window.addEventListener('header-update', handleHeaderUpdate);
-    // Initial check
-    handleHeaderUpdate();
-    return () => window.removeEventListener('header-update', handleHeaderUpdate);
-  }, []);
-
   const getCurrentDateTime = () => {
     const now = new Date();
     const date = now.toLocaleDateString("en-GB", {
@@ -152,11 +140,8 @@ function MainApp() {
     switch (currentPage) {
       case "dashboard":
         return "Dashboard";
-      case "companies": {
-        // We'll need access to Companies state here. 
-        // For now, let's keep it simple as requested.
+      case "companies":
         return "Companies";
-      }
       case "jobs":
         return "Jobs";
       case "interviews":
@@ -445,7 +430,6 @@ function MainApp() {
                   <HeaderBar
                     title={getPageTitle()}
                     subtitle={getCurrentDateTime()}
-                    workspaceName={currentPage === 'companies' ? headerWorkspaceName : undefined}
                   />
                   {renderPage()}
                 </main>
