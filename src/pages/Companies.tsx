@@ -4,6 +4,8 @@ import {
     organizationService,
     MyWorkspace,
 } from "../services/organizationService";
+import { jobPostService, Job } from "../services/jobPostService";
+import { showToast } from "../utils/toast";
 import {
     Search,
     ChevronLeft,
@@ -35,8 +37,6 @@ import PendingRequestsModal from "../components/workspace/PendingRequestsModal";
 import {
     companyStatCards,
     companyTableRows,
-    companyAiAutopilotItems,
-    companyRecentActivities,
     CompanyTableRow,
 } from "./companies/companiesData";
 
@@ -60,14 +60,29 @@ export default function Companies() {
     const [showPendingModal, setShowPendingModal] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
-    
-    const [isActionView, setIsActionView] = useState(true); 
+
+    const [isActionView, setIsActionView] = useState(true);
     const [selectedWorkspace, setSelectedWorkspace] = useState<MyWorkspace | null>(null);
+    const [allJobs, setAllJobs] = useState<Job[]>([]);
+    const [jobsLoading, setJobsLoading] = useState(false);
+
+    // Sync selected workspace name with global state for header breadcrumbs
+    useEffect(() => {
+        if (selectedWorkspace) {
+            (window as any).__selectedWorkspaceName = selectedWorkspace.name;
+        } else {
+            delete (window as any).__selectedWorkspaceName;
+        }
+        window.dispatchEvent(new CustomEvent('header-update'));
+    }, [selectedWorkspace]);
+
     const [currentPage, setCurrentPage] = useState(1);
     const [activeFilter, setActiveFilter] = useState<
         "All" | "Active" | "Paused" | "Inactive" | "Has Open Jobs" | "Needs Attention"
     >("All");
+    const [activeJobFilter, setActiveJobFilter] = useState<"All" | "Active" | "Paused" | "Closed" | "Draft">("All");
     const [searchQuery, setSearchQuery] = useState("");
+    const [jobSearchQuery, setJobSearchQuery] = useState("");
 
     const fetchLogo = async (query: string) => {
         if (!query || logos[query] !== undefined) return;
@@ -100,12 +115,26 @@ export default function Companies() {
         }
     };
 
+    const fetchJobs = async () => {
+        setJobsLoading(true);
+        try {
+            const data = await jobPostService.getJobs();
+            setAllJobs(data);
+        } catch (error) {
+            console.error("Failed to fetch jobs", error);
+        } finally {
+            setJobsLoading(false);
+        }
+    };
+
     useEffect(() => {
-        if (isAuthenticated) fetchWorkspaces();
+        if (isAuthenticated) {
+            fetchWorkspaces();
+            fetchJobs();
+        }
     }, [isAuthenticated]);
 
     const buildTableRows = useCallback((): CompanyTableRow[] => {
-        // Merge API workspaces with dummy data to fill in stats
         if (workspaces.length === 0) return companyTableRows;
 
         return workspaces.map((ws, i) => {
@@ -119,7 +148,7 @@ export default function Companies() {
                 totalCandidates: fallback.totalCandidates,
                 shortlisted: fallback.shortlisted,
                 hired: fallback.hired,
-                status: fallback.status,
+                status: fallback.status as any,
             };
         });
     }, [workspaces]);
@@ -186,26 +215,29 @@ export default function Companies() {
         const ws = workspaces.find(w => w.id === wsId);
         if (ws) {
             setSelectedWorkspace(ws);
+            setActiveJobFilter("All");
+            setJobSearchQuery("");
         }
     };
+
+    const workspaceJobs = allJobs.filter(j => j.workspace_details?.id === selectedWorkspace?.id);
+
+    const filteredWorkspaceJobs = workspaceJobs.filter(j => {
+        const matchesSearch = j.title.toLowerCase().includes(jobSearchQuery.toLowerCase());
+        const matchesFilter = activeJobFilter === "All"
+            ? true
+            : j.status === (activeJobFilter === "Draft" ? "DRAFT" : "PUBLISHED");
+        return matchesSearch && matchesFilter;
+    });
 
     if (selectedWorkspace) {
         return (
             <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-[#F3F5F7]">
-                {/* ── Header & Breadcrumbs ── */}
-                <div className="flex items-center justify-between mb-6">
-                    <div>
-                        <h1 className="text-2xl font-semibold text-black mb-1">Company Job Listing</h1>
-                        <div className="flex items-center gap-2 text-sm text-[#4B5563]">
-                            <button onClick={() => setSelectedWorkspace(null)} className="hover:underline">Companies</button>
-                            <span><ChevronRight className="w-4 h-4" /></span>
-                            <span className="font-light">{selectedWorkspace.name}</span>
-                        </div>
-                    </div>
-                </div>
+                {/* ── Header Spacer handle by global Header ── */}
+                <div className="mb-6 invisible h-1" />
 
                 {/* ── Company Info Card ── */}
-                <div className="bg-white rounded-xl p-6 mb-6 flex items-center justify-between shadow-sm">
+                <div className="bg-white rounded-xl border border-[#D1D1D6] p-6 mb-6 flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setSelectedWorkspace(null)}
@@ -226,24 +258,33 @@ export default function Companies() {
                                 <span className="px-2 py-0.5 bg-[#EBFFEE] text-[#069855] text-[10px] font-medium rounded-full uppercase">Active</span>
                             </div>
                             <div className="flex items-center gap-4 text-xs text-[#8E8E93]">
-                                <span className="flex items-center gap-1.5"><Globe className="w-3.5 h-3.5 text-[#8E8E93]" /> jupiter.money</span>
-                                <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-[#8E8E93]" /> Bengaluru, Karnataka</span>
-                                <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-[#8E8E93]" /> Est. 2019</span>
-                                <span className="flex items-center gap-1.5"><Settings className="w-3.5 h-3.5 text-[#8E8E93]" /> Fintech</span>
+                                <span className="flex items-center gap-1.5"><Globe className="w-3.5 h-3.5 text-[#8E8E93]" /> {selectedWorkspace.company_research_data?.website || 'jupiter.money'}</span>
+                                <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-[#8E8E93]" /> {selectedWorkspace.company_research_data?.headquarters || 'Bengaluru, India'}</span>
+                                <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-[#8E8E93]" /> Est. {selectedWorkspace.company_research_data?.founded_year || '2019'}</span>
+                                <span className="flex items-center gap-1.5"><Settings className="w-3.5 h-3.5 text-[#8E8E93]" /> {selectedWorkspace.company_research_data?.industry || 'Fintech'}</span>
                             </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button className="flex items-center gap-1.5 px-4 py-2 bg-[#F5F5F5] border border-[#AEAEB2] rounded-md text-xs font-medium text-[#757575] hover:bg-gray-100 transition-colors">
+                        <button
+                            onClick={() => showToast.info("Company detailed research view coming soon")}
+                            className="flex items-center gap-1.5 px-4 py-2 bg-[#F5F5F5] border border-[#AEAEB2] rounded-md text-xs font-medium text-[#757575] hover:bg-gray-100 transition-colors"
+                        >
                             View info <Eye className="w-3.5 h-3.5" />
                         </button>
                         <button className="flex items-center gap-1.5 px-4 py-2 bg-[#EBFFEE] border border-[#34C759] rounded-md text-sm font-medium text-[#14AE5C] hover:bg-[#D7FFE2] transition-colors">
-                            <Star className="w-4 h-4 fill-current" /> 4.2 / 5
+                            <Star className="w-4 h-4 fill-current" /> {selectedWorkspace.company_research_data?.overall_rating || '4.2'} / 5
                         </button>
-                        <button className="flex items-center gap-1.5 px-4 py-2 bg-[#E7EDFF] border border-[#0F47F2] rounded-md text-sm font-medium text-[#0F47F2] hover:bg-[#D7E3FF] transition-colors">
-                            <Plus className="w-4 h-4" /> Edit
+                        <button
+                            onClick={() => showToast.info("Edit workspace coming soon")}
+                            className="flex items-center gap-1.5 px-4 py-2 bg-[#E7EDFF] border border-[#0F47F2] rounded-md text-sm font-medium text-[#0F47F2] hover:bg-[#D7E3FF] transition-colors"
+                        >
+                            <Pencil className="w-4 h-4" /> Edit
                         </button>
-                        <button className="flex items-center gap-1.5 px-4 py-2 bg-[#0F47F2] rounded-md text-sm font-medium text-white hover:opacity-90 transition-opacity">
+                        <button
+                            onClick={() => showToast.success("Navigating to create job...")}
+                            className="flex items-center gap-1.5 px-4 py-2 bg-[#0F47F2] rounded-md text-sm font-medium text-white hover:opacity-90 transition-opacity"
+                        >
                             <Plus className="w-4 h-4" /> Create Job
                         </button>
                     </div>
@@ -252,9 +293,9 @@ export default function Companies() {
                 {/* ── Stat Cards ── */}
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
                     {[
-                        { label: "Total Jobs", value: "138", trend: "10% vs last month", trendColor: "text-[#069855]", icon: <Briefcase className="w-5 h-5 text-[#0F47F2]" /> },
-                        { label: "Total Candidates", value: "822", trend: "+42 this month", trendColor: "text-[#009951]", icon: <Users className="w-5 h-5 text-[#0F47F2]" /> },
-                        { label: "In Pipeline", value: "62", trend: "6 Need Action", trendColor: "text-[#FF8D28]", icon: <Route className="w-5 h-5 text-[#0F47F2]" /> },
+                        { label: "Total Jobs", value: workspaceJobs.length, trend: "10% vs last month", trendColor: "text-[#069855]", icon: <Briefcase className="w-5 h-5 text-[#0F47F2]" /> },
+                        { label: "Total Candidates", value: workspaceJobs.reduce((acc, j) => acc + (j.total_applied || 0), 0), trend: "+42 this month", trendColor: "text-[#009951]", icon: <Users className="w-5 h-5 text-[#0F47F2]" /> },
+                        { label: "In Pipeline", value: workspaceJobs.reduce((acc, j) => acc + (j.pipeline_candidate_count || 0), 0), trend: "6 Need Action", trendColor: "text-[#FF8D28]", icon: <Route className="w-5 h-5 text-[#0F47F2]" /> },
                         { label: "Shortlisted", value: "26", trend: "Across 9 Jobs", trendColor: "text-[#009951]", icon: <UserCheck className="w-5 h-5 text-[#0F47F2]" /> },
                         { label: "Interview this week", value: "12", trend: "3% This Quarter", trendColor: "text-[#009951]", icon: <Calendar className="w-5 h-5 text-[#0F47F2]" /> },
                         { label: "Hired", value: "5", trend: "3% This Quarter", trendColor: "text-[#009951]", icon: <UserCircle className="w-5 h-5 text-[#0F47F2]" /> },
@@ -279,14 +320,23 @@ export default function Companies() {
                     {/* Filters & Actions */}
                     <div className="p-5 border-b border-[#C7C7CC] flex flex-wrap items-center justify-between gap-4">
                         <div className="flex items-center gap-2">
-                            {["All (42)", "Active (25)", "Paused (10)", "Closed (7)", "Draft (4)"].map((filter, i) => (
-                                <button
-                                    key={filter}
-                                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${i === 0 ? 'bg-[#0F47F2] text-white' : 'bg-white border border-[#C7C7CC] text-[#AEAEB2] hover:bg-gray-50'}`}
-                                >
-                                    {filter}
-                                </button>
-                            ))}
+                            {(["All", "Active", "Paused", "Closed", "Draft"] as const).map((filter) => {
+                                const count = filter === "All" ? workspaceJobs.length : workspaceJobs.filter(j => {
+                                    if (filter === "Active") return j.status === "PUBLISHED";
+                                    if (filter === "Draft") return j.status === "DRAFT";
+                                    return false; // Paused/Closed not directly in status yet
+                                }).length;
+
+                                return (
+                                    <button
+                                        key={filter}
+                                        onClick={() => setActiveJobFilter(filter)}
+                                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${activeJobFilter === filter ? 'bg-[#0F47F2] text-white' : 'bg-white border border-[#C7C7CC] text-[#AEAEB2] hover:bg-gray-50'}`}
+                                    >
+                                        {filter} ({count})
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -296,6 +346,8 @@ export default function Companies() {
                             <input
                                 type="text"
                                 placeholder="Search for Jobs"
+                                value={jobSearchQuery}
+                                onChange={(e) => setJobSearchQuery(e.target.value)}
                                 className="w-full h-9 pl-10 pr-4 bg-white border border-[#AEAEB2] rounded-md text-xs text-[#4B5563] focus:outline-none"
                             />
                         </div>
@@ -329,24 +381,24 @@ export default function Companies() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#D1D1D6]">
-                                {[1, 2, 3, 4].map((_, i) => (
-                                    <tr key={i} className="hover:bg-gray-50 transition-colors">
+                                {filteredWorkspaceJobs.map((job) => (
+                                    <tr key={job.id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-5 py-4">
                                             <div className="flex flex-col gap-1.5">
-                                                <span className="text-sm text-[#8E8E93]">Senior Product Designer</span>
+                                                <span className="text-sm text-[#4B5563] font-medium">{job.title}</span>
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">3Yrs</span>
-                                                    <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">18 - 24 LPA</span>
-                                                    <span className="px-2 py-0.5 bg-[#F2F2F7] rounded-full text-[10px] text-[#8E8E93]">JD-154</span>
+                                                    <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">{job.experience_min_years}-{job.experience_max_years} Yrs</span>
+                                                    <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">{job.salary_min || '??'} - {job.salary_max || '??'} LPA</span>
+                                                    <span className="px-2 py-0.5 bg-[#F2F2F7] rounded-full text-[10px] text-[#8E8E93]">JD-{job.id}</span>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">36</td>
-                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">12</td>
-                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">1</td>
-                                        <td className="px-5 py-4 text-sm text-[#FF8D28]">36 Days</td>
-                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">3</td>
-                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">27/02/2026</td>
+                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">{job.total_applied || 0}</td>
+                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">{job.shortlistedCount || 0}</td>
+                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">0</td>
+                                        <td className="px-5 py-4 text-sm text-[#FF8D28]">-- Days</td>
+                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">{job.count || 1}</td>
+                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">{new Date(job.updated_at).toLocaleDateString()}</td>
                                         <td className="px-5 py-4">
                                             <div className="flex flex-col gap-1.5">
                                                 <span className="text-sm text-[#4B5563]">F2F Interview</span>
@@ -360,8 +412,8 @@ export default function Companies() {
                                             </div>
                                         </td>
                                         <td className="px-5 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-[10px] font-medium uppercase ${i === 2 ? 'bg-[#F2F2F7] text-gray-500' : 'bg-[#EBFFEE] text-[#069855]'}`}>
-                                                {i === 2 ? 'Closed' : 'Active'}
+                                            <span className={`px-2 py-1 rounded-full text-[10px] font-medium uppercase ${job.status === 'PUBLISHED' ? 'bg-[#EBFFEE] text-[#069855]' : 'bg-[#F2F2F7] text-gray-500'}`}>
+                                                {job.status === 'PUBLISHED' ? 'Active' : 'Draft'}
                                             </span>
                                         </td>
                                         <td className="px-5 py-4">
@@ -376,6 +428,11 @@ export default function Companies() {
                                         </td>
                                     </tr>
                                 ))}
+                                {filteredWorkspaceJobs.length === 0 && !jobsLoading && (
+                                    <tr>
+                                        <td colSpan={10} className="px-5 py-10 text-center text-[#8E8E93]">No jobs found for this criteria.</td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -570,51 +627,27 @@ export default function Companies() {
                                                 <th className="px-4 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
                                                     Status
                                                 </th>
-                                                <th className="px-4 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider text-right">
+                                                <th className="px-4 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider text-center">
                                                     Actions
                                                 </th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-[#D1D1D6]">
+                                        <tbody className="divide-y divide-gray-100">
                                             {loading ? (
-                                                // Skeleton rows while loading
-                                                [...Array(5)].map((_, i) => (
-                                                    <tr key={`skel-${i}`} className="animate-pulse">
-                                                        <td className="px-4 py-4">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="w-8 h-8 rounded-md bg-gray-200 shrink-0" />
-                                                                <div className="flex-1 space-y-1.5">
-                                                                    <div className="h-3.5 bg-gray-200 rounded w-32" />
-                                                                    <div className="h-2.5 bg-gray-100 rounded w-20" />
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-4 py-4"><div className="h-3.5 bg-gray-200 rounded w-10" /></td>
-                                                        <td className="px-4 py-4"><div className="h-3.5 bg-gray-200 rounded w-10" /></td>
-                                                        <td className="px-4 py-4"><div className="h-3.5 bg-gray-200 rounded w-10" /></td>
-                                                        <td className="px-4 py-4"><div className="h-3.5 bg-gray-200 rounded w-10" /></td>
-                                                        <td className="px-4 py-4"><div className="h-5 bg-gray-200 rounded-full w-14" /></td>
-                                                        <td className="px-4 py-4">
-                                                            <div className="flex items-center justify-end gap-2">
-                                                                <div className="w-16 h-6 bg-gray-200 rounded" />
-                                                                <div className="w-16 h-6 bg-gray-200 rounded" />
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
+                                                <tr>
+                                                    <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
+                                                        Loading companies...
+                                                    </td>
+                                                </tr>
                                             ) : paginatedRows.length === 0 ? (
                                                 <tr>
-                                                    <td
-                                                        colSpan={7}
-                                                        className="px-4 py-12 text-center text-sm text-[#AEAEB2]"
-                                                    >
+                                                    <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
                                                         No companies found.
                                                     </td>
                                                 </tr>
                                             ) : (
                                                 paginatedRows.map((row) => {
-                                                    const sty = statusStyles[row.status] || statusStyles.Active;
-                                                    const companyLogo = logos[row.name];
+                                                    const status = statusStyles[row.status] || statusStyles.Active;
                                                     return (
                                                         <tr
                                                             key={row.id}
@@ -622,116 +655,67 @@ export default function Companies() {
                                                             className="hover:bg-[#FAFBFC] transition-colors cursor-pointer"
                                                         >
                                                             {/* Company Title */}
-                                                            <td className="px-4 py-4">
+                                                            <td className="px-4 py-4 whitespace-nowrap">
                                                                 <div className="flex items-center gap-3">
-                                                                    <div className="w-8 h-8 rounded-md bg-[#F3F5F7] flex items-center justify-center shrink-0 overflow-hidden">
-                                                                        {companyLogo ? (
-                                                                            <img
-                                                                                src={companyLogo}
-                                                                                alt={row.name}
-                                                                                className="w-full h-full object-contain"
-                                                                            />
+                                                                    <div className="w-10 h-10 rounded-lg bg-[#F3F5F7] flex items-center justify-center overflow-hidden shrink-0 border border-gray-100">
+                                                                        {logos[row.name] ? (
+                                                                            <img src={logos[row.name]!} alt={row.name} className="w-full h-full object-contain" />
                                                                         ) : (
-                                                                            <span className="text-[11px] font-semibold text-[#8E8E93]">
-                                                                                {row.name.charAt(0).toUpperCase()}
-                                                                            </span>
+                                                                            <span className="text-lg font-bold text-[#8E8E93]">{row.name.charAt(0)}</span>
                                                                         )}
                                                                     </div>
-                                                                    <div className="min-w-0">
-                                                                        <p className="text-sm font-medium text-black max-w-[24ch] truncate">
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-sm font-medium text-black">
                                                                             {row.name}
-                                                                        </p>
-                                                                        <p className="text-[11px] text-[#AEAEB2]">
+                                                                        </span>
+                                                                        <span className="text-xs text-[#8E8E93]">
                                                                             {row.domain}
-                                                                        </p>
+                                                                        </span>
                                                                     </div>
                                                                 </div>
                                                             </td>
 
                                                             {/* Total Jobs */}
-                                                            <td className="px-4 py-4">
-                                                                <p className="text-sm font-semibold text-black">
-                                                                    {row.totalJobs}
-                                                                </p>
+                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-[#4B5563]">
+                                                                {row.totalJobs}
                                                             </td>
 
                                                             {/* Total Candidates */}
-                                                            <td className="px-4 py-4">
-                                                                <p className="text-sm font-semibold text-black">
-                                                                    {row.totalCandidates}
-                                                                </p>
+                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-[#4B5563]">
+                                                                {row.totalCandidates}
                                                             </td>
 
                                                             {/* Shortlisted */}
-                                                            <td className="px-4 py-4">
-                                                                <p className="text-sm font-semibold text-black">
-                                                                    {row.shortlisted}
-                                                                </p>
+                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-[#4B5563]">
+                                                                {row.shortlisted}
                                                             </td>
 
                                                             {/* Hired */}
-                                                            <td className="px-4 py-4">
-                                                                <p className="text-sm font-semibold text-black">
-                                                                    {row.hired}
-                                                                </p>
+                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-[#4B5563]">
+                                                                {row.hired}
                                                             </td>
 
                                                             {/* Status */}
-                                                            <td className="px-4 py-4">
+                                                            <td className="px-4 py-4 whitespace-nowrap">
                                                                 <span
-                                                                    className={`px-2 py-1 rounded-full text-[10px] font-semibold uppercase ${sty.bg} ${sty.text}`}
+                                                                    className={`px-2.5 py-1 rounded-full text-[10px] font-medium uppercase ${status.bg} ${status.text}`}
                                                                 >
                                                                     {row.status}
                                                                 </span>
                                                             </td>
 
                                                             {/* Actions */}
-                                                            <td className="px-4 py-4 text-right">
-                                                                <div
-                                                                    className="flex items-center justify-end gap-2"
-                                                                    onClick={(e) => e.stopPropagation()}
-                                                                >
+                                                            <td className="px-4 py-4 whitespace-nowrap text-center">
+                                                                <div className="flex items-center justify-center gap-2">
                                                                     <button
-                                                                        onClick={() => handleWorkspaceClick(row.workspaceId)}
-                                                                        className="flex items-center justify-center w-7 h-7 text-[#0F47F2] bg-[#E7EDFF] rounded-md transition-colors hover:bg-[#D7E3FF]"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleWorkspaceClick(row.workspaceId);
+                                                                        }}
+                                                                        className="p-1 px-3 py-1.5 flex items-center gap-1 bg-[#E7EDFF] text-[#0F47F2] rounded-md hover:bg-[#D7E3FF] transition-colors text-[10px] font-medium"
                                                                     >
-                                                                        <Eye className="w-4 h-4" />
+                                                                        <Eye className="w-3.5 h-3.5" /> View
                                                                     </button>
-
-                                                                    {isActionView && row.status === 'Paused' ? (
-                                                                        <button
-                                                                            className="flex items-center justify-center w-7 h-7 text-[#069855] bg-transparent rounded-md transition-colors hover:bg-gray-50 border border-green-500"
-                                                                        >
-                                                                            <Play className="w-3.5 h-3.5 fill-current" />
-                                                                        </button>
-                                                                    ) : row.status === 'Active' ? (
-                                                                        <button
-                                                                            className="flex items-center justify-center w-7 h-7 text-[#4B5563] bg-[#F3F5F7] rounded-md transition-colors hover:bg-[#E5E7EB]"
-                                                                        >
-                                                                            <div className="flex gap-[2px]">
-                                                                                <div className="w-[3px] h-3 bg-[#8E8E93] rounded-full"></div>
-                                                                                <div className="w-[3px] h-3 bg-[#8E8E93] rounded-full"></div>
-                                                                            </div>
-                                                                        </button>
-                                                                    ) : row.status === 'Paused' ? (
-                                                                        <button
-                                                                            className="flex items-center justify-center w-7 h-7 text-[#4B5563] bg-[#F3F5F7] rounded-md transition-colors hover:bg-[#E5E7EB]"
-                                                                        >
-                                                                            <div className="flex gap-[2px]">
-                                                                                <div className="w-[3px] h-3 bg-[#8E8E93] rounded-full"></div>
-                                                                                <div className="w-[3px] h-3 bg-[#8E8E93] rounded-full"></div>
-                                                                            </div>
-                                                                        </button>
-                                                                    ) : (
-                                                                        <button
-                                                                            className="flex items-center justify-center w-7 h-7 text-[#4B5563] bg-[#F3F5F7] rounded-md transition-colors hover:bg-[#E5E7EB]"
-                                                                        >
-                                                                            <div className="flex gap-[2px]">
-                                                                                <div className="w-[3px] h-3 bg-[#8E8E93] rounded-full"></div>
-                                                                                <div className="w-[3px] h-3 bg-[#8E8E93] rounded-full"></div>
-                                                                            </div>
-                                                                        </button>
-                                                                    )}
                                                                 </div>
                                                             </td>
                                                         </tr>
@@ -742,203 +726,54 @@ export default function Companies() {
                                     </table>
                                 </div>
 
-                                {/* Table Footer / Pagination */}
-                                <div
-                                    className="px-5 py-3 flex items-center justify-between border-t"
-                                    style={{ borderColor: "#F3F5F7" }}
-                                >
-                                    <div className="text-[11px] text-[#8E8E93]">
-                                        Showing {paginatedRows.length > 0 ? startIndex + 1 : 0}-
-                                        {Math.min(startIndex + itemsPerPage, filteredRows.length)} of {filteredRows.length} companies
-                                    </div>
-                                    {totalPages > 1 && (
-                                        <div className="flex items-center gap-1.5">
+                                {/* Pagination */}
+                                {!loading && totalPages > 1 && (
+                                    <div className="flex items-center justify-between p-4 bg-white border-t border-gray-100">
+                                        <div className="text-xs text-[#8E8E93]">
+                                            Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredRows.length)} of {filteredRows.length} companies
+                                        </div>
+                                        <div className="flex items-center gap-1">
                                             <button
-                                                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                                 disabled={currentPage === 1}
-                                                className="w-8 h-8 flex items-center justify-center rounded text-[#AEAEB2] hover:bg-[#F3F5F7] disabled:opacity-30 transition-colors"
-                                                style={{ border: "0.5px solid #D1D1D6" }}
+                                                className="p-1 rounded-md hover:bg-gray-100 disabled:opacity-30 transition-colors"
                                             >
                                                 <ChevronLeft className="w-4 h-4" />
                                             </button>
-                                            {getPageNumbers().map((p, i) =>
-                                                p === "..." ? (
-                                                    <span key={`e-${i}`} className="text-[#AEAEB2] text-xs px-1">
-                                                        ...
-                                                    </span>
-                                                ) : (
-                                                    <button
-                                                        key={p}
-                                                        onClick={() => setCurrentPage(p as number)}
-                                                        className={`w-8 h-8 flex items-center justify-center rounded text-xs font-medium transition-colors ${currentPage === p
-                                                            ? "bg-[#0F47F2] text-white"
-                                                            : "text-[#4B5563] hover:bg-[#F3F5F7]"
-                                                            }`}
-                                                    >
-                                                        {p}
-                                                    </button>
-                                                )
-                                            )}
+                                            {getPageNumbers().map((num, i) => (
+                                                <button
+                                                    key={i}
+                                                    onClick={() => typeof num === 'number' && setCurrentPage(num)}
+                                                    className={`w-7 h-7 flex items-center justify-center rounded-md text-xs transition-colors ${currentPage === num ? 'bg-[#0F47F2] text-white' : 'hover:bg-gray-100 text-[#4B5563]'}`}
+                                                >
+                                                    {num}
+                                                </button>
+                                            ))}
                                             <button
-                                                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                                 disabled={currentPage === totalPages}
-                                                className="w-8 h-8 flex items-center justify-center rounded text-[#AEAEB2] hover:bg-[#F3F5F7] disabled:opacity-30 transition-colors"
-                                                style={{ border: "0.5px solid #D1D1D6" }}
+                                                className="p-1 rounded-md hover:bg-gray-100 disabled:opacity-30 transition-colors"
                                             >
                                                 <ChevronRight className="w-4 h-4" />
                                             </button>
                                         </div>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </section>
                         </div>
-
                     </div>
                 </div>
-                {!isActionView && (
-                    <aside className="w-96 flex flex-col gap-4 shrink-0">
-                        {/* Immediate Actions */}
-                        <div
-                            className="bg-white rounded-xl p-5"
-                        >
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-sm font-semibold text-black">Immediate Actions</h3>
-                                <button
-                                    className="text-xs font-medium text-[#4B5563] border border-[#E5E7EB] bg-[#F9FAFB] px-2.5 py-1.5 rounded-md hover:bg-gray-100 transition-colors"
-                                    onClick={() => setIsActionView(true)}
-                                >
-                                    Hide Activities
-                                </button>
-                            </div>
-                            <div className="flex flex-col gap-3">
-                                {/* Hardcoded or mapped items, we'll map dummy data but match image styling perfectly */}
-                                <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <p className="text-sm font-semibold text-[#0F47F2]">Jupiter Money</p>
-                                        <div className="w-6 h-6 rounded-full bg-[#0F47F2] flex items-center justify-center shadow-sm">
-                                            <Star className="w-3 h-3 text-white fill-current" />
-                                        </div>
-                                    </div>
-                                    <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
-                                        Max Verstappen (85% match) hasn't been contacted for JD-112. Autopilot can send outreach now.
-                                    </p>
-                                    <div className="flex items-center gap-4">
-                                        <button className="py-1.5 px-3 bg-[#E7EDFF] text-[#0F47F2] text-xs font-semibold rounded-md hover:bg-[#D7E3FF] transition-colors">
-                                            Approve Outreach
-                                        </button>
-                                        <span className="text-xs text-[#AEAEB2] font-medium">09:00 AM</span>
-                                        <ArrowRight className="w-4 h-4 text-[#AEAEB2] ml-auto" />
-                                    </div>
-                                </div>
 
-                                <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <p className="text-sm font-semibold text-[#0F47F2]">Slice</p>
-                                    </div>
-                                    <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
-                                        Close Senior Dev role. 3 candidates in final stage, push to offer.
-                                    </p>
-                                    <div className="flex items-center gap-4">
-                                        <button className="py-1.5 px-3 bg-[#FFF7D6] text-[#D97706] text-xs font-semibold rounded-md hover:bg-[#FDE68A] transition-colors">
-                                            Take Action
-                                        </button>
-                                        <span className="text-xs text-[#AEAEB2] font-medium">4 Days ago</span>
-                                        <ArrowRight className="w-4 h-4 text-[#AEAEB2] ml-auto" />
-                                    </div>
-                                </div>
-
-                                <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <p className="text-sm font-semibold text-[#0F47F2]">Medcore Solutions</p>
-                                    </div>
-                                    <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
-                                        Client Check in needed. No updated in 2 weeks
-                                    </p>
-                                    <div className="flex items-center gap-4">
-                                        <button className="py-1.5 px-3 bg-[#E7EDFF] text-[#0F47F2] text-xs font-semibold rounded-md hover:bg-[#D7E3FF] transition-colors">
-                                            Take Actions
-                                        </button>
-                                        <span className="text-xs text-[#AEAEB2] font-medium">09:00 AM</span>
-                                        <ArrowRight className="w-4 h-4 text-[#AEAEB2] ml-auto" />
-                                    </div>
-                                </div>
-                                <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <p className="text-sm font-semibold text-[#0F47F2]">Racing Williams</p>
-                                        <div className="w-6 h-6 rounded-full bg-[#0F47F2] flex items-center justify-center shadow-sm">
-                                            <Star className="w-3 h-3 text-white fill-current" />
-                                        </div>
-                                    </div>
-                                    <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
-                                        Candidates haven't responded to follow-up, Autopilot
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Recent Activities */}
-                        <div
-                            className="bg-white rounded-xl p-5"
-                            style={{ border: "0.5px solid #D1D1D6" }}
-                        >
-                            <div className="flex items-center justify-between mb-5">
-                                <h3 className="text-sm font-semibold text-black">Recent Activities</h3>
-                                <button className="text-xs font-medium text-[#4B5563] border border-[#E5E7EB] bg-white px-3 py-1.5 rounded-md hover:bg-gray-50 transition-colors">
-                                    Today
-                                </button>
-                            </div>
-
-                            <div className="mb-3">
-                                <h4 className="text-xs font-semibold text-[#4B5563]">Today · Feb 20</h4>
-                            </div>
-
-                            <div className="flex flex-col gap-4">
-                                <div className="flex items-start justify-between pb-3 border-b border-[#F3F5F7]">
-                                    <div>
-                                        <p className="text-sm font-medium text-[#0F47F2] mb-0.5">RocketGrowth Inc</p>
-                                        <p className="text-[13px] text-[#4B5563]">New job posted - ML Engineer</p>
-                                        <p className="text-[11px] text-[#AEAEB2] mt-0.5">JD-108 · Full-time · Delhi</p>
-                                    </div>
-                                    <span className="text-xs text-[#AEAEB2] font-medium mt-1">10:45 AM</span>
-                                </div>
-
-                                <div className="flex items-start justify-between pb-3 border-b border-[#F3F5F7]">
-                                    <div>
-                                        <p className="text-sm font-medium text-[#0F47F2] mb-0.5">Acme Technologies</p>
-                                        <p className="text-[13px] text-[#4B5563]">Priya Patel hired</p>
-                                        <p className="text-[11px] text-[#AEAEB2] mt-0.5">Senior Product Designer · JD-101</p>
-                                    </div>
-                                    <span className="text-xs text-[#AEAEB2] font-medium mt-1">09:45 AM</span>
-                                </div>
-
-                                <div className="flex items-start justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-[#0F47F2] mb-0.5">Jupiter Money</p>
-                                        <p className="text-[13px] text-[#4B5563]">Shortlist sent to client</p>
-                                        <p className="text-[11px] text-[#AEAEB2] mt-0.5">4 candidates · ML Engineer · JD-102</p>
-                                    </div>
-                                    <span className="text-xs text-[#AEAEB2] font-medium mt-1">08:15 AM</span>
-                                </div>
-                            </div>
-                        </div>
-                    </aside>
-                )}
+                {/* ── Right Content Sidebar ── */}
+                <div className="w-full lg:w-96 flex flex-col gap-4">
+                    {/* Placeholder for future sidebar items if needed */}
+                </div>
             </div>
 
             {/* Modals */}
-            <CreateWorkspaceModal
-                isOpen={showCreateModal}
-                onClose={() => setShowCreateModal(false)}
-                onSuccess={() => fetchWorkspaces()}
-            />
-            <JoinWorkspaceModal
-                isOpen={showJoinModal}
-                onClose={() => setShowJoinModal(false)}
-            />
-            <PendingRequestsModal
-                isOpen={showPendingModal}
-                onClose={() => setShowPendingModal(false)}
-            />
+            <CreateWorkspaceModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} onSuccess={fetchWorkspaces} />
+            <JoinWorkspaceModal isOpen={showJoinModal} onClose={() => setShowJoinModal(false)} />
+            <PendingRequestsModal isOpen={showPendingModal} onClose={() => setShowPendingModal(false)} />
         </div>
     );
 }

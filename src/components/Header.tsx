@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 interface HeaderProps {
   title: string;
   subtitle?: string;
+  workspaceName?: string;
 }
 
 const RefreshIcon = (
@@ -24,7 +25,7 @@ const NotificationIcon = (
   </svg>
 );
 
-export default function Header({ title, subtitle }: HeaderProps) {
+export default function Header({ title, subtitle, workspaceName }: HeaderProps) {
   const { user, signOut } = useAuthContext();
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -32,8 +33,10 @@ export default function Header({ title, subtitle }: HeaderProps) {
   return (
     <header className="bg-white flex items-center justify-between px-6 shrink-0 relative" style={{ height: '88px', padding: '16px 24px' }}>
       <div className="flex flex-col gap-2.5">
-        <h1 className="text-[22px] font-medium leading-6 text-black">{title}</h1>
-        {subtitle && (
+        <h1 className="text-[22px] font-medium leading-6 text-black">
+          {workspaceName ? 'Company Job Listing' : title}
+        </h1>
+        {subtitle && !workspaceName && (
           <div className="flex items-center gap-2">
             {subtitle.split('•').map((part, i, arr) => (
               <span key={i} className="flex items-center gap-2">
@@ -41,6 +44,13 @@ export default function Header({ title, subtitle }: HeaderProps) {
                 {i < arr.length - 1 && <span className="w-1 h-1 rounded-full bg-[#4B5563] opacity-40" />}
               </span>
             ))}
+          </div>
+        )}
+        {workspaceName && (
+          <div className="flex items-center gap-2 text-sm text-[#4B5563]">
+            <span className="font-light">Companies</span>
+            <span className="w-1 h-1 rounded-full bg-[#4B5563] opacity-40 mx-1" />
+            <span className="font-light">{workspaceName}</span>
           </div>
         )}
       </div>
