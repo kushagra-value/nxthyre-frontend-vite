@@ -54,7 +54,7 @@ export default function Companies() {
     const [showPendingModal, setShowPendingModal] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
-    const [isActionView, setIsActionView] = useState(false);
+    const [isActionView, setIsActionView] = useState(true);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [activeFilter, setActiveFilter] = useState<
@@ -188,7 +188,7 @@ export default function Companies() {
                                     key={stat.id}
                                     className={`bg-white rounded-xl flex flex-col ${isAction ? "cursor-pointer hover:bg-gray-50 transition-colors" : ""}`} // UPDATED: clickable only for Immediate Action card
                                     style={{ padding: "20px", gap: "8px" }}
-                                    onClick={isAction ? () => setIsActionView(true) : undefined} // UPDATED: setIsActionView(true) on click
+                                    onClick={isAction ? () => setIsActionView(!isActionView) : undefined}
                                 >
                                     <div className="flex items-center justify-between">
                                         <p className="text-[12px] font-normal text-[#4B5563] leading-[14px]">
@@ -594,7 +594,7 @@ export default function Companies() {
                                 <h3 className="text-sm font-semibold text-black">Immediate Actions</h3>
                                 <button
                                     className="text-xs font-medium text-[#4B5563] border border-[#E5E7EB] bg-[#F9FAFB] px-2.5 py-1.5 rounded-md hover:bg-gray-100 transition-colors"
-                                    onClick={() => setIsActionView(false)} // UPDATED: set to false to show sidebar again
+                                    onClick={() => setIsActionView(true)}
                                 >
                                     Hide Activities
                                 </button>
