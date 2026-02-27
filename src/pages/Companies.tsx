@@ -237,30 +237,6 @@ export default function Companies() {
         return matchesSearch && matchesFilter;
     });
 
-    // ── Full-page Company Info View ──
-    if (infoWorkspace) {
-        return (
-            <div className="flex-1 overflow-y-auto custom-scrollbar bg-white">
-                <CompanyInfoTab
-                    data={infoWorkspace.company_research_data as any}
-                    onBack={() => setInfoWorkspace(null)}
-                    onEdit={() => { }}
-                    onCreateJob={() => setShowCreateJobRole(true)}
-                />
-                <CreateJobRoleModal
-                    isOpen={showCreateJobRole}
-                    onClose={() => setShowCreateJobRole(false)}
-                    workspaceId={infoWorkspace.id}
-                    workspaces={workspaces.map(ws => ({ id: ws.id, name: ws.name }))}
-                    onJobCreated={() => {
-                        setShowCreateJobRole(false);
-                        showToast.success("Job role created successfully!");
-                    }}
-                />
-            </div>
-        );
-    }
-
     if (selectedWorkspace) {
         return (
             <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-[#F3F5F7]">
@@ -472,6 +448,26 @@ export default function Companies() {
                         showToast.success("Job role created successfully!");
                     }}
                 />
+
+                {/* ── Company Info Modal Overlay ── */}
+                {infoWorkspace && (
+                    <div
+                        className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-start justify-end overflow-y-auto"
+                        onClick={() => setInfoWorkspace(null)}
+                    >
+                        <div
+                            className="bg-white rounded-l-3xl shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <CompanyInfoTab
+                                data={infoWorkspace.company_research_data as any}
+                                onBack={() => setInfoWorkspace(null)}
+                                onEdit={() => { }}
+                                onCreateJob={() => setShowCreateJobRole(true)}
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
         );
     }
@@ -1034,6 +1030,26 @@ export default function Companies() {
                 isOpen={showPendingModal}
                 onClose={() => setShowPendingModal(false)}
             />
+
+            {/* ── Company Info Modal Overlay ── */}
+            {infoWorkspace && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-start justify-end overflow-y-auto"
+                    onClick={() => setInfoWorkspace(null)}
+                >
+                    <div
+                        className="bg-white rounded-l-3xl shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <CompanyInfoTab
+                            data={infoWorkspace.company_research_data as any}
+                            onBack={() => setInfoWorkspace(null)}
+                            onEdit={() => { }}
+                            onCreateJob={() => { }}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
