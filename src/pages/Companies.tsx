@@ -186,8 +186,9 @@ export default function Companies() {
                             return (
                                 <div
                                     key={stat.id}
-                                    className="bg-white rounded-xl flex flex-col"
+                                    className={`bg-white rounded-xl flex flex-col ${isAction ? "cursor-pointer hover:bg-gray-50 transition-colors" : ""}`} // UPDATED: clickable only for Immediate Action card
                                     style={{ padding: "20px", gap: "8px" }}
+                                    onClick={isAction ? () => setIsActionView(true) : undefined} // UPDATED: setIsActionView(true) on click
                                 >
                                     <div className="flex items-center justify-between">
                                         <p className="text-[12px] font-normal text-[#4B5563] leading-[14px]">
@@ -277,21 +278,6 @@ export default function Companies() {
                                 </div>
 
                                 <div className="flex items-center gap-2 flex-wrap">
-                                    {/* Expand View / Action View Toggle */}
-                                    <button
-                                        onClick={() => setIsActionView(!isActionView)}
-                                        className="flex items-center gap-2 px-3 py-2 bg-white text-[#4B5563] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
-                                    >
-                                        {isActionView ? (
-                                            <>
-                                                <AlertCircle className="w-4 h-4 text-[#AEAEB2]" /> Action View
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Maximize className="w-4 h-4 text-[#AEAEB2]" /> Expand View
-                                            </>
-                                        )}
-                                    </button>
 
                                     {/* Export CSV */}
                                     <button
@@ -606,7 +592,10 @@ export default function Companies() {
                         >
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-sm font-semibold text-black">Immediate Actions</h3>
-                                <button className="text-xs font-medium text-[#4B5563] border border-[#E5E7EB] bg-[#F9FAFB] px-2.5 py-1.5 rounded-md hover:bg-gray-100 transition-colors">
+                                <button
+                                    className="text-xs font-medium text-[#4B5563] border border-[#E5E7EB] bg-[#F9FAFB] px-2.5 py-1.5 rounded-md hover:bg-gray-100 transition-colors"
+                                    onClick={() => setIsActionView(false)} // UPDATED: set to false to show sidebar again
+                                >
                                     Hide Activities
                                 </button>
                             </div>
