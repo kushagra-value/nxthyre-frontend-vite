@@ -31,6 +31,8 @@ import {
 import CreateWorkspaceModal from "../components/workspace/CreateWorkspaceModal";
 import JoinWorkspaceModal from "../components/workspace/JoinWorkspaceModal";
 import PendingRequestsModal from "../components/workspace/PendingRequestsModal";
+import CreateJobRoleModal from "../components/candidatePool/CreateJobRoleModal";
+import { showToast } from "../utils/toast";
 import {
     companyStatCards,
     companyTableRows,
@@ -58,6 +60,7 @@ export default function Companies() {
     const [showJoinModal, setShowJoinModal] = useState(false);
     const [showPendingModal, setShowPendingModal] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [showCreateJobRole, setShowCreateJobRole] = useState(false);
 
 
     const [isActionView, setIsActionView] = useState(true);
@@ -242,7 +245,10 @@ export default function Companies() {
                         <button className="flex items-center gap-1.5 px-4 py-2 bg-[#E7EDFF] border border-[#0F47F2] rounded-md text-sm font-medium text-[#0F47F2] hover:bg-[#D7E3FF] transition-colors">
                             <Plus className="w-4 h-4" /> Edit
                         </button>
-                        <button className="flex items-center gap-1.5 px-4 py-2 bg-[#0F47F2] rounded-md text-sm font-medium text-white hover:opacity-90 transition-opacity">
+                        <button
+                            onClick={() => setShowCreateJobRole(true)}
+                            className="flex items-center gap-1.5 px-4 py-2 bg-[#0F47F2] rounded-md text-sm font-medium text-white hover:opacity-90 transition-opacity"
+                        >
                             <Plus className="w-4 h-4" /> Create Job
                         </button>
                     </div>
@@ -379,6 +385,16 @@ export default function Companies() {
                         </table>
                     </div>
                 </div>
+                <CreateJobRoleModal
+                    isOpen={showCreateJobRole}
+                    onClose={() => setShowCreateJobRole(false)}
+                    workspaceId={selectedWorkspace.id}
+                    workspaces={workspaces.map(ws => ({ id: ws.id, name: ws.name }))}
+                    onJobCreated={() => {
+                        setShowCreateJobRole(false);
+                        showToast.success("Job role created successfully!");
+                    }}
+                />
             </div>
         );
     }
@@ -505,7 +521,7 @@ export default function Companies() {
                                     <div className="flex items-center relative">
                                         <button
                                             className="bg-[#0F47F2] text-white px-4 py-2 rounded-l-lg text-xs font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5 h-9"
-                                            onClick={() => { setShowCreateModal(true);}}
+                                            onClick={() => { setShowCreateModal(true); }}
                                         >
                                             <Plus className="w-4 h-4" /> Add Company
                                         </button>
