@@ -4,6 +4,7 @@ import {
     organizationService,
     MyWorkspace,
 } from "../services/organizationService";
+import { jobPostService, Job } from "../services/jobPostService";
 import {
     Search,
     ChevronLeft,
@@ -65,6 +66,8 @@ export default function Companies() {
 
     const [isActionView, setIsActionView] = useState(true);
     const [selectedWorkspace, setSelectedWorkspace] = useState<MyWorkspace | null>(null);
+    const [allJobs, setAllJobs] = useState<Job[]>([]);
+    const [jobsLoading, setJobsLoading] = useState(false);
 
     // Sync selected workspace name with global state for header breadcrumbs
     useEffect(() => {
@@ -80,7 +83,9 @@ export default function Companies() {
     const [activeFilter, setActiveFilter] = useState<
         "All" | "Active" | "Paused" | "Inactive" | "Has Open Jobs" | "Needs Attention"
     >("All");
+    const [activeJobFilter, setActiveJobFilter] = useState<"All" | "Active" | "Paused" | "Closed" | "Draft">("All");
     const [searchQuery, setSearchQuery] = useState("");
+    const [jobSearchQuery, setJobSearchQuery] = useState("");
 
     const fetchLogo = async (query: string) => {
         if (!query || logos[query] !== undefined) return;
@@ -113,8 +118,23 @@ export default function Companies() {
         }
     };
 
+    const fetchJobs = async () => {
+        setJobsLoading(true);
+        try {
+            const data = await jobPostService.getJobs();
+            setAllJobs(data);
+        } catch (error) {
+            console.error("Failed to fetch jobs", error);
+        } finally {
+            setJobsLoading(false);
+        }
+    };
+
     useEffect(() => {
-        if (isAuthenticated) fetchWorkspaces();
+        if (isAuthenticated) {
+            fetchWorkspaces();
+            fetchJobs();
+        }
     }, [isAuthenticated]);
 
     const buildTableRows = useCallback((): CompanyTableRow[] => {
@@ -199,8 +219,20 @@ export default function Companies() {
         const ws = workspaces.find(w => w.id === wsId);
         if (ws) {
             setSelectedWorkspace(ws);
+            setActiveJobFilter("All");
+            setJobSearchQuery("");
         }
     };
+
+    const workspaceJobs = allJobs.filter(j => j.workspace_details?.id === selectedWorkspace?.id);
+
+    const filteredWorkspaceJobs = workspaceJobs.filter(j => {
+        const matchesSearch = j.title.toLowerCase().includes(jobSearchQuery.toLowerCase());
+        const matchesFilter = activeJobFilter === "All"
+            ? true
+            : j.status === (activeJobFilter === "Draft" ? "DRAFT" : "PUBLISHED");
+        return matchesSearch && matchesFilter;
+    });
 
     if (selectedWorkspace) {
         return (
@@ -257,10 +289,10 @@ export default function Companies() {
                 {/* ── Stat Cards ── */}
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
                     {[
-                        { label: "Total Jobs", value: "138", trend: "10% vs last month", trendColor: "text-[#069855]", icon: <Briefcase className="w-5 h-5 text-[#0F47F2]" /> },
-                        { label: "Total Candidates", value: "822", trend: "+42 this month", trendColor: "text-[#009951]", icon: <Users className="w-5 h-5 text-[#0F47F2]" /> },
-                        { label: "In Pipeline", value: "62", trend: "6 Need Action", trendColor: "text-[#FF8D28]", icon: <Route className="w-5 h-5 text-[#0F47F2]" /> },
-                        { label: "Shortlisted", value: "26", trend: "Across 9 Jobs", trendColor: "text-[#009951]", icon: <UserCheck className="w-5 h-5 text-[#0F47F2]" /> },
+                        { label: "Total Jobs", value: workspaceJobs.length, trend: "10% vs last month", trendColor: "text-[#069855]", icon: <Briefcase className="w-5 h-5 text-[#0F47F2]" /> },
+                        { label: "Total Candidates", value: workspaceJobs.reduce((acc, j) => acc + (j.total_applied || 0), 0), trend: "+42 this month", trendColor: "text-[#009951]", icon: <Users className="w-5 h-5 text-[#0F47F2]" /> },
+                        { label: "In Pipeline", value: workspaceJobs.reduce((acc, j) => acc + (j.pipeline_candidate_count || 0), 0), trend: "6 Need Action", trendColor: "text-[#FF8D28]", icon: <Route className="w-5 h-5 text-[#0F47F2]" /> },
+                        { label: "Shortlisted", value: workspaceJobs.reduce((acc, j) => acc + (j.shortlisted_candidate_count || 0), 0), trend: "Across 9 Jobs", trendColor: "text-[#009951]", icon: <UserCheck className="w-5 h-5 text-[#0F47F2]" /> },
                         { label: "Interview this week", value: "12", trend: "3% This Quarter", trendColor: "text-[#009951]", icon: <Calendar className="w-5 h-5 text-[#0F47F2]" /> },
                         { label: "Hired", value: "5", trend: "3% This Quarter", trendColor: "text-[#009951]", icon: <UserCircle className="w-5 h-5 text-[#0F47F2]" /> },
                     ].map((stat, idx) => (
@@ -284,14 +316,23 @@ export default function Companies() {
                     {/* Filters & Actions */}
                     <div className="p-4 border-b border-[#C7C7CC] flex flex-wrap items-center justify-between gap-4">
                         <div className="flex items-center gap-2">
-                            {["All (42)", "Active (25)", "Paused (10)", "Closed (7)", "Draft (4)"].map((filter, i) => (
-                                <button
-                                    key={filter}
-                                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${i === 0 ? 'bg-[#0F47F2] text-white' : 'bg-white border border-[#C7C7CC] text-[#AEAEB2] hover:bg-gray-50'}`}
-                                >
-                                    {filter}
-                                </button>
-                            ))}
+                            {(["All", "Active", "Paused", "Closed", "Draft"] as const).map((filter) => {
+                                const count = filter === "All" ? workspaceJobs.length : workspaceJobs.filter(j => {
+                                    if (filter === "Active") return j.status === "PUBLISHED";
+                                    if (filter === "Draft") return j.status === "DRAFT";
+                                    return false; // Paused/Closed not directly in status yet
+                                }).length;
+
+                                return (
+                                    <button
+                                        key={filter}
+                                        onClick={() => setActiveJobFilter(filter)}
+                                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${activeJobFilter === filter ? 'bg-[#0F47F2] text-white' : 'bg-white border border-[#C7C7CC] text-[#AEAEB2] hover:bg-gray-50'}`}
+                                    >
+                                        {filter} ({count})
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -301,6 +342,8 @@ export default function Companies() {
                             <input
                                 type="text"
                                 placeholder="Search for Jobs"
+                                value={jobSearchQuery}
+                                onChange={(e) => setJobSearchQuery(e.target.value)}
                                 className="w-full h-9 pl-10 pr-4 bg-white border border-[#AEAEB2] rounded-md text-xs text-[#4B5563] focus:outline-none"
                             />
                         </div>
@@ -334,39 +377,39 @@ export default function Companies() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#D1D1D6]">
-                                {[1, 2, 3, 4].map((_, i) => (
-                                    <tr key={i} className="hover:bg-gray-50 transition-colors">
+                                {filteredWorkspaceJobs.map((job) => (
+                                    <tr key={job.id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-5 py-4">
                                             <div className="flex flex-col gap-1.5">
-                                                <span className="text-sm text-[#8E8E93]">Senior Product Designer</span>
+                                                <span className="text-sm text-[#4B5563] font-medium">{job.title}</span>
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">3Yrs</span>
-                                                    <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">18 - 24 LPA</span>
-                                                    <span className="px-2 py-0.5 bg-[#F2F2F7] rounded-full text-[10px] text-[#8E8E93]">JD-154</span>
+                                                    <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">{job.experience_min_years}-{job.experience_max_years} Yrs</span>
+                                                    <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">{job.salary_min || '??'} - {job.salary_max || '??'} LPA</span>
+                                                    <span className="px-2 py-0.5 bg-[#F2F2F7] rounded-full text-[10px] text-[#8E8E93]">JD-{job.id}</span>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">36</td>
-                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">12</td>
-                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">1</td>
-                                        <td className="px-5 py-4 text-sm text-[#FF8D28]">36 Days</td>
-                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">3</td>
-                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">27/02/2026</td>
+                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">{job.total_applied || 0}</td>
+                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">{job.shortlisted_candidate_count || 0}</td>
+                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">0</td>
+                                        <td className="px-5 py-4 text-sm text-[#FF8D28]">-- Days</td>
+                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">{job.count || 1}</td>
+                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">{new Date(job.updated_at).toLocaleDateString()}</td>
                                         <td className="px-5 py-4">
                                             <div className="flex flex-col gap-1.5">
-                                                <span className="text-sm text-[#4B5563]">F2F Interview</span>
+                                                <span className="text-sm text-[#4B5563]">Sourcing</span>
                                                 <div className="flex gap-0.5">
                                                     <div className="w-8 h-1 rounded bg-[#FFCC00]"></div>
-                                                    <div className="w-8 h-1 rounded bg-[#00C8B3]"></div>
-                                                    <div className="w-8 h-1 rounded bg-[#6155F5]"></div>
+                                                    <div className="w-8 h-1 rounded bg-[#C7C7CC]"></div>
+                                                    <div className="w-8 h-1 rounded bg-[#C7C7CC]"></div>
                                                     <div className="w-8 h-1 rounded bg-[#C7C7CC]"></div>
                                                     <div className="w-8 h-1 rounded bg-[#C7C7CC]"></div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-5 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-[10px] font-medium uppercase ${i === 2 ? 'bg-[#F2F2F7] text-gray-500' : 'bg-[#EBFFEE] text-[#069855]'}`}>
-                                                {i === 2 ? 'Closed' : 'Active'}
+                                            <span className={`px-2 py-1 rounded-full text-[10px] font-medium uppercase ${job.status === 'PUBLISHED' ? 'bg-[#EBFFEE] text-[#069855]' : 'bg-[#F2F2F7] text-gray-500'}`}>
+                                                {job.status === 'PUBLISHED' ? 'Active' : 'Draft'}
                                             </span>
                                         </td>
                                         <td className="px-5 py-4">
@@ -381,6 +424,11 @@ export default function Companies() {
                                         </td>
                                     </tr>
                                 ))}
+                                {filteredWorkspaceJobs.length === 0 && !jobsLoading && (
+                                    <tr>
+                                        <td colSpan={10} className="px-5 py-10 text-center text-[#8E8E93]">No jobs found for this criteria.</td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
