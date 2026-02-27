@@ -6,13 +6,10 @@ import {
     Globe,
     Target,
     Award,
-    TrendingUp,
     ShieldCheck,
     Heart,
-    DollarSign,
     MapPin,
     Calendar,
-    Briefcase,
     ArrowLeft,
     Star,
     Edit,
@@ -27,260 +24,287 @@ interface CompanyInfoTabProps {
     onCreateJob?: () => void;
 }
 
+// Tech stack color mapping per the design spec
+const getTechStackStyle = (tech: string): string => {
+    const blueItems = ['React Native', 'Node.js', 'Python', 'ML / AI'];
+    const purpleItems = ['AWS', 'Kafka'];
+    // PostgreSQL, Redis → gray
+    if (blueItems.includes(tech)) return 'bg-[#E7EDFF] text-[#0F47F2]';
+    if (purpleItems.includes(tech)) return 'bg-[#E7E5FF] text-[#6155F5]';
+    return 'bg-[#F3F5F7] text-[#4B5563]';
+};
+
+// Core competencies color mapping per the design spec
+const getCompetencyStyle = (comp: string): string => {
+    const greenItems = ['Fintech', 'Neo-banking', 'UX Design'];
+    const purpleItems = ['Data Science'];
+    // Product Growth, Risk & Compliance → amber
+    if (greenItems.includes(comp)) return 'bg-[#EBFFEE] text-[#009951]';
+    if (purpleItems.includes(comp)) return 'bg-[#E7E5FF] text-[#6155F5]';
+    return 'bg-[#FFF7D6] text-[#F59E0B]';
+};
+
+// Compliance cert color mapping
+const getComplianceStyle = (cert: string): string => {
+    if (cert.toLowerCase().includes('soc')) return 'bg-[#E5E5EA] text-[#4B5563]';
+    return 'bg-[#EBFFEE] text-[#009951]';
+};
+
 const CompanyInfoTab: React.FC<CompanyInfoTabProps> = ({ data, onBack, onEdit, onCreateJob }) => {
     if (!data) return <div className="text-center py-8 text-gray-500">No company details available.</div>;
 
-    const parsedData = data || {} as any;
+    const d = data || {} as any;
 
     return (
-        <div className="bg-white flex flex-col h-full font-sans w-full">
-            {/* Header Section */}
-            <div className="px-6 py-6 border-b border-gray-100 flex flex-wrap gap-4 items-start justify-between">
-                <div className="flex items-center gap-4">
+        <div className="bg-white flex flex-col h-full w-full" style={{ overflowY: 'scroll' }}>
+
+            {/* ── Header ── */}
+            <div className="px-[30px] py-[36px] flex flex-wrap gap-[30px] items-center justify-between" style={{ borderBottom: '0.5px solid #C7C7CC' }}>
+                <div className="flex items-center gap-[10px]">
                     {onBack && (
                         <button onClick={onBack} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
-                            <ArrowLeft className="w-5 h-5 text-gray-500" />
+                            <ArrowLeft className="w-5 h-5 text-[#4B5563]" />
                         </button>
                     )}
-                    <div className="w-16 h-16 rounded-full bg-[#FF7162] text-white flex items-center justify-center text-3xl font-bold shrink-0">
-                        {parsedData.company_name?.charAt(0) || 'J'}
-                    </div>
-                    <div>
-                        <h2 className="text-[26px] font-semibold text-gray-900 mb-1">{parsedData.company_name || 'Jupiter'}</h2>
-                        <div className="flex flex-wrap gap-4 text-xs text-gray-500">
-                            <span className="flex items-center gap-1.5"><Globe className="w-3.5 h-3.5 opacity-70" /> {parsedData.website || 'jupiter.money'}</span>
-                            <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 opacity-70" /> {parsedData.headquarters || 'Bengaluru, Karnataka'}</span>
-                            <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 opacity-70" /> Est. {parsedData.founded_year || '2019'}</span>
-                            <span className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5 opacity-70" /> Fintech</span>
+                    <div className="flex items-center gap-[10px]">
+                        {/* 86×86 avatar */}
+                        <div className="w-[86px] h-[86px] rounded-full bg-[#FF7162] text-white flex items-center justify-center shrink-0" style={{ fontSize: '36px', fontWeight: 500 }}>
+                            {d.company_name?.charAt(0) || 'J'}
+                        </div>
+                        <div className="flex flex-col gap-[10px] px-[10px]">
+                            {/* Company Name — 32px Gellix 500 */}
+                            <h2 style={{ fontSize: '32px', lineHeight: '40px', fontWeight: 500 }} className="text-[#4B5563]">
+                                {d.company_name || 'Jupiter'}
+                            </h2>
+                            {/* Sub-meta — 12px Gellix 400 #8E8E93 */}
+                            <div className="flex flex-wrap items-start gap-[15px]">
+                                <span className="flex items-center gap-[5px] text-[12px] leading-[14px] text-[#8E8E93]">
+                                    <Globe className="w-4 h-4 text-[#8E8E93]" /> {d.website || 'jupiter.money'}
+                                </span>
+                                <span className="flex items-start gap-[5px] text-[12px] leading-[14px] text-[#8E8E93]">
+                                    <MapPin className="w-4 h-4 text-[#8E8E93]" /> {d.headquarters || 'Bengaluru, Karnataka'}
+                                </span>
+                                <span className="flex items-start gap-[4px] text-[12px] leading-[14px] text-[#8E8E93]">
+                                    <Calendar className="w-4 h-4 text-[#8E8E93]" /> Est. {d.founded_year || '2019'}
+                                </span>
+                                <span className="flex items-start gap-[4px] text-[12px] leading-[14px] text-[#8E8E93]">
+                                    <Building2 className="w-4 h-4 text-[#8E8E93]" /> {d.company_type || 'Fintech'}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#EBFFEE] border border-[#34C759] rounded-md text-sm font-medium text-[#14AE5C]">
-                        <Star className="w-4 h-4 fill-current outline-none" /> {parsedData.overall_rating || '4.2'} / 5
+                {/* Action buttons */}
+                <div className="flex items-center gap-[10px]">
+                    {/* Rating badge */}
+                    <div className="flex items-center gap-[10px] px-[10px] h-[37px] rounded-[5px]" style={{ background: '#EBFFEE', border: '1px solid #34C759' }}>
+                        <Star className="w-4 h-4 text-[#14AE5C] fill-[#AFF4C6]" style={{ stroke: '#14AE5C' }} />
+                        <span style={{ fontSize: '14px', lineHeight: '17px', fontWeight: 500 }} className="text-[#14AE5C]">
+                            {d.overall_rating || '4.2'} / 5
+                        </span>
                     </div>
-                    <button onClick={onEdit} className="flex items-center gap-1.5 px-4 py-1.5 bg-[#E7EDFF] text-[#0F47F2] rounded-md text-sm font-medium hover:bg-[#D7E3FF] transition-colors">
-                        <Edit className="w-4 h-4" /> Edit
+                    {/* Edit */}
+                    <button onClick={onEdit} className="flex items-center gap-[5px] px-[10px] h-[37px] rounded-[5px] hover:opacity-90 transition-opacity" style={{ background: '#E7EDFF', border: '1px solid #0F47F2' }}>
+                        <Edit className="w-4 h-4 text-[#0F47F2]" />
+                        <span style={{ fontSize: '14px', lineHeight: '17px', fontWeight: 400 }} className="text-[#0F47F2]">Edit</span>
                     </button>
-                    <button onClick={onCreateJob} className="flex items-center gap-1.5 px-4 py-1.5 bg-[#0F47F2] text-white rounded-md text-sm font-medium hover:opacity-90 transition-opacity">
-                        <Plus className="w-4 h-4" /> Create Job
+                    {/* Create Job */}
+                    <button onClick={onCreateJob} className="flex items-center gap-[5px] px-[10px] h-[37px] rounded-[5px] bg-[#0F47F2] hover:opacity-90 transition-opacity">
+                        <Plus className="w-4 h-4 text-white" />
+                        <span style={{ fontSize: '14px', lineHeight: '17px', fontWeight: 400 }} className="text-white">Create Job</span>
                     </button>
                 </div>
             </div>
 
-            <div className="p-6 space-y-8 overflow-y-auto custom-scrollbar">
-                {/* Overview */}
-                <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-[#4B5563] flex items-center gap-2">
-                        <Building2 className="w-4 h-4 opacity-70" />
-                        Company Overview
-                    </h3>
-                    <p className="text-[13px] text-[#4B5563] leading-relaxed font-light">
-                        {parsedData.company_overview || 'Jupiter is a neo-banking fintech startup headquartered in Bengaluru, offering a full-stack digital banking experience — including a savings account, UPI, smart spending insights, and rewarding cashback. Founded in 2019 by Jitendra Gupta, Jupiter is backed by Tiger Global, Sequoia India, and Matrix Partners. It serves over 2 million customers across India and is building the next generation of personal finance tools powered by AI and data.'}
-                    </p>
+            {/* ── Body Content ── */}
+            <div className="px-[30px] pt-[20px] pb-[50px]">
 
-                    {/* Stats */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                        {[
-                            { label: 'Employees', value: parsedData.employee_count || '850+' },
-                            { label: 'Revenue', value: parsedData.annual_revenue || '~₹120Cr' },
-                            { label: 'Growth Stage', value: parsedData.growth_stage || 'Series C' },
-                            { label: 'Hiring Trend', value: parsedData.hiring_trend || 'Growing' },
-                        ].map((stat, idx) => (
-                            <div key={idx} className="border border-[#E5E7EB] rounded-2xl p-4 flex flex-col justify-center bg-white shadow-sm">
-                                <span className="text-[11px] text-[#4B5563] mb-1">{stat.label}</span>
-                                <span className="text-xl font-medium text-black">{stat.value}</span>
+                {/* ── Company Overview ── */}
+                <div className="pl-[25px] mb-[20px]">
+                    <h3 className="flex items-center gap-[5px] mb-[20px]">
+                        <Building2 className="w-5 h-5 text-[#4B5563]" />
+                        <span style={{ fontSize: '18px', lineHeight: '22px', fontWeight: 500 }} className="text-[#4B5563]">Company Overview</span>
+                    </h3>
+                    <p style={{ fontSize: '14px', lineHeight: '24px', fontWeight: 400, maxWidth: '738px' }} className="text-[#727272]">
+                        {d.company_overview || 'Jupiter is a neo-banking fintech startup headquartered in Bengaluru, offering a full-stack digital banking experience — including a savings account, UPI, smart spending insights, and rewarding cashback. Founded in 2019 by Jitendra Gupta, Jupiter is backed by Tiger Global, Sequoia India, and Matrix Partners. It serves over 2 million customers across India and is building the next generation of personal finance tools powered by AI and data.'}
+                    </p>
+                </div>
+
+                {/* ── Stats Cards ── */}
+                <div className="pl-[25px] flex flex-wrap gap-[30px] mb-[20px]">
+                    {[
+                        { label: 'Employees', value: d.employee_count || '850+' },
+                        { label: 'Revenue', value: d.annual_revenue || '~₹120Cr' },
+                        { label: 'Growth Stage', value: d.growth_stage || 'Series C' },
+                        { label: 'Hiring Trend', value: d.hiring_trend || 'Growing' },
+                    ].map((stat, idx) => (
+                        <div key={idx} className="flex flex-col gap-[8px] bg-white rounded-[10px] p-[20px]" style={{ border: '0.5px solid #D1D1D6' }}>
+                            <span style={{ fontSize: '12px', lineHeight: '14px', fontWeight: 400 }} className="text-[#4B5563]">{stat.label}</span>
+                            <span style={{ fontSize: '24px', lineHeight: '29px', fontWeight: 500 }} className="text-black">{stat.value}</span>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Divider */}
+                <div style={{ borderBottom: '0.5px solid #C7C7CC' }} className="mb-[20px]"></div>
+
+                {/* ── Leadership ── */}
+                <div className="pl-[25px] mb-[20px]">
+                    <h3 className="flex items-center gap-[5px] mb-[20px]">
+                        <Users className="w-5 h-5 text-[#4B5563]" />
+                        <span style={{ fontSize: '18px', lineHeight: '22px', fontWeight: 500 }} className="text-[#4B5563]">Leadership</span>
+                    </h3>
+                    <div className="flex flex-wrap gap-[10px]">
+                        {(d.founders?.length ? d.founders : [
+                            { name: 'Jitendra Gupta', title: 'Founder & CEO', bio: 'Previously MD at PayU India' },
+                            { name: 'Shobhit Puri', title: 'Co-founder & CTO', bio: 'Ex-Ola, IIT Bombay' },
+                            { name: 'Arpit Khandelwal', title: 'VP Product', bio: 'Ex-Flipkart, IIM Ahmedabad' },
+                        ]).map((founder: any, i: number) => (
+                            <div key={i} className="flex items-center gap-[10px] p-[10px] bg-[#E7EDFF] rounded-[10px]">
+                                <div className="w-[32px] h-[32px] rounded-full bg-gray-300 overflow-hidden shrink-0">
+                                    <img
+                                        src={`https://ui-avatars.com/api/?name=${(founder.name || '').split(' ').join('+')}&background=random&size=64`}
+                                        alt={founder.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-[4px]">
+                                    <span style={{ fontSize: '14px', lineHeight: '17px', fontWeight: 500 }} className="text-black">{founder.name}</span>
+                                    <span style={{ fontSize: '12px', lineHeight: '14px', fontWeight: 400 }} className="text-[#0F47F2]">{founder.title || 'Leader'}</span>
+                                    <span style={{ fontSize: '12px', lineHeight: '14px', fontWeight: 400 }} className="text-[#4B5563]">{founder.bio}</span>
+                                </div>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                <div className="border-t border-gray-100"></div>
+                {/* Divider */}
+                <div style={{ borderBottom: '0.5px solid #C7C7CC' }} className="mb-[20px]"></div>
 
-                {/* Leadership */}
-                <div>
-                    <h3 className="text-sm font-semibold text-[#4B5563] flex items-center gap-2 mb-4">
-                        <Users className="w-4 h-4 opacity-70" />
-                        Leadership
-                    </h3>
-                    {parsedData.founders && parsedData.founders.length > 0 ? (
-                        <div className="grid md:grid-cols-2 gap-4">
-                            {parsedData.founders.map((founder: any, i: number) => (
-                                <div key={i} className="flex items-center p-3 bg-[#EEF2FF] rounded-xl border border-[#E0E7FF]">
-                                    <div className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden shrink-0">
-                                        <img src={`https://ui-avatars.com/api/?name=${founder.name.split(' ').join('+')}&background=random`} alt={founder.name} className="w-full h-full object-cover" />
-                                    </div>
-                                    <div>
-                                        <div className="text-[13px] font-semibold text-black">{founder.name}</div>
-                                        <div className="text-[11px] text-[#0F47F2] font-medium mb-0.5">{founder.title || 'Leader'}</div>
-                                        <div className="text-[10px] text-[#4B5563] line-clamp-1">{founder.bio}</div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="grid md:grid-cols-3 gap-4">
-                            <div className="flex items-center p-3 bg-[#EEF2FF] rounded-xl border border-[#E0E7FF]">
-                                <div className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden shrink-0">
-                                    <img src={`https://ui-avatars.com/api/?name=Jitendra+Gupta&background=random`} alt="Leader" className="w-full h-full object-cover" />
-                                </div>
-                                <div>
-                                    <div className="text-[13px] font-semibold text-black">Jitendra Gupta</div>
-                                    <div className="text-[11px] text-[#0F47F2] font-medium mb-0.5">Founder & CEO</div>
-                                    <div className="text-[10px] text-[#4B5563]">Previously MD at PayU India</div>
-                                </div>
-                            </div>
-                            <div className="flex items-center p-3 bg-[#EEF2FF] rounded-xl border border-[#E0E7FF]">
-                                <div className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden shrink-0">
-                                    <img src={`https://ui-avatars.com/api/?name=Shobhit+Puri&background=random`} alt="Leader" className="w-full h-full object-cover" />
-                                </div>
-                                <div>
-                                    <div className="text-[13px] font-semibold text-black">Shobhit Puri</div>
-                                    <div className="text-[11px] text-[#0F47F2] font-medium mb-0.5">Co-founder & CTO</div>
-                                    <div className="text-[10px] text-[#4B5563]">Ex-Ola, IIT Bombay</div>
-                                </div>
-                            </div>
-                            <div className="flex items-center p-3 bg-[#EEF2FF] rounded-xl border border-[#E0E7FF]">
-                                <div className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden shrink-0">
-                                    <img src={`https://ui-avatars.com/api/?name=Arpit+Khandelwal&background=random`} alt="Leader" className="w-full h-full object-cover" />
-                                </div>
-                                <div>
-                                    <div className="text-[13px] font-semibold text-black">Arpit Khandelwal</div>
-                                    <div className="text-[11px] text-[#0F47F2] font-medium mb-0.5">VP Product</div>
-                                    <div className="text-[10px] text-[#4B5563]">Ex-Flipkart, IIM Ahmedabad</div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                <div className="border-t border-gray-100"></div>
-
-                {/* Tech Stack & Core Competencies */}
-                <div className="grid md:grid-cols-2 gap-8">
-                    <div>
-                        <h3 className="text-sm font-semibold text-[#4B5563] flex items-center gap-2 mb-4">
-                            <Layers className="w-4 h-4 opacity-70" />
-                            Tech Stack
+                {/* ── Tech Stack & Core Competencies ── */}
+                <div className="flex gap-[40px] pl-[25px] mb-[20px]">
+                    {/* Tech Stack */}
+                    <div className="flex-1">
+                        <h3 className="flex items-center gap-[5px] mb-[20px]">
+                            <Layers className="w-5 h-5 text-[#4B5563]" />
+                            <span style={{ fontSize: '18px', lineHeight: '22px', fontWeight: 500 }} className="text-[#4B5563]">Tech Stack</span>
                         </h3>
-                        <div className="flex flex-wrap gap-2.5">
-                            {(parsedData.tech_stack?.length ? parsedData.tech_stack : ['React Native', 'Node.js', 'Python', 'AWS', 'Kafka', 'PostgreSQL', 'Redis', 'ML / AI']).map((tech: string, i: number) => (
-                                <span key={i} className="px-3 py-1 bg-[#EEF2FF] text-[#0F47F2] rounded-full text-[11px] font-medium">
+                        <div className="flex flex-wrap gap-[10px]">
+                            {(d.tech_stack?.length ? d.tech_stack : ['React Native', 'Node.js', 'Python', 'AWS', 'Kafka', 'PostgreSQL', 'Redis', 'ML / AI']).map((tech: string, i: number) => (
+                                <span key={i} className={`flex items-center justify-center py-[8px] px-[14px] rounded-full ${getTechStackStyle(tech)}`} style={{ fontSize: '12px', lineHeight: '14px', fontWeight: 400 }}>
                                     {tech}
                                 </span>
                             ))}
                         </div>
                     </div>
-                    <div>
-                        <h3 className="text-sm font-semibold text-[#4B5563] flex items-center gap-2 mb-4">
-                            <Target className="w-4 h-4 opacity-70" />
-                            Core Competencies
+                    {/* Core Competencies */}
+                    <div className="flex-1">
+                        <h3 className="flex items-center gap-[5px] mb-[20px]">
+                            <Target className="w-4 h-4 text-[#4B5563]" />
+                            <span style={{ fontSize: '18px', lineHeight: '22px', fontWeight: 500 }} className="text-[#4B5563]">Core Competencies</span>
                         </h3>
-                        <div className="flex flex-wrap gap-2.5">
-                            {(parsedData.core_competencies?.length ? parsedData.core_competencies : ['Fintech', 'Neo-banking', 'UX Design', 'Data Science', 'Product Growth', 'Risk & Compliance']).map((tech: string, i: number) => {
-                                const colors = ['bg-[#EBFFEE] text-[#069855]', 'bg-[#F3E8FF] text-[#7E22CE]', 'bg-[#FFF7D6] text-[#D97706]'];
-                                const colorClass = colors[i % colors.length];
-                                return (
-                                    <span key={i} className={`px-3 py-1 rounded-full text-[11px] font-medium ${colorClass}`}>
-                                        {tech}
-                                    </span>
-                                )
-                            })}
+                        <div className="flex flex-wrap gap-[10px]">
+                            {(d.core_competencies?.length ? d.core_competencies : ['Fintech', 'Neo-banking', 'UX Design', 'Data Science', 'Product Growth', 'Risk & Compliance']).map((comp: string, i: number) => (
+                                <span key={i} className={`flex items-center justify-center py-[8px] px-[14px] rounded-full ${getCompetencyStyle(comp)}`} style={{ fontSize: '12px', lineHeight: '14px', fontWeight: 400 }}>
+                                    {comp}
+                                </span>
+                            ))}
                         </div>
                     </div>
                 </div>
 
-                <div className="border-t border-gray-100"></div>
+                {/* Divider */}
+                <div style={{ borderBottom: '0.5px solid #C7C7CC' }} className="mb-[20px]"></div>
 
-                {/* Culture & Values */}
-                <div>
-                    <h3 className="text-sm font-semibold text-[#4B5563] flex items-center gap-2 mb-4">
-                        <Heart className="w-4 h-4 opacity-70" />
-                        Culture & Values
+                {/* ── Culture & Values ── */}
+                <div className="pl-[22px] mb-[20px]">
+                    <h3 className="flex items-center gap-[5px] mb-[20px]">
+                        <Heart className="w-4 h-4 text-[#4B5563]" />
+                        <span style={{ fontSize: '18px', lineHeight: '22px', fontWeight: 500 }} className="text-[#4B5563]">Culture & Values</span>
                     </h3>
-                    <div className="grid md:grid-cols-2 gap-4 mb-5">
-                        <div className="bg-[#F0FDF4] p-5 rounded-xl border border-[#BBF7D0]">
-                            <h4 className="text-xs font-semibold text-[#166534] mb-3 flex items-center gap-2">
-                                Pros
-                            </h4>
-                            <ul className="space-y-2.5">
-                                {(parsedData.culture_pros?.length ? parsedData.culture_pros : [
-                                    'Strong design & product culture',
-                                    'ESOPs offered at competitive strike price',
-                                    'Flat hierarchy, direct access to founders',
-                                    'Fast-growing with clear career paths'
-                                ]).map((pro: string, i: number) => (
-                                    <li key={i} className="text-[12px] text-[#166534] flex items-start gap-2.5">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-[#166534] shrink-0 mt-1 opacity-60"></span>
-                                        <span>{pro}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                        <div className="bg-[#FEF2F2] p-5 rounded-xl border border-[#FECACA]">
-                            <h4 className="text-xs font-semibold text-[#991B1B] mb-3 flex items-center gap-2">
-                                Cons
-                            </h4>
-                            <ul className="space-y-2.5">
-                                {(parsedData.culture_cons?.length ? parsedData.culture_cons : [
-                                    'High pace — not for everyone',
-                                    'Processes still maturing (Series C)',
-                                    'Limited remote flexibility for core roles'
-                                ]).map((con: string, i: number) => (
-                                    <li key={i} className="text-[12px] text-[#991B1B] flex items-start gap-2.5">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-[#991B1B] shrink-0 mt-1 opacity-60"></span>
-                                        <span>{con}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
+
+                    {/* Pros */}
+                    <div className="rounded-[10px] bg-[#EBFFEE] p-[20px] mb-[14px]" style={{ maxWidth: '380px' }}>
+                        <h4 style={{ fontSize: '14px', lineHeight: '17px', fontWeight: 500 }} className="text-[#4B5563] mb-[10px]">Pros</h4>
+                        <ul className="flex flex-col gap-0">
+                            {(d.culture_pros?.length ? d.culture_pros : [
+                                'Strong design & product culture',
+                                'ESOPs offered at competitive strike price',
+                                'Flat hierarchy, direct access to founders',
+                                'Fast-growing with clear career paths'
+                            ]).map((pro: string, i: number) => (
+                                <li key={i} style={{ fontSize: '14px', lineHeight: '24px', fontWeight: 400, listStyle: 'disc', marginLeft: '16px' }} className="text-[#727272]">
+                                    {pro}
+                                </li>
+                            ))}
+                        </ul>
                     </div>
-                    <div className="flex flex-wrap gap-2.5">
-                        {(parsedData.core_values?.length ? parsedData.core_values : ['User Obsessed', 'Radical Transparency', 'Move Fast', 'Own It', 'Stay Curious']).map((val: string, i: number) => (
-                            <span key={i} className="px-3 py-1 bg-[#EEF2FF] text-[#0F47F2] rounded-full text-[11px] font-medium">
+
+                    {/* Cons */}
+                    <div className="rounded-[10px] bg-[#FEE9E7] p-[20px] mb-[20px]" style={{ maxWidth: '380px' }}>
+                        <h4 style={{ fontSize: '14px', lineHeight: '17px', fontWeight: 500 }} className="text-[#4B5563] mb-[10px]">Cons</h4>
+                        <ul className="flex flex-col gap-0">
+                            {(d.culture_cons?.length ? d.culture_cons : [
+                                'High pace — not for everyone',
+                                'Processes still maturing (Series C)',
+                                'Limited remote flexibility for core roles'
+                            ]).map((con: string, i: number) => (
+                                <li key={i} style={{ fontSize: '14px', lineHeight: '24px', fontWeight: 400, listStyle: 'disc', marginLeft: '16px' }} className="text-[#727272]">
+                                    {con}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    {/* Core Values Pills */}
+                    <div className="flex flex-wrap gap-[10px]">
+                        {(d.core_values?.length ? d.core_values : ['User Obsessed', 'Radical Transparency', 'Move Fast', 'Own It', 'Stay Curious']).map((val: string, i: number) => (
+                            <span key={i} className="flex items-center justify-center py-[8px] px-[14px] rounded-full bg-[#E7E5FF] text-[#6155F5]" style={{ fontSize: '12px', lineHeight: '14px', fontWeight: 400 }}>
                                 {val}
                             </span>
                         ))}
                     </div>
                 </div>
 
-                <div className="border-t border-gray-100"></div>
+                {/* Divider */}
+                <div style={{ borderBottom: '0.5px solid #C7C7CC' }} className="mb-[20px]"></div>
 
-                {/* Compliance & Security */}
-                <div>
-                    <h3 className="text-sm font-semibold text-[#4B5563] flex items-center gap-2 mb-4">
-                        <ShieldCheck className="w-4 h-4 opacity-70" />
-                        Compliance & Security
+                {/* ── Compliance & Security ── */}
+                <div className="pl-[22px] mb-[20px]">
+                    <h3 className="flex items-center gap-[7px] mb-[20px]">
+                        <ShieldCheck className="w-4 h-4 text-[#4B5563]" />
+                        <span style={{ fontSize: '18px', lineHeight: '22px', fontWeight: 500 }} className="text-[#4B5563]">Compliance & Security</span>
                     </h3>
-                    <div className="flex flex-wrap gap-2.5">
-                        {(parsedData.compliance_certifications?.length ? parsedData.compliance_certifications : ['RBI Licensed', 'PCI-DSS Compliant', 'ISO 27001', 'SOC 2 (in progress)']).map((cert: string, i: number) => (
-                            <span key={i} className="px-3 py-1 bg-[#F9FAFB] border border-[#E5E7EB] text-[#069855] rounded-full text-[11px] font-medium">
+                    <div className="flex flex-wrap items-center gap-[10px]">
+                        {(d.compliance_certifications?.length ? d.compliance_certifications : ['RBI Licensed', 'PCI-DSS Compliant', 'ISO 27001', 'SOC 2 (in progress)']).map((cert: string, i: number) => (
+                            <span key={i} className={`flex items-center justify-center py-[8px] px-[14px] rounded-full ${getComplianceStyle(cert)}`} style={{ fontSize: '12px', lineHeight: '14px', fontWeight: 400 }}>
                                 {cert}
                             </span>
                         ))}
                     </div>
                 </div>
 
-                <div className="border-t border-gray-100"></div>
+                {/* Divider */}
+                <div style={{ borderBottom: '0.5px solid #C7C7CC' }} className="mb-[20px]"></div>
 
-                {/* Awards */}
-                <div>
-                    <h3 className="text-sm font-semibold text-[#4B5563] flex items-center gap-2 mb-4">
-                        <Award className="w-4 h-4 opacity-70" />
-                        Awards & Recognition
+                {/* ── Awards & Recognition ── */}
+                <div className="pl-[0px] mb-[50px]">
+                    <h3 className="flex items-center gap-[7px] mb-[20px]">
+                        <Award className="w-4 h-4 text-[#4B5563]" />
+                        <span style={{ fontSize: '18px', lineHeight: '22px', fontWeight: 500 }} className="text-[#4B5563]">Awards & Recognition</span>
                     </h3>
-                    <div className="grid md:grid-cols-4 gap-4 pb-6">
-                        {(parsedData.awards_certifications?.length ? parsedData.awards_certifications : [
+                    <div className="flex flex-wrap gap-[15px]">
+                        {(d.awards_certifications?.length ? d.awards_certifications : [
                             'Best Fintech UX — Google Play India Awards 2023',
                             "India's Top 50 Startups to Work For — LinkedIn 2023",
                             'ET Startup of the Year — Fintech Category 2022',
                             'Glassdoor Top Rated CEO — Jitendra Gupta, 91% approval'
                         ]).map((award: string, i: number) => (
-                            <div key={i} className="p-4 bg-[#EEF2FF] rounded-xl flex flex-col gap-3 justify-center">
-                                <div className="w-7 h-7 rounded bg-white flex items-center justify-center shrink-0 shadow-sm border border-[#E0E7FF]">
-                                    <Award className="w-4 h-4 text-[#0F47F2]" />
+                            <div key={i} className="flex flex-col justify-between items-start p-[20px] gap-[8px] bg-[#E7EDFF] rounded-[10px]" style={{ width: '204px', height: '98px' }}>
+                                <div className="w-[20px] h-[20px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
+                                    <Award className="w-[16px] h-[16px] text-[#0F47F2]" />
                                 </div>
-                                <span className="text-[11px] leading-relaxed text-[#4B5563] font-medium">{award}</span>
+                                <span style={{ fontSize: '12px', lineHeight: '14px', fontWeight: 400, width: '164px' }} className="text-[#4B5563]">{award}</span>
                             </div>
                         ))}
                     </div>
@@ -291,4 +315,3 @@ const CompanyInfoTab: React.FC<CompanyInfoTabProps> = ({ data, onBack, onEdit, o
 };
 
 export default CompanyInfoTab;
-
