@@ -456,7 +456,7 @@ export default function Companies() {
                         onClick={() => setInfoWorkspace(null)}
                     >
                         <div
-                            className="bg-white rounded-l-3xl shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto"
+                            className="bg-white shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <CompanyInfoTab
