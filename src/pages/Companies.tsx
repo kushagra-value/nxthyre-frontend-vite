@@ -75,12 +75,7 @@ export default function Companies() {
             setCompanyResearchData(null);
             return;
         }
-        // If already available on the workspace object, use it
-        if (infoWorkspace.company_research_data) {
-            setCompanyResearchData(infoWorkspace.company_research_data);
-            return;
-        }
-        // Otherwise fetch from API
+
         let cancelled = false;
         setLoadingCompanyResearch(true);
         organizationService.getCompanyResearchData(infoWorkspace.id)
