@@ -201,12 +201,10 @@ export default function Companies() {
 
     if (selectedWorkspace) {
         return (
-            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-[#F3F5F7]">
-                {/* ── Header Spacer handle by global Header ── */}
-                <div className="mb-6 invisible h-1" />
+            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-[#F3F5F7]">
 
                 {/* ── Company Info Card ── */}
-                <div className="bg-white rounded-xl p-6 mb-6 flex items-center justify-between shadow-sm">
+                <div className="bg-white rounded-xl p-4 mb-4 flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setSelectedWorkspace(null)}
@@ -251,7 +249,7 @@ export default function Companies() {
                 </div>
 
                 {/* ── Stat Cards ── */}
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
                     {[
                         { label: "Total Jobs", value: "138", trend: "10% vs last month", trendColor: "text-[#069855]", icon: <Briefcase className="w-5 h-5 text-[#0F47F2]" /> },
                         { label: "Total Candidates", value: "822", trend: "+42 this month", trendColor: "text-[#009951]", icon: <Users className="w-5 h-5 text-[#0F47F2]" /> },
@@ -278,7 +276,7 @@ export default function Companies() {
                 {/* ── Table Section ── */}
                 <div className="bg-white rounded-xl shadow-sm border border-[#D1D1D6] overflow-hidden">
                     {/* Filters & Actions */}
-                    <div className="p-5 border-b border-[#C7C7CC] flex flex-wrap items-center justify-between gap-4">
+                    <div className="p-4 border-b border-[#C7C7CC] flex flex-wrap items-center justify-between gap-4">
                         <div className="flex items-center gap-2">
                             {["All (42)", "Active (25)", "Paused (10)", "Closed (7)", "Draft (4)"].map((filter, i) => (
                                 <button
@@ -291,7 +289,7 @@ export default function Companies() {
                         </div>
                     </div>
 
-                    <div className="p-5 border-b border-[#C7C7CC] flex flex-wrap items-center justify-between gap-4">
+                    <div className="p-4 border-b border-[#C7C7CC] flex flex-wrap items-center justify-between gap-4">
                         <div className="relative w-full max-w-[248px]">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
                             <input
