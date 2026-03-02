@@ -171,19 +171,26 @@ export default function Companies() {
 
         return workspaces.map((ws, i) => {
             const fallback = companyTableRows[i % companyTableRows.length];
+            const workspaceJobs = allJobs.filter(j => j.workspace_details?.id === ws.id);
+
             return {
                 id: `ws-${ws.id}`,
                 workspaceId: ws.id,
                 name: ws.name,
-                domain: ws.company_research_data?.website || fallback.domain,
-                totalJobs: fallback.totalJobs,
-                totalCandidates: fallback.totalCandidates,
-                shortlisted: fallback.shortlisted,
-                hired: fallback.hired,
-                status: fallback.status,
+                domain: ws.company_research_data?.website || "--",
+                totalJobs: workspaceJobs.length || "--",
+                totalCandidates: "--",
+                shortlisted: "--",
+                shortlistedTrend: undefined,
+                hired: "--",
+                hiredTrend: undefined,
+                lastActiveDate: ws.company_research_data?.research_date
+                    ? new Date(ws.company_research_data.research_date).toLocaleDateString('en-GB')
+                    : "--",
+                status: (ws.id % 3 === 0 ? "Paused" : ws.id % 5 === 0 ? "Inactive" : "Active") as any,
             };
         });
-    }, [workspaces]);
+    }, [workspaces, allJobs]);
 
     const allRows = buildTableRows();
 
@@ -208,9 +215,9 @@ export default function Companies() {
         activeFilter === "All"
             ? searchedRows
             : activeFilter === "Has Open Jobs"
-                ? searchedRows.filter((r) => r.totalJobs > 0)
+                ? searchedRows.filter((r) => (Number(r.totalJobs) || 0) > 0)
                 : activeFilter === "Needs Attention"
-                    ? searchedRows.filter((r) => r.totalCandidates === 0 || r.status === "Paused")
+                    ? searchedRows.filter((r) => (Number(r.totalCandidates) || 0) === 0 || r.status === "Paused")
                     : searchedRows.filter((r) => r.status === activeFilter);
 
     const filterCounts = {
@@ -218,8 +225,8 @@ export default function Companies() {
         Active: searchedRows.filter((r) => r.status === "Active").length,
         Paused: searchedRows.filter((r) => r.status === "Paused").length,
         Inactive: searchedRows.filter((r) => r.status === "Inactive").length,
-        "Has Open Jobs": searchedRows.filter((r) => r.totalJobs > 0).length,
-        "Needs Attention": searchedRows.filter((r) => r.totalCandidates === 0 || r.status === "Paused").length,
+        "Has Open Jobs": searchedRows.filter((r) => (Number(r.totalJobs) || 0) > 0).length,
+        "Needs Attention": searchedRows.filter((r) => (Number(r.totalCandidates) || 0) === 0 || r.status === "Paused").length,
     };
 
     const itemsPerPage = 10;
@@ -348,34 +355,39 @@ export default function Companies() {
                         {/* ─── Left: All Companies Table ─── */}
                         <div className="lg:col-span-4 flex flex-col">
 
-                            <div className="flex items-center gap-2 flex-wrap p-4">
-                                {(
-                                    ["All", "Active", "Paused", "Inactive", "Needs Attention"] as const
-                                ).map((f) => (
-                                    <button
-                                        key={f}
-                                        onClick={() => {
-                                            setActiveFilter(f);
-                                            setCurrentPage(1);
-                                        }}
-                                        className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeFilter === f
-                                            ? "bg-[#0F47F2] text-white"
-                                            : "text-[#4B5563] bg-white hover:bg-[#F3F5F7]"
-                                            }`}
-                                        style={
-                                            activeFilter !== f ? { border: "1px solid #D1D1D6" } : undefined
-                                        }
-                                    >
-                                        {f}{" "}
-                                        <span
-                                            className={
-                                                activeFilter === f ? "text-white/80" : "text-[#AEAEB2]"
+                            <div className="flex items-center justify-between p-4 flex-wrap">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    {(
+                                        ["All", "Active", "Paused", "Inactive", "Needs Attention"] as const
+                                    ).map((f) => (
+                                        <button
+                                            key={f}
+                                            onClick={() => {
+                                                setActiveFilter(f);
+                                                setCurrentPage(1);
+                                            }}
+                                            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeFilter === f
+                                                ? "bg-[#0F47F2] text-white"
+                                                : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7]"
+                                                }`}
+                                            style={
+                                                activeFilter !== f ? { border: "1px solid #D1D1D6" } : undefined
                                             }
                                         >
-                                            ({filterCounts[f as keyof typeof filterCounts]})
-                                        </span>
-                                    </button>
-                                ))}
+                                            {f}{" "}
+                                            <span
+                                                className={
+                                                    activeFilter === f ? "text-white/80" : "text-[#AEAEB2]"
+                                                }
+                                            >
+                                                ({filterCounts[f as keyof typeof filterCounts]})
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                                <button className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs">
+                                    <LayoutGrid className="w-4 h-4 " /> Grid View
+                                </button>
                             </div>
 
                             <div className="flex flex-wrap items-center justify-between bg-white p-4 border-y-[0.5px] border-[#D1D1D6]">
@@ -399,14 +411,14 @@ export default function Companies() {
 
                                     {/* Export CSV */}
                                     <button
-                                        className="flex items-center gap-2 px-3 py-2 bg-white text-[#4B5563] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
+                                        className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
                                     >
                                         <DownloadCloud className="w-4 h-4 text-[#AEAEB2]" /> Export CSV
                                     </button>
 
                                     {/* Date Picker Mock */}
                                     <button
-                                        className="flex items-center gap-2 px-3 py-2 bg-white text-[#4B5563] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
+                                        className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
                                     >
                                         <Calendar className="w-4 h-4 text-[#AEAEB2]" /> 24 Feb, 2026
                                     </button>
@@ -414,18 +426,18 @@ export default function Companies() {
                                     {/* Add Company Split Button */}
                                     <div className="flex items-center relative">
                                         <button
-                                            className="bg-[#0F47F2] text-white px-4 py-2 rounded-l-lg text-xs font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5 h-9"
+                                            className="bg-[#0F47F2] text-white px-4 py-2 rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5 h-9"
                                             onClick={() => { setShowCreateModal(true); }}
                                         >
                                             <Plus className="w-4 h-4" /> Add Company
                                         </button>
-                                        <div className="w-[1px] bg-white/20 h-9"></div>
+                                        {/* <div className="w-[1px] bg-white/20 h-9"></div>
                                         <button
                                             onClick={() => setDropdownOpen(!dropdownOpen)}
                                             className="bg-[#0F47F2] text-white px-2 py-2 rounded-r-lg hover:opacity-90 transition-opacity flex items-center h-9"
                                         >
                                             <ChevronDown className="w-4 h-4" />
-                                        </button>
+                                        </button> */}
 
                                         {dropdownOpen && (
                                             <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-[#E5E7EB] rounded-lg shadow-lg py-1 z-50">
@@ -458,56 +470,57 @@ export default function Companies() {
                             >
 
                                 {/* Table */}
-                                <div className="overflow-x-auto">
+                                <div className="overflow-x-auto overflow-y-hidden">
                                     <table className="w-full text-left border-collapse">
-                                        <thead className="bg-[#F3F5F7]">
+                                        <thead className="bg-[#F9FAFB]">
                                             <tr>
-                                                <th className="px-4 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2]">
                                                     Company
                                                 </th>
-                                                <th className="px-4 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
-                                                    Total Jobs
+                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
+                                                    Jobs
                                                 </th>
-                                                <th className="px-4 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
-                                                    Total Candidates
+                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
+                                                    Candidates
                                                 </th>
-                                                <th className="px-4 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
                                                     Shortlisted
                                                 </th>
-                                                <th className="px-4 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
                                                     Hired
                                                 </th>
-                                                <th className="px-4 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
+                                                    Last Active Date
+                                                </th>
+                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
                                                     Status
                                                 </th>
-                                                <th className="px-4 py-4 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider text-right">
+                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
                                                     Actions
                                                 </th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-[#D1D1D6]">
+                                        <tbody className="divide-y divide-[#F3F5F7]">
                                             {loading ? (
                                                 // Skeleton rows while loading
                                                 [...Array(5)].map((_, i) => (
                                                     <tr key={`skel-${i}`} className="animate-pulse">
-                                                        <td className="px-4 py-4">
+                                                        <td className="px-6 py-4">
                                                             <div className="flex items-center gap-3">
-                                                                <div className="w-8 h-8 rounded-md bg-gray-200 shrink-0" />
-                                                                <div className="flex-1 space-y-1.5">
-                                                                    <div className="h-3.5 bg-gray-200 rounded w-32" />
-                                                                    <div className="h-2.5 bg-gray-100 rounded w-20" />
-                                                                </div>
+                                                                <div className="w-8 h-8 rounded-full bg-gray-200 shrink-0" />
+                                                                <div className="h-4 bg-gray-200 rounded w-32" />
                                                             </div>
                                                         </td>
-                                                        <td className="px-4 py-4"><div className="h-3.5 bg-gray-200 rounded w-10" /></td>
-                                                        <td className="px-4 py-4"><div className="h-3.5 bg-gray-200 rounded w-10" /></td>
-                                                        <td className="px-4 py-4"><div className="h-3.5 bg-gray-200 rounded w-10" /></td>
-                                                        <td className="px-4 py-4"><div className="h-3.5 bg-gray-200 rounded w-10" /></td>
-                                                        <td className="px-4 py-4"><div className="h-5 bg-gray-200 rounded-full w-14" /></td>
-                                                        <td className="px-4 py-4">
-                                                            <div className="flex items-center justify-end gap-2">
-                                                                <div className="w-16 h-6 bg-gray-200 rounded" />
-                                                                <div className="w-16 h-6 bg-gray-200 rounded" />
+                                                        <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-8 mx-auto" /></td>
+                                                        <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-8 mx-auto" /></td>
+                                                        <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-8 mx-auto" /></td>
+                                                        <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-8 mx-auto" /></td>
+                                                        <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-20 mx-auto" /></td>
+                                                        <td className="px-6 py-4 text-center"><div className="h-5 bg-gray-200 rounded-full w-14 mx-auto" /></td>
+                                                        <td className="px-6 py-4 text-center">
+                                                            <div className="flex items-center justify-center gap-2">
+                                                                <div className="w-6 h-6 bg-gray-200 rounded-full" />
+                                                                <div className="w-6 h-6 bg-gray-200 rounded-full" />
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -515,8 +528,8 @@ export default function Companies() {
                                             ) : paginatedRows.length === 0 ? (
                                                 <tr>
                                                     <td
-                                                        colSpan={7}
-                                                        className="px-4 py-12 text-center text-sm text-[#AEAEB2]"
+                                                        colSpan={8}
+                                                        className="px-6 py-12 text-center text-sm text-[#AEAEB2]"
                                                     >
                                                         No companies found.
                                                     </td>
@@ -529,12 +542,12 @@ export default function Companies() {
                                                         <tr
                                                             key={row.id}
                                                             onClick={() => handleWorkspaceClick(row.workspaceId)}
-                                                            className="hover:bg-[#FAFBFC] transition-colors cursor-pointer"
+                                                            className="hover:bg-[#FAFBFC] transition-colors cursor-pointer group"
                                                         >
                                                             {/* Company Title */}
-                                                            <td className="px-4 py-4">
+                                                            <td className="px-6 py-4">
                                                                 <div className="flex items-center gap-3">
-                                                                    <div className="w-8 h-8 rounded-md bg-[#F3F5F7] flex items-center justify-center shrink-0 overflow-hidden">
+                                                                    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-gray-50">
                                                                         {companyLogo ? (
                                                                             <img
                                                                                 src={companyLogo}
@@ -547,57 +560,70 @@ export default function Companies() {
                                                                             </span>
                                                                         )}
                                                                     </div>
-                                                                    <div className="min-w-0">
-                                                                        <p className="text-sm font-medium text-black max-w-[24ch] truncate">
-                                                                            {row.name}
-                                                                        </p>
-                                                                        <p className="text-[11px] text-[#AEAEB2]">
-                                                                            {row.domain}
-                                                                        </p>
-                                                                    </div>
+                                                                    <p className="text-sm font-normal text-[#0F47F2] hover:underline hover:text-blue-700 transition-colors truncate max-w-[200px]">
+                                                                        {row.name}
+                                                                    </p>
                                                                 </div>
                                                             </td>
 
-                                                            {/* Total Jobs */}
-                                                            <td className="px-4 py-4">
-                                                                <p className="text-sm font-semibold text-black">
+                                                            {/* Jobs */}
+                                                            <td className="px-6 py-4 text-center">
+                                                                <p className="text-sm text-[#4B5563]">
                                                                     {row.totalJobs}
                                                                 </p>
                                                             </td>
 
-                                                            {/* Total Candidates */}
-                                                            <td className="px-4 py-4">
-                                                                <p className="text-sm font-semibold text-black">
+                                                            {/* Candidates */}
+                                                            <td className="px-6 py-4 text-center">
+                                                                <p className="text-sm text-[#4B5563]">
                                                                     {row.totalCandidates}
                                                                 </p>
                                                             </td>
 
                                                             {/* Shortlisted */}
-                                                            <td className="px-4 py-4">
-                                                                <p className="text-sm font-semibold text-black">
-                                                                    {row.shortlisted}
-                                                                </p>
+                                                            <td className="px-6 py-4 text-center">
+                                                                <div className="flex items-center justify-center gap-1.5">
+                                                                    <span className="text-sm text-[#4B5563]">{row.shortlisted}</span>
+                                                                    {row.shortlistedTrend && (
+                                                                        <span className="text-[10px] font-medium text-[#069855] bg-[#DEF7EC] px-1 py-0.5 rounded">
+                                                                            {row.shortlistedTrend}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
                                                             </td>
 
                                                             {/* Hired */}
-                                                            <td className="px-4 py-4">
-                                                                <p className="text-sm font-semibold text-black">
-                                                                    {row.hired}
+                                                            <td className="px-6 py-4 text-center">
+                                                                <div className="flex items-center justify-center gap-1.5">
+                                                                    <span className="text-sm text-[#4B5563]">{row.hired}</span>
+                                                                    {row.hiredTrend && (
+                                                                        <span className="text-[10px] font-medium text-[#069855] bg-[#DEF7EC] px-1 py-0.5 rounded">
+                                                                            {row.hiredTrend}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+
+                                                            {/* Last Active Date */}
+                                                            <td className="px-6 py-4 text-center">
+                                                                <p className="text-sm text-[#4B5563]">
+                                                                    {row.lastActiveDate}
                                                                 </p>
                                                             </td>
 
                                                             {/* Status */}
-                                                            <td className="px-4 py-4">
+                                                            <td className="px-6 py-4 text-center">
                                                                 <span
-                                                                    className={`px-2 py-1 rounded-full text-[10px] font-semibold uppercase ${sty.bg} ${sty.text}`}
+                                                                    className={`px-3 py-1 rounded-full text-[12px] font-medium ${sty.bg} ${sty.text}`}
                                                                 >
                                                                     {row.status}
                                                                 </span>
                                                             </td>
 
-                                                            <td className="px-4 py-4 text-right">
+                                                            {/* Actions */}
+                                                            <td className="px-6 py-4 text-center">
                                                                 <div
-                                                                    className="flex items-center justify-end gap-2"
+                                                                    className="flex items-center justify-center gap-3"
                                                                     onClick={(e) => e.stopPropagation()}
                                                                 >
                                                                     <button
@@ -605,43 +631,22 @@ export default function Companies() {
                                                                             const match = workspaces.find(w => w.id === row.workspaceId);
                                                                             if (match) setInfoWorkspace(match);
                                                                         }}
-                                                                        className="flex items-center justify-center w-7 h-7 text-[#0F47F2] bg-[#E7EDFF] rounded-md transition-colors hover:bg-[#D7E3FF]"
+                                                                        className="p-1.5 text-[#0F47F2] bg-blue-50 rounded-full hover:bg-blue-100 transition-colors"
                                                                     >
                                                                         <Eye className="w-4 h-4" />
                                                                     </button>
 
-                                                                    {isActionView && row.status === 'Paused' ? (
+                                                                    {row.status === 'Active' ? (
                                                                         <button
-                                                                            className="flex items-center justify-center w-7 h-7 text-[#069855] bg-transparent rounded-md transition-colors hover:bg-gray-50 border border-green-500"
+                                                                            className="p-1.5 text-gray-400 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors"
                                                                         >
-                                                                            <Play className="w-3.5 h-3.5 fill-current" />
-                                                                        </button>
-                                                                    ) : row.status === 'Active' ? (
-                                                                        <button
-                                                                            className="flex items-center justify-center w-7 h-7 text-[#4B5563] bg-[#F3F5F7] rounded-md transition-colors hover:bg-[#E5E7EB]"
-                                                                        >
-                                                                            <div className="flex gap-[2px]">
-                                                                                <div className="w-[3px] h-3 bg-[#8E8E93] rounded-full"></div>
-                                                                                <div className="w-[3px] h-3 bg-[#8E8E93] rounded-full"></div>
-                                                                            </div>
-                                                                        </button>
-                                                                    ) : row.status === 'Paused' ? (
-                                                                        <button
-                                                                            className="flex items-center justify-center w-7 h-7 text-[#4B5563] bg-[#F3F5F7] rounded-md transition-colors hover:bg-[#E5E7EB]"
-                                                                        >
-                                                                            <div className="flex gap-[2px]">
-                                                                                <div className="w-[3px] h-3 bg-[#8E8E93] rounded-full"></div>
-                                                                                <div className="w-[3px] h-3 bg-[#8E8E93] rounded-full"></div>
-                                                                            </div>
+                                                                            <Pause className="w-4 h-4" />
                                                                         </button>
                                                                     ) : (
                                                                         <button
-                                                                            className="flex items-center justify-center w-7 h-7 text-[#4B5563] bg-[#F3F5F7] rounded-md transition-colors hover:bg-[#E5E7EB]"
+                                                                            className="p-1.5 text-[#069855] bg-green-50 rounded-full hover:bg-green-100 transition-colors"
                                                                         >
-                                                                            <div className="flex gap-[2px]">
-                                                                                <div className="w-[3px] h-3 bg-[#8E8E93] rounded-full"></div>
-                                                                                <div className="w-[3px] h-3 bg-[#8E8E93] rounded-full"></div>
-                                                                            </div>
+                                                                            <Play className="w-4 h-4 fill-current" />
                                                                         </button>
                                                                     )}
                                                                 </div>
@@ -659,17 +664,16 @@ export default function Companies() {
                                     className="px-5 py-3 flex items-center justify-between border-t"
                                     style={{ borderColor: "#F3F5F7" }}
                                 >
-                                    <div className="text-[11px] text-[#8E8E93]">
+                                    <div className="text-[13px] text-[#AEAEB2]">
                                         Showing {paginatedRows.length > 0 ? startIndex + 1 : 0}-
                                         {Math.min(startIndex + itemsPerPage, filteredRows.length)} of {filteredRows.length} companies
                                     </div>
                                     {totalPages > 1 && (
-                                        <div className="flex items-center gap-1.5">
+                                        <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                                                 disabled={currentPage === 1}
-                                                className="w-8 h-8 flex items-center justify-center rounded text-[#AEAEB2] hover:bg-[#F3F5F7] disabled:opacity-30 transition-colors"
-                                                style={{ border: "0.5px solid #D1D1D6" }}
+                                                className="w-8 h-8 flex items-center justify-center rounded-lg text-[#AEAEB2] hover:bg-gray-50 border border-transparent disabled:opacity-30 transition-colors"
                                             >
                                                 <ChevronLeft className="w-4 h-4" />
                                             </button>
@@ -682,9 +686,9 @@ export default function Companies() {
                                                     <button
                                                         key={p}
                                                         onClick={() => setCurrentPage(p as number)}
-                                                        className={`w-8 h-8 flex items-center justify-center rounded text-xs font-medium transition-colors ${currentPage === p
+                                                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${currentPage === p
                                                             ? "bg-[#0F47F2] text-white"
-                                                            : "text-[#4B5563] hover:bg-[#F3F5F7]"
+                                                            : "text-[#AEAEB2] hover:bg-gray-50"
                                                             }`}
                                                     >
                                                         {p}
@@ -694,8 +698,7 @@ export default function Companies() {
                                             <button
                                                 onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
                                                 disabled={currentPage === totalPages}
-                                                className="w-8 h-8 flex items-center justify-center rounded text-[#AEAEB2] hover:bg-[#F3F5F7] disabled:opacity-30 transition-colors"
-                                                style={{ border: "0.5px solid #D1D1D6" }}
+                                                className="w-8 h-8 flex items-center justify-center rounded-lg text-[#AEAEB2] hover:bg-gray-50 border border-transparent disabled:opacity-30 transition-colors"
                                             >
                                                 <ChevronRight className="w-4 h-4" />
                                             </button>

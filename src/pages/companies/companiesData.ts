@@ -16,10 +16,13 @@ export interface CompanyTableRow {
     workspaceId: number;
     name: string;
     domain: string;
-    totalJobs: number;
-    totalCandidates: number;
-    shortlisted: number;
-    hired: number;
+    totalJobs: number | string;
+    totalCandidates: number | string;
+    shortlisted: number | string;
+    shortlistedTrend?: string;
+    hired: number | string;
+    hiredTrend?: string;
+    lastActiveDate: string;
     status: 'Active' | 'Paused' | 'Inactive';
 }
 
@@ -88,7 +91,10 @@ export const companyTableRows: CompanyTableRow[] = [
         totalJobs: 14,
         totalCandidates: 87,
         shortlisted: 24,
+        shortlistedTrend: '+52%',
         hired: 9,
+        hiredTrend: '+52%',
+        lastActiveDate: '24/02/2026',
         status: 'Active',
     },
     {
@@ -99,7 +105,10 @@ export const companyTableRows: CompanyTableRow[] = [
         totalJobs: 21,
         totalCandidates: 112,
         shortlisted: 38,
+        shortlistedTrend: '+28%',
         hired: 15,
+        hiredTrend: '+12%',
+        lastActiveDate: '24/02/2026',
         status: 'Active',
     },
     {
@@ -111,6 +120,7 @@ export const companyTableRows: CompanyTableRow[] = [
         totalCandidates: 43,
         shortlisted: 11,
         hired: 4,
+        lastActiveDate: '24/02/2026',
         status: 'Active',
     },
     {
@@ -122,6 +132,7 @@ export const companyTableRows: CompanyTableRow[] = [
         totalCandidates: 29,
         shortlisted: 7,
         hired: 2,
+        lastActiveDate: '24/02/2026',
         status: 'Paused',
     },
     {
@@ -133,6 +144,7 @@ export const companyTableRows: CompanyTableRow[] = [
         totalCandidates: 11,
         shortlisted: 2,
         hired: 0,
+        lastActiveDate: '24/02/2026',
         status: 'Inactive',
     },
 ];
