@@ -35,12 +35,10 @@ import JoinWorkspaceModal from "../components/workspace/JoinWorkspaceModal";
 import PendingRequestsModal from "../components/workspace/PendingRequestsModal";
 import CreateJobRoleModal from "../components/candidatePool/CreateJobRoleModal";
 import { showToast } from "../utils/toast";
-import CompanyInfoTab from "../components/candidatePool/CompanyInfoTab";
+import CompanyInfoDrawer from "./companies/components/CompanyInfoDrawer";
 import {
     companyStatCards,
     companyTableRows,
-    companyAiAutopilotItems,
-    companyRecentActivities,
     CompanyTableRow,
 } from "./companies/companiesData";
 
@@ -69,7 +67,6 @@ export default function Companies() {
     const [companyResearchData, setCompanyResearchData] = useState<CompanyResearchData | null>(null);
     const [loadingCompanyResearch, setLoadingCompanyResearch] = useState(false);
 
-    // Fetch company research data when infoWorkspace changes
     useEffect(() => {
         if (!infoWorkspace) {
             setCompanyResearchData(null);
@@ -98,7 +95,6 @@ export default function Companies() {
     const [allJobs, setAllJobs] = useState<Job[]>([]);
     const [jobsLoading, setJobsLoading] = useState(false);
 
-    // Sync selected workspace name with global state for header breadcrumbs
     useEffect(() => {
         if (selectedWorkspace) {
             (window as any).__selectedWorkspaceName = selectedWorkspace.name;
@@ -167,7 +163,6 @@ export default function Companies() {
     }, [isAuthenticated]);
 
     const buildTableRows = useCallback((): CompanyTableRow[] => {
-        // Merge API workspaces with dummy data to fill in stats
         if (workspaces.length === 0) return companyTableRows;
 
         return workspaces.map((ws, i) => {
@@ -476,36 +471,13 @@ export default function Companies() {
                 />
 
                 {/* ── Company Info Modal Overlay ── */}
-                {infoWorkspace && (
-                    <div
-                        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-start justify-end overflow-y-auto"
-                        onClick={() => setInfoWorkspace(null)}
-                    >
-                        <div
-                            className="bg-white shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            {loadingCompanyResearch ? (
-                                <div className="flex flex-col items-center justify-center py-24 gap-3">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F47F2]"></div>
-                                    <span className="text-sm text-[#8E8E93]">Loading company info...</span>
-                                </div>
-                            ) : companyResearchData ? (
-                                <CompanyInfoTab
-                                    data={companyResearchData}
-                                    onBack={() => setInfoWorkspace(null)}
-                                    onEdit={() => { }}
-                                    onCreateJob={() => setShowCreateJobRole(true)}
-                                />
-                            ) : (
-                                <div className="flex flex-col items-center justify-center py-24 gap-2">
-                                    <span className="text-sm text-[#8E8E93]">No company details available.</span>
-                                    <button onClick={() => setInfoWorkspace(null)} className="text-sm text-[#0F47F2] hover:underline">Close</button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
+                <CompanyInfoDrawer
+                    isOpen={!!infoWorkspace}
+                    loading={loadingCompanyResearch}
+                    data={companyResearchData}
+                    onClose={() => setInfoWorkspace(null)}
+                    onCreateJob={() => setShowCreateJobRole(true)}
+                />
             </div>
         );
     }
@@ -1069,36 +1041,13 @@ export default function Companies() {
                 onClose={() => setShowPendingModal(false)}
             />
 
-            {infoWorkspace && (
-                <div
-                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-start justify-end overflow-y-auto"
-                    onClick={() => setInfoWorkspace(null)}
-                >
-                    <div
-                        className="bg-white shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {loadingCompanyResearch ? (
-                            <div className="flex flex-col items-center justify-center py-24 gap-3">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F47F2]"></div>
-                                <span className="text-sm text-[#8E8E93]">Loading company info...</span>
-                            </div>
-                        ) : companyResearchData ? (
-                            <CompanyInfoTab
-                                data={companyResearchData}
-                                onBack={() => setInfoWorkspace(null)}
-                                onEdit={() => { }}
-                                onCreateJob={() => { }}
-                            />
-                        ) : (
-                            <div className="flex flex-col items-center justify-center py-24 gap-2">
-                                <span className="text-sm text-[#8E8E93]">No company details available.</span>
-                                <button onClick={() => setInfoWorkspace(null)} className="text-sm text-[#0F47F2] hover:underline">Close</button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
+            <CompanyInfoDrawer
+                isOpen={!!infoWorkspace}
+                loading={loadingCompanyResearch}
+                data={companyResearchData}
+                onClose={() => setInfoWorkspace(null)}
+                onCreateJob={() => { }}
+            />
         </div>
     );
 }
