@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Users, Mail, Check, X, Plus } from "lucide-react";
-import { organizationService } from "../../services/organizationService";
-import { showToast } from "../../utils/toast";
-import { useAuthContext } from "../../context/AuthContext";
+import { organizationService } from "../../../services/organizationService";
+import { showToast } from "../../../utils/toast";
+import { useAuthContext } from "../../../context/AuthContext";
 
 interface CreateWorkspaceModalProps {
     isOpen: boolean;

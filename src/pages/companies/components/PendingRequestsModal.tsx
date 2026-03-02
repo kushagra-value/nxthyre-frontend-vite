@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { X, Clock } from "lucide-react";
-import { organizationService } from "../../services/organizationService";
-import { useAuthContext } from "../../context/AuthContext";
-import { showToast } from "../../utils/toast";
+import { organizationService } from "../../../services/organizationService";
+import { useAuthContext } from "../../../context/AuthContext";
+import { showToast } from "../../../utils/toast";
 
 interface JoinRequest {
     id: number;

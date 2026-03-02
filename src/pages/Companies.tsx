@@ -30,9 +30,9 @@ import {
     UserCircle,
     LayoutGrid
 } from "lucide-react";
-import CreateWorkspaceModal from "../components/workspace/CreateWorkspaceModal";
-import JoinWorkspaceModal from "../components/workspace/JoinWorkspaceModal";
-import PendingRequestsModal from "../components/workspace/PendingRequestsModal";
+import CreateWorkspaceModal from "./companies/components/CreateWorkspaceModal";
+import JoinWorkspaceModal from "./companies/components/JoinWorkspaceModal";
+import PendingRequestsModal from "./companies/components/PendingRequestsModal";
 import CreateJobRoleModal from "../components/candidatePool/CreateJobRoleModal";
 import EditJobRoleModal from "../components/candidatePool/EditJobRoleModal";
 import { showToast } from "../utils/toast";
