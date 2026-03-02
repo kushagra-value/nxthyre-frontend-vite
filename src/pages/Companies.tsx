@@ -426,7 +426,7 @@ export default function Companies() {
                                     {/* Add Company Split Button */}
                                     <div className="flex items-center relative">
                                         <button
-                                            className="bg-[#0F47F2] text-white px-4 py-2 rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5 h-9"
+                                            className="bg-[#0F47F2] text-white px-4 py-2 rounded-l-lg text-xs font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5 h-9"
                                             onClick={() => { setShowCreateModal(true); }}
                                         >
                                             <Plus className="w-4 h-4" /> Add Company
