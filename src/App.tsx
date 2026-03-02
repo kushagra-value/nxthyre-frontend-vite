@@ -35,7 +35,6 @@ import HeaderBar from "./components/Header";
 
 // Pages
 import Dashboard from "./pages/Dashboard";
-import Jobs from "./pages/Jobs";
 import Interviews from "./pages/Interviews";
 import CandidatesPool from "./pages/CandidatesPool";
 import JobPipeline from "./pages/JobPipeline";
@@ -154,8 +153,6 @@ function MainApp() {
         return "Dashboard";
       case "companies":
         return headerWorkspaceName ? "Company Job Listing" : "Companies";
-      case "jobs":
-        return "Jobs";
       case "interviews":
         return "Interviews";
       case "candidatePool":
@@ -173,8 +170,6 @@ function MainApp() {
         return <Dashboard />;
       case "companies":
         return <Companies />;
-      case "jobs":
-        return <Jobs onSelectJob={handleJobSelect} />;
       case "interviews":
         return <Interviews />;
       case "candidatePool":
