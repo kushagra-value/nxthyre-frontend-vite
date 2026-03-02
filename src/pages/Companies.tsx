@@ -34,6 +34,7 @@ import CreateWorkspaceModal from "../components/workspace/CreateWorkspaceModal";
 import JoinWorkspaceModal from "../components/workspace/JoinWorkspaceModal";
 import PendingRequestsModal from "../components/workspace/PendingRequestsModal";
 import CreateJobRoleModal from "../components/candidatePool/CreateJobRoleModal";
+import EditJobRoleModal from "../components/candidatePool/EditJobRoleModal";
 import { showToast } from "../utils/toast";
 import CompanyInfoDrawer from "./companies/components/CompanyInfoDrawer";
 import {
@@ -62,6 +63,8 @@ export default function Companies() {
     const [showPendingModal, setShowPendingModal] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [showCreateJobRole, setShowCreateJobRole] = useState(false);
+    const [showEditJobRole, setShowEditJobRole] = useState(false); // Added
+    const [editingJobId, setEditingJobId] = useState<number | null>(null); // Added
 
     const [infoWorkspace, setInfoWorkspace] = useState<MyWorkspace | null>(null);
     const [companyResearchData, setCompanyResearchData] = useState<CompanyResearchData | null>(null);
@@ -417,9 +420,9 @@ export default function Companies() {
                                         </td>
                                         <td className="px-5 py-4 text-sm text-[#8E8E93]">{job.total_applied || 0}</td>
                                         <td className="px-5 py-4 text-sm text-[#8E8E93]">{job.shortlisted_candidate_count || 0}</td>
-                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">0</td>
-                                        <td className="px-5 py-4 text-sm text-[#FF8D28]">-- Days</td>
-                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">{job.count || 1}</td>
+                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">--</td>
+                                        <td className="px-5 py-4 text-sm text-[#FF8D28]">--</td>
+                                        <td className="px-5 py-4 text-sm text-[#8E8E93]">--</td>
                                         <td className="px-5 py-4 text-sm text-[#8E8E93]">{new Date(job.updated_at).toLocaleDateString()}</td>
                                         <td className="px-5 py-4">
                                             <div className="flex flex-col gap-1.5">
@@ -440,7 +443,13 @@ export default function Companies() {
                                         </td>
                                         <td className="px-5 py-4">
                                             <div className="flex items-center justify-center gap-2">
-                                                <button className="w-8 h-8 flex items-center justify-center bg-[#E7EDFF] text-[#0F47F2] rounded-md hover:bg-[#D7E3FF] transition-colors">
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingJobId(job.id);
+                                                        setShowEditJobRole(true);
+                                                    }}
+                                                    className="w-8 h-8 flex items-center justify-center bg-[#E7EDFF] text-[#0F47F2] rounded-md hover:bg-[#D7E3FF] transition-colors"
+                                                >
                                                     <Pencil className="w-3.5 h-3.5" />
                                                 </button>
                                                 <button className="w-8 h-8 flex items-center justify-center bg-[#F2F2F7] text-[#4B5563] rounded-md hover:bg-[#E5E7EB] transition-colors">
@@ -466,9 +475,27 @@ export default function Companies() {
                     workspaces={workspaces.map(ws => ({ id: ws.id, name: ws.name }))}
                     onJobCreated={() => {
                         setShowCreateJobRole(false);
+                        fetchJobs(); // Refresh jobs
                         showToast.success("Job role created successfully!");
                     }}
                 />
+                {editingJobId && (
+                    <EditJobRoleModal
+                        isOpen={showEditJobRole}
+                        jobId={editingJobId}
+                        workspaceId={selectedWorkspace.id}
+                        workspaces={workspaces.map(ws => ({ id: ws.id, name: ws.name }))}
+                        onClose={() => {
+                            setShowEditJobRole(false);
+                            setEditingJobId(null);
+                        }}
+                        onJobUpdated={() => {
+                            setShowEditJobRole(false);
+                            setEditingJobId(null);
+                            fetchJobs(); // Refresh jobs after update
+                        }}
+                    />
+                )}
 
                 {/* ── Company Info Modal Overlay ── */}
                 <CompanyInfoDrawer

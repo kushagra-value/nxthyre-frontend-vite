@@ -2,6 +2,7 @@
 import apiClient from "./api";
 
 export interface Job {
+  shortlisted_candidate_count: number;
   id: number;
   title: string;
   location: string[];
