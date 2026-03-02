@@ -478,11 +478,11 @@ export default function Companies() {
                 {/* ── Company Info Modal Overlay ── */}
                 {infoWorkspace && (
                     <div
-                        className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-start justify-end overflow-y-auto"
+                        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm p-6 z-[100] flex items-start justify-end overflow-y-auto"
                         onClick={() => setInfoWorkspace(null)}
                     >
                         <div
-                            className="bg-white shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto"
+                            className="bg-white shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {loadingCompanyResearch ? (
@@ -1069,14 +1069,13 @@ export default function Companies() {
                 onClose={() => setShowPendingModal(false)}
             />
 
-            {/* ── Company Info Modal Overlay ── */}
             {infoWorkspace && (
                 <div
-                    className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-start justify-end overflow-y-auto"
+                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm p-6 z-[100] flex items-start justify-end overflow-y-auto"
                     onClick={() => setInfoWorkspace(null)}
                 >
                     <div
-                        className="bg-white rounded-l-3xl shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto"
+                        className="bg-white shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {loadingCompanyResearch ? (

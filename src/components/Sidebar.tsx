@@ -173,8 +173,7 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
 
   const menuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
-    { id: 'companies', label: 'Companies', icon: JobsIcon },
-    { id: 'jobs', label: 'Jobs', icon: CompaniesIcon },
+    { id: 'companies', label: 'Companies', icon: CompaniesIcon },
     { id: 'candidatePool', label: 'Candidates', icon: CandidatesIcon },
     { id: 'calendar', label: 'Schedule', icon: ScheduleIcon, badge: 4 },
   ];
@@ -190,7 +189,6 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
       className="flex flex-col bg-white shrink-0 transition-all duration-300 h-screen"
       style={{ width: isCollapsed ? 100 : 248 }}
     >
-      {/* ── Logo Section ── */}
       <div
         className="relative flex items-center bg-white shrink-0"
         style={{
