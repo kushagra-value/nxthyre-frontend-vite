@@ -80,6 +80,12 @@ const JobListing: React.FC<JobListingProps> = ({
     companyResearchData,
     setInfoWorkspaceNull,
 }) => {
+
+    const formatSalaryToLPA = (salary: number | null | undefined): string => {
+        if (salary == null || salary <= 0) return '??';
+        const lpa = salary / 100000;
+        return lpa % 1 === 0 ? lpa.toString() : lpa.toFixed(2);
+    };
     return (
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-[#F3F5F7]">
             {/* ── Company Info Card ── */}
@@ -231,7 +237,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                             <span className="text-sm text-[#4B5563] font-medium">{job.title}</span>
                                             <div className="flex items-center gap-1.5">
                                                 <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">{job.experience_min_years}-{job.experience_max_years} Yrs</span>
-                                                <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">{job.salary_min || '??'} - {job.salary_max || '??'} LPA</span>
+                                                <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">{formatSalaryToLPA(job.salary_min)} - {formatSalaryToLPA(job.salary_max)} LPA</span>
                                                 <span className="px-2 py-0.5 bg-[#F2F2F7] rounded-full text-[10px] text-[#8E8E93]">JD-{job.id}</span>
                                             </div>
                                         </div>
