@@ -1,5 +1,5 @@
 import React from 'react';
-import CompanyInfoTab from "../../../components/candidatePool/CompanyInfoTab";
+import CompanyInfoTab from "./CompanyInfoTab";
 import { CompanyResearchData } from "../../../services/organizationService";
 
 interface CompanyInfoDrawerProps {

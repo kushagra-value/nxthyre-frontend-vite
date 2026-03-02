@@ -39,7 +39,7 @@ import {
   MyWorkspace,
   CompanyResearchData,
 } from "./services/organizationService";
-import CompanyInfoTab from "./components/candidatePool/CompanyInfoTab";
+import CompanyInfoTab from "./pages/companies/components/CompanyInfoTab";
 import { User } from "./types/auth";
 import type { Job } from "./services/jobPostService";
 import { useLocation } from "react-router-dom";
