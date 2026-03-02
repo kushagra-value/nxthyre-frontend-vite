@@ -19,7 +19,7 @@ import TemplateSelector from "../components/TemplateSelector";
 import CreateJobRoleModal from "../components/candidatePool/CreateJobRoleModal";
 import EditJobRoleModal from "../components/candidatePool/EditJobRoleModal";
 import EditTemplateModal from "../components/candidatePool/EditTemplateModal";
-import PipelineStages from "./PipelineStages";
+import PipelineStages from "../components/PipelineStages";
 
 import {
     organizationService,
