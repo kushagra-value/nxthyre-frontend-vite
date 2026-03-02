@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { ChevronRight, ChevronDown, Edit3, Share2, Bell } from "lucide-react";
-import JobPipelineDashboard from "./jobPipeline/components/JobPipelineDashboard";
-import JobCandidateProfile from "./jobPipeline/components/JobCandidateProfile";
-import { jobDetails } from "./jobPipeline/JobPipelineData";
+import JobPipelineDashboard from "./companies/components/JobPipelineDashboard";
+import JobCandidateProfile from "./companies/components/JobCandidateProfile";
+import { jobDetails } from "./companies/JobPipelineData";
 
 export default function JobPipeline({ jobId, onBack }: { jobId: number | null, onBack: () => void }) {
     const [selectedCandidate, setSelectedCandidate] = useState<any>(null);

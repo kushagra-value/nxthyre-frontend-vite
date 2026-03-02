@@ -224,7 +224,7 @@ export default function JobPipelineDashboard({ onSelectCandidate }: { onSelectCa
                                             <p className="text-xs font-bold text-black mb-0.5">{fu.candidate}</p>
                                             <p className="text-[10px] text-[#8E8E93] leading-tight mb-2">{fu.description}</p>
                                             <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${fu.tagColor === 'red' ? 'bg-[#FEE2E2] text-[#DC2626]' :
-                                                    fu.tagColor === 'blue' ? 'bg-[#E7EDFF] text-[#0F47F2]' : 'bg-[#FEF3C7] text-[#D97706]'
+                                                fu.tagColor === 'blue' ? 'bg-[#E7EDFF] text-[#0F47F2]' : 'bg-[#FEF3C7] text-[#D97706]'
                                                 }`}>
                                                 {fu.tag}
                                             </span>

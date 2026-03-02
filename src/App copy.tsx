@@ -21,7 +21,7 @@ import {
 import Header from "./components/candidatePool/Header";
 import TermsAndConditions from "./components/TermsAndConditions";
 import FiltersSidebar from "./components/candidatePool/FiltersSidebar";
-import JobApplicationForm from "./pages/JobApplicationForm";
+import JobApplicationForm from "./components/JobApplicationForm";
 import CandidatesMain from "./components/candidatePool/CandidatesMain";
 import CandidateDetail from "./components/candidatePool/CandidateDetail";
 import TemplateSelector from "./components/TemplateSelector";
@@ -59,7 +59,7 @@ import {
   Search,
 } from "lucide-react";
 import { showToast } from "./utils/toast";
-import CandidateBackGroundCheck from "./pages/CandidateBackGroundCheck";
+import CandidateBackGroundCheck from "./components/CandidateBackGroundCheck";
 import SuperAdminDashboard from "./components/SuperAdmin/SuperAdminDashboard";
 import ProjectCard from "./components/ProjectCard";
 import { AnalysisResult } from "./services/candidateService";
