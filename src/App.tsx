@@ -13,7 +13,7 @@ import AuthApp from "./components/AuthApp";
 import LinkedInAuth from "./components/auth/LinkedInAuth";
 import Settings from "./components/Settings";
 import ShareableProfile from "./components/profileShare/ShareableProfile";
-import PipelineSharePage from "./pages/PipelineSharePage";
+import PipelineSharePage from "./components/PipelineSharePage";
 import TermsAndConditions from "./components/TermsAndConditions";
 import JobApplicationForm from "./components/JobApplicationForm";
 import CandidateBackGroundCheck from "./components/CandidateBackGroundCheck";
