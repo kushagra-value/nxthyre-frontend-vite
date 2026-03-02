@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { ChevronDown, Building2, Settings, LogOut } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { ChevronDown, Building2, Settings, LogOut, Bell, Check } from 'lucide-react';
 import { useAuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import organizationService, { Invitation } from '../services/organizationService';
 
 interface HeaderProps {
   title: string;
@@ -17,17 +18,37 @@ const RefreshIcon = (
   </svg>
 );
 
-const NotificationIcon = (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M2.52992 14.394C2.31727 15.7471 3.268 16.6862 4.43205 17.1542C8.89481 18.9486 15.1052 18.9486 19.5679 17.1542C20.732 16.6862 21.6827 15.7471 21.4701 14.394C21.3394 13.5625 20.6932 12.8701 20.2144 12.194C19.5873 11.2975 19.525 10.3197 19.5249 9.27941C19.5249 5.2591 16.1559 2 12 2C7.84413 2 4.47513 5.2591 4.47513 9.27941C4.47503 10.3197 4.41272 11.2975 3.78561 12.194C3.30684 12.8701 2.66061 13.5625 2.52992 14.394Z" stroke="#4B5563" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M9 21C9.79613 21.6219 10.8475 22 12 22C13.1525 22 14.2039 21.6219 15 21" stroke="#4B5563" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
 export default function Header({ title, subtitle }: HeaderProps) {
-  const { user, signOut } = useAuthContext();
+  const { isAuthenticated, user, signOut } = useAuthContext();
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [showPopup, setShowPopup] = useState(false);
+  const [isLoadingInvites, setIsLoadingInvites] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const fetchInvites = async () => {
+        setIsLoadingInvites(true);
+        try {
+          const data = await organizationService.getInvitations();
+          setInvitations(data);
+        } catch (error) {
+          console.error("Failed to fetch invitations:", error);
+        } finally {
+          setIsLoadingInvites(false);
+        }
+      };
+      fetchInvites();
+    } else {
+      setInvitations([]);
+    }
+  }, [isAuthenticated]);
+
+  const pendingInvites = useMemo(() =>
+    invitations.filter(invite => invite.status === "PENDING"),
+    [invitations]
+  );
 
   return (
     <header className="bg-white flex items-center justify-between px-6 shrink-0 relative" style={{ height: '88px', padding: '16px 24px' }}>
@@ -46,25 +67,69 @@ export default function Header({ title, subtitle }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-5">
+
         {/* Icon buttons */}
         <div className="flex items-start gap-2">
           <button className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-50 transition-colors">
             {RefreshIcon}
           </button>
-          <button className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-50 transition-colors">
-            {NotificationIcon}
-            <span
-              className="absolute rounded-full"
-              style={{
-                width: '10px',
-                height: '10px',
-                top: '6px',
-                right: '6px',
-                background: '#0F47F2',
-                border: '1px solid #FFFFFF',
-              }}
-            />
-          </button>
+
+          {isAuthenticated && !isLoadingInvites && (
+            <div className="relative">
+              <button
+                onClick={() => setShowPopup(!showPopup)}
+                className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-50 transition-colors"
+                aria-label="Pending Invitations"
+              >
+                <Bell className="w-5 h-5 text-gray-600" />
+                {pendingInvites.length > 0 && (
+                  <span
+                    className="absolute flex items-center justify-center text-[10px] text-white font-bold rounded-full"
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      top: '4px',
+                      right: '4px',
+                      background: '#EF4444',
+                      border: '1px solid #FFFFFF',
+                    }}
+                  >
+                    {pendingInvites.length}
+                  </span>
+                )}
+              </button>
+
+              {showPopup && pendingInvites.length > 0 && (
+                <div className="absolute right-0 mt-2 w-[400px] bg-white rounded-lg shadow-lg border border-gray-200 z-[110]">
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold pb-4">Workspace Invitations</h3>
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto">
+                      {pendingInvites.map((invite) => (
+                        <div key={invite.id} className="flex justify-between gap-4 items-center border p-4 rounded-lg">
+                          <div>
+                            <p className="text-sm text-gray-700">
+                              <strong>{invite.invited_by.full_name}</strong> has invited you in <strong>{invite.workspace.name}</strong> workspace.
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              this invite will expire on {new Date(invite.expires_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })}.
+                            </p>
+                          </div>
+                          <a
+                            href={invite.accept_url}
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center w-8 h-8 border border-green-500 text-green-500 rounded-full hover:bg-green-50"
+                            title="Accept Invitation"
+                          >
+                            <Check className="w-4 h-4" />
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* User profile Menu */}
