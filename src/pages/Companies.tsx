@@ -478,7 +478,7 @@ export default function Companies() {
                 {/* ── Company Info Modal Overlay ── */}
                 {infoWorkspace && (
                     <div
-                        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm p-6 z-[100] flex items-start justify-end overflow-y-auto"
+                        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-start justify-end overflow-y-auto"
                         onClick={() => setInfoWorkspace(null)}
                     >
                         <div
@@ -1071,7 +1071,7 @@ export default function Companies() {
 
             {infoWorkspace && (
                 <div
-                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm p-6 z-[100] flex items-start justify-end overflow-y-auto"
+                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-start justify-end overflow-y-auto"
                     onClick={() => setInfoWorkspace(null)}
                 >
                     <div
