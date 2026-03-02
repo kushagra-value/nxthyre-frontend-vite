@@ -431,13 +431,13 @@ export default function Companies() {
                                         >
                                             <Plus className="w-4 h-4" /> Add Company
                                         </button>
-                                        {/* <div className="w-[1px] bg-white/20 h-9"></div>
+                                        <div className="w-[1px] bg-white/20 h-9"></div>
                                         <button
                                             onClick={() => setDropdownOpen(!dropdownOpen)}
                                             className="bg-[#0F47F2] text-white px-2 py-2 rounded-r-lg hover:opacity-90 transition-opacity flex items-center h-9"
                                         >
                                             <ChevronDown className="w-4 h-4" />
-                                        </button> */}
+                                        </button>
 
                                         {dropdownOpen && (
                                             <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-[#E5E7EB] rounded-lg shadow-lg py-1 z-50">
