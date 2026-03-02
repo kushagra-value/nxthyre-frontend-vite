@@ -61,7 +61,7 @@ import {
 import { showToast } from "./utils/toast";
 import CandidateBackGroundCheck from "./pages/CandidateBackGroundCheck";
 import SuperAdminDashboard from "./components/SuperAdmin/SuperAdminDashboard";
-import ProjectCard from "./pages/jobs/components/ProjectCard";
+import ProjectCard from "./components/ProjectCard";
 import { AnalysisResult } from "./services/candidateService";
 import ShareCandidateListPage from "./components/applicantTracking/ShareCandidateListPage";
 interface Category {
