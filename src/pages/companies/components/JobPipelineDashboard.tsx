@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search, SlidersHorizontal, Share2, Download, Calendar, Grid3X3,
   ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Pencil, Upload, X,
-  Maximize2, Minimize2,
+  Maximize2, Minimize2, ArrowLeft, Briefcase, LocateIcon, FileSearch,
 } from "lucide-react";
 import apiClient from "../../../services/api";
 import { jobPostService, Job } from "../../../services/jobPostService";
+import { organizationService, CompanyResearchData } from "../../../services/organizationService";
 import EditJobRoleModal from "../../../components/candidatePool/EditJobRoleModal";
+import RequisitionSkeleton from "../../../components/skeletons/RequisitionSkeleton";
+import CompanyInfoTab from "./CompanyInfoTab";
 import toast from "react-hot-toast";
 import { showToast } from "../../../utils/toast";
 
@@ -137,6 +141,8 @@ const statusColor = (status?: string): { bg: string; dot: string; text: string }
 export default function JobPipelineDashboard({
   jobId, workspaceId, workspaces, onJobUpdated, onSelectCandidate,
 }: JobPipelineDashboardProps) {
+  const navigate = useNavigate();
+
   // ── Job details
   const [jobDetails, setJobDetails] = useState<Job | null>(null);
   const [loadingJob, setLoadingJob] = useState(false);
@@ -177,6 +183,15 @@ export default function JobPipelineDashboard({
 
   // ── Active tab
   const [activeTab, setActiveTab] = useState<"pipeline" | "naukbot" | "inbound">("pipeline");
+
+  // ── Requisition Info Modal
+  const [showRequisitionInfoModal, setShowRequisitionInfoModal] = useState(false);
+  const [requisitionModalTab, setRequisitionModalTab] = useState<"info" | "company">("info");
+  const [jobDataForModal, setJobDataForModal] = useState<Job | null>(null);
+  const [competenciesData, setCompetenciesData] = useState<any>(null);
+  const [loadingCompetencies, setLoadingCompetencies] = useState(false);
+  const [companyResearchData, setCompanyResearchData] = useState<CompanyResearchData | null>(null);
+  const [loadingCompanyResearch, setLoadingCompanyResearch] = useState(false);
 
   // ── Upload helpers (same as PipelineStages) ──────────────────
 
@@ -383,6 +398,38 @@ export default function JobPipelineDashboard({
     return pages;
   };
 
+  // ── Requisition Info Handlers ────────────────────────────────
+
+  const handleRequisitionInfo = async (jId: number) => {
+    setRequisitionModalTab("info");
+    setCompanyResearchData(null);
+    setLoadingCompetencies(true);
+    setJobDataForModal(null);
+    setCompetenciesData(null);
+    try {
+      const [job, comp] = await Promise.all([
+        jobPostService.getJob(jId),
+        jobPostService.getJobCompetencies(jId),
+      ]);
+      setJobDataForModal(job);
+      setCompetenciesData(comp);
+    } catch {
+      showToast.error("Failed to fetch requisition info");
+    } finally {
+      setLoadingCompetencies(false);
+      setShowRequisitionInfoModal(true);
+    }
+  };
+
+  const handleCloseRequisitionModal = () => {
+    setRequisitionModalTab("info");
+    setShowRequisitionInfoModal(false);
+    setJobDataForModal(null);
+    setCompetenciesData(null);
+    setCompanyResearchData(null);
+    setLoadingCompetencies(false);
+  };
+
   // ── Derived ──────────────────────────────────────────────────
 
   const totalPipelineCandidates = stages.reduce((sum, s) => sum + s.candidate_count, 0);
@@ -448,6 +495,7 @@ export default function JobPipelineDashboard({
 
             {/* View JD */}
             <button
+              onClick={() => jobId && handleRequisitionInfo(jobId)}
               className="flex items-center gap-2 px-4 py-2 border border-[#D1D1D6] rounded-lg text-sm text-[#757575] hover:bg-[#F9FAFB] transition-colors">
               View JD <span className="text-[#AEAEB2]">ⓘ</span>
             </button>
@@ -614,7 +662,10 @@ export default function JobPipelineDashboard({
           )}
         </div>
 
-        <button className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs">
+        <button
+          onClick={() => jobId && navigate(`/pipelines/${jobId}`)}
+          className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs"
+        >
           <Grid3X3 className="w-4 h-4" /> Kanban
         </button>
       </div>
@@ -928,6 +979,68 @@ export default function JobPipelineDashboard({
                 {isUploading ? "Uploading..." : "Upload"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════
+          Requisition Info Modal (same as CandidatesPool)
+         ═══════════════════════════════════════════════════════ */}
+      {showRequisitionInfoModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-start justify-end overflow-y-auto" onClick={handleCloseRequisitionModal}>
+          <div className="bg-white rounded-3xl shadow-xl max-w-2xl w-full max-h-[125vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-2 mb-4">
+              <button onClick={handleCloseRequisitionModal}><ArrowLeft className="w-8 h-8 text-gray-800" /></button>
+              <h1 className="text-lg font-semibold text-gray-800">Requisition Info</h1>
+            </div>
+            <div className="flex border-b border-gray-200 mb-6">
+              <button
+                className={`pb-2 px-4 text-sm font-medium ${requisitionModalTab === "info" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"}`}
+                onClick={() => setRequisitionModalTab("info")}
+              >Requisition Info</button>
+              <button
+                className={`pb-2 px-4 text-sm font-medium ${requisitionModalTab === "company" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"}`}
+                onClick={async () => {
+                  setRequisitionModalTab("company");
+                  if (jobDataForModal?.workspace_details?.id && !companyResearchData) {
+                    setLoadingCompanyResearch(true);
+                    try { setCompanyResearchData(await organizationService.getCompanyResearchData(jobDataForModal.workspace_details.id)); }
+                    catch { } finally { setLoadingCompanyResearch(false); }
+                  }
+                }}
+              >About Company</button>
+            </div>
+            {loadingCompetencies ? <RequisitionSkeleton /> : jobDataForModal ? (<>
+              {requisitionModalTab === "info" && competenciesData && (<>
+                <h2 className="text-2xl font-semibold text-gray-900 mb-1">{jobDataForModal.title}</h2>
+                <div className="flex space-x-8 mt-2 mb-6">
+                  <span className="flex items-center text-gray-500"><Briefcase className="w-4 h-4 mr-1" /> {jobDataForModal.experience_min_years}+ years</span>
+                  <span className="flex items-center text-gray-500"><LocateIcon className="w-4 h-4 mr-1" /> {jobDataForModal.work_approach}</span>
+                  <span className="flex items-center text-gray-500"><FileSearch className="w-4 h-4 mr-1" /> Immediate</span>
+                </div>
+                <div className="mb-6"><h3 className="text-lg font-semibold text-gray-700 mb-2">Role Overview</h3><p className="text-gray-600 text-sm">{competenciesData.role_overview}</p></div>
+                <div className="mb-6"><h3 className="text-lg font-semibold text-gray-700 mb-2">The Core Expectation</h3>
+                  <ul className="text-gray-600 text-sm list-disc pl-5 space-y-1">{competenciesData.the_core_expectation.map((item: string, i: number) => <li key={i}>{item}</li>)}</ul></div>
+                <div className="mb-6"><h3 className="text-lg font-semibold text-gray-700 mb-3">Key Responsibilities</h3><div className="space-y-3">
+                  {competenciesData.key_responsibilities_explained.functional.map((item: any, i: number) => (
+                    <div key={i} className="bg-blue-50 rounded-lg p-4"><h4 className="font-medium text-gray-600 mb-1">{item.competency}</h4>
+                      <p className="text-sm text-gray-400">{item.context}</p>{item.priority && <p className="text-xs text-gray-500 mt-1">Priority: {item.priority}</p>}</div>))}
+                  {competenciesData.key_responsibilities_explained.leadership?.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-gray-200"><h4 className="font-semibold text-gray-700 mb-3">Leadership</h4>
+                      {competenciesData.key_responsibilities_explained.leadership.map((item: any, i: number) => (
+                        <div key={i} className="bg-green-50 rounded-lg p-4 mb-3"><h5 className="font-medium text-gray-600 mb-1">{item.responsibility}</h5>
+                          <p className="text-sm text-gray-400">{item.context}</p></div>))}</div>)}</div></div>
+                <div className="mb-6"><h3 className="text-lg font-semibold text-gray-700 mb-3">Technical Skills</h3><div className="space-y-3">
+                  {competenciesData.required_technical_skills_purpose.map((item: any, i: number) => (
+                    <div key={i} className="bg-blue-50 rounded-lg p-4"><h4 className="font-medium text-gray-600 mb-1">{item.skill}</h4>
+                      <p className="text-sm text-gray-400">{item.context}</p></div>))}</div></div>
+              </>)}
+              {requisitionModalTab === "company" && (<>
+                {loadingCompanyResearch ? <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>
+                  : companyResearchData ? <CompanyInfoTab data={companyResearchData} />
+                    : <div className="text-center py-8 text-gray-500">No company details available.</div>}
+              </>)}
+            </>) : <div className="text-center py-8 text-gray-500">Failed to load data.</div>}
           </div>
         </div>
       )}
