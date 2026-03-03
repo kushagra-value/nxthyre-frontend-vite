@@ -957,7 +957,6 @@ export default function JobPipelineDashboard({
                     return (
                       <div
                         key={item.id}
-                        onClick={() => onSelectCandidate?.(item)}
                         draggable
                         onDragStart={() => handleDragStart(item.id)}
                         className="bg-white border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/50 transition-all flex flex-col gap-1 relative"
@@ -972,7 +971,12 @@ export default function JobPipelineDashboard({
                           />
                         </div>
                         <div className="flex items-start justify-between gap-2 pr-6">
-                          <h4 className="font-bold text-[14px] text-slate-800 line-clamp-1">{cand.full_name || "--"}</h4>
+                          <h4
+                            className="font-bold text-[14px] text-slate-800 line-clamp-1 cursor-pointer hover:underline"
+                            onClick={() => onSelectCandidate?.(item)}
+                          >
+                            {cand.full_name || "--"}
+                          </h4>
                         </div>
                         <div className="inline-flex">
                           <span className="text-[10px] font-bold px-2 py-0.5 mt-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100 flex-shrink-0">{aiScoreRaw}</span>
@@ -1084,13 +1088,16 @@ export default function JobPipelineDashboard({
                   const aiScoreColor = aiScoreNum >= 70 ? "#00C8B3" : aiScoreNum >= 40 ? "#FFCC00" : aiScoreNum > 0 ? "#FF383C" : "#E5E7EB";
 
                   return (
-                    <tr key={item.id} className="hover:bg-[#F9FAFB] cursor-pointer transition-colors" onClick={() => onSelectCandidate?.(item)}>
-                      <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
+                    <tr key={item.id} className="hover:bg-[#F9FAFB] transition-colors">
+                      <td className="px-6 py-5">
                         <input type="checkbox" className="w-4 h-4 accent-[#0F47F2]" checked={selectedIds.has(item.id)} onChange={() => handleToggleCandidate(item.id)} />
                       </td>
                       <td className="px-6 py-5">
-                        <div>
-                          <div className="font-medium text-[#4B5563]">{cand.full_name || "--"}</div>
+                        <div
+                          className="cursor-pointer group"
+                          onClick={() => onSelectCandidate?.(item)}
+                        >
+                          <div className="font-medium text-[#4B5563] group-hover:underline group-hover:text-blue-600 transition">{cand.full_name || "--"}</div>
                           <div className="text-xs text-[#727272]">{cand.headline || "--"}</div>
                         </div>
                       </td>
