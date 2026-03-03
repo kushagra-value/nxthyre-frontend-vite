@@ -462,7 +462,7 @@ export default function Companies() {
                                         </button>
                                     ))}
                                 </div>
-                                <button className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs">
+                                <button className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs" title="Feature Coming Soon" disabled>
                                     <LayoutGrid className="w-4 h-4 " /> Grid View
                                 </button>
                             </div>
@@ -489,6 +489,8 @@ export default function Companies() {
                                     {/* Export CSV */}
                                     <button
                                         className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
+                                        title="Feature Coming Soon"
+                                        disabled
                                     >
                                         <DownloadCloud className="w-4 h-4 text-[#AEAEB2]" /> Export CSV
                                     </button>
@@ -496,6 +498,8 @@ export default function Companies() {
                                     {/* Date Picker Mock */}
                                     <button
                                         className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
+                                        title="Feature Coming Soon"
+                                        disabled
                                     >
                                         <Calendar className="w-4 h-4 text-[#AEAEB2]" /> 24 Feb, 2026
                                     </button>
@@ -716,12 +720,16 @@ export default function Companies() {
                                                                     {row.status === 'Active' ? (
                                                                         <button
                                                                             className="p-1.5 text-gray-400 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors"
+                                                                            title="Feature Coming Soon"
+                                                                            disabled
                                                                         >
                                                                             <Pause className="w-4 h-4" />
                                                                         </button>
                                                                     ) : (
                                                                         <button
                                                                             className="p-1.5 text-[#069855] bg-green-50 rounded-full hover:bg-green-100 transition-colors"
+                                                                            title="Feature Coming Soon"
+                                                                            disabled
                                                                         >
                                                                             <Play className="w-4 h-4 fill-current" />
                                                                         </button>
