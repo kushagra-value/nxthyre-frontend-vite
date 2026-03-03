@@ -9,10 +9,12 @@ import {
 import apiClient from "../../../services/api";
 import { jobPostService, Job } from "../../../services/jobPostService";
 import { organizationService, CompanyResearchData } from "../../../services/organizationService";
+import { candidateService } from "../../../services/candidateService";
 import EditJobRoleModal from "../../../components/candidatePool/EditJobRoleModal";
 import CompanyInfoTab from "./CompanyInfoTab";
 import toast from "react-hot-toast";
 import { showToast } from "../../../utils/toast";
+import * as XLSX from "xlsx";
 
 // ─── Interfaces ────────────────────────────────────────────────
 
@@ -240,6 +242,106 @@ export default function JobPipelineDashboard({
   const [loadingCompetencies, setLoadingCompetencies] = useState(false);
   const [companyResearchData, setCompanyResearchData] = useState<CompanyResearchData | null>(null);
   const [loadingCompanyResearch, setLoadingCompanyResearch] = useState(false);
+
+  // ── Export
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+
+  // ── Export helpers
+  const downloadFile = (
+    data: string | Blob,
+    fileName: string,
+    type: "csv" | "xlsx",
+  ) => {
+    const blob =
+      typeof data === "string"
+        ? new Blob([data], {
+          type:
+            type === "csv"
+              ? "text/csv"
+              : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        })
+        : data;
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleExportCandidates = async (format: "csv" | "xlsx") => {
+    if (selectedIds.size === 0) {
+      showToast.error("Please select at least one candidate");
+      return;
+    }
+    if (!jobId) {
+      showToast.error("No job selected for export");
+      return;
+    }
+
+    setExportLoading(true);
+    try {
+      const selectedCandidateUuids = candidates
+        .filter((cand) => selectedIds.has(cand.id))
+        .map((cand) => cand.candidate.id);
+
+      if (selectedCandidateUuids.length === 0) {
+        throw new Error("No valid candidates found for export");
+      }
+
+      const response = await candidateService.exportCandidates(selectedCandidateUuids, jobId);
+
+      if (typeof response !== "string") {
+        throw new Error("Invalid response format: Expected a CSV string");
+      }
+
+      if (!response.trim()) {
+        throw new Error("No candidate data returned for export");
+      }
+
+      if (format === "csv") {
+        downloadFile(response, `candidates_export_${Date.now()}.csv`, "csv");
+      } else {
+        const lines = response.split("\n").filter((line) => line.trim());
+        const worksheetData = lines.map((line) =>
+          line
+            .split(",")
+            .map((value) => value.replace(/^"|"$/g, "").replace(/""/g, '"')),
+        );
+
+        if (worksheetData.length < 2) {
+          throw new Error("No candidate data returned for export");
+        }
+
+        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Candidates");
+        const excelBuffer = XLSX.write(workbook, {
+          bookType: "xlsx",
+          type: "array",
+        });
+        const blob = new Blob([excelBuffer], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        downloadFile(blob, `candidates_export_${Date.now()}.xlsx`, "xlsx");
+      }
+
+      showToast.success(
+        `Candidates exported successfully as ${format.toUpperCase()}`,
+      );
+      setShowExportDialog(false);
+      setSelectedIds(new Set());
+      setSelectAll(false);
+    } catch (error: any) {
+      console.error("Export Error:", error);
+      showToast.error(error.message || "Failed to export candidates");
+    } finally {
+      setExportLoading(false);
+    }
+  };
 
   // ── Upload helpers (same as PipelineStages) ──────────────────
 
@@ -738,10 +840,23 @@ export default function JobPipelineDashboard({
           </button>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors">
+          <button
+            onClick={() => {
+              const url = `${window.location.origin}/public/workspaces/${workspaceId}/applications`;
+              window.open(url, "_blank");
+            }}
+            className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#E7EDFF] hover:text-[#0F47F2] hover:border-[#0F47F2] transition-colors">
             <Share2 className="w-4 h-4" /> Share Pipeline
           </button>
-          <button className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors">
+          <button
+            onClick={() => {
+              if (selectedIds.size === 0) {
+                showToast.error("Please select at least one candidate to export");
+                return;
+              }
+              setShowExportDialog(true);
+            }}
+            className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors">
             <Download className="w-4 h-4" /> Export CSV
           </button>
           <button className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors">
@@ -1320,6 +1435,43 @@ export default function JobPipelineDashboard({
                 <button onClick={handleCloseRequisitionModal} className="text-sm text-[#0F47F2] hover:underline">Close</button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Export Format Selection Modal */}
+      {showExportDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1001]">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Export {selectedIds.size} Candidate{selectedIds.size !== 1 ? "s" : ""}
+            </h3>
+            <p className="text-sm text-gray-600 mt-2">
+              Please choose the export format for the selected candidates.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200"
+                onClick={() => setShowExportDialog(false)}
+                disabled={exportLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-[#0F47F2] text-white text-sm font-medium rounded-lg hover:bg-[#0D3ECF] disabled:opacity-50"
+                onClick={() => handleExportCandidates("csv")}
+                disabled={exportLoading}
+              >
+                {exportLoading ? "Exporting..." : "Export as CSV"}
+              </button>
+              <button
+                className="px-4 py-2 bg-[#0F47F2] text-white text-sm font-medium rounded-lg hover:bg-[#0D3ECF] disabled:opacity-50"
+                onClick={() => handleExportCandidates("xlsx")}
+                disabled={exportLoading}
+              >
+                {exportLoading ? "Exporting..." : "Export as Excel"}
+              </button>
+            </div>
           </div>
         </div>
       )}

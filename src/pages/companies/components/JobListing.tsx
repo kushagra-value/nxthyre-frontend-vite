@@ -148,10 +148,10 @@ const JobListing: React.FC<JobListingProps> = ({
                             <span className="px-2 py-0.5 bg-[#EBFFEE] text-[#069855] text-[10px] font-medium rounded-full uppercase">Active</span>
                         </div>
                         <div className="flex items-center gap-4 text-xs text-[#8E8E93]">
-                            <span className="flex items-center gap-1.5"><Globe className="w-3.5 h-3.5 text-[#8E8E93]" /> jupiter.money</span>
-                            <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-[#8E8E93]" /> Bengaluru, Karnataka</span>
-                            <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-[#8E8E93]" /> Est. 2019</span>
-                            <span className="flex items-center gap-1.5"><Settings className="w-3.5 h-3.5 text-[#8E8E93]" /> Fintech</span>
+                            <span className="flex items-center gap-1.5"><Globe className="w-3.5 h-3.5 text-[#8E8E93]" /> --</span>
+                            <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-[#8E8E93]" /> --</span>
+                            <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-[#8E8E93]" /> --</span>
+                            <span className="flex items-center gap-1.5"><Settings className="w-3.5 h-3.5 text-[#8E8E93]" /> --</span>
                         </div>
                     </div>
                 </div>
@@ -167,7 +167,7 @@ const JobListing: React.FC<JobListingProps> = ({
                         title="Feature coming Soon"
                         className="flex items-center gap-1.5 px-4 py-2 bg-[#EBFFEE] border border-[#34C759] rounded-md text-sm font-medium text-[#14AE5C] opacity-50 cursor-not-allowed"
                     >
-                        <Star className="w-4 h-4 fill-current" /> 4.2 / 5
+                        <Star className="w-4 h-4 fill-current" /> --
                     </button>
                     <button
                         onClick={() => setShowCreateJobRole(true)}
