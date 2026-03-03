@@ -90,6 +90,16 @@ export default function Companies() {
     const [allJobs, setAllJobs] = useState<Job[]>([]);
     const [jobsLoading, setJobsLoading] = useState(false);
 
+    // Track pending rehydration IDs from sessionStorage
+    const [pendingWsId] = useState<number | null>(() => {
+        const stored = sessionStorage.getItem('nxthyre_companies_wsId');
+        return stored ? Number(stored) : null;
+    });
+    const [pendingJobId] = useState<number | null>(() => {
+        const stored = sessionStorage.getItem('nxthyre_companies_jobId');
+        return stored ? Number(stored) : null;
+    });
+
     useEffect(() => {
         if (selectedJob && selectedWorkspace) {
             (window as any).__selectedWorkspaceName = selectedWorkspace.name;
@@ -102,6 +112,20 @@ export default function Companies() {
             delete (window as any).__selectedJobName;
         }
         window.dispatchEvent(new CustomEvent('header-update'));
+    }, [selectedWorkspace, selectedJob]);
+
+    // Persist workspace/job IDs to sessionStorage
+    useEffect(() => {
+        if (selectedWorkspace) {
+            sessionStorage.setItem('nxthyre_companies_wsId', String(selectedWorkspace.id));
+        } else {
+            sessionStorage.removeItem('nxthyre_companies_wsId');
+        }
+        if (selectedJob) {
+            sessionStorage.setItem('nxthyre_companies_jobId', String(selectedJob.id));
+        } else {
+            sessionStorage.removeItem('nxthyre_companies_jobId');
+        }
     }, [selectedWorkspace, selectedJob]);
 
     useEffect(() => {
@@ -174,6 +198,25 @@ export default function Companies() {
             fetchJobs();
         }
     }, [isAuthenticated]);
+
+    // Rehydrate the navigation stack from sessionStorage after data loads
+    useEffect(() => {
+        if (workspaces.length > 0 && pendingWsId && !selectedWorkspace) {
+            const ws = workspaces.find(w => w.id === pendingWsId);
+            if (ws) {
+                setSelectedWorkspace(ws);
+            }
+        }
+    }, [workspaces, pendingWsId]);
+
+    useEffect(() => {
+        if (allJobs.length > 0 && pendingJobId && selectedWorkspace && !selectedJob) {
+            const job = allJobs.find(j => j.id === pendingJobId);
+            if (job) {
+                setSelectedJob(job);
+            }
+        }
+    }, [allJobs, pendingJobId, selectedWorkspace]);
 
     const buildTableRows = useCallback((): CompanyTableRow[] => {
         if (workspaces.length === 0) return companyTableRows;

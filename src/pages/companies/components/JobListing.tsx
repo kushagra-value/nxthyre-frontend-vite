@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
     ChevronLeft,
     Globe,
@@ -17,7 +17,9 @@ import {
     LayoutGrid,
     DownloadCloud,
     Pencil,
-    Pause
+    Pause,
+    Share2,
+    ChevronRight,
 } from "lucide-react";
 import { MyWorkspace } from "../../../services/organizationService";
 import { Job } from "../../../services/jobPostService";
@@ -82,6 +84,40 @@ const JobListing: React.FC<JobListingProps> = ({
     setInfoWorkspaceNull,
     onJobSelect,
 }) => {
+    // ── Pagination state ──
+    const ITEMS_PER_PAGE = 10;
+    const [currentPage, setCurrentPage] = useState(1);
+    const totalPages = Math.max(1, Math.ceil(filteredWorkspaceJobs.length / ITEMS_PER_PAGE));
+    const paginatedJobs = filteredWorkspaceJobs.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
+    const startIdx = (currentPage - 1) * ITEMS_PER_PAGE + 1;
+    const endIdx = Math.min(currentPage * ITEMS_PER_PAGE, filteredWorkspaceJobs.length);
+
+    // ── Share pipeline handler ──
+    const handleSharePipeline = () => {
+        if (!selectedWorkspace?.id) return;
+        const publicPageUrl = `${window.location.origin}/public/workspaces/${selectedWorkspace.id}/applications`;
+        window.open(publicPageUrl, '_blank');
+    };
+
+    // ── Page number generation ──
+    const getPageNumbers = () => {
+        const pages: (number | '...')[] = [];
+        if (totalPages <= 5) {
+            for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+            pages.push(1);
+            if (currentPage > 3) pages.push('...');
+            const start = Math.max(2, currentPage - 1);
+            const end = Math.min(totalPages - 1, currentPage + 1);
+            for (let i = start; i <= end; i++) pages.push(i);
+            if (currentPage < totalPages - 2) pages.push('...');
+            pages.push(totalPages);
+        }
+        return pages;
+    };
 
     const formatSalaryToLPA = (salary: number | null | undefined): string => {
         if (salary == null || salary <= 0) return '??';
@@ -126,11 +162,12 @@ const JobListing: React.FC<JobListingProps> = ({
                     >
                         View info <Eye className="w-3.5 h-3.5" />
                     </button>
-                    <button className="flex items-center gap-1.5 px-4 py-2 bg-[#EBFFEE] border border-[#34C759] rounded-md text-sm font-medium text-[#14AE5C] hover:bg-[#D7FFE2] transition-colors">
+                    <button
+                        disabled
+                        title="Feature coming Soon"
+                        className="flex items-center gap-1.5 px-4 py-2 bg-[#EBFFEE] border border-[#34C759] rounded-md text-sm font-medium text-[#14AE5C] opacity-50 cursor-not-allowed"
+                    >
                         <Star className="w-4 h-4 fill-current" /> 4.2 / 5
-                    </button>
-                    <button className="flex items-center gap-1.5 px-4 py-2 bg-[#E7EDFF] border border-[#0F47F2] rounded-md text-sm font-medium text-[#0F47F2] hover:bg-[#D7E3FF] transition-colors">
-                        <Plus className="w-4 h-4" /> Edit
                     </button>
                     <button
                         onClick={() => setShowCreateJobRole(true)}
@@ -207,21 +244,35 @@ const JobListing: React.FC<JobListingProps> = ({
                     </div>
 
                     <div className="flex items-center gap-3">
-                        {/* UPDATED: Share Pipeline (was Grid View) */}
-                        <button className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] hover:bg-gray-50 transition-colors">
-                            <Route className="w-4 h-4" /> Share Pipeline
+                        {/* Share Pipeline - opens public applications page */}
+                        <button
+                            onClick={handleSharePipeline}
+                            className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] hover:bg-[#E7EDFF] hover:text-[#0F47F2] hover:border-[#0F47F2] transition-colors"
+                        >
+                            <Share2 className="w-4 h-4" /> Share Pipeline
                         </button>
 
-                        <button className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] hover:bg-gray-50 transition-colors">
+                        <button
+                            disabled
+                            title="Feature coming Soon"
+                            className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] opacity-50 cursor-not-allowed"
+                        >
                             <DownloadCloud className="w-4 h-4" /> Export CSV
                         </button>
 
-                        <button className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] hover:bg-gray-50 transition-colors">
-                            <Calendar className="w-4 h-4" /> 24 Feb, 2026
+                        <button
+                            disabled
+                            title="Feature coming Soon"
+                            className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] opacity-50 cursor-not-allowed"
+                        >
+                            <Calendar className="w-4 h-4" /> {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </button>
 
-                        {/* Grid View kept (matches image position) */}
-                        <button className="flex items-center gap-2 px-3 py-2 border border-[#AEAEB2] rounded-md text-xs text-[#AEAEB2] hover:bg-gray-50 transition-colors">
+                        <button
+                            disabled
+                            title="Feature coming Soon"
+                            className="flex items-center gap-2 px-3 py-2 border border-[#AEAEB2] rounded-md text-xs text-[#AEAEB2] opacity-50 cursor-not-allowed"
+                        >
                             <LayoutGrid className="w-4 h-4" /> Grid View
                         </button>
                     </div>
@@ -244,7 +295,7 @@ const JobListing: React.FC<JobListingProps> = ({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#D1D1D6]">
-                            {filteredWorkspaceJobs.map((job) => {
+                            {paginatedJobs.map((job) => {
                                 const daysOpen = "36"; // UPDATED: matches image (replace with real calc if needed)
                                 const noOfPositions = "3"; // UPDATED: matches image
 
@@ -348,7 +399,11 @@ const JobListing: React.FC<JobListingProps> = ({
                                                 >
                                                     <Pencil className="w-4 h-4 text-[#0F47F2]" />
                                                 </button>
-                                                <button className="w-6 h-6 bg-[#F2F2F7] border border-white rounded-[5px] flex items-center justify-center hover:bg-[#E5E7EB]">
+                                                <button
+                                                    disabled
+                                                    title="Feature coming Soon"
+                                                    className="w-6 h-6 bg-[#F2F2F7] border border-white rounded-[5px] flex items-center justify-center opacity-50 cursor-not-allowed"
+                                                >
                                                     <Pause className="w-[14px] h-[14px] text-[#4B5563]" />
                                                 </button>
                                             </div>
@@ -368,18 +423,49 @@ const JobListing: React.FC<JobListingProps> = ({
                     </table>
                 </div>
 
-                {/* Pagination - added to match design */}
+                {/* Pagination */}
                 <div className="px-5 py-4 flex items-center justify-between border-t border-[#D1D1D6]">
-                    <div className="text-[12px] text-[#6B7280]">Showing 1–{Math.min(10, filteredWorkspaceJobs.length)} of {filteredWorkspaceJobs.length} jobs</div>
-                    <div className="flex items-center gap-1">
-                        <button className="w-[30px] h-[30px] border border-[#E5E7EB] rounded-[8px] text-[#6B7280] text-sm">‹</button>
-                        <button className="w-[30px] h-[30px] bg-[#0F47F2] text-white text-sm font-medium rounded-[8px]">1</button>
-                        <button className="w-[30px] h-[30px] border border-[#E5E7EB] rounded-[8px] text-[#6B7280] text-sm">2</button>
-                        <button className="w-[30px] h-[30px] border border-[#E5E7EB] rounded-[8px] text-[#6B7280] text-sm">3</button>
-                        <button className="w-[30px] h-[30px] border border-[#E5E7EB] rounded-[8px] text-[#6B7280] text-sm">…</button>
-                        <button className="w-[30px] h-[30px] border border-[#E5E7EB] rounded-[8px] text-[#6B7280] text-sm">9</button>
-                        <button className="w-[30px] h-[30px] border border-[#E5E7EB] rounded-[8px] text-[#6B7280] text-sm">›</button>
+                    <div className="text-[12px] text-[#6B7280]">
+                        {filteredWorkspaceJobs.length > 0
+                            ? `Showing ${startIdx}–${endIdx} of ${filteredWorkspaceJobs.length} jobs`
+                            : 'No jobs to display'}
                     </div>
+                    {totalPages > 1 && (
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className={`w-[30px] h-[30px] border border-[#E5E7EB] rounded-[8px] text-sm flex items-center justify-center transition-colors ${currentPage === 1 ? 'text-[#D1D1D6] cursor-not-allowed' : 'text-[#6B7280] hover:bg-gray-50'
+                                    }`}
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            {getPageNumbers().map((page, idx) => (
+                                page === '...' ? (
+                                    <span key={`ellipsis-${idx}`} className="w-[30px] h-[30px] flex items-center justify-center text-[#6B7280] text-sm">…</span>
+                                ) : (
+                                    <button
+                                        key={page}
+                                        onClick={() => setCurrentPage(page as number)}
+                                        className={`w-[30px] h-[30px] text-sm font-medium rounded-[8px] transition-colors ${currentPage === page
+                                            ? 'bg-[#0F47F2] text-white'
+                                            : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        {page}
+                                    </button>
+                                )
+                            ))}
+                            <button
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                                className={`w-[30px] h-[30px] border border-[#E5E7EB] rounded-[8px] text-sm flex items-center justify-center transition-colors ${currentPage === totalPages ? 'text-[#D1D1D6] cursor-not-allowed' : 'text-[#6B7280] hover:bg-gray-50'
+                                    }`}
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </div>
+                    )}
                 </div>
 
             </div>

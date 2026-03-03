@@ -51,7 +51,9 @@ function MainApp() {
   } = useAuth();
   const { } = useAuthContext();
 
-  const [currentPage, setCurrentPage] = useState("dashboard");
+  const [currentPage, setCurrentPage] = useState(() => {
+    return sessionStorage.getItem('nxthyre_activeTab') || 'dashboard';
+  });
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [, setAuthFlow] = useState("login");
@@ -83,6 +85,11 @@ function MainApp() {
     }
   }, [isAuthenticated, userStatus, firebaseUser]);
 
+  // Persist active tab to sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem('nxthyre_activeTab', currentPage);
+  }, [currentPage]);
+
   const handleAuthSuccess = (user: any) => {
     setCurrentUser(user);
     setShowAuthApp(false);
@@ -107,6 +114,9 @@ function MainApp() {
       sessionStorage.removeItem("hasSelectedJob");
       sessionStorage.removeItem("activeCategoryId");
       sessionStorage.removeItem("showPipelineStages");
+      sessionStorage.removeItem("nxthyre_activeTab");
+      sessionStorage.removeItem("nxthyre_companies_wsId");
+      sessionStorage.removeItem("nxthyre_companies_jobId");
       showToast.success("Successfully logged out");
       navigate("/");
     } catch (error) {
