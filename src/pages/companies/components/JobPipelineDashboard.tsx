@@ -25,6 +25,7 @@ interface Stage {
 interface CandidateListItem {
   id: number;
   candidate: {
+    job_score: any;
     id: string;
     full_name: string;
     avatar: string;
@@ -408,7 +409,7 @@ export default function JobPipelineDashboard({
       {/* ═══════════════════════════════════════════════════════
           Title Bar — Job Title, Status, JD-ID, View JD, Edit, + Candidate
          ═══════════════════════════════════════════════════════ */}
-      <div className="mx-8 mt-6 bg-white border border-[#C7C7CC] rounded-xl px-6 py-5">
+      <div className="mx-8 mt-6 bg-white rounded-xl px-6 py-5">
         <div className="flex items-center justify-between">
           {/* Left: title + status + id */}
           <div className="flex items-center gap-3">
@@ -446,7 +447,8 @@ export default function JobPipelineDashboard({
             </button>
 
             {/* View JD */}
-            <button className="flex items-center gap-2 px-4 py-2 border border-[#D1D1D6] rounded-lg text-sm text-[#757575] hover:bg-[#F9FAFB] transition-colors">
+            <button
+              className="flex items-center gap-2 px-4 py-2 border border-[#D1D1D6] rounded-lg text-sm text-[#757575] hover:bg-[#F9FAFB] transition-colors">
               View JD <span className="text-[#AEAEB2]">ⓘ</span>
             </button>
 
@@ -467,85 +469,88 @@ export default function JobPipelineDashboard({
             </button>
           </div>
         </div>
-      </div>
 
-      {/* ═══════════════════════════════════════════════════════
+        {/* ═══════════════════════════════════════════════════════
           Job Metadata Card (collapsible)
          ═══════════════════════════════════════════════════════ */}
-      {isMetadataExpanded && (
-        <div className="mx-8 mt-4 bg-white border border-[#C7C7CC] rounded-xl p-6 transition-all">
-          {loadingJob ? (
-            <div className="animate-pulse space-y-4">
-              <div className="h-4 bg-gray-200 rounded w-1/3" />
-              <div className="grid grid-cols-6 gap-4">
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <div key={i} className="h-4 bg-gray-200 rounded" />
-                ))}
-              </div>
-            </div>
-          ) : jobDetails ? (
-            <div className="grid grid-cols-6 gap-x-8 gap-y-6 text-sm">
-              <div>
-                <div className="text-[#8E8E93] text-xs font-medium">Year of Experience</div>
-                <div className="font-medium text-[#4B5563] mt-1">
-                  {jobDetails.experience_min_years || "--"} - {jobDetails.experience_max_years || "--"} years
+        {isMetadataExpanded && (
+          <div className="transition-all">
+            {loadingJob ? (
+              <div className="animate-pulse space-y-4">
+                <div className="h-4 bg-gray-200 rounded w-1/3" />
+                <div className="grid grid-cols-6 gap-4">
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <div key={i} className="h-4 bg-gray-200 rounded" />
+                  ))}
                 </div>
               </div>
-              <div>
-                <div className="text-[#8E8E93] text-xs font-medium">Location</div>
-                <div className="font-medium text-[#4B5563] mt-1">{jobDetails.location?.join(", ") || "--"}</div>
-              </div>
-              <div>
-                <div className="text-[#8E8E93] text-xs font-medium">Salary - CTC</div>
-                <div className="font-medium text-[#4B5563] mt-1">{formatSalary(jobDetails.salary_min, jobDetails.salary_max)}</div>
-              </div>
-              <div>
-                <div className="text-[#8E8E93] text-xs font-medium">Work Approach</div>
-                <div className="font-medium text-[#4B5563] mt-1">{workApproachLabel[jobDetails.work_approach] || "--"}</div>
-              </div>
-              <div>
-                <div className="text-[#8E8E93] text-xs font-medium">No of Position</div>
-                <div className="font-medium text-[#4B5563] mt-1">{jobDetails.count || "--"}</div>
-              </div>
-              <div>
-                <div className="text-[#8E8E93] text-xs font-medium">Education Qualifications</div>
-                <div className="font-medium text-[#4B5563] mt-1">{jobDetails.seniority || "--"}</div>
-              </div>
+            ) : jobDetails ? (
+              <div className="grid grid-cols-6 gap-x-8 gap-y-6 text-sm">
+                <div>
+                  <div className="text-[#8E8E93] text-xs font-medium">Year of Experience</div>
+                  <div className="font-medium text-[#4B5563] mt-1">
+                    {jobDetails.experience_min_years || "--"} - {jobDetails.experience_max_years || "--"} years
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[#8E8E93] text-xs font-medium">Location</div>
+                  <div className="font-medium text-[#4B5563] mt-1">{jobDetails.location?.join(", ") || "--"}</div>
+                </div>
+                <div>
+                  <div className="text-[#8E8E93] text-xs font-medium">Salary - CTC</div>
+                  <div className="font-medium text-[#4B5563] mt-1">{formatSalary(jobDetails.salary_min, jobDetails.salary_max)}</div>
+                </div>
+                <div>
+                  <div className="text-[#8E8E93] text-xs font-medium">Work Approach</div>
+                  <div className="font-medium text-[#4B5563] mt-1">{workApproachLabel[jobDetails.work_approach] || "--"}</div>
+                </div>
+                <div>
+                  <div className="text-[#8E8E93] text-xs font-medium">No of Position</div>
+                  <div className="font-medium text-[#4B5563] mt-1">{jobDetails.count || "--"}</div>
+                </div>
+                <div>
+                  <div className="text-[#8E8E93] text-xs font-medium">Education Qualifications</div>
+                  <div className="font-medium text-[#4B5563] mt-1">{jobDetails.seniority || "--"}</div>
+                </div>
 
-              {/* Second row */}
-              <div>
-                <div className="text-[#8E8E93] text-xs font-medium">Open Date</div>
-                <div className="font-medium text-[#4B5563] mt-1">{formatDate(jobDetails.created_at)}</div>
-              </div>
-              <div>
-                <div className="text-[#8E8E93] text-xs font-medium">Last Active Date</div>
-                <div className="font-medium text-[#4B5563] mt-1">{formatDate(jobDetails.updated_at)}</div>
-              </div>
-              <div>
-                <div className="text-[#8E8E93] text-xs font-medium">Shortlisted</div>
-                <div className="font-medium text-[#4B5563] mt-1">{jobDetails.shortlisted_candidate_count ?? "--"}</div>
-              </div>
-              <div>
-                <div className="text-[#8E8E93] text-xs font-medium">Hired</div>
-                <div className="font-medium text-[#4B5563] mt-1">--</div>
-              </div>
-              <div className="col-span-2">
-                <div className="text-[#8E8E93] text-xs font-medium mb-1.5">Skills</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {(jobDetails.skills && jobDetails.skills.length > 0)
-                    ? jobDetails.skills.map((s) => (
-                      <span key={s} className="bg-[#F2F2F7] text-[#4B5563] text-[10px] px-2.5 py-0.5 rounded-full">{s}</span>
-                    ))
-                    : <span className="text-[#8E8E93] text-xs">--</span>
-                  }
+                {/* Second row */}
+                <div>
+                  <div className="text-[#8E8E93] text-xs font-medium">Open Date</div>
+                  <div className="font-medium text-[#4B5563] mt-1">{formatDate(jobDetails.created_at)}</div>
+                </div>
+                <div>
+                  <div className="text-[#8E8E93] text-xs font-medium">Last Active Date</div>
+                  <div className="font-medium text-[#4B5563] mt-1">{formatDate(jobDetails.updated_at)}</div>
+                </div>
+                <div>
+                  <div className="text-[#8E8E93] text-xs font-medium">Shortlisted</div>
+                  <div className="font-medium text-[#4B5563] mt-1">{jobDetails.shortlisted_candidate_count ?? "--"}</div>
+                </div>
+                <div>
+                  <div className="text-[#8E8E93] text-xs font-medium">Hired</div>
+                  <div className="font-medium text-[#4B5563] mt-1">--</div>
+                </div>
+                <div className="col-span-2">
+                  <div className="text-[#8E8E93] text-xs font-medium mb-1.5">Skills</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(jobDetails.skills && jobDetails.skills.length > 0)
+                      ? jobDetails.skills.map((s) => (
+                        <span key={s} className="bg-[#F2F2F7] text-[#4B5563] text-[10px] px-2.5 py-0.5 rounded-full">{s}</span>
+                      ))
+                      : <span className="text-[#8E8E93] text-xs">--</span>
+                    }
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="text-center text-sm text-[#8E8E93] py-4">Failed to load job details</div>
-          )}
-        </div>
-      )}
+            ) : (
+              <div className="text-center text-sm text-[#8E8E93] py-4">Failed to load job details</div>
+            )}
+          </div>
+        )}
+
+      </div>
+
+
 
       {/* ═══════════════════════════════════════════════════════
           Pipeline / Naukbot / Inbound Tabs
@@ -577,7 +582,7 @@ export default function JobPipelineDashboard({
       {/* ═══════════════════════════════════════════════════════
           Stage Filter Pills
          ═══════════════════════════════════════════════════════ */}
-      <div className="mx-8 mt-4 flex items-center justify-between">
+      <div className="mx-8 mt-4 flex items-center justify-between bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setActiveStageSlug(null)}
@@ -617,7 +622,7 @@ export default function JobPipelineDashboard({
       {/* ═══════════════════════════════════════════════════════
           Toolbar: Search + Actions
          ═══════════════════════════════════════════════════════ */}
-      <div className="mx-8 mt-4 flex flex-wrap items-center justify-between bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
+      <div className="mx-8 flex flex-wrap items-center justify-between bg-white p-4 border border-b-0 border-[#E5E7EB]">
         <div className="flex items-center gap-3">
           <div className="relative w-[240px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
@@ -712,7 +717,7 @@ export default function JobPipelineDashboard({
                           <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#E5E7EB" strokeWidth="3.5" />
                           <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#00C8B3" strokeWidth="3.5" strokeDasharray="84, 100" />
                         </svg>
-                        <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[#4B5563]">84%</div>
+                        <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[#4B5563]">{cand?.job_score?.candidate_match_score.score ? `${cand.job_score.candidate_match_score.score}` : "--%"}</div>
                       </div>
                     </td>
                     <td className="px-6 py-5 text-sm text-[#8E8E93]">{cand.location || "--"}</td>
