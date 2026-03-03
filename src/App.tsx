@@ -37,7 +37,7 @@ import HeaderBar from "./components/Header";
 import Dashboard from "./pages/Dashboard";
 import Interviews from "./pages/Interviews";
 import CandidatesPool from "./pages/CandidatesPool";
-import JobPipeline from "./pages/JobPipeline";
+import JobPipeline from "./pages/companies/components/JobPipeline";
 import Companies from "./pages/Companies";
 
 function MainApp() {

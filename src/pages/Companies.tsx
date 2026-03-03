@@ -27,7 +27,7 @@ import PendingRequestsModal from "./companies/components/PendingRequestsModal";
 import { showToast } from "../utils/toast";
 import CompanyInfoDrawer from "./companies/components/CompanyInfoDrawer";
 import JobListing from "./companies/components/JobListing";
-import JobPipeline from "./JobPipeline";
+import JobPipeline from "./companies/components/JobPipeline";
 import {
     companyStatCards,
     companyTableRows,
