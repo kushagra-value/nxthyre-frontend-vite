@@ -114,14 +114,6 @@ const CompanyInfoTab: React.FC<CompanyInfoTabProps> = ({ data, onBack, onEdit, o
                             {overallRating > 0 ? `${overallRating} / 5` : PH}
                         </span>
                     </div>
-                    <button onClick={onEdit} className="flex items-center gap-[5px] px-[10px] h-[37px] rounded-[5px] hover:opacity-90 transition-opacity" style={{ background: '#E7EDFF', border: '1px solid #0F47F2' }}>
-                        <Edit className="w-4 h-4 text-[#0F47F2]" />
-                        <span style={{ fontSize: '14px', lineHeight: '17px', fontWeight: 400 }} className="text-[#0F47F2]">Edit</span>
-                    </button>
-                    <button onClick={onCreateJob} className="flex items-center gap-[5px] px-[10px] h-[37px] rounded-[5px] bg-[#0F47F2] hover:opacity-90 transition-opacity">
-                        <Plus className="w-4 h-4 text-white" />
-                        <span style={{ fontSize: '14px', lineHeight: '17px', fontWeight: 400 }} className="text-white">Create Job</span>
-                    </button>
                 </div>
             </div>
 

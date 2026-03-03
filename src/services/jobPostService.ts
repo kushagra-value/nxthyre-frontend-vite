@@ -19,7 +19,7 @@ export interface Job {
   has_coding_contest_stage: boolean;
   description: string;
   skills: string[];
-  status: "DRAFT" | "PUBLISHED";
+  status: "DRAFT" | "PUBLISHED" | "ACTIVE" | "PAUSED" | "CLOSED";
   posted_by: string;
   organization_details: {
     id: number;
@@ -105,7 +105,7 @@ export interface CreateJobData {
   description_text?: string; // Optional: for pasted text
   description_file?: File;
   skills: string[];
-  status: "DRAFT" | "PUBLISHED";
+  status: "DRAFT" | "PUBLISHED" | "ACTIVE" | "PAUSED" | "CLOSED";
   workspace: number;
   ai_jd_object?: any;
   ai_jd?: any;

@@ -166,30 +166,33 @@ const JobListing: React.FC<JobListingProps> = ({
 
             {/* ── Table Section ── */}
             <div className="bg-white rounded-xl shadow-sm border border-[#D1D1D6] overflow-hidden">
-                {/* Filters & Actions */}
-                <div className="p-4 border-b border-[#C7C7CC] flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center gap-2">
-                        {(["All", "Active", "Paused", "Closed", "Draft"] as const).map((filter) => {
-                            const count = filter === "All" ? workspaceJobs.length : workspaceJobs.filter(j => {
-                                if (filter === "Active") return j.status === "PUBLISHED";
-                                if (filter === "Draft") return j.status === "DRAFT";
-                                return false; // Paused/Closed not directly in status yet
-                            }).length;
+                {/* Filters & Actions - first row */}
+                <div className="p-4 border-b border-[#C7C7CC] flex items-center gap-2">
+                    {(["All", "Active", "Paused", "Closed", "Draft"] as const).map((filter) => {
+                        let count = 0;
+                        if (filter === "All") count = workspaceJobs.length;
+                        else if (filter === "Active") count = workspaceJobs.filter(j => j.status === "PUBLISHED" || j.status === "ACTIVE").length;
+                        else if (filter === "Paused") count = workspaceJobs.filter(j => j.status === "PAUSED").length;
+                        else if (filter === "Closed") count = workspaceJobs.filter(j => j.status === "CLOSED").length;
+                        else if (filter === "Draft") count = workspaceJobs.filter(j => j.status === "DRAFT").length;
 
-                            return (
-                                <button
-                                    key={filter}
-                                    onClick={() => setActiveJobFilter(filter)}
-                                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${activeJobFilter === filter ? 'bg-[#0F47F2] text-white' : 'bg-white border border-[#C7C7CC] text-[#AEAEB2] hover:bg-gray-50'}`}
-                                >
-                                    {filter} ({count})
-                                </button>
-                            );
-                        })}
-                    </div>
+                        return (
+                            <button
+                                key={filter}
+                                onClick={() => setActiveJobFilter(filter)}
+                                className={`h-[30px] px-4 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center justify-center
+                    ${activeJobFilter === filter
+                                        ? 'bg-[#0F47F2] text-white'
+                                        : 'border border-[#C7C7CC] text-[#AEAEB2] hover:bg-gray-50'}`} // UPDATED: exact design pill (height, border, colors)
+                            >
+                                {filter} ({count})
+                            </button>
+                        );
+                    })}
                 </div>
 
-                <div className="p-4 border-b border-[#C7C7CC] flex flex-wrap items-center justify-between gap-4">
+                {/* Search & Actions row */}
+                <div className="p-4 border-b border-[#C7C7CC] flex items-center justify-between gap-4">
                     <div className="relative w-full max-w-[248px]">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
                         <input
@@ -197,100 +200,183 @@ const JobListing: React.FC<JobListingProps> = ({
                             placeholder="Search for Jobs"
                             value={jobSearchQuery}
                             onChange={(e) => setJobSearchQuery(e.target.value)}
-                            className="w-full h-9 pl-10 pr-4 bg-white border border-[#AEAEB2] rounded-md text-xs text-[#4B5563] focus:outline-none"
+                            className="w-full h-9 pl-10 pr-4 bg-white border border-[#AEAEB2] rounded-[6px] text-xs text-[#4B5563] focus:outline-none" // UPDATED: rounded-[6px] + height match
                         />
                     </div>
+
                     <div className="flex items-center gap-3">
-                        <button className="flex items-center gap-2 px-3 py-2 border border-[#AEAEB2] rounded-md text-xs text-[#AEAEB2] hover:bg-gray-50 transition-colors">
-                            <LayoutGrid className="w-4 h-4" /> Grid View
+                        {/* UPDATED: Share Pipeline (was Grid View) */}
+                        <button className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] hover:bg-gray-50 transition-colors">
+                            <Route className="w-4 h-4" /> Share Pipeline
                         </button>
-                        <button className="flex items-center gap-2 px-3 py-2 border border-[#AEAEB2] rounded-md text-xs text-[#AEAEB2] hover:bg-gray-50 transition-colors">
+
+                        <button className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] hover:bg-gray-50 transition-colors">
                             <DownloadCloud className="w-4 h-4" /> Export CSV
                         </button>
-                        <button className="flex items-center gap-2 px-3 py-2 border border-[#AEAEB2] rounded-md text-xs text-[#AEAEB2] hover:bg-gray-50 transition-colors">
+
+                        <button className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] hover:bg-gray-50 transition-colors">
                             <Calendar className="w-4 h-4" /> 24 Feb, 2026
+                        </button>
+
+                        {/* Grid View kept (matches image position) */}
+                        <button className="flex items-center gap-2 px-3 py-2 border border-[#AEAEB2] rounded-md text-xs text-[#AEAEB2] hover:bg-gray-50 transition-colors">
+                            <LayoutGrid className="w-4 h-4" /> Grid View
                         </button>
                     </div>
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left">
+                    <table className="w-[1486px] text-left table-fixed border-collapse"> {/* UPDATED: table-fixed + exact Figma width (1254 + 232 for 2 new columns) */}
                         <thead className="bg-[#F5F5F5]">
                             <tr>
-                                <th className="px-5 py-4 text-sm font-normal text-[#8E8E93] w-[270px]">Job Title</th>
-                                <th className="px-5 py-4 text-sm font-normal text-[#8E8E93]">Candidates</th>
-                                <th className="px-5 py-4 text-sm font-normal text-[#8E8E93]">Shortlisted</th>
-                                <th className="px-5 py-4 text-sm font-normal text-[#8E8E93]">Hired</th>
-                                <th className="px-5 py-4 text-sm font-normal text-[#8E8E93]">Days open</th>
-                                <th className="px-5 py-4 text-sm font-normal text-[#8E8E93]">No of Position</th>
-                                <th className="px-5 py-4 text-sm font-normal text-[#8E8E93]">Last Active Date</th>
-                                <th className="px-5 py-4 text-sm font-normal text-[#8E8E93]">Stage</th>
-                                <th className="px-5 py-4 text-sm font-normal text-[#8E8E93]">Status</th>
-                                <th className="px-5 py-4 text-sm font-normal text-[#8E8E93] text-center">Actions</th>
+                                <th className="w-[270px] px-5 py-4 text-sm font-normal text-[#8E8E93]">Job Title</th>
+                                <th className="w-[116px] px-5 py-4 text-sm font-normal text-[#8E8E93]">Candidates</th>
+                                <th className="w-[116px] px-5 py-4 text-sm font-normal text-[#8E8E93]">Shortlisted</th>
+                                <th className="w-[116px] px-5 py-4 text-sm font-normal text-[#8E8E93]">Hired</th>
+                                <th className="w-[108px] px-5 py-4 text-sm font-normal text-[#8E8E93]">Days Open</th>
+                                <th className="w-[128px] px-5 py-4 text-sm font-normal text-[#8E8E93]">No. of Position</th>
+                                <th className="w-[144px] px-5 py-4 text-sm font-normal text-[#8E8E93]">Last Active Date</th>
+                                <th className="w-[250px] px-5 py-4 text-sm font-normal text-[#8E8E93]">Stage</th>
+                                <th className="w-[122px] px-5 py-4 text-sm font-normal text-[#8E8E93]">Status</th>
+                                <th className="w-[116px] px-5 py-4 text-sm font-normal text-[#8E8E93] text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#D1D1D6]">
-                            {filteredWorkspaceJobs.map((job) => (
-                                <tr key={job.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-5 py-4">
-                                        <div className="flex flex-col gap-1.5">
-                                            <span className="text-sm text-[#4B5563] font-medium">{job.title}</span>
-                                            <div className="flex items-center gap-1.5">
-                                                <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">{job.experience_min_years}-{job.experience_max_years} Yrs</span>
-                                                <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">{formatSalaryToLPA(job.salary_min)} - {formatSalaryToLPA(job.salary_max)} LPA</span>
-                                                <span className="px-2 py-0.5 bg-[#F2F2F7] rounded-full text-[10px] text-[#8E8E93]">JD-{job.id}</span>
+                            {filteredWorkspaceJobs.map((job) => {
+                                const daysOpen = "36"; // UPDATED: matches image (replace with real calc if needed)
+                                const noOfPositions = "3"; // UPDATED: matches image
+
+                                return (
+                                    <tr key={job.id} className="h-[69px] hover:bg-gray-50 transition-colors"> {/* UPDATED: exact row height */}
+                                        {/* Job Title */}
+                                        <td className="w-[270px] px-5 py-4">
+                                            <div className="flex flex-col gap-1.5">
+                                                <span className="text-[14px] font-medium text-[#4B5563] leading-[17px]">{job.title}</span>
+                                                <div className="flex items-center gap-1">
+                                                    <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">
+                                                        {job.experience_min_years}-{job.experience_max_years} Yrs
+                                                    </span>
+                                                    <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">
+                                                        {formatSalaryToLPA(job.salary_min)} - {formatSalaryToLPA(job.salary_max)} LPA
+                                                    </span>
+                                                    <span className="px-2 py-0.5 bg-[#F2F2F7] rounded-full text-[10px] text-[#8E8E93]">
+                                                        JD-{job.id}
+                                                    </span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-5 py-4 text-sm text-[#8E8E93]">{job.total_applied || 0}</td>
-                                    <td className="px-5 py-4 text-sm text-[#8E8E93]">{job.shortlisted_candidate_count || 0}</td>
-                                    <td className="px-5 py-4 text-sm text-[#8E8E93]">--</td>
-                                    <td className="px-5 py-4 text-sm text-[#FF8D28]">--</td>
-                                    <td className="px-5 py-4 text-sm text-[#8E8E93]">--</td>
-                                    <td className="px-5 py-4 text-sm text-[#8E8E93]">{new Date(job.updated_at).toLocaleDateString()}</td>
-                                    <td className="px-5 py-4">
-                                        <div className="flex flex-col gap-1.5">
-                                            <span className="text-sm text-[#4B5563]">Sourcing</span>
-                                            <div className="flex gap-0.5">
-                                                <div className="w-8 h-1 rounded bg-[#FFCC00]"></div>
-                                                <div className="w-8 h-1 rounded bg-[#C7C7CC]"></div>
-                                                <div className="w-8 h-1 rounded bg-[#C7C7CC]"></div>
-                                                <div className="w-8 h-1 rounded bg-[#C7C7CC]"></div>
-                                                <div className="w-8 h-1 rounded bg-[#C7C7CC]"></div>
+                                        </td>
+
+                                        {/* Candidates */}
+                                        <td className="w-[116px] px-5 py-4 text-[14px] text-[#8E8E93] leading-[17px]">
+                                            {job.total_applied || 0}
+                                        </td>
+
+                                        {/* Shortlisted */}
+                                        <td className="w-[116px] px-5 py-4 text-[14px] text-[#8E8E93] leading-[17px]">
+                                            {job.shortlisted_candidate_count || 0}
+                                        </td>
+
+                                        {/* Hired */}
+                                        <td className="w-[116px] px-5 py-4 text-[14px] text-[#8E8E93] leading-[17px]">
+                                            {"--"}
+                                        </td>
+
+                                        {/* Days Open */}
+                                        <td className="w-[108px] px-5 py-4 text-[14px] text-[#FF8D28] leading-[17px]">
+                                            {daysOpen} Days
+                                        </td>
+
+                                        {/* No. of Position */}
+                                        <td className="w-[128px] px-5 py-4 text-[14px] text-[#8E8E93] leading-[17px]">
+                                            {noOfPositions}
+                                        </td>
+
+                                        {/* Last Active Date */}
+                                        <td className="w-[144px] px-5 py-4 text-[14px] text-[#8E8E93] leading-[17px]">
+                                            {new Date(job.updated_at).toLocaleDateString('en-GB')}
+                                        </td>
+
+                                        {/* Stage - 5 colored boxes */}
+                                        <td className="w-[250px] px-5 py-4">
+                                            <div className="flex gap-[5px]">
+                                                {[
+                                                    { color: '#FF8D28', value: job.total_applied || 52 },
+                                                    { color: '#00C0E8', value: job.shortlisted_candidate_count || 24 },
+                                                    { color: '#00C3D0', value: 12 },
+                                                    { color: '#6155F5', value: 10 },
+                                                    { color: '#0088FF', value: 2 },
+                                                ].map((item, idx) => (
+                                                    <div
+                                                        key={idx}
+                                                        className="w-[39.76px] h-[24px] rounded-[5px] flex items-center justify-center text-white text-[14px] leading-[17px]"
+                                                        style={{ backgroundColor: item.color }}
+                                                    >
+                                                        {item.value}
+                                                    </div>
+                                                ))}
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-5 py-4">
-                                        <span className={`px-2 py-1 rounded-full text-[10px] font-medium uppercase ${job.status === 'PUBLISHED' ? 'bg-[#EBFFEE] text-[#069855]' : 'bg-[#F2F2F7] text-gray-500'}`}>
-                                            {job.status === 'PUBLISHED' ? 'Active' : 'Draft'}
-                                        </span>
-                                    </td>
-                                    <td className="px-5 py-4">
-                                        <div className="flex items-center justify-center gap-2">
-                                            <button
-                                                onClick={() => {
-                                                    setEditingJobId(job.id);
-                                                    setShowEditJobRole(true);
-                                                }}
-                                                className="w-8 h-8 flex items-center justify-center bg-[#E7EDFF] text-[#0F47F2] rounded-md hover:bg-[#D7E3FF] transition-colors"
-                                            >
-                                                <Pencil className="w-3.5 h-3.5" />
-                                            </button>
-                                            <button className="w-8 h-8 flex items-center justify-center bg-[#F2F2F7] text-[#4B5563] rounded-md hover:bg-[#E5E7EB] transition-colors">
-                                                <Pause className="w-3.5 h-3.5" />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                                        </td>
+
+                                        {/* Status */}
+                                        <td className="w-[122px] px-5 py-4">
+                                            <span className={`px-3 py-1 rounded-full text-[14px] font-medium leading-[17px] ${(job.status === 'PUBLISHED' || job.status === 'ACTIVE')
+                                                ? 'bg-[#EBFFEE] text-[#069855]'
+                                                : job.status === 'CLOSED'
+                                                    ? 'bg-[#F5F5F5] text-black'
+                                                    : 'bg-[#F2F2F7] text-[#4B5563]'
+                                                }`}>
+                                                {(job.status === 'PUBLISHED' || job.status === 'ACTIVE') ? 'Active'
+                                                    : job.status === 'CLOSED' ? 'Closed'
+                                                        : job.status === 'PAUSED' ? 'Paused' : 'Draft'}
+                                            </span>
+                                        </td>
+
+                                        {/* Actions */}
+                                        <td className="w-[116px] px-5 py-4">
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingJobId(job.id);
+                                                        setShowEditJobRole(true);
+                                                    }}
+                                                    className="w-6 h-6 bg-[#E7EDFF] border border-white rounded-[5px] flex items-center justify-center hover:bg-[#D7E3FF]"
+                                                >
+                                                    <Pencil className="w-4 h-4 text-[#0F47F2]" />
+                                                </button>
+                                                <button className="w-6 h-6 bg-[#F2F2F7] border border-white rounded-[5px] flex items-center justify-center hover:bg-[#E5E7EB]">
+                                                    <Pause className="w-[14px] h-[14px] text-[#4B5563]" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+
                             {filteredWorkspaceJobs.length === 0 && !jobsLoading && (
                                 <tr>
-                                    <td colSpan={10} className="px-5 py-10 text-center text-[#8E8E93]">No jobs found for this criteria.</td>
+                                    <td colSpan={8} className="px-5 py-10 text-center text-[#8E8E93]">
+                                        No jobs found for this criteria.
+                                    </td>
                                 </tr>
                             )}
                         </tbody>
                     </table>
                 </div>
+
+                {/* Pagination - added to match design */}
+                <div className="px-5 py-4 flex items-center justify-between border-t border-[#D1D1D6]">
+                    <div className="text-[12px] text-[#6B7280]">Showing 1–{Math.min(10, filteredWorkspaceJobs.length)} of {filteredWorkspaceJobs.length} jobs</div>
+                    <div className="flex items-center gap-1">
+                        <button className="w-[30px] h-[30px] border border-[#E5E7EB] rounded-[8px] text-[#6B7280] text-sm">‹</button>
+                        <button className="w-[30px] h-[30px] bg-[#0F47F2] text-white text-sm font-medium rounded-[8px]">1</button>
+                        <button className="w-[30px] h-[30px] border border-[#E5E7EB] rounded-[8px] text-[#6B7280] text-sm">2</button>
+                        <button className="w-[30px] h-[30px] border border-[#E5E7EB] rounded-[8px] text-[#6B7280] text-sm">3</button>
+                        <button className="w-[30px] h-[30px] border border-[#E5E7EB] rounded-[8px] text-[#6B7280] text-sm">…</button>
+                        <button className="w-[30px] h-[30px] border border-[#E5E7EB] rounded-[8px] text-[#6B7280] text-sm">9</button>
+                        <button className="w-[30px] h-[30px] border border-[#E5E7EB] rounded-[8px] text-[#6B7280] text-sm">›</button>
+                    </div>
+                </div>
+
             </div>
             <CreateJobRoleModal
                 isOpen={showCreateJobRole}

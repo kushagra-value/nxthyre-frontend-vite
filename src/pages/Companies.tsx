@@ -263,10 +263,17 @@ export default function Companies() {
 
     const filteredWorkspaceJobs = workspaceJobs.filter(j => {
         const matchesSearch = j.title.toLowerCase().includes(jobSearchQuery.toLowerCase());
-        const matchesFilter = activeJobFilter === "All"
-            ? true
-            : j.status === (activeJobFilter === "Draft" ? "DRAFT" : "PUBLISHED");
-        return matchesSearch && matchesFilter;
+        let matchesStatus = true;
+        if (activeJobFilter === "Active") {
+            matchesStatus = j.status === "PUBLISHED" || j.status === "ACTIVE";
+        } else if (activeJobFilter === "Paused") {
+            matchesStatus = j.status === "PAUSED";
+        } else if (activeJobFilter === "Closed") {
+            matchesStatus = j.status === "CLOSED";
+        } else if (activeJobFilter === "Draft") {
+            matchesStatus = j.status === "DRAFT";
+        }
+        return matchesSearch && matchesStatus;
     });
 
     if (selectedWorkspace) {
