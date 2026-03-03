@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+
 import {
-  Search, SlidersHorizontal, Share2, Download, Calendar, Grid3X3,
+  Search, SlidersHorizontal, Share2, Download, Calendar, Grid3X3, List,
   ChevronLeft, ChevronRight, Pencil, X,
   Maximize2, Minimize2, ArrowLeft, Briefcase, LocateIcon, FileSearch,
   Target, Layers, BookOpen, ListChecks, Zap, Clock,
@@ -192,7 +192,7 @@ const statusColor = (status?: string): { bg: string; dot: string; text: string }
 export default function JobPipelineDashboard({
   jobId, workspaceId, workspaces, onJobUpdated, onSelectCandidate,
 }: JobPipelineDashboardProps) {
-  const navigate = useNavigate();
+
 
   // ── Job details
   const [jobDetails, setJobDetails] = useState<Job | null>(null);
@@ -234,6 +234,9 @@ export default function JobPipelineDashboard({
 
   // ── Active tab
   const [activeTab, setActiveTab] = useState<"pipeline" | "naukbot" | "inbound">("pipeline");
+
+  // ── Kanban View State
+  const [isKanbanView, setIsKanbanView] = useState(false);
 
   // ── Requisition Info Modal
   const [showRequisitionInfoModal, setShowRequisitionInfoModal] = useState(false);
@@ -817,10 +820,10 @@ export default function JobPipelineDashboard({
         </div>
 
         <button
-          onClick={() => jobId && navigate(`/pipelines/${jobId}`)}
+          onClick={() => setIsKanbanView(!isKanbanView)}
           className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs"
         >
-          <Grid3X3 className="w-4 h-4" /> Kanban
+          {isKanbanView ? <><List className="w-4 h-4" /> Table View</> : <><Grid3X3 className="w-4 h-4" /> Kanban</>}
         </button>
       </div>
 
@@ -870,182 +873,248 @@ export default function JobPipelineDashboard({
       </div>
 
       {/* ═══════════════════════════════════════════════════════
-          Candidates Table
+          Content View (Table or Kanban)
          ═══════════════════════════════════════════════════════ */}
-      <div className="mx-8 bg-white border border-[#E5E7EB] rounded-b-2xl overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-            <tr>
-              <th className="w-10 px-6 py-4">
-                <input type="checkbox" className="w-4 h-4 accent-[#0F47F2]" checked={selectAll} onChange={handleSelectAll} />
-              </th>
-              {["Name", "AI Score", "Location", "Exp", "CTC", "Expected CTC", "Notice Period", "Stage", "Attention"].map((h) => (
-                <th key={h} className="text-left px-6 py-4 text-xs font-bold uppercase tracking-widest text-[#AEAEB2]">{h}</th>
-              ))}
-              <th className="w-24 px-6 py-4 text-xs font-bold uppercase tracking-widest text-[#AEAEB2] text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#F3F5F7]">
-            {loadingCandidates ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <tr key={`skel-${i}`} className="animate-pulse">
-                  <td className="px-6 py-5"><div className="w-4 h-4 bg-gray-200 rounded" /></td>
-                  <td className="px-6 py-5"><div className="space-y-2"><div className="h-4 bg-gray-200 rounded w-32" /><div className="h-3 bg-gray-200 rounded w-40" /></div></td>
-                  <td className="px-6 py-5"><div className="w-9 h-9 bg-gray-200 rounded-full" /></td>
-                  <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-20" /></td>
-                  <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
-                  <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
-                  <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-20" /></td>
-                  <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
-                  <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-24" /></td>
-                  <td className="px-6 py-5"><div className="h-5 bg-gray-200 rounded-full w-16" /></td>
-                  <td className="px-6 py-5"><div className="flex gap-2 justify-end"><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /></div></td>
-                </tr>
-              ))
-            ) : candidates.length === 0 ? (
-              <tr>
-                <td colSpan={11} className="px-6 py-12 text-center text-sm text-[#AEAEB2]">
-                  No candidates found{activeStageSlug ? " in this stage" : ""}
-                </td>
-              </tr>
-            ) : (
-              candidates.map((item) => {
-                const cand = item.candidate;
-                const stageIdx = getStageIndex(item.current_stage?.slug || item.stage_slug);
-                const totalStgs = stages.length > 0 ? stages.filter(s => s.slug !== "archives").length : 5;
+      {isKanbanView ? (
+        <div className="mx-8 bg-[#F3F5F7] border border-[#E5E7EB] rounded-b-2xl overflow-x-auto p-6 flex gap-6 min-h-[500px]">
+          {stages.filter((s) => s.slug !== "archives").map((stage) => {
+            const columnCandidates = candidates.filter((item) => {
+              const itemStageSlug = item.current_stage?.slug || item.stage_slug;
+              return itemStageSlug === stage.slug;
+            });
 
-                // Experience — handle both numeric total_experience and string like "1+ years exp"
-                const expYears = cand.total_experience != null
-                  ? `${cand.total_experience} Years`
-                  : cand.experience_years
-                    ? cand.experience_years.replace(/\s*exp$/i, "")
-                    : "--";
+            return (
+              <div key={stage.id} className="min-w-[320px] w-[320px] bg-white border border-[#E5E7EB] rounded-xl flex flex-col pt-3 pb-2 h-full max-h-[70vh]">
+                <div className="px-5 pb-3 border-b border-[#E5E7EB] flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-[#4B5563]">{stage.name}</h3>
+                  <span className="text-xs bg-[#F9FAFB] border border-[#D1D1D6] text-[#8E8E93] rounded-full px-2 py-0.5 font-bold">{columnCandidates.length}</span>
+                </div>
 
-                // CTC
-                const ctc = cand.current_salary_lpa ? `${cand.current_salary_lpa} LPA` : "--";
+                <div className="flex-1 p-3 space-y-3 overflow-y-auto mt-1 custom-scrollbar">
+                  {columnCandidates.length > 0 ? columnCandidates.map(item => {
+                    const cand = item.candidate;
+                    const aiScoreRaw = item.job_score?.candidate_match_score?.score || "--%";
 
-                // Expected CTC
-                const expectedCtc = cand.expected_ctc ? `${cand.expected_ctc} LPA` : "--";
-
-                // Notice period
-                const noticePeriod = cand.notice_period_summary || (cand.notice_period_days != null ? `${cand.notice_period_days} Days` : "--");
-
-                // Attention tag from status_tags
-                const attentionTag = item.status_tags?.find((t) => t.text);
-
-                // AI Score — read from item.job_score (top-level), not cand.job_score
-                const aiScoreRaw = item.job_score?.candidate_match_score?.score;
-                const aiScoreLabel = aiScoreRaw || "--%";
-                const aiScoreNum = aiScoreRaw ? parseInt(aiScoreRaw.replace("%", ""), 10) : 0;
-                const aiScoreColor = aiScoreNum >= 70 ? "#00C8B3" : aiScoreNum >= 40 ? "#FFCC00" : aiScoreNum > 0 ? "#FF383C" : "#E5E7EB";
-
-                return (
-                  <tr key={item.id} className="hover:bg-[#F9FAFB] cursor-pointer transition-colors" onClick={() => onSelectCandidate?.(item)}>
-                    <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
-                      <input type="checkbox" className="w-4 h-4 accent-[#0F47F2]" checked={selectedIds.has(item.id)} onChange={() => handleToggleCandidate(item.id)} />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div>
-                        <div className="font-medium text-[#4B5563]">{cand.full_name || "--"}</div>
-                        <div className="text-xs text-[#727272]">{cand.headline || "--"}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="relative w-9 h-9">
-                        <svg className="w-9 h-9 -rotate-90" viewBox="0 0 36 36">
-                          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#E5E7EB" strokeWidth="3.5" />
-                          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={aiScoreColor} strokeWidth="3.5" strokeDasharray={`${aiScoreNum}, 100`} />
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[#4B5563]">{aiScoreLabel}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5 text-sm text-[#8E8E93]">{cand.location || "--"}</td>
-                    <td className="px-6 py-5 text-sm text-[#8E8E93]">{expYears}</td>
-                    <td className="px-6 py-5 text-sm text-[#8E8E93]">{ctc}</td>
-                    <td className="px-6 py-5 text-sm text-[#8E8E93]">{expectedCtc}</td>
-                    <td className="px-6 py-5 text-sm text-[#8E8E93]">{noticePeriod}</td>
-                    <td className="px-6 py-5">
-                      <div>
-                        <div className="text-[#6155F5] text-sm font-medium">{item.current_stage?.name || "--"}</div>
-                        <div className="flex gap-0.5 mt-1.5">
-                          {Array.from({ length: totalStgs }).map((_, idx) => (
-                            <div key={idx} className="h-1 w-7 rounded" style={{ backgroundColor: idx <= stageIdx ? stageBarColors[idx % stageBarColors.length] : "#E5E5EA" }} />
-                          ))}
+                    return (
+                      <div key={item.id} onClick={() => onSelectCandidate?.(item)} className="bg-white border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm cursor-pointer hover:shadow-md hover:border-[#0F47F2]/50 transition-all flex flex-col gap-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <h4 className="font-bold text-[14px] text-slate-800 line-clamp-1">{cand.full_name || "--"}</h4>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100 flex-shrink-0">{aiScoreRaw}</span>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5">
-                      {attentionTag ? (
-                        <span className="inline-block text-xs font-medium px-3 py-0.5 rounded-full"
-                          style={{
-                            backgroundColor: attentionTag.color === "red" ? "#FEE9E7" : attentionTag.color === "yellow" ? "#FFF7D6" : "#FEE9E7",
-                            color: attentionTag.color === "red" ? "#FF383C" : attentionTag.color === "yellow" ? "#92400E" : "#FF383C",
-                          }}>
-                          {attentionTag.text}
-                        </span>
-                      ) : <span className="text-xs text-[#8E8E93]">--</span>}
-                    </td>
-                    <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => {
-                            setCallModalCandidate({
-                              id: cand.id,
-                              name: cand.full_name || "Unknown",
-                              avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN",
-                              headline: cand.headline || "--",
-                              phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", // Fallback for UI testing
-                              experience: expYears,
-                              expectedCtc: expectedCtc,
-                              location: cand.location || "--",
-                              noticePeriod: noticePeriod
-                            });
-                          }}
-                          className="w-8 h-8 flex items-center justify-center bg-[#E3E1FF] rounded-full hover:bg-[#D5D2FF] transition-colors"
-                        >
-                          <span className="text-[#6155F5]">☎</span>
-                        </button>
-                        <button className="w-8 h-8 flex items-center justify-center bg-[#FFF2E6] rounded-full hover:bg-[#FFE8D4] transition-colors">
-                          <span className="text-[#FF8D28]">✉</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                        <p className="text-xs text-slate-500 line-clamp-1">{cand.headline || "--"}</p>
 
-        {/* Pagination */}
-        <div className="px-8 py-5 border-t border-[#E5E7EB] flex items-center justify-between bg-[#F9FAFB]">
-          <div className="text-xs text-[#6B7280]">
-            Showing {candidates.length > 0 ? startIndex + 1 : 0}–{Math.min(startIndex + pageSize, totalCandidates)} of {totalCandidates} candidates
-          </div>
-          {totalPages > 1 && (
-            <div className="flex items-center gap-1">
-              <button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1}
-                className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#6B7280] disabled:opacity-30 hover:bg-gray-50 transition-colors">
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              {getPageNumbers().map((p, i) =>
-                p === "..." ? (
-                  <span key={`e-${i}`} className="w-8 h-8 flex items-center justify-center text-[#6B7280] text-xs">…</span>
-                ) : (
-                  <button key={p} onClick={() => setCurrentPage(p as number)}
-                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${currentPage === p ? "bg-[#0F47F2] text-white" : "border border-[#E5E7EB] text-[#4B5563] hover:bg-gray-50"}`}>
-                    {p}
-                  </button>
-                )
-              )}
-              <button onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages}
-                className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#6B7280] disabled:opacity-30 hover:bg-gray-50 transition-colors">
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
+                        <div className="flex flex-wrap items-center mt-3 gap-y-2 gap-x-4 text-[11px] text-[#8E8E93] font-medium">
+                          {cand.location && (
+                            <span className="flex items-center gap-1.5"><LocateIcon className="w-3.5 h-3.5" /> {cand.location.split(',')[0]}</span>
+                          )}
+                          {(cand.total_experience || cand.experience_years) && (
+                            <span className="flex items-center gap-1.5"><Briefcase className="w-3.5 h-3.5" /> {cand.total_experience != null ? `${cand.total_experience} Yrs` : cand.experience_years.replace(/\s*exp$/i, "")}</span>
+                          )}
+                          {cand.current_salary_lpa && (
+                            <span className="flex items-center gap-1.5"><Target className="w-3.5 h-3.5" /> {cand.current_salary_lpa} LPA</span>
+                          )}
+                        </div>
+
+                        {item.status_tags && item.status_tags.find((t) => t.text) && (
+                          <div className="mt-2 pt-2 border-t border-slate-50 flex gap-1">
+                            {item.status_tags.map((tag, i) => (
+                              <span key={i} style={{
+                                backgroundColor: tag.color === "red" ? "#FEE9E7" : tag.color === "yellow" ? "#FFF7D6" : "#FEE9E7",
+                                color: tag.color === "red" ? "#FF383C" : tag.color === "yellow" ? "#92400E" : "#FF383C",
+                              }} className="text-[10px] font-semibold px-2 py-0.5 rounded inline-block">
+                                {tag.text}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }) : (
+                    <div className="flex items-center justify-center p-6 border-2 border-dashed border-[#E5E7EB] rounded-lg">
+                      <span className="text-xs text-[#AEAEB2] font-medium">Drop candidates here</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </div>
+      ) : (
+        <div className="mx-8 bg-white border border-[#E5E7EB] rounded-b-2xl overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
+              <tr>
+                <th className="w-10 px-6 py-4">
+                  <input type="checkbox" className="w-4 h-4 accent-[#0F47F2]" checked={selectAll} onChange={handleSelectAll} />
+                </th>
+                {["Name", "AI Score", "Location", "Exp", "CTC", "Expected CTC", "Notice Period", "Stage", "Attention"].map((h) => (
+                  <th key={h} className="text-left px-6 py-4 text-xs font-bold uppercase tracking-widest text-[#AEAEB2]">{h}</th>
+                ))}
+                <th className="w-24 px-6 py-4 text-xs font-bold uppercase tracking-widest text-[#AEAEB2] text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#F3F5F7]">
+              {loadingCandidates ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={`skel-${i}`} className="animate-pulse">
+                    <td className="px-6 py-5"><div className="w-4 h-4 bg-gray-200 rounded" /></td>
+                    <td className="px-6 py-5"><div className="space-y-2"><div className="h-4 bg-gray-200 rounded w-32" /><div className="h-3 bg-gray-200 rounded w-40" /></div></td>
+                    <td className="px-6 py-5"><div className="w-9 h-9 bg-gray-200 rounded-full" /></td>
+                    <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-20" /></td>
+                    <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
+                    <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
+                    <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-20" /></td>
+                    <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
+                    <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-24" /></td>
+                    <td className="px-6 py-5"><div className="h-5 bg-gray-200 rounded-full w-16" /></td>
+                    <td className="px-6 py-5"><div className="flex gap-2 justify-end"><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /></div></td>
+                  </tr>
+                ))
+              ) : candidates.length === 0 ? (
+                <tr>
+                  <td colSpan={11} className="px-6 py-12 text-center text-sm text-[#AEAEB2]">
+                    No candidates found{activeStageSlug ? " in this stage" : ""}
+                  </td>
+                </tr>
+              ) : (
+                candidates.map((item) => {
+                  const cand = item.candidate;
+                  const stageIdx = getStageIndex(item.current_stage?.slug || item.stage_slug);
+                  const totalStgs = stages.length > 0 ? stages.filter(s => s.slug !== "archives").length : 5;
+
+                  // Experience — handle both numeric total_experience and string like "1+ years exp"
+                  const expYears = cand.total_experience != null
+                    ? `${cand.total_experience} Years`
+                    : cand.experience_years
+                      ? cand.experience_years.replace(/\s*exp$/i, "")
+                      : "--";
+
+                  // CTC
+                  const ctc = cand.current_salary_lpa ? `${cand.current_salary_lpa} LPA` : "--";
+
+                  // Expected CTC
+                  const expectedCtc = cand.expected_ctc ? `${cand.expected_ctc} LPA` : "--";
+
+                  // Notice period
+                  const noticePeriod = cand.notice_period_summary || (cand.notice_period_days != null ? `${cand.notice_period_days} Days` : "--");
+
+                  // Attention tag from status_tags
+                  const attentionTag = item.status_tags?.find((t) => t.text);
+
+                  // AI Score — read from item.job_score (top-level), not cand.job_score
+                  const aiScoreRaw = item.job_score?.candidate_match_score?.score;
+                  const aiScoreLabel = aiScoreRaw || "--%";
+                  const aiScoreNum = aiScoreRaw ? parseInt(aiScoreRaw.replace("%", ""), 10) : 0;
+                  const aiScoreColor = aiScoreNum >= 70 ? "#00C8B3" : aiScoreNum >= 40 ? "#FFCC00" : aiScoreNum > 0 ? "#FF383C" : "#E5E7EB";
+
+                  return (
+                    <tr key={item.id} className="hover:bg-[#F9FAFB] cursor-pointer transition-colors" onClick={() => onSelectCandidate?.(item)}>
+                      <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
+                        <input type="checkbox" className="w-4 h-4 accent-[#0F47F2]" checked={selectedIds.has(item.id)} onChange={() => handleToggleCandidate(item.id)} />
+                      </td>
+                      <td className="px-6 py-5">
+                        <div>
+                          <div className="font-medium text-[#4B5563]">{cand.full_name || "--"}</div>
+                          <div className="text-xs text-[#727272]">{cand.headline || "--"}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="relative w-9 h-9">
+                          <svg className="w-9 h-9 -rotate-90" viewBox="0 0 36 36">
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#E5E7EB" strokeWidth="3.5" />
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={aiScoreColor} strokeWidth="3.5" strokeDasharray={`${aiScoreNum}, 100`} />
+                          </svg>
+                          <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[#4B5563]">{aiScoreLabel}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 text-sm text-[#8E8E93]">{cand.location || "--"}</td>
+                      <td className="px-6 py-5 text-sm text-[#8E8E93]">{expYears}</td>
+                      <td className="px-6 py-5 text-sm text-[#8E8E93]">{ctc}</td>
+                      <td className="px-6 py-5 text-sm text-[#8E8E93]">{expectedCtc}</td>
+                      <td className="px-6 py-5 text-sm text-[#8E8E93]">{noticePeriod}</td>
+                      <td className="px-6 py-5">
+                        <div>
+                          <div className="text-[#6155F5] text-sm font-medium">{item.current_stage?.name || "--"}</div>
+                          <div className="flex gap-0.5 mt-1.5">
+                            {Array.from({ length: totalStgs }).map((_, idx) => (
+                              <div key={idx} className="h-1 w-7 rounded" style={{ backgroundColor: idx <= stageIdx ? stageBarColors[idx % stageBarColors.length] : "#E5E5EA" }} />
+                            ))}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5">
+                        {attentionTag ? (
+                          <span className="inline-block text-xs font-medium px-3 py-0.5 rounded-full"
+                            style={{
+                              backgroundColor: attentionTag.color === "red" ? "#FEE9E7" : attentionTag.color === "yellow" ? "#FFF7D6" : "#FEE9E7",
+                              color: attentionTag.color === "red" ? "#FF383C" : attentionTag.color === "yellow" ? "#92400E" : "#FF383C",
+                            }}>
+                            {attentionTag.text}
+                          </span>
+                        ) : <span className="text-xs text-[#8E8E93]">--</span>}
+                      </td>
+                      <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => {
+                              setCallModalCandidate({
+                                id: cand.id,
+                                name: cand.full_name || "Unknown",
+                                avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN",
+                                headline: cand.headline || "--",
+                                phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", // Fallback for UI testing
+                                experience: expYears,
+                                expectedCtc: expectedCtc,
+                                location: cand.location || "--",
+                                noticePeriod: noticePeriod
+                              });
+                            }}
+                            className="w-8 h-8 flex items-center justify-center bg-[#E3E1FF] rounded-full hover:bg-[#D5D2FF] transition-colors"
+                          >
+                            <span className="text-[#6155F5]">☎</span>
+                          </button>
+                          <button className="w-8 h-8 flex items-center justify-center bg-[#FFF2E6] rounded-full hover:bg-[#FFE8D4] transition-colors">
+                            <span className="text-[#FF8D28]">✉</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+
+          {/* Pagination */}
+          <div className="px-8 py-5 border-t border-[#E5E7EB] flex items-center justify-between bg-[#F9FAFB]">
+            <div className="text-xs text-[#6B7280]">
+              Showing {candidates.length > 0 ? startIndex + 1 : 0}–{Math.min(startIndex + pageSize, totalCandidates)} of {totalCandidates} candidates
+            </div>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1">
+                <button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1}
+                  className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#6B7280] disabled:opacity-30 hover:bg-gray-50 transition-colors">
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                {getPageNumbers().map((p, i) =>
+                  p === "..." ? (
+                    <span key={`e-${i}`} className="w-8 h-8 flex items-center justify-center text-[#6B7280] text-xs">…</span>
+                  ) : (
+                    <button key={p} onClick={() => setCurrentPage(p as number)}
+                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${currentPage === p ? "bg-[#0F47F2] text-white" : "border border-[#E5E7EB] text-[#4B5563] hover:bg-gray-50"}`}>
+                      {p}
+                    </button>
+                  )
+                )}
+                <button onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages}
+                  className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#6B7280] disabled:opacity-30 hover:bg-gray-50 transition-colors">
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ═══════════════════════════════════════════════════════
           Edit Job Role Modal
