@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ChevronDown, Building2, Settings, LogOut, Bell, Check } from 'lucide-react';
+import { ChevronDown, Building2, Settings, LogOut, Check } from 'lucide-react';
 import { useAuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import organizationService, { Invitation } from '../services/organizationService';
@@ -7,6 +7,7 @@ import organizationService, { Invitation } from '../services/organizationService
 interface HeaderProps {
   title: string;
   subtitle?: string;
+  onBreadcrumbNavigate?: (index: number) => void;
 }
 
 const RefreshIcon = (
@@ -25,7 +26,7 @@ const NotificationIcon = (
   </svg>
 );
 
-export default function Header({ title, subtitle }: HeaderProps) {
+export default function Header({ title, subtitle, onBreadcrumbNavigate }: HeaderProps) {
   const { isAuthenticated, user, signOut } = useAuthContext();
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -65,7 +66,15 @@ export default function Header({ title, subtitle }: HeaderProps) {
           <div className="flex items-center gap-2">
             {subtitle.split('•').map((part, i, arr) => (
               <span key={i} className="flex items-center gap-2">
-                <span className="text-sm font-light text-[#4B5563] leading-5">{part.trim()}</span>
+                <button
+                  onClick={() => onBreadcrumbNavigate?.(i)}
+                  className={`text-sm leading-5 transition-colors ${onBreadcrumbNavigate && i < arr.length - 1
+                    ? 'font-light text-[#4B5563] hover:text-black hover:underline cursor-pointer'
+                    : 'font-light text-[#4B5563] cursor-default'
+                    }`}
+                >
+                  {part.trim()}
+                </button>
                 {i < arr.length - 1 && <span className="w-1 h-1 rounded-full bg-[#4B5563] opacity-40" />}
               </span>
             ))}

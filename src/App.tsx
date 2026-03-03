@@ -52,7 +52,6 @@ function MainApp() {
   const { } = useAuthContext();
 
   const [currentPage, setCurrentPage] = useState("dashboard");
-  const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [, setAuthFlow] = useState("login");
@@ -115,16 +114,15 @@ function MainApp() {
     }
   };
 
-  const handleJobSelect = (jobId: number) => {
-    setSelectedJobId(jobId);
-    setCurrentPage("jobPipeline");
-  };
+
 
   const [headerWorkspaceName, setHeaderWorkspaceName] = useState<string | undefined>(undefined);
+  const [headerJobName, setHeaderJobName] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const handleHeaderUpdate = () => {
       setHeaderWorkspaceName((window as any).__selectedWorkspaceName);
+      setHeaderJobName((window as any).__selectedJobName);
     };
     window.addEventListener('header-update', handleHeaderUpdate);
     // Initial check
@@ -152,7 +150,9 @@ function MainApp() {
       case "dashboard":
         return "Dashboard";
       case "companies":
-        return headerWorkspaceName ? "Company Job Listing" : "Companies";
+        if (headerJobName) return `${headerJobName}`;
+        if (headerWorkspaceName) return "Company Jobs";
+        return "Companies";
       case "interviews":
         return "Interviews";
       case "candidatePool":
@@ -161,6 +161,35 @@ function MainApp() {
         return "Pipeline Stage";
       default:
         return "Dashboard";
+    }
+  };
+
+  const getPageSubtitle = () => {
+    if (currentPage === 'companies') {
+      if (headerJobName && headerWorkspaceName) {
+        return `Companies • ${headerWorkspaceName} • ${headerJobName}`;
+      }
+      if (headerWorkspaceName) {
+        return `Companies • ${headerWorkspaceName}`;
+      }
+    }
+    return getCurrentDateTime();
+  };
+
+  const handleBreadcrumbNavigate = (index: number) => {
+    if (currentPage !== 'companies') return;
+    // index 0 = "Companies" (go back to company list)
+    // index 1 = workspace name (go back to job listing)
+    // index 2 = job name (current - do nothing)
+    if (index === 0) {
+      // Navigate back to companies list
+      delete (window as any).__selectedWorkspaceName;
+      delete (window as any).__selectedJobName;
+      window.dispatchEvent(new CustomEvent('breadcrumb-navigate', { detail: { level: 'companies' } }));
+    } else if (index === 1) {
+      // Navigate back to job listing
+      delete (window as any).__selectedJobName;
+      window.dispatchEvent(new CustomEvent('breadcrumb-navigate', { detail: { level: 'workspace' } }));
     }
   };
 
@@ -173,9 +202,9 @@ function MainApp() {
       case "interviews":
         return <Interviews />;
       case "candidatePool":
-        return <CandidatesPool initialJobId={selectedJobId} />;
+        return <CandidatesPool initialJobId={null} />;
       case "jobPipeline":
-        return <JobPipeline jobId={selectedJobId} onBack={() => setCurrentPage("jobs")} />;
+        return <JobPipeline jobId={null} />;
       default:
         return <Dashboard />;
     }
@@ -436,7 +465,8 @@ function MainApp() {
                 <main className="flex-1 flex flex-col overflow-hidden">
                   <HeaderBar
                     title={getPageTitle()}
-                    subtitle={currentPage === 'companies' && headerWorkspaceName ? `Companies • ${headerWorkspaceName}` : getCurrentDateTime()}
+                    subtitle={getPageSubtitle()}
+                    onBreadcrumbNavigate={handleBreadcrumbNavigate}
                   />
                   {renderPage()}
                 </main>

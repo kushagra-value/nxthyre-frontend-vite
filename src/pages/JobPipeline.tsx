@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { ChevronRight, ChevronDown, Edit3, Share2, Bell } from "lucide-react";
+import { ChevronDown, Edit3, Share2, Bell } from "lucide-react";
 import JobPipelineDashboard from "./companies/components/JobPipelineDashboard";
 import JobCandidateProfile from "./companies/components/JobCandidateProfile";
 import { jobDetails } from "./companies/JobPipelineData";
 
-export default function JobPipeline({ jobId, onBack }: { jobId: number | null, onBack: () => void }) {
+export default function JobPipeline({ jobId }: { jobId: number | null }) {
     const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
 
     if (!jobId) {
@@ -14,13 +14,7 @@ export default function JobPipeline({ jobId, onBack }: { jobId: number | null, o
     return (
         <div className="flex flex-col h-full bg-[#F3F5F7] overflow-hidden">
             {!selectedCandidate && (
-                <div className="bg-white px-8 pt-6 pb-4 flex flex-col gap-4 border-b border-[#E5E7EB]">
-                    {/* Breadcrumb */}
-                    <div className="flex items-center gap-2 text-sm text-[#8E8E93]">
-                        <button onClick={onBack} className="hover:text-black transition cursor-pointer">Jobs</button> <ChevronRight className="w-3 h-3" />
-                        <span>{jobDetails.company}</span> <ChevronRight className="w-3 h-3" />
-                        <span className="text-black font-semibold">{jobDetails.title}</span>
-                    </div>
+                <div className="bg-white px-8 pt-8 pb-4 flex flex-col gap-4 border-b border-[#E5E7EB]">
 
                     <div className="flex items-center justify-between">
                         <div>

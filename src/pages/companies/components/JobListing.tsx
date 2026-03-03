@@ -52,6 +52,7 @@ interface JobListingProps {
     loadingCompanyResearch: boolean;
     companyResearchData: any;
     setInfoWorkspaceNull: () => void;
+    onJobSelect?: (job: Job) => void;
 }
 
 const JobListing: React.FC<JobListingProps> = ({
@@ -79,6 +80,7 @@ const JobListing: React.FC<JobListingProps> = ({
     loadingCompanyResearch,
     companyResearchData,
     setInfoWorkspaceNull,
+    onJobSelect,
 }) => {
 
     const formatSalaryToLPA = (salary: number | null | undefined): string => {
@@ -251,7 +253,10 @@ const JobListing: React.FC<JobListingProps> = ({
                                         {/* Job Title */}
                                         <td className="w-[270px] px-5 py-4">
                                             <div className="flex flex-col gap-1.5">
-                                                <span className="text-[14px] font-medium text-[#4B5563] leading-[17px]">{job.title}</span>
+                                                <span
+                                                    className="text-[14px] font-medium text-[#4B5563] leading-[17px] cursor-pointer hover:text-[#0F47F2] hover:underline transition-colors"
+                                                    onClick={() => onJobSelect?.(job)}
+                                                >{job.title}</span>
                                                 <div className="flex items-center gap-1">
                                                     <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">
                                                         {job.experience_min_years}-{job.experience_max_years} Yrs

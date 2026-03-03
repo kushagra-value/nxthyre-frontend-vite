@@ -14,30 +14,20 @@ import {
     Plus,
     Pause,
     Play,
-    Users,
-    Settings,
     DownloadCloud,
     Calendar,
     ChevronDown,
     Star,
     ArrowRight,
-    MapPin,
-    Globe,
-    Briefcase,
-    Route,
-    UserCheck,
-    Pencil,
-    UserCircle,
     LayoutGrid
 } from "lucide-react";
 import CreateWorkspaceModal from "./companies/components/CreateWorkspaceModal";
 import JoinWorkspaceModal from "./companies/components/JoinWorkspaceModal";
 import PendingRequestsModal from "./companies/components/PendingRequestsModal";
-import CreateJobRoleModal from "../components/candidatePool/CreateJobRoleModal";
-import EditJobRoleModal from "../components/candidatePool/EditJobRoleModal";
 import { showToast } from "../utils/toast";
 import CompanyInfoDrawer from "./companies/components/CompanyInfoDrawer";
 import JobListing from "./companies/components/JobListing";
+import JobPipeline from "./JobPipeline";
 import {
     companyStatCards,
     companyTableRows,
@@ -96,17 +86,36 @@ export default function Companies() {
 
     const [isActionView, setIsActionView] = useState(true);
     const [selectedWorkspace, setSelectedWorkspace] = useState<MyWorkspace | null>(null);
+    const [selectedJob, setSelectedJob] = useState<Job | null>(null);
     const [allJobs, setAllJobs] = useState<Job[]>([]);
     const [jobsLoading, setJobsLoading] = useState(false);
 
     useEffect(() => {
-        if (selectedWorkspace) {
+        if (selectedJob && selectedWorkspace) {
             (window as any).__selectedWorkspaceName = selectedWorkspace.name;
+            (window as any).__selectedJobName = selectedJob.title;
+        } else if (selectedWorkspace) {
+            (window as any).__selectedWorkspaceName = selectedWorkspace.name;
+            delete (window as any).__selectedJobName;
         } else {
             delete (window as any).__selectedWorkspaceName;
+            delete (window as any).__selectedJobName;
         }
         window.dispatchEvent(new CustomEvent('header-update'));
-    }, [selectedWorkspace]);
+    }, [selectedWorkspace, selectedJob]);
+
+    useEffect(() => {
+        const handleBreadcrumbNavigate = (e: any) => {
+            if (e.detail?.level === 'companies') {
+                setSelectedWorkspace(null);
+                setSelectedJob(null);
+            } else if (e.detail?.level === 'workspace') {
+                setSelectedJob(null);
+            }
+        };
+        window.addEventListener('breadcrumb-navigate', handleBreadcrumbNavigate);
+        return () => window.removeEventListener('breadcrumb-navigate', handleBreadcrumbNavigate);
+    }, []);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [activeFilter, setActiveFilter] = useState<
@@ -169,8 +178,7 @@ export default function Companies() {
     const buildTableRows = useCallback((): CompanyTableRow[] => {
         if (workspaces.length === 0) return companyTableRows;
 
-        return workspaces.map((ws, i) => {
-            const fallback = companyTableRows[i % companyTableRows.length];
+        return workspaces.map((ws) => {
             const workspaceJobs = allJobs.filter(j => j.workspace_details?.id === ws.id);
 
             return {
@@ -276,11 +284,23 @@ export default function Companies() {
         return matchesSearch && matchesStatus;
     });
 
+    // ── Job Pipeline View ──
+    if (selectedJob && selectedWorkspace) {
+        return (
+            <JobPipeline
+                jobId={selectedJob.id}
+            />
+        );
+    }
+
     if (selectedWorkspace) {
         return (
             <JobListing
                 selectedWorkspace={selectedWorkspace}
-                setSelectedWorkspace={setSelectedWorkspace}
+                setSelectedWorkspace={(ws) => {
+                    setSelectedWorkspace(ws);
+                    setSelectedJob(null);
+                }}
                 logos={logos}
                 workspaceJobs={workspaceJobs}
                 activeJobFilter={activeJobFilter}
@@ -303,6 +323,7 @@ export default function Companies() {
                 loadingCompanyResearch={loadingCompanyResearch}
                 companyResearchData={companyResearchData}
                 setInfoWorkspaceNull={() => setInfoWorkspace(null)}
+                onJobSelect={(job) => setSelectedJob(job)}
             />
         );
     }
