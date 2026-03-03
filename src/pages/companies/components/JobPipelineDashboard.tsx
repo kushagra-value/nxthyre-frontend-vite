@@ -2,14 +2,14 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search, SlidersHorizontal, Share2, Download, Calendar, Grid3X3,
-  ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Pencil, Upload, X,
+  ChevronLeft, ChevronRight, Pencil, X,
   Maximize2, Minimize2, ArrowLeft, Briefcase, LocateIcon, FileSearch,
+  Target, Layers, BookOpen, ListChecks, Zap, Clock,
 } from "lucide-react";
 import apiClient from "../../../services/api";
 import { jobPostService, Job } from "../../../services/jobPostService";
 import { organizationService, CompanyResearchData } from "../../../services/organizationService";
 import EditJobRoleModal from "../../../components/candidatePool/EditJobRoleModal";
-import RequisitionSkeleton from "../../../components/skeletons/RequisitionSkeleton";
 import CompanyInfoTab from "./CompanyInfoTab";
 import toast from "react-hot-toast";
 import { showToast } from "../../../utils/toast";
@@ -1053,63 +1053,273 @@ export default function JobPipelineDashboard({
       )}
 
       {/* ═══════════════════════════════════════════════════════
-          Requisition Info Modal (same as CandidatesPool)
+          Requisition Info Drawer (styled like CompanyInfoDrawer)
          ═══════════════════════════════════════════════════════ */}
       {showRequisitionInfoModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-start justify-end overflow-y-auto" onClick={handleCloseRequisitionModal}>
-          <div className="bg-white rounded-3xl shadow-xl max-w-2xl w-full max-h-[125vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-2 mb-4">
-              <button onClick={handleCloseRequisitionModal}><ArrowLeft className="w-8 h-8 text-gray-800" /></button>
-              <h1 className="text-lg font-semibold text-gray-800">Requisition Info</h1>
-            </div>
-            <div className="flex border-b border-gray-200 mb-6">
-              <button
-                className={`pb-2 px-4 text-sm font-medium ${requisitionModalTab === "info" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"}`}
-                onClick={() => setRequisitionModalTab("info")}
-              >Requisition Info</button>
-              <button
-                className={`pb-2 px-4 text-sm font-medium ${requisitionModalTab === "company" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"}`}
-                onClick={async () => {
-                  setRequisitionModalTab("company");
-                  if (jobDataForModal?.workspace_details?.id && !companyResearchData) {
-                    setLoadingCompanyResearch(true);
-                    try { setCompanyResearchData(await organizationService.getCompanyResearchData(jobDataForModal.workspace_details.id)); }
-                    catch { } finally { setLoadingCompanyResearch(false); }
-                  }
-                }}
-              >About Company</button>
-            </div>
-            {loadingCompetencies ? <RequisitionSkeleton /> : jobDataForModal ? (<>
-              {requisitionModalTab === "info" && competenciesData && (<>
-                <h2 className="text-2xl font-semibold text-gray-900 mb-1">{jobDataForModal.title}</h2>
-                <div className="flex space-x-8 mt-2 mb-6">
-                  <span className="flex items-center text-gray-500"><Briefcase className="w-4 h-4 mr-1" /> {jobDataForModal.experience_min_years}+ years</span>
-                  <span className="flex items-center text-gray-500"><LocateIcon className="w-4 h-4 mr-1" /> {jobDataForModal.work_approach}</span>
-                  <span className="flex items-center text-gray-500"><FileSearch className="w-4 h-4 mr-1" /> Immediate</span>
+        <div
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-start justify-end overflow-y-auto"
+          onClick={handleCloseRequisitionModal}
+        >
+          <div
+            className="bg-white shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {loadingCompetencies ? (
+              <div className="flex flex-col items-center justify-center py-24 gap-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F47F2]"></div>
+                <span className="text-sm text-[#8E8E93]">Loading requisition info...</span>
+              </div>
+            ) : jobDataForModal ? (
+              <>
+                {/* ── Header ── */}
+                <div className="px-[30px] py-[36px] flex flex-wrap gap-[30px] items-center justify-between" style={{ borderBottom: '0.5px solid #C7C7CC' }}>
+                  <div className="flex items-center gap-[10px]">
+                    <button onClick={handleCloseRequisitionModal} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+                      <ArrowLeft className="w-5 h-5 text-[#4B5563]" />
+                    </button>
+                    <div className="flex items-center gap-[10px]">
+                      <div className="w-[86px] h-[86px] rounded-full bg-[#0F47F2] text-white flex items-center justify-center shrink-0" style={{ fontSize: '36px', fontWeight: 500 }}>
+                        {jobDataForModal.title?.charAt(0) || '?'}
+                      </div>
+                      <div className="flex flex-col gap-[10px] px-[10px]">
+                        <h2 style={{ fontSize: '32px', lineHeight: '40px', fontWeight: 500 }} className="text-[#4B5563]">
+                          {jobDataForModal.title || '--'}
+                        </h2>
+                        <div className="flex flex-wrap items-start gap-[15px]">
+                          <span className="flex items-center gap-[5px] text-[12px] leading-[14px] text-[#8E8E93]">
+                            <Briefcase className="w-4 h-4 text-[#8E8E93]" /> {jobDataForModal.experience_min_years ?? '--'}+ years
+                          </span>
+                          <span className="flex items-center gap-[5px] text-[12px] leading-[14px] text-[#8E8E93]">
+                            <LocateIcon className="w-4 h-4 text-[#8E8E93]" /> {workApproachLabel[jobDataForModal.work_approach] || jobDataForModal.work_approach || '--'}
+                          </span>
+                          <span className="flex items-center gap-[5px] text-[12px] leading-[14px] text-[#8E8E93]">
+                            <FileSearch className="w-4 h-4 text-[#8E8E93]" /> {jobDataForModal.location?.join(', ') || '--'}
+                          </span>
+                          <span className="flex items-center gap-[5px] text-[12px] leading-[14px] text-[#8E8E93]">
+                            <Clock className="w-4 h-4 text-[#8E8E93]" /> Immediate
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Tabs in header area */}
+                  <div className="flex items-center gap-[10px]">
+                    <div className="flex items-center gap-[10px] px-[10px] h-[37px] rounded-[5px]" style={{ background: '#E7EDFF', border: '1px solid #0F47F2' }}>
+                      <span style={{ fontSize: '14px', lineHeight: '17px', fontWeight: 500 }} className="text-[#0F47F2]">
+                        JD-{jobId}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="mb-6"><h3 className="text-lg font-semibold text-gray-700 mb-2">Role Overview</h3><p className="text-gray-600 text-sm">{competenciesData.role_overview}</p></div>
-                <div className="mb-6"><h3 className="text-lg font-semibold text-gray-700 mb-2">The Core Expectation</h3>
-                  <ul className="text-gray-600 text-sm list-disc pl-5 space-y-1">{competenciesData.the_core_expectation.map((item: string, i: number) => <li key={i}>{item}</li>)}</ul></div>
-                <div className="mb-6"><h3 className="text-lg font-semibold text-gray-700 mb-3">Key Responsibilities</h3><div className="space-y-3">
-                  {competenciesData.key_responsibilities_explained.functional.map((item: any, i: number) => (
-                    <div key={i} className="bg-blue-50 rounded-lg p-4"><h4 className="font-medium text-gray-600 mb-1">{item.competency}</h4>
-                      <p className="text-sm text-gray-400">{item.context}</p>{item.priority && <p className="text-xs text-gray-500 mt-1">Priority: {item.priority}</p>}</div>))}
-                  {competenciesData.key_responsibilities_explained.leadership?.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-200"><h4 className="font-semibold text-gray-700 mb-3">Leadership</h4>
-                      {competenciesData.key_responsibilities_explained.leadership.map((item: any, i: number) => (
-                        <div key={i} className="bg-green-50 rounded-lg p-4 mb-3"><h5 className="font-medium text-gray-600 mb-1">{item.responsibility}</h5>
-                          <p className="text-sm text-gray-400">{item.context}</p></div>))}</div>)}</div></div>
-                <div className="mb-6"><h3 className="text-lg font-semibold text-gray-700 mb-3">Technical Skills</h3><div className="space-y-3">
-                  {competenciesData.required_technical_skills_purpose.map((item: any, i: number) => (
-                    <div key={i} className="bg-blue-50 rounded-lg p-4"><h4 className="font-medium text-gray-600 mb-1">{item.skill}</h4>
-                      <p className="text-sm text-gray-400">{item.context}</p></div>))}</div></div>
-              </>)}
-              {requisitionModalTab === "company" && (<>
-                {loadingCompanyResearch ? <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>
-                  : companyResearchData ? <CompanyInfoTab data={companyResearchData} />
-                    : <div className="text-center py-8 text-gray-500">No company details available.</div>}
-              </>)}
-            </>) : <div className="text-center py-8 text-gray-500">Failed to load data.</div>}
+
+                {/* ── Tab Switcher ── */}
+                <div className="px-[30px] pt-[20px]" style={{ borderBottom: '0.5px solid #C7C7CC' }}>
+                  <div className="flex gap-[20px]">
+                    <button
+                      className={`pb-[12px] text-[14px] font-medium transition-colors ${requisitionModalTab === 'info'
+                        ? 'text-[#0F47F2] border-b-2 border-[#0F47F2]'
+                        : 'text-[#8E8E93] hover:text-[#4B5563]'
+                        }`}
+                      onClick={() => setRequisitionModalTab('info')}
+                    >Requisition Info</button>
+                    <button
+                      className={`pb-[12px] text-[14px] font-medium transition-colors ${requisitionModalTab === 'company'
+                        ? 'text-[#0F47F2] border-b-2 border-[#0F47F2]'
+                        : 'text-[#8E8E93] hover:text-[#4B5563]'
+                        }`}
+                      onClick={async () => {
+                        setRequisitionModalTab('company');
+                        if (jobDataForModal?.workspace_details?.id && !companyResearchData) {
+                          setLoadingCompanyResearch(true);
+                          try { setCompanyResearchData(await organizationService.getCompanyResearchData(jobDataForModal.workspace_details.id)); }
+                          catch { } finally { setLoadingCompanyResearch(false); }
+                        }
+                      }}
+                    >About Company</button>
+                  </div>
+                </div>
+
+                {/* ── Tab Content ── */}
+                {requisitionModalTab === 'info' && competenciesData && (
+                  <div className="px-[30px] pt-[20px] pb-[50px]">
+
+                    {/* ── Stats Cards ── */}
+                    <div className="pl-[25px] flex flex-wrap gap-[30px] mb-[20px]">
+                      {[
+                        { label: 'Experience', value: `${jobDataForModal.experience_min_years ?? '--'} - ${jobDataForModal.experience_max_years ?? '--'} yrs` },
+                        { label: 'Positions', value: jobDataForModal.count || '--' },
+                        { label: 'Salary Range', value: formatSalary(jobDataForModal.salary_min, jobDataForModal.salary_max) },
+                        { label: 'Work Approach', value: workApproachLabel[jobDataForModal.work_approach] || '--' },
+                      ].map((stat, idx) => (
+                        <div key={idx} className="flex flex-col gap-[8px] bg-white rounded-[10px] p-[20px]" style={{ border: '0.5px solid #D1D1D6' }}>
+                          <span style={{ fontSize: '12px', lineHeight: '14px', fontWeight: 400 }} className="text-[#4B5563]">{stat.label}</span>
+                          <span style={{ fontSize: '24px', lineHeight: '29px', fontWeight: 500 }} className="text-black">{stat.value}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Divider */}
+                    <div style={{ borderBottom: '0.5px solid #C7C7CC' }} className="mb-[20px]"></div>
+
+                    {/* ── Role Overview ── */}
+                    <div className="pl-[25px] mb-[20px]">
+                      <h3 className="flex items-center gap-[5px] mb-[20px]">
+                        <BookOpen className="w-5 h-5 text-[#4B5563]" />
+                        <span style={{ fontSize: '18px', lineHeight: '22px', fontWeight: 500 }} className="text-[#4B5563]">Role Overview</span>
+                      </h3>
+                      <p style={{ fontSize: '14px', lineHeight: '24px', fontWeight: 400, maxWidth: '738px' }} className="text-[#727272]">
+                        {competenciesData.role_overview || '--'}
+                      </p>
+                    </div>
+
+                    {/* Divider */}
+                    <div style={{ borderBottom: '0.5px solid #C7C7CC' }} className="mb-[20px]"></div>
+
+                    {/* ── The Core Expectation ── */}
+                    <div className="pl-[25px] mb-[20px]">
+                      <h3 className="flex items-center gap-[5px] mb-[20px]">
+                        <Target className="w-5 h-5 text-[#4B5563]" />
+                        <span style={{ fontSize: '18px', lineHeight: '22px', fontWeight: 500 }} className="text-[#4B5563]">The Core Expectation</span>
+                      </h3>
+                      <div className="rounded-[10px] bg-[#EBFFEE] p-[20px]">
+                        <ul className="flex flex-col gap-0">
+                          {competenciesData.the_core_expectation.map((item: string, i: number) => (
+                            <li key={i} style={{ fontSize: '14px', lineHeight: '24px', fontWeight: 400, listStyle: 'disc', marginLeft: '16px' }} className="text-[#727272]">
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    {/* Divider */}
+                    <div style={{ borderBottom: '0.5px solid #C7C7CC' }} className="mb-[20px]"></div>
+
+                    {/* ── Key Responsibilities ── */}
+                    <div className="pl-[25px] mb-[20px]">
+                      <h3 className="flex items-center gap-[5px] mb-[20px]">
+                        <ListChecks className="w-5 h-5 text-[#4B5563]" />
+                        <span style={{ fontSize: '18px', lineHeight: '22px', fontWeight: 500 }} className="text-[#4B5563]">Key Responsibilities</span>
+                      </h3>
+                      <div className="flex flex-col gap-[10px]">
+                        {competenciesData.key_responsibilities_explained.functional.map((item: any, i: number) => (
+                          <div key={i} className="flex items-start gap-[10px] p-[20px] bg-[#E7EDFF] rounded-[10px]">
+                            <div className="flex flex-col gap-[4px]">
+                              <span style={{ fontSize: '14px', lineHeight: '17px', fontWeight: 500 }} className="text-black">{item.competency}</span>
+                              <span style={{ fontSize: '12px', lineHeight: '20px', fontWeight: 400 }} className="text-[#727272]">{item.context}</span>
+                              {item.priority && (
+                                <span className="flex items-center justify-center py-[4px] px-[10px] rounded-full bg-[#FFF7D6] text-[#F59E0B] self-start mt-[4px]" style={{ fontSize: '10px', lineHeight: '12px', fontWeight: 500 }}>
+                                  Priority: {item.priority}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Leadership responsibilities */}
+                      {competenciesData.key_responsibilities_explained.leadership?.length > 0 && (
+                        <>
+                          <div style={{ borderBottom: '0.5px solid #C7C7CC' }} className="my-[20px]"></div>
+                          <h4 className="flex items-center gap-[5px] mb-[14px]">
+                            <Zap className="w-4 h-4 text-[#4B5563]" />
+                            <span style={{ fontSize: '16px', lineHeight: '20px', fontWeight: 500 }} className="text-[#4B5563]">Leadership</span>
+                          </h4>
+                          <div className="flex flex-col gap-[10px]">
+                            {competenciesData.key_responsibilities_explained.leadership.map((item: any, i: number) => (
+                              <div key={i} className="flex items-start gap-[10px] p-[20px] bg-[#EBFFEE] rounded-[10px]">
+                                <div className="flex flex-col gap-[4px]">
+                                  <span style={{ fontSize: '14px', lineHeight: '17px', fontWeight: 500 }} className="text-black">{item.responsibility}</span>
+                                  <span style={{ fontSize: '12px', lineHeight: '20px', fontWeight: 400 }} className="text-[#727272]">{item.context}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Divider */}
+                    <div style={{ borderBottom: '0.5px solid #C7C7CC' }} className="mb-[20px]"></div>
+
+                    {/* ── Technical Skills ── */}
+                    <div className="pl-[25px] mb-[20px]">
+                      <h3 className="flex items-center gap-[5px] mb-[20px]">
+                        <Layers className="w-5 h-5 text-[#4B5563]" />
+                        <span style={{ fontSize: '18px', lineHeight: '22px', fontWeight: 500 }} className="text-[#4B5563]">Technical Skills</span>
+                      </h3>
+                      <div className="flex flex-col gap-[10px]">
+                        {competenciesData.required_technical_skills_purpose.map((item: any, i: number) => {
+                          const SKILL_COLORS = [
+                            'bg-[#E7EDFF]', 'bg-[#E7E5FF]', 'bg-[#F3F5F7]',
+                          ];
+                          return (
+                            <div key={i} className={`flex items-start gap-[10px] p-[20px] ${SKILL_COLORS[i % SKILL_COLORS.length]} rounded-[10px]`}>
+                              <div className="flex flex-col gap-[4px]">
+                                <span style={{ fontSize: '14px', lineHeight: '17px', fontWeight: 500 }} className="text-black">{item.skill}</span>
+                                <span style={{ fontSize: '12px', lineHeight: '20px', fontWeight: 400 }} className="text-[#727272]">{item.context}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* ── Skills Pills ── */}
+                    {jobDataForModal.skills && jobDataForModal.skills.length > 0 && (
+                      <>
+                        <div style={{ borderBottom: '0.5px solid #C7C7CC' }} className="mb-[20px]"></div>
+                        <div className="pl-[25px] mb-[50px]">
+                          <h3 className="flex items-center gap-[5px] mb-[20px]">
+                            <Target className="w-5 h-5 text-[#4B5563]" />
+                            <span style={{ fontSize: '18px', lineHeight: '22px', fontWeight: 500 }} className="text-[#4B5563]">Required Skills</span>
+                          </h3>
+                          <div className="flex flex-wrap gap-[10px]">
+                            {jobDataForModal.skills.map((skill: string, i: number) => {
+                              const PILL_COLORS = [
+                                'bg-[#E7EDFF] text-[#0F47F2]',
+                                'bg-[#E7E5FF] text-[#6155F5]',
+                                'bg-[#EBFFEE] text-[#009951]',
+                                'bg-[#FFF7D6] text-[#F59E0B]',
+                                'bg-[#F3F5F7] text-[#4B5563]',
+                              ];
+                              return (
+                                <span key={i} className={`flex items-center justify-center py-[8px] px-[14px] rounded-full ${PILL_COLORS[i % PILL_COLORS.length]}`} style={{ fontSize: '12px', lineHeight: '14px', fontWeight: 400 }}>
+                                  {skill}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* ── About Company Tab ── */}
+                {requisitionModalTab === 'company' && (
+                  <div className="px-[30px] pt-[20px] pb-[50px]">
+                    {loadingCompanyResearch ? (
+                      <div className="flex flex-col items-center justify-center py-24 gap-3">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F47F2]"></div>
+                        <span className="text-sm text-[#8E8E93]">Loading company info...</span>
+                      </div>
+                    ) : companyResearchData ? (
+                      <CompanyInfoTab data={companyResearchData} />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-24 gap-2">
+                        <span className="text-sm text-[#8E8E93]">No company details available.</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-24 gap-2">
+                <span className="text-sm text-[#8E8E93]">Failed to load requisition data.</span>
+                <button onClick={handleCloseRequisitionModal} className="text-sm text-[#0F47F2] hover:underline">Close</button>
+              </div>
+            )}
           </div>
         </div>
       )}
