@@ -12,6 +12,7 @@ import { organizationService, CompanyResearchData } from "../../../services/orga
 import { candidateService } from "../../../services/candidateService";
 import EditJobRoleModal from "../../../components/candidatePool/EditJobRoleModal";
 import CompanyInfoTab from "./CompanyInfoTab";
+import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
 import toast from "react-hot-toast";
 import { showToast } from "../../../utils/toast";
 import * as XLSX from "xlsx";
@@ -246,6 +247,9 @@ export default function JobPipelineDashboard({
   // ── Export
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
+
+  // ── Call Modal State
+  const [callModalCandidate, setCallModalCandidate] = useState<CallCandidateData | null>(null);
 
   // ── Export helpers
   const downloadFile = (
@@ -983,7 +987,22 @@ export default function JobPipelineDashboard({
                     </td>
                     <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end gap-2">
-                        <button className="w-8 h-8 flex items-center justify-center bg-[#E3E1FF] rounded-full hover:bg-[#D5D2FF] transition-colors">
+                        <button
+                          onClick={() => {
+                            setCallModalCandidate({
+                              id: cand.id,
+                              name: cand.full_name || "Unknown",
+                              avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN",
+                              headline: cand.headline || "--",
+                              phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", // Fallback for UI testing
+                              experience: expYears,
+                              expectedCtc: expectedCtc,
+                              location: cand.location || "--",
+                              noticePeriod: noticePeriod
+                            });
+                          }}
+                          className="w-8 h-8 flex items-center justify-center bg-[#E3E1FF] rounded-full hover:bg-[#D5D2FF] transition-colors"
+                        >
                           <span className="text-[#6155F5]">☎</span>
                         </button>
                         <button className="w-8 h-8 flex items-center justify-center bg-[#FFF2E6] rounded-full hover:bg-[#FFE8D4] transition-colors">
@@ -1475,6 +1494,13 @@ export default function JobPipelineDashboard({
           </div>
         </div>
       )}
+
+      {/* Call Candidate Modal */}
+      <CallCandidateModal
+        isOpen={!!callModalCandidate}
+        onClose={() => setCallModalCandidate(null)}
+        candidate={callModalCandidate}
+      />
     </div>
   );
 }
