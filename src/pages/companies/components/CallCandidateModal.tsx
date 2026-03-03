@@ -137,82 +137,84 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({ isOpen, onClose
                             </div>
                         </div>
                     ) : (
-                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                            <div className="mb-6">
-                                <h3 className="text-slate-800 font-medium mb-3">Mark A Reason</h3>
-                                <div className="flex flex-wrap gap-2">
-                                    {REASONS.map(reason => (
-                                        <button
-                                            key={reason}
-                                            onClick={() => setSelectedReason(reason)}
-                                            className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${selectedReason === reason
+                        <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            <div className="flex-1 overflow-y-auto max-h-[50vh] pr-2 custom-scrollbar">
+                                <div className="mb-6">
+                                    <h3 className="text-slate-800 font-medium mb-3">Mark A Reason</h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {REASONS.map(reason => (
+                                            <button
+                                                key={reason}
+                                                onClick={() => setSelectedReason(reason)}
+                                                className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${selectedReason === reason
                                                     ? 'bg-[#1D4ED8] text-white border-[#1D4ED8]'
                                                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                                                }`}
-                                        >
-                                            {reason}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="bg-slate-50 border border-blue-100 rounded-xl p-5 mb-6">
-                                <h3 className="text-slate-800 font-medium mb-4">Schedule Follow up</h3>
-                                <div className="flex gap-4 mb-6">
-                                    <div className="flex-1">
-                                        <label className="text-slate-500 text-xs mb-1.5 block">Select Date</label>
-                                        <div className="relative">
-                                            <Calendar className="w-4 h-4 text-blue-600 absolute left-3 top-1/2 -translate-y-1/2" />
-                                            <input
-                                                type="date"
-                                                value={selectedDate}
-                                                onChange={(e) => setSelectedDate(e.target.value)}
-                                                className="w-full pl-9 pr-3 py-2 border border-blue-200 rounded-lg text-sm text-blue-600 font-medium focus:outline-none focus:border-blue-500 bg-white"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="flex-1">
-                                        <label className="text-slate-500 text-xs mb-1.5 block">Select Time</label>
-                                        <div className="relative">
-                                            <Clock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                                            <input
-                                                type="time"
-                                                value={selectedTime}
-                                                onChange={(e) => setSelectedTime(e.target.value)}
-                                                className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-400 focus:outline-none focus:border-blue-500 bg-white"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="text-slate-500 text-xs mb-2 block">Quick Slots</label>
-                                    <div className="flex flex-wrap gap-2">
-                                        {QUICK_SLOTS.map(slot => (
-                                            <button
-                                                key={slot}
-                                                onClick={() => setSelectedTime(slot)}
-                                                className="px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-600 text-xs font-medium hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors"
+                                                    }`}
                                             >
-                                                {slot}
+                                                {reason}
                                             </button>
                                         ))}
                                     </div>
                                 </div>
+
+                                <div className="bg-slate-50 border border-blue-100 rounded-xl p-5 mb-6">
+                                    <h3 className="text-slate-800 font-medium mb-4">Schedule Follow up</h3>
+                                    <div className="flex gap-4 mb-6">
+                                        <div className="flex-1">
+                                            <label className="text-slate-500 text-xs mb-1.5 block">Select Date</label>
+                                            <div className="relative">
+                                                <Calendar className="w-4 h-4 text-blue-600 absolute left-3 top-1/2 -translate-y-1/2" />
+                                                <input
+                                                    type="date"
+                                                    value={selectedDate}
+                                                    onChange={(e) => setSelectedDate(e.target.value)}
+                                                    className="w-full pl-9 pr-3 py-2 border border-blue-200 rounded-lg text-sm text-blue-600 font-medium focus:outline-none focus:border-blue-500 bg-white"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="text-slate-500 text-xs mb-1.5 block">Select Time</label>
+                                            <div className="relative">
+                                                <Clock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                                                <input
+                                                    type="time"
+                                                    value={selectedTime}
+                                                    onChange={(e) => setSelectedTime(e.target.value)}
+                                                    className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-400 focus:outline-none focus:border-blue-500 bg-white"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-slate-500 text-xs mb-2 block">Quick Slots</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {QUICK_SLOTS.map(slot => (
+                                                <button
+                                                    key={slot}
+                                                    onClick={() => setSelectedTime(slot)}
+                                                    className="px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-600 text-xs font-medium hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors"
+                                                >
+                                                    {slot}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mb-6">
+                                    <label className="text-slate-800 font-medium mb-2 block">Add A Note</label>
+                                    <input
+                                        type="text"
+                                        value={note}
+                                        onChange={(e) => setNote(e.target.value)}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                                        placeholder="Type here..."
+                                    />
+                                </div>
                             </div>
 
-                            <div className="mb-6">
-                                <label className="text-slate-800 font-medium mb-2 block">Add A Note</label>
-                                <input
-                                    type="text"
-                                    value={note}
-                                    onChange={(e) => setNote(e.target.value)}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                                    placeholder="Type here..."
-                                />
-                            </div>
-
-                            <div className="flex gap-4">
+                            <div className="sticky bottom-0 left-0 right-0 pt-4 mt-2 bg-white border-t border-slate-100 flex gap-4">
                                 <button
                                     onClick={handleLogOnly}
                                     className="flex-1 py-3 rounded-lg border border-[#1D4ED8] text-[#1D4ED8] font-bold text-sm hover:bg-blue-50 transition-colors"
