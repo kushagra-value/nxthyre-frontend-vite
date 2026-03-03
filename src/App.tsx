@@ -214,7 +214,7 @@ function MainApp() {
       case "candidatePool":
         return <CandidatesPool initialJobId={null} />;
       case "jobPipeline":
-        return <JobPipeline jobId={null} />;
+        return <JobPipeline jobId={null} workspaceId={0} workspaces={[]} />;
       default:
         return <Dashboard />;
     }
@@ -470,7 +470,20 @@ function MainApp() {
               <div className="flex h-screen overflow-hidden bg-[#F3F5F7]">
                 <Sidebar
                   currentPage={currentPage}
-                  onNavigate={setCurrentPage}
+                  onNavigate={(page) => {
+                    if (page === 'companies') {
+                      delete (window as any).__selectedWorkspaceName;
+                      delete (window as any).__selectedJobName;
+                      sessionStorage.removeItem("nxthyre_companies_wsId");
+                      sessionStorage.removeItem("nxthyre_companies_jobId");
+                      window.dispatchEvent(
+                        new CustomEvent("breadcrumb-navigate", {
+                          detail: { level: "companies" },
+                        }),
+                      );
+                    }
+                    setCurrentPage(page);
+                  }}
                 />
                 <main className="flex-1 flex flex-col overflow-hidden">
                   <HeaderBar
