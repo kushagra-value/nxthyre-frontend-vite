@@ -2,7 +2,14 @@ import { useState } from "react";
 import JobPipelineDashboard from "./JobPipelineDashboard";
 import JobCandidateProfile from "./JobCandidateProfile";
 
-export default function JobPipeline({ jobId }: { jobId: number | null }) {
+interface JobPipelineProps {
+    jobId: number | null;
+    workspaceId: number;
+    workspaces: { id: number; name: string }[];
+    onJobUpdated?: () => void;
+}
+
+export default function JobPipeline({ jobId, workspaceId, workspaces, onJobUpdated }: JobPipelineProps) {
     const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
 
     if (!jobId) {
@@ -19,6 +26,9 @@ export default function JobPipeline({ jobId }: { jobId: number | null }) {
             ) : (
                 <JobPipelineDashboard
                     jobId={jobId}
+                    workspaceId={workspaceId}
+                    workspaces={workspaces}
+                    onJobUpdated={onJobUpdated}
                     onSelectCandidate={(c: any) => setSelectedCandidate(c)}
                 />
             )}

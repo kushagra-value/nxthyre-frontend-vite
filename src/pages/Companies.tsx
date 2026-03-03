@@ -289,6 +289,12 @@ export default function Companies() {
         return (
             <JobPipeline
                 jobId={selectedJob.id}
+                workspaceId={selectedWorkspace.id}
+                workspaces={workspaces.map(ws => ({ id: ws.id, name: ws.name }))}
+                onJobUpdated={() => {
+                    jobPostService.getJob(selectedJob.id).then(j => setSelectedJob(j)).catch(() => { });
+                    fetchJobs();
+                }}
             />
         );
     }
