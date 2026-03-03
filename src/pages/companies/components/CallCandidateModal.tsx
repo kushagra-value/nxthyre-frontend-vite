@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X, Calendar, Clock, Phone } from 'lucide-react';
 
 export interface CallCandidateData {
@@ -38,6 +39,7 @@ const QUICK_SLOTS = [
 
 const CallCandidateModal: React.FC<CallCandidateModalProps> = ({ isOpen, onClose, candidate }) => {
     const [step, setStep] = useState<1 | 2>(1);
+    const navigate = useNavigate();
     const [selectedReason, setSelectedReason] = useState<string | null>(null);
     const [selectedDate, setSelectedDate] = useState<string>('');
     const [selectedTime, setSelectedTime] = useState<string>('');
@@ -46,8 +48,8 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({ isOpen, onClose
     if (!isOpen || !candidate) return null;
 
     const handleCallNow = () => {
-        // Integrate actual call logic if needed in future
-        setStep(2);
+        // Redirect to new call screen using candidate's ID
+        if (candidate) navigate(`/call/${candidate.id}`, { state: { candidate } });
     };
 
     const handleLogOnly = () => {

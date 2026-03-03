@@ -17,6 +17,7 @@ import PipelineSharePage from "./components/PipelineSharePage";
 import TermsAndConditions from "./components/TermsAndConditions";
 import JobApplicationForm from "./components/JobApplicationForm";
 import CandidateBackGroundCheck from "./components/CandidateBackGroundCheck";
+import CandidateCallPage from "./pages/companies/components/CandidateCallPage";
 import SuperAdminDashboard from "./components/SuperAdmin/SuperAdminDashboard";
 import ShareCandidateListPage from "./components/applicantTracking/ShareCandidateListPage";
 import ProjectSkeletonCard from "./components/skeletons/ProjectSkeletonCard";
@@ -400,6 +401,10 @@ function MainApp() {
         <Route
           path="/candidate-profiles/:candidateId"
           element={<ShareableProfile />}
+        />
+        <Route
+          path="/call/:candidateId"
+          element={<CandidateCallPage />}
         />
         <Route
           path="/linkedin-auth"
