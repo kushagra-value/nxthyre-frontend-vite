@@ -35,39 +35,61 @@ interface CandidateListItem {
     avatar: string;
     headline: string;
     location: string;
-    linkedin_url: string;
+    linkedin_url?: string;
     is_background_verified: boolean;
+    profile_picture_url?: string | null;
     experience_years: string;
     experience_summary: {
       title: string;
       date_range: string;
       duration_years: number;
-    };
-    education_summary: { title: string; date_range: string };
+    } | null;
+    education_summary: { title: string; date_range: string } | null;
     notice_period_summary: string;
     skills_list: string[];
-    social_links: {
+    social_links?: {
       linkedin: string;
       github: string;
       portfolio: string;
       resume: string;
     };
-    resume_url: string;
-    current_salary_lpa: string;
+    resume_url?: string;
+    current_salary_lpa: string | null;
+    expected_ctc?: string | null;
+    last_active_at?: string | null;
+    application_type?: string;
+    time_applied?: string | null;
     profile_summary?: string;
     total_experience?: number;
     notice_period_days?: number;
     premium_data_unlocked: boolean;
+    premium_data_availability?: Record<string, boolean>;
     premium_data?: {
       email?: string;
       phone?: string;
+      linkedin_url?: string | null;
+      github_url?: string | null;
+      twitter_url?: string | null;
+      resume_url?: string | null;
+      resume_text?: string;
+      portfolio_url?: string | null;
+      dribble_username?: string;
+      behance_username?: string;
+      instagram_username?: string;
+      pinterest_username?: string;
+      all_emails?: string[];
+      all_phone_numbers?: string[];
     };
     source?: {
-      source: string;
-      original_platform: string;
-    };
+      source: string | null;
+      original_platform: string | null;
+    } | null;
   };
   stage_slug: string;
+  status_tags: {
+    text: string;
+    color: string;
+  }[];
   job: {
     id: number;
     title: string;
@@ -76,11 +98,37 @@ interface CandidateListItem {
     id: number;
     name: string;
     slug: string;
+    stage_type?: string;
   };
-  status_tags: {
-    text: string;
-    color: string;
-  }[];
+  score?: any;
+  job_score?: {
+    gaps_risks?: string[];
+    candidate_id?: string;
+    call_attention?: string[];
+    candidate_name?: string;
+    quick_fit_summary?: {
+      badge: string;
+      color: string;
+      status: string;
+      evidence: string;
+      priority: string;
+    }[];
+    recommended_message?: string;
+    candidate_match_score?: {
+      note: string;
+      label: string;
+      score: string;
+      description: string;
+    };
+  } | null;
+  job_score_obj?: any;
+  source?: {
+    source: string | null;
+    original_platform: string | null;
+    source_type?: string;
+  };
+  time_added?: string;
+  auto_pilot?: boolean;
 }
 
 // ─── Props ─────────────────────────────────────────────────────
@@ -746,10 +794,31 @@ export default function JobPipelineDashboard({
                 const cand = item.candidate;
                 const stageIdx = getStageIndex(item.current_stage?.slug || item.stage_slug);
                 const totalStgs = stages.length > 0 ? stages.filter(s => s.slug !== "archives").length : 5;
-                const expYears = cand.total_experience != null ? `${cand.total_experience} Years` : cand.experience_years ? `${cand.experience_years} Years` : "--";
-                const ctc = cand.current_salary_lpa || "--";
+
+                // Experience — handle both numeric total_experience and string like "1+ years exp"
+                const expYears = cand.total_experience != null
+                  ? `${cand.total_experience} Years`
+                  : cand.experience_years
+                    ? cand.experience_years.replace(/\s*exp$/i, "")
+                    : "--";
+
+                // CTC
+                const ctc = cand.current_salary_lpa ? `${cand.current_salary_lpa} LPA` : "--";
+
+                // Expected CTC
+                const expectedCtc = cand.expected_ctc ? `${cand.expected_ctc} LPA` : "--";
+
+                // Notice period
                 const noticePeriod = cand.notice_period_summary || (cand.notice_period_days != null ? `${cand.notice_period_days} Days` : "--");
+
+                // Attention tag from status_tags
                 const attentionTag = item.status_tags?.find((t) => t.text);
+
+                // AI Score — read from item.job_score (top-level), not cand.job_score
+                const aiScoreRaw = item.job_score?.candidate_match_score?.score;
+                const aiScoreLabel = aiScoreRaw || "--%";
+                const aiScoreNum = aiScoreRaw ? parseInt(aiScoreRaw.replace("%", ""), 10) : 0;
+                const aiScoreColor = aiScoreNum >= 70 ? "#00C8B3" : aiScoreNum >= 40 ? "#FFCC00" : aiScoreNum > 0 ? "#FF383C" : "#E5E7EB";
 
                 return (
                   <tr key={item.id} className="hover:bg-[#F9FAFB] cursor-pointer transition-colors" onClick={() => onSelectCandidate?.(item)}>
@@ -766,15 +835,15 @@ export default function JobPipelineDashboard({
                       <div className="relative w-9 h-9">
                         <svg className="w-9 h-9 -rotate-90" viewBox="0 0 36 36">
                           <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#E5E7EB" strokeWidth="3.5" />
-                          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#00C8B3" strokeWidth="3.5" strokeDasharray="84, 100" />
+                          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={aiScoreColor} strokeWidth="3.5" strokeDasharray={`${aiScoreNum}, 100`} />
                         </svg>
-                        <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[#4B5563]">{cand?.job_score?.candidate_match_score.score ? `${cand.job_score.candidate_match_score.score}` : "--%"}</div>
+                        <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[#4B5563]">{aiScoreLabel}</div>
                       </div>
                     </td>
                     <td className="px-6 py-5 text-sm text-[#8E8E93]">{cand.location || "--"}</td>
                     <td className="px-6 py-5 text-sm text-[#8E8E93]">{expYears}</td>
                     <td className="px-6 py-5 text-sm text-[#8E8E93]">{ctc}</td>
-                    <td className="px-6 py-5 text-sm text-[#8E8E93]">--</td>
+                    <td className="px-6 py-5 text-sm text-[#8E8E93]">{expectedCtc}</td>
                     <td className="px-6 py-5 text-sm text-[#8E8E93]">{noticePeriod}</td>
                     <td className="px-6 py-5">
                       <div>
