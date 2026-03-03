@@ -237,6 +237,56 @@ export default function JobPipelineDashboard({
 
   // ── Kanban View State
   const [isKanbanView, setIsKanbanView] = useState(false);
+  const [draggedCandidateId, setDraggedCandidateId] = useState<number | null>(null);
+
+  const handleDragStart = (id: number) => {
+    setDraggedCandidateId(id);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent, toStageSlug: string) => {
+    e.preventDefault();
+    if (!draggedCandidateId || !jobId) return;
+
+    const toStage = stages.find(s => s.slug === toStageSlug);
+    if (!toStage) return;
+
+    // Optimistically update local state for fast UI feedback
+    setCandidates((prev) =>
+      prev.map((c) => {
+        if (c.id === draggedCandidateId) {
+          return {
+            ...c,
+            stage_slug: toStageSlug,
+            current_stage: toStage,
+          };
+        }
+        return c;
+      })
+    );
+    setDraggedCandidateId(null);
+
+    try {
+      if (toStageSlug === "archives") {
+        await apiClient.patch(`/jobs/applications/${draggedCandidateId}/`, {
+          current_stage: toStage.id,
+          status: "ARCHIVED",
+          archive_reason: "Candidate archived from Kanban",
+        });
+      } else {
+        await apiClient.patch(`/jobs/applications/${draggedCandidateId}/`, {
+          current_stage: toStage.id,
+        });
+      }
+      showToast.success(`Candidate moved to ${toStage.name}`);
+    } catch (error) {
+      console.error("Error moving candidate:", error);
+      showToast.error("Failed to move candidate");
+    }
+  };
 
   // ── Requisition Info Modal
   const [showRequisitionInfoModal, setShowRequisitionInfoModal] = useState(false);
@@ -789,33 +839,37 @@ export default function JobPipelineDashboard({
          ═══════════════════════════════════════════════════════ */}
       <div className="mx-8 mt-4 flex items-center justify-between bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
         <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => setActiveStageSlug(null)}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === null
-              ? "bg-[#0F47F2] text-white"
-              : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
-              }`}
-          >
-            All ({totalPipelineCandidates})
-          </button>
-
-          {loadingStages ? (
-            Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="w-28 h-8 bg-gray-200 rounded-full animate-pulse" />
-            ))
-          ) : (
-            stages.filter((s) => s.slug !== "archives").map((stage) => (
+          {!isKanbanView && (
+            <>
               <button
-                key={stage.id}
-                onClick={() => setActiveStageSlug(stage.slug)}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === stage.slug
+                onClick={() => setActiveStageSlug(null)}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === null
                   ? "bg-[#0F47F2] text-white"
                   : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
                   }`}
               >
-                {stage.name} ({stage.candidate_count})
+                All ({totalPipelineCandidates})
               </button>
-            ))
+
+              {loadingStages ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="w-28 h-8 bg-gray-200 rounded-full animate-pulse" />
+                ))
+              ) : (
+                stages.filter((s) => s.slug !== "archives").map((stage) => (
+                  <button
+                    key={stage.id}
+                    onClick={() => setActiveStageSlug(stage.slug)}
+                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === stage.slug
+                      ? "bg-[#0F47F2] text-white"
+                      : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
+                      }`}
+                  >
+                    {stage.name} ({stage.candidate_count})
+                  </button>
+                ))
+              )}
+            </>
           )}
         </div>
 
@@ -876,17 +930,22 @@ export default function JobPipelineDashboard({
           Content View (Table or Kanban)
          ═══════════════════════════════════════════════════════ */}
       {isKanbanView ? (
-        <div className="mx-8 bg-[#F3F5F7] border border-[#E5E7EB] rounded-b-2xl overflow-x-auto p-6 flex gap-6 min-h-[500px]">
-          {stages.filter((s) => s.slug !== "archives").map((stage) => {
+        <div className="mx-8 bg-[#F3F5F7] border border-[#E5E7EB] rounded-b-2xl overflow-x-auto p-6 flex gap-6 min-h-[500px] items-start">
+          {stages.map((stage) => {
             const columnCandidates = candidates.filter((item) => {
               const itemStageSlug = item.current_stage?.slug || item.stage_slug;
               return itemStageSlug === stage.slug;
             });
 
             return (
-              <div key={stage.id} className="min-w-[320px] w-[320px] bg-white border border-[#E5E7EB] rounded-xl flex flex-col pt-3 pb-2 h-full max-h-[70vh]">
+              <div
+                key={stage.id}
+                className="min-w-[320px] w-[320px] bg-white border border-[#E5E7EB] rounded-xl flex flex-col pt-3 pb-2 h-full max-h-[70vh]"
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, stage.slug)}
+              >
                 <div className="px-5 pb-3 border-b border-[#E5E7EB] flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-[#4B5563]">{stage.name}</h3>
+                  <h3 className="text-sm font-bold text-[#4B5563] capitalize">{stage.name}</h3>
                   <span className="text-xs bg-[#F9FAFB] border border-[#D1D1D6] text-[#8E8E93] rounded-full px-2 py-0.5 font-bold">{columnCandidates.length}</span>
                 </div>
 
@@ -896,10 +955,27 @@ export default function JobPipelineDashboard({
                     const aiScoreRaw = item.job_score?.candidate_match_score?.score || "--%";
 
                     return (
-                      <div key={item.id} onClick={() => onSelectCandidate?.(item)} className="bg-white border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm cursor-pointer hover:shadow-md hover:border-[#0F47F2]/50 transition-all flex flex-col gap-1">
-                        <div className="flex items-start justify-between gap-2">
+                      <div
+                        key={item.id}
+                        onClick={() => onSelectCandidate?.(item)}
+                        draggable
+                        onDragStart={() => handleDragStart(item.id)}
+                        className="bg-white border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/50 transition-all flex flex-col gap-1 relative"
+                      >
+                        <div className="absolute top-3 right-3 z-10">
+                          <input
+                            type="checkbox"
+                            className="w-4 h-4 accent-[#0F47F2]"
+                            checked={selectedIds.has(item.id)}
+                            onChange={() => handleToggleCandidate(item.id)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                        <div className="flex items-start justify-between gap-2 pr-6">
                           <h4 className="font-bold text-[14px] text-slate-800 line-clamp-1">{cand.full_name || "--"}</h4>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100 flex-shrink-0">{aiScoreRaw}</span>
+                        </div>
+                        <div className="inline-flex">
+                          <span className="text-[10px] font-bold px-2 py-0.5 mt-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100 flex-shrink-0">{aiScoreRaw}</span>
                         </div>
                         <p className="text-xs text-slate-500 line-clamp-1">{cand.headline || "--"}</p>
 
