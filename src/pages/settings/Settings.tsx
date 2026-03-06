@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, User, Bell, Shield, Globe, Palette, Database, HelpCircle, Save } from 'lucide-react';
-import { showToast } from '../utils/toast';
+import { showToast } from '../../utils/toast';
 
 interface SettingsProps {
   onBack: () => void;

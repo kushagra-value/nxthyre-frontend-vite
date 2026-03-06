@@ -259,14 +259,14 @@ const NotesIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
-import { showToast } from "../../utils/toast";
+import { showToast } from "../../../utils/toast";
 import {
   candidateService,
   CandidateDetailData,
   CandidateListItem,
   Note,
   AnalysisResult,
-} from "../../services/candidateService";
+} from "../../../services/candidateService";
 import { CompanyHoverCard } from "./CompanyHoverCard";
 
 interface HighlightedTextProps {

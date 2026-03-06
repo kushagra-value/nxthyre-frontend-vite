@@ -16,9 +16,9 @@ import {
   Bold,
   Italic,
 } from "lucide-react";
-import { showToast } from "../../utils/toast";
-import { jobPostService, Job, CreateJobData } from "../../services/jobPostService";
-import { candidateService } from "../../services/candidateService";
+import { showToast } from "../../../utils/toast";
+import { jobPostService, Job, CreateJobData } from "../../../services/jobPostService";
+import { candidateService } from "../../../services/candidateService";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { debounce } from "lodash";
@@ -970,8 +970,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
               <div className="flex flex-col justify-center gap-2 items-center">
                 <span
                   className={`ml-2 text-sm ${currentStep >= 1
-                      ? "text-blue-500 font-medium"
-                      : "text-gray-500"
+                    ? "text-blue-500 font-medium"
+                    : "text-gray-500"
                     }`}
                 >
                   Basic Info
@@ -984,8 +984,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
               <div className="flex flex-col justify-center gap-2 items-center">
                 <span
                   className={`ml-2 text-sm ${currentStep >= 2
-                      ? "text-blue-500 font-medium"
-                      : "text-gray-500"
+                    ? "text-blue-500 font-medium"
+                    : "text-gray-500"
                     }`}
                 >
                   Update and Refine JD
@@ -1358,8 +1358,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                         }))
                       }
                       className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-md font-[400] transition-all duration-200 ${formData.confidential
-                          ? "bg-[#ECF1FF] text-blue-600"
-                          : "bg-[#F0F0F0] text-gray-400"
+                        ? "bg-[#ECF1FF] text-blue-600"
+                        : "bg-[#F0F0F0] text-gray-400"
                         }`}
                       disabled={isLoading}
                     >
@@ -1396,8 +1396,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                         }))
                       }
                       className={`px-3 py-1 text-sm rounded-md transition-colors ${formData.uploadType === "paste"
-                          ? "bg-white text-blue-600 shadow-sm"
-                          : "text-gray-600"
+                        ? "bg-white text-blue-600 shadow-sm"
+                        : "text-gray-600"
                         }`}
                       disabled={isLoading}
                     >
@@ -1412,8 +1412,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                         }))
                       }
                       className={`px-3 py-1 text-sm rounded-md transition-colors ${formData.uploadType === "upload"
-                          ? "bg-white text-blue-600 shadow-sm"
-                          : "text-gray-600"
+                        ? "bg-white text-blue-600 shadow-sm"
+                        : "text-gray-600"
                         }`}
                       disabled={isLoading}
                     >

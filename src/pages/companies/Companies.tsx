@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../../hooks/useAuth";
 import {
     organizationService,
     MyWorkspace,
     CompanyResearchData,
     WorkspaceStatsCount
-} from "../services/organizationService";
-import { jobPostService, Job } from "../services/jobPostService";
+} from "../../services/organizationService";
+import { jobPostService, Job } from "../../services/jobPostService";
 import {
     Search,
     ChevronLeft,
@@ -23,18 +23,18 @@ import {
     ArrowDown,
     ArrowUpDown
 } from "lucide-react";
-import CreateWorkspaceModal from "./companies/components/CreateWorkspaceModal";
-import JoinWorkspaceModal from "./companies/components/JoinWorkspaceModal";
-import PendingRequestsModal from "./companies/components/PendingRequestsModal";
-import { showToast } from "../utils/toast";
-import CompanyInfoDrawer from "./companies/components/CompanyInfoDrawer";
-import JobListing from "./companies/components/JobListing";
-import JobPipeline from "./companies/components/JobPipeline";
+import CreateWorkspaceModal from "./components/CreateWorkspaceModal";
+import JoinWorkspaceModal from "./components/JoinWorkspaceModal";
+import PendingRequestsModal from "./components/PendingRequestsModal";
+import { showToast } from "../../utils/toast";
+import CompanyInfoDrawer from "./components/CompanyInfoDrawer";
+import JobListing from "./components/JobListing";
+import JobPipeline from "./components/JobPipeline";
 import {
     companyStatCards,
     companyTableRows,
     CompanyTableRow,
-} from "./companies/companiesData";
+} from "./companiesData";
 
 
 

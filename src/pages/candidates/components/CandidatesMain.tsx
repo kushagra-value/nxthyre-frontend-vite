@@ -34,10 +34,10 @@ import {
   BulkPipelineResponse,
   PipelineStage,
   ExportCandidateResponse,
-} from "../../services/candidateService";
-import { showToast } from "../../utils/toast";
-import { AnalysisResult } from "../../services/candidateService";
-import ShareableProfile from "../profileShare/ShareableProfile";
+} from "../../../services/candidateService";
+import { showToast } from "../../../utils/toast";
+import { AnalysisResult } from "../../../services/candidateService";
+import ShareableProfile from "../../profileShare/ShareableProfile";
 
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -1019,8 +1019,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`py-2 text-sm 2xl:text-base font-[400] rounded-t-lg transition-all duration-200 whitespace-nowrap border-b-2 focus-visible:border-b-2 focus-visible:border-blue-600 ${activeTab === tab.id
-                    ? "text-blue-600 border-blue-500"
-                    : "text-gray-600 border-transparent hover:text-gray-700"
+                  ? "text-blue-600 border-blue-500"
+                  : "text-gray-600 border-transparent hover:text-gray-700"
                   }`}
                 aria-label={`Switch to ${tab.label} tab`}
               >
@@ -1158,8 +1158,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 <button
                   onClick={() => setShowSourceDropdown((prev) => !prev)}
                   className={`flex items-center gap-2.5 px-4 py-2.5 rounded-lg border transition-colors hover:border-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 ${selectedSource
-                      ? "border-blue-400 bg-blue-50 text-blue-600"
-                      : "border-gray-300 bg-white text-gray-400"
+                    ? "border-blue-400 bg-blue-50 text-blue-600"
+                    : "border-gray-300 bg-white text-gray-400"
                     }`}
                 >
                   {selectedSource ? (
@@ -1219,8 +1219,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                             onInboundSourceChange?.(option.value);
                           }}
                           className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors ${selectedSource === option.value
-                              ? "bg-blue-50 text-blue-600"
-                              : "text-gray-700"
+                            ? "bg-blue-50 text-blue-600"
+                            : "text-gray-700"
                             }`}
                         >
                           <div className="w-6 h-6 flex-shrink-0">
@@ -1523,8 +1523,8 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                 <div
                   key={candidate.id}
                   className={`relative pt-5 cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2  ${selectedCandidate?.id === candidate.id
-                      ? "bg-white border-l-4 border-blue-500 shadow-[0_0_20px_0_rgba(0,0,0,0.15),_0_0_8px_0_rgba(0,0,0,0.1)]"
-                      : "border border-gray-200"
+                    ? "bg-white border-l-4 border-blue-500 shadow-[0_0_20px_0_rgba(0,0,0,0.15),_0_0_8px_0_rgba(0,0,0,0.1)]"
+                    : "border border-gray-200"
                     }`}
                   onClick={() => handleCandidateClick(candidate)}
                   onKeyDown={(e) => handleKeyDown(e, candidate)}
@@ -2867,10 +2867,10 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     typeof page === "number" && handlePageChange(page)
                   }
                   className={`px-3 py-1 text-sm rounded-lg transition-colors focus-visible:ring focus-visible:ring-2 focus-visible:ring-blue-500 ${page === currentPage
-                      ? "bg-blue-600 text-white"
-                      : typeof page === "number"
-                        ? "text-gray-600 hover:bg-gray-100"
-                        : "text-gray-600 cursor-default"
+                    ? "bg-blue-600 text-white"
+                    : typeof page === "number"
+                      ? "text-gray-600 hover:bg-gray-100"
+                      : "text-gray-600 cursor-default"
                     }`}
                   disabled={typeof page !== "number"}
                   area-label={`Go to page ${page}`}
@@ -2912,10 +2912,10 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
                     typeof page === "number" && handlePageChange(page)
                   }
                   className={`px-3 py-1 text-sm rounded-lg transition-colors ${page === currentPage
-                      ? "bg-blue-600 text-white"
-                      : typeof page === "number"
-                        ? "text-gray-600 hover:bg-gray-100"
-                        : "text-gray-600 cursor-default"
+                    ? "bg-blue-600 text-white"
+                    : typeof page === "number"
+                      ? "text-gray-600 hover:bg-gray-100"
+                      : "text-gray-600 cursor-default"
                     }`}
                   disabled={typeof page !== "number"}
                 >

@@ -10,7 +10,7 @@ import apiClient from "../../../services/api";
 import { jobPostService, Job } from "../../../services/jobPostService";
 import { organizationService, CompanyResearchData } from "../../../services/organizationService";
 import { candidateService } from "../../../services/candidateService";
-import EditJobRoleModal from "../../../components/candidatePool/EditJobRoleModal";
+import EditJobRoleModal from "../../candidates/components/EditJobRoleModal";
 import CompanyInfoTab from "./CompanyInfoTab";
 import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
 import toast from "react-hot-toast";

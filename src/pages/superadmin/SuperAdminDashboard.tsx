@@ -1,5 +1,5 @@
 import { useState } from "react";
-import DashboardLayout from "./DashboardLayout";
+import DashboardLayout from "../../components/layout/DashboardLayout";
 import UsersManagement from "./UsersManagement";
 import OrganizationsManagement from "./OrganizationsManagement";
 import CreditsManagement from "./CreditsManagement";

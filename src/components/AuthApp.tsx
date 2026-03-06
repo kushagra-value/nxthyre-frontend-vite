@@ -1,10 +1,10 @@
 import React, { useState, useEffect, Component, ReactNode } from "react";
-import SignUp from "./auth/SignUp";
-import Login from "./auth/Login";
-import OTPVerification from "./auth/OTPVerification";
-import ForgotPassword from "./auth/ForgotPassword";
-import ResetPassword from "./auth/ResetPassword";
-import LinkedInAuth from "./auth/LinkedInAuth";
+import SignUp from "../pages/auth/SignUp";
+import Login from "../pages/auth/Login";
+import OTPVerification from "../pages/auth/OTPVerification";
+import ForgotPassword from "../pages/auth/ForgotPassword";
+import ResetPassword from "../pages/auth/ResetPassword";
+import LinkedInAuth from "../pages/auth/LinkedInAuth";
 import WorkspacesOrg from "./workspace/WorkspacesOrg";
 import WorkspaceJoining from "./workspace/WorkspaceJoining";
 import WorkspaceCreation from "./workspace/WorkspaceCreation";
@@ -145,7 +145,7 @@ const AuthApp: React.FC<AuthAppProps> = ({
     }
   };
 
-  useEffect(() => {}, [authState.currentFlow]);
+  useEffect(() => { }, [authState.currentFlow]);
 
   return renderCurrentFlow();
 };

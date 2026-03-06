@@ -10,16 +10,16 @@ import { AuthProvider, useAuthContext } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./hooks/useAuth";
 import AuthApp from "./components/AuthApp";
-import LinkedInAuth from "./components/auth/LinkedInAuth";
-import Settings from "./components/Settings";
-import ShareableProfile from "./components/profileShare/ShareableProfile";
-import PipelineSharePage from "./components/PipelineSharePage";
-import TermsAndConditions from "./components/TermsAndConditions";
-import JobApplicationForm from "./components/JobApplicationForm";
-import CandidateBackGroundCheck from "./components/CandidateBackGroundCheck";
+import LinkedInAuth from "./pages/auth/LinkedInAuth";
+import Settings from "./pages/settings/Settings";
+import ShareableProfile from "./pages/profileShare/ShareableProfile";
+import PipelineSharePage from "./pages/pipelines/PipelineSharePage";
+import TermsAndConditions from "./components/legal/TermsAndConditions";
+import JobApplicationForm from "./pages/candidates/components/JobApplicationForm";
+import CandidateBackGroundCheck from "./pages/candidates/components/CandidateBackGroundCheck";
 import CandidateCallPage from "./pages/companies/components/CandidateCallPage";
-import SuperAdminDashboard from "./components/SuperAdmin/SuperAdminDashboard";
-import ShareCandidateListPage from "./components/applicantTracking/ShareCandidateListPage";
+import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
+import ShareCandidateListPage from "./pages/pipelines/ShareCandidateListPage";
 import ProjectSkeletonCard from "./components/skeletons/ProjectSkeletonCard";
 import {
   organizationService,
@@ -31,15 +31,15 @@ import { Users, LogOut } from "lucide-react";
 
 
 // Layout
-import Sidebar from "./components/Sidebar";
-import HeaderBar from "./components/Header";
+import Sidebar from "./components/layout/Sidebar";
+import HeaderBar from "./components/layout/Header";
 
 // Pages
-import Dashboard from "./pages/Dashboard";
-import Interviews from "./pages/Interviews";
-import CandidatesPool from "./pages/CandidatesPool";
+import Dashboard from "./pages/dashboard/Dashboard";
+import Interviews from "./pages/interviews/Interviews";
+import CandidatesPool from "./pages/candidates/CandidatesPool";
 import JobPipeline from "./pages/companies/components/JobPipeline";
-import Companies from "./pages/Companies";
+import Companies from "./pages/companies/Companies";
 
 function MainApp() {
   const navigate = useNavigate();

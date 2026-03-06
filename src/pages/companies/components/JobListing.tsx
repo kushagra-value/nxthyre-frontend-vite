@@ -27,8 +27,8 @@ import {
 import { MyWorkspace } from "../../../services/organizationService";
 import { Job, jobPostService } from "../../../services/jobPostService";
 import { showToast as toastUtil } from "../../../utils/toast";
-import CreateJobRoleModal from "../../../components/candidatePool/CreateJobRoleModal";
-import EditJobRoleModal from "../../../components/candidatePool/EditJobRoleModal";
+import CreateJobRoleModal from "../../candidates/components/CreateJobRoleModal";
+import EditJobRoleModal from "../../candidates/components/EditJobRoleModal";
 import CompanyInfoDrawer from "./CompanyInfoDrawer";
 
 interface JobListingProps {
