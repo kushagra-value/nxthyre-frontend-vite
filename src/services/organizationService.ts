@@ -462,6 +462,42 @@ class OrganizationService {
       );
     }
   }
+  async exportWorkspacesCSV(): Promise<void> {
+    try {
+      const response = await apiClient.get("/organization/my-workspaces/export-csv/", {
+        responseType: 'blob', // Important for receiving binary data
+      });
+
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+
+      // Create a temporary link element
+      const link = document.createElement('a');
+      link.href = url;
+
+      // Try to extract filename from Content-Disposition header if possible, else default
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = "workspaces_export.csv";
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (filenameMatch && filenameMatch.length === 2) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to export workspaces as CSV"
+      );
+    }
+  }
 }
 
 export const organizationService = new OrganizationService();

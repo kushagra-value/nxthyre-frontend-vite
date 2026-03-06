@@ -661,11 +661,15 @@ export default function Companies() {
 
                                     {/* Export CSV */}
                                     <button
-                                        className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
-                                        title="Feature Coming Soon"
-                                        disabled
+                                        onClick={() => {
+                                            organizationService.exportWorkspacesCSV()
+                                                .then(() => showToast.success("Export started successfully"))
+                                                .catch((err) => showToast.error(err.message || "Failed to export data"));
+                                        }}
+                                        className="flex items-center gap-2 px-3 py-2 bg-white text-[#4B5563] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] hover:text-black transition-colors"
+                                        title="Export Workspaces CSV"
                                     >
-                                        <DownloadCloud className="w-4 h-4 text-[#AEAEB2]" /> Export CSV
+                                        <DownloadCloud className="w-4 h-4 text-[#4B5563]" /> Export CSV
                                     </button>
 
                                     {/* Date Picker Mock */}
