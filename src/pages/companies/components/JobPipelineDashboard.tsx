@@ -19,14 +19,14 @@ import * as XLSX from "xlsx";
 
 // ─── Interfaces ────────────────────────────────────────────────
 
-interface Stage {
+export interface Stage {
   id: number;
   name: string;
   slug: string;
   sort_order: number;
-  stage_type: string;
-  candidate_count: number;
-  activity_update: string;
+  stage_type?: string;
+  candidate_count?: number;
+  activity_update?: string;
 }
 
 interface CandidateListItem {
@@ -142,6 +142,8 @@ interface JobPipelineDashboardProps {
   workspaces: { id: number; name: string }[];
   onJobUpdated?: () => void;
   onSelectCandidate?: (candidate: CandidateListItem, allCandidates?: CandidateListItem[], index?: number) => void;
+  externalStages?: Stage[];
+  onRefreshStages?: () => void;
 }
 
 // ─── Helpers ───────────────────────────────────────────────────
@@ -191,6 +193,7 @@ const statusColor = (status?: string): { bg: string; dot: string; text: string }
 
 export default function JobPipelineDashboard({
   jobId, workspaceId, workspaces, onJobUpdated, onSelectCandidate,
+  externalStages, onRefreshStages,
 }: JobPipelineDashboardProps) {
 
 
@@ -519,9 +522,20 @@ export default function JobPipelineDashboard({
     refreshJobDetails();
   }, [refreshJobDetails]);
 
+  // ── Sync Stages from Prop
+  useEffect(() => {
+    if (externalStages && externalStages.length > 0) {
+      setStages(externalStages);
+    }
+  }, [externalStages]);
+
   // ── Fetch Stages ─────────────────────────────────────────────
 
   const fetchStages = useCallback(async (jId: number) => {
+    if (onRefreshStages) {
+      onRefreshStages();
+      return;
+    }
     setLoadingStages(true);
     try {
       const response = await apiClient.get(`/jobs/applications/stages/?job_id=${jId}`);
@@ -534,11 +548,13 @@ export default function JobPipelineDashboard({
     } finally {
       setLoadingStages(false);
     }
-  }, []);
+  }, [onRefreshStages]);
 
   useEffect(() => {
-    if (jobId != null) { fetchStages(jobId); }
-  }, [jobId, fetchStages]);
+    if (jobId != null && (!externalStages || externalStages.length === 0)) {
+      fetchStages(jobId);
+    }
+  }, [jobId, fetchStages, externalStages]);
 
   // ── Fetch Candidates ─────────────────────────────────────────
 
@@ -639,7 +655,7 @@ export default function JobPipelineDashboard({
 
   // ── Derived ──────────────────────────────────────────────────
 
-  const totalPipelineCandidates = stages.reduce((sum, s) => sum + s.candidate_count, 0);
+  const totalPipelineCandidates = stages.reduce((sum, s) => sum + (s.candidate_count || 0), 0);
 
   const getStageIndex = (slug: string): number => {
     const idx = stages.findIndex((s) => s.slug === slug);

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import {
-    Mail, Download, Check, FileText, MapPin, Clock, Briefcase,
-    ExternalLink, Phone, ArrowLeft, Calendar, Linkedin
+    Mail, Download, Check, MapPin, Briefcase,
+    Phone, ArrowLeft, Calendar, Linkedin, Github, Globe,
+    UserCircle, TrendingUp, Palette, FileText
 } from "lucide-react";
 import candidateService from "../../../services/candidateService";
 
@@ -19,6 +20,7 @@ interface Activity {
 interface JobCandidateProfileProps {
     candidate: any;       // Raw API response from /jobs/applications/{id}/
     jobId: number | null;
+    stages: any[];
     goBack: () => void;
     loading?: boolean;
     onNavigatePrev?: () => void;
@@ -29,20 +31,13 @@ interface JobCandidateProfileProps {
 
 // ─── Helpers ───────────────────────────────────────────────
 
-const formatExpDuration = (startDate?: string, endDate?: string, isCurrent?: boolean): string => {
-    const start = startDate ? new Date(startDate) : null;
-    const end = isCurrent ? new Date() : endDate ? new Date(endDate) : null;
-    if (!start) return "";
-    const startYear = start.getFullYear();
-    const endYear = end ? end.getFullYear() : "Present";
-    const diffYears = end ? Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 365))) : 0;
-    return `${startYear} — ${endYear}${diffYears ? ` · ${diffYears} yr${diffYears > 1 ? "s" : ""}` : ""}`;
-};
+
 
 // ─── Component ─────────────────────────────────────────────
 
 export default function JobCandidateProfile({
     candidate,
+    stages,
     goBack,
     loading,
     onNavigatePrev,
@@ -67,7 +62,6 @@ export default function JobCandidateProfile({
     const experience = cand.experience || [];
     const education = cand.education || [];
     const skills = cand.skills_list || [];
-    const socialLinks = cand.social_links || {};
     const premiumData = cand.premium_data || {};
     const premiumUnlocked = cand.premium_data_unlocked || false;
     const noticePeriod = cand.notice_period_summary || (cand.notice_period_days ? `${cand.notice_period_days} Days` : "--");
@@ -80,7 +74,7 @@ export default function JobCandidateProfile({
     const aiSummary = aiReport?.feedbacks?.overallFeedback || "";
 
     // States
-    const [activeTab, setActiveTab] = useState<"info" | "activity" | "notes">("info");
+    const [activeTab, setActiveTab] = useState<"info" | "activity" | "notes" | "links">("info");
     const [activities, setActivities] = useState<Activity[]>([]);
     const [loadingActivities, setLoadingActivities] = useState(false);
 
@@ -317,42 +311,54 @@ export default function JobCandidateProfile({
                 {/* ── Current Stage Pipeline Section ── */}
                 <div className="bg-white rounded-xl p-8 shadow-sm">
                     <h3 className="text-xs font-medium text-[#4B5563] mb-8">
-                        CURRENT STAGE <span className="text-[#0F47F2] ml-2 font-bold uppercase">{candidate.current_stage?.name || "--"}</span>
+                        CURRENT STAGE <span className="text-[#0F47F2] ml-4 font-bold uppercase">{candidate.current_stage?.name || "--"}</span>
                     </h3>
 
-                    <div className="flex items-center justify-between mb-8 relative">
-                        {/* This would be the pipeline UI from Figma */}
-                        <div className="w-full flex items-center gap-0 overflow-x-auto no-scrollbar py-4">
-                            {[1, 2, 3, 4, 5, 6, 7, 8].map((step, i) => {
-                                const isCompleted = i < 2; // Mocking for now based on image
-                                const isActive = i === 2;
+                    <div className="flex items-center justify-between mb-8 relative overflow-x-auto no-scrollbar py-4">
+                        <div className="flex items-center w-full min-w-max gap-0 pr-4">
+                            {stages.filter(s => s.slug !== 'archives').map((stage, i) => {
+                                const currentStageIndex = stages.findIndex(s => s.slug === (candidate.current_stage?.slug || candidate.stage_slug));
+                                const isCompleted = i < currentStageIndex;
+                                const isActive = i === currentStageIndex;
+
                                 return (
-                                    <div key={step} className="flex-1 flex items-center min-w-[80px]">
-                                        <div className="flex flex-col items-center flex-1 relative">
-                                            <div
-                                                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold z-10 transition-colors
-                                                ${isCompleted ? 'bg-[#009951] text-white' : isActive ? 'bg-[#0F47F2] text-white' : 'bg-[#E5E7EB] text-[#8E8E93]'}`}
-                                            >
-                                                {isCompleted ? <Check className="w-6 h-6" /> : step}
+                                    <div key={stage.id} className="flex items-center flex-1 min-w-[100px] last:flex-none last:min-w-[80px]">
+                                        <div className="flex flex-col items-center relative z-10 w-[80px]">
+                                            <div className="relative group">
+                                                {isCompleted ? (
+                                                    <div className="w-10 h-10 flex items-center justify-center">
+                                                        <svg width="40" height="40" viewBox="0 0 58 58" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10">
+                                                            <path d="M23.6391 9.40147C25.0017 8.24019 25.683 7.65957 26.3954 7.31908C28.0431 6.53154 29.9586 6.53154 31.6063 7.31908C32.3187 7.65957 32.9999 8.24019 34.3627 9.40147C34.905 9.86366 35.1762 10.0948 35.4659 10.2889C36.1298 10.7339 36.8753 11.0427 37.6593 11.1975C38.0015 11.265 38.3565 11.2934 39.067 11.35C40.8517 11.4924 41.7439 11.5637 42.4885 11.8266C44.2104 12.4348 45.5649 13.7893 46.1732 15.5112C46.4361 16.2557 46.5072 17.1481 46.6498 18.9328C46.7063 19.6431 46.7346 19.9983 46.8022 20.3403C46.9569 21.1244 47.2658 21.87 47.7109 22.5339C47.905 22.8235 48.136 23.0947 48.5983 23.637C49.7595 24.9997 50.3402 25.6812 50.6808 26.3934C51.4681 28.0411 51.4681 29.9565 50.6808 31.6042C50.3402 32.3166 49.7595 32.9979 48.5983 34.3606C48.136 34.9029 47.905 35.1741 47.7109 35.4638C47.2658 36.1277 46.9569 36.8732 46.8022 37.6574C46.7346 37.9994 46.7063 38.3547 46.6498 39.0649C46.5072 40.8496 46.4361 41.7419 46.1732 42.4864C45.5649 44.2083 44.2104 45.5628 42.4885 46.1711C41.7439 46.4341 40.8517 46.5051 39.067 46.6477C38.3565 46.7042 38.0015 46.7328 37.6593 46.8002C36.8753 46.9551 36.1298 47.2637 35.4659 47.7088C35.1762 47.9029 34.905 48.1339 34.3627 48.5962C32.9999 49.7575 32.3187 50.3382 31.6063 50.6787C29.9586 51.466 28.0431 51.466 26.3954 50.6787C25.683 50.3382 25.0017 49.7575 23.6391 48.5962C23.0967 48.1339 22.8255 47.9029 22.5359 47.7088C21.872 47.2637 21.1265 46.9551 20.3424 46.8002C20.0003 46.7328 19.6452 46.7042 18.9348 46.6477C17.1501 46.5051 16.2577 46.4341 15.5133 46.1711C13.7913 45.5628 12.4369 44.2083 11.8287 42.4864C11.5657 41.7419 11.4945 40.8496 11.3521 39.0649C11.2954 38.3547 11.2671 37.9994 11.1995 37.6574C11.0447 36.8732 10.7359 36.1277 10.2909 35.4638C10.0968 35.1741 9.86571 34.9029 9.40352 34.3606C8.24224 32.9979 7.66162 32.3166 7.32111 31.6042C6.53359 29.9565 6.53359 28.0411 7.32111 26.3934C7.66162 25.6809 8.24224 24.9997 9.40352 23.637C9.86571 23.0947 10.0968 22.8235 10.2909 22.5339C10.7359 21.87 11.0447 21.1244 11.1995 20.3403C11.2671 19.9983 11.2954 19.6431 11.3521 18.9328C11.4945 17.1481 11.5657 16.2557 11.8287 15.5112C12.4369 13.7893 13.7913 12.4348 15.5133 11.8266C16.2577 11.5637 17.1501 11.4924 18.9348 11.35C19.6452 11.2934 20.0003 11.265 20.3424 11.1975C21.1265 11.0427 21.872 10.7339 22.5359 10.2889C22.8255 10.0948 23.0967 9.86366 23.6391 9.40147Z" fill="#14AE5C" />
+                                                            <path d="M20.541 30.2083L25.3743 35.0416L37.4577 22.9583" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                                        </svg>
+                                                    </div>
+                                                ) : (
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors
+                                                        ${isActive ? 'bg-[#0F47F2] text-white' : 'bg-[#E5E7EB] text-[#8E8E93]'}`}>
+                                                        {i + 1}
+                                                    </div>
+                                                )}
                                             </div>
-                                            <span className={`text-[11px] mt-2 font-medium ${isActive ? 'text-[#0F47F2]' : 'text-[#8E8E93]'}`}>
-                                                {['Sourcing', 'Screening', 'Round2', 'Shortlist', 'Technical', 'F2F', 'Offer', 'Hired'][i]}
+                                            <span className={`text-[11px] mt-3 font-semibold text-center whitespace-normal leading-tight px-1 ${isActive ? 'text-[#0F47F2]' : 'text-[#8E8E93]'}`}>
+                                                {stage.name}
                                             </span>
                                         </div>
-                                        {i < 7 && (
-                                            <div className={`flex-1 h-[2px] -mt-6 transition-colors ${isCompleted ? 'bg-[#009951]' : 'bg-[#E5E7EB]'}`} />
+                                        {i < stages.filter(s => s.slug !== 'archives').length - 1 && (
+                                            <div className="flex-1 px-1">
+                                                <div className={`h-[2px] transition-colors -mt-10 ${isCompleted ? 'bg-[#009951]' : 'bg-[#E5E7EB]'}`} />
+                                            </div>
                                         )}
                                     </div>
-                                )
+                                );
                             })}
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <button className="flex items-center gap-2 bg-[#0F47F2] text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-700 transition shadow-sm">
+                        <button className="flex items-center gap-2 bg-[#0F47F2] text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition shadow-md">
                             Move to Stage
                         </button>
-                        <button className="flex items-center gap-2 bg-white border border-[#FEE9E7] text-[#DC2626] px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#FEE9E7] transition">
+                        <button className="flex items-center gap-2 bg-white border border-[#FEE9E7] text-[#DC2626] px-8 py-3 rounded-xl text-sm font-bold hover:bg-[#FEE9E7] transition">
                             Move to Archive
                         </button>
                     </div>
@@ -453,21 +459,27 @@ export default function JobCandidateProfile({
                 <div className="bg-white rounded-xl shadow-sm border border-[#E5E7EB] overflow-hidden">
                     {/* Sidebar tabs */}
                     <div className="flex border-b border-[#E5E7EB]">
-                        {(["info", "activity", "notes"] as const).map((tab) => (
-                            <button
-                                key={tab}
-                                onClick={() => setActiveTab(tab)}
-                                className={`flex-1 py-4 text-sm font-medium capitalize transition-colors flex items-center justify-center gap-2 ${activeTab === tab
-                                    ? "text-[#0F47F2] border-b-2 border-[#0F47F2] bg-[#F3F5F7]/30"
-                                    : "text-[#8E8E93] hover:text-[#4B5563]"
-                                    }`}
-                            >
-                                {tab === "info" && <Briefcase className="w-4 h-4" />}
-                                {tab === "activity" && <Clock className="w-4 h-4" />}
-                                {tab === "notes" && <FileText className="w-4 h-4" />}
-                                <span className="sr-only">{tab}</span>
-                            </button>
-                        ))}
+                        {(['info', 'activity', 'notes', 'links'] as const).map((id) => {
+                            const icons: Record<string, React.ReactNode> = {
+                                info: <UserCircle className="w-5 h-5" />,
+                                activity: <TrendingUp className="w-5 h-5" />,
+                                notes: <Phone className="w-5 h-5" />,
+                                links: <Globe className="w-5 h-5" />,
+                            };
+                            return (
+                                <button
+                                    key={id}
+                                    onClick={() => setActiveTab(id)}
+                                    className={`flex-1 py-4 text-sm font-medium capitalize transition-colors flex items-center justify-center gap-2 ${activeTab === id
+                                        ? "text-[#0F47F2] border-b-2 border-[#0F47F2] bg-[#F3F5F7]/30"
+                                        : "text-[#8E8E93] hover:text-[#4B5563]"
+                                        }`}
+                                >
+                                    {icons[id]}
+                                    <span className="sr-only">{id}</span>
+                                </button>
+                            );
+                        })}
                     </div>
 
                     <div className="p-6 flex flex-col gap-8 text-sm">
@@ -477,45 +489,37 @@ export default function JobCandidateProfile({
                                 <div>
                                     <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider">CONTACT INFO</h4>
                                     <div className="flex flex-col gap-4">
-                                        <div className="flex justify-between items-start">
-                                            <span className="text-[#8E8E93]">Name</span>
-                                            <span className="font-bold text-right text-black">{fullName}</span>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-[#AEAEB2] font-medium">Name</span>
+                                            <span className="font-bold text-black">{fullName}</span>
                                         </div>
-                                        <div className="flex justify-between items-start">
-                                            <span className="text-[#8E8E93]">Location</span>
-                                            <span className="font-bold text-right text-black">{location || "--"}</span>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-[#AEAEB2] font-medium">Location</span>
+                                            <span className="font-medium text-black">{location || "--"}</span>
                                         </div>
-                                        <div className="flex justify-between items-start">
-                                            <span className="text-[#8E8E93]">D.O.B</span>
-                                            <span className="font-bold text-right text-black">{cand.dob || "--"}</span>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-[#AEAEB2] font-medium">D.O.B</span>
+                                            <span className="font-medium text-black">--</span>
                                         </div>
-                                        {premiumUnlocked && premiumData.email && (
-                                            <div className="flex justify-between items-start">
-                                                <span className="text-[#8E8E93]">Email</span>
-                                                <div className="flex items-center gap-2">
-                                                    <a href={`mailto:${premiumData.email}`} className="font-bold text-[#0F47F2] hover:underline underline-offset-2">{premiumData.email}</a>
-                                                </div>
-                                            </div>
-                                        )}
-                                        {premiumUnlocked && premiumData.phone && (
-                                            <div className="flex justify-between items-start">
-                                                <span className="text-[#8E8E93]">Phone</span>
-                                                <span className="font-bold text-black">{premiumData.phone}</span>
-                                            </div>
-                                        )}
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-[#8E8E93]">Links</span>
-                                            <div className="flex items-center gap-2">
-                                                {socialLinks.linkedin && (
-                                                    <a href={socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-[#F3F5F7] rounded text-[#0F47F2] hover:bg-blue-50 transition">
-                                                        <Linkedin className="w-3.5 h-3.5" />
-                                                    </a>
-                                                )}
-                                                {socialLinks.github && (
-                                                    <a href={socialLinks.github} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-[#F3F5F7] rounded text-black hover:bg-gray-100 transition">
-                                                        <ExternalLink className="w-3.5 h-3.5" />
-                                                    </a>
-                                                )}
+                                        <div className="flex justify-between items-center text-sm text-black">
+                                            <span className="text-[#AEAEB2] font-medium">Email</span>
+                                            <span className="truncate ml-4 text-[#0F47F2] font-medium cursor-pointer" onClick={() => (premiumUnlocked && premiumData.email) && window.open(`mailto:${premiumData.email}`)}>
+                                                {premiumUnlocked ? (premiumData.email || "--") : "••••••••@••••.com"}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-[#AEAEB2] font-medium">Phone</span>
+                                            <span className="text-[#0F47F2] font-medium cursor-pointer">
+                                                {premiumUnlocked ? (premiumData.phone || "--") : "+91 ••••• •••••"}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-[#AEAEB2] font-medium">Links</span>
+                                            <div className="flex gap-2">
+                                                {cand.linkedin_url && <Linkedin className="w-4 h-4 text-black hover:text-[#0F47F2] cursor-pointer" />}
+                                                <Github className="w-4 h-4 text-black hover:text-[#0F47F2] cursor-pointer" />
+                                                <Palette className="w-4 h-4 text-black hover:text-[#0F47F2] cursor-pointer" />
+                                                <Globe className="w-4 h-4 text-black hover:text-[#0F47F2] cursor-pointer" />
                                             </div>
                                         </div>
                                     </div>
@@ -550,18 +554,25 @@ export default function JobCandidateProfile({
                                 <div>
                                     <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider">EXPERIENCE</h4>
                                     <div className="flex flex-col gap-6">
-                                        {experience.length > 0 ? experience.map((exp: any, i: number) => (
-                                            <div key={i}>
-                                                <div className="flex justify-between items-start">
-                                                    <p className="font-bold text-black text-[13px]">{exp.job_title}</p>
-                                                    <span className="text-[10px] text-[#AEAEB2] whitespace-nowrap">{exp.start_date ? new Date(exp.start_date).getFullYear() : ""} - {exp.end_date ? new Date(exp.end_date).getFullYear() : (exp.is_current ? "Present" : "")}</span>
+                                        {experience.map((exp: any, i: number) => {
+                                            const startYear = exp.start_date ? new Date(exp.start_date).getFullYear() : "";
+                                            const endYear = exp.is_current ? "Present" : exp.end_date ? new Date(exp.end_date).getFullYear() : "";
+                                            const duration = exp.start_date && (exp.end_date || exp.is_current) ?
+                                                Math.max(1, Math.round(((exp.is_current ? new Date() : new Date(exp.end_date)).getTime() - new Date(exp.start_date).getTime()) / (1000 * 60 * 60 * 24 * 365))) : null;
+
+                                            return (
+                                                <div key={i} className="mb-6 last:mb-0">
+                                                    <div className="flex justify-between items-start mb-1">
+                                                        <span className="font-bold text-sm text-black">{exp.job_title}</span>
+                                                        <span className="text-[11px] text-[#AEAEB2] font-medium">{startYear} — {endYear}</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center">
+                                                        <div className="text-xs text-[#0F47F2] font-semibold">{exp.company}</div>
+                                                        {duration && <div className="text-[11px] text-[#AEAEB2] font-medium">{duration} Year{duration > 1 ? 's' : ''}</div>}
+                                                    </div>
                                                 </div>
-                                                <p className="text-[11px] text-[#0F47F2] font-semibold">{exp.company}</p>
-                                                <p className="text-[10px] text-[#8E8E93] mt-0.5">
-                                                    {formatExpDuration(exp.start_date, exp.end_date, exp.is_current).split('·')[1] || ""}
-                                                </p>
-                                            </div>
-                                        )) : <p className="text-xs text-[#AEAEB2]">No experience details provided.</p>}
+                                            );
+                                        })}
                                     </div>
                                 </div>
 
@@ -572,16 +583,9 @@ export default function JobCandidateProfile({
                                     <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider">EDUCATION</h4>
                                     <div className="flex flex-col gap-6">
                                         {education.length > 0 ? education.map((edu: any, i: number) => (
-                                            <div key={i}>
-                                                <p className="font-bold text-black text-[13px]">{edu.institution || edu.schoolName}</p>
-                                                <p className="text-[11px] text-[#0F47F2] font-semibold">
-                                                    {edu.degree || edu.degreeName}
-                                                    {(edu.specialization || edu.fieldOfStudy) && ` — ${edu.specialization || edu.fieldOfStudy}`}
-                                                </p>
-                                                <p className="text-[10px] text-[#AEAEB2]">
-                                                    {edu.start_date ? new Date(edu.start_date).getFullYear() : ""}
-                                                    {edu.end_date ? ` — ${new Date(edu.end_date).getFullYear()}` : (edu.start_date ? " — Present" : "")}
-                                                </p>
+                                            <div key={i} className="mb-6 last:mb-0">
+                                                <div className="font-bold text-sm text-black mb-1">{edu.degree || edu.degree_name || edu.field_of_study}</div>
+                                                <div className="text-xs font-semibold text-[#0F47F2]">{edu.school_name || edu.institution} {edu.end_date ? `| ${new Date(edu.end_date).getFullYear()}` : ""}</div>
                                             </div>
                                         )) : <p className="text-xs text-[#AEAEB2]">No education details provided.</p>}
                                     </div>
@@ -637,6 +641,37 @@ export default function JobCandidateProfile({
                                 </button>
                             </div>
                         )}
+
+                        {activeTab === "links" && (
+                            <div>
+                                <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-6 tracking-wider">PORTFOLIO & SOCIAL</h4>
+                                <div className="flex flex-col gap-4">
+                                    {cand.linkedin_url && (
+                                        <a href={cand.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-[#F8FAFC] rounded-xl border border-[#E5E7EB] hover:border-[#0F47F2] transition group">
+                                            <div className="flex items-center gap-3">
+                                                <Linkedin className="w-5 h-5 text-black" />
+                                                <span className="font-bold text-sm text-black">LinkedIn Profile</span>
+                                            </div>
+                                            <Globe className="w-4 h-4 text-[#AEAEB2] group-hover:text-[#0F47F2]" />
+                                        </a>
+                                    )}
+                                    <a href="#" className="flex items-center justify-between p-4 bg-[#F8FAFC] rounded-xl border border-[#E5E7EB] hover:border-[#0F47F2] transition group">
+                                        <div className="flex items-center gap-3">
+                                            <Github className="w-5 h-5 text-black" />
+                                            <span className="font-bold text-sm text-black">GitHub Repository</span>
+                                        </div>
+                                        <Globe className="w-4 h-4 text-[#AEAEB2] group-hover:text-[#0F47F2]" />
+                                    </a>
+                                    <a href="#" className="flex items-center justify-between p-4 bg-[#F8FAFC] rounded-xl border border-[#E5E7EB] hover:border-[#0F47F2] transition group">
+                                        <div className="flex items-center gap-3">
+                                            <Palette className="w-5 h-5 text-black" />
+                                            <span className="font-bold text-sm text-black">Portfolio / Behance</span>
+                                        </div>
+                                        <Globe className="w-4 h-4 text-[#AEAEB2] group-hover:text-[#0F47F2]" />
+                                    </a>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -654,6 +689,6 @@ export default function JobCandidateProfile({
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }

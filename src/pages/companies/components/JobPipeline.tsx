@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import JobPipelineDashboard from "./JobPipelineDashboard";
+import JobPipelineDashboard, { Stage } from "./JobPipelineDashboard";
 import JobCandidateProfile from "./JobCandidateProfile";
 import apiClient from "../../../services/api";
 
@@ -16,6 +16,8 @@ export default function JobPipeline({ jobId, workspaceId, workspaces, onJobUpdat
     // Track candidate list for pagination
     const [candidateList, setCandidateList] = useState<any[]>([]);
     const [currentCandidateIndex, setCurrentCandidateIndex] = useState<number>(-1);
+
+    const [stages, setStages] = useState<Stage[]>([]);
 
     useEffect(() => {
         if (selectedCandidate) {
@@ -35,6 +37,23 @@ export default function JobPipeline({ jobId, workspaceId, workspaces, onJobUpdat
         window.addEventListener('breadcrumb-navigate', handleBreadcrumbNavigate);
         return () => window.removeEventListener('breadcrumb-navigate', handleBreadcrumbNavigate);
     }, []);
+
+    // Fetch Stages
+    const fetchStages = useCallback(async (jId: number) => {
+        try {
+            const response = await apiClient.get(`/jobs/applications/stages/?job_id=${jId}`);
+            const data: Stage[] = response.data;
+            const sorted = data.sort((a, b) => a.sort_order - b.sort_order);
+            setStages(sorted);
+        } catch (error) {
+            console.error("Error fetching stages:", error);
+            setStages([]);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (jobId != null) { fetchStages(jobId); }
+    }, [jobId, fetchStages]);
 
     // Fetch full candidate details from the application endpoint
     const fetchCandidateDetails = useCallback(async (applicationId: number) => {
@@ -80,15 +99,13 @@ export default function JobPipeline({ jobId, workspaceId, workspaces, onJobUpdat
         }
     };
 
-    if (!jobId) {
-    }
-
     return (
         <div className="flex flex-col h-full bg-[#F3F5F7] overflow-hidden">
             {selectedCandidate ? (
                 <JobCandidateProfile
                     candidate={selectedCandidate}
                     jobId={jobId}
+                    stages={stages}
                     goBack={() => setSelectedCandidate(null)}
                     loading={loadingCandidate}
                     onNavigatePrev={currentCandidateIndex > 0 ? handleNavigatePrev : undefined}
@@ -103,6 +120,8 @@ export default function JobPipeline({ jobId, workspaceId, workspaces, onJobUpdat
                     workspaces={workspaces}
                     onJobUpdated={onJobUpdated}
                     onSelectCandidate={handleSelectCandidate}
+                    externalStages={stages}
+                    onRefreshStages={() => jobId && fetchStages(jobId)}
                 />
             )}
         </div>
