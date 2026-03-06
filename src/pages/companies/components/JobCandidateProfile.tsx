@@ -316,7 +316,7 @@ export default function JobCandidateProfile({
                     </h3>
 
                     <div className="overflow-x-auto pb-8 scrollbar-hide">
-                        <div className="flex items-center min-w-max gap-8">
+                        <div className="flex items-center min-w-max">
                             {stages
                                 .filter(s => s.slug !== 'archives')
                                 .map((stage, i, filteredStages) => {
@@ -354,7 +354,7 @@ export default function JobCandidateProfile({
                                                         </div>
                                                     )}
                                                 </div>
-                                                <span className={`text-[11px] mt-3 font-semibold text-center max-w-[88px] leading-tight px-1 ${isActive ? 'text-[#0F47F2]' : 'text-[#8E8E93]'}`}>
+                                                <span className={`text-[8px] mt-3 font-semibold text-left max-w-[88px] text-nowrap leading-tight px-1 ${isActive ? 'text-[#0F47F2]' : 'text-[#8E8E93]'}`}>
                                                     {stage.name}
                                                 </span>
                                             </div>
