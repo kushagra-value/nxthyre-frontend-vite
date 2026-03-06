@@ -25,7 +25,8 @@ import {
     ArrowUpDown,
 } from "lucide-react";
 import { MyWorkspace } from "../../../services/organizationService";
-import { Job } from "../../../services/jobPostService";
+import { Job, jobPostService } from "../../../services/jobPostService";
+import { showToast as toastUtil } from "../../../utils/toast";
 import CreateJobRoleModal from "../../../components/candidatePool/CreateJobRoleModal";
 import EditJobRoleModal from "../../../components/candidatePool/EditJobRoleModal";
 import CompanyInfoDrawer from "./CompanyInfoDrawer";
@@ -91,6 +92,32 @@ const JobListing: React.FC<JobListingProps> = ({
     const ITEMS_PER_PAGE = 10;
     const [currentPage, setCurrentPage] = useState(1);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+
+    const [showUnpublishModal, setShowUnpublishModal] = useState<number | null>(null);
+    const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
+
+    const handleUnpublishJobRole = async (jobId: number) => {
+        try {
+            await jobPostService.unpublishJob(jobId);
+            await jobPostService.updateJob(jobId, { status: "DRAFT", visibility: "PRIVATE" });
+            fetchJobs();
+            toastUtil.success("Unpublished");
+        } catch {
+            toastUtil.error("Failed to unpublish");
+        }
+        setShowUnpublishModal(null);
+    };
+
+    const handlePublishJobRole = async (jobId: number) => {
+        try {
+            await jobPostService.updateJob(jobId, { status: "PUBLISHED", visibility: "PUBLIC" });
+            fetchJobs();
+            toastUtil.success("Published");
+        } catch {
+            toastUtil.error("Failed to publish");
+        }
+        setShowPublishModal(null);
+    };
 
     const sortedJobs = React.useMemo(() => {
         if (!sortConfig) return filteredWorkspaceJobs;
@@ -493,13 +520,24 @@ const JobListing: React.FC<JobListingProps> = ({
                                                 >
                                                     <Pencil className="w-4 h-4 text-[#0F47F2]" />
                                                 </button>
-                                                <button
-                                                    disabled
-                                                    title="Feature coming Soon"
-                                                    className="w-6 h-6 bg-[#F2F2F7] border border-white rounded-[5px] flex items-center justify-center opacity-50 cursor-not-allowed"
-                                                >
-                                                    <Pause className="w-[14px] h-[14px] text-[#4B5563]" />
-                                                </button>
+                                                {job.status === "PUBLISHED" && job.visibility === "PUBLIC" && (
+                                                    <button
+                                                        onClick={() => setShowUnpublishModal(job.id)}
+                                                        title="Unpublish"
+                                                        className="w-6 h-6 bg-[#F2F2F7] border border-white rounded-[5px] flex items-center justify-center hover:bg-gray-200 transition-colors"
+                                                    >
+                                                        <Pause className="w-[14px] h-[14px] text-[#4B5563]" />
+                                                    </button>
+                                                )}
+                                                {job.status === "DRAFT" && job.visibility === "PRIVATE" && (
+                                                    <button
+                                                        onClick={() => setShowPublishModal(job.id)}
+                                                        title="Publish"
+                                                        className="w-6 h-6 bg-[#F2F2F7] border border-white rounded-[5px] flex items-center justify-center hover:bg-gray-200 transition-colors"
+                                                    >
+                                                        <Globe className="w-[14px] h-[14px] text-[#4B5563]" />
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -600,6 +638,42 @@ const JobListing: React.FC<JobListingProps> = ({
                 onClose={setInfoWorkspaceNull}
                 onCreateJob={() => setShowCreateJobRole(true)}
             />
+
+            {showPublishModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                        <div className="text-center">
+                            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Globe className="w-6 h-6 text-green-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">Confirm Publish Job</h3>
+                            <p className="text-gray-600 mb-6">Publish {filteredWorkspaceJobs.find((c) => c.id === showPublishModal)?.title}?</p>
+                            <div className="flex space-x-3">
+                                <button onClick={() => setShowPublishModal(null)} className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+                                <button onClick={() => handlePublishJobRole(showPublishModal)} className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">Publish</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showUnpublishModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                        <div className="text-center">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Pause className="w-6 h-6 text-red-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">Confirm Unpublish</h3>
+                            <p className="text-gray-600 mb-6">Unpublish {filteredWorkspaceJobs.find((c) => c.id === showUnpublishModal)?.title}?</p>
+                            <div className="flex space-x-3">
+                                <button onClick={() => setShowUnpublishModal(null)} className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+                                <button onClick={() => handleUnpublishJobRole(showUnpublishModal)} className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">Unpublish</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
