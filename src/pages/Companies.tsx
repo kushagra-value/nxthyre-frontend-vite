@@ -20,7 +20,10 @@ import {
     ChevronDown,
     Star,
     ArrowRight,
-    LayoutGrid
+    LayoutGrid,
+    ArrowUp,
+    ArrowDown,
+    ArrowUpDown
 } from "lucide-react";
 import CreateWorkspaceModal from "./companies/components/CreateWorkspaceModal";
 import JoinWorkspaceModal from "./companies/components/JoinWorkspaceModal";
@@ -150,6 +153,12 @@ export default function Companies() {
     const [activeJobFilter, setActiveJobFilter] = useState<"All" | "Active" | "Paused" | "Closed" | "Draft">("All");
     const [searchQuery, setSearchQuery] = useState("");
     const [jobSearchQuery, setJobSearchQuery] = useState("");
+
+    type SortConfig = {
+        key: keyof CompanyTableRow;
+        direction: 'asc' | 'desc';
+    } | null;
+    const [sortConfig, setSortConfig] = useState<SortConfig>(null);
 
     const fetchLogo = async (query: string) => {
         if (!query || logos[query] !== undefined) return;
@@ -281,10 +290,66 @@ export default function Companies() {
         Inactive: searchedRows.filter((r) => r.status === "Inactive").length,
     };
 
+    const handleSort = (key: keyof CompanyTableRow) => {
+        let direction: 'asc' | 'desc' = 'asc';
+
+        if (sortConfig && sortConfig.key === key) {
+            direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            if (['totalJobs', 'totalCandidates', 'shortlisted', 'hired'].includes(key)) {
+                direction = 'desc'; // Number field default: high to low
+            } else if (key === 'lastActiveDate') {
+                direction = 'desc'; // Date field default: most recent
+            } else {
+                direction = 'asc'; // Text field default: alphabetically
+            }
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const getSortedRows = (rows: CompanyTableRow[]) => {
+        if (!sortConfig) return rows;
+
+        return [...rows].sort((a, b) => {
+            const aVal = a[sortConfig.key];
+            const bVal = b[sortConfig.key];
+
+            let aCom: any = aVal === '--' ? 0 : aVal;
+            let bCom: any = bVal === '--' ? 0 : bVal;
+
+            if (sortConfig.key === 'lastActiveDate') {
+                const parseDate = (d: any) => {
+                    if (!d || d === '--') return 0;
+                    const parts = d.split('/');
+                    if (parts.length === 3) return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`).getTime();
+                    return new Date(d).getTime() || 0;
+                };
+                aCom = parseDate(aVal);
+                bCom = parseDate(bVal);
+            } else if (['totalJobs', 'totalCandidates', 'shortlisted', 'hired'].includes(sortConfig.key)) {
+                aCom = Number(aVal) || 0;
+                bCom = Number(bVal) || 0;
+            } else {
+                aCom = typeof aVal === 'string' ? aVal.toLowerCase() : String(aVal);
+                bCom = typeof bVal === 'string' ? bVal.toLowerCase() : String(bVal);
+            }
+
+            if (aCom < bCom) {
+                return sortConfig.direction === 'asc' ? -1 : 1;
+            }
+            if (aCom > bCom) {
+                return sortConfig.direction === 'asc' ? 1 : -1;
+            }
+            return 0;
+        });
+    };
+
+    const sortedRows = getSortedRows(filteredRows);
+
     const itemsPerPage = 10;
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const paginatedRows = filteredRows.slice(startIndex, startIndex + itemsPerPage);
-    const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
+    const paginatedRows = sortedRows.slice(startIndex, startIndex + itemsPerPage);
+    const totalPages = Math.max(1, Math.ceil(sortedRows.length / itemsPerPage));
 
     const getPageNumbers = (): (number | "...")[] => {
         if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -422,6 +487,13 @@ export default function Companies() {
     };
 
     const dynamicStatCards = getDynamicStatCards();
+
+    const SortIcon = ({ columnKey }: { columnKey: keyof CompanyTableRow }) => {
+        if (sortConfig?.key !== columnKey) return <ArrowUpDown className="w-3 h-3 ml-1 text-gray-400 group-hover:text-gray-600 inline-block opacity-0 group-hover:opacity-100 transition-opacity" />;
+        return sortConfig.direction === 'asc'
+            ? <ArrowUp className="w-3 h-3 ml-1 text-[#0F47F2] inline-block" />
+            : <ArrowDown className="w-3 h-3 ml-1 text-[#0F47F2] inline-block" />;
+    };
 
     return (
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
@@ -601,26 +673,47 @@ export default function Companies() {
                                     <table className="w-full text-left border-collapse">
                                         <thead className="bg-[#F9FAFB]">
                                             <tr>
-                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2]">
-                                                    Company
+                                                <th
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    onClick={() => handleSort('name')}
+                                                >
+                                                    <div className="flex items-center">Company <SortIcon columnKey="name" /></div>
                                                 </th>
-                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
-                                                    Jobs
+                                                <th
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    onClick={() => handleSort('totalJobs')}
+                                                >
+                                                    <div className="flex items-center justify-center">Jobs <SortIcon columnKey="totalJobs" /></div>
                                                 </th>
-                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
-                                                    Candidates
+                                                <th
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    onClick={() => handleSort('totalCandidates')}
+                                                >
+                                                    <div className="flex items-center justify-center">Candidates <SortIcon columnKey="totalCandidates" /></div>
                                                 </th>
-                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
-                                                    Shortlisted
+                                                <th
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    onClick={() => handleSort('shortlisted')}
+                                                >
+                                                    <div className="flex items-center justify-center">Shortlisted <SortIcon columnKey="shortlisted" /></div>
                                                 </th>
-                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
-                                                    Hired
+                                                <th
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    onClick={() => handleSort('hired')}
+                                                >
+                                                    <div className="flex items-center justify-center">Hired <SortIcon columnKey="hired" /></div>
                                                 </th>
-                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
-                                                    Last Active Date
+                                                <th
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    onClick={() => handleSort('lastActiveDate')}
+                                                >
+                                                    <div className="flex items-center justify-center">Last Active Date <SortIcon columnKey="lastActiveDate" /></div>
                                                 </th>
-                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
-                                                    Status
+                                                <th
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    onClick={() => handleSort('status')}
+                                                >
+                                                    <div className="flex items-center justify-center">Status <SortIcon columnKey="status" /></div>
                                                 </th>
                                                 <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
                                                     Actions
