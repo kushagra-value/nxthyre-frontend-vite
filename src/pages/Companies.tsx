@@ -4,6 +4,7 @@ import {
     organizationService,
     MyWorkspace,
     CompanyResearchData,
+    WorkspaceStatsCount
 } from "../services/organizationService";
 import { jobPostService, Job } from "../services/jobPostService";
 import {
@@ -46,6 +47,7 @@ export default function Companies() {
     const { isAuthenticated } = useAuth();
 
     const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
+    const [statsCount, setStatsCount] = useState<WorkspaceStatsCount | null>(null);
     const [loading, setLoading] = useState(true);
     const [logos, setLogos] = useState<Record<string, string | null | undefined>>({});
 
@@ -171,8 +173,9 @@ export default function Companies() {
     const fetchWorkspaces = async () => {
         setLoading(true);
         try {
-            const data = await organizationService.getMyWorkspaces();
-            setWorkspaces(data);
+            const data = await organizationService.getMyWorkspacesData();
+            setWorkspaces(data.workspaces || []);
+            setStatsCount(data.stats_count || null);
         } catch (error) {
             console.error("Failed to fetch workspaces", error);
         } finally {
@@ -222,26 +225,27 @@ export default function Companies() {
         if (workspaces.length === 0) return companyTableRows;
 
         return workspaces.map((ws) => {
-            const workspaceJobs = allJobs.filter(j => j.workspace_details?.id === ws.id);
+            const monthlyShortlistedTrend = ws.increased_decreased_rate_percentages?.shortlisted?.monthly;
+            const monthlyHiredTrend = ws.increased_decreased_rate_percentages?.hired?.monthly;
 
             return {
                 id: `ws-${ws.id}`,
                 workspaceId: ws.id,
                 name: ws.name,
                 domain: ws.company_research_data?.website || "--",
-                totalJobs: workspaceJobs.length || "--",
-                totalCandidates: "--",
-                shortlisted: "--",
-                shortlistedTrend: undefined,
-                hired: "--",
-                hiredTrend: undefined,
-                lastActiveDate: ws.company_research_data?.research_date
-                    ? new Date(ws.company_research_data.research_date).toLocaleDateString('en-GB')
+                totalJobs: ws.jobs_count ?? "--",
+                totalCandidates: ws.candidates_in_workspace_count ?? "--",
+                shortlisted: ws.shortlisted_candidates_in_workspace_count ?? "--",
+                shortlistedTrend: monthlyShortlistedTrend ? `${monthlyShortlistedTrend > 0 ? '+' : ''}${monthlyShortlistedTrend}%` : undefined,
+                hired: ws.hired_candidates_in_workspace_count ?? "--",
+                hiredTrend: monthlyHiredTrend ? `${monthlyHiredTrend > 0 ? '+' : ''}${monthlyHiredTrend}%` : undefined,
+                lastActiveDate: ws.last_active_date
+                    ? new Date(ws.last_active_date).toLocaleDateString('en-GB')
                     : "--",
-                status: (ws.id % 3 === 0 ? "Paused" : ws.id % 5 === 0 ? "Inactive" : "Active") as any,
+                status: (ws.workspace_status || "Active") as any,
             };
         });
-    }, [workspaces, allJobs]);
+    }, [workspaces]);
 
     const allRows = buildTableRows();
 
@@ -377,13 +381,58 @@ export default function Companies() {
         );
     }
 
+    const getDynamicStatCards = () => {
+        if (!statsCount) return companyStatCards;
+
+        const renderTrend = (val: number | undefined) => {
+            if (val === undefined || val === null || val === 0) return undefined;
+            return `${val > 0 ? '+' : ''}${val}%`;
+        };
+
+        const totalCompanyTrend = statsCount.increased_decreased_rate_percentages?.total_companies?.monthly;
+        const activeCompanyTrend = statsCount.increased_decreased_rate_percentages?.active_companies?.monthly;
+        const totalOpenJobsTrend = statsCount.increased_decreased_rate_percentages?.total_open_jobs?.monthly;
+
+        return [
+            {
+                id: 'cs-1',
+                label: 'Total Companies',
+                value: statsCount.total_companies,
+                trend: renderTrend(totalCompanyTrend),
+                trendColor: (totalCompanyTrend && totalCompanyTrend >= 0) ? 'green' : 'red',
+            },
+            {
+                id: 'cs-2',
+                label: 'Active Companies',
+                value: statsCount.active_companies,
+                trend: renderTrend(activeCompanyTrend),
+                trendColor: (activeCompanyTrend && activeCompanyTrend >= 0) ? 'green' : 'red',
+            },
+            {
+                id: 'cs-3',
+                label: 'Total Open Jobs',
+                value: statsCount.total_open_jobs,
+                trend: renderTrend(totalOpenJobsTrend),
+                trendColor: (totalOpenJobsTrend && totalOpenJobsTrend >= 0) ? 'green' : 'red',
+            },
+            {
+                id: 'cs-4',
+                label: 'Immediate Actions',
+                value: statsCount.immediate_action_jobs,
+                subText: `${statsCount.immediate_action_jobs} pending`,
+            },
+        ] as any;
+    };
+
+    const dynamicStatCards = getDynamicStatCards();
+
     return (
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
             <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex-1 flex flex-col gap-4">
                     {/* ── Stats Grid ── */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {companyStatCards.map((stat) => {
+                        {dynamicStatCards.map((stat: any) => {
                             const isAction = stat.id === "cs-4";
                             return (
                                 <div

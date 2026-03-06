@@ -154,6 +154,42 @@ export interface MyWorkspace {
   created_by: string;
   user_role: string;
   company_research_data?: CompanyResearchData;
+  jobs_count?: number;
+  candidates_in_workspace_count?: number;
+  shortlisted_candidates_in_workspace_count?: number;
+  hired_candidates_in_workspace_count?: number;
+  increased_decreased_rate_percentages?: {
+    shortlisted: {
+      daily: number;
+      weekly: number;
+      monthly: number;
+    };
+    hired: {
+      daily: number;
+      weekly: number;
+      monthly: number;
+    };
+  };
+  last_active_date?: string | null;
+  workspace_status?: string;
+}
+
+export interface WorkspaceStatsCount {
+  total_companies: number;
+  active_companies: number;
+  total_open_jobs: number;
+  immediate_action_jobs: number;
+  increased_decreased_rate_percentages: {
+    total_companies: { daily: number; weekly: number; monthly: number };
+    active_companies: { daily: number; weekly: number; monthly: number };
+    total_open_jobs: { daily: number; weekly: number; monthly: number };
+    immediate_action_jobs: { daily: number; weekly: number; monthly: number };
+  };
+}
+
+export interface WorkspacesDataResponse {
+  stats_count: WorkspaceStatsCount;
+  workspaces: MyWorkspace[];
 }
 
 export interface DiscoverWorkspace {
@@ -309,6 +345,20 @@ class OrganizationService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error || "Failed to fetch my workspaces"
+      );
+    }
+  }
+
+  async getMyWorkspacesData(): Promise<WorkspacesDataResponse> {
+    try {
+      const response = await apiClient.get("/organization/my-workspaces/");
+      if (Array.isArray(response.data)) {
+        return { workspaces: response.data, stats_count: {} as WorkspaceStatsCount };
+      }
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch my workspaces data"
       );
     }
   }
