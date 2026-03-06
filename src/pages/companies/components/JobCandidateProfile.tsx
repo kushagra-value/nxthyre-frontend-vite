@@ -341,21 +341,23 @@ export default function JobCandidateProfile({
                                                             </div>
 
                                                             {i < filteredStages.length - 1 && (
-                                                                <div className="relative flex flex-col items-center">
-                                                                    <div className="w-12 h-[2px] bg-[#E5E7EB]">
-                                                                        {isCompleted && <div className="h-full bg-[#009951]" />}
-                                                                    </div>
-                                                                    <span className={`absolute bottom-0 text-[8px] font-semibold text-left max-w-[88px] text-nowrap leading-tight ${isActive ? 'text-[#0F47F2]' : 'text-[#8E8E93]'}`}>
-                                                                        {stage.name}
-                                                                    </span>
+
+                                                                <div className="w-12 h-[2px] bg-[#E5E7EB]">
+                                                                    {isCompleted && <div className="h-full bg-[#009951]" />}
                                                                 </div>
+
                                                             )}
                                                         </div>
                                                     ) : (
                                                         <div className="flex items-center justify-center">
-                                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors
+                                                            <div className="relative flex flex-col items-center">
+                                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors
                                                             ${isActive ? 'bg-[#0F47F2] text-white' : 'bg-[#E5E7EB] text-[#8E8E93]'}`}>
-                                                                {i + 1}
+                                                                    {i + 1}
+                                                                </div>
+                                                                <span className={`absolute bottom-0 text-[8px] font-semibold text-left max-w-[88px] text-nowrap leading-tight ${isActive ? 'text-[#0F47F2]' : 'text-[#8E8E93]'}`}>
+                                                                    {stage.name}
+                                                                </span>
                                                             </div>
                                                             {i < filteredStages.length - 1 && (
                                                                 <div className="w-12 h-[2px] bg-[#E5E7EB]">
