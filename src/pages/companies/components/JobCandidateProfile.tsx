@@ -29,10 +29,6 @@ interface JobCandidateProfileProps {
     totalCandidates?: number;
 }
 
-// ─── Helpers ───────────────────────────────────────────────
-
-
-
 // ─── Component ─────────────────────────────────────────────
 
 export default function JobCandidateProfile({
@@ -53,6 +49,11 @@ export default function JobCandidateProfile({
     const quickFitSummary = jobScoreObj?.quick_fit_summary || [];
     const statusTags = candidate?.status_tags || [];
     const applicationId = candidate?.id;
+
+    // NEW: Use current_stage_details from API (as requested)
+    const currentStageDetails = candidate?.current_stage_details || {};
+    const currentStageName = currentStageDetails.name || candidate.current_stage?.name || "--";
+    const currentStageSlug = currentStageDetails.slug || candidate.current_stage?.slug || candidate.stage_slug;
 
     // Candidate data
     const fullName = cand.full_name || "--";
@@ -137,10 +138,6 @@ export default function JobCandidateProfile({
         if (score <= 10) return `${score * 10}%`;
         return `${score}%`;
     }
-
-    // ── Copy helper ──────────────────────────────────────────
-
-
 
     // ── Loading State ────────────────────────────────────────
 
@@ -306,49 +303,59 @@ export default function JobCandidateProfile({
                     )}
                 </div>
 
-                {/* ── Current Stage Pipeline Section ── */}
+                {/* ── Current Stage Pipeline Section (FIXED) ── */}
+                {/* 
+                    - Main card width stays exactly the same as other cards 
+                    - Pipeline becomes horizontally scrollable when there are many stages
+                    - Uses current_stage_details from API as requested
+                    - Each stage is fixed width (no shrinking) + clean connectors
+                */}
                 <div className="bg-white rounded-xl p-8 shadow-sm">
                     <h3 className="text-xs font-medium text-[#4B5563] mb-8">
-                        CURRENT STAGE <span className="text-[#0F47F2] ml-4 font-bold uppercase">{candidate.current_stage?.name || "--"}</span>
+                        CURRENT STAGE <span className="text-[#0F47F2] ml-4 font-bold uppercase">{currentStageName}</span>
                     </h3>
 
-                    <div className="flex items-center justify-between mb-8 relative max-w-[calc(100vw-4rem)] overflow-x-auto no-scrollbar py-4">
-                        <div className="flex items-center w-full min-w-max gap-0 pr-4">
-                            {stages.filter(s => s.slug !== 'archives').map((stage, i) => {
-                                const currentStageIndex = stages.findIndex(s => s.slug === (candidate.current_stage?.slug || candidate.stage_slug));
-                                const isCompleted = i < currentStageIndex;
-                                const isActive = i === currentStageIndex;
+                    <div className="overflow-x-auto pb-8 scrollbar-hide">
+                        <div className="flex items-center min-w-max gap-8">
+                            {stages
+                                .filter(s => s.slug !== 'archives')
+                                .map((stage, i, filteredStages) => {
+                                    const currentStageIndex = stages.findIndex(s => s.slug === currentStageSlug);
+                                    const isCompleted = i < currentStageIndex;
+                                    const isActive = i === currentStageIndex;
 
-                                return (
-                                    <div key={stage.id} className="flex items-center flex-1 min-w-[100px] last:flex-none last:min-w-[80px]">
-                                        <div className="flex flex-col items-center relative z-10 w-[80px]">
-                                            <div className="relative group">
-                                                {isCompleted ? (
-                                                    <div className="w-10 h-10 flex items-center justify-center">
-                                                        <svg width="40" height="40" viewBox="0 0 58 58" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10">
-                                                            <path d="M23.6391 9.40147C25.0017 8.24019 25.683 7.65957 26.3954 7.31908C28.0431 6.53154 29.9586 6.53154 31.6063 7.31908C32.3187 7.65957 32.9999 8.24019 34.3627 9.40147C34.905 9.86366 35.1762 10.0948 35.4659 10.2889C36.1298 10.7339 36.8753 11.0427 37.6593 11.1975C38.0015 11.265 38.3565 11.2934 39.067 11.35C40.8517 11.4924 41.7439 11.5637 42.4885 11.8266C44.2104 12.4348 45.5649 13.7893 46.1732 15.5112C46.4361 16.2557 46.5072 17.1481 46.6498 18.9328C46.7063 19.6431 46.7346 19.9983 46.8022 20.3403C46.9569 21.1244 47.2658 21.87 47.7109 22.5339C47.905 22.8235 48.136 23.0947 48.5983 23.637C49.7595 24.9997 50.3402 25.6812 50.6808 26.3934C51.4681 28.0411 51.4681 29.9565 50.6808 31.6042C50.3402 32.3166 49.7595 32.9979 48.5983 34.3606C48.136 34.9029 47.905 35.1741 47.7109 35.4638C47.2658 36.1277 46.9569 36.8732 46.8022 37.6574C46.7346 37.9994 46.7063 38.3547 46.6498 39.0649C46.5072 40.8496 46.4361 41.7419 46.1732 42.4864C45.5649 44.2083 44.2104 45.5628 42.4885 46.1711C41.7439 46.4341 40.8517 46.5051 39.067 46.6477C38.3565 46.7042 38.0015 46.7328 37.6593 46.8002C36.8753 46.9551 36.1298 47.2637 35.4659 47.7088C35.1762 47.9029 34.905 48.1339 34.3627 48.5962C32.9999 49.7575 32.3187 50.3382 31.6063 50.6787C29.9586 51.466 28.0431 51.466 26.3954 50.6787C25.683 50.3382 25.0017 49.7575 23.6391 48.5962C23.0967 48.1339 22.8255 47.9029 22.5359 47.7088C21.872 47.2637 21.1265 46.9551 20.3424 46.8002C20.0003 46.7328 19.6452 46.7042 18.9348 46.6477C17.1501 46.5051 16.2577 46.4341 15.5133 46.1711C13.7913 45.5628 12.4369 44.2083 11.8287 42.4864C11.5657 41.7419 11.4945 40.8496 11.3521 39.0649C11.2954 38.3547 11.2671 37.9994 11.1995 37.6574C11.0447 36.8732 10.7359 36.1277 10.2909 35.4638C10.0968 35.1741 9.86571 34.9029 9.40352 34.3606C8.24224 32.9979 7.66162 32.3166 7.32111 31.6042C6.53359 29.9565 6.53359 28.0411 7.32111 26.3934C7.66162 25.6809 8.24224 24.9997 9.40352 23.637C9.86571 23.0947 10.0968 22.8235 10.2909 22.5339C10.7359 21.87 11.0447 21.1244 11.1995 20.3403C11.2671 19.9983 11.2954 19.6431 11.3521 18.9328C11.4945 17.1481 11.5657 16.2557 11.8287 15.5112C12.4369 13.7893 13.7913 12.4348 15.5133 11.8266C16.2577 11.5637 17.1501 11.4924 18.9348 11.35C19.6452 11.2934 20.0003 11.265 20.3424 11.1975C21.1265 11.0427 21.872 10.7339 22.5359 10.2889C22.8255 10.0948 23.0967 9.86366 23.6391 9.40147Z" fill="#14AE5C" />
-                                                            <path d="M20.541 30.2083L25.3743 35.0416L37.4577 22.9583" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                                        </svg>
-                                                    </div>
-                                                ) : (
-                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors
-                                                        ${isActive ? 'bg-[#0F47F2] text-white' : 'bg-[#E5E7EB] text-[#8E8E93]'}`}>
-                                                        {i + 1}
-                                                    </div>
-                                                )}
+                                    return (
+                                        <div key={stage.id} className="flex items-center flex-shrink-0">
+                                            <div className="flex flex-col items-center">
+                                                <div className="relative group">
+                                                    {isCompleted ? (
+                                                        <div className="w-10 h-10 flex items-center justify-center">
+                                                            <svg width="40" height="40" viewBox="0 0 58 58" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10">
+                                                                <path d="M23.6391 9.40147C25.0017 8.24019 25.683 7.65957 26.3954 7.31908C28.0431 6.53154 29.9586 6.53154 31.6063 7.31908C32.3187 7.65957 32.9999 8.24019 34.3627 9.40147C34.905 9.86366 35.1762 10.0948 35.4659 10.2889C36.1298 10.7339 36.8753 11.0427 37.6593 11.1975C38.0015 11.265 38.3565 11.2934 39.067 11.35C40.8517 11.4924 41.7439 11.5637 42.4885 11.8266C44.2104 12.4348 45.5649 13.7893 46.1732 15.5112C46.4361 16.2557 46.5072 17.1481 46.6498 18.9328C46.7063 19.6431 46.7346 19.9983 46.8022 20.3403C46.9569 21.1244 47.2658 21.87 47.7109 22.5339C47.905 22.8235 48.136 23.0947 48.5983 23.637C49.7595 24.9997 50.3402 25.6812 50.6808 26.3934C51.4681 28.0411 51.4681 29.9565 50.6808 31.6042C50.3402 32.3166 49.7595 32.9979 48.5983 34.3606C48.136 34.9029 47.905 35.1741 47.7109 35.4638C47.2658 36.1277 46.9569 36.8732 46.8022 37.6574C46.7346 37.9994 46.7063 38.3547 46.6498 39.0649C46.5072 40.8496 46.4361 41.7419 46.1732 42.4864C45.5649 44.2083 44.2104 45.5628 42.4885 46.1711C41.7439 46.4341 40.8517 46.5051 39.067 46.6477C38.3565 46.7042 38.0015 46.7328 37.6593 46.8002C36.8753 46.9551 36.1298 47.2637 35.4659 47.7088C35.1762 47.9029 34.905 48.1339 34.3627 48.5962C32.9999 49.7575 32.3187 50.3382 31.6063 50.6787C29.9586 51.466 28.0431 51.466 26.3954 50.6787C25.683 50.3382 25.0017 49.7575 23.6391 48.5962C23.0967 48.1339 22.8255 47.9029 22.5359 47.7088C21.872 47.2637 21.1265 46.9551 20.3424 46.8002C20.0003 46.7328 19.6452 46.7042 18.9348 46.6477C17.1501 46.5051 16.2577 46.4341 15.5133 46.1711C13.7913 45.5628 12.4369 44.2083 11.8287 42.4864C11.5657 41.7419 11.4945 40.8496 11.3521 39.0649C11.2954 38.3547 11.2671 37.9994 11.1995 37.6574C11.0447 36.8732 10.7359 36.1277 10.2909 35.4638C10.0968 35.1741 9.86571 34.9029 9.40352 34.3606C8.24224 32.9979 7.66162 32.3166 7.32111 31.6042C6.53359 29.9565 6.53359 28.0411 7.32111 26.3934C7.66162 25.6809 8.24224 24.9997 9.40352 23.637C9.86571 23.0947 10.0968 22.8235 10.2909 22.5339C10.7359 21.87 11.0447 21.1244 11.1995 20.3403C11.2671 19.9983 11.2954 19.6431 11.3521 18.9328C11.4945 17.1481 11.5657 16.2557 11.8287 15.5112C12.4369 13.7893 13.7913 12.4348 15.5133 11.8266C16.2577 11.5637 17.1501 11.4924 18.9348 11.35C19.6452 11.2934 20.0003 11.265 20.3424 11.1975C21.1265 11.0427 21.872 10.7339 22.5359 10.2889C22.8255 10.0948 23.0967 9.86366 23.6391 9.40147Z" fill="#14AE5C" />
+                                                                <path d="M20.541 30.2083L25.3743 35.0416L37.4577 22.9583" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                                            </svg>
+                                                        </div>
+                                                    ) : (
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors
+                                                            ${isActive ? 'bg-[#0F47F2] text-white' : 'bg-[#E5E7EB] text-[#8E8E93]'}`}>
+                                                            {i + 1}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <span className={`text-[11px] mt-3 font-semibold text-center max-w-[88px] leading-tight px-1 ${isActive ? 'text-[#0F47F2]' : 'text-[#8E8E93]'}`}>
+                                                    {stage.name}
+                                                </span>
                                             </div>
-                                            <span className={`text-[11px] mt-3 font-semibold text-center whitespace-normal leading-tight px-1 ${isActive ? 'text-[#0F47F2]' : 'text-[#8E8E93]'}`}>
-                                                {stage.name}
-                                            </span>
+
+                                            {/* Connector line */}
+                                            {i < filteredStages.length - 1 && (
+                                                <div className="w-12 h-[2px] mt-[-22px] mx-4 bg-[#E5E7EB]">
+                                                    {isCompleted && <div className="h-full bg-[#009951]" />}
+                                                </div>
+                                            )}
                                         </div>
-                                        {i < stages.filter(s => s.slug !== 'archives').length - 1 && (
-                                            <div className="flex-1 px-1">
-                                                <div className={`h-[2px] transition-colors -mt-10 ${isCompleted ? 'bg-[#009951]' : 'bg-[#E5E7EB]'}`} />
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
                         </div>
                     </div>
 
