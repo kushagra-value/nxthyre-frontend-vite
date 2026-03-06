@@ -20,6 +20,9 @@ import {
     Pause,
     Share2,
     ChevronRight,
+    ArrowUp,
+    ArrowDown,
+    ArrowUpDown,
 } from "lucide-react";
 import { MyWorkspace } from "../../../services/organizationService";
 import { Job } from "../../../services/jobPostService";
@@ -87,13 +90,73 @@ const JobListing: React.FC<JobListingProps> = ({
     // ── Pagination state ──
     const ITEMS_PER_PAGE = 10;
     const [currentPage, setCurrentPage] = useState(1);
-    const totalPages = Math.max(1, Math.ceil(filteredWorkspaceJobs.length / ITEMS_PER_PAGE));
-    const paginatedJobs = filteredWorkspaceJobs.slice(
+    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+
+    const sortedJobs = React.useMemo(() => {
+        if (!sortConfig) return filteredWorkspaceJobs;
+
+        return [...filteredWorkspaceJobs].sort((a, b) => {
+            const getVal = (job: any, key: string) => {
+                const daysOpen = 36; // Replace with real calc if needed
+                const noOfPositions = 3;
+
+                switch (key) {
+                    case "Job Title": return (job.title || "").toLowerCase();
+                    case "Candidates": return job.total_applied || 0;
+                    case "Shortlisted": return job.shortlisted_candidate_count || 0;
+                    case "Hired": return 0;
+                    case "Days Open": return daysOpen;
+                    case "No. of Position": return noOfPositions;
+                    case "Last Active Date": return new Date(job.updated_at).getTime() || 0;
+                    case "Status": return (job.status || "").toLowerCase();
+                    default: return "";
+                }
+            };
+
+            const aVal = getVal(a, sortConfig.key);
+            const bVal = getVal(b, sortConfig.key);
+
+            if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }, [filteredWorkspaceJobs, sortConfig]);
+
+    const handleSort = (key: string) => {
+        let direction: 'asc' | 'desc' = 'asc';
+        if (['Candidates', 'Shortlisted', 'Hired', 'Days Open', 'No. of Position'].includes(key)) {
+            direction = 'desc'; // fallback intuitive default for numbers
+        } else if (key === 'Last Active Date') {
+            direction = 'desc'; // newest first
+        }
+
+        if (sortConfig && sortConfig.key === key) {
+            if (sortConfig.direction === direction) {
+                direction = direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                setSortConfig(null);
+                setCurrentPage(1);
+                return;
+            }
+        }
+        setSortConfig({ key, direction });
+        setCurrentPage(1);
+    };
+
+    const SortIcon = ({ columnKey }: { columnKey: string }) => {
+        if (sortConfig?.key !== columnKey) return <ArrowUpDown className="w-3 h-3 ml-1 text-gray-400 group-hover:text-gray-600 inline-block opacity-0 group-hover:opacity-100 transition-opacity" />;
+        return sortConfig.direction === 'asc'
+            ? <ArrowUp className="w-3 h-3 ml-1 text-[#0F47F2] inline-block" />
+            : <ArrowDown className="w-3 h-3 ml-1 text-[#0F47F2] inline-block" />;
+    };
+
+    const totalPages = Math.max(1, Math.ceil(sortedJobs.length / ITEMS_PER_PAGE));
+    const paginatedJobs = sortedJobs.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
         currentPage * ITEMS_PER_PAGE
     );
     const startIdx = (currentPage - 1) * ITEMS_PER_PAGE + 1;
-    const endIdx = Math.min(currentPage * ITEMS_PER_PAGE, filteredWorkspaceJobs.length);
+    const endIdx = Math.min(currentPage * ITEMS_PER_PAGE, sortedJobs.length);
 
     // ── Share pipeline handler ──
     const handleSharePipeline = () => {
@@ -124,6 +187,17 @@ const JobListing: React.FC<JobListingProps> = ({
         const lpa = salary / 100000;
         return lpa % 1 === 0 ? lpa.toString() : lpa.toFixed(2);
     };
+    const renderTrend = (val: number | undefined, defaultText: string) => {
+        if (val === undefined || val === null || val === 0) return defaultText;
+        return `${val > 0 ? '+' : ''}${val}% this month`;
+    };
+
+    const shortlistedTrend = renderTrend(selectedWorkspace.increased_decreased_rate_percentages?.shortlisted?.monthly, "--");
+    const shortlistedColor = (selectedWorkspace.increased_decreased_rate_percentages?.shortlisted?.monthly || 0) >= 0 ? "text-[#009951]" : "text-[#DC2626]";
+
+    const hiredTrend = renderTrend(selectedWorkspace.increased_decreased_rate_percentages?.hired?.monthly, "--");
+    const hiredColor = (selectedWorkspace.increased_decreased_rate_percentages?.hired?.monthly || 0) >= 0 ? "text-[#009951]" : "text-[#DC2626]";
+
     return (
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-[#F3F5F7]">
             {/* ── Company Info Card ── */}
@@ -145,13 +219,20 @@ const JobListing: React.FC<JobListingProps> = ({
                     <div>
                         <div className="flex items-center gap-2 mb-1">
                             <h2 className="text-xl font-semibold text-[#4B5563]">{selectedWorkspace.name}</h2>
-                            <span className="px-2 py-0.5 bg-[#EBFFEE] text-[#069855] text-[10px] font-medium rounded-full uppercase">Active</span>
+                            <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full uppercase ${(selectedWorkspace.workspace_status || 'Active').toLowerCase() === 'active'
+                                ? 'bg-[#EBFFEE] text-[#069855]'
+                                : (selectedWorkspace.workspace_status || '').toLowerCase() === 'paused'
+                                    ? 'bg-[#FFF7D6] text-[#92400E]'
+                                    : 'bg-[#F3F5F7] text-[#8E8E93]'
+                                }`}>
+                                {selectedWorkspace.workspace_status || 'Active'}
+                            </span>
                         </div>
                         <div className="flex items-center gap-4 text-xs text-[#8E8E93]">
-                            <span className="flex items-center gap-1.5"><Globe className="w-3.5 h-3.5 text-[#8E8E93]" /> --</span>
-                            <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-[#8E8E93]" /> --</span>
-                            <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-[#8E8E93]" /> --</span>
-                            <span className="flex items-center gap-1.5"><Settings className="w-3.5 h-3.5 text-[#8E8E93]" /> --</span>
+                            <span className="flex items-center gap-1.5"><Globe className="w-3.5 h-3.5 text-[#8E8E93]" /> {selectedWorkspace.company_research_data?.website || "--"}</span>
+                            <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-[#8E8E93]" /> {selectedWorkspace.company_research_data?.headquarters || "--"}</span>
+                            <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-[#8E8E93]" /> {selectedWorkspace.company_research_data?.founded_year ? `Founded ${selectedWorkspace.company_research_data.founded_year}` : "--"}</span>
+                            <span className="flex items-center gap-1.5"><Settings className="w-3.5 h-3.5 text-[#8E8E93]" /> {selectedWorkspace.company_research_data?.industry || "--"}</span>
                         </div>
                     </div>
                 </div>
@@ -181,12 +262,12 @@ const JobListing: React.FC<JobListingProps> = ({
             {/* ── Stat Cards ── */}
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
                 {[
-                    { label: "Total Jobs", value: workspaceJobs.length, trend: "10% vs last month", trendColor: "text-[#069855]", icon: <Briefcase className="w-5 h-5 text-[#0F47F2]" /> },
-                    { label: "Total Candidates", value: workspaceJobs.reduce((acc, j) => acc + (j.total_applied || 0), 0), trend: "+42 this month", trendColor: "text-[#009951]", icon: <Users className="w-5 h-5 text-[#0F47F2]" /> },
-                    { label: "In Pipeline", value: workspaceJobs.reduce((acc, j) => acc + (j.pipeline_candidate_count || 0), 0), trend: "6 Need Action", trendColor: "text-[#FF8D28]", icon: <Route className="w-5 h-5 text-[#0F47F2]" /> },
-                    { label: "Shortlisted", value: workspaceJobs.reduce((acc, j) => acc + (j.shortlisted_candidate_count || 0), 0), trend: "Across 9 Jobs", trendColor: "text-[#009951]", icon: <UserCheck className="w-5 h-5 text-[#0F47F2]" /> },
-                    { label: "Interview this week", value: "12", trend: "3% This Quarter", trendColor: "text-[#009951]", icon: <Calendar className="w-5 h-5 text-[#0F47F2]" /> },
-                    { label: "Hired", value: "5", trend: "3% This Quarter", trendColor: "text-[#009951]", icon: <UserCircle className="w-5 h-5 text-[#0F47F2]" /> },
+                    { label: "Total Jobs", value: selectedWorkspace.jobs_count ?? workspaceJobs.length, trend: "--", trendColor: "text-[#8E8E93]", icon: <Briefcase className="w-5 h-5 text-[#0F47F2]" /> },
+                    { label: "Total Candidates", value: selectedWorkspace.candidates_in_workspace_count ?? workspaceJobs.reduce((acc, j) => acc + (j.total_applied || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <Users className="w-5 h-5 text-[#0F47F2]" /> },
+                    { label: "In Pipeline", value: workspaceJobs.reduce((acc, j) => acc + (j.pipeline_candidate_count || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <Route className="w-5 h-5 text-[#0F47F2]" /> },
+                    { label: "Shortlisted", value: selectedWorkspace.shortlisted_candidates_in_workspace_count ?? workspaceJobs.reduce((acc, j) => acc + (j.shortlisted_candidate_count || 0), 0), trend: shortlistedTrend, trendColor: shortlistedColor, icon: <UserCheck className="w-5 h-5 text-[#0F47F2]" /> },
+                    { label: "Interview this week", value: "--", trend: "--", trendColor: "text-[#8E8E93]", icon: <Calendar className="w-5 h-5 text-[#0F47F2]" /> },
+                    { label: "Hired", value: selectedWorkspace.hired_candidates_in_workspace_count ?? 0, trend: hiredTrend, trendColor: hiredColor, icon: <UserCircle className="w-5 h-5 text-[#0F47F2]" /> },
                 ].map((stat, idx) => (
                     <div key={idx} className="bg-white p-5 rounded-xl border border-[#D1D1D6] flex flex-col gap-2 shadow-sm">
                         <div className="flex items-center justify-between">
@@ -282,16 +363,29 @@ const JobListing: React.FC<JobListingProps> = ({
                     <table className="w-[1486px] text-left table-fixed border-collapse"> {/* UPDATED: table-fixed + exact Figma width (1254 + 232 for 2 new columns) */}
                         <thead className="bg-[#F5F5F5]">
                             <tr>
-                                <th className="w-[270px] px-5 py-4 text-sm font-normal text-[#8E8E93]">Job Title</th>
-                                <th className="w-[116px] px-5 py-4 text-sm font-normal text-[#8E8E93]">Candidates</th>
-                                <th className="w-[116px] px-5 py-4 text-sm font-normal text-[#8E8E93]">Shortlisted</th>
-                                <th className="w-[116px] px-5 py-4 text-sm font-normal text-[#8E8E93]">Hired</th>
-                                <th className="w-[108px] px-5 py-4 text-sm font-normal text-[#8E8E93]">Days Open</th>
-                                <th className="w-[128px] px-5 py-4 text-sm font-normal text-[#8E8E93]">No. of Position</th>
-                                <th className="w-[144px] px-5 py-4 text-sm font-normal text-[#8E8E93]">Last Active Date</th>
-                                <th className="w-[250px] px-5 py-4 text-sm font-normal text-[#8E8E93]">Stage</th>
-                                <th className="w-[122px] px-5 py-4 text-sm font-normal text-[#8E8E93]">Status</th>
-                                <th className="w-[116px] px-5 py-4 text-sm font-normal text-[#8E8E93] text-center">Actions</th>
+                                {[
+                                    { key: "Job Title", width: "w-[270px]" },
+                                    { key: "Candidates", width: "w-[116px]" },
+                                    { key: "Shortlisted", width: "w-[116px]" },
+                                    { key: "Hired", width: "w-[116px]" },
+                                    { key: "Days Open", width: "w-[108px]" },
+                                    { key: "No. of Position", width: "w-[128px]" },
+                                    { key: "Last Active Date", width: "w-[144px]" },
+                                    { key: "Stage", width: "w-[250px]", sortable: false },
+                                    { key: "Status", width: "w-[122px]" },
+                                ].map(({ key, width, sortable = true }) => (
+                                    <th
+                                        key={key}
+                                        className={`${width} px-5 py-4 text-sm font-normal text-[#8E8E93] ${sortable ? 'cursor-pointer hover:bg-gray-200 transition-colors group select-none whitespace-nowrap' : 'select-none whitespace-nowrap'}`}
+                                        onClick={sortable ? () => handleSort(key) : undefined}
+                                    >
+                                        <div className="flex items-center">
+                                            {key}
+                                            {sortable && <SortIcon columnKey={key} />}
+                                        </div>
+                                    </th>
+                                ))}
+                                <th className="w-[116px] px-5 py-4 text-sm font-normal text-[#8E8E93] text-center select-none">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#D1D1D6]">
