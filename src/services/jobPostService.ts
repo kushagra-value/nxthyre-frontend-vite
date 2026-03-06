@@ -125,7 +125,10 @@ class JobPostService {
   async getJobs(): Promise<Job[]> {
     try {
       const response = await apiClient.get("/jobs/roles/");
-      return response.data;
+      if (Array.isArray(response.data)) {
+        return response.data;
+      }
+      return response.data.jobs || response.data.roles || response.data.results || response.data.data || [];
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to fetch jobs");
     }

@@ -302,7 +302,10 @@ class OrganizationService {
   async getMyWorkspaces(): Promise<MyWorkspace[]> {
     try {
       const response = await apiClient.get("/organization/my-workspaces/");
-      return response.data;
+      if (Array.isArray(response.data)) {
+        return response.data;
+      }
+      return response.data.workspaces || response.data.results || response.data.data || [];
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error || "Failed to fetch my workspaces"
