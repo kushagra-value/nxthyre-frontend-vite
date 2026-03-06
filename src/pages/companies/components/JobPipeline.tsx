@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import JobPipelineDashboard from "./JobPipelineDashboard";
 import JobCandidateProfile from "./JobCandidateProfile";
 import apiClient from "../../../services/api";
@@ -13,6 +13,25 @@ interface JobPipelineProps {
 export default function JobPipeline({ jobId, workspaceId, workspaces, onJobUpdated }: JobPipelineProps) {
     const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
     const [loadingCandidate, setLoadingCandidate] = useState(false);
+
+    useEffect(() => {
+        if (selectedCandidate) {
+            (window as any).__selectedCandidateName = selectedCandidate.candidate?.full_name || 'Profile';
+        } else {
+            delete (window as any).__selectedCandidateName;
+        }
+        window.dispatchEvent(new CustomEvent('header-update'));
+    }, [selectedCandidate]);
+
+    useEffect(() => {
+        const handleBreadcrumbNavigate = (e: any) => {
+            if (e.detail?.level === 'job' || e.detail?.level === 'workspace' || e.detail?.level === 'companies') {
+                setSelectedCandidate(null);
+            }
+        };
+        window.addEventListener('breadcrumb-navigate', handleBreadcrumbNavigate);
+        return () => window.removeEventListener('breadcrumb-navigate', handleBreadcrumbNavigate);
+    }, []);
 
     // Fetch full candidate details from the application endpoint
     const fetchCandidateDetails = useCallback(async (applicationId: number) => {

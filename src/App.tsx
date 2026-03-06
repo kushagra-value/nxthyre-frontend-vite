@@ -129,11 +129,13 @@ function MainApp() {
 
   const [headerWorkspaceName, setHeaderWorkspaceName] = useState<string | undefined>(undefined);
   const [headerJobName, setHeaderJobName] = useState<string | undefined>(undefined);
+  const [headerCandidateName, setHeaderCandidateName] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const handleHeaderUpdate = () => {
       setHeaderWorkspaceName((window as any).__selectedWorkspaceName);
       setHeaderJobName((window as any).__selectedJobName);
+      setHeaderCandidateName((window as any).__selectedCandidateName);
     };
     window.addEventListener('header-update', handleHeaderUpdate);
     // Initial check
@@ -177,6 +179,9 @@ function MainApp() {
 
   const getPageSubtitle = () => {
     if (currentPage === 'companies') {
+      if (headerJobName && headerWorkspaceName && headerCandidateName) {
+        return `Companies • ${headerWorkspaceName} • ${headerJobName} • Profile`;
+      }
       if (headerJobName && headerWorkspaceName) {
         return `Companies • ${headerWorkspaceName} • ${headerJobName}`;
       }
@@ -191,16 +196,22 @@ function MainApp() {
     if (currentPage !== 'companies') return;
     // index 0 = "Companies" (go back to company list)
     // index 1 = workspace name (go back to job listing)
-    // index 2 = job name (current - do nothing)
+    // index 2 = job name (go back to job pipeline if candidate profile is active)
     if (index === 0) {
       // Navigate back to companies list
       delete (window as any).__selectedWorkspaceName;
       delete (window as any).__selectedJobName;
+      delete (window as any).__selectedCandidateName;
       window.dispatchEvent(new CustomEvent('breadcrumb-navigate', { detail: { level: 'companies' } }));
     } else if (index === 1) {
       // Navigate back to job listing
       delete (window as any).__selectedJobName;
+      delete (window as any).__selectedCandidateName;
       window.dispatchEvent(new CustomEvent('breadcrumb-navigate', { detail: { level: 'workspace' } }));
+    } else if (index === 2 && headerCandidateName) {
+      // Navigate back to job pipeline from candidate profile
+      delete (window as any).__selectedCandidateName;
+      window.dispatchEvent(new CustomEvent('breadcrumb-navigate', { detail: { level: 'job' } }));
     }
   };
 
@@ -479,6 +490,7 @@ function MainApp() {
                     if (page === 'companies') {
                       delete (window as any).__selectedWorkspaceName;
                       delete (window as any).__selectedJobName;
+                      delete (window as any).__selectedCandidateName;
                       sessionStorage.removeItem("nxthyre_companies_wsId");
                       sessionStorage.removeItem("nxthyre_companies_jobId");
                       window.dispatchEvent(

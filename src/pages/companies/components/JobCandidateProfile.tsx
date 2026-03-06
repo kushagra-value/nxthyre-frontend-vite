@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
     Mail, ArrowRight, Download, Flag, MoreHorizontal, Check,
     FileText, ChevronLeft, ChevronRight, MapPin, Clock, Briefcase,
-    GraduationCap, Linkedin, ExternalLink, Phone, Copy,
+    GraduationCap, Linkedin, ExternalLink, Phone, Copy, ArrowLeft, Calendar
 } from "lucide-react";
 import apiClient from "../../../services/api";
 import candidateService from "../../../services/candidateService";
@@ -189,248 +189,257 @@ export default function JobCandidateProfile({ candidate, jobId, goBack, loading 
     const jobTitle = candidate?.job?.title || contextualDetails?.job_title || "";
 
     return (
-        <div className="flex-1 overflow-y-auto bg-[#F3F5F7] flex flex-col xl:flex-row">
+        <div className="flex-1 overflow-y-auto bg-[#F3F5F7] flex flex-col xl:flex-row p-6 gap-6">
             {/* ═══════════════════════════════════════════════════
           Left Column: Candidate Main Info
          ═══════════════════════════════════════════════════ */}
-            <div className="flex-1 bg-white xl:mr-2 border-r border-[#E5E7EB]">
-                {/* ── Header Breadcrumb ── */}
-                <div className="flex items-center justify-between border-b border-[#E5E7EB] px-8 py-4 bg-white sticky top-0 z-10">
-                    <div className="flex items-center gap-2 text-sm text-[#8E8E93]">
-                        <button onClick={goBack} className="hover:text-black transition-colors">Jobs</button>
-                        <ChevronRight className="w-3 h-3" />
-                        <button onClick={goBack} className="hover:text-black font-semibold text-black transition-colors">
-                            {jobTitle || "Pipeline"}
-                        </button>
-                        <ChevronRight className="w-3 h-3" />
-                        <span className="text-black font-semibold">Profile</span>
-                    </div>
-                </div>
+            <div className="flex-1 flex flex-col gap-6">
+                {/* ── Main Candidate Card ── */}
+                <div className="bg-white rounded-xl overflow-hidden shadow-sm">
+                    <div className="p-6">
+                        <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <button onClick={goBack} className="text-[#8E8E93] hover:text-black transition-colors rounded-full p-1 hover:bg-[#F3F5F7]">
+                                        <ArrowLeft className="w-5 h-5" />
+                                    </button>
+                                    <h1 className="text-2xl font-semibold text-black">
+                                        {fullName}
+                                    </h1>
+                                </div>
+                                <div className="ml-10">
+                                    <p className="text-sm text-[#0F47F2] mb-4">
+                                        {headline || jobTitle} {headline && jobTitle ? ` • ${jobTitle}` : ""}
+                                    </p>
 
-                <div className="p-8 pb-12">
-                    {/* ── Main Candidate Card ── */}
-                    <div className="border border-[#E5E7EB] rounded-t-xl rounded-b overflow-hidden mb-8">
-                        <div className="p-6 bg-white flex flex-col gap-6 border-b border-[#E5E7EB]">
-                            <div className="flex items-start justify-between">
-                                <div className="flex gap-4">
-                                    <div className="w-16 h-16 rounded bg-[#F3F5F7] text-[#4B5563] text-2xl font-bold flex items-center justify-center border border-[#E5E7EB]">
-                                        {cand.profile_picture_url ? (
-                                            <img src={cand.profile_picture_url} alt={fullName} className="w-full h-full object-cover rounded" />
-                                        ) : (
-                                            getInitials(fullName)
-                                        )}
+                                    <div className="flex items-center gap-4 text-xs text-[#4B5563] mb-6 font-medium">
+                                        <span className="flex items-center gap-1.5 ">
+                                            <Briefcase className="w-4 h-4 text-[#8E8E93]" /> {totalExp}
+                                        </span>
+                                        <span className="flex items-center gap-1.5">
+                                            <MapPin className="w-4 h-4 text-[#8E8E93]" /> {location || "--"}
+                                        </span>
+                                        <span className="flex items-center gap-1.5">
+                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[#8E8E93]">
+                                                <path d="M12.6667 3.33333H3.33333C2.59695 3.33333 2 3.93029 2 4.66667V11.3333C2 12.0697 2.59695 12.6667 3.33333 12.6667H12.6667C13.403 12.6667 14 12.0697 14 11.3333V4.66667C14 3.93029 13.403 3.33333 12.6667 3.33333Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+                                                <path d="M2.66663 6.66667H13.3333" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                            {currentSalary}
+                                        </span>
+                                        <span className="flex items-center gap-1.5">
+                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[#8E8E93]">
+                                                <path d="M12.6667 3.33333H3.33333C2.59695 3.33333 2 3.93029 2 4.66667V11.3333C2 12.0697 2.59695 12.6667 3.33333 12.6667H12.6667C13.403 12.6667 14 12.0697 14 11.3333V4.66667C14 3.93029 13.403 3.33333 12.6667 3.33333Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                            {cand.expected_ctc || "--"}
+                                        </span>
+                                        <span className="flex items-center gap-1.5">
+                                            <Calendar className="w-4 h-4 text-[#8E8E93]" /> {noticePeriod}
+                                        </span>
                                     </div>
-                                    <div>
-                                        <h1 className="text-2xl font-bold text-black flex items-center gap-3">
-                                            {fullName}
-                                            {matchScore.score && (
-                                                <span className="bg-[#DEF7EC] border border-[#A7F3D0] text-[#059669] text-sm px-2 py-0.5 rounded-full">
-                                                    {matchScore.score}/10
-                                                </span>
-                                            )}
-                                        </h1>
-                                        {headline && (
-                                            <p className="text-sm text-[#4B5563] mt-1">
-                                                {headline}
-                                                {jobTitle && <span> • {jobTitle}</span>}
-                                            </p>
+                                    <div className="flex items-center gap-3">
+                                        {(premiumUnlocked && premiumData.email) && (
+                                            <button
+                                                onClick={() => window.open(`mailto:${premiumData.email}`)}
+                                                className="flex items-center gap-2 bg-[#0F47F2] text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+                                            >
+                                                <Mail className="w-4 h-4" /> Send Mail
+                                            </button>
                                         )}
-                                        <div className="flex items-center gap-4 mt-2 text-xs font-semibold text-[#8E8E93]">
-                                            {location && (
-                                                <span className="flex items-center gap-1">
-                                                    <MapPin className="w-3.5 h-3.5" /> {location}
-                                                </span>
-                                            )}
-                                            {createdAt && (
-                                                <span className="flex items-center gap-1">
-                                                    <Clock className="w-3.5 h-3.5" /> Applied {formatTimeAgo(createdAt)}
-                                                </span>
-                                            )}
-                                            {currentStage?.name && (
-                                                <span className="flex items-center gap-1 text-[#059669]">
-                                                    <Check className="w-3.5 h-3.5" /> {currentStage.name}
-                                                </span>
-                                            )}
-                                        </div>
+                                        <button className="flex items-center gap-2 bg-white border border-[#0F47F2] text-[#0F47F2] px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition">
+                                            <Phone className="w-4 h-4" /> Call
+                                        </button>
+                                        {cand.resume_url && (
+                                            <button
+                                                onClick={() => window.open(cand.resume_url, "_blank")}
+                                                className="flex items-center gap-2 bg-[#E7EDFF] text-[#0F47F2] w-10 h-10 justify-center rounded-lg text-sm font-medium hover:bg-[#D4E0FF] transition"
+                                            >
+                                                <Download className="w-4 h-4" />
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Actions */}
-                            <div className="flex items-center gap-3">
-                                {(premiumUnlocked && premiumData.email) && (
-                                    <button
-                                        onClick={() => window.open(`mailto:${premiumData.email}`)}
-                                        className="flex items-center gap-2 bg-[#0F47F2] text-white px-4 py-2 rounded text-sm font-bold hover:bg-blue-700 transition"
-                                    >
-                                        <Mail className="w-4 h-4" /> Send Mail
+                            <div className="flex flex-col items-center justify-start max-w-[150px]">
+                                <div className="flex items-center gap-2 mb-6 self-end w-full justify-end">
+                                    <button className="px-3 py-1 border border-[#E5E7EB] rounded-md text-xs text-[#8E8E93] hover:bg-gray-50 flex items-center gap-1">
+                                        &laquo; Prev
                                     </button>
-                                )}
-                                <button className="flex items-center gap-2 bg-white border border-[#D1D1D6] text-[#4B5563] px-4 py-2 rounded text-sm font-bold hover:bg-[#F3F5F7] transition">
-                                    <ArrowRight className="w-4 h-4" /> Move to Stage
-                                </button>
-                                {cand.resume_url && (
-                                    <button
-                                        onClick={() => window.open(cand.resume_url, "_blank")}
-                                        className="flex items-center gap-2 bg-white border border-[#D1D1D6] text-[#4B5563] px-4 py-2 rounded text-sm font-bold hover:bg-[#F3F5F7] transition"
-                                    >
-                                        <Download className="w-4 h-4" /> Download Resume
+                                    <button className="px-3 py-1 border border-[#E5E7EB] rounded-md text-xs text-[#8E8E93] hover:bg-gray-50 flex items-center gap-1">
+                                        Next &raquo;
                                     </button>
-                                )}
-                                <button className="flex items-center gap-2 bg-white border border-[#D1D1D6] text-[#4B5563] px-3 py-2 rounded hover:bg-[#F3F5F7] transition">
-                                    <Flag className="w-4 h-4" />
-                                </button>
-                                <button className="flex items-center gap-2 bg-white border border-[#D1D1D6] text-[#4B5563] px-3 py-2 rounded hover:bg-[#F3F5F7] transition">
-                                    <MoreHorizontal className="w-4 h-4" />
-                                </button>
+                                </div>
+                                <div className="relative w-20 h-20 mb-2">
+                                    <svg viewBox="0 0 36 36" className="w-20 h-20 -rotate-90">
+                                        <path
+                                            className="text-gray-200"
+                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="3.5"
+                                        />
+                                        <path
+                                            style={{ color: getScoreColor(Number(matchScore.score) || 0) }}
+                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="3.5"
+                                            strokeDasharray={`${(Number(matchScore.score) || 0) * 10}, 100`}
+                                        />
+                                    </svg>
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                        <span className="text-xl font-semibold -mt-1">{Number(matchScore.score || 0) * 10}%</span>
+                                    </div>
+                                </div>
+                                <span className="text-[11px] text-[#8E8E93] text-center uppercase tracking-wider font-semibold">Match Score</span>
                             </div>
                         </div>
-
-                        {/* Status tags row */}
-                        {statusTags.length > 0 && (
-                            <div className="bg-[#F8FAFC] px-6 py-3 text-xs font-semibold border-t border-[#E5E7EB] flex gap-2 flex-wrap">
-                                {statusTags.map((tag: any, i: number) => (
-                                    <span
-                                        key={i}
-                                        className="px-2 py-0.5 rounded-full text-xs"
-                                        style={{
-                                            backgroundColor: tag.color === "green" ? "#DEF7EC" : tag.color === "red" ? "#FEE9E7" : tag.color === "yellow" ? "#FFF7D6" : "#E7EDFF",
-                                            color: tag.color === "green" ? "#059669" : tag.color === "red" ? "#DC2626" : tag.color === "yellow" ? "#92400E" : "#0F47F2",
-                                        }}
-                                    >
-                                        {tag.text}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
                     </div>
 
-                    {/* ── Quick Fit Summary (Signals) ── */}
-                    {quickFitSummary.length > 0 && (
-                        <div className="mb-10">
-                            <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-4">Signals</h3>
-                            <div className="flex flex-wrap gap-2">
-                                {quickFitSummary.map((item: any, i: number) => {
-                                    const colorMap: Record<string, { bg: string; border: string; text: string }> = {
-                                        green: { bg: "#DCFCE7", border: "#86EFAC", text: "#15803D" },
-                                        yellow: { bg: "#FEF9C3", border: "#FDE047", text: "#854D0E" },
-                                        red: { bg: "#FEE2E2", border: "#FCA5A5", text: "#DC2626" },
-                                    };
-                                    const c = colorMap[item.color] || colorMap.green;
-                                    return (
-                                        <span
-                                            key={i}
-                                            className="text-xs font-bold px-3 py-1.5 rounded flex items-center gap-1.5"
-                                            style={{ backgroundColor: c.bg, borderColor: c.border, color: c.text, border: `1px solid ${c.border}` }}
-                                            title={item.evidence}
-                                        >
-                                            {item.badge}
-                                            {item.status && <span className="font-normal ml-1">· {item.status}</span>}
-                                        </span>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ── Score Cards ── */}
-                    {scoreEntries.length > 0 && (
-                        <div className="mb-10">
-                            <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-4">Score</h3>
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                                {scoreEntries.map((entry) => (
-                                    <div key={entry.label} className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-5 shadow-sm">
-                                        <div className="text-3xl font-black text-black">{entry.score.toFixed(1)}</div>
-                                        <div className="text-xs font-semibold text-[#8E8E93] mt-1">{entry.label}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ── Profile Match Description ── */}
-                    {matchScore.description && (
-                        <div className="mb-10">
-                            <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-4">Profile Match Summary</h3>
-                            <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl p-6 shadow-sm">
-                                <p className="text-sm leading-relaxed text-[#374151]">{matchScore.description}</p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ── AI Interview Summary ── */}
-                    {aiSummary && (
-                        <div className="mb-10">
-                            <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-4">AI Interview Summary</h3>
-                            <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl p-6 shadow-sm">
-                                <p className="text-sm leading-relaxed text-[#374151]">{aiSummary}</p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ── AI Interview Score Breakdown ── */}
-                    {scoreEntries.length > 0 && (
-                        <div className="mb-10">
-                            <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-4">AI Interview Score Breakdown</h3>
-                            <div className="bg-white border border-[#E5E7EB] rounded-xl p-6 shadow-sm flex flex-col gap-5">
-                                {scoreEntries.map((entry) => (
-                                    <div key={entry.label} className="flex justify-between items-center text-sm font-semibold">
-                                        <span className="w-32 text-[#4B5563]">{entry.label}</span>
-                                        <div className="flex-1 mx-4 h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full rounded-full transition-all"
-                                                style={{ width: getScoreWidth(entry.score), backgroundColor: getScoreColor(entry.score) }}
-                                            />
-                                        </div>
-                                        <span className="w-8 text-right text-black">{entry.score.toFixed(1)}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ── Profile Summary ── */}
-                    {profileSummary && (
-                        <div className="mb-10">
-                            <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-4">Profile Summary</h3>
-                            <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl p-6 shadow-sm">
-                                <p className="text-sm leading-relaxed text-[#374151]">{profileSummary}</p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ── Skills ── */}
-                    {skills.length > 0 && (
-                        <div className="mb-10">
-                            <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-4">Skills</h3>
-                            <div className="flex flex-wrap gap-2">
-                                {skills.map((skill: string, i: number) => (
-                                    <span key={i} className="bg-[#F2F2F7] text-[#4B5563] text-xs px-3 py-1.5 rounded-full font-medium">{skill}</span>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ── Gaps & Risks ── */}
-                    {(jobScoreObj.gaps_risks || []).length > 0 && (
-                        <div className="mb-10">
-                            <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-4">Gaps & Risks</h3>
-                            <div className="bg-[#FEF2F2] border border-[#FECACA] rounded-xl p-6 shadow-sm">
-                                <ul className="list-disc list-inside space-y-1">
-                                    {jobScoreObj.gaps_risks.map((gap: string, i: number) => (
-                                        <li key={i} className="text-sm text-[#991B1B]">{gap}</li>
-                                    ))}
-                                </ul>
-                            </div>
+                    {/* Status tags row */}
+                    {statusTags.length > 0 && (
+                        <div className="bg-[#F8FAFC] px-6 py-3 text-xs font-semibold border-t border-[#E5E7EB] flex gap-2 flex-wrap">
+                            {statusTags.map((tag: any, i: number) => (
+                                <span
+                                    key={i}
+                                    className="px-2 py-0.5 rounded-full text-xs"
+                                    style={{
+                                        backgroundColor: tag.color === "green" ? "#DEF7EC" : tag.color === "red" ? "#FEE9E7" : tag.color === "yellow" ? "#FFF7D6" : "#E7EDFF",
+                                        color: tag.color === "green" ? "#059669" : tag.color === "red" ? "#DC2626" : tag.color === "yellow" ? "#92400E" : "#0F47F2",
+                                    }}
+                                >
+                                    {tag.text}
+                                </span>
+                            ))}
                         </div>
                     )}
                 </div>
+
+                {/* ── Quick Fit Summary (Signals) ── */}
+                {quickFitSummary.length > 0 && (
+                    <div className="mb-10">
+                        <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-4">Signals</h3>
+                        <div className="flex flex-wrap gap-2">
+                            {quickFitSummary.map((item: any, i: number) => {
+                                const colorMap: Record<string, { bg: string; border: string; text: string }> = {
+                                    green: { bg: "#DCFCE7", border: "#86EFAC", text: "#15803D" },
+                                    yellow: { bg: "#FEF9C3", border: "#FDE047", text: "#854D0E" },
+                                    red: { bg: "#FEE2E2", border: "#FCA5A5", text: "#DC2626" },
+                                };
+                                const c = colorMap[item.color] || colorMap.green;
+                                return (
+                                    <span
+                                        key={i}
+                                        className="text-xs font-bold px-3 py-1.5 rounded flex items-center gap-1.5"
+                                        style={{ backgroundColor: c.bg, borderColor: c.border, color: c.text, border: `1px solid ${c.border}` }}
+                                        title={item.evidence}
+                                    >
+                                        {item.badge}
+                                        {item.status && <span className="font-normal ml-1">· {item.status}</span>}
+                                    </span>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {/* ── Score Cards ── */}
+                {scoreEntries.length > 0 && (
+                    <div className="mb-10">
+                        <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-4">Score</h3>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            {scoreEntries.map((entry) => (
+                                <div key={entry.label} className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-5 shadow-sm">
+                                    <div className="text-3xl font-black text-black">{entry.score.toFixed(1)}</div>
+                                    <div className="text-xs font-semibold text-[#8E8E93] mt-1">{entry.label}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* ── Profile Match Description ── */}
+                {matchScore.description && (
+                    <div className="mb-10">
+                        <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-4">Profile Match Summary</h3>
+                        <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl p-6 shadow-sm">
+                            <p className="text-sm leading-relaxed text-[#374151]">{matchScore.description}</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* ── AI Interview Summary ── */}
+                {aiSummary && (
+                    <div className="mb-10">
+                        <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-4">AI Interview Summary</h3>
+                        <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl p-6 shadow-sm">
+                            <p className="text-sm leading-relaxed text-[#374151]">{aiSummary}</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* ── AI Interview Score Breakdown ── */}
+                {scoreEntries.length > 0 && (
+                    <div className="mb-10">
+                        <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-4">AI Interview Score Breakdown</h3>
+                        <div className="bg-white border border-[#E5E7EB] rounded-xl p-6 shadow-sm flex flex-col gap-5">
+                            {scoreEntries.map((entry) => (
+                                <div key={entry.label} className="flex justify-between items-center text-sm font-semibold">
+                                    <span className="w-32 text-[#4B5563]">{entry.label}</span>
+                                    <div className="flex-1 mx-4 h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full rounded-full transition-all"
+                                            style={{ width: getScoreWidth(entry.score), backgroundColor: getScoreColor(entry.score) }}
+                                        />
+                                    </div>
+                                    <span className="w-8 text-right text-black">{entry.score.toFixed(1)}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* ── Profile Summary ── */}
+                {profileSummary && (
+                    <div className="mb-10">
+                        <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-4">Profile Summary</h3>
+                        <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl p-6 shadow-sm">
+                            <p className="text-sm leading-relaxed text-[#374151]">{profileSummary}</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* ── Skills ── */}
+                {skills.length > 0 && (
+                    <div className="mb-10">
+                        <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-4">Skills</h3>
+                        <div className="flex flex-wrap gap-2">
+                            {skills.map((skill: string, i: number) => (
+                                <span key={i} className="bg-[#F2F2F7] text-[#4B5563] text-xs px-3 py-1.5 rounded-full font-medium">{skill}</span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* ── Gaps & Risks ── */}
+                {(jobScoreObj.gaps_risks || []).length > 0 && (
+                    <div className="mb-10">
+                        <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-4">Gaps & Risks</h3>
+                        <div className="bg-[#FEF2F2] border border-[#FECACA] rounded-xl p-6 shadow-sm">
+                            <ul className="list-disc list-inside space-y-1">
+                                {jobScoreObj.gaps_risks.map((gap: string, i: number) => (
+                                    <li key={i} className="text-sm text-[#991B1B]">{gap}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* ═══════════════════════════════════════════════════
           Right Column: Sidebar
          ═══════════════════════════════════════════════════ */}
-            <div className="w-full xl:w-[360px] bg-white border-l border-[#E5E7EB]">
+            <div className="w-full xl:w-[360px] bg-white rounded-xl shadow-sm border border-[#E5E7EB] shrink-0 overflow-hidden" style={{ height: "max-content", maxHeight: "100%" }}>
                 {/* Sidebar tabs */}
                 <div className="flex border-b border-[#E5E7EB]">
                     {(["info", "activity", "notes"] as const).map((tab) => (
