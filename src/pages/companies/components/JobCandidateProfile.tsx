@@ -170,12 +170,10 @@ export default function JobCandidateProfile({
 
     return (
         <div className="flex-1 overflow-y-auto bg-[#F3F5F7] flex flex-col xl:flex-row p-6 gap-6">
-            {/* ═══════════════════════════════════════════════════
-          Left Column: Candidate Main Info
-         ═══════════════════════════════════════════════════ */}
+
             <div className="flex-1 flex flex-col gap-6">
                 {/* ── Main Candidate Card ── */}
-                <div className="bg-white rounded-xl overflow-hidden shadow-sm">
+                <div className="bg-white rounded-xl shadow-sm">
                     <div className="p-6">
                         <div className="flex items-start justify-between">
                             <div className="flex-1">
@@ -314,7 +312,7 @@ export default function JobCandidateProfile({
                         CURRENT STAGE <span className="text-[#0F47F2] ml-4 font-bold uppercase">{candidate.current_stage?.name || "--"}</span>
                     </h3>
 
-                    <div className="flex items-center justify-between mb-8 relative overflow-x-auto no-scrollbar py-4">
+                    <div className="flex items-center justify-between mb-8 relative max-w-[calc(100vw-4rem)] overflow-x-auto no-scrollbar py-4">
                         <div className="flex items-center w-full min-w-max gap-0 pr-4">
                             {stages.filter(s => s.slug !== 'archives').map((stage, i) => {
                                 const currentStageIndex = stages.findIndex(s => s.slug === (candidate.current_stage?.slug || candidate.stage_slug));
@@ -452,9 +450,6 @@ export default function JobCandidateProfile({
                 )}
             </div>
 
-            {/* ═══════════════════════════════════════════════════
-          Right Column: Sidebar
-         ═══════════════════════════════════════════════════ */}
             <div className="w-full xl:w-[360px] flex flex-col gap-6 shrink-0">
                 <div className="bg-white rounded-xl shadow-sm border border-[#E5E7EB] overflow-hidden">
                     {/* Sidebar tabs */}
