@@ -326,7 +326,7 @@ export default function JobCandidateProfile({
 
                                     return (
                                         <div key={stage.id} className="flex items-center flex-shrink-0">
-                                            <div className="flex flex-col items-center">
+                                            <div className="flex flex-col items-left">
                                                 <div className="relative group">
                                                     {isCompleted ? (
                                                         <div className="flex items-center justify-center">
