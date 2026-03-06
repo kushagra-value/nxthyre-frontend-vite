@@ -129,11 +129,11 @@ export default function Companies() {
     const [jobsLoading, setJobsLoading] = useState(false);
 
     // Track pending rehydration IDs from sessionStorage
-    const [pendingWsId] = useState<number | null>(() => {
+    const [pendingWsId, setPendingWsId] = useState<number | null>(() => {
         const stored = sessionStorage.getItem('nxthyre_companies_wsId');
         return stored ? Number(stored) : null;
     });
-    const [pendingJobId] = useState<number | null>(() => {
+    const [pendingJobId, setPendingJobId] = useState<number | null>(() => {
         const stored = sessionStorage.getItem('nxthyre_companies_jobId');
         return stored ? Number(stored) : null;
     });
@@ -251,6 +251,7 @@ export default function Companies() {
             if (ws) {
                 setSelectedWorkspace(ws);
             }
+            setPendingWsId(null);
         }
     }, [workspaces, pendingWsId]);
 
@@ -260,6 +261,7 @@ export default function Companies() {
             if (job) {
                 setSelectedJob(job);
             }
+            setPendingJobId(null);
         }
     }, [allJobs, pendingJobId, selectedWorkspace]);
 
@@ -426,6 +428,7 @@ export default function Companies() {
         const ws = workspaces.find(w => w.id === wsId);
         if (ws) {
             setSelectedWorkspace(ws);
+            setSelectedJob(null);
             setActiveJobFilter("All");
             setJobSearchQuery("");
         }

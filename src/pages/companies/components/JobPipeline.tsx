@@ -52,7 +52,13 @@ export default function JobPipeline({ jobId, workspaceId, workspaces, onJobUpdat
     }, []);
 
     useEffect(() => {
-        if (jobId != null) { fetchStages(jobId); }
+        if (jobId != null) {
+            fetchStages(jobId);
+        }
+        // Reset candidate selection when jobId changes
+        setSelectedCandidate(null);
+        setCandidateList([]);
+        setCurrentCandidateIndex(-1);
     }, [jobId, fetchStages]);
 
     // Fetch full candidate details from the application endpoint
