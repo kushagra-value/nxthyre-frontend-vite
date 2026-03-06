@@ -141,7 +141,7 @@ interface JobPipelineDashboardProps {
   workspaceId: number;
   workspaces: { id: number; name: string }[];
   onJobUpdated?: () => void;
-  onSelectCandidate?: (candidate: CandidateListItem) => void;
+  onSelectCandidate?: (candidate: CandidateListItem, allCandidates?: CandidateListItem[], index?: number) => void;
 }
 
 // ─── Helpers ───────────────────────────────────────────────────
@@ -950,7 +950,7 @@ export default function JobPipelineDashboard({
                 </div>
 
                 <div className="flex-1 p-3 space-y-3 overflow-y-auto mt-1 custom-scrollbar">
-                  {columnCandidates.length > 0 ? columnCandidates.map(item => {
+                  {columnCandidates.length > 0 ? columnCandidates.map((item, idx) => {
                     const cand = item.candidate;
                     const aiScoreRaw = item.job_score?.candidate_match_score?.score || "--%";
 
@@ -973,7 +973,7 @@ export default function JobPipelineDashboard({
                         <div className="flex items-start justify-between gap-2 pr-6">
                           <h4
                             className="font-bold text-[14px] text-slate-800 line-clamp-1 cursor-pointer hover:underline"
-                            onClick={() => onSelectCandidate?.(item)}
+                            onClick={() => onSelectCandidate?.(item, columnCandidates, idx)}
                           >
                             {cand.full_name || "--"}
                           </h4>
@@ -1057,7 +1057,7 @@ export default function JobPipelineDashboard({
                   </td>
                 </tr>
               ) : (
-                candidates.map((item) => {
+                candidates.map((item, index) => {
                   const cand = item.candidate;
                   const stageIdx = getStageIndex(item.current_stage?.slug || item.stage_slug);
                   const totalStgs = stages.length > 0 ? stages.filter(s => s.slug !== "archives").length : 5;
@@ -1095,7 +1095,7 @@ export default function JobPipelineDashboard({
                       <td className="px-6 py-5">
                         <div
                           className="cursor-pointer group"
-                          onClick={() => onSelectCandidate?.(item)}
+                          onClick={() => onSelectCandidate?.(item, candidates, index)}
                         >
                           <div className="font-medium text-[#4B5563] group-hover:underline group-hover:text-blue-600 transition">{cand.full_name || "--"}</div>
                           <div className="text-xs text-[#727272]">{cand.headline || "--"}</div>

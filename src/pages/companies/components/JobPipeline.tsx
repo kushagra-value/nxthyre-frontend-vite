@@ -13,6 +13,9 @@ interface JobPipelineProps {
 export default function JobPipeline({ jobId, workspaceId, workspaces, onJobUpdated }: JobPipelineProps) {
     const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
     const [loadingCandidate, setLoadingCandidate] = useState(false);
+    // Track candidate list for pagination
+    const [candidateList, setCandidateList] = useState<any[]>([]);
+    const [currentCandidateIndex, setCurrentCandidateIndex] = useState<number>(-1);
 
     useEffect(() => {
         if (selectedCandidate) {
@@ -47,9 +50,34 @@ export default function JobPipeline({ jobId, workspaceId, workspaces, onJobUpdat
         }
     }, []);
 
-    const handleSelectCandidate = (candidateListItem: any) => {
+    const handleSelectCandidate = (candidateListItem: any, allCandidates?: any[], index?: number) => {
+        // Store the candidate list and index for pagination
+        if (allCandidates) {
+            setCandidateList(allCandidates);
+        }
+        if (index !== undefined) {
+            setCurrentCandidateIndex(index);
+        }
         // Fetch full details using the application id
         fetchCandidateDetails(candidateListItem.id);
+    };
+
+    const handleNavigatePrev = () => {
+        if (currentCandidateIndex > 0 && candidateList.length > 0) {
+            const prevIndex = currentCandidateIndex - 1;
+            const prevCandidate = candidateList[prevIndex];
+            setCurrentCandidateIndex(prevIndex);
+            fetchCandidateDetails(prevCandidate.id);
+        }
+    };
+
+    const handleNavigateNext = () => {
+        if (currentCandidateIndex < candidateList.length - 1 && candidateList.length > 0) {
+            const nextIndex = currentCandidateIndex + 1;
+            const nextCandidate = candidateList[nextIndex];
+            setCurrentCandidateIndex(nextIndex);
+            fetchCandidateDetails(nextCandidate.id);
+        }
     };
 
     if (!jobId) {
@@ -63,6 +91,10 @@ export default function JobPipeline({ jobId, workspaceId, workspaces, onJobUpdat
                     jobId={jobId}
                     goBack={() => setSelectedCandidate(null)}
                     loading={loadingCandidate}
+                    onNavigatePrev={currentCandidateIndex > 0 ? handleNavigatePrev : undefined}
+                    onNavigateNext={currentCandidateIndex < candidateList.length - 1 ? handleNavigateNext : undefined}
+                    currentIndex={currentCandidateIndex}
+                    totalCandidates={candidateList.length}
                 />
             ) : (
                 <JobPipelineDashboard
