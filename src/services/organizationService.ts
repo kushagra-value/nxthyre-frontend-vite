@@ -448,6 +448,20 @@ class OrganizationService {
       );
     }
   }
+
+  async updateWorkspace(workspaceId: number, data: { name?: string; status?: string }): Promise<MyWorkspace> {
+    try {
+      const response = await apiClient.patch(
+        `/organization/workspaces/${workspaceId}/`,
+        data
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to update workspace"
+      );
+    }
+  }
 }
 
 export const organizationService = new OrganizationService();

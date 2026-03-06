@@ -13,8 +13,6 @@ import {
     ChevronRight,
     Eye,
     Plus,
-    Pause,
-    Play,
     DownloadCloud,
     Calendar,
     ChevronDown,
@@ -46,12 +44,47 @@ const statusStyles: Record<string, { bg: string; text: string }> = {
     Inactive: { bg: "bg-[#F3F5F7]", text: "text-[#8E8E93]" },
 };
 
+const PlayIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M13.6057 6.23503C15.0203 7.00431 15.0203 8.99565 13.6057 9.76491L5.06441 14.4096C3.68957 15.1573 2 14.1842 2 12.6447V3.35525C2 1.81577 3.68957 0.842659 5.06441 1.5903L13.6057 6.23503Z" stroke="#14AE5C" />
+    </svg>
+);
+
+const PauseIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g clipPath="url(#clip0_519_5988)">
+            <path d="M1.16699 3.49999C1.16699 2.40004 1.16699 1.85007 1.5087 1.50837C1.85041 1.16666 2.40038 1.16666 3.50032 1.16666C4.60027 1.16666 5.15024 1.16666 5.49195 1.50837C5.83366 1.85007 5.83366 2.40004 5.83366 3.49999V10.5C5.83366 11.5999 5.83366 12.1499 5.49195 12.4916C5.15024 12.8333 4.60027 12.8333 3.50032 12.8333C2.40038 12.8333 1.85041 12.8333 1.5087 12.4916C1.16699 12.1499 1.16699 11.5999 1.16699 10.5V3.49999Z" stroke="#4B5563" />
+            <path d="M8.16699 3.49999C8.16699 2.40004 8.16699 1.85007 8.50871 1.50837C8.85043 1.16666 9.40039 1.16666 10.5003 1.16666C11.6003 1.16666 12.1502 1.16666 12.4919 1.50837C12.8337 1.85007 12.8337 2.40004 12.8337 3.49999V10.5C12.8337 11.5999 12.8337 12.1499 12.4919 12.4916C12.1502 12.8333 11.6003 12.8333 10.5003 12.8333C9.40039 12.8333 8.85043 12.8333 8.50871 12.4916C8.16699 12.1499 8.16699 11.5999 8.16699 10.5V3.49999Z" stroke="#4B5563" />
+        </g>
+        <defs>
+            <clipPath id="clip0_519_5988">
+                <rect width="14" height="14" fill="white" />
+            </clipPath>
+        </defs>
+    </svg>
+);
+
+const StopIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g clipPath="url(#clip0_519_4750)">
+            <path d="M7.99967 14.6666C11.6816 14.6666 14.6663 11.6819 14.6663 7.99998C14.6663 4.31808 11.6816 1.33331 7.99967 1.33331C4.31778 1.33331 1.33301 4.31808 1.33301 7.99998C1.33301 11.6819 4.31778 14.6666 7.99967 14.6666Z" stroke="#8E8E93" />
+            <path d="M5.33301 7.99998C5.33301 6.74291 5.33301 6.11436 5.72353 5.72384C6.11405 5.33331 6.74261 5.33331 7.99967 5.33331C9.25674 5.33331 9.88527 5.33331 10.2758 5.72384C10.6663 6.11436 10.6663 6.74291 10.6663 7.99998C10.6663 9.25705 10.6663 9.88558 10.2758 10.2761C9.88527 10.6666 9.25674 10.6666 7.99967 10.6666C6.74261 10.6666 6.11405 10.6666 5.72353 10.2761C5.33301 9.88558 5.33301 9.25705 5.33301 7.99998Z" stroke="#8E8E93" />
+        </g>
+        <defs>
+            <clipPath id="clip0_519_4750">
+                <rect width="16" height="16" fill="white" />
+            </clipPath>
+        </defs>
+    </svg>
+);
+
 export default function Companies() {
     const { isAuthenticated } = useAuth();
 
     const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
     const [statsCount, setStatsCount] = useState<WorkspaceStatsCount | null>(null);
     const [loading, setLoading] = useState(true);
+    const [statusUpdating, setStatusUpdating] = useState<number | null>(null);
     const [logos, setLogos] = useState<Record<string, string | null | undefined>>({});
 
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -282,6 +315,28 @@ export default function Companies() {
         activeFilter === "All"
             ? searchedRows
             : searchedRows.filter((r) => r.status === activeFilter);
+
+    const handleStatusToggle = async (workspaceId: number, currentStatus: string) => {
+        if (statusUpdating) return;
+
+        const nextMap: Record<string, string> = {
+            "Active": "Paused",
+            "Paused": "Inactive",
+            "Inactive": "Active"
+        };
+        const newStatus = nextMap[currentStatus] || "Active";
+
+        setStatusUpdating(workspaceId);
+        try {
+            await organizationService.updateWorkspace(workspaceId, { status: newStatus });
+            setWorkspaces(prev => prev.map(w => w.id === workspaceId ? { ...w, workspace_status: newStatus } : w));
+            showToast.success("Workspace status updated");
+        } catch (err: any) {
+            showToast.error(err.message || "Failed to update status");
+        } finally {
+            setStatusUpdating(null);
+        }
+    };
 
     const filterCounts = {
         All: searchedRows.length,
@@ -834,9 +889,10 @@ export default function Companies() {
                                                             {/* Status */}
                                                             <td className="px-6 py-4 text-center">
                                                                 <span
-                                                                    className={`px-3 py-1 rounded-full text-[12px] font-medium ${sty.bg} ${sty.text}`}
+                                                                    onClick={(e) => { e.stopPropagation(); handleStatusToggle(row.workspaceId, row.status); }}
+                                                                    className={`px-3 py-1 rounded-full text-[12px] font-medium ${sty.bg} ${sty.text} cursor-pointer hover:opacity-80 transition-opacity ${statusUpdating === row.workspaceId ? 'opacity-50 pointer-events-none' : ''}`}
                                                                 >
-                                                                    {row.status}
+                                                                    {statusUpdating === row.workspaceId ? '...' : row.status}
                                                                 </span>
                                                             </td>
 
@@ -856,23 +912,14 @@ export default function Companies() {
                                                                         <Eye className="w-4 h-4" />
                                                                     </button>
 
-                                                                    {row.status === 'Active' ? (
-                                                                        <button
-                                                                            className="p-1.5 text-gray-400 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors"
-                                                                            title="Feature Coming Soon"
-                                                                            disabled
-                                                                        >
-                                                                            <Pause className="w-4 h-4" />
-                                                                        </button>
-                                                                    ) : (
-                                                                        <button
-                                                                            className="p-1.5 text-[#069855] bg-green-50 rounded-full hover:bg-green-100 transition-colors"
-                                                                            title="Feature Coming Soon"
-                                                                            disabled
-                                                                        >
-                                                                            <Play className="w-4 h-4 fill-current" />
-                                                                        </button>
-                                                                    )}
+                                                                    <button
+                                                                        onClick={(e) => { e.stopPropagation(); handleStatusToggle(row.workspaceId, row.status); }}
+                                                                        disabled={statusUpdating === row.workspaceId}
+                                                                        title={`Toggle status (Current: ${row.status})`}
+                                                                        className={`p-1.5 transition-colors rounded-full hover:bg-gray-100 ${statusUpdating === row.workspaceId ? 'opacity-50 pointer-events-none' : ''}`}
+                                                                    >
+                                                                        {row.status === 'Active' ? <PlayIcon /> : row.status === 'Paused' ? <PauseIcon /> : <StopIcon />}
+                                                                    </button>
                                                                 </div>
                                                             </td>
                                                         </tr>
