@@ -145,7 +145,7 @@ export default function Companies() {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [activeFilter, setActiveFilter] = useState<
-        "All" | "Active" | "Paused" | "Inactive" | "Has Open Jobs" | "Needs Attention"
+        "All" | "Active" | "Paused" | "Inactive" | "Needs Attention"
     >("All");
     const [activeJobFilter, setActiveJobFilter] = useState<"All" | "Active" | "Paused" | "Closed" | "Draft">("All");
     const [searchQuery, setSearchQuery] = useState("");
@@ -228,6 +228,9 @@ export default function Companies() {
             const monthlyShortlistedTrend = ws.increased_decreased_rate_percentages?.shortlisted?.monthly;
             const monthlyHiredTrend = ws.increased_decreased_rate_percentages?.hired?.monthly;
 
+            const rawStatus = ws.workspace_status || "Active";
+            const normalizedStatus = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1).toLowerCase();
+
             return {
                 id: `ws-${ws.id}`,
                 workspaceId: ws.id,
@@ -242,7 +245,7 @@ export default function Companies() {
                 lastActiveDate: ws.last_active_date
                     ? new Date(ws.last_active_date).toLocaleDateString('en-GB')
                     : "--",
-                status: (ws.workspace_status || "Active") as any,
+                status: normalizedStatus as any,
             };
         });
     }, [workspaces]);
@@ -269,19 +272,13 @@ export default function Companies() {
     const filteredRows =
         activeFilter === "All"
             ? searchedRows
-            : activeFilter === "Has Open Jobs"
-                ? searchedRows.filter((r) => (Number(r.totalJobs) || 0) > 0)
-                : activeFilter === "Needs Attention"
-                    ? searchedRows.filter((r) => (Number(r.totalCandidates) || 0) === 0 || r.status === "Paused")
-                    : searchedRows.filter((r) => r.status === activeFilter);
+            : searchedRows.filter((r) => r.status === activeFilter);
 
     const filterCounts = {
         All: searchedRows.length,
         Active: searchedRows.filter((r) => r.status === "Active").length,
         Paused: searchedRows.filter((r) => r.status === "Paused").length,
         Inactive: searchedRows.filter((r) => r.status === "Inactive").length,
-        "Has Open Jobs": searchedRows.filter((r) => (Number(r.totalJobs) || 0) > 0).length,
-        "Needs Attention": searchedRows.filter((r) => (Number(r.totalCandidates) || 0) === 0 || r.status === "Paused").length,
     };
 
     const itemsPerPage = 10;
