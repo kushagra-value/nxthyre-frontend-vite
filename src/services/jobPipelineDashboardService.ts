@@ -203,7 +203,7 @@ export async function getPlivoToken(): Promise<{
   token: string;
   username: string;
 }> {
-  const res = await fetch(`${PLIVO_BASE}/plivo/token/`, {
+  const res = await fetch(`${PLIVO_BASE}/token/`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
