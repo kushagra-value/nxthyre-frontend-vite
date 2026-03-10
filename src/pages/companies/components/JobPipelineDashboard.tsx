@@ -4,7 +4,7 @@ import {
   Search, SlidersHorizontal, Share2, Download, Calendar, Grid3X3, List,
   ChevronLeft, ChevronRight, Pencil, X, Archive, Check,
   Maximize2, Minimize2, ArrowLeft, Briefcase, LocateIcon, FileSearch,
-  Target, Layers, BookOpen, ListChecks, Zap, Clock,
+  Target, Layers, BookOpen, ListChecks, Zap, Clock, ArrowUpDown, ArrowUp, ArrowDown
 } from "lucide-react";
 import apiClient from "../../../services/api";
 import { jobPostService, Job } from "../../../services/jobPostService";
@@ -234,6 +234,90 @@ export default function JobPipelineDashboard({
   // ── Selection
   const [selectAll, setSelectAll] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+
+  // ── Sorting
+  type CandidateSortKey = "Name" | "AI Score" | "Location" | "Exp" | "CTC" | "Expected CTC" | "Notice Period" | "Stage" | "Attention";
+  const [sortConfig, setSortConfig] = useState<{ key: CandidateSortKey; direction: 'asc' | 'desc' } | null>(null);
+
+  const handleSort = (key: CandidateSortKey) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (["AI Score", "Exp", "CTC", "Expected CTC", "Notice Period"].includes(key)) {
+      direction = 'desc'; // Default desc for numeric/score values
+    }
+
+    if (sortConfig && sortConfig.key === key) {
+      if (sortConfig.direction === direction) {
+        direction = direction === 'asc' ? 'desc' : 'asc';
+      } else {
+        setSortConfig(null);
+        return;
+      }
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const SortIcon = ({ columnKey }: { columnKey: CandidateSortKey }) => {
+    if (sortConfig?.key !== columnKey) return <ArrowUpDown className="w-3 h-3 ml-1 text-gray-400 group-hover:text-gray-600 inline-block opacity-0 group-hover:opacity-100 transition-opacity" />;
+    return sortConfig.direction === 'asc'
+      ? <ArrowUp className="w-3 h-3 ml-1 text-[#0F47F2] inline-block" />
+      : <ArrowDown className="w-3 h-3 ml-1 text-[#0F47F2] inline-block" />;
+  };
+
+  const getSortedCandidates = (cands: CandidateListItem[]) => {
+    if (!sortConfig) return cands;
+    return [...cands].sort((a, b) => {
+      const candA = a.candidate;
+      const candB = b.candidate;
+
+      let valA: any = 0;
+      let valB: any = 0;
+
+      switch (sortConfig.key) {
+        case "Name":
+          valA = candA.full_name?.toLowerCase() || "";
+          valB = candB.full_name?.toLowerCase() || "";
+          break;
+        case "AI Score":
+          valA = parseInt((a.job_score?.candidate_match_score?.score || "0").replace("%", ""), 10);
+          valB = parseInt((b.job_score?.candidate_match_score?.score || "0").replace("%", ""), 10);
+          break;
+        case "Location":
+          valA = candA.location?.toLowerCase() || "";
+          valB = candB.location?.toLowerCase() || "";
+          break;
+        case "Exp":
+          valA = candA.total_experience ?? (candA.experience_years ? parseInt(candA.experience_years) : 0);
+          valB = candB.total_experience ?? (candB.experience_years ? parseInt(candB.experience_years) : 0);
+          break;
+        case "CTC":
+          valA = candA.current_salary_lpa ? parseFloat(candA.current_salary_lpa) : 0;
+          valB = candB.current_salary_lpa ? parseFloat(candB.current_salary_lpa) : 0;
+          break;
+        case "Expected CTC":
+          valA = candA.expected_ctc ? parseFloat(candA.expected_ctc) : 0;
+          valB = candB.expected_ctc ? parseFloat(candB.expected_ctc) : 0;
+          break;
+        case "Notice Period":
+          valA = candA.notice_period_days ?? 999;
+          valB = candB.notice_period_days ?? 999;
+          break;
+        case "Stage":
+          valA = a.current_stage?.name?.toLowerCase() || "";
+          valB = b.current_stage?.name?.toLowerCase() || "";
+          break;
+        case "Attention":
+          valA = a.status_tags?.find(t => t.text)?.text?.toLowerCase() || "";
+          valB = b.status_tags?.find(t => t.text)?.text?.toLowerCase() || "";
+          break;
+      }
+
+      if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
+
+  const sortedCandidates = getSortedCandidates(candidates);
 
   // ── Active tab
   const [activeTab, setActiveTab] = useState<"pipeline" | "naukbot" | "inbound">("pipeline");
@@ -1210,16 +1294,24 @@ export default function JobPipelineDashboard({
         </div>
       ) : (
         <div className="mx-8 bg-white border border-[#E5E7EB] rounded-b-2xl overflow-hidden">
-          <table className="w-full">
+          <table className="w-full text-left border-collapse">
             <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
               <tr>
                 <th className="w-10 px-6 py-4">
                   <input type="checkbox" className="w-4 h-4 accent-[#0F47F2]" checked={selectAll} onChange={handleSelectAll} />
                 </th>
                 {["Name", "AI Score", "Location", "Exp", "CTC", "Expected CTC", "Notice Period", "Stage", "Attention"].map((h) => (
-                  <th key={h} className="text-left px-6 py-4 text-xs font-bold uppercase tracking-widest text-[#AEAEB2]">{h}</th>
+                  <th
+                    key={h}
+                    className="text-left px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors select-none whitespace-nowrap"
+                    onClick={() => handleSort(h as CandidateSortKey)}
+                  >
+                    <div className="flex items-center">
+                      {h} <SortIcon columnKey={h as CandidateSortKey} />
+                    </div>
+                  </th>
                 ))}
-                <th className="w-24 px-6 py-4 text-xs font-bold uppercase tracking-widest text-[#AEAEB2] text-right">Actions</th>
+                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-right select-none whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F5F7]">
@@ -1246,7 +1338,7 @@ export default function JobPipelineDashboard({
                   </td>
                 </tr>
               ) : (
-                candidates.map((item, index) => {
+                sortedCandidates.map((item, index) => {
                   const cand = item.candidate;
                   const stageIdx = getStageIndex(item.current_stage?.slug || item.stage_slug);
                   const totalStgs = stages.length > 0 ? stages.filter(s => s.slug !== "archives").length : 5;
@@ -1299,11 +1391,11 @@ export default function JobPipelineDashboard({
                           <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[#4B5563]">{aiScoreLabel}</div>
                         </div>
                       </td>
-                      <td className="px-6 py-5 text-sm text-[#8E8E93]">{cand.location || "--"}</td>
-                      <td className="px-6 py-5 text-sm text-[#8E8E93]">{expYears}</td>
-                      <td className="px-6 py-5 text-sm text-[#8E8E93]">{ctc}</td>
-                      <td className="px-6 py-5 text-sm text-[#8E8E93]">{expectedCtc}</td>
-                      <td className="px-6 py-5 text-sm text-[#8E8E93]">{noticePeriod}</td>
+                      <td className="px-6 py-5 text-sm text-[#4B5563]">{cand.location || "--"}</td>
+                      <td className="px-6 py-5 text-sm text-[#4B5563]">{expYears}</td>
+                      <td className="px-6 py-5 text-sm text-[#4B5563]">{ctc}</td>
+                      <td className="px-6 py-5 text-sm text-[#4B5563]">{expectedCtc}</td>
+                      <td className="px-6 py-5 text-sm text-[#4B5563]">{noticePeriod}</td>
                       <td className="px-6 py-5">
                         <div>
                           <div className="text-[#6155F5] text-sm font-medium">{item.current_stage?.name || "--"}</div>

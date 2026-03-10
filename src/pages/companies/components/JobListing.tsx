@@ -388,7 +388,7 @@ const JobListing: React.FC<JobListingProps> = ({
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-left table-fixed border-collapse"> {/* UPDATED: table-fixed + exact Figma width (1254 + 232 for 2 new columns) */}
-                        <thead className="bg-[#F5F5F5]">
+                        <thead className="bg-[#F9FAFB]">
                             <tr>
                                 {[
                                     { key: "Job Title" },
@@ -403,7 +403,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                 ].map(({ key, sortable = true }) => (
                                     <th
                                         key={key}
-                                        className={`px-5 py-4 text-sm font-normal text-[#8E8E93] ${sortable ? 'cursor-pointer hover:bg-gray-200 transition-colors group select-none whitespace-nowrap' : 'select-none whitespace-nowrap'}`}
+                                        className={`px-6 py-4 text-[13px] font-normal text-[#AEAEB2] ${sortable ? 'cursor-pointer group hover:text-[#4B5563] transition-colors select-none whitespace-nowrap' : 'select-none whitespace-nowrap'}`}
                                         onClick={sortable ? () => handleSort(key) : undefined}
                                     >
                                         <div className="flex items-center">
@@ -412,7 +412,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                         </div>
                                     </th>
                                 ))}
-                                <th className="w-[116px] px-5 py-4 text-sm font-normal text-[#8E8E93] text-center select-none">Actions</th>
+                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center select-none">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#D1D1D6]">
@@ -423,7 +423,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                 return (
                                     <tr key={job.id} className="h-[69px] hover:bg-gray-50 transition-colors"> {/* UPDATED: exact row height */}
                                         {/* Job Title */}
-                                        <td className="w-[270px] px-5 py-4">
+                                        <td className="px-6 py-4">
                                             <div className="flex flex-col gap-1.5">
                                                 <span
                                                     className="text-[14px] font-medium text-[#4B5563] leading-[17px] cursor-pointer hover:text-[#0F47F2] hover:underline transition-colors"
@@ -444,38 +444,38 @@ const JobListing: React.FC<JobListingProps> = ({
                                         </td>
 
                                         {/* Candidates */}
-                                        <td className="w-[116px] px-5 py-4 text-[14px] text-[#8E8E93] leading-[17px]">
+                                        <td className="px-6 py-4 text-sm text-[#4B5563] leading-[17px] text-center">
                                             {job.candidates_count ?? job.total_applied ?? 0}
                                         </td>
 
                                         {/* Shortlisted */}
-                                        <td className="w-[116px] px-5 py-4 text-[14px] text-[#8E8E93] leading-[17px]">
+                                        <td className="px-6 py-4 text-sm text-[#4B5563] leading-[17px] text-center">
                                             {job.shortlisted_count ?? job.shortlisted_candidate_count ?? 0}
                                         </td>
 
                                         {/* Hired */}
-                                        <td className="w-[116px] px-5 py-4 text-[14px] text-[#8E8E93] leading-[17px]">
+                                        <td className="px-6 py-4 text-sm text-[#4B5563] leading-[17px] text-center">
                                             {job.hired_count ?? "--"}
                                         </td>
 
                                         {/* Days Open */}
-                                        <td className="w-[108px] px-5 py-4 text-[14px] text-[#FF8D28] leading-[17px]">
+                                        <td className="px-6 py-4 text-[14px] text-[#FF8D28] leading-[17px] text-center">
                                             {daysOpen}
                                         </td>
 
                                         {/* No. of Position */}
-                                        <td className="w-[128px] px-5 py-4 text-[14px] text-[#8E8E93] leading-[17px]">
+                                        <td className="px-6 py-4 text-sm text-[#4B5563] leading-[17px] text-center">
                                             {noOfPositions}
                                         </td>
 
                                         {/* Last Active Date */}
-                                        <td className="w-[144px] px-5 py-4 text-[14px] text-[#8E8E93] leading-[17px]">
+                                        <td className="px-6 py-4 text-sm text-[#4B5563] leading-[17px] text-center">
                                             {job.last_active_date_display || new Date(job.updated_at).toLocaleDateString('en-GB')}
                                         </td>
 
                                         {/* Stage - 5 colored boxes */}
-                                        <td className="w-[250px] px-5 py-4">
-                                            <div className="flex gap-[5px]">
+                                        <td className="px-6 py-4">
+                                            <div className="flex justify-center gap-[5px]">
                                                 {job.stage_breakdown ? (
                                                     job.stage_breakdown.map((item, idx) => (
                                                         <div
@@ -508,7 +508,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                         </td>
 
                                         {/* Status */}
-                                        <td className="w-[122px] px-5 py-4">
+                                        <td className="px-6 py-4 text-center">
                                             <span className={`px-3 py-1 rounded-full text-[14px] font-medium leading-[17px] ${(job.status === 'PUBLISHED' || job.status === 'ACTIVE')
                                                 ? 'bg-[#EBFFEE] text-[#069855]'
                                                 : job.status === 'CLOSED'
@@ -522,7 +522,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                         </td>
 
                                         {/* Actions */}
-                                        <td className="w-[116px] px-5 py-4">
+                                        <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
                                                 <button
                                                     onClick={() => {
