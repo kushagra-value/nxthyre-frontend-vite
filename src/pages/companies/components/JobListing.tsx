@@ -124,17 +124,17 @@ const JobListing: React.FC<JobListingProps> = ({
 
         return [...filteredWorkspaceJobs].sort((a, b) => {
             const getVal = (job: any, key: string) => {
-                const daysOpen = 36; // Replace with real calc if needed
-                const noOfPositions = 3;
+                const daysOpen = job.days_open || 0; // Replace with real calc if needed
+                const noOfPositions = job.num_positions || job.No_of_opening_or_positions_ || 0;
 
                 switch (key) {
                     case "Job Title": return (job.title || "").toLowerCase();
-                    case "Candidates": return job.total_applied || 0;
-                    case "Shortlisted": return job.shortlisted_candidate_count || 0;
-                    case "Hired": return 0;
+                    case "Candidates": return job.candidates_count ?? job.total_applied ?? 0;
+                    case "Shortlisted": return job.shortlisted_count ?? job.shortlisted_candidate_count ?? 0;
+                    case "Hired": return job.hired_count || 0;
                     case "Days Open": return daysOpen;
                     case "No. of Position": return noOfPositions;
-                    case "Last Active Date": return new Date(job.updated_at).getTime() || 0;
+                    case "Last Active Date": return job.last_active_date ? new Date(job.last_active_date).getTime() : (new Date(job.updated_at).getTime() || 0);
                     case "Status": return (job.status || "").toLowerCase();
                     default: return "";
                 }
@@ -417,8 +417,8 @@ const JobListing: React.FC<JobListingProps> = ({
                         </thead>
                         <tbody className="divide-y divide-[#D1D1D6]">
                             {paginatedJobs.map((job) => {
-                                const daysOpen = "36"; // UPDATED: matches image (replace with real calc if needed)
-                                const noOfPositions = "3"; // UPDATED: matches image
+                                const daysOpen = job.days_open_text || (job.days_open ? `${job.days_open} Days` : "36 Days");
+                                const noOfPositions = job.num_positions || job.No_of_opening_or_positions_ || "3";
 
                                 return (
                                     <tr key={job.id} className="h-[69px] hover:bg-gray-50 transition-colors"> {/* UPDATED: exact row height */}
@@ -431,13 +431,13 @@ const JobListing: React.FC<JobListingProps> = ({
                                                 >{job.title}</span>
                                                 <div className="flex items-center gap-1">
                                                     <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">
-                                                        {job.experience_min_years}-{job.experience_max_years} Yrs
+                                                        {job.experience_display || `${job.experience_min_years}-${job.experience_max_years} Yrs`}
                                                     </span>
                                                     <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">
-                                                        {formatSalaryToLPA(job.salary_min)} - {formatSalaryToLPA(job.salary_max)} LPA
+                                                        {job.salary_display || `${formatSalaryToLPA(job.salary_min)} - ${formatSalaryToLPA(job.salary_max)} LPA`}
                                                     </span>
                                                     <span className="px-2 py-0.5 bg-[#F2F2F7] rounded-full text-[10px] text-[#8E8E93]">
-                                                        JD-{job.id}
+                                                        {job.jd_code || `JD-${job.id}`}
                                                     </span>
                                                 </div>
                                             </div>
@@ -445,22 +445,22 @@ const JobListing: React.FC<JobListingProps> = ({
 
                                         {/* Candidates */}
                                         <td className="w-[116px] px-5 py-4 text-[14px] text-[#8E8E93] leading-[17px]">
-                                            {job.total_applied || 0}
+                                            {job.candidates_count ?? job.total_applied ?? 0}
                                         </td>
 
                                         {/* Shortlisted */}
                                         <td className="w-[116px] px-5 py-4 text-[14px] text-[#8E8E93] leading-[17px]">
-                                            {job.shortlisted_candidate_count || 0}
+                                            {job.shortlisted_count ?? job.shortlisted_candidate_count ?? 0}
                                         </td>
 
                                         {/* Hired */}
                                         <td className="w-[116px] px-5 py-4 text-[14px] text-[#8E8E93] leading-[17px]">
-                                            {"--"}
+                                            {job.hired_count ?? "--"}
                                         </td>
 
                                         {/* Days Open */}
                                         <td className="w-[108px] px-5 py-4 text-[14px] text-[#FF8D28] leading-[17px]">
-                                            {daysOpen} Days
+                                            {daysOpen}
                                         </td>
 
                                         {/* No. of Position */}
@@ -470,27 +470,40 @@ const JobListing: React.FC<JobListingProps> = ({
 
                                         {/* Last Active Date */}
                                         <td className="w-[144px] px-5 py-4 text-[14px] text-[#8E8E93] leading-[17px]">
-                                            {new Date(job.updated_at).toLocaleDateString('en-GB')}
+                                            {job.last_active_date_display || new Date(job.updated_at).toLocaleDateString('en-GB')}
                                         </td>
 
                                         {/* Stage - 5 colored boxes */}
                                         <td className="w-[250px] px-5 py-4">
                                             <div className="flex gap-[5px]">
-                                                {[
-                                                    { color: '#FF8D28', value: job.total_applied || 52 },
-                                                    { color: '#00C0E8', value: job.shortlisted_candidate_count || 24 },
-                                                    { color: '#00C3D0', value: 12 },
-                                                    { color: '#6155F5', value: 10 },
-                                                    { color: '#0088FF', value: 2 },
-                                                ].map((item, idx) => (
-                                                    <div
-                                                        key={idx}
-                                                        className="w-[39.76px] h-[24px] rounded-[5px] flex items-center justify-center text-white text-[14px] leading-[17px]"
-                                                        style={{ backgroundColor: item.color }}
-                                                    >
-                                                        {item.value}
-                                                    </div>
-                                                ))}
+                                                {job.stage_breakdown ? (
+                                                    job.stage_breakdown.map((item, idx) => (
+                                                        <div
+                                                            key={idx}
+                                                            className="w-[39.76px] h-[24px] rounded-[5px] flex items-center justify-center text-white text-[14px] leading-[17px]"
+                                                            style={{ backgroundColor: item.color }}
+                                                            title={item.name}
+                                                        >
+                                                            {item.count}
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    [
+                                                        { color: '#FF8D28', value: job.total_applied || 52 },
+                                                        { color: '#00C0E8', value: job.shortlisted_candidate_count || 24 },
+                                                        { color: '#00C3D0', value: 12 },
+                                                        { color: '#6155F5', value: 10 },
+                                                        { color: '#0088FF', value: 2 },
+                                                    ].map((item, idx) => (
+                                                        <div
+                                                            key={idx}
+                                                            className="w-[39.76px] h-[24px] rounded-[5px] flex items-center justify-center text-white text-[14px] leading-[17px]"
+                                                            style={{ backgroundColor: item.color }}
+                                                        >
+                                                            {item.value}
+                                                        </div>
+                                                    ))
+                                                )}
                                             </div>
                                         </td>
 

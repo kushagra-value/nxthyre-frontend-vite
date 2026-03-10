@@ -42,6 +42,24 @@ export interface Job {
   ai_jd_object?: any;
   count: number;
   jobrole_company: string;
+  boolean_search_terms?: string;
+  experience_display?: string;
+  salary_display?: string;
+  jd_code?: string;
+  candidates_count?: number;
+  shortlisted_count?: number;
+  hired_count?: number;
+  days_open?: number;
+  days_open_text?: string;
+  No_of_opening_or_positions_?: number;
+  last_active_date?: string;
+  last_active_date_display?: string;
+  stage_breakdown?: {
+    name: string;
+    count: number;
+    color: string;
+  }[];
+  num_positions?: number;
 }
 
 export interface SearchedCandidateItem {
@@ -331,7 +349,7 @@ class JobPostService {
     try {
       const formData = new FormData();
       formData.append("job_id", String(jobId));
-      resumes.forEach((resume, index) => {
+      resumes.forEach((resume) => {
         formData.append("resumes", resume);
       });
       const response = await apiClient.post(
