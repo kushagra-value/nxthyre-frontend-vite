@@ -1058,23 +1058,45 @@ export default function JobPipelineDashboard({
             {selectedIds.size} Candidate{selectedIds.size !== 1 ? "s" : ""} Selected
           </div>
           <div className="flex items-center gap-3 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="text-[#4B5563] font-medium">Move to:</span>
-              <select
-                className="border border-[#D1D1D6] rounded-md px-2 py-1.5 bg-white text-[#4B5563] focus:outline-none focus:border-[#0F47F2] font-medium"
-                onChange={(e) => {
-                  const stageId = Number(e.target.value);
-                  if (stageId) bulkMoveCandidates(Array.from(selectedIds), stageId);
-                  e.target.value = ""; // Reset select
-                }}
-                defaultValue=""
-              >
-                <option value="" disabled>Select Stage...</option>
-                {stages.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
-            </div>
+            <button
+              onClick={() => {
+                let nextStageId: number | undefined;
+                if (activeStageSlug) {
+                  const currentIdx = stages.findIndex(s => s.slug === activeStageSlug);
+                  if (currentIdx !== -1 && currentIdx + 1 < stages.length) {
+                    // Check if next stage is 'archives', if so skip or just use it. Typically archives is not a 'next' stage
+                    const nextStage = stages[currentIdx + 1];
+                    if (nextStage.slug !== 'archives') {
+                      nextStageId = nextStage.id;
+                    } else if (currentIdx + 2 < stages.length) {
+                      nextStageId = stages[currentIdx + 2].id;
+                    }
+                  }
+                } else {
+                  const firstCandId = Array.from(selectedIds)[0];
+                  const firstCand = candidates.find(c => c.id === firstCandId);
+                  const currentSlug = firstCand?.current_stage?.slug || firstCand?.stage_slug;
+                  const currentIdx = stages.findIndex(s => s.slug === currentSlug);
+                  if (currentIdx !== -1 && currentIdx + 1 < stages.length) {
+                    const nextStage = stages[currentIdx + 1];
+                    if (nextStage.slug !== 'archives') {
+                      nextStageId = nextStage.id;
+                    } else if (currentIdx + 2 < stages.length) {
+                      nextStageId = stages[currentIdx + 2].id;
+                    }
+                  }
+                }
+
+                if (nextStageId) {
+                  bulkMoveCandidates(Array.from(selectedIds), nextStageId);
+                } else {
+                  showToast.error("No next stage available");
+                }
+              }}
+              className="flex items-center gap-2 px-3 py-1.5 bg-white text-[#4B5563] border border-[#D1D1D6] rounded-md hover:bg-gray-50 transition-colors font-medium"
+            >
+              Move to Next Stage
+            </button>
 
             <button
               onClick={() => setShowExportDialog(true)}
