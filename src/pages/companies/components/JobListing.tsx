@@ -391,19 +391,19 @@ const JobListing: React.FC<JobListingProps> = ({
                         <thead className="bg-[#F5F5F5]">
                             <tr>
                                 {[
-                                    { key: "Job Title", width: "w-[270px]" },
-                                    { key: "Candidates", width: "w-[116px]" },
-                                    { key: "Shortlisted", width: "w-[116px]" },
-                                    { key: "Hired", width: "w-[116px]" },
-                                    { key: "Days Open", width: "w-[108px]" },
-                                    { key: "No. of Position", width: "w-[128px]" },
-                                    { key: "Last Active Date", width: "w-[144px]" },
-                                    { key: "Stage", width: "w-[250px]", sortable: false },
-                                    { key: "Status", width: "w-[122px]" },
-                                ].map(({ key, width, sortable = true }) => (
+                                    { key: "Job Title" },
+                                    { key: "Candidates" },
+                                    { key: "Shortlisted" },
+                                    { key: "Hired" },
+                                    { key: "Days Open" },
+                                    { key: "No. of Position" },
+                                    { key: "Last Active Date" },
+                                    { key: "Stage", sortable: false },
+                                    { key: "Status" },
+                                ].map(({ key, sortable = true }) => (
                                     <th
                                         key={key}
-                                        className={`${width} px-5 py-4 text-sm font-normal text-[#8E8E93] ${sortable ? 'cursor-pointer hover:bg-gray-200 transition-colors group select-none whitespace-nowrap' : 'select-none whitespace-nowrap'}`}
+                                        className={`px-5 py-4 text-sm font-normal text-[#8E8E93] ${sortable ? 'cursor-pointer hover:bg-gray-200 transition-colors group select-none whitespace-nowrap' : 'select-none whitespace-nowrap'}`}
                                         onClick={sortable ? () => handleSort(key) : undefined}
                                     >
                                         <div className="flex items-center">
