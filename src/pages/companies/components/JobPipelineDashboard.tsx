@@ -1214,7 +1214,7 @@ export default function JobPipelineDashboard({
                     <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
                     <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-24" /></td>
                     <td className="px-6 py-5"><div className="h-5 bg-gray-200 rounded-full w-16" /></td>
-                    <td className="px-6 py-5"><div className="flex gap-2 justify-end"><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /></div></td>
+                    <td className="px-6 py-5"><div className="flex gap-2 justify-end"><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /></div></td>
                   </tr>
                 ))
               ) : candidates.length === 0 ? (
