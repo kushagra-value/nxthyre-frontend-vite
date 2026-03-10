@@ -387,7 +387,7 @@ const JobListing: React.FC<JobListingProps> = ({
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-[1486px] text-left table-fixed border-collapse"> {/* UPDATED: table-fixed + exact Figma width (1254 + 232 for 2 new columns) */}
+                    <table className="w-full text-left table-fixed border-collapse"> {/* UPDATED: table-fixed + exact Figma width (1254 + 232 for 2 new columns) */}
                         <thead className="bg-[#F5F5F5]">
                             <tr>
                                 {[
