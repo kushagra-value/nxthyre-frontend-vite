@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 
 import {
   Search, SlidersHorizontal, Share2, Download, Calendar, Grid3X3, List,
-  ChevronLeft, ChevronRight, Pencil, X,
+  ChevronLeft, ChevronRight, Pencil, X, Archive, Check,
   Maximize2, Minimize2, ArrowLeft, Briefcase, LocateIcon, FileSearch,
   Target, Layers, BookOpen, ListChecks, Zap, Clock,
 } from "lucide-react";
@@ -606,6 +606,113 @@ export default function JobPipelineDashboard({
     setSelectAll(next.size === candidates.length && candidates.length > 0);
   };
 
+  // ── Actions ──────────────────────────────────────────────────
+
+  const archiveCandidate = async (applicationId: number) => {
+    const archiveStage = stages.find((stage) => stage.slug === "archives");
+    if (!archiveStage) return;
+    try {
+      await apiClient.patch(`/jobs/applications/${applicationId}/`, {
+        current_stage: archiveStage.id,
+        status: "ARCHIVED",
+        archive_reason: "Candidate archived from UI",
+      });
+      if (jobId != null) {
+        fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery);
+        fetchStages(jobId);
+      }
+      showToast.success("Candidate archived successfully");
+    } catch (error) {
+      console.error("Error archiving candidate:", error);
+      showToast.error("Failed to archive candidate");
+    }
+  };
+
+  const shortlistCandidate = async (applicationId: number) => {
+    try {
+      const shortlistedStage = stages.find(
+        (s) => s.slug === "shortlisted" || s.name.toLowerCase().includes("shortlist"),
+      );
+
+      if (!shortlistedStage) {
+        showToast.error("Shortlisted stage not found");
+        return;
+      }
+
+      await apiClient.patch(`/jobs/applications/${applicationId}/`, {
+        current_stage: shortlistedStage.id,
+      });
+
+      showToast.success("Candidate shortlisted successfully");
+
+      if (jobId != null) {
+        fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery);
+        fetchStages(jobId);
+      }
+    } catch (error) {
+      console.error("Error shortlisting candidate:", error);
+      showToast.error("Failed to shortlist candidate");
+    }
+  };
+
+  const bulkArchive = async (applicationIds: number[]) => {
+    if (applicationIds.length === 0) return;
+    try {
+      const archiveStage = stages.find((s) => s.slug === "archives");
+      if (!archiveStage) {
+        showToast.error("Archives stage not found");
+        return;
+      }
+      await apiClient.post("/jobs/bulk-move-stage/", {
+        application_ids: applicationIds,
+        current_stage: archiveStage.id,
+      });
+      showToast.success(`Successfully archived ${applicationIds.length} candidate(s)`);
+      setSelectedIds(new Set());
+      setSelectAll(false);
+      if (jobId != null) {
+        fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery);
+        fetchStages(jobId);
+      }
+    } catch (error) {
+      console.error("Error bulk archiving:", error);
+      showToast.error("Failed to archive candidates");
+    }
+  };
+
+  const bulkMoveCandidates = async (applicationIds: number[], stageId: number) => {
+    if (applicationIds.length === 0) return;
+    try {
+      await apiClient.post("/jobs/bulk-move-stage/", {
+        application_ids: applicationIds,
+        current_stage: stageId,
+      });
+
+      const targetStage = stages.find((stage) => stage.id === stageId);
+      if (targetStage?.slug === "applied") {
+        await Promise.all(
+          applicationIds.map(async (appId) => {
+            const cand = candidates.find((c) => c.id === appId);
+            if (cand && jobId !== null) {
+              await candidateService.scheduleCodingAssessmentEmail(cand.candidate.id, jobId);
+            }
+          })
+        );
+      }
+
+      showToast.success(`Moved ${applicationIds.length} candidate(s) to ${targetStage?.name || "selected stage"}`);
+      setSelectedIds(new Set());
+      setSelectAll(false);
+      if (jobId !== null) {
+        fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery);
+        fetchStages(jobId);
+      }
+    } catch (error) {
+      console.error("Error bulk moving candidates:", error);
+      showToast.error("Failed to move candidates");
+    }
+  };
+
   // ── Pagination ───────────────────────────────────────────────
 
   const totalPages = Math.max(1, Math.ceil(totalCandidates / pageSize));
@@ -943,6 +1050,50 @@ export default function JobPipelineDashboard({
       </div>
 
       {/* ═══════════════════════════════════════════════════════
+          Bulk Action Bar
+         ═══════════════════════════════════════════════════════ */}
+      {selectedIds.size > 0 && (
+        <div className="mx-8 bg-blue-50/50 border-x border-[#E5E7EB] px-6 py-3 flex items-center justify-between">
+          <div className="text-sm font-medium text-[#0F47F2]">
+            {selectedIds.size} Candidate{selectedIds.size !== 1 ? "s" : ""} Selected
+          </div>
+          <div className="flex items-center gap-3 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-[#4B5563] font-medium">Move to:</span>
+              <select
+                className="border border-[#D1D1D6] rounded-md px-2 py-1.5 bg-white text-[#4B5563] focus:outline-none focus:border-[#0F47F2] font-medium"
+                onChange={(e) => {
+                  const stageId = Number(e.target.value);
+                  if (stageId) bulkMoveCandidates(Array.from(selectedIds), stageId);
+                  e.target.value = ""; // Reset select
+                }}
+                defaultValue=""
+              >
+                <option value="" disabled>Select Stage...</option>
+                {stages.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              onClick={() => setShowExportDialog(true)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-white text-[#4B5563] border border-[#D1D1D6] rounded-md hover:bg-gray-50 transition-colors font-medium"
+            >
+              <Download className="w-4 h-4" /> Export CSV
+            </button>
+
+            <button
+              onClick={() => bulkArchive(Array.from(selectedIds))}
+              className="flex items-center gap-2 px-3 py-1.5 bg-white text-red-600 border border-red-200 rounded-md hover:bg-red-50 transition-colors font-medium"
+            >
+              <Archive className="w-4 h-4" /> Archive Candidates
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════
           Content View (Table or Kanban)
          ═══════════════════════════════════════════════════════ */}
       {isKanbanView ? (
@@ -1155,6 +1306,20 @@ export default function JobPipelineDashboard({
                       <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-end gap-2">
                           <button
+                            onClick={() => shortlistCandidate(item.id)}
+                            className="w-8 h-8 flex items-center justify-center bg-[#E7E5FF] rounded-full hover:bg-[#D5D2FF] transition-colors"
+                            title="Shortlist Candidate"
+                          >
+                            <Check className="w-4 h-4 text-[#6155F5]" />
+                          </button>
+                          <button
+                            onClick={() => archiveCandidate(item.id)}
+                            className="w-8 h-8 flex items-center justify-center bg-[#FEE9E7] rounded-full hover:bg-[#FDD2D0] transition-colors"
+                            title="Archive Candidate"
+                          >
+                            <Archive className="w-4 h-4 text-[#FF383C]" />
+                          </button>
+                          <button
                             onClick={() => {
                               setCallModalCandidate({
                                 id: cand.id,
@@ -1169,10 +1334,11 @@ export default function JobPipelineDashboard({
                               });
                             }}
                             className="w-8 h-8 flex items-center justify-center bg-[#E3E1FF] rounded-full hover:bg-[#D5D2FF] transition-colors"
+                            title="Call Candidate"
                           >
                             <span className="text-[#6155F5]">☎</span>
                           </button>
-                          <button className="w-8 h-8 flex items-center justify-center bg-[#FFF2E6] rounded-full hover:bg-[#FFE8D4] transition-colors">
+                          <button className="w-8 h-8 flex items-center justify-center bg-[#FFF2E6] rounded-full hover:bg-[#FFE8D4] transition-colors" title="Email Candidate">
                             <span className="text-[#FF8D28]">✉</span>
                           </button>
                         </div>
