@@ -241,7 +241,7 @@ export default function CandidateCallPage() {
     pollingRef.current = setInterval(async () => {
       try {
         const status: CallStatus = await getCallStatus();
-        if (status.call_uuid && !callUuid) {
+        if (status.call_uuid) {
           setCallUuid(status.call_uuid);
         }
         if (status.status === "answered" || status.event === "answer") {
@@ -286,10 +286,24 @@ export default function CandidateCallPage() {
 
   // ─── Call Controls ───────────────────────────────────
   const handleEndCall = useCallback(async () => {
-    if (!callUuid || isEndingCall) return;
+    if (isEndingCall) return;
     setIsEndingCall(true);
     try {
-      await hangupCall(callUuid);
+      if (callUuid) {
+        try {
+          await hangupCall(callUuid);
+        } catch (err) {
+          console.error("Backend hangup error (continuing):", err);
+        }
+      }
+      // 2. Disconnect the Browser SDK WebRTC call
+      if (plivoRef.current) {
+        try {
+          plivoRef.current.client.hangup();
+        } catch (err) {
+          console.error("SDK hangup error:", err);
+        }
+      }
       setCallState("completed");
       setIsPaused(true);
     } catch (err) {
@@ -316,6 +330,20 @@ export default function CandidateCallPage() {
       console.error("Recording toggle error:", err);
     }
   }, [callUuid, isRecording]);
+
+  const handleToggleHold = () => {
+    setIsPaused((prev) => {
+      const newPaused = !prev;
+      if (plivoRef.current) {
+        if (newPaused) {
+          plivoRef.current.client.hold();
+        } else {
+          plivoRef.current.client.unhold();
+        }
+      }
+      return newPaused;
+    });
+  };
 
   const handleSaveNotes = useCallback(async () => {
     if (!candidate) return;
@@ -461,7 +489,7 @@ export default function CandidateCallPage() {
 
           <div className="flex flex-col items-center gap-2">
             <button
-              onClick={() => setIsPaused(!isPaused)}
+              onClick={handleToggleHold}
               disabled={callState === "completed"}
               className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition shadow-lg disabled:opacity-40 ${isPaused ? "bg-white text-[#1D4ED8]" : "bg-white/20 text-white hover:bg-white/30"}`}
             >
