@@ -118,7 +118,7 @@ export default function CandidateCallPage() {
     (async () => {
       try {
         // 1. Get JWT token from our backend
-        const { token, username } = await getPlivoToken();
+        const { username, password } = await getPlivoToken();
         if (cancelled) return;
 
         // 2. Dynamically import the Plivo Browser SDK
@@ -184,7 +184,7 @@ export default function CandidateCallPage() {
         });
 
         // 5. Login/Register the endpoint
-        plivoBrowser.client.login(token, username);
+        plivoBrowser.client.login(username, password);
       } catch (err) {
         console.error("Failed to initialize Plivo Browser SDK:", err);
       }

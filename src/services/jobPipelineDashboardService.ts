@@ -202,6 +202,7 @@ export async function scheduleFollowUp(
 export async function getPlivoToken(): Promise<{
   token: string;
   username: string;
+  password: string;
 }> {
   const res = await fetch(`${PLIVO_BASE}/token/`, {
     method: "GET",
