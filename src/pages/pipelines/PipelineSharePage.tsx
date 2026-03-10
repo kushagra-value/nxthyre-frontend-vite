@@ -47,17 +47,17 @@ import {
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp, faWindows } from "@fortawesome/free-brands-svg-icons";
-import { showToast } from "../utils/toast";
-import apiClient from "../services/api";
-import AddNewStageForm from "../components/applicantTracking/AddNewStageForm";
-import { useAuthContext } from "../context/AuthContext";
-import candidateService from "../services/candidateService";
+import { showToast } from "../../utils/toast";
+import apiClient from "../../services/api";
+import AddNewStageForm from "./AddNewStageForm";
+import { useAuthContext } from "../../context/AuthContext";
+import candidateService from "../../services/candidateService";
 import { useParams } from "react-router-dom";
-import { Calender } from "../components/calender/Calender";
-import { EventForm } from "../components/calender/EventForm";
-import { CalendarEvent } from "../data/mockEvents";
-import { PipelineCandidate } from "../data/pipelineData";
-import EventPreview from "../components/calender/EventPreview";
+import { Calender } from "../../pages/schedules/Calender";
+import { EventForm } from "../../pages/schedules/EventForm";
+import { CalendarEvent } from "../../data/mockEvents";
+import { PipelineCandidate } from "../../data/pipelineData";
+import EventPreview from "../../pages/schedules/EventPreview";
 
 interface DraggedCandidate {
   candidate: any;
@@ -1206,10 +1206,10 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                         )}
                         <span
                           className={`${q.status === "Pass"
-                              ? "text-[#007A5A]"
-                              : q.status === "Fail"
-                                ? "text-[#ED051C]"
-                                : "text-[#818283]"
+                            ? "text-[#007A5A]"
+                            : q.status === "Fail"
+                              ? "text-[#ED051C]"
+                              : "text-[#818283]"
                             } font-medium`}
                         >
                           {q.status}
@@ -2608,8 +2608,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
               toggleCandidateSelection(candidate.id, stage);
             }}
             className={`w-5 h-5 rounded border-2 cursor-pointer flex items-center justify-center transition-colors ${isSelected
-                ? "bg-blue-600 border-blue-600"
-                : "border-gray-300 bg-white"
+              ? "bg-blue-600 border-blue-600"
+              : "border-gray-300 bg-white"
               }`}
           >
             {isSelected && (
@@ -3211,8 +3211,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                       key={tab}
                       onClick={() => setProfileTab(tab)}
                       className={`py-3 px-4 text-sm font-medium transition-colors ${profileTab === tab
-                          ? "text-blue-600 border-b-2 border-blue-600"
-                          : "text-gray-500 hover:text-gray-700"
+                        ? "text-blue-600 border-b-2 border-blue-600"
+                        : "text-gray-500 hover:text-gray-700"
                         }`}
                     >
                       {tab}
@@ -3425,8 +3425,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                           key={suggestion.id}
                           onClick={() => handleSelectSuggestion(suggestion)}
                           className={`p-3 cursor-pointer hover:bg-gray-100 flex items-center gap-3 border-b border-gray-100 last:border-b-0 ${index === selectedSuggestionIndex
-                              ? "bg-blue-50"
-                              : ""
+                            ? "bg-blue-50"
+                            : ""
                             }`}
                         >
                           <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-bold">
@@ -3481,8 +3481,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`relative pb-4 text-xl font-semibold transition-colors duration-200 ${activeTab === tab.id
-                        ? "text-[#0F47F2]"
-                        : "text-[#818283] hover:text-gray-500"
+                      ? "text-[#0F47F2]"
+                      : "text-[#818283] hover:text-gray-500"
                       }`}
                   >
                     {tab.label}

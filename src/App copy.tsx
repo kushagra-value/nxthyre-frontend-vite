@@ -18,21 +18,21 @@ import {
   CandidateListItem,
   CandidateSearchResponse,
 } from "./services/candidateService";
-import Header from "./components/candidatePool/Header";
+import Header from "./pages/candidates/components/Header";
 import TermsAndConditions from "./components/TermsAndConditions";
-import FiltersSidebar from "./components/candidatePool/FiltersSidebar";
+import FiltersSidebar from "./pages/candidates/components/FiltersSidebar";
 import JobApplicationForm from "./components/JobApplicationForm";
-import CandidatesMain from "./components/candidatePool/CandidatesMain";
-import CandidateDetail from "./components/candidatePool/CandidateDetail";
+import CandidatesMain from "./pages/candidates/components/CandidatesMain";
+import CandidateDetail from "./pages/candidates/components/CandidateDetail";
 import TemplateSelector from "./components/TemplateSelector";
-import CreateJobRoleModal from "./components/candidatePool/CreateJobRoleModal";
-import EditJobRoleModal from "./components/candidatePool/EditJobRoleModal";
-import EditTemplateModal from "./components/candidatePool/EditTemplateModal";
+import CreateJobRoleModal from "./pages/candidates/components/CreateJobRoleModal";
+import EditJobRoleModal from "./pages/candidates/components/EditJobRoleModal";
+import EditTemplateModal from "./pages/candidates/components/EditTemplateModal";
 import PipelineStages from "./pages/PipelineStages";
 import AuthApp from "./components/AuthApp";
-import LinkedInAuth from "./components/auth/LinkedInAuth";
+import LinkedInAuth from "./pages/auth/LinkedInAuth";
 import Settings from "./components/Settings";
-import ShareableProfile from "./components/profileShare/ShareableProfile";
+import ShareableProfile from "./pages/profileShare/ShareableProfile";
 import PipelineSharePage from "./pages/PipelineSharePage";
 import {
   organizationService,
@@ -59,11 +59,11 @@ import {
   Search,
 } from "lucide-react";
 import { showToast } from "./utils/toast";
-import CandidateBackGroundCheck from "./components/CandidateBackGroundCheck";
+import CandidateBackGroundCheck from "./pages/candidates/components/CandidateBackGroundCheck";
 import SuperAdminDashboard from "./components/SuperAdmin/SuperAdminDashboard";
-import ProjectCard from "./components/ProjectCard";
+import ProjectCard from "./components/common/ProjectCard";
 import { AnalysisResult } from "./services/candidateService";
-import ShareCandidateListPage from "./components/applicantTracking/ShareCandidateListPage";
+import ShareCandidateListPage from "./pages/pipelines/ShareCandidateListPage";
 interface Category {
   id: number;
   name: string;

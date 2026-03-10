@@ -14,8 +14,8 @@ import {
   Edit,
   Check,
 } from "lucide-react";
-import { showToast } from "../../utils/toast";
-import { Template, candidateService } from "../../services/candidateService";
+import { showToast } from "../../../utils/toast";
+import { Template, candidateService } from "../../../services/candidateService";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
@@ -428,8 +428,8 @@ Best regards,
                 })
               }
               className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${formData.sendViaEmail
-                  ? "bg-blue-100 text-blue-800"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                ? "bg-blue-100 text-blue-800"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               disabled={loading}
             >
@@ -452,8 +452,8 @@ Best regards,
                 })
               }
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${formData.sendViaWhatsApp
-                  ? "bg-blue-100 text-blue-800"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                ? "bg-blue-100 text-blue-800"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               disabled={loading}
             >
@@ -476,8 +476,8 @@ Best regards,
                 })
               }
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${formData.sendViaPhone
-                  ? "bg-blue-100 text-blue-800"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                ? "bg-blue-100 text-blue-800"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               disabled={loading}
             >
@@ -943,8 +943,8 @@ Best regards,
                 <button
                   onClick={() => setSendTestViaEmail(!sendTestViaEmail)}
                   className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendTestViaEmail
-                      ? "bg-blue-100 text-blue-800"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-blue-100 text-blue-800"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                   disabled={loading}
                 >
@@ -962,8 +962,8 @@ Best regards,
                 <button
                   onClick={() => setSendTestViaWhatsApp(!sendTestViaWhatsApp)}
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendTestViaWhatsApp
-                      ? "bg-blue-100 text-blue-800"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-blue-100 text-blue-800"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                   disabled={loading}
                 >
@@ -981,8 +981,8 @@ Best regards,
                 <button
                   onClick={() => setSendTestViaPhone(!sendTestViaPhone)}
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendTestViaPhone
-                      ? "bg-blue-100 text-blue-800"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-blue-100 text-blue-800"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                   disabled={loading}
                 >

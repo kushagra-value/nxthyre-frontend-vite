@@ -21,8 +21,8 @@ import { debounce } from "lodash";
 import {
   candidateService,
   CandidateListItem,
-} from "../../services/candidateService";
-import { showToast } from "../../utils/toast";
+} from "../../../services/candidateService";
+import { showToast } from "../../../utils/toast";
 
 interface FiltersSidebarProps {
   filters: {
@@ -452,8 +452,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               >
                 <span
                   className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${tempFilters.booleanSearch
-                      ? "translate-x-4"
-                      : "translate-x-1"
+                    ? "translate-x-4"
+                    : "translate-x-1"
                     }`}
                 />
               </button>
@@ -502,8 +502,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         {/* Total Experience */}
         <div
           className={`bg-[#F5F9FB] rounded-t-lg  p-4 ${expandedSections.totalExp
-              ? "mb-4 rounded-lg"
-              : "border-b border-gray-200"
+            ? "mb-4 rounded-lg"
+            : "border-b border-gray-200"
             }`}
         >
           <div
@@ -595,8 +595,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         {/* Location */}
         <div
           className={`bg-[#F5F9FB]  p-4 ${expandedSections.location
-              ? "my-4 rounded-lg"
-              : "border-b border-gray-200"
+            ? "my-4 rounded-lg"
+            : "border-b border-gray-200"
             }`}
         >
           <div
@@ -735,8 +735,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         {/* Companies/Industries */}
         <div
           className={`bg-[#F5F9FB]  p-4 ${expandedSections.companies
-              ? "my-4 rounded-lg"
-              : "border-b border-gray-200"
+            ? "my-4 rounded-lg"
+            : "border-b border-gray-200"
             }`}
         >
           <div
@@ -792,8 +792,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         {/* Salary Range */}
         <div
           className={`bg-[#F5F9FB] p-4  ${expandedSections.salary
-              ? "my-4 rounded-lg"
-              : "border-b border-gray-200"
+            ? "my-4 rounded-lg"
+            : "border-b border-gray-200"
             }`}
         >
           <div
@@ -880,8 +880,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         {/* Notice Period */}
         <div
           className={`bg-[#F5F9FB] p-4 ${expandedSections.notice
-              ? "my-4 rounded-lg"
-              : "border-b border-gray-200"
+            ? "my-4 rounded-lg"
+            : "border-b border-gray-200"
             }`}
         >
           <div
@@ -922,8 +922,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         {/* Colleges */}
         <div
           className={`bg-[#F5F9FB] p-4 ${expandedSections.colleges
-              ? "my-4  rounded-lg"
-              : "border-b border-gray-200"
+            ? "my-4  rounded-lg"
+            : "border-b border-gray-200"
             }`}
         >
           <div
@@ -986,8 +986,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         {/* Spotlight */}
         <div
           className={`bg-[#F5F9FB] p-4 ${expandedSections.spotlight
-              ? "my-4 rounded-lg"
-              : "border-b border-gray-200"
+            ? "my-4 rounded-lg"
+            : "border-b border-gray-200"
             }`}
         >
           <div
@@ -1137,8 +1137,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
             onClick={applyFilters}
             disabled={isSearchMode}
             className={`w-full p-2 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center ${isSearchMode
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700"
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
               }`}
           >
             <Filter className="w-4 h-4 mr-2" />
@@ -1153,8 +1153,8 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
               onClick={resetFilters}
               disabled={isSearchMode}
               className={`w-full p-2 text-sm rounded-lg transition-colors flex items-center justify-center ${isSearchMode
-                  ? "border border-gray-400 text-gray-400 cursor-not-allowed"
-                  : "border border-blue-600 text-blue-600 hover:bg-blue-700 hover:text-white"
+                ? "border border-gray-400 text-gray-400 cursor-not-allowed"
+                : "border border-blue-600 text-blue-600 hover:bg-blue-700 hover:text-white"
                 }`}
             >
               Clear All Filters

@@ -22,13 +22,13 @@ import {
   Trash2,
   Edit,
 } from "lucide-react";
-import { showToast } from "../utils/toast";
+import { showToast } from "../../utils/toast";
 import {
   CandidateListItem,
   CandidateDetailData,
   Template,
   candidateService,
-} from "../services/candidateService";
+} from "../../services/candidateService";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

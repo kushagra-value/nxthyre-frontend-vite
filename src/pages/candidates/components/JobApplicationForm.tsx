@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { jobPostService, Job } from "../services/jobPostService"; // Import the service and Job type
+import { jobPostService, Job } from "../../../services/jobPostService"; // Import the service and Job type
 import { useParams } from "react-router-dom"; // For getting job ID from URL
 
 const JobApplicationForm = () => {

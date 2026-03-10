@@ -10,8 +10,8 @@ import {
   Globe,
   Copy,
 } from "lucide-react";
-import { showToast } from "../../utils/toast";
-import { jobPostService } from "../../services/jobPostService";
+import { showToast } from "../../../utils/toast";
+import { jobPostService } from "../../../services/jobPostService";
 
 interface CategoryItem {
   id: number;
@@ -178,8 +178,8 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
                 onClose();
               }}
               className={`flex items-center justify-between px-3 py-2 rounded-lg transition-colors cursor-pointer ${category.id === activeCategoryId
-                  ? "bg-blue-50"
-                  : "hover:bg-gray-50"
+                ? "bg-blue-50"
+                : "hover:bg-gray-50"
                 }`}
             >
               <div className="flex-1">

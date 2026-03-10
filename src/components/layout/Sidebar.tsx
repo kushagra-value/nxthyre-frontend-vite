@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuthContext } from '../context/AuthContext';
+import { useAuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Settings as SettingsReactIcon } from 'lucide-react';
 

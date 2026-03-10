@@ -10,16 +10,16 @@ import { AuthProvider, useAuthContext } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./hooks/useAuth";
 import AuthApp from "./components/AuthApp";
-import LinkedInAuth from "./components/auth/LinkedInAuth";
-import Settings from "./components/Settings";
-import ShareableProfile from "./components/profileShare/ShareableProfile";
-import PipelineSharePage from "./components/PipelineSharePage";
-import TermsAndConditions from "./components/TermsAndConditions";
-import JobApplicationForm from "./components/JobApplicationForm";
-import CandidateBackGroundCheck from "./components/CandidateBackGroundCheck";
+import LinkedInAuth from "./pages/auth/LinkedInAuth";
+import Settings from "./pages/settings/Settings";
+import ShareableProfile from "./pages/profileShare/ShareableProfile";
+import PipelineSharePage from "./pages/pipelines/PipelineSharePage";
+import TermsAndConditions from "./components/legal/TermsAndConditions";
+import JobApplicationForm from "./pages/candidates/components/JobApplicationForm";
+import CandidateBackGroundCheck from "./pages/candidates/components/CandidateBackGroundCheck";
 import CandidateCallPage from "./pages/companies/components/CandidateCallPage";
-import SuperAdminDashboard from "./components/SuperAdmin/SuperAdminDashboard";
-import ShareCandidateListPage from "./components/applicantTracking/ShareCandidateListPage";
+import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
+import ShareCandidateListPage from "./pages/pipelines/ShareCandidateListPage";
 import ProjectSkeletonCard from "./components/skeletons/ProjectSkeletonCard";
 import {
   organizationService,
@@ -31,15 +31,15 @@ import { Users, LogOut } from "lucide-react";
 
 
 // Layout
-import Sidebar from "./components/Sidebar";
-import HeaderBar from "./components/Header";
+import Sidebar from "./components/layout/Sidebar";
+import HeaderBar from "./components/layout/Header";
 
 // Pages
-import Dashboard from "./pages/Dashboard";
-import Interviews from "./pages/Interviews";
-import CandidatesPool from "./pages/CandidatesPool";
+import Dashboard from "./pages/dashboard/Dashboard";
+import Interviews from "./pages/interviews/Interviews";
+import CandidatesPool from "./pages/candidates/CandidatesPool";
 import JobPipeline from "./pages/companies/components/JobPipeline";
-import Companies from "./pages/Companies";
+import Companies from "./pages/companies/Companies";
 
 function MainApp() {
   const navigate = useNavigate();
@@ -129,11 +129,13 @@ function MainApp() {
 
   const [headerWorkspaceName, setHeaderWorkspaceName] = useState<string | undefined>(undefined);
   const [headerJobName, setHeaderJobName] = useState<string | undefined>(undefined);
+  const [headerCandidateName, setHeaderCandidateName] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const handleHeaderUpdate = () => {
       setHeaderWorkspaceName((window as any).__selectedWorkspaceName);
       setHeaderJobName((window as any).__selectedJobName);
+      setHeaderCandidateName((window as any).__selectedCandidateName);
     };
     window.addEventListener('header-update', handleHeaderUpdate);
     // Initial check
@@ -177,6 +179,9 @@ function MainApp() {
 
   const getPageSubtitle = () => {
     if (currentPage === 'companies') {
+      if (headerJobName && headerWorkspaceName && headerCandidateName) {
+        return `Companies • ${headerWorkspaceName} • ${headerJobName} • Profile`;
+      }
       if (headerJobName && headerWorkspaceName) {
         return `Companies • ${headerWorkspaceName} • ${headerJobName}`;
       }
@@ -191,16 +196,22 @@ function MainApp() {
     if (currentPage !== 'companies') return;
     // index 0 = "Companies" (go back to company list)
     // index 1 = workspace name (go back to job listing)
-    // index 2 = job name (current - do nothing)
+    // index 2 = job name (go back to job pipeline if candidate profile is active)
     if (index === 0) {
       // Navigate back to companies list
       delete (window as any).__selectedWorkspaceName;
       delete (window as any).__selectedJobName;
+      delete (window as any).__selectedCandidateName;
       window.dispatchEvent(new CustomEvent('breadcrumb-navigate', { detail: { level: 'companies' } }));
     } else if (index === 1) {
       // Navigate back to job listing
       delete (window as any).__selectedJobName;
+      delete (window as any).__selectedCandidateName;
       window.dispatchEvent(new CustomEvent('breadcrumb-navigate', { detail: { level: 'workspace' } }));
+    } else if (index === 2 && headerCandidateName) {
+      // Navigate back to job pipeline from candidate profile
+      delete (window as any).__selectedCandidateName;
+      window.dispatchEvent(new CustomEvent('breadcrumb-navigate', { detail: { level: 'job' } }));
     }
   };
 
@@ -479,6 +490,7 @@ function MainApp() {
                     if (page === 'companies') {
                       delete (window as any).__selectedWorkspaceName;
                       delete (window as any).__selectedJobName;
+                      delete (window as any).__selectedCandidateName;
                       sessionStorage.removeItem("nxthyre_companies_wsId");
                       sessionStorage.removeItem("nxthyre_companies_jobId");
                       window.dispatchEvent(

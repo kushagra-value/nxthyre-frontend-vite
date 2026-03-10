@@ -1,44 +1,44 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthContext } from "../context/AuthContext";
+import { useAuthContext } from "../../context/AuthContext";
 import { Toaster } from "react-hot-toast";
-import { useAuth } from "../hooks/useAuth";
-import useDebounce from "../hooks/useDebounce";
-import { creditService } from "../services/creditService";
-import { jobPostService } from "../services/jobPostService";
+import { useAuth } from "../../hooks/useAuth";
+import useDebounce from "../../hooks/useDebounce";
+import { creditService } from "../../services/creditService";
+import { jobPostService } from "../../services/jobPostService";
 import {
     candidateService,
     CandidateListItem,
     CandidateSearchResponse,
-} from "../services/candidateService";
-import Header from "../components/candidatePool/Header";
-import FiltersSidebar from "../components/candidatePool/FiltersSidebar";
-import CandidatesMain from "../components/candidatePool/CandidatesMain";
-import CandidateDetail from "../components/candidatePool/CandidateDetail";
-import TemplateSelector from "../components/TemplateSelector";
-import CreateJobRoleModal from "../components/candidatePool/CreateJobRoleModal";
-import EditJobRoleModal from "../components/candidatePool/EditJobRoleModal";
-import EditTemplateModal from "../components/candidatePool/EditTemplateModal";
-import PipelineStages from "../components/PipelineStages";
+} from "../../services/candidateService";
+import Header from "./components/Header";
+import FiltersSidebar from "./components/FiltersSidebar";
+import CandidatesMain from "./components/CandidatesMain";
+import CandidateDetail from "./components/CandidateDetail";
+import TemplateSelector from "../../components/common/TemplateSelector";
+import CreateJobRoleModal from "./components/CreateJobRoleModal";
+import EditJobRoleModal from "./components/EditJobRoleModal";
+import EditTemplateModal from "./components/EditTemplateModal";
+import PipelineStages from "../pipelines/PipelineStages";
 
 import {
     organizationService,
     MyWorkspace,
     CompanyResearchData,
-} from "../services/organizationService";
-import CompanyInfoTab from "./companies/components/CompanyInfoTab";
-import { User } from "../types/auth";
-import type { Job } from "../services/jobPostService";
-import ProjectSkeletonCard from "../components/skeletons/ProjectSkeletonCard";
-import RequisitionSkeleton from "../components/skeletons/RequisitionSkeleton";
+} from "../../services/organizationService";
+import CompanyInfoTab from "../companies/components/CompanyInfoTab";
+import { User } from "../../types/auth";
+import type { Job } from "../../services/jobPostService";
+import ProjectSkeletonCard from "../../components/skeletons/ProjectSkeletonCard";
+import RequisitionSkeleton from "../../components/skeletons/RequisitionSkeleton";
 import {
     Trash2, LogOut, ArrowLeft, Pause, Globe,
     ChevronLeft, ChevronRight, Briefcase, LocateIcon,
     FileSearch, Search, Copy, Mail, Edit2, Info, Archive,
 } from "lucide-react";
-import { showToast } from "../utils/toast";
-import ProjectCard from "../components/ProjectCard";
-import { AnalysisResult } from "../services/candidateService";
+import { showToast } from "../../utils/toast";
+import ProjectCard from "../../components/common/ProjectCard";
+import { AnalysisResult } from "../../services/candidateService";
 
 interface Category {
     id: number; name: string; location: string; companyName: string;

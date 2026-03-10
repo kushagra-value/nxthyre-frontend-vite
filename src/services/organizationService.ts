@@ -154,6 +154,42 @@ export interface MyWorkspace {
   created_by: string;
   user_role: string;
   company_research_data?: CompanyResearchData;
+  jobs_count?: number;
+  candidates_in_workspace_count?: number;
+  shortlisted_candidates_in_workspace_count?: number;
+  hired_candidates_in_workspace_count?: number;
+  increased_decreased_rate_percentages?: {
+    shortlisted: {
+      daily: number;
+      weekly: number;
+      monthly: number;
+    };
+    hired: {
+      daily: number;
+      weekly: number;
+      monthly: number;
+    };
+  };
+  last_active_date?: string | null;
+  workspace_status?: string;
+}
+
+export interface WorkspaceStatsCount {
+  total_companies: number;
+  active_companies: number;
+  total_open_jobs: number;
+  immediate_action_jobs: number;
+  increased_decreased_rate_percentages: {
+    total_companies: { daily: number; weekly: number; monthly: number };
+    active_companies: { daily: number; weekly: number; monthly: number };
+    total_open_jobs: { daily: number; weekly: number; monthly: number };
+    immediate_action_jobs: { daily: number; weekly: number; monthly: number };
+  };
+}
+
+export interface WorkspacesDataResponse {
+  stats_count: WorkspaceStatsCount;
+  workspaces: MyWorkspace[];
 }
 
 export interface DiscoverWorkspace {
@@ -302,10 +338,27 @@ class OrganizationService {
   async getMyWorkspaces(): Promise<MyWorkspace[]> {
     try {
       const response = await apiClient.get("/organization/my-workspaces/");
-      return response.data;
+      if (Array.isArray(response.data)) {
+        return response.data;
+      }
+      return response.data.workspaces || response.data.results || response.data.data || [];
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error || "Failed to fetch my workspaces"
+      );
+    }
+  }
+
+  async getMyWorkspacesData(): Promise<WorkspacesDataResponse> {
+    try {
+      const response = await apiClient.get("/organization/my-workspaces/");
+      if (Array.isArray(response.data)) {
+        return { workspaces: response.data, stats_count: {} as WorkspaceStatsCount };
+      }
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch my workspaces data"
       );
     }
   }
@@ -392,6 +445,56 @@ class OrganizationService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error || "Failed to fetch company research data"
+      );
+    }
+  }
+
+  async updateWorkspace(workspaceId: number, data: { name?: string; status?: string }): Promise<MyWorkspace> {
+    try {
+      const response = await apiClient.patch(
+        `/organization/workspaces/${workspaceId}/`,
+        data
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to update workspace"
+      );
+    }
+  }
+  async exportWorkspacesCSV(): Promise<void> {
+    try {
+      const response = await apiClient.get("/organization/my-workspaces/export-csv/", {
+        responseType: 'blob', // Important for receiving binary data
+      });
+
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+
+      // Create a temporary link element
+      const link = document.createElement('a');
+      link.href = url;
+
+      // Try to extract filename from Content-Disposition header if possible, else default
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = "workspaces_export.csv";
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (filenameMatch && filenameMatch.length === 2) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to export workspaces as CSV"
       );
     }
   }

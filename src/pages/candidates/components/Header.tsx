@@ -10,12 +10,12 @@ import {
   Building2,
   Check,
 } from "lucide-react";
-import { useAuthContext } from "../../context/AuthContext"; // Adjust path
+import { useAuthContext } from "../../../context/AuthContext"; // Adjust path
 import { useNavigate } from "react-router-dom";
-import { showToast } from "../../utils/toast";
-import organizationService from "../../services/organizationService";
-import { CandidateListItem } from "../../services/candidateService";
-import { Invitation } from "../../services/organizationService";
+import { showToast } from "../../../utils/toast";
+import organizationService from "../../../services/organizationService";
+import { CandidateListItem } from "../../../services/candidateService";
+import { Invitation } from "../../../services/organizationService";
 
 interface HeaderProps {
   onCreateRole: () => void;

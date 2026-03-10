@@ -42,24 +42,24 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import Header from "../components/candidatePool/Header";
-import { creditService } from "../services/creditService";
-import { useAuth } from "../hooks/useAuth";
+import Header from "../../pages/candidates/components/Header";
+import { creditService } from "../../services/creditService";
+import { useAuth } from "../../hooks/useAuth";
 import {
   pipelineStages,
   pipelineCandidates,
   PipelineCandidate,
-} from "../data/pipelineData";
-import { useAuthContext } from "../context/AuthContext";
-import apiClient from "../services/api";
-import { jobPostService } from "../services/jobPostService"; // Import jobPostService
-import { showToast } from "../utils/toast";
-import PipelinesSideCard from "../components/PipelinePage/PipelinesSideCard";
+} from "../../data/pipelineData";
+import { useAuthContext } from "../../context/AuthContext";
+import apiClient from "../../services/api";
+import { jobPostService } from "../../services/jobPostService"; // Import jobPostService
+import { showToast } from "../../utils/toast";
+import PipelinesSideCard from "./PipelinesSideCard";
 import {
   candidateService,
   ExportCandidateResponse,
-} from "../services/candidateService";
-import TemplateSelector from "../components/TemplateSelector";
+} from "../../services/candidateService";
+import TemplateSelector from "../../components/common/TemplateSelector";
 import toast from "react-hot-toast";
 
 import { useNavigate } from "react-router-dom";

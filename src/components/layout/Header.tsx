@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { ChevronDown, Building2, Settings, LogOut, Check } from 'lucide-react';
-import { useAuthContext } from '../context/AuthContext';
+import { useAuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import organizationService, { Invitation } from '../services/organizationService';
+import organizationService, { Invitation } from '../../services/organizationService';
 
 interface HeaderProps {
   title: string;

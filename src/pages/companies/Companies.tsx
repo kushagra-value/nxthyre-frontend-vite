@@ -1,38 +1,40 @@
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../../hooks/useAuth";
 import {
     organizationService,
     MyWorkspace,
     CompanyResearchData,
-} from "../services/organizationService";
-import { jobPostService, Job } from "../services/jobPostService";
+    WorkspaceStatsCount
+} from "../../services/organizationService";
+import { jobPostService, Job } from "../../services/jobPostService";
 import {
     Search,
     ChevronLeft,
     ChevronRight,
     Eye,
     Plus,
-    Pause,
-    Play,
     DownloadCloud,
     Calendar,
     ChevronDown,
     Star,
     ArrowRight,
-    LayoutGrid
+    LayoutGrid,
+    ArrowUp,
+    ArrowDown,
+    ArrowUpDown
 } from "lucide-react";
-import CreateWorkspaceModal from "./companies/components/CreateWorkspaceModal";
-import JoinWorkspaceModal from "./companies/components/JoinWorkspaceModal";
-import PendingRequestsModal from "./companies/components/PendingRequestsModal";
-import { showToast } from "../utils/toast";
-import CompanyInfoDrawer from "./companies/components/CompanyInfoDrawer";
-import JobListing from "./companies/components/JobListing";
-import JobPipeline from "./companies/components/JobPipeline";
+import CreateWorkspaceModal from "./components/CreateWorkspaceModal";
+import JoinWorkspaceModal from "./components/JoinWorkspaceModal";
+import PendingRequestsModal from "./components/PendingRequestsModal";
+import { showToast } from "../../utils/toast";
+import CompanyInfoDrawer from "./components/CompanyInfoDrawer";
+import JobListing from "./components/JobListing";
+import JobPipeline from "./components/JobPipeline";
 import {
     companyStatCards,
     companyTableRows,
     CompanyTableRow,
-} from "./companies/companiesData";
+} from "./companiesData";
 
 
 
@@ -42,11 +44,47 @@ const statusStyles: Record<string, { bg: string; text: string }> = {
     Inactive: { bg: "bg-[#F3F5F7]", text: "text-[#8E8E93]" },
 };
 
+const PlayIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M13.6057 6.23503C15.0203 7.00431 15.0203 8.99565 13.6057 9.76491L5.06441 14.4096C3.68957 15.1573 2 14.1842 2 12.6447V3.35525C2 1.81577 3.68957 0.842659 5.06441 1.5903L13.6057 6.23503Z" stroke="#14AE5C" />
+    </svg>
+);
+
+const PauseIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g clipPath="url(#clip0_519_5988)">
+            <path d="M1.16699 3.49999C1.16699 2.40004 1.16699 1.85007 1.5087 1.50837C1.85041 1.16666 2.40038 1.16666 3.50032 1.16666C4.60027 1.16666 5.15024 1.16666 5.49195 1.50837C5.83366 1.85007 5.83366 2.40004 5.83366 3.49999V10.5C5.83366 11.5999 5.83366 12.1499 5.49195 12.4916C5.15024 12.8333 4.60027 12.8333 3.50032 12.8333C2.40038 12.8333 1.85041 12.8333 1.5087 12.4916C1.16699 12.1499 1.16699 11.5999 1.16699 10.5V3.49999Z" stroke="#4B5563" />
+            <path d="M8.16699 3.49999C8.16699 2.40004 8.16699 1.85007 8.50871 1.50837C8.85043 1.16666 9.40039 1.16666 10.5003 1.16666C11.6003 1.16666 12.1502 1.16666 12.4919 1.50837C12.8337 1.85007 12.8337 2.40004 12.8337 3.49999V10.5C12.8337 11.5999 12.8337 12.1499 12.4919 12.4916C12.1502 12.8333 11.6003 12.8333 10.5003 12.8333C9.40039 12.8333 8.85043 12.8333 8.50871 12.4916C8.16699 12.1499 8.16699 11.5999 8.16699 10.5V3.49999Z" stroke="#4B5563" />
+        </g>
+        <defs>
+            <clipPath id="clip0_519_5988">
+                <rect width="14" height="14" fill="white" />
+            </clipPath>
+        </defs>
+    </svg>
+);
+
+const StopIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g clipPath="url(#clip0_519_4750)">
+            <path d="M7.99967 14.6666C11.6816 14.6666 14.6663 11.6819 14.6663 7.99998C14.6663 4.31808 11.6816 1.33331 7.99967 1.33331C4.31778 1.33331 1.33301 4.31808 1.33301 7.99998C1.33301 11.6819 4.31778 14.6666 7.99967 14.6666Z" stroke="#8E8E93" />
+            <path d="M5.33301 7.99998C5.33301 6.74291 5.33301 6.11436 5.72353 5.72384C6.11405 5.33331 6.74261 5.33331 7.99967 5.33331C9.25674 5.33331 9.88527 5.33331 10.2758 5.72384C10.6663 6.11436 10.6663 6.74291 10.6663 7.99998C10.6663 9.25705 10.6663 9.88558 10.2758 10.2761C9.88527 10.6666 9.25674 10.6666 7.99967 10.6666C6.74261 10.6666 6.11405 10.6666 5.72353 10.2761C5.33301 9.88558 5.33301 9.25705 5.33301 7.99998Z" stroke="#8E8E93" />
+        </g>
+        <defs>
+            <clipPath id="clip0_519_4750">
+                <rect width="16" height="16" fill="white" />
+            </clipPath>
+        </defs>
+    </svg>
+);
+
 export default function Companies() {
     const { isAuthenticated } = useAuth();
 
     const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
+    const [statsCount, setStatsCount] = useState<WorkspaceStatsCount | null>(null);
     const [loading, setLoading] = useState(true);
+    const [statusUpdating, setStatusUpdating] = useState<number | null>(null);
     const [logos, setLogos] = useState<Record<string, string | null | undefined>>({});
 
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -91,11 +129,11 @@ export default function Companies() {
     const [jobsLoading, setJobsLoading] = useState(false);
 
     // Track pending rehydration IDs from sessionStorage
-    const [pendingWsId] = useState<number | null>(() => {
+    const [pendingWsId, setPendingWsId] = useState<number | null>(() => {
         const stored = sessionStorage.getItem('nxthyre_companies_wsId');
         return stored ? Number(stored) : null;
     });
-    const [pendingJobId] = useState<number | null>(() => {
+    const [pendingJobId, setPendingJobId] = useState<number | null>(() => {
         const stored = sessionStorage.getItem('nxthyre_companies_jobId');
         return stored ? Number(stored) : null;
     });
@@ -143,11 +181,17 @@ export default function Companies() {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [activeFilter, setActiveFilter] = useState<
-        "All" | "Active" | "Paused" | "Inactive" | "Has Open Jobs" | "Needs Attention"
+        "All" | "Active" | "Paused" | "Inactive" | "Needs Attention"
     >("All");
     const [activeJobFilter, setActiveJobFilter] = useState<"All" | "Active" | "Paused" | "Closed" | "Draft">("All");
     const [searchQuery, setSearchQuery] = useState("");
     const [jobSearchQuery, setJobSearchQuery] = useState("");
+
+    type SortConfig = {
+        key: keyof CompanyTableRow;
+        direction: 'asc' | 'desc';
+    } | null;
+    const [sortConfig, setSortConfig] = useState<SortConfig>(null);
 
     const fetchLogo = async (query: string) => {
         if (!query || logos[query] !== undefined) return;
@@ -171,8 +215,9 @@ export default function Companies() {
     const fetchWorkspaces = async () => {
         setLoading(true);
         try {
-            const data = await organizationService.getMyWorkspaces();
-            setWorkspaces(data);
+            const data = await organizationService.getMyWorkspacesData();
+            setWorkspaces(data.workspaces || []);
+            setStatsCount(data.stats_count || null);
         } catch (error) {
             console.error("Failed to fetch workspaces", error);
         } finally {
@@ -206,6 +251,7 @@ export default function Companies() {
             if (ws) {
                 setSelectedWorkspace(ws);
             }
+            setPendingWsId(null);
         }
     }, [workspaces, pendingWsId]);
 
@@ -215,6 +261,7 @@ export default function Companies() {
             if (job) {
                 setSelectedJob(job);
             }
+            setPendingJobId(null);
         }
     }, [allJobs, pendingJobId, selectedWorkspace]);
 
@@ -222,26 +269,30 @@ export default function Companies() {
         if (workspaces.length === 0) return companyTableRows;
 
         return workspaces.map((ws) => {
-            const workspaceJobs = allJobs.filter(j => j.workspace_details?.id === ws.id);
+            const monthlyShortlistedTrend = ws.increased_decreased_rate_percentages?.shortlisted?.monthly;
+            const monthlyHiredTrend = ws.increased_decreased_rate_percentages?.hired?.monthly;
+
+            const rawStatus = ws.workspace_status || "Active";
+            const normalizedStatus = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1).toLowerCase();
 
             return {
                 id: `ws-${ws.id}`,
                 workspaceId: ws.id,
                 name: ws.name,
                 domain: ws.company_research_data?.website || "--",
-                totalJobs: workspaceJobs.length || "--",
-                totalCandidates: "--",
-                shortlisted: "--",
-                shortlistedTrend: undefined,
-                hired: "--",
-                hiredTrend: undefined,
-                lastActiveDate: ws.company_research_data?.research_date
-                    ? new Date(ws.company_research_data.research_date).toLocaleDateString('en-GB')
+                totalJobs: ws.jobs_count ?? "--",
+                totalCandidates: ws.candidates_in_workspace_count ?? "--",
+                shortlisted: ws.shortlisted_candidates_in_workspace_count ?? "--",
+                shortlistedTrend: monthlyShortlistedTrend ? `${monthlyShortlistedTrend > 0 ? '+' : ''}${monthlyShortlistedTrend}%` : undefined,
+                hired: ws.hired_candidates_in_workspace_count ?? "--",
+                hiredTrend: monthlyHiredTrend ? `${monthlyHiredTrend > 0 ? '+' : ''}${monthlyHiredTrend}%` : undefined,
+                lastActiveDate: ws.last_active_date
+                    ? new Date(ws.last_active_date).toLocaleDateString('en-GB')
                     : "--",
-                status: (ws.id % 3 === 0 ? "Paused" : ws.id % 5 === 0 ? "Inactive" : "Active") as any,
+                status: normalizedStatus as any,
             };
         });
-    }, [workspaces, allJobs]);
+    }, [workspaces]);
 
     const allRows = buildTableRows();
 
@@ -265,25 +316,97 @@ export default function Companies() {
     const filteredRows =
         activeFilter === "All"
             ? searchedRows
-            : activeFilter === "Has Open Jobs"
-                ? searchedRows.filter((r) => (Number(r.totalJobs) || 0) > 0)
-                : activeFilter === "Needs Attention"
-                    ? searchedRows.filter((r) => (Number(r.totalCandidates) || 0) === 0 || r.status === "Paused")
-                    : searchedRows.filter((r) => r.status === activeFilter);
+            : searchedRows.filter((r) => r.status === activeFilter);
+
+    const handleStatusToggle = async (workspaceId: number, currentStatus: string) => {
+        if (statusUpdating) return;
+
+        const nextMap: Record<string, string> = {
+            "Active": "Paused",
+            "Paused": "Inactive",
+            "Inactive": "Active"
+        };
+        const newStatus = nextMap[currentStatus] || "Active";
+
+        setStatusUpdating(workspaceId);
+        try {
+            await organizationService.updateWorkspace(workspaceId, { status: newStatus });
+            setWorkspaces(prev => prev.map(w => w.id === workspaceId ? { ...w, workspace_status: newStatus } : w));
+            showToast.success("Workspace status updated");
+        } catch (err: any) {
+            showToast.error(err.message || "Failed to update status");
+        } finally {
+            setStatusUpdating(null);
+        }
+    };
 
     const filterCounts = {
         All: searchedRows.length,
         Active: searchedRows.filter((r) => r.status === "Active").length,
         Paused: searchedRows.filter((r) => r.status === "Paused").length,
         Inactive: searchedRows.filter((r) => r.status === "Inactive").length,
-        "Has Open Jobs": searchedRows.filter((r) => (Number(r.totalJobs) || 0) > 0).length,
-        "Needs Attention": searchedRows.filter((r) => (Number(r.totalCandidates) || 0) === 0 || r.status === "Paused").length,
     };
+
+    const handleSort = (key: keyof CompanyTableRow) => {
+        let direction: 'asc' | 'desc' = 'asc';
+
+        if (sortConfig && sortConfig.key === key) {
+            direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            if (['totalJobs', 'totalCandidates', 'shortlisted', 'hired'].includes(key)) {
+                direction = 'desc'; // Number field default: high to low
+            } else if (key === 'lastActiveDate') {
+                direction = 'desc'; // Date field default: most recent
+            } else {
+                direction = 'asc'; // Text field default: alphabetically
+            }
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const getSortedRows = (rows: CompanyTableRow[]) => {
+        if (!sortConfig) return rows;
+
+        return [...rows].sort((a, b) => {
+            const aVal = a[sortConfig.key];
+            const bVal = b[sortConfig.key];
+
+            let aCom: any = aVal === '--' ? 0 : aVal;
+            let bCom: any = bVal === '--' ? 0 : bVal;
+
+            if (sortConfig.key === 'lastActiveDate') {
+                const parseDate = (d: any) => {
+                    if (!d || d === '--') return 0;
+                    const parts = d.split('/');
+                    if (parts.length === 3) return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`).getTime();
+                    return new Date(d).getTime() || 0;
+                };
+                aCom = parseDate(aVal);
+                bCom = parseDate(bVal);
+            } else if (['totalJobs', 'totalCandidates', 'shortlisted', 'hired'].includes(sortConfig.key)) {
+                aCom = Number(aVal) || 0;
+                bCom = Number(bVal) || 0;
+            } else {
+                aCom = typeof aVal === 'string' ? aVal.toLowerCase() : String(aVal);
+                bCom = typeof bVal === 'string' ? bVal.toLowerCase() : String(bVal);
+            }
+
+            if (aCom < bCom) {
+                return sortConfig.direction === 'asc' ? -1 : 1;
+            }
+            if (aCom > bCom) {
+                return sortConfig.direction === 'asc' ? 1 : -1;
+            }
+            return 0;
+        });
+    };
+
+    const sortedRows = getSortedRows(filteredRows);
 
     const itemsPerPage = 10;
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const paginatedRows = filteredRows.slice(startIndex, startIndex + itemsPerPage);
-    const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
+    const paginatedRows = sortedRows.slice(startIndex, startIndex + itemsPerPage);
+    const totalPages = Math.max(1, Math.ceil(sortedRows.length / itemsPerPage));
 
     const getPageNumbers = (): (number | "...")[] => {
         if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -305,6 +428,7 @@ export default function Companies() {
         const ws = workspaces.find(w => w.id === wsId);
         if (ws) {
             setSelectedWorkspace(ws);
+            setSelectedJob(null);
             setActiveJobFilter("All");
             setJobSearchQuery("");
         }
@@ -377,13 +501,65 @@ export default function Companies() {
         );
     }
 
+    const getDynamicStatCards = () => {
+        if (!statsCount) return companyStatCards;
+
+        const renderTrend = (val: number | undefined) => {
+            if (val === undefined || val === null || val === 0) return undefined;
+            return `${val > 0 ? '+' : ''}${val}%`;
+        };
+
+        const totalCompanyTrend = statsCount.increased_decreased_rate_percentages?.total_companies?.monthly;
+        const activeCompanyTrend = statsCount.increased_decreased_rate_percentages?.active_companies?.monthly;
+        const totalOpenJobsTrend = statsCount.increased_decreased_rate_percentages?.total_open_jobs?.monthly;
+
+        return [
+            {
+                id: 'cs-1',
+                label: 'Total Companies',
+                value: statsCount.total_companies,
+                trend: renderTrend(totalCompanyTrend),
+                trendColor: (totalCompanyTrend && totalCompanyTrend >= 0) ? 'green' : 'red',
+            },
+            {
+                id: 'cs-2',
+                label: 'Active Companies',
+                value: statsCount.active_companies,
+                trend: renderTrend(activeCompanyTrend),
+                trendColor: (activeCompanyTrend && activeCompanyTrend >= 0) ? 'green' : 'red',
+            },
+            {
+                id: 'cs-3',
+                label: 'Total Open Jobs',
+                value: statsCount.total_open_jobs,
+                trend: renderTrend(totalOpenJobsTrend),
+                trendColor: (totalOpenJobsTrend && totalOpenJobsTrend >= 0) ? 'green' : 'red',
+            },
+            {
+                id: 'cs-4',
+                label: 'Immediate Actions',
+                value: statsCount.immediate_action_jobs,
+                subText: `${statsCount.immediate_action_jobs} pending`,
+            },
+        ] as any;
+    };
+
+    const dynamicStatCards = getDynamicStatCards();
+
+    const SortIcon = ({ columnKey }: { columnKey: keyof CompanyTableRow }) => {
+        if (sortConfig?.key !== columnKey) return <ArrowUpDown className="w-3 h-3 ml-1 text-gray-400 group-hover:text-gray-600 inline-block opacity-0 group-hover:opacity-100 transition-opacity" />;
+        return sortConfig.direction === 'asc'
+            ? <ArrowUp className="w-3 h-3 ml-1 text-[#0F47F2] inline-block" />
+            : <ArrowDown className="w-3 h-3 ml-1 text-[#0F47F2] inline-block" />;
+    };
+
     return (
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
             <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex-1 flex flex-col gap-4">
                     {/* ── Stats Grid ── */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {companyStatCards.map((stat) => {
+                        {dynamicStatCards.map((stat: any) => {
                             const isAction = stat.id === "cs-4";
                             return (
                                 <div
@@ -488,11 +664,15 @@ export default function Companies() {
 
                                     {/* Export CSV */}
                                     <button
-                                        className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
-                                        title="Feature Coming Soon"
-                                        disabled
+                                        onClick={() => {
+                                            organizationService.exportWorkspacesCSV()
+                                                .then(() => showToast.success("Export started successfully"))
+                                                .catch((err) => showToast.error(err.message || "Failed to export data"));
+                                        }}
+                                        className="flex items-center gap-2 px-3 py-2 bg-white text-[#4B5563] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] hover:text-black transition-colors"
+                                        title="Export Workspaces CSV"
                                     >
-                                        <DownloadCloud className="w-4 h-4 text-[#AEAEB2]" /> Export CSV
+                                        <DownloadCloud className="w-4 h-4 text-[#4B5563]" /> Export CSV
                                     </button>
 
                                     {/* Date Picker Mock */}
@@ -555,26 +735,47 @@ export default function Companies() {
                                     <table className="w-full text-left border-collapse">
                                         <thead className="bg-[#F9FAFB]">
                                             <tr>
-                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2]">
-                                                    Company
+                                                <th
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    onClick={() => handleSort('name')}
+                                                >
+                                                    <div className="flex items-center">Company <SortIcon columnKey="name" /></div>
                                                 </th>
-                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
-                                                    Jobs
+                                                <th
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    onClick={() => handleSort('totalJobs')}
+                                                >
+                                                    <div className="flex items-center justify-center">Jobs <SortIcon columnKey="totalJobs" /></div>
                                                 </th>
-                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
-                                                    Candidates
+                                                <th
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    onClick={() => handleSort('totalCandidates')}
+                                                >
+                                                    <div className="flex items-center justify-center">Candidates <SortIcon columnKey="totalCandidates" /></div>
                                                 </th>
-                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
-                                                    Shortlisted
+                                                <th
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    onClick={() => handleSort('shortlisted')}
+                                                >
+                                                    <div className="flex items-center justify-center">Shortlisted <SortIcon columnKey="shortlisted" /></div>
                                                 </th>
-                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
-                                                    Hired
+                                                <th
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    onClick={() => handleSort('hired')}
+                                                >
+                                                    <div className="flex items-center justify-center">Hired <SortIcon columnKey="hired" /></div>
                                                 </th>
-                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
-                                                    Last Active Date
+                                                <th
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    onClick={() => handleSort('lastActiveDate')}
+                                                >
+                                                    <div className="flex items-center justify-center">Last Active Date <SortIcon columnKey="lastActiveDate" /></div>
                                                 </th>
-                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
-                                                    Status
+                                                <th
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    onClick={() => handleSort('status')}
+                                                >
+                                                    <div className="flex items-center justify-center">Status <SortIcon columnKey="status" /></div>
                                                 </th>
                                                 <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
                                                     Actions
@@ -695,9 +896,10 @@ export default function Companies() {
                                                             {/* Status */}
                                                             <td className="px-6 py-4 text-center">
                                                                 <span
-                                                                    className={`px-3 py-1 rounded-full text-[12px] font-medium ${sty.bg} ${sty.text}`}
+                                                                    onClick={(e) => { e.stopPropagation(); handleStatusToggle(row.workspaceId, row.status); }}
+                                                                    className={`px-3 py-1 rounded-full text-[12px] font-medium ${sty.bg} ${sty.text} cursor-pointer hover:opacity-80 transition-opacity ${statusUpdating === row.workspaceId ? 'opacity-50 pointer-events-none' : ''}`}
                                                                 >
-                                                                    {row.status}
+                                                                    {statusUpdating === row.workspaceId ? '...' : row.status}
                                                                 </span>
                                                             </td>
 
@@ -717,23 +919,14 @@ export default function Companies() {
                                                                         <Eye className="w-4 h-4" />
                                                                     </button>
 
-                                                                    {row.status === 'Active' ? (
-                                                                        <button
-                                                                            className="p-1.5 text-gray-400 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors"
-                                                                            title="Feature Coming Soon"
-                                                                            disabled
-                                                                        >
-                                                                            <Pause className="w-4 h-4" />
-                                                                        </button>
-                                                                    ) : (
-                                                                        <button
-                                                                            className="p-1.5 text-[#069855] bg-green-50 rounded-full hover:bg-green-100 transition-colors"
-                                                                            title="Feature Coming Soon"
-                                                                            disabled
-                                                                        >
-                                                                            <Play className="w-4 h-4 fill-current" />
-                                                                        </button>
-                                                                    )}
+                                                                    <button
+                                                                        onClick={(e) => { e.stopPropagation(); handleStatusToggle(row.workspaceId, row.status); }}
+                                                                        disabled={statusUpdating === row.workspaceId}
+                                                                        title={`Toggle status (Current: ${row.status})`}
+                                                                        className={`p-1.5 transition-colors rounded-full hover:bg-gray-100 ${statusUpdating === row.workspaceId ? 'opacity-50 pointer-events-none' : ''}`}
+                                                                    >
+                                                                        {row.status === 'Active' ? <PlayIcon /> : row.status === 'Paused' ? <PauseIcon /> : <StopIcon />}
+                                                                    </button>
                                                                 </div>
                                                             </td>
                                                         </tr>
