@@ -331,19 +331,19 @@ export default function CandidateCallPage() {
     }
   }, [callUuid, isRecording]);
 
-  const handleToggleHold = () => {
-    setIsPaused((prev) => {
-      const newPaused = !prev;
-      if (plivoRef.current) {
-        if (newPaused) {
-          plivoRef.current.client.hold();
-        } else {
-          plivoRef.current.client.unhold();
-        }
-      }
-      return newPaused;
-    });
-  };
+  // const handleToggleHold = () => {
+  //   setIsPaused((prev) => {
+  //     const newPaused = !prev;
+  //     if (plivoRef.current) {
+  //       if (newPaused) {
+  //         plivoRef.current.client.hold();
+  //       } else {
+  //         plivoRef.current.client.unhold();
+  //       }
+  //     }
+  //     return newPaused;
+  //   });
+  // };
 
   const handleSaveNotes = useCallback(async () => {
     if (!candidate) return;
@@ -489,7 +489,7 @@ export default function CandidateCallPage() {
 
           <div className="flex flex-col items-center gap-2">
             <button
-              onClick={handleToggleHold}
+              // onClick={handleToggleHold}
               disabled={callState === "completed"}
               className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition shadow-lg disabled:opacity-40 ${isPaused ? "bg-white text-[#1D4ED8]" : "bg-white/20 text-white hover:bg-white/30"}`}
             >
