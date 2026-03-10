@@ -1285,11 +1285,6 @@ export default function JobPipelineDashboard({
                       <td className="px-6 py-5">
                         <div>
                           <div className="text-[#6155F5] text-sm font-medium">{item.current_stage?.name || "--"}</div>
-                          <div className="flex gap-0.5 mt-1.5">
-                            {Array.from({ length: totalStgs }).map((_, idx) => (
-                              <div key={idx} className="h-1 w-7 rounded" style={{ backgroundColor: idx <= stageIdx ? stageBarColors[idx % stageBarColors.length] : "#E5E5EA" }} />
-                            ))}
-                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-5">
