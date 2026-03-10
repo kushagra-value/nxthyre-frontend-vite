@@ -198,3 +198,15 @@ export async function scheduleFollowUp(
   });
   return handleResponse<ScheduleFollowUpResponse>(res);
 }
+
+export async function getPlivoToken(): Promise<{
+  token: string;
+  username: string;
+}> {
+  const res = await fetch(`${PLIVO_BASE}/plivo/token/`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) throw new Error(`Failed to get Plivo token: ${res.status}`);
+  return res.json();
+}

@@ -17,6 +17,7 @@ import {
   startRecording,
   stopRecording,
   saveCallLog,
+  getPlivoToken,
   type CallStatus,
 } from "../../../services/jobPipelineDashboardService";
 
@@ -86,12 +87,120 @@ export default function CandidateCallPage() {
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const [sdkReady, setSdkReady] = useState(false);
+  const plivoRef = useRef<any>(null);
+
+  const handleMuteToggle = () => {
+    setIsMuted((prev) => {
+      const newMuted = !prev;
+      if (plivoRef.current) {
+        if (newMuted) {
+          plivoRef.current.client.mute();
+        } else {
+          plivoRef.current.client.unmute();
+        }
+      }
+      return newMuted;
+    });
+  };
+
   // Load candidate fallback if direct link
   useEffect(() => {
     if (!candidate && candidateId) {
       setCandidate(DUMMY_FALLBACK);
     }
   }, [candidateId, candidate]);
+
+  // ─── Register Plivo Browser SDK (WebRTC) ─────────────
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        // 1. Get JWT token from our backend
+        const { token, username } = await getPlivoToken();
+        if (cancelled) return;
+
+        // 2. Dynamically import the Plivo Browser SDK
+        const plivoModule = await import("plivo-browser-sdk");
+        const PlivoClient = (plivoModule as any).Client || plivoModule.default;
+
+        // 3. Initialize the SDK
+        const plivoBrowser = new PlivoClient({
+          debug: "INFO",
+          permOnClick: true,
+          enableTracking: true,
+          closeProtection: false,
+          maxAverageBitrate: 48000,
+        });
+
+        plivoRef.current = plivoBrowser;
+
+        // 4. Set up event listeners
+        plivoBrowser.on("onWebrtcNotSupported", () => {
+          console.error("WebRTC is not supported in this browser");
+        });
+
+        plivoBrowser.on("onLogin", () => {
+          console.log("Plivo SDK: Registered as", username);
+          setSdkReady(true);
+        });
+
+        plivoBrowser.on("onLoginFailed", (reason: string) => {
+          console.error("Plivo SDK: Login failed:", reason);
+        });
+
+        plivoBrowser.on(
+          "onIncomingCall",
+          (callerName: string, extraHeaders: any) => {
+            console.log("Plivo SDK: Incoming call from", callerName);
+            // Auto-answer the incoming bridged call
+            plivoBrowser.client.answer();
+          },
+        );
+
+        plivoBrowser.on("onIncomingCallCanceled", () => {
+          console.log("Plivo SDK: Incoming call cancelled");
+        });
+
+        plivoBrowser.on("onCallRemoteRinging", () => {
+          console.log("Plivo SDK: Remote ringing");
+        });
+
+        plivoBrowser.on("onCallAnswered", () => {
+          console.log("Plivo SDK: Call answered — audio should be flowing");
+          setCallState("answered");
+        });
+
+        plivoBrowser.on("onCallTerminated", () => {
+          console.log("Plivo SDK: Call terminated");
+        });
+
+        plivoBrowser.on("onMediaPermission", (permissionGranted: boolean) => {
+          console.log(
+            "Plivo SDK: Media permission:",
+            permissionGranted ? "granted" : "denied",
+          );
+        });
+
+        // 5. Login/Register the endpoint
+        plivoBrowser.client.login(token, username);
+      } catch (err) {
+        console.error("Failed to initialize Plivo Browser SDK:", err);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (plivoRef.current) {
+        try {
+          plivoRef.current.client.logout();
+        } catch {
+          // ignore
+        }
+      }
+    };
+  }, []);
 
   // ─── Initiate Call on Mount ──────────────────────────
   useEffect(() => {
@@ -366,7 +475,7 @@ export default function CandidateCallPage() {
 
           <div className="flex flex-col items-center gap-2">
             <button
-              onClick={() => setIsMuted(!isMuted)}
+              onClick={handleMuteToggle}
               disabled={callState === "completed"}
               className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition shadow-lg disabled:opacity-40 ${isMuted ? "bg-white text-[#1D4ED8]" : "bg-white/20 text-white hover:bg-white/30"}`}
             >
