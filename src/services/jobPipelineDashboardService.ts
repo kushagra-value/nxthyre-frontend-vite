@@ -2,7 +2,7 @@
 // Service file for Plivo call integration APIs
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
-const PLIVO_BASE = `${API_BASE}/api/plivo`;
+const PLIVO_BASE = `${API_BASE}/plivo`;
 
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem("authToken") || "";
