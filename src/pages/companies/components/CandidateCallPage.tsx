@@ -137,20 +137,20 @@ export default function CandidateCallPage() {
         plivoRef.current = plivoBrowser;
 
         // 4. Set up event listeners
-        plivoBrowser.on("onWebrtcNotSupported", () => {
+        plivoBrowser.client.on("onWebrtcNotSupported", () => {
           console.error("WebRTC is not supported in this browser");
         });
 
-        plivoBrowser.on("onLogin", () => {
+        plivoBrowser.client.on("onLogin", () => {
           console.log("Plivo SDK: Registered as", username);
           setSdkReady(true);
         });
 
-        plivoBrowser.on("onLoginFailed", (reason: string) => {
+        plivoBrowser.client.on("onLoginFailed", (reason: string) => {
           console.error("Plivo SDK: Login failed:", reason);
         });
 
-        plivoBrowser.on(
+        plivoBrowser.client.on(
           "onIncomingCall",
           (callerName: string, extraHeaders: any) => {
             console.log("Plivo SDK: Incoming call from", callerName);
@@ -159,29 +159,32 @@ export default function CandidateCallPage() {
           },
         );
 
-        plivoBrowser.on("onIncomingCallCanceled", () => {
+        plivoBrowser.client.on("onIncomingCallCanceled", () => {
           console.log("Plivo SDK: Incoming call cancelled");
         });
 
-        plivoBrowser.on("onCallRemoteRinging", () => {
+        plivoBrowser.client.on("onCallRemoteRinging", () => {
           console.log("Plivo SDK: Remote ringing");
         });
 
-        plivoBrowser.on("onCallAnswered", () => {
+        plivoBrowser.client.on("onCallAnswered", () => {
           console.log("Plivo SDK: Call answered — audio should be flowing");
           setCallState("answered");
         });
 
-        plivoBrowser.on("onCallTerminated", () => {
+        plivoBrowser.client.on("onCallTerminated", () => {
           console.log("Plivo SDK: Call terminated");
         });
 
-        plivoBrowser.on("onMediaPermission", (permissionGranted: boolean) => {
-          console.log(
-            "Plivo SDK: Media permission:",
-            permissionGranted ? "granted" : "denied",
-          );
-        });
+        plivoBrowser.client.on(
+          "onMediaPermission",
+          (permissionGranted: boolean) => {
+            console.log(
+              "Plivo SDK: Media permission:",
+              permissionGranted ? "granted" : "denied",
+            );
+          },
+        );
 
         // 5. Login/Register the endpoint
         plivoBrowser.client.login(username, password);
