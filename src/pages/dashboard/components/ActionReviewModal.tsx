@@ -89,7 +89,7 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                             <h2 className="text-[22px] font-bold text-slate-900 leading-tight">
                                 {candidate.name}
                             </h2>
-                            <p className="text-sm font-medium text-emerald-500 mt-1">
+                            <p className="text-sm font-medium mt-1" style={{ color: '#069855' }}>
                                 {candidate.role} · {candidate.company}
                             </p>
                         </div>
@@ -98,13 +98,13 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                             <svg width="52" height="52" viewBox="0 0 52 52" className="-rotate-90">
                                 <circle
                                     cx="26" cy="26" r={radius}
-                                    stroke="#e5e7eb"
+                                    stroke="#E5E7EB"
                                     strokeWidth="3"
                                     fill="none"
                                 />
                                 <circle
                                     cx="26" cy="26" r={radius}
-                                    stroke="#10b981"
+                                    stroke="#00C3D0"
                                     strokeWidth="3"
                                     fill="none"
                                     strokeLinecap="round"
@@ -113,7 +113,7 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                                     className="transition-all duration-500"
                                 />
                             </svg>
-                            <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-slate-800">
+                            <span className="absolute inset-0 flex items-center justify-center text-xs font-bold" style={{ color: '#00C3D0' }}>
                                 {candidate.matchPercentage}%
                             </span>
                         </div>
@@ -152,27 +152,24 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
 
                     {/* Quick Fit Summary */}
                     <div className="mb-5">
-                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Quick Fit Summary</h4>
-                        <div className="flex flex-wrap gap-2">
+                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">QUICK FIT SUMMARY</h4>
+                        <div className="flex flex-wrap gap-x-4 gap-y-2.5">
                             {candidate.quickFitSkills.map((skill) => (
                                 <span
                                     key={skill.name}
-                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${
-                                        skill.match
-                                            ? 'border-emerald-200 bg-emerald-50/60 text-emerald-700'
-                                            : 'border-red-200 bg-red-50/60 text-red-600'
-                                    }`}
+                                    className="inline-flex items-center gap-1.5 text-[13px] font-medium"
+                                    style={{ color: skill.match ? '#069855' : '#DC2626' }}
                                 >
                                     {skill.name}
                                     {skill.match ? (
-                                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                            <circle cx="7" cy="7" r="6" stroke="#10b981" strokeWidth="1.5" />
-                                            <path d="M4.5 7L6.5 9L9.5 5" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                            <circle cx="8" cy="8" r="7" stroke="#069855" strokeWidth="1.5" />
+                                            <path d="M5 8L7 10L11 6" stroke="#069855" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                     ) : (
-                                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                            <circle cx="7" cy="7" r="6" stroke="#ef4444" strokeWidth="1.5" />
-                                            <path d="M5 5L9 9M9 5L5 9" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" />
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                            <circle cx="8" cy="8" r="7" stroke="#DC2626" strokeWidth="1.5" />
+                                            <path d="M5.5 5.5L10.5 10.5M10.5 5.5L5.5 10.5" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" />
                                         </svg>
                                     )}
                                 </span>
@@ -194,7 +191,7 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                 {/* Modal Footer */}
                 <div className="px-7 py-4 flex items-center justify-between border-t border-slate-100">
                     {/* Left: Skip */}
-                    <button className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-red-200 text-red-500 text-sm font-semibold hover:bg-red-50 transition-colors">
+                    <button className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-red-300 text-red-500 text-sm font-semibold hover:bg-red-50 transition-colors">
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                             <rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" />
                             <path d="M4.5 4.5L9.5 9.5M9.5 4.5L4.5 9.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
@@ -202,23 +199,25 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                         Skip
                     </button>
 
-                    {/* Right: Note, Call, Move to Screening */}
+                    {/* Right: View Profile, Call, Move to Screening */}
                     <div className="flex items-center gap-2.5">
-                        <button className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
+                        <button className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-slate-200 text-slate-500 text-sm font-medium hover:bg-slate-50 transition-colors">
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                <path d="M2 10.5V12H3.5L10.5 5L9 3.5L2 10.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d="M9 3.5L10.5 2L12 3.5L10.5 5L9 3.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.2" />
+                                <path d="M7 4.5V7.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                                <circle cx="7" cy="9.5" r="0.5" fill="currentColor" />
                             </svg>
-                            Note
+                            View Profile
                         </button>
-                        <button className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
+                        <button className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-slate-200 text-slate-500 text-sm font-medium hover:bg-slate-50 transition-colors">
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                <path d="M8.5 2.5C9.6 2.5 11.5 3.5 11.5 5.5C11.5 7.5 9.5 9.5 7 12C4.5 9.5 2.5 7.5 2.5 5.5C2.5 3.5 4.4 2.5 5.5 2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d="M5 6L5 5C5 3.9 5.9 3 7 3C8.1 3 9 3.9 9 5V6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                                <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.2" />
+                                <path d="M4 7.5C4.5 6 5.5 5 7 5C8.5 5 9.5 6 10 7.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                                <circle cx="7" cy="7.5" r="1" stroke="currentColor" strokeWidth="1" />
                             </svg>
                             Call
                         </button>
-                        <button className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-600 transition-all shadow-sm">
+                        <button className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg text-white text-sm font-semibold hover:opacity-90 transition-all shadow-sm" style={{ backgroundColor: '#069855' }}>
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                                 <path d="M2 7H12M9 4L12 7L9 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
