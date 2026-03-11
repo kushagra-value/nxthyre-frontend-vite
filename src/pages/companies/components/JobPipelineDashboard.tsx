@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 
 import {
   Search, SlidersHorizontal, Share2, Download, Calendar, Grid3X3, List,
-  ChevronLeft, ChevronRight, Pencil, X, Archive, Check,
+  ChevronLeft, ChevronRight, Pencil, X, Archive, Check, Plus,
   Maximize2, Minimize2, ArrowLeft, Briefcase, LocateIcon, FileSearch,
   Target, Layers, BookOpen, ListChecks, Zap, Clock, ArrowUpDown, ArrowUp, ArrowDown
 } from "lucide-react";
@@ -14,6 +14,7 @@ import EditJobRoleModal from "../../candidates/components/EditJobRoleModal";
 import CompanyInfoTab from "./CompanyInfoTab";
 import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
 import NaukbotTab from "./NaukbotTab";
+import AddNewStageForm from "../../pipelines/AddNewStageForm";
 import toast from "react-hot-toast";
 import { showToast } from "../../../utils/toast";
 import * as XLSX from "xlsx";
@@ -221,6 +222,8 @@ export default function JobPipelineDashboard({
   const [stages, setStages] = useState<Stage[]>([]);
   const [loadingStages, setLoadingStages] = useState(false);
   const [activeStageSlug, setActiveStageSlug] = useState<string | null>(null);
+  const [showAddStageForm, setShowAddStageForm] = useState(false);
+  const [archivedCandidates, setArchivedCandidates] = useState<any[]>([]);
 
   // ── Candidates
   const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
@@ -319,7 +322,16 @@ export default function JobPipelineDashboard({
     });
   };
 
-  const sortedCandidates = getSortedCandidates(candidates);
+  let combinedCands = candidates;
+  if (archivedCandidates.length > 0) {
+    const existingIds = new Set(candidates.map(c => c.id));
+    const uniqueArchived = archivedCandidates.filter(c => !existingIds.has(c.id));
+    combinedCands = [...candidates, ...uniqueArchived];
+  }
+  if (activeStageSlug) {
+    combinedCands = combinedCands.filter(c => (c.current_stage?.slug || c.stage_slug) === activeStageSlug);
+  }
+  const sortedCandidates = getSortedCandidates(combinedCands);
 
   // ── Active tab
   const [activeTab, setActiveTab] = useState<"pipeline" | "naukbot" | "inbound">("pipeline");
@@ -642,6 +654,21 @@ export default function JobPipelineDashboard({
     }
   }, [jobId, fetchStages, externalStages]);
 
+  // ── Fetch Archived Candidates (For in-place Kanban/Table view)
+  const fetchArchivedCandidates = useCallback(async (jId: number) => {
+    try {
+      const res = await apiClient.get(`/jobs/roles/${jId}/archived-applications/`);
+      const data = res.data;
+      const results = data.results || (Array.isArray(data) ? data : []);
+      // add an is_archived manual flag
+      const archived = results.map((c: any) => ({ ...c, is_archived: true }));
+      setArchivedCandidates(archived);
+    } catch (error) {
+      console.error("Error fetching archived candidates:", error);
+      setArchivedCandidates([]);
+    }
+  }, []);
+
   // ── Fetch Candidates ─────────────────────────────────────────
 
   const fetchCandidates = useCallback(async (jId: number, stageSlug: string | null, page: number, search: string) => {
@@ -674,8 +701,9 @@ export default function JobPipelineDashboard({
   useEffect(() => {
     if (jobId != null && searchQuery === "") {
         fetchCandidates(jobId, activeStageSlug, currentPage, "");
+        fetchArchivedCandidates(jobId);
     }
-  }, [jobId, activeStageSlug, currentPage, searchQuery, fetchCandidates]);
+  }, [jobId, activeStageSlug, currentPage, searchQuery, fetchCandidates, fetchArchivedCandidates]);
 
   useEffect(() => {
     if (searchQuery.length > 0 && jobId !== null && activeTab === 'pipeline') {
@@ -884,11 +912,6 @@ export default function JobPipelineDashboard({
   // ── Derived ──────────────────────────────────────────────────
 
   const totalPipelineCandidates = stages.reduce((sum, s) => sum + (s.candidate_count || 0), 0);
-
-  const getStageIndex = (slug: string): number => {
-    const idx = stages.findIndex((s) => s.slug === slug);
-    return idx >= 0 ? idx : 0;
-  };
 
   // ── Render ───────────────────────────────────────────────────
 
@@ -1102,7 +1125,7 @@ export default function JobPipelineDashboard({
                   <div key={i} className="w-28 h-8 bg-gray-200 rounded-full animate-pulse" />
                 ))
               ) : (
-                stages.filter((s) => s.slug !== "archives").map((stage) => (
+                stages.map((stage) => (
                   <button
                     key={stage.id}
                     onClick={() => setActiveStageSlug(stage.slug)}
@@ -1119,12 +1142,19 @@ export default function JobPipelineDashboard({
           )}
         </div>
 
-        <button
-          onClick={() => setIsKanbanView(!isKanbanView)}
-          className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs"
-        >
-          {isKanbanView ? <><List className="w-4 h-4" /> Table View</> : <><Grid3X3 className="w-4 h-4" /> Kanban</>}
-        </button>
+        <div className="flex items-center gap-2">
+          {!isKanbanView && (
+            <button onClick={() => setShowAddStageForm(true)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#E7EDFF] text-[#0F47F2] rounded-full hover:bg-[#D5E1FF] transition-colors border border-transparent mr-2">
+              <Plus className="w-3.5 h-3.5" /> Add Stage
+            </button>
+          )}
+          <button
+            onClick={() => setIsKanbanView(!isKanbanView)}
+            className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs"
+          >
+            {isKanbanView ? <><List className="w-4 h-4" /> Table View</> : <><Grid3X3 className="w-4 h-4" /> Kanban</>}
+          </button>
+        </div>
       </div>
 
       {/* ═══════════════════════════════════════════════════════
@@ -1257,10 +1287,19 @@ export default function JobPipelineDashboard({
       {isKanbanView ? (
         <div className="mx-8 bg-[#F3F5F7] border border-[#E5E7EB] rounded-b-2xl overflow-x-auto p-6 flex gap-6 min-h-[500px] items-start">
           {stages.map((stage) => {
-            const columnCandidates = candidates.filter((item) => {
+            const activeColumnCandidates = candidates.filter((item) => {
               const itemStageSlug = item.current_stage?.slug || item.stage_slug;
               return itemStageSlug === stage.slug;
             });
+            const archivedColumnCandidates = archivedCandidates.filter((item) => {
+              const itemStageSlug = item.current_stage?.slug || item.stage_slug;
+              return itemStageSlug === stage.slug;
+            });
+            
+            // deduplicate across arrays in case
+            const existingIds = new Set(activeColumnCandidates.map(c => c.id));
+            const uniqueArchived = archivedColumnCandidates.filter(c => !existingIds.has(c.id));
+            const columnCandidates = [...activeColumnCandidates, ...uniqueArchived];
 
             return (
               <div
@@ -1320,9 +1359,9 @@ export default function JobPipelineDashboard({
                           )}
                         </div>
 
-                        {item.status_tags && item.status_tags.find((t) => t.text) && (
+                        {item.status_tags && item.status_tags.find((t: any) => t.text) && (
                           <div className="mt-2 pt-2 border-t border-slate-50 flex gap-1">
-                            {item.status_tags.map((tag, i) => (
+                            {item.status_tags.map((tag: any, i: number) => (
                               <span key={i} style={{
                                 backgroundColor: tag.color === "red" ? "#FEE9E7" : tag.color === "yellow" ? "#FFF7D6" : "#FEE9E7",
                                 color: tag.color === "red" ? "#FF383C" : tag.color === "yellow" ? "#92400E" : "#FF383C",
@@ -1343,6 +1382,19 @@ export default function JobPipelineDashboard({
               </div>
             );
           })}
+          
+          {/* Add Custom Stage Kanban Button */}
+          <div className="min-w-[320px] w-[320px] bg-[#F5F9FB] rounded-xl flex flex-col items-center justify-center relative border border-[#E5E7EB] border-dashed hover:bg-black/5 transition-colors cursor-pointer" onClick={() => setShowAddStageForm(true)}>
+            <div className="flex flex-col items-center gap-4 z-10 p-6 opacity-60">
+              <div className="w-[62px] h-[62px]">
+                <svg width="62" height="62" viewBox="0 0 62 62" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M32.9375 23.25C32.9375 22.18 32.07 21.3125 31 21.3125C29.93 21.3125 29.0625 22.18 29.0625 23.25V29.0625H23.25C22.18 29.0625 21.3125 29.93 21.3125 31C21.3125 32.07 22.18 32.9375 23.25 32.9375H29.0625V38.75C29.0625 39.82 29.93 40.6875 31 40.6875C32.07 40.6875 32.9375 39.82 32.9375 38.75V32.9375H38.75C39.82 32.9375 40.6875 32.07 40.6875 31C40.6875 29.93 39.82 29.0625 38.75 29.0625H32.9375V23.25Z" fill="#818283"/>
+                  <path fillRule="evenodd" clipRule="evenodd" d="M31.1496 3.23047H30.853C24.8898 3.23044 20.2164 3.23042 16.5701 3.72066C12.8378 4.22244 9.89276 5.26957 7.58116 7.58116C5.26957 9.89276 4.22244 12.8378 3.72066 16.5701C3.23042 20.2164 3.23044 24.8897 3.23047 30.853V31.1496C3.23044 37.1129 3.23042 41.7862 3.72066 45.4326C4.22244 49.1647 5.26957 52.11 7.58116 54.4215C9.89276 56.7331 12.8378 57.7801 16.5701 58.2821C20.2164 58.7721 24.8897 58.7721 30.853 58.7721H31.1496C37.1129 58.7721 41.7862 58.7721 45.4326 58.2821C49.1647 57.7801 52.11 56.7331 54.4215 54.4215C56.7331 52.11 57.7801 49.1647 58.2821 45.4326C58.7721 41.7862 58.7721 37.1129 58.7721 31.1496V30.853C58.7721 24.8897 58.7721 20.2164 58.2821 16.5701C57.7801 12.8378 56.7331 9.89276 54.4215 7.58116C52.11 5.26957 49.1647 4.22244 45.4326 3.72066C41.7862 3.23042 37.1129 3.23044 31.1496 3.23047ZM10.3212 10.3212C11.7928 8.84958 13.7838 8.00511 17.0864 7.56109C20.4447 7.10958 24.8575 7.10547 31.0013 7.10547C37.145 7.10547 41.5578 7.10958 44.9162 7.56109C48.2187 8.00511 50.2097 8.84958 51.6814 10.3212C53.1531 11.7928 53.9976 13.7838 54.4414 17.0864C54.893 20.4447 54.8971 24.8575 54.8971 31.0013C54.8971 37.145 54.893 41.5578 54.4414 44.9162C53.9976 48.2187 53.1531 50.2097 51.6814 51.6814C50.2097 53.1531 48.2187 53.9976 44.9162 54.4414C41.5578 54.893 37.145 54.8971 31.0013 54.8971C24.8575 54.8971 20.4447 54.893 17.0864 54.4414C13.7838 53.9976 11.7928 53.1531 10.3212 51.6814C8.84958 50.2097 8.00511 48.2187 7.56109 44.9162C7.10958 41.5578 7.10547 37.145 7.10547 31.0013C7.10547 24.8575 7.10958 20.4447 7.56109 17.0864C8.00511 13.7838 8.84958 11.7928 10.3212 10.3212Z" fill="#818283"/>
+                </svg>
+              </div>
+              <h3 className="font-medium text-xl leading-6 text-[#818283]">Add Custom Stage</h3>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="mx-8 bg-white border border-[#E5E7EB] rounded-b-2xl overflow-hidden">
@@ -1951,6 +2003,25 @@ export default function JobPipelineDashboard({
                 <button onClick={handleCloseRequisitionModal} className="text-sm text-[#0F47F2] hover:underline">Close</button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Add New Stage Form - Full Screen Overlay */}
+      {showAddStageForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
+          <div className="ml-auto min-w-[400px]">
+            <AddNewStageForm
+              onClose={() => setShowAddStageForm(false)}
+              onStageCreated={() => {
+                if (jobId != null) {
+                  // Wait a short moment for backend indexes then refresh
+                  setTimeout(() => window.location.reload(), 1500);
+                  showToast.success("Stage created successfully!");
+                  setShowAddStageForm(false);
+                }
+              }}
+            />
           </div>
         </div>
       )}
