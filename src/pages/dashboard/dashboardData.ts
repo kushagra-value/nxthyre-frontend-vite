@@ -66,17 +66,28 @@ export interface ActivitySection {
 }
 
 // Modal candidate types
+export interface QuickFitSkill {
+    name: string;
+    match: boolean;
+}
+
 export interface ActionReviewCandidate {
     id: string;
     name: string;
     role: string;
+    company: string;
     avatar: string;
     source: string;
     skills: string[];
+    quickFitSkills: QuickFitSkill[];
     matchPercentage: number;
     aiSummary: string;
     experience: string;
     noticePeriod: string;
+    currentCTC: string;
+    expectedCTC: string;
+    location: string;
+    status: string;
 }
 
 export interface NewMatchCandidate {
@@ -422,49 +433,103 @@ export const actionReviewCandidates: ActionReviewCandidate[] = [
         id: 'ar-1',
         name: 'Dwija Patel',
         role: 'Senior Product Designer',
+        company: 'Jupiter',
         avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBT3sqE6RS0WmeZC9ArbIb8MM0-p-S0-dOWpwKXbcGSUftawEeGPpMktD6ANae56887NK3bzR7kiWfds8A6-dzSGuJkS1Sl94WTahskERf3bPIyTVfkhilfvymlG1GgxTUL9Ziyn-kqE750oSaA97y7M_tuNFIEUG7s2bHSyQHKVykRaKgstr2aSKuNsQ0A9aWAIgt_Bwgfp9hWow4OkmXiH7MRT49H8h4VxFDnEE2A4uyy4g9KxBcX37YIMZtE8qnGWAPHSntdknZI',
-        source: 'Nxthyre',
+        source: 'Naukbot',
         skills: ['Docker', 'Kubernetes', 'Terraform', 'AWS'],
-        matchPercentage: 95,
-        aiSummary: 'Dwija Patel is an exceptional match for this role due to her extensive experience in scaling infrastructure and product design. Her past roles show a strong emphasis on user experience, perfectly aligning with the team\'s current roadmap.',
-        experience: '8+ Years',
-        noticePeriod: 'Immediate',
+        quickFitSkills: [
+            { name: '8+Years', match: true },
+            { name: 'UI / Frontend Development', match: true },
+            { name: 'UI UX', match: true },
+            { name: 'Product Strategy', match: true },
+            { name: 'Design Thinking', match: true },
+            { name: 'Product Design', match: true },
+            { name: 'Communication', match: true },
+            { name: 'AI UX Product Design', match: false },
+        ],
+        matchPercentage: 84,
+        aiSummary: 'Strong technical profile with 7 years in product engineering. Led checkout redesign reducing drop-off by 22%. Communication is confident. Minor gaps in cloud and GraphQL but trainable within 3 months.',
+        experience: '5 yrs',
+        noticePeriod: '30 Days',
+        currentCTC: '₹16L',
+        expectedCTC: '24L',
+        location: 'Bengaluru',
+        status: 'Follow up required',
     },
     {
         id: 'ar-2',
         name: 'Ana De Armas',
         role: 'Product Manager',
+        company: 'Deloitte',
         avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         source: 'LinkedIn',
         skills: ['Product Strategy', 'Agile', 'Scrum', 'Analytics'],
+        quickFitSkills: [
+            { name: '6 Years', match: true },
+            { name: 'Product Strategy', match: true },
+            { name: 'Agile', match: true },
+            { name: 'Scrum', match: true },
+            { name: 'Analytics', match: true },
+            { name: 'Data Science', match: false },
+        ],
         matchPercentage: 88,
         aiSummary: 'Ana brings extensive product management expertise and agile methodologies. Her background in guiding cross-functional teams makes her a strong fit for the product requirements.',
         experience: '6 Years',
         noticePeriod: '30 Days',
+        currentCTC: '₹22L',
+        expectedCTC: '30L',
+        location: 'Mumbai',
+        status: 'Follow up required',
     },
     {
         id: 'ar-3',
         name: 'Charles Leclerc',
         role: 'Backend Engineer',
+        company: 'HGS',
         avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         source: 'Referral',
         skills: ['Node.js', 'Python', 'PostgreSQL', 'Redis'],
+        quickFitSkills: [
+            { name: '5 Years', match: true },
+            { name: 'Node.js', match: true },
+            { name: 'Python', match: true },
+            { name: 'PostgreSQL', match: true },
+            { name: 'Redis', match: true },
+            { name: 'Go', match: false },
+        ],
         matchPercentage: 82,
         aiSummary: 'Charles has deep knowledge in backend systems and infrastructure scaling. His experience with highly available architectures and caching tools like Redis is valuable.',
         experience: '5 Years',
         noticePeriod: '60 Days',
+        currentCTC: '₹18L',
+        expectedCTC: '26L',
+        location: 'Hyderabad',
+        status: 'Outreach Required',
     },
     {
         id: 'ar-4',
         name: 'Max Verstappen',
         role: 'Senior Product Designer',
+        company: 'McLaren',
         avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         source: 'Indeed',
         skills: ['Figma', 'UI/UX', 'Prototyping', 'User Research'],
+        quickFitSkills: [
+            { name: '7 Years', match: true },
+            { name: 'Figma', match: true },
+            { name: 'UI/UX', match: true },
+            { name: 'Prototyping', match: true },
+            { name: 'User Research', match: true },
+            { name: 'Motion Design', match: false },
+        ],
         matchPercentage: 78,
         aiSummary: 'Max specializes in prototyping and creating seamless user journeys. His user research experience complements the team\'s design strategy.',
         experience: '7 Years',
         noticePeriod: 'Immediate',
+        currentCTC: '₹20L',
+        expectedCTC: '28L',
+        location: 'Pune',
+        status: 'Follow up required',
     },
 ];
 
