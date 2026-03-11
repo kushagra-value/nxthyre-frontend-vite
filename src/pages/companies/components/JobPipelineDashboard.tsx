@@ -13,6 +13,7 @@ import { candidateService } from "../../../services/candidateService";
 import EditJobRoleModal from "../../candidates/components/EditJobRoleModal";
 import CompanyInfoTab from "./CompanyInfoTab";
 import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
+import NaukbotTab from "./NaukbotTab";
 import toast from "react-hot-toast";
 import { showToast } from "../../../utils/toast";
 import * as XLSX from "xlsx";
@@ -1042,10 +1043,12 @@ export default function JobPipelineDashboard({
       </div>
 
       {/* ═══════════════════════════════════════════════════════
-          Stage Filter Pills
+          Stage Filter Pills & Pipeline Content
          ═══════════════════════════════════════════════════════ */}
-      <div className="mx-8 mt-4 flex items-center justify-between bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
-        <div className="flex items-center gap-2 flex-wrap">
+      {activeTab === "pipeline" && (
+        <>
+          <div className="mx-8 mt-4 flex items-center justify-between bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
+            <div className="flex items-center gap-2 flex-wrap">
           {!isKanbanView && (
             <>
               <button
@@ -1489,6 +1492,10 @@ export default function JobPipelineDashboard({
           </div>
         </div>
       )}
+      </>
+      )}
+
+      {activeTab === "naukbot" && <NaukbotTab />}
 
       {/* ═══════════════════════════════════════════════════════
           Edit Job Role Modal
