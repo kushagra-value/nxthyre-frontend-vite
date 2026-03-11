@@ -1392,8 +1392,6 @@ export default function JobPipelineDashboard({
               ) : (
                 sortedCandidates.map((item, index) => {
                   const cand = item.candidate;
-                  const stageIdx = getStageIndex(item.current_stage?.slug || item.stage_slug);
-                  const totalStgs = stages.length > 0 ? stages.filter(s => s.slug !== "archives").length : 5;
 
                   // Experience — handle both numeric total_experience and string like "1+ years exp"
                   const expYears = cand.total_experience != null
@@ -1544,7 +1542,7 @@ export default function JobPipelineDashboard({
       </>
       )}
 
-      {activeTab === "naukbot" && <NaukbotTab />}
+      {activeTab === "naukbot" && <NaukbotTab jobId={jobId} />}
 
       {/* ═══════════════════════════════════════════════════════
           Edit Job Role Modal

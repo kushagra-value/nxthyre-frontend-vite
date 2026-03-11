@@ -1,8 +1,140 @@
-import { useState } from "react";
-import { Search, SlidersHorizontal, Calendar, X, Send, Trash2 } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Search, SlidersHorizontal, X, Send, Trash2, ArrowRight, ArrowLeft, Check } from "lucide-react";
+import { naukbotService, NaukbotCandidate, NaukbotCandidateSummary } from "../../../services/naukbotService";
+import { showToast } from "../../../utils/toast";
+import toast from "react-hot-toast";
 
-export default function NaukbotTab() {
+interface NaukbotTabProps {
+  jobId: number | null;
+}
+
+export default function NaukbotTab({ jobId }: NaukbotTabProps) {
   const [showDismiss, setShowDismiss] = useState(true);
+  const [candidates, setCandidates] = useState<NaukbotCandidate[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [summary, setSummary] = useState<NaukbotCandidateSummary>({
+    total_sourced: 0,
+    above_80_pct: 0,
+    nvited: 0,
+    new: 0,
+  });
+  const [sourcingEnabled, setSourcingEnabled] = useState(false);
+
+  // Pagination & Filtering
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("ai_score_desc");
+
+  // Selection
+  const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
+
+  const fetchCandidates = useCallback(async () => {
+    if (!jobId) return;
+    setLoading(true);
+    try {
+      const res = await naukbotService.getNaukbotCandidates({
+        job_id: jobId,
+        page,
+        page_size: pageSize,
+        search: searchQuery,
+        sort_by: sortBy,
+      });
+      setCandidates(res.results);
+      setTotalPages(res.total_pages);
+      setTotalCount(res.count);
+      setSummary(res.summary);
+      setSourcingEnabled(res.sourcing_enabled);
+    } catch (error) {
+      console.error(error);
+      showToast.error("Failed to load Naukbot candidates");
+    } finally {
+      setLoading(false);
+    }
+  }, [jobId, page, pageSize, searchQuery, sortBy]);
+
+  useEffect(() => {
+    fetchCandidates();
+  }, [fetchCandidates]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, sortBy, jobId]);
+
+  const toggleSelection = (id: string) => {
+    setSelectedCandidates((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedCandidates.size === candidates.length) {
+      setSelectedCandidates(new Set());
+    } else {
+      setSelectedCandidates(new Set(candidates.map((c) => c.id)));
+    }
+  };
+
+  const handleSkip = async (id: string) => {
+    try {
+      await naukbotService.skipCandidates([id]);
+      toast.success("Candidate skipped");
+      fetchCandidates();
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to skip candidate");
+    }
+  };
+
+  const handleBulkSkip = async () => {
+    if (selectedCandidates.size === 0) return;
+    try {
+      await naukbotService.skipCandidates(Array.from(selectedCandidates));
+      toast.success(`Skipped ${selectedCandidates.size} candidates`);
+      setSelectedCandidates(new Set());
+      fetchCandidates();
+    } catch (error) {
+       console.error(error);
+       toast.error("Failed to bulk skip candidates");
+    }
+  };
+
+  const triggerNvite = () => {
+     // Placeholder for actual NVite modal
+     // toast("NVite flow requires selecting a Naukri Job, implement modal if needed.", { icon: "ℹ️" });
+     // We will mock this or you can add the modal depending on requirements
+     showToast.error("NVite action requires selecting a job ID in production. Action currently pending modal.");
+  };
+
+  const getPageNumbers = () => {
+    const pageNumbers: (number | string)[] = [];
+    const maxVisiblePages = 5;
+    if (totalPages <= maxVisiblePages + 2) {
+      for (let i = 1; i <= totalPages; i++) pageNumbers.push(i);
+    } else {
+      pageNumbers.push(1);
+      const halfWindow = Math.floor(maxVisiblePages / 2);
+      let startPage = Math.max(2, page - halfWindow);
+      let endPage = Math.min(totalPages - 1, page + halfWindow);
+
+      if (endPage - startPage + 1 < maxVisiblePages) {
+        if (page <= halfWindow + 1) endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
+        else startPage = Math.max(2, endPage - maxVisiblePages + 1);
+      }
+
+      if (startPage > 2) pageNumbers.push("...");
+      for (let i = startPage; i <= endPage; i++) pageNumbers.push(i);
+      if (endPage < totalPages - 1) pageNumbers.push("...");
+      if (totalPages > 1) pageNumbers.push(totalPages);
+    }
+    return pageNumbers;
+  };
+
 
   return (
     <div className="pb-12">
@@ -15,38 +147,45 @@ export default function NaukbotTab() {
           </div>
           <div className="flex items-center gap-10">
             <div className="flex flex-col items-center">
-              <span className="text-[22px] font-bold">652</span>
+              <span className="text-[22px] font-bold">{summary.total_sourced}</span>
               <span className="text-xs text-[#E0E7FF] font-medium mt-0.5">Sourced</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-[22px] font-bold">487</span>
+              <span className="text-[22px] font-bold">{summary.above_80_pct}</span>
               <span className="text-xs text-[#E0E7FF] font-medium mt-0.5">80%+ Match</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-[22px] font-bold">48</span>
+              <span className="text-[22px] font-bold">{summary.nvited}</span>
               <span className="text-xs text-[#E0E7FF] font-medium mt-0.5">nVited</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-[22px] font-bold">12</span>
+              <span className="text-[22px] font-bold">{summary.new}</span>
               <span className="text-xs text-[#E0E7FF] font-medium mt-0.5">New</span>
             </div>
             <div className="flex flex-col items-end border-l border-[#8193FE] pl-8">
-              <div className="flex items-center gap-2 bg-white rounded-full p-[2px] pr-3 mb-1 cursor-pointer">
-                <div className="w-6 h-6 bg-[#4F68FC] rounded-full flex items-center justify-center"></div>
-                <span className="text-[11px] font-bold text-[#4F68FC]">ON</span>
-              </div>
+              {sourcingEnabled ? (
+                <div className="flex items-center gap-2 bg-white rounded-full p-[2px] pr-3 mb-1 cursor-pointer">
+                  <div className="w-6 h-6 bg-[#4F68FC] rounded-full flex items-center justify-center"></div>
+                  <span className="text-[11px] font-bold text-[#4F68FC]">ON</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 bg-white rounded-full p-[2px] pl-3 mb-1 cursor-pointer border border-[#E5E7EB]">
+                  <span className="text-[11px] font-bold text-[#8E8E93]">OFF</span>
+                  <div className="w-6 h-6 bg-[#AEAEB2] rounded-full flex items-center justify-center"></div>
+                </div>
+              )}
               <span className="text-[10px] text-[#E0E7FF] font-medium">Sourcing Candidates</span>
             </div>
           </div>
         </div>
 
         {/* Green Alert */}
-        {showDismiss && (
+        {showDismiss && summary.new > 0 && (
           <div className="bg-[#D1F7DB] px-6 py-3.5 flex items-center justify-between text-[#006A2E]">
             <div className="flex items-center gap-2.5">
               <div className="w-2.5 h-2.5 bg-[#009951] rounded-full"></div>
               <span className="text-[13px] font-semibold text-[#009951]">
-                12 new candidates <span className="font-normal text-[#1A8D49]">sourced in the last 2 hours</span>
+                {summary.new} new candidates <span className="font-normal text-[#1A8D49]">sourced in the last 2 hours</span>
               </span>
             </div>
             <button 
@@ -65,19 +204,31 @@ export default function NaukbotTab() {
             <input 
               type="text" 
               placeholder="Search for Candidates" 
-              className="w-full h-10 pl-10 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none border border-[#E5E7EB]"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-10 pl-10 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none border border-[#E5E7EB] focus:border-[#0F47F2] transition-colors"
             />
           </div>
           <div className="flex items-center gap-3">
              <button className="flex items-center gap-2 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors">
               <SlidersHorizontal className="w-4 h-4" /> Filters
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors">
-              <SlidersHorizontal className="w-4 h-4" /> AI Score
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors">
-              <Calendar className="w-4 h-4" /> 03/02/2026
-            </button>
+            <select 
+              className="flex items-center gap-2 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors focus:outline-none focus:border-[#0F47F2]"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            >
+              <option value="ai_score_desc">AI Score ↓</option>
+              <option value="ai_score_asc">AI Score ↑</option>
+              <option value="newest">Newest</option>
+              <option value="experience_desc">Experience ↓</option>
+              <option value="ctc_desc">CTC ↓</option>
+            </select>
+            {selectedCandidates.size > 0 && (
+                <button onClick={handleBulkSkip} className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors">
+                  <Trash2 className="w-4 h-4" /> Skip Selected ({selectedCandidates.size})
+                </button>
+            )}
           </div>
         </div>
 
@@ -87,7 +238,13 @@ export default function NaukbotTab() {
             <thead className="border-b border-[#E5E7EB]">
               <tr>
                 <th className="w-12 px-6 py-4">
-                  <input type="checkbox" className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]" />
+                  <input 
+                    type="checkbox" 
+                    checked={candidates.length > 0 && selectedCandidates.size === candidates.length}
+                    onChange={toggleSelectAll}
+                    disabled={candidates.length === 0}
+                    className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]" 
+                  />
                 </th>
                 <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Candidate</th>
                 <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-center">AI Score</th>
@@ -101,64 +258,86 @@ export default function NaukbotTab() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F5F7]">
-               {[
-                 { score: 84, scoreColor: "#00C8B3", np: "Immediate", npColor: "#0F47F2", skills: 9, skillsColor: "#009951" },
-                 { score: 54, scoreColor: "#F59E0B", np: "15 Days", npColor: "#009951", skills: 9, skillsColor: "#009951" },
-                 { score: 96, scoreColor: "#0F47F2", np: "30 Days", npColor: "#F59E0B", skills: 8, skillsColor: "#009951" },
-                 { score: 72, scoreColor: "#EA580C", np: "90 Days", npColor: "#EA580C", skills: 5, skillsColor: "#EF4444" },
-                 { score: 84, scoreColor: "#00C8B3", np: "Not Yet", npColor: "#EF4444", skills: 6, skillsColor: "#F59E0B" }
-               ].map((item, i) => (
-                  <tr key={i} className="hover:bg-[#F9FAFB] transition-colors">
-                    <td className="px-6 py-6">
-                      <input type="checkbox" className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]" />
+               {loading ? (
+                   <tr><td colSpan={10} className="py-12 text-center text-[#8E8E93]">Loading...</td></tr>
+               ) : candidates.length === 0 ? (
+                   <tr><td colSpan={10} className="py-12 text-center text-[#8E8E93]">No candidates found</td></tr>
+               ) : candidates.map((item) => {
+                  const scoreColor = item.ai_score >= 80 ? "#00C8B3" : item.ai_score >= 60 ? "#F59E0B" : "#EA580C";
+                  const skillsColor = item.skills_match.matched >= (item.skills_match.total * 0.8) ? "#009951" : "#EA580C";
+                  return (
+                  <tr key={item.id} className="hover:bg-[#F9FAFB] transition-colors">
+                    <td className="px-6 py-6 border-transparent">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedCandidates.has(item.id)}
+                        onChange={() => toggleSelection(item.id)}
+                        className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]" 
+                      />
                     </td>
-                    <td className="px-6 py-6">
-                      <div className="font-semibold text-sm text-[#4B5563]">Charles Leclerc</div>
-                      <div className="text-[12px] text-[#8E8E93] mt-0.5">Product Designer • Scuderia</div>
+                    <td className="px-6 py-6 border-transparent">
+                      <div className="font-semibold text-sm text-[#4B5563]">{item.name}</div>
+                      <div className="text-[12px] text-[#8E8E93] mt-0.5">{item.current_title} • {item.current_company || "N/A"}</div>
                     </td>
-                    <td className="px-6 py-6">
+                    <td className="px-6 py-6 border-transparent">
                        <div className="relative w-10 h-10 mx-auto">
                           <svg className="w-10 h-10 -rotate-90" viewBox="0 0 36 36">
                             <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#F3F5F7" strokeWidth="4" />
-                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={item.scoreColor} strokeWidth="4" strokeDasharray={`${item.score}, 100`} />
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={scoreColor} strokeWidth="4" strokeDasharray={`${item.ai_score}, 100`} />
                           </svg>
-                          <div className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-[#4B5563]">{item.score}%</div>
+                          <div className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-[#4B5563]">{item.ai_score}%</div>
                         </div>
                     </td>
-                    <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93]">Monte Carlo</td>
-                    <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93]">7 Years</td>
-                    <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93]">18.5 LPA</td>
-                    <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93]">25 - 35 LPA</td>
-                    <td className="px-6 py-6 text-[13px] font-medium" style={{ color: item.npColor }}>{item.np}</td>
-                    <td className="px-6 py-6 text-[13px] font-medium" style={{ color: item.skillsColor }}>{item.skills}/10 skills</td>
-                    <td className="px-6 py-6">
+                    <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent">{item.location || "--"}</td>
+                    <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent">{item.experience_years ? `${item.experience_years} Years` : "--"}</td>
+                    <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent">{item.current_ctc_lacs ? `${item.current_ctc_lacs} LPA` : "--"}</td>
+                    <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent">{item.expected_ctc_lacs ? `${item.expected_ctc_lacs} LPA` : "--"}</td>
+                    <td className="px-6 py-6 text-[13px] font-medium border-transparent text-[#8E8E93]">{item.notice_period || "--"}</td>
+                    <td className="px-6 py-6 text-[13px] font-medium border-transparent" style={{ color: skillsColor }}>{item.skills_match.matched}/{item.skills_match.total} skills</td>
+                    <td className="px-6 py-6 border-transparent">
                       <div className="flex justify-end gap-2">
-                        <button className="flex items-center gap-1.5 px-4 py-2 bg-[#0F47F2] text-white rounded-lg text-sm font-medium hover:bg-[#0A3BCC] transition-colors">
-                           <Send className="w-3.5 h-3.5" /> nVite
+                        <button 
+                           onClick={() => triggerNvite()}
+                           disabled={item.is_nvited}
+                           className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${item.is_nvited ? 'bg-gray-100 text-gray-400' : 'bg-[#0F47F2] text-white hover:bg-[#0A3BCC]'}`}>
+                           {item.is_nvited ? <><Check className="w-3.5 h-3.5" /> nVited</> : <><Send className="w-3.5 h-3.5" /> nVite</>}
                         </button>
-                        <button className="flex items-center gap-1.5 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors">
+                        <button 
+                           onClick={() => handleSkip(item.id)}
+                           className="flex items-center gap-1.5 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors">
                            <Trash2 className="w-4 h-4" /> Skip
                         </button>
                       </div>
                     </td>
                   </tr>
-               ))}
+               )})}
             </tbody>
           </table>
         </div>
 
         {/* Pagination */}
-        <div className="bg-white border border-[#E5E7EB] rounded-b-xl px-6 py-5 flex items-center justify-between">
-            <div className="text-[13px] text-[#8E8E93]">Showing 1–10 of 42 companies</div>
-            <div className="flex items-center gap-1.5">
-               <button className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#8E8E93] bg-white hover:bg-gray-50 text-sm font-medium">&lt;</button>
-               <button className="w-8 h-8 flex items-center justify-center border border-[#0F47F2] rounded-lg text-white bg-[#0F47F2] text-sm font-medium">1</button>
-               <button className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#4B5563] bg-white hover:bg-gray-50 text-sm font-medium">2</button>
-               <button className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#4B5563] bg-white hover:bg-gray-50 text-sm font-medium">3</button>
-               <span className="w-6 h-8 flex items-center justify-center text-[#8E8E93] text-sm font-medium">...</span>
-               <button className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#4B5563] bg-white hover:bg-gray-50 text-sm font-medium">9</button>
-               <button className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#8E8E93] bg-white hover:bg-gray-50 text-sm font-medium">&gt;</button>
+        <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-b-xl px-6 py-5 flex items-center justify-between">
+            <div className="text-[13px] text-[#8E8E93]">
+                Showing {totalCount > 0 ? (page - 1) * pageSize + 1 : 0}–{Math.min(page * pageSize, totalCount)} of {totalCount} candidates
             </div>
+            {totalPages > 1 && (
+                <div className="flex items-center gap-1.5">
+                   <button onClick={() => setPage(Math.max(page - 1, 1))} disabled={page === 1} className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#8E8E93] bg-white hover:bg-gray-50 text-sm font-medium disabled:opacity-50"><ArrowLeft className="w-4 h-4"/></button>
+                   {getPageNumbers().map((p, i) => (
+                      p === "..." ? (
+                        <span key={`dots-${i}`} className="w-6 h-8 flex items-center justify-center text-[#8E8E93] text-sm font-medium">...</span>
+                      ) : (
+                        <button 
+                          key={`page-${p}`} 
+                          onClick={() => setPage(p as number)}
+                          className={`w-8 h-8 flex items-center justify-center border rounded-lg text-sm font-medium ${page === p ? 'border-[#0F47F2] text-white bg-[#0F47F2]' : 'border-[#E5E7EB] text-[#4B5563] bg-white hover:bg-gray-50'}`}>
+                            {p}
+                        </button>
+                      )
+                   ))}
+                   <button onClick={() => setPage(Math.min(page + 1, totalPages))} disabled={page === totalPages} className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#8E8E93] bg-white hover:bg-gray-50 text-sm font-medium disabled:opacity-50"><ArrowRight className="w-4 h-4"/></button>
+                </div>
+            )}
         </div>
       </div>
     </div>
