@@ -130,11 +130,10 @@ const JobListing: React.FC<JobListingProps> = ({
                 switch (key) {
                     case "Job Title": return (job.title || "").toLowerCase();
                     case "Candidates": return job.candidates_count ?? job.total_applied ?? 0;
-                    case "Shortlisted": return job.shortlisted_count ?? job.shortlisted_candidate_count ?? 0;
-                    case "Hired": return job.hired_count || 0;
-                    case "Days Open": return daysOpen;
-                    case "No. of Position": return noOfPositions;
-                    case "Last Active Date": return job.last_active_date ? new Date(job.last_active_date).getTime() : (new Date(job.updated_at).getTime() || 0);
+                    case "Days open": return daysOpen;
+                    case "Position": return noOfPositions;
+                    case "Budget": return job.salary_max || 0;
+                    case "Active Date": return job.last_active_date ? new Date(job.last_active_date).getTime() : (new Date(job.updated_at).getTime() || 0);
                     case "Status": return (job.status || "").toLowerCase();
                     default: return "";
                 }
@@ -151,9 +150,9 @@ const JobListing: React.FC<JobListingProps> = ({
 
     const handleSort = (key: string) => {
         let direction: 'asc' | 'desc' = 'asc';
-        if (['Candidates', 'Shortlisted', 'Hired', 'Days Open', 'No. of Position'].includes(key)) {
+        if (['Candidates', 'Days open', 'Position', 'Budget'].includes(key)) {
             direction = 'desc'; // fallback intuitive default for numbers
-        } else if (key === 'Last Active Date') {
+        } else if (key === 'Active Date') {
             direction = 'desc'; // newest first
         }
 
@@ -312,30 +311,39 @@ const JobListing: React.FC<JobListingProps> = ({
             </div>
 
             {/* ── Table Section ── */}
-            <div className="bg-white rounded-xl shadow-sm border border-[#D1D1D6] overflow-hidden">
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                 {/* Filters & Actions - first row */}
-                <div className="p-4 border-b border-[#C7C7CC] flex items-center gap-2">
-                    {(["All", "Active", "Paused", "Closed", "Draft"] as const).map((filter) => {
-                        let count = 0;
-                        if (filter === "All") count = workspaceJobs.length;
-                        else if (filter === "Active") count = workspaceJobs.filter(j => j.status === "PUBLISHED" || j.status === "ACTIVE").length;
-                        else if (filter === "Paused") count = workspaceJobs.filter(j => j.status === "PAUSED").length;
-                        else if (filter === "Closed") count = workspaceJobs.filter(j => j.status === "CLOSED").length;
-                        else if (filter === "Draft") count = workspaceJobs.filter(j => j.status === "DRAFT").length;
+                <div className="p-4 border-b border-[#C7C7CC] flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        {(["All", "Active", "Paused", "Closed", "Draft"] as const).map((filter) => {
+                            let count = 0;
+                            if (filter === "All") count = workspaceJobs.length;
+                            else if (filter === "Active") count = workspaceJobs.filter(j => j.status === "PUBLISHED" || j.status === "ACTIVE").length;
+                            else if (filter === "Paused") count = workspaceJobs.filter(j => j.status === "PAUSED").length;
+                            else if (filter === "Closed") count = workspaceJobs.filter(j => j.status === "CLOSED").length;
+                            else if (filter === "Draft") count = workspaceJobs.filter(j => j.status === "DRAFT").length;
 
-                        return (
-                            <button
-                                key={filter}
-                                onClick={() => setActiveJobFilter(filter)}
-                                className={`h-[30px] px-4 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center justify-center
-                    ${activeJobFilter === filter
-                                        ? 'bg-[#0F47F2] text-white'
-                                        : 'border border-[#C7C7CC] text-[#AEAEB2] hover:bg-gray-50'}`} // UPDATED: exact design pill (height, border, colors)
-                            >
-                                {filter} ({count})
-                            </button>
-                        );
-                    })}
+                            return (
+                                <button
+                                    key={filter}
+                                    onClick={() => setActiveJobFilter(filter)}
+                                    className={`h-[30px] px-4 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center justify-center
+                        ${activeJobFilter === filter
+                                            ? 'bg-[#0F47F2] text-white'
+                                            : 'border border-[#C7C7CC] text-[#AEAEB2] hover:bg-gray-50'}`}
+                                >
+                                    {filter} ({count})
+                                </button>
+                            );
+                        })}
+                    </div>
+                    <button
+                        disabled
+                        title="Feature coming Soon"
+                        className="flex items-center gap-2 px-3 py-2 border border-[#AEAEB2] rounded-md text-xs text-[#AEAEB2] opacity-50 cursor-not-allowed"
+                    >
+                        <LayoutGrid className="w-4 h-4" /> Grid View
+                    </button>
                 </div>
 
                 {/* Search & Actions row */}
@@ -375,35 +383,37 @@ const JobListing: React.FC<JobListingProps> = ({
                         >
                             <Calendar className="w-4 h-4" /> {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </button>
-
-                        <button
-                            disabled
-                            title="Feature coming Soon"
-                            className="flex items-center gap-2 px-3 py-2 border border-[#AEAEB2] rounded-md text-xs text-[#AEAEB2] opacity-50 cursor-not-allowed"
-                        >
-                            <LayoutGrid className="w-4 h-4" /> Grid View
-                        </button>
                     </div>
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left table-fixed border-collapse"> {/* UPDATED: table-fixed + exact Figma width (1254 + 232 for 2 new columns) */}
+                    <table className="w-full text-left border-collapse">
+                        <colgroup>
+                            <col style={{ width: '22%' }} /> {/* Job Title */}
+                            <col style={{ width: '8%' }} />  {/* Candidates */}
+                            <col style={{ width: '8%' }} />  {/* Days open */}
+                            <col style={{ width: '7%' }} />  {/* Position */}
+                            <col style={{ width: '9%' }} />  {/* Budget */}
+                            <col style={{ width: '10%' }} /> {/* Active Date */}
+                            <col style={{ width: '20%' }} /> {/* Stage */}
+                            <col style={{ width: '8%' }} />  {/* Status */}
+                            <col style={{ width: '8%' }} />  {/* Actions */}
+                        </colgroup>
                         <thead className="bg-[#F9FAFB]">
                             <tr>
                                 {[
                                     { key: "Job Title" },
                                     { key: "Candidates" },
-                                    { key: "Shortlisted" },
-                                    { key: "Hired" },
-                                    { key: "Days Open" },
-                                    { key: "No. of Position" },
-                                    { key: "Last Active Date" },
+                                    { key: "Days open" },
+                                    { key: "Position" },
+                                    { key: "Budget" },
+                                    { key: "Active Date" },
                                     { key: "Stage", sortable: false },
                                     { key: "Status" },
                                 ].map(({ key, sortable = true }) => (
                                     <th
                                         key={key}
-                                        className={`px-6 py-4 text-[13px] font-normal text-[#AEAEB2] ${sortable ? 'cursor-pointer group hover:text-[#4B5563] transition-colors select-none whitespace-nowrap' : 'select-none whitespace-nowrap'}`}
+                                        className={`px-4 py-3 text-[13px] font-normal text-[#AEAEB2] ${sortable ? 'cursor-pointer group hover:text-[#4B5563] transition-colors select-none whitespace-nowrap' : 'select-none whitespace-nowrap'}`}
                                         onClick={sortable ? () => handleSort(key) : undefined}
                                     >
                                         <div className="flex items-center">
@@ -412,31 +422,32 @@ const JobListing: React.FC<JobListingProps> = ({
                                         </div>
                                     </th>
                                 ))}
-                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center select-none">Actions</th>
+                                <th className="px-4 py-3 text-[13px] font-normal text-[#AEAEB2] text-center select-none">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#D1D1D6]">
                             {paginatedJobs.map((job) => {
                                 const daysOpen = job.days_open_text || (job.days_open ? `${job.days_open} Days` : "36 Days");
                                 const noOfPositions = job.num_positions || job.No_of_opening_or_positions_ || "3";
+                                const budgetDisplay = job.salary_display || `${formatSalaryToLPA(job.salary_min)}-${formatSalaryToLPA(job.salary_max)} LPA`;
 
                                 return (
-                                    <tr key={job.id} className="h-[69px] hover:bg-gray-50 transition-colors"> {/* UPDATED: exact row height */}
+                                    <tr key={job.id} className="h-[69px] hover:bg-gray-50 transition-colors">
                                         {/* Job Title */}
-                                        <td className="px-6 py-4">
+                                        <td className="px-4 py-3">
                                             <div className="flex flex-col gap-1.5">
                                                 <span
-                                                    className="text-[14px] font-medium text-[#4B5563] leading-[17px] cursor-pointer hover:text-[#0F47F2] hover:underline transition-colors"
+                                                    className="text-[14px] font-medium text-[#4B5563] leading-[17px] cursor-pointer hover:text-[#0F47F2] hover:underline transition-colors truncate"
                                                     onClick={() => onJobSelect?.(job)}
                                                 >{job.title}</span>
-                                                <div className="flex items-center gap-1">
-                                                    <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">
+                                                <div className="flex items-center gap-1 flex-wrap">
+                                                    <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563] whitespace-nowrap">
                                                         {job.experience_display || `${job.experience_min_years}-${job.experience_max_years} Yrs`}
                                                     </span>
-                                                    <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563]">
+                                                    <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563] whitespace-nowrap">
                                                         {job.salary_display || `${formatSalaryToLPA(job.salary_min)} - ${formatSalaryToLPA(job.salary_max)} LPA`}
                                                     </span>
-                                                    <span className="px-2 py-0.5 bg-[#F2F2F7] rounded-full text-[10px] text-[#8E8E93]">
+                                                    <span className="px-2 py-0.5 bg-[#F2F2F7] rounded-full text-[10px] text-[#8E8E93] whitespace-nowrap">
                                                         {job.jd_code || `JD-${job.id}`}
                                                     </span>
                                                 </div>
@@ -444,43 +455,38 @@ const JobListing: React.FC<JobListingProps> = ({
                                         </td>
 
                                         {/* Candidates */}
-                                        <td className="px-6 py-4 text-sm text-[#4B5563] leading-[17px] text-center">
+                                        <td className="px-4 py-3 text-sm text-[#4B5563] leading-[17px] text-center">
                                             {job.candidates_count ?? job.total_applied ?? 0}
                                         </td>
 
-                                        {/* Shortlisted */}
-                                        <td className="px-6 py-4 text-sm text-[#4B5563] leading-[17px] text-center">
-                                            {job.shortlisted_count ?? job.shortlisted_candidate_count ?? 0}
-                                        </td>
-
-                                        {/* Hired */}
-                                        <td className="px-6 py-4 text-sm text-[#4B5563] leading-[17px] text-center">
-                                            {job.hired_count ?? "--"}
-                                        </td>
-
-                                        {/* Days Open */}
-                                        <td className="px-6 py-4 text-[14px] text-[#FF8D28] leading-[17px] text-center">
+                                        {/* Days open */}
+                                        <td className="px-4 py-3 text-[14px] text-[#FF8D28] font-medium leading-[17px] text-center whitespace-nowrap">
                                             {daysOpen}
                                         </td>
 
-                                        {/* No. of Position */}
-                                        <td className="px-6 py-4 text-sm text-[#4B5563] leading-[17px] text-center">
+                                        {/* Position */}
+                                        <td className="px-4 py-3 text-sm text-[#4B5563] leading-[17px] text-center">
                                             {noOfPositions}
                                         </td>
 
-                                        {/* Last Active Date */}
-                                        <td className="px-6 py-4 text-sm text-[#4B5563] leading-[17px] text-center">
-                                            {job.last_active_date_display || new Date(job.updated_at).toLocaleDateString('en-GB')}
+                                        {/* Budget */}
+                                        <td className="px-4 py-3 text-sm text-[#4B5563] leading-[17px] text-center whitespace-nowrap">
+                                            {budgetDisplay}
                                         </td>
 
-                                        {/* Stage - 5 colored boxes */}
-                                        <td className="px-6 py-4">
-                                            <div className="flex justify-center gap-[5px]">
+                                        {/* Active Date */}
+                                        <td className="px-4 py-3 text-sm text-[#4B5563] leading-[17px] text-center whitespace-nowrap">
+                                            {job.last_active_date_display || new Date(job.updated_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                        </td>
+
+                                        {/* Stage - colored boxes */}
+                                        <td className="px-4 py-3">
+                                            <div className="flex justify-center gap-[4px]">
                                                 {job.stage_breakdown ? (
                                                     job.stage_breakdown.map((item, idx) => (
                                                         <div
                                                             key={idx}
-                                                            className="w-[39.76px] h-[24px] rounded-[5px] flex items-center justify-center text-white text-[14px] leading-[17px]"
+                                                            className="w-[36px] h-[24px] rounded-[5px] flex items-center justify-center text-white text-[13px] leading-[17px] font-medium"
                                                             style={{ backgroundColor: item.color }}
                                                             title={item.name}
                                                         >
@@ -497,7 +503,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                     ].map((item, idx) => (
                                                         <div
                                                             key={idx}
-                                                            className="w-[39.76px] h-[24px] rounded-[5px] flex items-center justify-center text-white text-[14px] leading-[17px]"
+                                                            className="w-[36px] h-[24px] rounded-[5px] flex items-center justify-center text-white text-[13px] leading-[17px] font-medium"
                                                             style={{ backgroundColor: item.color }}
                                                         >
                                                             {item.value}
@@ -508,8 +514,8 @@ const JobListing: React.FC<JobListingProps> = ({
                                         </td>
 
                                         {/* Status */}
-                                        <td className="px-6 py-4 text-center">
-                                            <span className={`px-3 py-1 rounded-full text-[14px] font-medium leading-[17px] ${(job.status === 'PUBLISHED' || job.status === 'ACTIVE')
+                                        <td className="px-4 py-3 text-center">
+                                            <span className={`px-3 py-1 rounded-full text-[13px] font-medium leading-[17px] whitespace-nowrap ${(job.status === 'PUBLISHED' || job.status === 'ACTIVE')
                                                 ? 'bg-[#EBFFEE] text-[#069855]'
                                                 : job.status === 'CLOSED'
                                                     ? 'bg-[#F5F5F5] text-black'
@@ -522,33 +528,33 @@ const JobListing: React.FC<JobListingProps> = ({
                                         </td>
 
                                         {/* Actions */}
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center justify-center gap-2">
                                                 <button
                                                     onClick={() => {
                                                         setEditingJobId(job.id);
                                                         setShowEditJobRole(true);
                                                     }}
-                                                    className="w-6 h-6 bg-[#E7EDFF] border border-white rounded-[5px] flex items-center justify-center hover:bg-[#D7E3FF]"
+                                                    className="w-7 h-7 bg-[#E7EDFF] border border-white rounded-[5px] flex items-center justify-center hover:bg-[#D7E3FF] transition-colors"
                                                 >
-                                                    <Pencil className="w-4 h-4 text-[#0F47F2]" />
+                                                    <Pencil className="w-3.5 h-3.5 text-[#0F47F2]" />
                                                 </button>
                                                 {job.status === "PUBLISHED" && job.visibility === "PUBLIC" && (
                                                     <button
                                                         onClick={() => setShowUnpublishModal(job.id)}
                                                         title="Unpublish"
-                                                        className="w-6 h-6 bg-[#F2F2F7] border border-white rounded-[5px] flex items-center justify-center hover:bg-gray-200 transition-colors"
+                                                        className="w-7 h-7 bg-[#F2F2F7] border border-white rounded-[5px] flex items-center justify-center hover:bg-gray-200 transition-colors"
                                                     >
-                                                        <Pause className="w-[14px] h-[14px] text-[#4B5563]" />
+                                                        <Pause className="w-3.5 h-3.5 text-[#4B5563]" />
                                                     </button>
                                                 )}
                                                 {job.status === "DRAFT" && job.visibility === "PRIVATE" && (
                                                     <button
                                                         onClick={() => setShowPublishModal(job.id)}
                                                         title="Publish"
-                                                        className="w-6 h-6 bg-[#F2F2F7] border border-white rounded-[5px] flex items-center justify-center hover:bg-gray-200 transition-colors"
+                                                        className="w-7 h-7 bg-[#F2F2F7] border border-white rounded-[5px] flex items-center justify-center hover:bg-gray-200 transition-colors"
                                                     >
-                                                        <Globe className="w-[14px] h-[14px] text-[#4B5563]" />
+                                                        <Globe className="w-3.5 h-3.5 text-[#4B5563]" />
                                                     </button>
                                                 )}
                                             </div>
@@ -559,7 +565,7 @@ const JobListing: React.FC<JobListingProps> = ({
 
                             {filteredWorkspaceJobs.length === 0 && !jobsLoading && (
                                 <tr>
-                                    <td colSpan={8} className="px-5 py-10 text-center text-[#8E8E93]">
+                                    <td colSpan={9} className="px-5 py-10 text-center text-[#8E8E93]">
                                         No jobs found for this criteria.
                                     </td>
                                 </tr>
@@ -570,32 +576,30 @@ const JobListing: React.FC<JobListingProps> = ({
 
                 {/* Pagination */}
                 <div className="px-5 py-4 flex items-center justify-between border-t border-[#D1D1D6]">
-                    <div className="text-[12px] text-[#6B7280]">
+                    <div className="text-[13px] text-[#8E8E93]">
                         {filteredWorkspaceJobs.length > 0
-                            ? `Showing ${startIdx}–${endIdx} of ${filteredWorkspaceJobs.length} jobs`
+                            ? `Showing ${startIdx}-${endIdx} of ${sortedJobs.length} companies`
                             : 'No jobs to display'}
                     </div>
                     {totalPages > 1 && (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5">
                             <button
                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                 disabled={currentPage === 1}
-                                className={`w-[30px] h-[30px] border border-[#E5E7EB] rounded-[8px] text-sm flex items-center justify-center transition-colors ${currentPage === 1 ? 'text-[#D1D1D6] cursor-not-allowed' : 'text-[#6B7280] hover:bg-gray-50'
-                                    }`}
+                                className={`w-[32px] h-[32px] border border-[#E5E7EB] rounded-[8px] text-sm flex items-center justify-center transition-colors ${currentPage === 1 ? 'text-[#D1D1D6] cursor-not-allowed' : 'text-[#6B7280] hover:bg-gray-50'}`}
                             >
                                 <ChevronLeft className="w-4 h-4" />
                             </button>
                             {getPageNumbers().map((page, idx) => (
                                 page === '...' ? (
-                                    <span key={`ellipsis-${idx}`} className="w-[30px] h-[30px] flex items-center justify-center text-[#6B7280] text-sm">…</span>
+                                    <span key={`ellipsis-${idx}`} className="w-[32px] h-[32px] flex items-center justify-center text-[#6B7280] text-sm">…</span>
                                 ) : (
                                     <button
                                         key={page}
                                         onClick={() => setCurrentPage(page as number)}
-                                        className={`w-[30px] h-[30px] text-sm font-medium rounded-[8px] transition-colors ${currentPage === page
+                                        className={`w-[32px] h-[32px] text-sm font-medium rounded-[8px] transition-colors ${currentPage === page
                                             ? 'bg-[#0F47F2] text-white'
-                                            : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-gray-50'
-                                            }`}
+                                            : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-gray-50'}`}
                                     >
                                         {page}
                                     </button>
@@ -604,8 +608,7 @@ const JobListing: React.FC<JobListingProps> = ({
                             <button
                                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                 disabled={currentPage === totalPages}
-                                className={`w-[30px] h-[30px] border border-[#E5E7EB] rounded-[8px] text-sm flex items-center justify-center transition-colors ${currentPage === totalPages ? 'text-[#D1D1D6] cursor-not-allowed' : 'text-[#6B7280] hover:bg-gray-50'
-                                    }`}
+                                className={`w-[32px] h-[32px] border border-[#E5E7EB] rounded-[8px] text-sm flex items-center justify-center transition-colors ${currentPage === totalPages ? 'text-[#D1D1D6] cursor-not-allowed' : 'text-[#6B7280] hover:bg-gray-50'}`}
                             >
                                 <ChevronRight className="w-4 h-4" />
                             </button>
