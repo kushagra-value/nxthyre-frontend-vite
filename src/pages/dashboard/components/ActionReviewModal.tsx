@@ -36,7 +36,7 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
     const progressOffset = circumference - (candidate.matchPercentage / 100) * circumference;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6" onClick={onClose}>
             {/* Modal Container — 553px wide, 10px radius, scrollable */}
             <div
                 className="bg-white flex flex-col overflow-hidden"
