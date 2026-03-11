@@ -41,6 +41,7 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
             <div
                 className="bg-white flex flex-col overflow-hidden"
                 style={{ width: 553, maxHeight: 727, borderRadius: 10, boxShadow: '0 8px 40px rgba(0,0,0,0.15)' }}
+                onClick={(e) => e.stopPropagation()}
             >
 
                 {/* ── Header — 65px, border-bottom #AEAEB2 ── */}
