@@ -231,6 +231,7 @@ export default function JobPipelineDashboard({
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
   const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<{ id: string; name: string }[]>([]);
 
   // ── Selection
   const [selectAll, setSelectAll] = useState(false);
@@ -671,8 +672,43 @@ export default function JobPipelineDashboard({
   }, []);
 
   useEffect(() => {
-    if (jobId != null) { fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery); }
+    if (jobId != null && searchQuery === "") {
+        fetchCandidates(jobId, activeStageSlug, currentPage, "");
+    }
   }, [jobId, activeStageSlug, currentPage, searchQuery, fetchCandidates]);
+
+  useEffect(() => {
+    if (searchQuery.length > 0 && jobId !== null && activeTab === 'pipeline') {
+      const fetchSuggestions = async () => {
+        try {
+          const res = await jobPostService.searchAutosuggest(searchQuery, jobId);
+          setSuggestions(res);
+        } catch (error) {
+          console.error("Error fetching suggestions:", error);
+        }
+      };
+      const debounceTimer = setTimeout(fetchSuggestions, 300);
+      return () => clearTimeout(debounceTimer);
+    } else {
+      setSuggestions([]);
+    }
+  }, [searchQuery, jobId, activeTab]);
+
+  const handleSuggestionSelect = async (sug: { id: string; name: string }) => {
+    setSearchQuery(sug.name);
+    setSuggestions([]);
+    if (jobId) {
+      try {
+        setCandidates([]);
+        const res = await jobPostService.getSearchedCandidate(sug.id, jobId);
+        setActiveStageSlug(res.current_stage.slug);
+        setCandidates([res as unknown as CandidateListItem]);
+        setTotalCandidates(1);
+      } catch (error) {
+        console.error("Error fetching searched candidate:", error);
+      }
+    }
+  };
 
   useEffect(() => { setCurrentPage(1); }, [activeStageSlug, searchQuery]);
 
@@ -1105,6 +1141,19 @@ export default function JobPipelineDashboard({
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-9 pl-9 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow border border-[#E5E7EB]"
             />
+            {suggestions.length > 0 && (
+              <div className="absolute top-10 z-[100] w-full bg-white shadow-lg rounded-lg max-h-60 overflow-y-auto border border-gray-200">
+                {suggestions.map((sug) => (
+                  <div
+                    key={sug.id}
+                    className="p-2 hover:bg-gray-100 cursor-pointer text-sm text-[#4B5563]"
+                    onClick={() => handleSuggestionSelect(sug)}
+                  >
+                    {sug.name}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           <button className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors">
             <SlidersHorizontal className="w-4 h-4" /> Filters
