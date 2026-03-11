@@ -30,157 +30,250 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
     const goNext = () => setCurrentIndex((prev) => Math.min(prev + 1, total - 1));
     const goPrev = () => setCurrentIndex((prev) => Math.max(prev - 1, 0));
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6">
-            {/* Modal Container */}
-            <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
+    // SVG arc for the match percentage ring
+    const matchPct = candidate.matchPercentage;
+    const radius = 20;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDashoffset = circumference - (matchPct / 100) * circumference;
 
-                {/* Modal Header */}
-                <div className="p-8 pb-5 border-b border-slate-100 relative">
-                    <div className="flex justify-between items-start">
-                        <div className="flex flex-col items-start pr-8">
-                            <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-                                New matches Candidates for {candidate.role}
-                            </h2>
-                            <button className="mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 text-xs font-bold hover:bg-blue-100 transition-colors border border-blue-100">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                                    <path d="M2 17l10 5 10-5" />
-                                    <path d="M2 12l10 5 10-5" />
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 backdrop-blur-sm"
+            onClick={onClose}
+        >
+            {/* Modal Container */}
+            <div
+                className="bg-white flex flex-col overflow-y-auto"
+                style={{ width: 553, maxHeight: 727, borderRadius: 10, boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* ─── Header ─── */}
+                <div className="w-full shrink-0" style={{ borderBottom: '0.5px solid #AEAEB2' }}>
+                    <div className="flex items-center justify-between" style={{ padding: '20px 24px' }}>
+                        {/* Title */}
+                        <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>
+                            New Talent Matches
+                        </span>
+
+                        {/* Right side: pagination + close */}
+                        <div className="flex items-center gap-5">
+                            {/* Pagination nav */}
+                            <div className="flex items-center gap-2">
+                                <button
+                                    className="flex items-center justify-center bg-white p-0 cursor-pointer hover:bg-gray-100 disabled:opacity-35 disabled:cursor-not-allowed"
+                                    style={{ width: 30, height: 30, border: '0.5px solid #D1D1D6', borderRadius: 7 }}
+                                    onClick={goPrev}
+                                    disabled={currentIndex === 0}
+                                >
+                                    <svg width="6" height="10" viewBox="0 0 6 10" fill="none">
+                                        <path d="M5 1L1 5L5 9" stroke="#4B5563" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </button>
+                                <span className="text-xs text-gray-600 text-center" style={{ minWidth: 22, lineHeight: '14px' }}>
+                                    {currentIndex + 1}/{total}
+                                </span>
+                                <button
+                                    className="flex items-center justify-center bg-white p-0 cursor-pointer hover:bg-gray-100 disabled:opacity-35 disabled:cursor-not-allowed"
+                                    style={{ width: 30, height: 30, border: '0.5px solid #D1D1D6', borderRadius: 7 }}
+                                    onClick={goNext}
+                                    disabled={currentIndex === total - 1}
+                                >
+                                    <svg width="6" height="10" viewBox="0 0 6 10" fill="none">
+                                        <path d="M1 1L5 5L1 9" stroke="#4B5563" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {/* Close button */}
+                            <button
+                                className="flex items-center justify-center bg-transparent border-none p-0 cursor-pointer hover:opacity-60"
+                                onClick={onClose}
+                            >
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="12" r="10" stroke="#4B5563" strokeWidth="1" />
+                                    <path d="M8.46 8.46L15.54 15.54M15.54 8.46L8.46 15.54" stroke="#4B5563" strokeWidth="1" strokeLinecap="round" />
                                 </svg>
-                                Move all suitable candidates
                             </button>
                         </div>
-                        <button
-                            onClick={onClose}
-                            className="text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0 mt-1"
-                        >
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                            </svg>
-                        </button>
-                    </div>
-                    {/* Pagination — bottom-right of header */}
-                    <div className="flex items-center gap-3 mt-4 text-slate-400 absolute right-8 bottom-5">
-                        <button
-                            className="hover:text-slate-600 transition-colors disabled:opacity-30"
-                            onClick={goPrev}
-                            disabled={currentIndex === 0}
-                        >
-                            <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
-                                <path d="M6 1L1 6L6 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        </button>
-                        <span className="text-[11px] font-bold tracking-widest uppercase">{currentIndex + 1} of {total}</span>
-                        <button
-                            className="hover:text-slate-600 transition-colors disabled:opacity-30"
-                            onClick={goNext}
-                            disabled={currentIndex === total - 1}
-                        >
-                            <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
-                                <path d="M1 1L6 6L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        </button>
                     </div>
                 </div>
 
-                {/* Modal Content */}
-                <div className="p-8 space-y-8 flex-1 overflow-y-auto max-h-[calc(100vh-300px)]">
-
-                    {/* Candidate Header */}
-                    <div className="flex items-start gap-5">
-                        <div className="relative flex-shrink-0">
-                            <div
-                                className="w-20 h-20 rounded-full bg-cover bg-center border-2 border-slate-100"
-                                style={{
-                                    backgroundImage: `url('${candidate.avatar}')`
-                                }}
-                            />
-                            <div className="absolute -bottom-1 -right-1 bg-green-500 w-5 h-5 rounded-full border-2 border-white" />
+                {/* ─── Candidate Info + Details Section ─── */}
+                <div className="w-full shrink-0" style={{ borderBottom: '0.5px solid #AEAEB2', padding: '20px 24px' }}>
+                    {/* Candidate Name + Match Ring */}
+                    <div className="flex items-center justify-between" style={{ marginBottom: 30 }}>
+                        <div className="flex flex-col" style={{ gap: 10 }}>
+                            <h3 className="m-0 font-medium text-black" style={{ fontSize: 20, lineHeight: '24px' }}>
+                                {candidate.name}
+                            </h3>
+                            <p className="m-0 text-xs font-normal" style={{ color: '#0F47F2', lineHeight: '14px' }}>
+                                {candidate.role} · {candidate.company}
+                            </p>
                         </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-3 mb-2">
-                                <h3 className="text-xl font-semibold text-slate-900">{candidate.name}</h3>
-                                <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 text-[10px] font-bold uppercase tracking-wider border border-blue-100">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                                    </svg>
-                                    Source: {candidate.source}
-                                </span>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {candidate.skills.map((skill) => (
-                                    <span
-                                        key={skill}
-                                        className="px-3 py-1 rounded-lg bg-slate-50 text-slate-600 text-xs font-medium border border-slate-200"
-                                    >
-                                        {skill}
-                                    </span>
-                                ))}
-                            </div>
+                        {/* Match Percentage Ring */}
+                        <div className="flex flex-col items-center justify-center" style={{ width: 48, height: 48 }}>
+                            <svg width="48" height="48" viewBox="0 0 48 48">
+                                {/* Background circle */}
+                                <circle cx="24" cy="24" r={radius} fill="none" stroke="rgba(116,116,128,0.08)" strokeWidth="4" />
+                                {/* Progress arc */}
+                                <circle
+                                    cx="24" cy="24" r={radius}
+                                    fill="none"
+                                    stroke="#00C8B3"
+                                    strokeWidth="4"
+                                    strokeLinecap="round"
+                                    strokeDasharray={circumference}
+                                    strokeDashoffset={strokeDashoffset}
+                                    transform="rotate(-90 24 24)"
+                                />
+                                <text x="24" y="24" textAnchor="middle" dominantBaseline="central" fill="#4B5563" fontSize="14" fontFamily="Gellix, Inter, sans-serif" fontWeight="400">
+                                    {matchPct}%
+                                </text>
+                            </svg>
                         </div>
                     </div>
 
-                    {/* AI Match Summary */}
-                    <div className="bg-blue-50/50 rounded-xl border border-blue-100 p-6 relative overflow-hidden">
-                        <div className="absolute top-0 right-0">
-                            <div className="bg-blue-600 px-4 py-1.5 text-white text-[10px] font-bold rounded-bl-xl tracking-widest">
-                                {candidate.matchPercentage}% MATCH
-                            </div>
+                    {/* Details Grid — 3 columns × 2 rows */}
+                    {/* Row 1: Experience, Current CTC, Expected */}
+                    <div className="flex items-start justify-between" style={{ gap: 67, marginBottom: 20 }}>
+                        <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                            <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Experience</span>
+                            <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.experience}</span>
                         </div>
-                        <div className="flex items-center gap-2 mb-3 text-blue-600">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M12 2a10 10 0 1 0 10 10H12V2z" />
-                                <path d="M20.7 11A8.5 8.5 0 0 0 13 3.3V11h7.7z" />
-                            </svg>
-                            <h4 className="font-bold text-sm uppercase tracking-widest">AI Match Summary</h4>
+                        <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                            <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Current CTC</span>
+                            <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.currentCTC}</span>
                         </div>
-                        <p className="text-slate-600 text-sm leading-relaxed">
+                        <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                            <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Expected</span>
+                            <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.expectedCTC}</span>
+                        </div>
+                    </div>
+                    {/* Row 2: Notice Period, Location, Source */}
+                    <div className="flex items-start justify-between" style={{ gap: 67 }}>
+                        <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                            <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Notice Period</span>
+                            <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.noticePeriod}</span>
+                        </div>
+                        <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                            <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Location</span>
+                            <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.location}</span>
+                        </div>
+                        <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                            <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Source</span>
+                            <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.source}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ─── Quick Fit Summary + AI Summary ─── */}
+                <div className="w-full shrink-0" style={{ padding: '20px 24px' }}>
+                    {/* Quick Fit Summary Header */}
+                    <h4 className="m-0 font-medium text-sm uppercase text-gray-600" style={{ lineHeight: '17px', marginBottom: 20 }}>
+                        Quick Fit Summary
+                    </h4>
+
+                    {/* Quick Fit Tags */}
+                    <div className="flex flex-wrap items-center" style={{ gap: 10, marginBottom: 30 }}>
+                        {candidate.quickFitSkills.map((skill) => (
+                            <span
+                                key={skill.name}
+                                className="inline-flex items-center text-sm font-normal"
+                                style={{
+                                    padding: '10px 12px',
+                                    background: '#F5F9FB',
+                                    borderRadius: 20,
+                                    gap: 5,
+                                    color: skill.match ? '#009951' : '#CF272D',
+                                    lineHeight: '17px',
+                                }}
+                            >
+                                {skill.name}
+                                {skill.match ? (
+                                    <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+                                        <circle cx="8.5" cy="8.5" r="8" stroke="#009951" strokeWidth="1" />
+                                        <path d="M5 8.5L7.5 11L12 6" stroke="#009951" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                ) : (
+                                    <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+                                        <circle cx="8.5" cy="8.5" r="8" stroke="#CF272D" strokeWidth="1" />
+                                        <path d="M6 6L11 11M11 6L6 11" stroke="#CF272D" strokeWidth="1.2" strokeLinecap="round" />
+                                    </svg>
+                                )}
+                            </span>
+                        ))}
+                    </div>
+
+                    {/* AI Summary Header */}
+                    <h4 className="m-0 font-medium text-sm uppercase text-gray-600" style={{ lineHeight: '17px', marginBottom: 10 }}>
+                        AI Summary
+                    </h4>
+
+                    {/* AI Summary Box */}
+                    <div className="bg-gray-50" style={{ borderRadius: 10, padding: '8px 0 6px 8px' }}>
+                        <p className="m-0 text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '25px' }}>
                             {candidate.aiSummary}
                         </p>
                     </div>
-
-                    {/* Key Stats */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="p-5 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-blue-600 border border-slate-200">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Experience</p>
-                                <p className="font-bold text-slate-900 text-lg">{candidate.experience}</p>
-                            </div>
-                        </div>
-                        <div className="p-5 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-blue-600 border border-slate-200">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <polyline points="12 6 12 12 16 14" />
-                                </svg>
-                            </div>
-                            <div>
-                                <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Notice Period</p>
-                                <p className="font-bold text-slate-900 text-lg">{candidate.noticePeriod}</p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
-                {/* Modal Footer */}
-                <div className="bg-slate-50 px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-100">
-                    <button className="text-slate-400 hover:text-red-500 text-sm font-semibold transition-colors order-3 sm:order-1">
-                        Reject Candidate
+                {/* ─── Footer Actions ─── */}
+                <div className="flex items-center justify-between shrink-0" style={{ padding: '20px 24px', gap: 76 }}>
+                    {/* Skip button */}
+                    <button
+                        className="flex items-center justify-center cursor-pointer bg-white text-sm font-normal"
+                        style={{ height: 37, border: '0.5px solid #FF383C', borderRadius: 5, padding: 10, gap: 5, color: '#FF383C' }}
+                    >
+                        {/* Trash icon */}
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d="M9.17 4H14.83L15.5 2H8.5L9.17 4Z" stroke="#FF383C" strokeWidth="1.2" />
+                            <path d="M3.5 6H20.5" stroke="#FF383C" strokeWidth="1.2" strokeLinecap="round" />
+                            <path d="M5.5 6V19C5.5 20.1 6.4 21 7.5 21H16.5C17.6 21 18.5 20.1 18.5 19V6" stroke="#FF383C" strokeWidth="1.2" />
+                            <path d="M9.5 11V16" stroke="#FF383C" strokeWidth="1.2" strokeLinecap="round" />
+                            <path d="M14.5 11V16" stroke="#FF383C" strokeWidth="1.2" strokeLinecap="round" />
+                        </svg>
+                        Skip
                     </button>
-                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto order-1 sm:order-2">
-                        <button className="px-6 py-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-sm hover:bg-slate-50 transition-all">
-                            View Full Profile
+
+                    {/* Right side buttons */}
+                    <div className="flex items-center" style={{ gap: 10 }}>
+                        {/* View Profile */}
+                        <button
+                            className="flex items-center justify-center cursor-pointer bg-transparent text-sm font-normal"
+                            style={{ height: 37, border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, gap: 5, color: '#0F47F2' }}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="10" r="3.5" stroke="#0F47F2" strokeWidth="1.5" />
+                                <path d="M5.5 19.5C5.5 16.5 8.5 14.5 12 14.5C15.5 14.5 18.5 16.5 18.5 19.5" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
+                                <circle cx="12" cy="12" r="10" stroke="#0F47F2" strokeWidth="1.5" />
+                            </svg>
+                            View Profile
                         </button>
-                        <button className="px-8 py-3 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
-                            Move to Screening
+
+                        {/* Call */}
+                        <button
+                            className="flex items-center justify-center cursor-pointer bg-transparent text-sm font-normal"
+                            style={{ height: 37, border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, gap: 5, color: '#0F47F2' }}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M14.5 2C14.5 2 16.5 2.5 19 5C21.5 7.5 22 9.5 22 9.5" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
+                                <path d="M14.5 5.5C14.5 5.5 15.5 6 17 7.5C18.5 9 19 10 19 10" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
+                                <path d="M22 16.92V19.92C22 20.97 21.18 21.85 20.13 21.97C19.05 22.1 16.8 22 14 20C11.51 18.22 9.37 16.08 7.78 13.78C5.69 10.96 5.5 8.78 5.5 7.5C5.5 5.5 7 4 8.5 4C9 4 9.5 4.5 10 5L11.5 7.5C12 8.5 11 9.5 10.5 10C10 10.5 10 11 11 12.5C12 14 13 15 14.5 14C15 13.5 16 12.5 17 13L19.5 14.5C20.5 15 21 15.5 21 16C21.5 16.25 22 16.42 22 16.92Z" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            Call
+                        </button>
+
+                        {/* Send Nvites — primary */}
+                        <button
+                            className="flex items-center justify-center cursor-pointer text-sm font-normal text-white"
+                            style={{ height: 37, background: '#0F47F2', border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, gap: 5 }}
+                        >
+                            {/* Send icon */}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M5.4 12L3 21L21 12L3 3L5.4 12Z" stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
+                                <path d="M5.4 12H12" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                            </svg>
+                            Send Nvites
                         </button>
                     </div>
                 </div>

@@ -94,13 +94,18 @@ export interface NewMatchCandidate {
     id: string;
     name: string;
     role: string;
+    company: string;
     avatar: string;
     source: string;
     skills: string[];
+    quickFitSkills: QuickFitSkill[];
     matchPercentage: number;
     aiSummary: string;
     experience: string;
     noticePeriod: string;
+    currentCTC: string;
+    expectedCTC: string;
+    location: string;
 }
 
 export interface ScheduleEventData {
@@ -119,6 +124,12 @@ export interface ScheduleEventData {
     recruiterAvatar: string;
     candidateEmail: string;
     candidatePhone: string;
+    candidateCompany?: string;
+    candidatePosition?: string;
+    candidateExperience?: string;
+    duration?: string;
+    interviewer?: string;
+    jobRole?: string;
 }
 
 export interface AgendaItem {
@@ -541,62 +552,123 @@ export const newMatchCandidates: NewMatchCandidate[] = [
     {
         id: 'nm-1',
         name: 'Oscar Piastri',
-        role: 'Software Developer',
+        role: 'Senior Product Designer',
+        company: 'Jupiter',
         avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBpnB_JU5clH9QSjNYAJnIxoCWXVkSFmRWGl1MfkIiIQ1h7ZcRZXIWzOQTgybmVtj7pz04KRKqGNY97oj7UxLBd5O_2DCpUEw307u3IY-MW_Lpxs22Mjk9Oz_vqxUqbyKy2umJeNDmiPAM90gVKaS5bJ7afPMqxOu-Ab6IbFTjQuLOGPdhUj_4hnm2T1OweIL0rShZXxOtmsIaKHEFR-Mx2rCOfi_d-Q9Jj2bOFXaOeg-D30LDbMzGz-yVxX9RNKMDRKX4H5DlUFO8r',
-        source: 'Nxthyre',
+        source: 'Naukbot',
         skills: ['React', 'Node.js', 'Typescript', 'AWS'],
-        matchPercentage: 85,
-        aiSummary: 'Oscar is an exceptional match for this role due to his deep expertise in software development. His extensive background in full-stack applications aligns perfectly with our core technical requirements.',
-        experience: '7 Years',
-        noticePeriod: 'Immediate',
+        quickFitSkills: [
+            { name: '8+Years', match: true },
+            { name: 'UI / Frontend Development', match: true },
+            { name: 'UI UX', match: true },
+            { name: 'Product Strategy', match: true },
+            { name: 'Design Thinking', match: true },
+            { name: 'Product Design', match: true },
+            { name: 'Communication', match: true },
+            { name: 'AI UX Product Design', match: false },
+        ],
+        matchPercentage: 84,
+        aiSummary: 'Strong technical profile with 7 years in product engineering. Led checkout redesign reducing drop-off by 22%. Communication is confident. Minor gaps in cloud and GraphQL but trainable within 3 months.',
+        experience: '5 yrs',
+        noticePeriod: '30 Days',
+        currentCTC: '₹16L',
+        expectedCTC: '24L',
+        location: 'Bengaluru',
     },
     {
         id: 'nm-2',
         name: 'Fernando Alonso',
         role: 'F1 Race Technical Engineer',
+        company: 'Deloitte',
         avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         source: 'LinkedIn',
         skills: ['Aerodynamics', 'Telemetry', 'C++', 'Data Analysis'],
+        quickFitSkills: [
+            { name: '6 Years', match: true },
+            { name: 'Telemetry', match: true },
+            { name: 'C++', match: true },
+            { name: 'Data Analysis', match: true },
+            { name: 'Machine Learning', match: false },
+        ],
         matchPercentage: 85,
         aiSummary: 'Fernando\'s strong background in technical engineering and his proven track record of optimizing systems make him a prime candidate.',
         experience: '7 Years',
         noticePeriod: '15 Days',
+        currentCTC: '₹22L',
+        expectedCTC: '30L',
+        location: 'Mumbai',
     },
     {
         id: 'nm-3',
         name: 'Lando Norris',
         role: 'Systems Architect',
+        company: 'McLaren Technologies',
         avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         source: 'Naukri',
         skills: ['System Design', 'Microservices', 'AWS', 'Go'],
+        quickFitSkills: [
+            { name: '5 Years', match: true },
+            { name: 'System Design', match: true },
+            { name: 'Microservices', match: true },
+            { name: 'AWS', match: true },
+            { name: 'Go', match: true },
+            { name: 'Kubernetes', match: false },
+        ],
         matchPercentage: 92,
         aiSummary: 'Lando brings solid systems architecture expertise and has designed complex microservices. His architecture skills align well with the role requirements.',
         experience: '5 Years',
         noticePeriod: '30 Days',
+        currentCTC: '₹20L',
+        expectedCTC: '28L',
+        location: 'Pune',
     },
     {
         id: 'nm-4',
         name: 'Emily Torres',
         role: 'Senior DevOps Role',
+        company: 'HGS',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         source: 'Referral',
         skills: ['Kubernetes', 'GCP', 'Monitoring', 'Go'],
+        quickFitSkills: [
+            { name: '5 Years', match: true },
+            { name: 'Kubernetes', match: true },
+            { name: 'GCP', match: true },
+            { name: 'Monitoring', match: true },
+            { name: 'Go', match: true },
+            { name: 'Terraform', match: false },
+        ],
         matchPercentage: 84,
         aiSummary: 'Emily\'s deep Kubernetes expertise on GCP and her proficiency in building observability platforms with Prometheus and Grafana make her a strong contender. Her Go development skills are a bonus.',
         experience: '5 Years',
         noticePeriod: 'Immediate',
+        currentCTC: '₹18L',
+        expectedCTC: '26L',
+        location: 'Hyderabad',
     },
     {
         id: 'nm-5',
         name: 'Marcus Johnson',
         role: 'Senior DevOps Role',
+        company: 'Jupiter',
         avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         source: 'Indeed',
         skills: ['Azure', 'Terraform', 'PowerShell', 'Docker'],
+        quickFitSkills: [
+            { name: '9 Years', match: true },
+            { name: 'Azure', match: true },
+            { name: 'Terraform', match: true },
+            { name: 'Docker', match: true },
+            { name: 'PowerShell', match: true },
+            { name: 'AWS', match: false },
+        ],
         matchPercentage: 80,
         aiSummary: 'Marcus has extensive Azure cloud infrastructure experience with Terraform and PowerShell automation. His containerization skills and security-first mindset complement the team well.',
         experience: '9 Years',
         noticePeriod: '45 Days',
+        currentCTC: '₹24L',
+        expectedCTC: '32L',
+        location: 'Chennai',
     },
 ];
 
@@ -610,8 +682,8 @@ export const scheduleEventsData: ScheduleEventData[] = [
         title: 'Final Round: Henry Cavil',
         candidateName: 'Henry Cavil',
         interviewType: 'Final Round',
-        date: 'Oct 25, 2023',
-        timeRange: '09:00 AM - 10:00 AM',
+        date: 'Feb 11, 2026',
+        timeRange: '09:00 AM – 10:00 AM',
         timezone: 'EST',
         description: 'Deep dive into React internals, specifically focusing on Reconciliation, Hooks implementation, and Concurrent Mode. The interview will also include a short system design challenge focused on real-time data streaming architectures.',
         meetingPlatform: 'Google Meet',
@@ -621,14 +693,20 @@ export const scheduleEventsData: ScheduleEventData[] = [
         recruiterAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAE_PSOqDBwLVeSV_V-WQ6k89ghwcB6WUjkj8C-F70jlcZ1FDTPqDEXMINeXvXwaVExHNXjaNOWGURwqRiKXWdlqpSTwHayrHPloDGTJ4bxWc7cY9yZwskyoOui_YbTHg06KlN4Hu0X_XMqSMTW9G9GPWAMEn9dvrCrTujlH7uqsmxIGGFLY4ZTp6W_e32LBdM5LQTWlQL5ynMl-eSyOwv1NJh4-i86cIiZyF-sfTbN-Yir_SO5_hVdR49hMmkdit3dfnrHnUFI8kKV',
         candidateEmail: 'sarah.j@example.com',
         candidatePhone: '+1 (555) 123-4567',
+        candidateCompany: 'Deloitte',
+        candidatePosition: 'Full Stack Developer',
+        candidateExperience: '4 years',
+        duration: '60 min',
+        interviewer: 'You',
+        jobRole: 'Sr. Product Designer',
     },
     {
         id: 'se-2',
         title: '2nd Round Interview: Max Verstappen',
         candidateName: 'Max Verstappen',
-        interviewType: '2nd Round Interview',
-        date: 'Oct 25, 2023',
-        timeRange: '11:30 AM - 12:30 PM',
+        interviewType: '1st Round Interview',
+        date: 'Feb 11, 2026',
+        timeRange: '11:30 AM – 12:00 PM',
         timezone: 'EST',
         description: 'System design round focusing on distributed systems, microservices architecture, and event-driven patterns. Candidates should be prepared for whiteboard exercises on load balancing and failover strategies.',
         meetingPlatform: 'Zoom',
@@ -638,14 +716,20 @@ export const scheduleEventsData: ScheduleEventData[] = [
         recruiterAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         candidateEmail: 'max.v@example.com',
         candidatePhone: '+1 (555) 234-5678',
+        candidateCompany: 'Deloitte',
+        candidatePosition: 'Full Stack Developer',
+        candidateExperience: '4 years',
+        duration: '45 min',
+        interviewer: 'You',
+        jobRole: 'Sr. Product Designer',
     },
     {
         id: 'se-3',
         title: 'Technical Round: Brad Pitt',
         candidateName: 'Brad Pitt',
         interviewType: 'Technical Round',
-        date: 'Oct 25, 2023',
-        timeRange: '12:30 PM - 01:30 PM',
+        date: 'Feb 11, 2026',
+        timeRange: '12:30 PM – 01:30 PM',
         timezone: 'EST',
         description: 'Coding assessment round covering data structures, algorithms, and problem-solving. The candidate will work on two medium-difficulty problems in their preferred programming language.',
         meetingPlatform: 'Microsoft Teams',
@@ -655,14 +739,20 @@ export const scheduleEventsData: ScheduleEventData[] = [
         recruiterAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAE_PSOqDBwLVeSV_V-WQ6k89ghwcB6WUjkj8C-F70jlcZ1FDTPqDEXMINeXvXwaVExHNXjaNOWGURwqRiKXWdlqpSTwHayrHPloDGTJ4bxWc7cY9yZwskyoOui_YbTHg06KlN4Hu0X_XMqSMTW9G9GPWAMEn9dvrCrTujlH7uqsmxIGGFLY4ZTp6W_e32LBdM5LQTWlQL5ynMl-eSyOwv1NJh4-i86cIiZyF-sfTbN-Yir_SO5_hVdR49hMmkdit3dfnrHnUFI8kKV',
         candidateEmail: 'brad.p@example.com',
         candidatePhone: '+1 (555) 345-6789',
+        candidateCompany: 'HGS',
+        candidatePosition: 'Software Developer',
+        candidateExperience: '6 years',
+        duration: '60 min',
+        interviewer: 'You',
+        jobRole: 'Backend Engineer',
     },
     {
         id: 'se-4',
         title: 'HR Round: Robert Pattinson',
         candidateName: 'Robert Pattinson',
         interviewType: 'HR Round',
-        date: 'Oct 25, 2023',
-        timeRange: '02:30 PM - 03:00 PM',
+        date: 'Feb 11, 2026',
+        timeRange: '02:30 PM – 03:00 PM',
         timezone: 'EST',
         description: 'Culture fit and behavioral interview. Discussion will include team dynamics, conflict resolution, and career aspirations. The HR panel will assess communication skills and cultural alignment.',
         meetingPlatform: 'Google Meet',
@@ -672,6 +762,12 @@ export const scheduleEventsData: ScheduleEventData[] = [
         recruiterAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         candidateEmail: 'robert.p@example.com',
         candidatePhone: '+1 (555) 456-7890',
+        candidateCompany: 'Jupiter',
+        candidatePosition: 'Marketing Manager',
+        candidateExperience: '2 years',
+        duration: '30 min',
+        interviewer: 'You',
+        jobRole: 'Marketing Lead',
     },
 ];
 

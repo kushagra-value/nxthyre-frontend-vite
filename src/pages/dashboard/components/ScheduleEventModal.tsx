@@ -31,143 +31,172 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
     const goPrev = () => setCurrentIndex((prev) => Math.max(prev - 1, 0));
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6">
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 backdrop-blur-sm"
+            onClick={onClose}
+        >
             {/* Modal Container */}
-            <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
+            <div
+                className="bg-white flex flex-col overflow-y-auto"
+                style={{ width: 459, maxHeight: 506, borderRadius: 10, boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* ─── Header ─── */}
+                <div className="w-full shrink-0" style={{ borderBottom: '0.5px solid #AEAEB2' }}>
+                    <div className="flex items-center justify-between" style={{ padding: '18px 24px' }}>
+                        {/* Interview type badge */}
+                        <span
+                            className="inline-flex items-center text-sm font-normal"
+                            style={{ padding: '4px 8px', background: '#E7EDFF', borderRadius: 4, color: '#0088FF', lineHeight: '17px' }}
+                        >
+                            {event.interviewType}
+                        </span>
 
-                {/* Modal Header */}
-                <div className="p-8 pb-5 border-b border-slate-100 relative">
-                    <div className="flex justify-between items-start">
-                        <div className="flex flex-col items-start pr-8">
-                            <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-                                {event.title}
-                            </h2>
-                            <button className="text-sm font-semibold text-blue-600 underline underline-offset-4 hover:opacity-70 transition-opacity mt-2">
-                                Reschedule Event
+                        {/* Right side: pagination + close */}
+                        <div className="flex items-center gap-5">
+                            {/* Pagination nav */}
+                            <div className="flex items-center gap-2">
+                                <button
+                                    className="flex items-center justify-center bg-white p-0 cursor-pointer hover:bg-gray-100 disabled:opacity-35 disabled:cursor-not-allowed"
+                                    style={{ width: 30, height: 30, border: '0.5px solid #D1D1D6', borderRadius: 7 }}
+                                    onClick={goPrev}
+                                    disabled={currentIndex === 0}
+                                >
+                                    <svg width="6" height="10" viewBox="0 0 6 10" fill="none">
+                                        <path d="M5 1L1 5L5 9" stroke="#4B5563" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </button>
+                                <span className="text-xs text-gray-600 text-center" style={{ minWidth: 22, lineHeight: '14px' }}>
+                                    {currentIndex + 1}/{total}
+                                </span>
+                                <button
+                                    className="flex items-center justify-center bg-white p-0 cursor-pointer hover:bg-gray-100 disabled:opacity-35 disabled:cursor-not-allowed"
+                                    style={{ width: 30, height: 30, border: '0.5px solid #D1D1D6', borderRadius: 7 }}
+                                    onClick={goNext}
+                                    disabled={currentIndex === total - 1}
+                                >
+                                    <svg width="6" height="10" viewBox="0 0 6 10" fill="none">
+                                        <path d="M1 1L5 5L1 9" stroke="#4B5563" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {/* Close button */}
+                            <button
+                                className="flex items-center justify-center bg-transparent border-none p-0 cursor-pointer hover:opacity-60"
+                                onClick={onClose}
+                            >
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="12" r="10" stroke="#4B5563" strokeWidth="1" />
+                                    <path d="M8.46 8.46L15.54 15.54M15.54 8.46L8.46 15.54" stroke="#4B5563" strokeWidth="1" strokeLinecap="round" />
+                                </svg>
                             </button>
                         </div>
-                        <button
-                            onClick={onClose}
-                            className="text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0 mt-1"
-                        >
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                            </svg>
-                        </button>
-                    </div>
-                    {/* Pagination — bottom-right of header */}
-                    <div className="flex items-center gap-3 mt-4 text-slate-400 absolute right-8 bottom-5">
-                        <button
-                            className="hover:text-slate-600 transition-colors disabled:opacity-30"
-                            onClick={goPrev}
-                            disabled={currentIndex === 0}
-                        >
-                            <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
-                                <path d="M6 1L1 6L6 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        </button>
-                        <span className="text-[11px] font-bold tracking-widest uppercase">{currentIndex + 1} of {total}</span>
-                        <button
-                            className="hover:text-slate-600 transition-colors disabled:opacity-30"
-                            onClick={goNext}
-                            disabled={currentIndex === total - 1}
-                        >
-                            <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
-                                <path d="M1 1L6 6L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        </button>
                     </div>
                 </div>
 
-                {/* Modal Body */}
-                <div className="p-8 space-y-8 flex-1 overflow-y-auto max-h-[calc(100vh-300px)]">
-
-                    {/* Event Info */}
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                            <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded uppercase tracking-wider">
-                                {event.statusLabel}
-                            </span>
-                            <h3 className="text-2xl font-bold text-slate-900">{event.interviewType}</h3>
-                        </div>
-                        <p className="text-slate-500 font-medium text-sm">{event.date} | {event.timeRange} ({event.timezone})</p>
-                    </div>
-
-                    {/* Description */}
-                    <p className="text-slate-600 text-sm leading-relaxed">
-                        {event.description}
-                    </p>
-
-                    {/* Primary Action */}
-                    <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-blue-200">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polygon points="23 7 16 12 23 17 23 7" />
-                            <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-                        </svg>
-                        Join Meeting ({event.meetingPlatform})
-                    </button>
-
-                    {/* Details Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                        {/* Recruiter Info */}
-                        <div className="space-y-3">
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Recruiter</p>
-                            <div className="flex items-center gap-3">
-                                <div
-                                    className="w-12 h-12 rounded-full bg-cover bg-center border-2 border-white shadow-sm bg-slate-100"
-                                    style={{
-                                        backgroundImage: `url('${event.recruiterAvatar}')`
-                                    }}
-                                />
-                                <div>
-                                    <p className="font-bold text-slate-900 text-sm">{event.recruiterName}</p>
-                                    <p className="text-sm text-slate-500">{event.recruiterRole}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Candidate Contact */}
-                        <div className="space-y-3">
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Candidate Contact</p>
-                            <div className="space-y-1.5">
-                                <a
-                                    className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:underline"
-                                    href={`mailto:${event.candidateEmail}`}
-                                >
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                                        <polyline points="22,6 12,13 2,6" />
-                                    </svg>
-                                    {event.candidateEmail}
-                                </a>
-                                <p className="flex items-center gap-2 text-sm font-medium text-slate-500">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                                    </svg>
-                                    {event.candidatePhone}
+                {/* ─── Candidate Info Section ─── */}
+                <div className="w-full shrink-0" style={{ borderBottom: '0.5px solid #AEAEB2', padding: '20px 24px' }}>
+                    <div className="flex flex-col" style={{ gap: 18 }}>
+                        {/* Candidate header with accent bar */}
+                        <div className="flex items-start" style={{ gap: 5 }}>
+                            <div className="shrink-0" style={{ width: 5, height: 48, background: '#00C8B3', borderRadius: 10 }}></div>
+                            <div className="flex flex-col" style={{ gap: 10 }}>
+                                <h3 className="m-0 font-medium text-black" style={{ fontSize: 20, lineHeight: '24px' }}>
+                                    {event.candidateName}
+                                </h3>
+                                <p className="m-0 text-xs font-normal" style={{ color: '#0F47F2', lineHeight: '14px' }}>
+                                    {event.candidateCompany || 'Deloitte'} · {event.candidatePosition || 'Full Stack Developer'} · {event.candidateExperience || '4 years'}
                                 </p>
                             </div>
                         </div>
+
+                        {/* Details Grid */}
+                        <div className="flex flex-col rounded-md bg-gray-50" style={{ padding: '20px 14px', gap: 20 }}>
+                            {/* Row 1: Date & Time */}
+                            <div className="flex items-start" style={{ gap: 70 }}>
+                                <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                                    <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Date</span>
+                                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{event.date}</span>
+                                </div>
+                                <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                                    <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Time</span>
+                                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{event.timeRange}</span>
+                                </div>
+                            </div>
+                            {/* Row 2: Mode & Duration */}
+                            <div className="flex items-start" style={{ gap: 70 }}>
+                                <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                                    <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Mode</span>
+                                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{event.meetingPlatform}</span>
+                                </div>
+                                <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                                    <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Duration</span>
+                                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{event.duration || '45 min'}</span>
+                                </div>
+                            </div>
+                            {/* Row 3: Interviewer & Job Role */}
+                            <div className="flex items-start" style={{ gap: 70 }}>
+                                <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                                    <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Interviewer</span>
+                                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{event.interviewer || 'You'}</span>
+                                </div>
+                                <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                                    <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Job Role</span>
+                                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{event.jobRole || event.recruiterRole}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Modal Footer */}
-                <div className="bg-slate-50 px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-100">
+                {/* ─── Footer Actions ─── */}
+                <div className="flex flex-col justify-center items-start shrink-0" style={{ padding: '24px 27px', gap: 10 }}>
+                    {/* Primary CTA */}
                     <button
-                        onClick={onClose}
-                        className="px-6 py-3 rounded-xl border border-slate-200 bg-white text-slate-500 font-bold text-sm hover:bg-slate-50 transition-all order-3 sm:order-1"
+                        className="w-full flex items-center justify-center text-sm font-normal text-white cursor-pointer"
+                        style={{ height: 37, background: '#0F47F2', border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, lineHeight: '17px' }}
                     >
-                        Close
+                        Join {event.meetingPlatform} Meeting
                     </button>
-                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto order-1 sm:order-2">
-                        <button className="px-6 py-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+
+                    {/* Secondary buttons row */}
+                    <div className="flex items-center justify-between w-full" style={{ gap: 10 }}>
+                        <button
+                            className="flex-1 flex items-center justify-center text-sm font-normal cursor-pointer bg-transparent"
+                            style={{ height: 37, border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, gap: 5, color: '#0F47F2', lineHeight: '17px' }}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="10" r="3.5" stroke="#0F47F2" strokeWidth="1.5" />
+                                <path d="M5.5 19.5C5.5 16.5 8.5 14.5 12 14.5C15.5 14.5 18.5 16.5 18.5 19.5" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
+                                <circle cx="12" cy="12" r="10" stroke="#0F47F2" strokeWidth="1.5" />
                             </svg>
-                            Message
+                            View Profile
                         </button>
-                        <button className="px-8 py-3 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
-                            View Full Profile
+                        <button
+                            className="flex-1 flex items-center justify-center text-sm font-normal cursor-pointer bg-transparent"
+                            style={{ height: 37, border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, gap: 5, color: '#0F47F2', lineHeight: '17px' }}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <rect x="3" y="4" width="18" height="18" rx="2" stroke="#0F47F2" strokeWidth="1.5" />
+                                <path d="M8 2V5" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
+                                <path d="M16 2V5" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
+                                <path d="M3 9H21" stroke="#0F47F2" strokeWidth="1.5" />
+                                <path d="M14.5 14L18 17.5" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
+                                <path d="M18 14L14.5 17.5" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
+                            </svg>
+                            Reschedule
+                        </button>
+                        <button
+                            className="flex-1 flex items-center justify-center text-sm font-normal cursor-pointer bg-transparent"
+                            style={{ height: 37, border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, gap: 5, color: '#0F47F2', lineHeight: '17px' }}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M14.5 2C14.5 2 16.5 2.5 19 5C21.5 7.5 22 9.5 22 9.5" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
+                                <path d="M14.5 5.5C14.5 5.5 15.5 6 17 7.5C18.5 9 19 10 19 10" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
+                                <path d="M22 16.92V19.92C22 20.97 21.18 21.85 20.13 21.97C19.05 22.1 16.8 22 14 20C11.51 18.22 9.37 16.08 7.78 13.78C5.69 10.96 5.5 8.78 5.5 7.5C5.5 5.5 7 4 8.5 4C9 4 9.5 4.5 10 5L11.5 7.5C12 8.5 11 9.5 10.5 10C10 10.5 10 11 11 12.5C12 14 13 15 14.5 14C15 13.5 16 12.5 17 13L19.5 14.5C20.5 15 21 15.5 21 16C21.5 16.25 22 16.42 22 16.92Z" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            Call Candidate
                         </button>
                     </div>
                 </div>
