@@ -227,8 +227,8 @@ export default function Dashboard() {
     : recentActivitiesData;
 
   // For schedule, use API data if available; map to ScheduleItemData from dashboardData types
-  const dynamicScheduleItems: ScheduleItemData[] = dashboardData?.dashboard?.schedule?.items?.length
-    ? dashboardData.dashboard.schedule.items.map((item: any, idx: number) => ({
+  const dynamicScheduleItems: ScheduleItemData[] = Array.isArray(dashboardData?.dashboard?.schedule?.items)
+    ? dashboardData!.dashboard.schedule.items.map((item: any, idx: number) => ({
         id: item.id || `sched-api-${idx}`,
         time: item.time || '',
         type: item.type || item.interview_type || '',
