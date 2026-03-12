@@ -665,8 +665,8 @@ export default function JobCandidateProfile({
                         )}
 
                         {activeTab === "call" && (
-                            <div className="flex flex-col gap-6">
-                                <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-6 overflow-y-auto max-h-[500px] hide-scrollbar pr-2 -mr-2">
+                                <div className="flex flex-col gap-4 mt-2">
                                     <div className="flex justify-between items-center text-[#8E8E93] text-xs font-bold tracking-wider">
                                         <span>YESTERDAY</span>
                                         <span className="font-normal">03/03/26</span>
