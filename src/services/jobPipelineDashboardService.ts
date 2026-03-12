@@ -89,13 +89,13 @@ export interface CallHistoryEntry {
   caller_uid: string | null;
   phone_number: string | null;
   call_status:
-    | "initiated"
-    | "ringing"
-    | "answered"
-    | "not_answered"
-    | "busy"
-    | "failed"
-    | "completed";
+  | "initiated"
+  | "ringing"
+  | "answered"
+  | "not_answered"
+  | "busy"
+  | "failed"
+  | "completed";
   call_type: "outgoing" | "incoming";
   reason: string | null;
   note: string | null;
