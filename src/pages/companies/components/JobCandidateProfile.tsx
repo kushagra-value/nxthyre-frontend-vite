@@ -526,13 +526,13 @@ export default function JobCandidateProfile({
                                         <div className="flex justify-between items-center text-sm text-black">
                                             <span className="text-[#AEAEB2] font-medium">Email</span>
                                             <span className="truncate ml-4 text-[#0F47F2] font-medium cursor-pointer" onClick={() => (premiumUnlocked && premiumData.email) && window.open(`mailto:${premiumData.email}`)}>
-                                                {premiumUnlocked ? (premiumData.email || "--") : "••••••••@••••.com"}
+                                                {premiumData.email || "--"}
                                             </span>
                                         </div>
                                         <div className="flex justify-between items-center text-sm">
                                             <span className="text-[#AEAEB2] font-medium">Phone</span>
                                             <span className="text-[#0F47F2] font-medium cursor-pointer">
-                                                {premiumUnlocked ? (premiumData.phone || "--") : "+91 ••••• •••••"}
+                                                {premiumData.phone || "--"}
                                             </span>
                                         </div>
                                         <div className="flex justify-between items-center text-sm">
