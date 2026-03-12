@@ -185,17 +185,13 @@ const DailyActivitiesModal: React.FC<DailyActivitiesModalProps> = ({ isOpen, onC
     ];
 
     return (
+
         <div
-            className="fixed inset-0 z-50 bg-black/25 backdrop-blur-sm"
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-start justify-end overflow-y-auto"
             onClick={onClose}
         >
             <div
-                className="absolute bg-white overflow-hidden shadow-2xl flex flex-col right-0 lg:right-auto lg:top-1/2 lg:-translate-y-1/2 h-full lg:h-[908px]"
-                style={{
-                    width: '459px',
-                    borderRadius: '10px',
-                    left: 'calc(50% - 459px/2 + 490.5px)', // from Figma, though 'right-4' is usually better. We will stick to design logic but add a fallback for smaller screens
-                }}
+                className="bg-white shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* ── Header ── */}

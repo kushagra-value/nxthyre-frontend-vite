@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import StatCard from './components/StatCard';
 import PriorityCard from './components/PriorityCard';
@@ -10,6 +10,12 @@ import ActionReviewModal from './components/ActionReviewModal';
 import NewMatchCandidateModal from './components/NewMatchCandidateModal';
 import ScheduleEventModal from './components/ScheduleEventModal';
 import DateWiseAgendaModal from './components/DateWiseAgendaModal';
+import { useAuth } from '../../hooks/useAuth';
+import dashboardService, {
+  DashboardData,
+  DashboardPriorityColumn,
+  DashboardTalentMatch,
+} from '../../services/dashboardService';
 import {
   statCardsData,
   priorityColumnsData,
@@ -21,6 +27,11 @@ import {
   scheduleEventsData,
   dailyAgendaData,
   ScheduleItemData,
+  StatCardData,
+  PriorityColumnData,
+  TalentMatchData,
+  ActivitySection,
+  CandidateSource,
 } from './dashboardData';
 
 const BriefcaseIcon = (
@@ -62,10 +73,63 @@ const iconMap: Record<string, React.ReactNode> = {
   briefcase: BriefcaseIcon,
   building: BuildingIcon,
   userPlus: UserPlusIcon,
+  'user-plus': UserPlusIcon,
   clock: ClockIcon,
 };
 
+// Map API icon_type to internal iconType keys
+const mapIconType = (apiIconType: string): string => {
+  const mapping: Record<string, string> = {
+    briefcase: 'briefcase',
+    building: 'building',
+    'user-plus': 'userPlus',
+    clock: 'clock',
+  };
+  return mapping[apiIconType] || apiIconType;
+};
+
+// Map API status_color to internal format
+const mapStatusColor = (color: string): 'blue' | 'rose' | 'amber' | 'indigo' | 'grey' => {
+  const mapping: Record<string, 'blue' | 'rose' | 'amber' | 'indigo' | 'grey'> = {
+    blue: 'blue',
+    rose: 'rose',
+    amber: 'amber',
+    indigo: 'indigo',
+    grey: 'grey',
+    red: 'rose',
+    green: 'blue',
+  };
+  return mapping[color] || 'grey';
+};
+
+// Map API source to internal CandidateSource
+const mapSource = (src: string): CandidateSource | undefined => {
+  const mapping: Record<string, CandidateSource> = {
+    autopilot: 'nxt',
+    nxthyre: 'nxt',
+    naukri: 'naukri',
+    pyjamahr: 'pyjama',
+    upload: 'external',
+    external: 'external',
+  };
+  return mapping[src.toLowerCase()] || 'external';
+};
+
+// Column color config
+const columnColors: Record<string, { dotColor: string; accentColor: string }> = {
+  sourcing: { dotColor: '#6155F5', accentColor: '#6155F5' },
+  screening: { dotColor: '#CB30E0', accentColor: '#CB30E0' },
+  interview: { dotColor: '#00C3D0', accentColor: '#00C3D0' },
+};
+
 export default function Dashboard() {
+  const { isAuthenticated } = useAuth();
+
+  // API data state
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Modal states
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [actionInitialIndex, setActionInitialIndex] = useState(0);
 
@@ -76,6 +140,105 @@ export default function Dashboard() {
   const [scheduleInitialIndex, setScheduleInitialIndex] = useState(0);
 
   const [isAgendaModalOpen, setIsAgendaModalOpen] = useState(false);
+
+  // Fetch dashboard data
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    let cancelled = false;
+    setLoading(true);
+
+    dashboardService
+      .getDashboard()
+      .then((data) => {
+        if (!cancelled) {
+          setDashboardData(data);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to fetch dashboard data:', err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
+
+  // ── Derive display data from API or fall back to static data ──
+
+  const dynamicStatCards: StatCardData[] = dashboardData
+    ? dashboardData.dashboard.stat_cards.map((card) => ({
+        id: card.id,
+        iconType: mapIconType(card.icon_type) as StatCardData['iconType'],
+        label: card.label,
+        value: card.unit ? `${card.value}` : card.value,
+        trend: card.trend,
+        trendText: card.trend_text,
+        dateText: card.unit,
+      }))
+    : statCardsData;
+
+  const dynamicPriorityColumns: PriorityColumnData[] = dashboardData
+    ? dashboardData.dashboard.priority_actions.columns.map((col: DashboardPriorityColumn) => {
+        const colors = columnColors[col.id] || { dotColor: '#6155F5', accentColor: '#6155F5' };
+        return {
+          id: `col-${col.id}`,
+          title: col.title,
+          dotColor: colors.dotColor,
+          accentColor: colors.accentColor,
+          urgentCount: col.urgent_count,
+          totalCount: col.count,
+          cards: col.cards.map((c) => ({
+            id: `pa-${c.id}`,
+            name: c.name,
+            role: c.role,
+            daysAgo: c.days_ago,
+            status: c.status,
+            statusColor: mapStatusColor(c.status_color),
+          })),
+        };
+      })
+    : priorityColumnsData;
+
+  const dynamicTalentMatches: TalentMatchData[] = dashboardData
+    ? dashboardData.dashboard.new_talent_matches.map((m: DashboardTalentMatch) => ({
+        id: m.id,
+        name: m.name,
+        company: m.company || 'N/A',
+        position: m.position,
+        experience: m.experience,
+        matchPercentage: m.match_percentage,
+        source: mapSource(m.source),
+      }))
+    : talentMatchesData;
+
+  const dynamicRecentActivities: ActivitySection[] = dashboardData
+    ? dashboardData.dashboard.recent_activities.items.map((group) => ({
+        label: group.label,
+        items: group.items.map((item) => ({
+          icon: item.icon as 'calendar' | 'phone' | 'check',
+          text: item.text,
+          time: item.time,
+        })),
+      }))
+    : recentActivitiesData;
+
+  // For schedule, use API data if available; map to ScheduleItemData from dashboardData types
+  const dynamicScheduleItems: ScheduleItemData[] = dashboardData?.dashboard?.schedule?.items?.length
+    ? dashboardData.dashboard.schedule.items.map((item: any, idx: number) => ({
+        id: item.id || `sched-api-${idx}`,
+        time: item.time || '',
+        type: item.type || item.interview_type || '',
+        name: item.name || item.candidate_name || '',
+        details: item.details || '',
+        location: item.location || item.meeting_platform || '',
+        color: item.color || 'cyan',
+        isDone: item.isDone || item.is_done || false,
+      }))
+    : scheduleItemsData;
 
   const handlePriorityCardClick = (name: string) => {
     const idx = actionReviewCandidates.findIndex((c) => c.name === name);
@@ -103,22 +266,38 @@ export default function Dashboard() {
     <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
       <div className="flex flex-col lg:flex-row gap-4">
         <div className="flex-1 flex flex-col gap-4">
-          {/* Stat Cards from data */}
+          {/* Stat Cards from API or fallback */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {statCardsData.map((stat) => (
-              <StatCard
-                key={stat.id}
-                icon={iconMap[stat.iconType]}
-                label={stat.label}
-                value={stat.value}
-                trend={stat.trend}
-                trendText={stat.trendText}
-                dateText={stat.dateText}
-              />
-            ))}
+            {loading
+              ? // Skeleton stat cards
+                [...Array(4)].map((_, i) => (
+                  <div
+                    key={`stat-skel-${i}`}
+                    className="bg-white rounded-xl animate-pulse"
+                    style={{ padding: '20px', gap: '8px', border: '0.5px solid #D1D1D6' }}
+                  >
+                    <div className="flex justify-between items-center w-full mb-2">
+                      <div className="w-10 h-10 rounded-lg bg-gray-200" />
+                      <div className="w-20 h-4 rounded bg-gray-200" />
+                    </div>
+                    <div className="w-16 h-3 rounded bg-gray-200 mb-1" />
+                    <div className="w-12 h-8 rounded bg-gray-200" />
+                  </div>
+                ))
+              : dynamicStatCards.map((stat) => (
+                  <StatCard
+                    key={stat.id}
+                    icon={iconMap[stat.iconType]}
+                    label={stat.label}
+                    value={stat.value}
+                    trend={stat.trend}
+                    trendText={stat.trendText}
+                    dateText={stat.dateText}
+                  />
+                ))}
           </div>
 
-          {/* Priority Actions from data */}
+          {/* Priority Actions from API or fallback */}
           <section className="bg-white rounded-xl p-5 flex flex-col gap-5">
             <div className="flex items-center justify-between">
               <h2 className="text-[22px] font-medium leading-6 text-black">Priority Actions</h2>
@@ -133,41 +312,59 @@ export default function Dashboard() {
                     <path d="M2.08325 10.2027C2.08325 6.57161 2.08325 4.75607 3.12668 3.62803C4.17012 2.5 5.84949 2.5 9.20825 2.5H10.7916C14.1503 2.5 15.8297 2.5 16.8732 3.62803C17.9166 4.75607 17.9166 6.57161 17.9166 10.2027V10.6306C17.9166 14.2617 17.9166 16.0773 16.8732 17.2053C15.8297 18.3333 14.1503 18.3333 10.7916 18.3333H9.20825C5.84949 18.3333 4.17012 18.3333 3.12668 17.2053C2.08325 16.0773 2.08325 14.2617 2.08325 10.6306V10.2027Z" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                     <path d="M5 6.66666H15" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                   </svg>
-                  13 Jan, 2024
+                  {dashboardData?.dashboard?.current_date
+                    ? new Date(dashboardData.dashboard.current_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                    : '13 Jan, 2024'}
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {priorityColumnsData.map((column) => (
-                <div key={column.id} className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 overflow-y-auto max-h-[400px] hide-scrollbar">
-                  <div className="flex items-center justify-between px-1 py-1">
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: column.dotColor }}></div>
-                      <span className="text-sm font-normal text-[#4B5563] leading-[17px]">{column.title}</span>
+              {loading
+                ? [...Array(3)].map((_, i) => (
+                    <div key={`col-skel-${i}`} className="bg-[#F3F5F7] rounded-xl p-2.5 animate-pulse min-h-[200px]">
+                      <div className="flex items-center justify-between px-1 py-1 mb-2">
+                        <div className="w-20 h-4 rounded bg-gray-200" />
+                        <div className="w-12 h-4 rounded bg-gray-200" />
+                      </div>
+                      {[...Array(2)].map((_, j) => (
+                        <div key={j} className="bg-white rounded-lg p-3 mb-2">
+                          <div className="w-24 h-3 rounded bg-gray-200 mb-2" />
+                          <div className="w-32 h-3 rounded bg-gray-200 mb-2" />
+                          <div className="w-16 h-3 rounded bg-gray-200" />
+                        </div>
+                      ))}
                     </div>
-                    <div className="flex items-center gap-1">
-                      <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#4B5563]">{column.urgentCount}</span>
-                      <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal" style={{ color: column.accentColor }}>{column.totalCount}</span>
+                  ))
+                : dynamicPriorityColumns.map((column) => (
+                    <div key={column.id} className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 overflow-y-auto max-h-[400px] hide-scrollbar">
+                      <div className="flex items-center justify-between px-1 py-1">
+                        <div className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: column.dotColor }}></div>
+                          <span className="text-sm font-normal text-[#4B5563] leading-[17px]">{column.title}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#4B5563]">{column.urgentCount}</span>
+                          <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal" style={{ color: column.accentColor }}>{column.totalCount}</span>
+                        </div>
+                      </div>
+                      {column.cards.map((card) => (
+                        <PriorityCard
+                          key={card.id}
+                          name={card.name}
+                          role={card.role}
+                          daysAgo={card.daysAgo}
+                          status={card.status}
+                          statusColor={card.statusColor}
+                          onClick={() => handlePriorityCardClick(card.name)}
+                        />
+                      ))}
                     </div>
-                  </div>
-                  {column.cards.map((card) => (
-                    <PriorityCard
-                      key={card.id}
-                      name={card.name}
-                      role={card.role}
-                      daysAgo={card.daysAgo}
-                      status={card.status}
-                      statusColor={card.statusColor}
-                      onClick={() => handlePriorityCardClick(card.name)}
-                    />
                   ))}
-                </div>
-              ))}
             </div>
           </section>
 
-          {/* Talent Matches from data */}
+          {/* Talent Matches from API or fallback */}
           <section className="bg-white rounded-[10px] p-5 flex flex-col gap-5">
             <div className="flex items-center justify-between">
               <h2 className="text-[22px] font-medium leading-6 text-black">New Talent Matches</h2>
@@ -187,18 +384,28 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex flex-col gap-5">
-              {talentMatchesData.map((match) => (
-                <TalentMatchCard
-                  key={match.id}
-                  name={match.name}
-                  company={match.company}
-                  position={match.position}
-                  experience={match.experience}
-                  matchPercentage={match.matchPercentage}
-                  source={match.source}
-                  onClick={() => handleTalentMatchClick(match.name)}
-                />
-              ))}
+              {loading
+                ? [...Array(3)].map((_, i) => (
+                    <div key={`tm-skel-${i}`} className="bg-white p-5 rounded-[10px] flex items-center justify-between animate-pulse" style={{ border: '1px solid #D1D1D6' }}>
+                      <div className="flex flex-col gap-2">
+                        <div className="w-32 h-4 rounded bg-gray-200" />
+                        <div className="w-48 h-3 rounded bg-gray-200" />
+                      </div>
+                      <div className="w-10 h-10 rounded-full bg-gray-200" />
+                    </div>
+                  ))
+                : dynamicTalentMatches.map((match) => (
+                    <TalentMatchCard
+                      key={match.id}
+                      name={match.name}
+                      company={match.company}
+                      position={match.position}
+                      experience={match.experience}
+                      matchPercentage={match.matchPercentage}
+                      source={match.source}
+                      onClick={() => handleTalentMatchClick(match.name)}
+                    />
+                  ))}
             </div>
           </section>
         </div>
@@ -206,8 +413,8 @@ export default function Dashboard() {
         {/* Right Sidebar */}
         <aside className="w-96 flex flex-col gap-4 shrink-0">
           <CalendarWidget onDateClick={handleDateClick} />
-          <ScheduleWidget items={scheduleItemsData} onEventClick={handleScheduleEventClick} />
-          <RecentActivities activities={recentActivitiesData} />
+          <ScheduleWidget items={dynamicScheduleItems} onEventClick={handleScheduleEventClick} />
+          <RecentActivities activities={dynamicRecentActivities} />
         </aside>
       </div>
 

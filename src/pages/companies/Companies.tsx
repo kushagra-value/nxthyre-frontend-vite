@@ -7,6 +7,11 @@ import {
     WorkspaceStatsCount
 } from "../../services/organizationService";
 import { jobPostService, Job } from "../../services/jobPostService";
+import dashboardService, {
+    SidebarData,
+    SidebarImmediateAction,
+    SidebarActivityGroup,
+} from "../../services/dashboardService";
 import {
     Search,
     ChevronLeft,
@@ -21,7 +26,9 @@ import {
     LayoutGrid,
     ArrowUp,
     ArrowDown,
-    ArrowUpDown
+    ArrowUpDown,
+    PlusCircle,
+    UserCheck,
 } from "lucide-react";
 import CreateWorkspaceModal from "./components/CreateWorkspaceModal";
 import JoinWorkspaceModal from "./components/JoinWorkspaceModal";
@@ -121,6 +128,11 @@ export default function Companies() {
         return () => { cancelled = true; };
     }, [infoWorkspace]);
 
+
+    // Sidebar API state
+    const [sidebarData, setSidebarData] = useState<SidebarData | null>(null);
+    const [sidebarLoading, setSidebarLoading] = useState(false);
+    const [sidebarActivityView, setSidebarActivityView] = useState('Today');
 
     const [isActionView, setIsActionView] = useState(true);
     const [selectedWorkspace, setSelectedWorkspace] = useState<MyWorkspace | null>(null);
@@ -241,8 +253,21 @@ export default function Companies() {
         if (isAuthenticated) {
             fetchWorkspaces();
             fetchJobs();
+            fetchSidebar();
         }
     }, [isAuthenticated]);
+
+    const fetchSidebar = async () => {
+        setSidebarLoading(true);
+        try {
+            const data = await dashboardService.getSidebar();
+            setSidebarData(data);
+        } catch (error) {
+            console.error('Failed to fetch sidebar data', error);
+        } finally {
+            setSidebarLoading(false);
+        }
+    };
 
     // Rehydrate the navigation stack from sessionStorage after data loads
     useEffect(() => {
@@ -991,11 +1016,16 @@ export default function Companies() {
                 {!isActionView && (
                     <aside className="w-96 flex flex-col gap-4 shrink-0">
                         {/* Immediate Actions */}
-                        <div
-                            className="bg-white rounded-xl p-5"
-                        >
+                        <div className="bg-white rounded-xl p-5">
                             <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-sm font-semibold text-black">Immediate Actions</h3>
+                                <h3 className="text-sm font-semibold text-black">
+                                    Immediate Actions
+                                    {sidebarData && (
+                                        <span className="ml-1.5 text-xs font-normal text-[#AEAEB2]">
+                                            ({sidebarData.right_sidebar.immediate_actions.total_pending})
+                                        </span>
+                                    )}
+                                </h3>
                                 <button
                                     className="text-xs font-medium text-[#4B5563] border border-[#E5E7EB] bg-[#F9FAFB] px-2.5 py-1.5 rounded-md hover:bg-gray-100 transition-colors"
                                     onClick={() => setIsActionView(true)}
@@ -1004,68 +1034,61 @@ export default function Companies() {
                                 </button>
                             </div>
                             <div className="flex flex-col gap-3">
-                                {/* Hardcoded or mapped items, we'll map dummy data but match image styling perfectly */}
-                                <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <p className="text-sm font-semibold text-[#0F47F2]">Jupiter Money</p>
-                                        <div className="w-6 h-6 rounded-full bg-[#0F47F2] flex items-center justify-center shadow-sm">
-                                            <Star className="w-3 h-3 text-white fill-current" />
+                                {sidebarLoading ? (
+                                    // Skeleton loading for immediate actions
+                                    [...Array(3)].map((_, i) => (
+                                        <div key={`ia-skel-${i}`} className="p-4 bg-[#F9FAFB] rounded-lg animate-pulse" style={{ border: "0.5px solid #E5E7EB" }}>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="w-24 h-4 rounded bg-gray-200" />
+                                                <div className="w-6 h-6 rounded-full bg-gray-200" />
+                                            </div>
+                                            <div className="w-full h-3 rounded bg-gray-200 mb-2" />
+                                            <div className="w-3/4 h-3 rounded bg-gray-200 mb-4" />
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-24 h-6 rounded bg-gray-200" />
+                                                <div className="w-14 h-3 rounded bg-gray-200" />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
-                                        Max Verstappen (85% match) hasn't been contacted for JD-112. Autopilot can send outreach now.
-                                    </p>
-                                    <div className="flex items-center gap-4">
-                                        <button className="py-1.5 px-3 bg-[#E7EDFF] text-[#0F47F2] text-xs font-semibold rounded-md hover:bg-[#D7E3FF] transition-colors">
-                                            Approve Outreach
-                                        </button>
-                                        <span className="text-xs text-[#AEAEB2] font-medium">09:00 AM</span>
-                                        <ArrowRight className="w-4 h-4 text-[#AEAEB2] ml-auto" />
-                                    </div>
-                                </div>
-
-                                <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <p className="text-sm font-semibold text-[#0F47F2]">Slice</p>
-                                    </div>
-                                    <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
-                                        Close Senior Dev role. 3 candidates in final stage, push to offer.
-                                    </p>
-                                    <div className="flex items-center gap-4">
-                                        <button className="py-1.5 px-3 bg-[#FFF7D6] text-[#D97706] text-xs font-semibold rounded-md hover:bg-[#FDE68A] transition-colors">
-                                            Take Action
-                                        </button>
-                                        <span className="text-xs text-[#AEAEB2] font-medium">4 Days ago</span>
-                                        <ArrowRight className="w-4 h-4 text-[#AEAEB2] ml-auto" />
-                                    </div>
-                                </div>
-
-                                <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <p className="text-sm font-semibold text-[#0F47F2]">Medcore Solutions</p>
-                                    </div>
-                                    <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
-                                        Client Check in needed. No updated in 2 weeks
-                                    </p>
-                                    <div className="flex items-center gap-4">
-                                        <button className="py-1.5 px-3 bg-[#E7EDFF] text-[#0F47F2] text-xs font-semibold rounded-md hover:bg-[#D7E3FF] transition-colors">
-                                            Take Actions
-                                        </button>
-                                        <span className="text-xs text-[#AEAEB2] font-medium">09:00 AM</span>
-                                        <ArrowRight className="w-4 h-4 text-[#AEAEB2] ml-auto" />
-                                    </div>
-                                </div>
-                                <div className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <p className="text-sm font-semibold text-[#0F47F2]">Racing Williams</p>
-                                        <div className="w-6 h-6 rounded-full bg-[#0F47F2] flex items-center justify-center shadow-sm">
-                                            <Star className="w-3 h-3 text-white fill-current" />
+                                    ))
+                                ) : sidebarData ? (
+                                    sidebarData.right_sidebar.immediate_actions.items.map((action: SidebarImmediateAction) => (
+                                        <div key={action.id} className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="flex items-center gap-2">
+                                                    {action.company_logo_url ? (
+                                                        <img src={action.company_logo_url} alt={action.company_name} className="w-5 h-5 rounded-full object-contain" />
+                                                    ) : null}
+                                                    <p className="text-sm font-semibold text-[#0F47F2]">{action.company_name}</p>
+                                                </div>
+                                                {action.has_star && (
+                                                    <div className="w-6 h-6 rounded-full bg-[#0F47F2] flex items-center justify-center shadow-sm">
+                                                        <Star className="w-3 h-3 text-white fill-current" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
+                                                {action.issue_summary}
+                                            </p>
+                                            <div className="flex items-center gap-4">
+                                                <button
+                                                    className={`py-1.5 px-3 text-xs font-semibold rounded-md transition-colors ${
+                                                        action.priority_level === 'high'
+                                                            ? 'bg-[#E7EDFF] text-[#0F47F2] hover:bg-[#D7E3FF]'
+                                                            : 'bg-[#FFF7D6] text-[#D97706] hover:bg-[#FDE68A]'
+                                                    }`}
+                                                >
+                                                    {action.action_button_label}
+                                                </button>
+                                                <span className="text-xs text-[#AEAEB2] font-medium">
+                                                    {action.timestamp_relative}
+                                                </span>
+                                                <ArrowRight className="w-4 h-4 text-[#AEAEB2] ml-auto" />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
-                                        Candidates haven't responded to follow-up, Autopilot
-                                    </p>
-                                </div>
+                                    ))
+                                ) : (
+                                    <p className="text-sm text-[#AEAEB2] text-center py-4">No immediate actions</p>
+                                )}
                             </div>
                         </div>
 
@@ -1076,42 +1099,82 @@ export default function Companies() {
                         >
                             <div className="flex items-center justify-between mb-5">
                                 <h3 className="text-sm font-semibold text-black">Recent Activities</h3>
-                                <button className="text-xs font-medium text-[#4B5563] border border-[#E5E7EB] bg-white px-3 py-1.5 rounded-md hover:bg-gray-50 transition-colors">
-                                    Today
-                                </button>
-                            </div>
-
-                            <div className="mb-3">
-                                <h4 className="text-xs font-semibold text-[#4B5563]">Today · Feb 20</h4>
+                                {sidebarData ? (
+                                    <div className="flex items-center gap-1">
+                                        {sidebarData.right_sidebar.recent_activities.view_options.map((opt) => (
+                                            <button
+                                                key={opt}
+                                                onClick={() => setSidebarActivityView(opt)}
+                                                className={`text-xs font-medium px-3 py-1.5 rounded-md transition-colors ${
+                                                    sidebarActivityView === opt
+                                                        ? 'text-[#0F47F2] bg-[#E7EDFF]'
+                                                        : 'text-[#4B5563] border border-[#E5E7EB] bg-white hover:bg-gray-50'
+                                                }`}
+                                            >
+                                                {opt}
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <button className="text-xs font-medium text-[#4B5563] border border-[#E5E7EB] bg-white px-3 py-1.5 rounded-md hover:bg-gray-50 transition-colors">
+                                        Today
+                                    </button>
+                                )}
                             </div>
 
                             <div className="flex flex-col gap-4">
-                                <div className="flex items-start justify-between pb-3 border-b border-[#F3F5F7]">
-                                    <div>
-                                        <p className="text-sm font-medium text-[#0F47F2] mb-0.5">RocketGrowth Inc</p>
-                                        <p className="text-[13px] text-[#4B5563]">New job posted - ML Engineer</p>
-                                        <p className="text-[11px] text-[#AEAEB2] mt-0.5">JD-108 · Full-time · Delhi</p>
-                                    </div>
-                                    <span className="text-xs text-[#AEAEB2] font-medium mt-1">10:45 AM</span>
-                                </div>
-
-                                <div className="flex items-start justify-between pb-3 border-b border-[#F3F5F7]">
-                                    <div>
-                                        <p className="text-sm font-medium text-[#0F47F2] mb-0.5">Acme Technologies</p>
-                                        <p className="text-[13px] text-[#4B5563]">Priya Patel hired</p>
-                                        <p className="text-[11px] text-[#AEAEB2] mt-0.5">Senior Product Designer · JD-101</p>
-                                    </div>
-                                    <span className="text-xs text-[#AEAEB2] font-medium mt-1">09:45 AM</span>
-                                </div>
-
-                                <div className="flex items-start justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-[#0F47F2] mb-0.5">Jupiter Money</p>
-                                        <p className="text-[13px] text-[#4B5563]">Shortlist sent to client</p>
-                                        <p className="text-[11px] text-[#AEAEB2] mt-0.5">4 candidates · ML Engineer · JD-102</p>
-                                    </div>
-                                    <span className="text-xs text-[#AEAEB2] font-medium mt-1">08:15 AM</span>
-                                </div>
+                                {sidebarLoading ? (
+                                    [...Array(3)].map((_, i) => (
+                                        <div key={`ra-skel-${i}`} className="flex items-start justify-between pb-3 border-b border-[#F3F5F7] animate-pulse">
+                                            <div>
+                                                <div className="w-28 h-4 rounded bg-gray-200 mb-1" />
+                                                <div className="w-40 h-3 rounded bg-gray-200 mb-1" />
+                                                <div className="w-32 h-2 rounded bg-gray-200" />
+                                            </div>
+                                            <div className="w-14 h-3 rounded bg-gray-200 mt-1" />
+                                        </div>
+                                    ))
+                                ) : sidebarData ? (
+                                    sidebarData.right_sidebar.recent_activities.groups
+                                        .filter((group: SidebarActivityGroup) => {
+                                            if (sidebarActivityView === 'All') return true;
+                                            if (sidebarActivityView === 'Today') return group.date_label === 'Today';
+                                            if (sidebarActivityView === 'This Week') return true;
+                                            return true;
+                                        })
+                                        .map((group: SidebarActivityGroup, gIdx: number) => (
+                                            <div key={`group-${gIdx}`}>
+                                                <div className="mb-3">
+                                                    <h4 className="text-xs font-semibold text-[#4B5563]">
+                                                        {group.date_label}
+                                                        {group.date_sub_label && <span className="font-normal"> · {group.date_sub_label}</span>}
+                                                    </h4>
+                                                </div>
+                                                {group.items.map((item) => (
+                                                    <div key={item.id} className="flex items-start justify-between pb-3 border-b border-[#F3F5F7] mb-2">
+                                                        <div className="flex items-start gap-2">
+                                                            <div className={`w-5 h-5 rounded-full flex items-center justify-center mt-0.5 shrink-0 ${
+                                                                item.color === 'green' ? 'bg-[#DEF7EC]' : 'bg-[#E7EDFF]'
+                                                            }`}>
+                                                                {item.activity_type === 'hire' ? (
+                                                                    <UserCheck className="w-3 h-3 text-[#069855]" />
+                                                                ) : (
+                                                                    <PlusCircle className="w-3 h-3 text-[#0F47F2]" />
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-medium text-[#0F47F2] mb-0.5">{item.company_name}</p>
+                                                                <p className="text-[13px] text-[#4B5563]">{item.message}</p>
+                                                            </div>
+                                                        </div>
+                                                        <span className="text-xs text-[#AEAEB2] font-medium mt-1 shrink-0 ml-2">{item.time}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ))
+                                ) : (
+                                    <p className="text-sm text-[#AEAEB2] text-center py-4">No recent activities</p>
+                                )}
                             </div>
                         </div>
                     </aside>
