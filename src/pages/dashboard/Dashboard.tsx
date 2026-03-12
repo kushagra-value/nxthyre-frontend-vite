@@ -413,8 +413,8 @@ export default function Dashboard() {
         {/* Right Sidebar */}
         <aside className="w-96 flex flex-col gap-4 shrink-0">
           <CalendarWidget onDateClick={handleDateClick} />
-          <ScheduleWidget items={dynamicScheduleItems} onEventClick={handleScheduleEventClick} />
-          <RecentActivities activities={dynamicRecentActivities} />
+          <ScheduleWidget items={dynamicScheduleItems} isLoading={loading} onEventClick={handleScheduleEventClick} />
+          <RecentActivities activities={dynamicRecentActivities} isLoading={loading} />
         </aside>
       </div>
 

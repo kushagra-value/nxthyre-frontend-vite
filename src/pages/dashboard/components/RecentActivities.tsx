@@ -34,9 +34,10 @@ const CheckIcon = (
 
 interface RecentActivitiesProps {
   activities: ActivitySection[];
+  isLoading?: boolean;
 }
 
-export default function RecentActivities({ activities }: RecentActivitiesProps) {
+export default function RecentActivities({ activities, isLoading }: RecentActivitiesProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const getIcon = (icon: string): React.ReactNode => {
@@ -68,40 +69,60 @@ export default function RecentActivities({ activities }: RecentActivitiesProps) 
 
         <div className="overflow-y-auto max-h-[260px] hide-scrollbar px-5 pb-5">
           <div className="flex flex-col gap-4">
-            {activities.map((section, sectionIdx) => (
-              <div key={sectionIdx}>
-                <p className="text-sm font-normal text-[#4B5563] leading-[17px] mb-3">
-                  {section.label}
-                </p>
-                <div className="flex flex-col">
-                  {section.items.map((activity, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-start gap-1.5 rounded-[5px] px-2.5 py-1.5"
-                      style={{ borderBottom: '0.5px dashed #C7C7CC' }}
-                    >
-                      <div
-                        className="w-6 h-6 rounded-[5px] flex items-center justify-center shrink-0"
-                        style={{
-                          backgroundColor: '#E7EDFF',
-                          border: '0.5px solid #FFFFFF',
-                        }}
-                      >
-                        {getIcon(activity.icon)}
+            {isLoading ? (
+              [...Array(3)].map((_, sectionIdx) => (
+                <div key={`recent-skel-${sectionIdx}`}>
+                  <div className="w-20 h-3 rounded bg-gray-200 mb-3" />
+                  <div className="flex flex-col gap-3">
+                    {[...Array(2)].map((_, idx) => (
+                      <div key={`item-skel-${idx}`} className="flex items-start gap-2.5 pb-2" style={{ borderBottom: '0.5px dashed #C7C7CC' }}>
+                        <div className="w-6 h-6 rounded bg-gray-200 shrink-0" />
+                        <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                          <div className="w-full h-3 rounded bg-gray-200" />
+                          <div className="w-3/4 h-3 rounded bg-gray-200" />
+                          <div className="w-16 h-2.5 rounded bg-gray-200 mt-0.5" />
+                        </div>
                       </div>
-                      <div className="flex flex-col gap-1 flex-1 min-w-0">
-                        <span className="text-sm font-normal text-[#4B5563] leading-[17px]">
-                          {activity.text}
-                        </span>
-                        <span className="text-xs font-normal text-[#AEAEB2] leading-[14px]">
-                          {activity.time}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              activities.map((section, sectionIdx) => (
+                <div key={sectionIdx}>
+                  <p className="text-sm font-normal text-[#4B5563] leading-[17px] mb-3">
+                    {section.label}
+                  </p>
+                  <div className="flex flex-col">
+                    {section.items.map((activity, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-start gap-1.5 rounded-[5px] px-2.5 py-1.5"
+                        style={{ borderBottom: '0.5px dashed #C7C7CC' }}
+                      >
+                        <div
+                          className="w-6 h-6 rounded-[5px] flex items-center justify-center shrink-0"
+                          style={{
+                            backgroundColor: '#E7EDFF',
+                            border: '0.5px solid #FFFFFF',
+                          }}
+                        >
+                          {getIcon(activity.icon)}
+                        </div>
+                        <div className="flex flex-col gap-1 flex-1 min-w-0">
+                          <span className="text-sm font-normal text-[#4B5563] leading-[17px]">
+                            {activity.text}
+                          </span>
+                          <span className="text-xs font-normal text-[#AEAEB2] leading-[14px]">
+                            {activity.time}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

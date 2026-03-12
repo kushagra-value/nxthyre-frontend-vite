@@ -33,10 +33,11 @@ const colorConfig: Record<string, { bg: string; dot: string; nameColor: string; 
 
 interface ScheduleWidgetProps {
   items: ScheduleItemData[];
+  isLoading?: boolean;
   onEventClick?: (item: ScheduleItemData) => void;
 }
 
-export default function ScheduleWidget({ items, onEventClick }: ScheduleWidgetProps) {
+export default function ScheduleWidget({ items, isLoading, onEventClick }: ScheduleWidgetProps) {
   return (
     <div className="bg-white rounded-[10px] flex flex-col overflow-hidden" >
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
@@ -56,51 +57,68 @@ export default function ScheduleWidget({ items, onEventClick }: ScheduleWidgetPr
             style={{ borderLeft: '1px dashed #D1D1D6' }}
           />
 
-          {items.map((item) => {
-            const config = colorConfig[item.color];
-
-            return (
-              <div key={item.id} className={`flex items-center gap-2 relative ${!item.isDone ? 'cursor-pointer' : ''}`} onClick={!item.isDone ? () => onEventClick?.(item) : undefined}>
-                <span className="w-[60px] shrink-0 text-sm font-normal text-[#4B5563] leading-5">
-                  {item.time}
-                </span>
-
-                <div
-                  className="w-2 h-2 rounded-full shrink-0 relative z-10"
-                  style={{ backgroundColor: config.dot }}
-                />
-
-                <div
-                  className="flex-1 rounded-md p-2.5 relative"
-                  style={{ backgroundColor: config.bg }}
-                >
-                  <span className="text-[10px] font-normal text-[#4B5563] leading-3 block">
-                    {item.type}
-                  </span>
-                  <div className="flex items-center justify-between mt-1">
-                    <span
-                      className="text-sm font-medium leading-[17px]"
-                      style={{ color: config.nameColor }}
-                    >
-                      {item.name}
-                    </span>
-                    <span
-                      className="px-2 py-1 text-[10px] font-normal leading-3 rounded-[5px]"
-                      style={{
-                        backgroundColor: config.badgeBg,
-                        color: config.badgeText,
-                      }}
-                    >
-                      {item.location}
-                    </span>
+          {isLoading ? (
+            [...Array(3)].map((_, i) => (
+              <div key={`sched-skel-${i}`} className="flex items-center gap-2 relative animate-pulse">
+                <div className="w-[60px] h-4 rounded bg-gray-200 shrink-0" />
+                <div className="w-2 h-2 rounded-full bg-gray-300 shrink-0 relative z-10" />
+                <div className="flex-1 rounded-md p-2.5 bg-gray-100 flex flex-col gap-2">
+                  <div className="w-16 h-3 rounded bg-gray-200" />
+                  <div className="flex items-center justify-between">
+                    <div className="w-24 h-4 rounded bg-gray-200" />
+                    <div className="w-12 h-4 rounded bg-gray-200" />
                   </div>
-                  <span className="text-[10px] font-normal text-[#4B5563] leading-3 block mt-1.5">
-                    {item.details}
-                  </span>
+                  <div className="w-32 h-3 rounded bg-gray-200" />
                 </div>
               </div>
-            );
-          })}
+            ))
+          ) : (
+            items.map((item) => {
+              const config = colorConfig[item.color] || colorConfig.cyan;
+
+              return (
+                <div key={item.id} className={`flex items-center gap-2 relative ${!item.isDone ? 'cursor-pointer' : ''}`} onClick={!item.isDone ? () => onEventClick?.(item) : undefined}>
+                  <span className="w-[60px] shrink-0 text-sm font-normal text-[#4B5563] leading-5">
+                    {item.time}
+                  </span>
+
+                  <div
+                    className="w-2 h-2 rounded-full shrink-0 relative z-10"
+                    style={{ backgroundColor: config.dot }}
+                  />
+
+                  <div
+                    className="flex-1 rounded-md p-2.5 relative"
+                    style={{ backgroundColor: config.bg }}
+                  >
+                    <span className="text-[10px] font-normal text-[#4B5563] leading-3 block">
+                      {item.type}
+                    </span>
+                    <div className="flex items-center justify-between mt-1">
+                      <span
+                        className="text-sm font-medium leading-[17px]"
+                        style={{ color: config.nameColor }}
+                      >
+                        {item.name}
+                      </span>
+                      <span
+                        className="px-2 py-1 text-[10px] font-normal leading-3 rounded-[5px]"
+                        style={{
+                          backgroundColor: config.badgeBg,
+                          color: config.badgeText,
+                        }}
+                      >
+                        {item.location}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-normal text-[#4B5563] leading-3 block mt-1.5">
+                      {item.details}
+                    </span>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </div>
