@@ -508,7 +508,7 @@ export default function JobCandidateProfile({
                         {activeTab === "info" && (
                             <>
                                 {/* ── Contact Info ── */}
-                                <div>
+                                <div className=" overflow-y-auto max-h-[500px] hide-scrollbar">
                                     <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider">CONTACT INFO</h4>
                                     <div className="flex flex-col gap-4">
                                         <div className="flex justify-between items-center text-sm">
@@ -616,7 +616,7 @@ export default function JobCandidateProfile({
                         )}
 
                         {activeTab === "activity" && (
-                            <div>
+                            <div className=" overflow-y-auto max-h-[500px] hide-scrollbar">
                                 <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-6 tracking-wider">PIPELINE HISTORY</h4>
                                 {loadingActivities ? (
                                     <div className="space-y-4">
