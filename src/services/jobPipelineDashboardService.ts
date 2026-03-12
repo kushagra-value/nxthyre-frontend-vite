@@ -67,6 +67,47 @@ export interface CallStatus {
   extra: Record<string, any>;
 }
 
+// ─── Call History Types ─────────────────────────────────
+export interface CallRecording {
+  recording_url: string | null;
+  recording_duration: number;
+  transcript_source: "plivo" | "gemini" | null;
+  transcript: string | null;
+  summary: string | null;
+  status: "pending" | "processing" | "completed" | "failed";
+}
+export interface CallFollowUp {
+  id: number;
+  scheduled_date: string;
+  scheduled_time: string;
+  created_at: string;
+}
+export interface CallHistoryEntry {
+  id: number;
+  call_uuid: string | null;
+  candidate_id: string;
+  caller_uid: string | null;
+  phone_number: string | null;
+  call_status:
+    | "initiated"
+    | "ringing"
+    | "answered"
+    | "not_answered"
+    | "busy"
+    | "failed"
+    | "completed";
+  call_type: "outgoing" | "incoming";
+  reason: string | null;
+  note: string | null;
+  duration_seconds: number;
+  tags: string[] | null;
+  checklist_data: any;
+  skills_data: any;
+  created_at: string;
+  recording: CallRecording | null;
+  follow_ups: CallFollowUp[];
+}
+
 export async function getCallStatus(): Promise<CallStatus> {
   const res = await fetch(`${PLIVO_BASE}/interactive/status/`, {
     method: "GET",
@@ -210,4 +251,26 @@ export async function getPlivoToken(): Promise<{
   });
   if (!res.ok) throw new Error(`Failed to get Plivo token: ${res.status}`);
   return res.json();
+}
+
+export async function getCandidateCallHistory(
+  candidateId: string,
+): Promise<CallHistoryEntry[]> {
+  const response = await fetch(
+    `${API_BASE}/plivo/call-history/${candidateId}/`,
+  );
+  if (!response.ok) throw new Error("Failed to fetch call history");
+  return response.json();
+}
+export async function processCallRecording(
+  callUuid: string,
+  candidateId: string,
+): Promise<any> {
+  const response = await fetch(`${API_BASE}/plivo/recordings/process/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ call_uuid: callUuid, candidate_id: candidateId }),
+  });
+  if (!response.ok) throw new Error("Failed to process recording");
+  return response.json();
 }
