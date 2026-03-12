@@ -255,13 +255,19 @@ export async function getPlivoToken(): Promise<{
 
 export async function getCandidateCallHistory(
   candidateId: string,
+  phoneNumber?: string,
 ): Promise<CallHistoryEntry[]> {
+  const params = new URLSearchParams();
+  if (phoneNumber) params.set("phone_number", phoneNumber);
+  const qs = params.toString() ? `?${params.toString()}` : "";
+
   const response = await fetch(
-    `${API_BASE}/plivo/call-history/${candidateId}/`,
+    `${API_BASE}/plivo/call-history/${candidateId}/${qs}`,
   );
   if (!response.ok) throw new Error("Failed to fetch call history");
   return response.json();
 }
+
 export async function processCallRecording(
   callUuid: string,
   candidateId: string,

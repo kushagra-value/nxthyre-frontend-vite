@@ -179,7 +179,8 @@ export default function JobCandidateProfile({
   useEffect(() => {
     if (!cand.id || activeTab !== "call") return;
     setLoadingCalls(true);
-    getCandidateCallHistory(cand.id)
+    const candidatePhone = premiumUnlocked ? premiumData.phone : "";
+    getCandidateCallHistory(cand.id, candidatePhone)
       .then((data) => setCallHistory(data))
       .catch((err) => {
         console.error("Error fetching call history:", err);
