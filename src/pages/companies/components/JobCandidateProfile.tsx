@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import {
     Mail, Download, Check, MapPin, Briefcase,
     Phone, ArrowLeft, Calendar, Linkedin, Github, Globe,
-    UserCircle, TrendingUp, Palette, FileText
+    UserCircle, TrendingUp, Palette, FileText,
+    Play, Volume2, MoreHorizontal, Sparkles, PhoneOff, ChevronDown
 } from "lucide-react";
 import candidateService from "../../../services/candidateService";
 
@@ -75,7 +76,7 @@ export default function JobCandidateProfile({
     const aiSummary = aiReport?.feedbacks?.overallFeedback || "";
 
     // States
-    const [activeTab, setActiveTab] = useState<"info" | "activity" | "notes" | "links">("info");
+    const [activeTab, setActiveTab] = useState<"info" | "activity" | "call" | "notes">("info");
     const [activities, setActivities] = useState<Activity[]>([]);
     const [loadingActivities, setLoadingActivities] = useState(false);
 
@@ -480,12 +481,12 @@ export default function JobCandidateProfile({
                 <div className="bg-white rounded-xl shadow-sm border border-[#E5E7EB] overflow-hidden">
                     {/* Sidebar tabs */}
                     <div className="flex border-b border-[#E5E7EB]">
-                        {(['info', 'activity', 'notes', 'links'] as const).map((id) => {
+                        {(['info', 'activity', 'call', 'notes'] as const).map((id) => {
                             const icons: Record<string, React.ReactNode> = {
                                 info: <UserCircle className="w-5 h-5" />,
                                 activity: <TrendingUp className="w-5 h-5" />,
-                                notes: <Phone className="w-5 h-5" />,
-                                links: <Globe className="w-5 h-5" />,
+                                call: <Phone className="w-5 h-5" />,
+                                notes: <FileText className="w-5 h-5" />,
                             };
                             return (
                                 <button
@@ -663,33 +664,111 @@ export default function JobCandidateProfile({
                             </div>
                         )}
 
-                        {activeTab === "links" && (
-                            <div>
-                                <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-6 tracking-wider">PORTFOLIO & SOCIAL</h4>
+                        {activeTab === "call" && (
+                            <div className="flex flex-col gap-6">
                                 <div className="flex flex-col gap-4">
-                                    {cand.linkedin_url && (
-                                        <a href={cand.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-[#F8FAFC] rounded-xl border border-[#E5E7EB] hover:border-[#0F47F2] transition group">
-                                            <div className="flex items-center gap-3">
-                                                <Linkedin className="w-5 h-5 text-black" />
-                                                <span className="font-bold text-sm text-black">LinkedIn Profile</span>
+                                    <div className="flex justify-between items-center text-[#8E8E93] text-xs font-bold tracking-wider">
+                                        <span>YESTERDAY</span>
+                                        <span className="font-normal">03/03/26</span>
+                                    </div>
+                                    <div className="border border-[#E5E7EB] rounded-xl p-5">
+                                        <div className="flex items-center gap-4 mb-5">
+                                            <div className="w-10 h-10 rounded-full bg-[#F3F5F7] flex items-center justify-center shrink-0">
+                                                <Phone className="w-4 h-4 text-[#8E8E93]" />
                                             </div>
-                                            <Globe className="w-4 h-4 text-[#AEAEB2] group-hover:text-[#0F47F2]" />
-                                        </a>
-                                    )}
-                                    <a href="#" className="flex items-center justify-between p-4 bg-[#F8FAFC] rounded-xl border border-[#E5E7EB] hover:border-[#0F47F2] transition group">
-                                        <div className="flex items-center gap-3">
-                                            <Github className="w-5 h-5 text-black" />
-                                            <span className="font-bold text-sm text-black">GitHub Repository</span>
+                                            <div>
+                                                <p className="text-[13px] font-bold text-[#4B5563]">Outgoing Call on 4:30 PM</p>
+                                                <p className="text-[11px] text-[#AEAEB2] mt-0.5">5mins 34secs</p>
+                                            </div>
                                         </div>
-                                        <Globe className="w-4 h-4 text-[#AEAEB2] group-hover:text-[#0F47F2]" />
-                                    </a>
-                                    <a href="#" className="flex items-center justify-between p-4 bg-[#F8FAFC] rounded-xl border border-[#E5E7EB] hover:border-[#0F47F2] transition group">
-                                        <div className="flex items-center gap-3">
-                                            <Palette className="w-5 h-5 text-black" />
-                                            <span className="font-bold text-sm text-black">Portfolio / Behance</span>
+
+                                        {/* Audio Player */}
+                                        <div className="bg-[#EEF1FF] rounded-lg p-3 flex items-center gap-3 mb-6">
+                                            <Play className="w-4 h-4 text-[#0F47F2] fill-[#0F47F2] cursor-pointer" />
+                                            <div className="relative flex-1 h-1 bg-white/50 rounded-full cursor-pointer flex items-center">
+                                                <div className="absolute left-0 top-0 bottom-0 bg-[#0F47F2] rounded-full w-1/3" />
+                                                <div className="w-2.5 h-2.5 bg-white shadow border border-gray-200 rounded-full absolute left-1/3 -translate-x-1/2" />
+                                            </div>
+                                            <Volume2 className="w-4 h-4 text-[#4B5563] cursor-pointer" />
+                                            <span className="text-xs font-medium text-[#4B5563] cursor-pointer">1x</span>
+                                            <MoreHorizontal className="w-4 h-4 text-[#4B5563] cursor-pointer" />
                                         </div>
-                                        <Globe className="w-4 h-4 text-[#AEAEB2] group-hover:text-[#0F47F2]" />
-                                    </a>
+
+                                        <div className="mb-6">
+                                            <h4 className="flex items-center gap-2 text-[13px] font-bold text-[#4B5563] mb-3">
+                                                Call Summary
+                                                <div className="bg-[#0F47F2] rounded-full p-[3px]">
+                                                    <Sparkles className="w-2.5 h-2.5 text-white" />
+                                                </div>
+                                            </h4>
+                                            <ul className="flex flex-col gap-3">
+                                                <li className="flex items-start gap-2.5">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-[#0F47F2] mt-1.5 shrink-0" />
+                                                    <span className="text-[13px] text-[#8E8E93] leading-relaxed">Candidate confirmed interest in the role and asked about team structure.</span>
+                                                </li>
+                                                <li className="flex items-start gap-2.5">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-[#0F47F2] mt-1.5 shrink-0" />
+                                                    <span className="text-[13px] text-[#8E8E93] leading-relaxed">Current CTC verified at 13 LPA, expecting 16-20 LPA range.</span>
+                                                </li>
+                                                <li className="flex items-start gap-2.5">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-[#0F47F2] mt-1.5 shrink-0" />
+                                                    <span className="text-[13px] text-[#8E8E93] leading-relaxed">Notice period is 30 days, buyout possible with prior employer approval.</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+
+                                        <div>
+                                            <h4 className="text-[13px] font-bold text-[#4B5563] mb-3">Next Steps</h4>
+                                            <ul className="flex flex-col gap-3">
+                                                <li className="flex items-start gap-2.5">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-[#0F47F2] mt-1.5 shrink-0" />
+                                                    <span className="text-[13px] text-[#8E8E93] leading-relaxed">Share role brief and JD with candidate over email.</span>
+                                                </li>
+                                                <li className="flex items-start gap-2.5">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-[#0F47F2] mt-1.5 shrink-0" />
+                                                    <span className="text-[13px] text-[#8E8E93] leading-relaxed">Schedule Round 2 technical interview with hiring manager.</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col gap-4 mt-2">
+                                    <div className="flex justify-between items-center text-[#8E8E93] text-xs font-bold tracking-wider">
+                                        <span>2 DAYS AGO</span>
+                                        <span className="font-normal">04/03/26</span>
+                                    </div>
+                                    <div className="border border-[#E5E7EB] rounded-xl p-4 flex items-center justify-between hover:border-[#0F47F2] transition cursor-pointer">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-full bg-[#FEE9E7] flex items-center justify-center shrink-0">
+                                                <PhoneOff className="w-4 h-4 text-[#DC2626]" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[13px] font-bold text-[#DC2626]">Not answered</p>
+                                                <p className="text-[11px] text-[#AEAEB2] mt-0.5">Rang for 30 secs</p>
+                                            </div>
+                                        </div>
+                                        <ChevronDown className="w-5 h-5 text-[#4B5563]" />
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col gap-4 mt-2">
+                                    <div className="flex justify-between items-center text-[#8E8E93] text-xs font-bold tracking-wider">
+                                        <span>5 DAYS AGO</span>
+                                        <span className="font-normal">28/02/26</span>
+                                    </div>
+                                    <div className="border border-[#E5E7EB] rounded-xl p-4 flex items-center justify-between hover:border-[#0F47F2] transition cursor-pointer">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-full bg-[#FEE9E7] flex items-center justify-center shrink-0">
+                                                <PhoneOff className="w-4 h-4 text-[#DC2626]" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[13px] font-bold text-[#4B5563]">Outgoing Call on 11:30 AM</p>
+                                                <p className="text-[11px] text-[#AEAEB2] mt-0.5">2mins 48 secs</p>
+                                            </div>
+                                        </div>
+                                        <ChevronDown className="w-5 h-5 text-[#4B5563]" />
+                                    </div>
                                 </div>
                             </div>
                         )}
