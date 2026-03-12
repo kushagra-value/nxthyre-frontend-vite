@@ -213,7 +213,7 @@ export default function JobCandidateProfile({
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        {(premiumUnlocked && premiumData.email) && (
+                                        {(premiumData.email) && (
                                             <button
                                                 onClick={() => window.open(`mailto:${premiumData.email}`)}
                                                 className="flex items-center gap-2 bg-[#0F47F2] text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
@@ -525,7 +525,7 @@ export default function JobCandidateProfile({
                                         </div>
                                         <div className="flex justify-between items-center text-sm text-black">
                                             <span className="text-[#AEAEB2] font-medium">Email</span>
-                                            <span className="truncate ml-4 text-[#0F47F2] font-medium cursor-pointer" onClick={() => (premiumUnlocked && premiumData.email) && window.open(`mailto:${premiumData.email}`)}>
+                                            <span className="truncate ml-4 text-[#0F47F2] font-medium cursor-pointer" onClick={() => ( premiumData.email) && window.open(`mailto:${premiumData.email}`)}>
                                                 {premiumData.email || "--"}
                                             </span>
                                         </div>
