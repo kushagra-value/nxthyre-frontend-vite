@@ -73,16 +73,16 @@ export interface DashboardData {
     priority_actions: {
       columns: DashboardPriorityColumn[];
     };
-    new_talent_matches: DashboardTalentMatch[];
+    new_talent_matches: {
+      filter_options: string[];
+      selected_filter: string;
+      matches: DashboardTalentMatch[];
+    };
     schedule: {
       selected_date: string;
       items: DashboardScheduleItem[];
     };
-    recent_activities: {
-      selected_company: string;
-      selected_date: string;
-      items: DashboardActivityGroup[];
-    };
+    recent_activities: DashboardActivityGroup[];
   };
   modals: Record<string, any>;
   _meta: {

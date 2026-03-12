@@ -169,8 +169,8 @@ export default function Dashboard() {
 
   // ── Derive display data from API or fall back to static data ──
 
-  const dynamicStatCards: StatCardData[] = dashboardData?.dashboard?.stat_cards
-    ? dashboardData.dashboard.stat_cards.map((card) => ({
+  const dynamicStatCards: StatCardData[] = Array.isArray(dashboardData?.dashboard?.stat_cards)
+    ? dashboardData!.dashboard.stat_cards.map((card) => ({
         id: card.id,
         iconType: mapIconType(card.icon_type) as StatCardData['iconType'],
         label: card.label,
@@ -181,8 +181,8 @@ export default function Dashboard() {
       }))
     : statCardsData;
 
-  const dynamicPriorityColumns: PriorityColumnData[] = dashboardData?.dashboard?.priority_actions?.columns
-    ? dashboardData.dashboard.priority_actions.columns.map((col: DashboardPriorityColumn) => {
+  const dynamicPriorityColumns: PriorityColumnData[] = Array.isArray(dashboardData?.dashboard?.priority_actions?.columns)
+    ? dashboardData!.dashboard.priority_actions.columns.map((col: DashboardPriorityColumn) => {
         const colors = columnColors[col.id] || { dotColor: '#6155F5', accentColor: '#6155F5' };
         return {
           id: `col-${col.id}`,
@@ -191,20 +191,20 @@ export default function Dashboard() {
           accentColor: colors.accentColor,
           urgentCount: col.urgent_count,
           totalCount: col.count,
-          cards: (col.cards || []).map((c) => ({
+          cards: Array.isArray(col.cards) ? col.cards.map((c) => ({
             id: `pa-${c.id}`,
             name: c.name,
             role: c.role,
             daysAgo: c.days_ago,
             status: c.status,
             statusColor: mapStatusColor(c.status_color),
-          })),
+          })) : [],
         };
       })
     : priorityColumnsData;
 
-  const dynamicTalentMatches: TalentMatchData[] = dashboardData?.dashboard?.new_talent_matches
-    ? dashboardData.dashboard.new_talent_matches.map((m: DashboardTalentMatch) => ({
+  const dynamicTalentMatches: TalentMatchData[] = Array.isArray(dashboardData?.dashboard?.new_talent_matches?.matches)
+    ? dashboardData!.dashboard.new_talent_matches.matches.map((m: DashboardTalentMatch) => ({
         id: m.id,
         name: m.name,
         company: m.company || 'N/A',
@@ -215,14 +215,14 @@ export default function Dashboard() {
       }))
     : talentMatchesData;
 
-  const dynamicRecentActivities: ActivitySection[] = dashboardData?.dashboard?.recent_activities?.items
-    ? dashboardData.dashboard.recent_activities.items.map((group) => ({
+  const dynamicRecentActivities: ActivitySection[] = Array.isArray(dashboardData?.dashboard?.recent_activities)
+    ? dashboardData!.dashboard.recent_activities.map((group) => ({
         label: group.label,
-        items: (group.items || []).map((item) => ({
+        items: Array.isArray(group.items) ? group.items.map((item) => ({
           icon: item.icon as 'calendar' | 'phone' | 'check',
           text: item.text,
           time: item.time,
-        })),
+        })) : [],
       }))
     : recentActivitiesData;
 
