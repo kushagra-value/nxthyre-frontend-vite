@@ -169,7 +169,7 @@ export default function Dashboard() {
 
   // ── Derive display data from API or fall back to static data ──
 
-  const dynamicStatCards: StatCardData[] = dashboardData
+  const dynamicStatCards: StatCardData[] = dashboardData?.dashboard?.stat_cards
     ? dashboardData.dashboard.stat_cards.map((card) => ({
         id: card.id,
         iconType: mapIconType(card.icon_type) as StatCardData['iconType'],
@@ -181,7 +181,7 @@ export default function Dashboard() {
       }))
     : statCardsData;
 
-  const dynamicPriorityColumns: PriorityColumnData[] = dashboardData
+  const dynamicPriorityColumns: PriorityColumnData[] = dashboardData?.dashboard?.priority_actions?.columns
     ? dashboardData.dashboard.priority_actions.columns.map((col: DashboardPriorityColumn) => {
         const colors = columnColors[col.id] || { dotColor: '#6155F5', accentColor: '#6155F5' };
         return {
@@ -191,7 +191,7 @@ export default function Dashboard() {
           accentColor: colors.accentColor,
           urgentCount: col.urgent_count,
           totalCount: col.count,
-          cards: col.cards.map((c) => ({
+          cards: (col.cards || []).map((c) => ({
             id: `pa-${c.id}`,
             name: c.name,
             role: c.role,
@@ -203,7 +203,7 @@ export default function Dashboard() {
       })
     : priorityColumnsData;
 
-  const dynamicTalentMatches: TalentMatchData[] = dashboardData
+  const dynamicTalentMatches: TalentMatchData[] = dashboardData?.dashboard?.new_talent_matches
     ? dashboardData.dashboard.new_talent_matches.map((m: DashboardTalentMatch) => ({
         id: m.id,
         name: m.name,
@@ -215,10 +215,10 @@ export default function Dashboard() {
       }))
     : talentMatchesData;
 
-  const dynamicRecentActivities: ActivitySection[] = dashboardData
+  const dynamicRecentActivities: ActivitySection[] = dashboardData?.dashboard?.recent_activities?.items
     ? dashboardData.dashboard.recent_activities.items.map((group) => ({
         label: group.label,
-        items: group.items.map((item) => ({
+        items: (group.items || []).map((item) => ({
           icon: item.icon as 'calendar' | 'phone' | 'check',
           text: item.text,
           time: item.time,
