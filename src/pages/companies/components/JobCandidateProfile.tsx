@@ -178,7 +178,7 @@ export default function JobCandidateProfile({
   useEffect(() => {
     if (!cand.id || activeTab !== "call") return;
     setLoadingCalls(true);
-    const candidatePhone = premiumData.phone || "+918103715252";
+    const candidatePhone = "+91" + premiumData.phone || "";
     getCandidateCallHistory(cand.id, candidatePhone)
       .then((data) => setCallHistory(data))
       .catch((err) => {
