@@ -194,12 +194,16 @@ class DashboardService {
   async fetchRecentActivities(
     startDate?: string,
     endDate?: string,
+    categories?: string[],
   ): Promise<ActivitySection[]> {
     try {
       let url = "/candidates/recent-activities/";
       const params = new URLSearchParams();
       if (startDate) params.append("start_date", startDate);
       if (endDate) params.append("end_date", endDate);
+      if (categories && categories.length > 0 && !categories.includes("All")) {
+        params.append("category", categories.join(","));
+      }
 
       if (params.toString()) {
         url += `?${params.toString()}`;
