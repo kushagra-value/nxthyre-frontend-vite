@@ -37,6 +37,7 @@ import {
   ActivitySection,
   CandidateSource,
 } from './dashboardData';
+import apiClient from '../../services/api';
 
 const BriefcaseIcon = (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -273,6 +274,11 @@ export default function Dashboard() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+
+    apiClient
+      .get('/candidates/talent-matches/')
+      .then((res) => console.log('✅ NEW TALENT MATCHES API RESPONSE:', res.data))
+      .catch((err) => console.error('Talent Matches failed:', err));
     
     return () => {
       cancelled = true;
