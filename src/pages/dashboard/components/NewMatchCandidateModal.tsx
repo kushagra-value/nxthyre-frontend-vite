@@ -1,40 +1,118 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { NewMatchCandidate } from '../dashboardData';
 
 interface NewMatchCandidateModalProps {
     isOpen?: boolean;
     onClose?: () => void;
     candidates: NewMatchCandidate[];
-    initialIndex?: number;
+    candidateData?: any; // Full candidate details from /jobs/applications/{id}/
+    isLoading?: boolean;
+    currentIndex: number;
+    onNavigate: (newIndex: number) => void;
+}
+
+// quick_fit_summary item shape from the API
+interface QuickFitItem {
+    badge: string;
+    color: 'green' | 'yellow' | 'red';
+    status: string;
+    evidence: string;
+    priority: string;
 }
 
 const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
     isOpen = true,
     onClose = () => { },
     candidates = [],
-    initialIndex = 0,
+    candidateData,
+    isLoading = false,
+    currentIndex,
+    onNavigate,
 }) => {
-    const [currentIndex, setCurrentIndex] = useState(initialIndex);
-
-    React.useEffect(() => {
-        if (isOpen && candidates.length > 0) {
-            setCurrentIndex(initialIndex < candidates.length ? initialIndex : 0);
-        }
-    }, [isOpen, initialIndex, candidates.length]);
-
     if (!isOpen || candidates.length === 0) return null;
 
-    const candidate = candidates[currentIndex];
-    const total = candidates.length;
+    const goNext = () => onNavigate(Math.min(currentIndex + 1, candidates.length - 1));
+    const goPrev = () => onNavigate(Math.max(currentIndex - 1, 0));
 
-    const goNext = () => setCurrentIndex((prev) => Math.min(prev + 1, total - 1));
-    const goPrev = () => setCurrentIndex((prev) => Math.max(prev - 1, 0));
+    // ── Extract data from API response ──
+    const candidate = candidateData?.candidate;
+    const contextual = candidateData?.contextual_details;
+    const jobScoreObj = contextual?.job_score_obj;
+    const candidateMatchScore = jobScoreObj?.candidate_match_score;
+
+    // FALLBACKS from the 'candidates' array prop if API data is loading or missing
+    const currentItem = candidates[currentIndex];
+    const candidateName = candidate?.full_name || currentItem?.name || 'Loading...';
+
+    // ── Subtitle: role · company ──
+    const role = currentItem?.role || '';
+    const company = currentItem?.company || '';
+
+    // ── Match percentage — parse from candidate_match_score.score (e.g. "65%") ──
+    let matchPercentage = currentItem?.matchPercentage || 0;
+    if (candidateMatchScore?.score) {
+        const parsed = parseInt(String(candidateMatchScore.score).replace('%', ''), 10);
+        if (!isNaN(parsed)) matchPercentage = parsed;
+    }
+
+    // ── Experience ──
+    const experience = candidate?.total_experience != null
+        ? `${candidate.total_experience} yrs`
+        : (currentItem?.experience || 'N/A');
+
+    // ── Current CTC ──
+    const currentCTC = candidate?.current_salary
+        || candidate?.premium_data?.current_ctc
+        || currentItem?.currentCTC
+        || 'N/A';
+
+    // ── Expected CTC ──
+    const expectedCTC = candidate?.expected_ctc
+        || candidate?.premium_data?.expected_ctc
+        || currentItem?.expectedCTC
+        || 'N/A';
+
+    // ── Notice Period ──
+    const noticePeriodDays = candidate?.notice_period_days;
+    const noticePeriod = noticePeriodDays != null
+        ? (noticePeriodDays === 0 ? 'Immediate' : `${noticePeriodDays} Days`)
+        : (candidate?.notice_period_summary || currentItem?.noticePeriod || 'N/A');
+
+    // ── Location ──
+    const location = candidate?.location || currentItem?.location || 'N/A';
+
+    // ── Source ──
+    const source = candidate?.application_type
+        ? candidate.application_type.charAt(0).toUpperCase() + candidate.application_type.slice(1)
+        : (currentItem?.source || 'N/A');
+
+    // ── Quick Fit Summary ──
+    const quickFitSummary: QuickFitItem[] = jobScoreObj?.quick_fit_summary || [];
+
+    // ── AI Summary ──
+    const aiSummary = candidateMatchScore?.description
+        || contextual?.ai_summary
+        || jobScoreObj?.recommended_message
+        || candidate?.profile_summary
+        || currentItem?.aiSummary
+        || 'No AI summary available.';
+
+    // ── Match label ──
+    const matchLabel = candidateMatchScore?.label || '';
 
     // SVG arc for the match percentage ring
-    const matchPct = candidate.matchPercentage;
     const radius = 20;
     const circumference = 2 * Math.PI * radius;
-    const strokeDashoffset = circumference - (matchPct / 100) * circumference;
+    const strokeDashoffset = circumference - (matchPercentage / 100) * circumference;
+
+    const getBadgeStyle = (color: string): { textColor: string; iconType: 'check' | 'warn' | 'cross' } => {
+        switch (color) {
+            case 'green': return { textColor: '#009951', iconType: 'check' };
+            case 'yellow': return { textColor: '#CC8800', iconType: 'warn' };
+            case 'red': return { textColor: '#CF272D', iconType: 'cross' };
+            default: return { textColor: '#8E8E93', iconType: 'check' };
+        }
+    };
 
     return (
         <div
@@ -50,14 +128,11 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
                 {/* ─── Header ─── */}
                 <div className="w-full shrink-0" style={{ borderBottom: '0.5px solid #AEAEB2' }}>
                     <div className="flex items-center justify-between" style={{ padding: '20px 24px' }}>
-                        {/* Title */}
                         <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>
                             New Talent Matches
                         </span>
 
-                        {/* Right side: pagination + close */}
                         <div className="flex items-center gap-5">
-                            {/* Pagination nav */}
                             <div className="flex items-center gap-2">
                                 <button
                                     className="flex items-center justify-center bg-white p-0 cursor-pointer hover:bg-gray-100 disabled:opacity-35 disabled:cursor-not-allowed"
@@ -70,13 +145,13 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
                                     </svg>
                                 </button>
                                 <span className="text-xs text-gray-600 text-center" style={{ minWidth: 22, lineHeight: '14px' }}>
-                                    {currentIndex + 1}/{total}
+                                    {currentIndex + 1}/{candidates.length}
                                 </span>
                                 <button
                                     className="flex items-center justify-center bg-white p-0 cursor-pointer hover:bg-gray-100 disabled:opacity-35 disabled:cursor-not-allowed"
                                     style={{ width: 30, height: 30, border: '0.5px solid #D1D1D6', borderRadius: 7 }}
                                     onClick={goNext}
-                                    disabled={currentIndex === total - 1}
+                                    disabled={currentIndex === candidates.length - 1}
                                 >
                                     <svg width="6" height="10" viewBox="0 0 6 10" fill="none">
                                         <path d="M1 1L5 5L1 9" stroke="#4B5563" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -84,7 +159,6 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
                                 </button>
                             </div>
 
-                            {/* Close button */}
                             <button
                                 className="flex items-center justify-center bg-transparent border-none p-0 cursor-pointer hover:opacity-60"
                                 onClick={onClose}
@@ -97,184 +171,203 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
                         </div>
                     </div>
                 </div>
+
                 {/* Scrollable */}
-                <div className="flex-1 overflow-y-auto" style={{ padding: '20px 24px' }}>
-                    {/* ─── Candidate Info + Details Section ─── */}
-                    <div className="w-full shrink-0 " style={{ borderBottom: '0.5px solid #AEAEB2', padding: '20px 24px' }}>
-                        {/* Candidate Name + Match Ring */}
-                        <div className="flex items-center justify-between" style={{ marginBottom: 30 }}>
-                            <div className="flex flex-col" style={{ gap: 10 }}>
-                                <h3 className="m-0 font-medium text-black" style={{ fontSize: 20, lineHeight: '24px' }}>
-                                    {candidate.name}
-                                </h3>
-                                <p className="m-0 text-xs font-normal" style={{ color: '#0F47F2', lineHeight: '14px' }}>
-                                    {candidate.role} · {candidate.company}
-                                </p>
+                <div className="flex-1 overflow-y-auto">
+                    {isLoading ? (
+                        <div className="p-6 animate-pulse">
+                            <div className="flex items-center justify-between mb-8">
+                                <div className="space-y-3">
+                                    <div className="h-6 w-48 bg-gray-200 rounded" />
+                                    <div className="h-4 w-64 bg-gray-100 rounded" />
+                                </div>
+                                <div className="h-12 w-12 rounded-full bg-gray-100" />
                             </div>
-                            {/* Match Percentage Ring */}
-                            <div className="flex flex-col items-center justify-center" style={{ width: 48, height: 48 }}>
-                                <svg width="48" height="48" viewBox="0 0 48 48">
-                                    {/* Background circle */}
-                                    <circle cx="24" cy="24" r={radius} fill="none" stroke="rgba(116,116,128,0.08)" strokeWidth="4" />
-                                    {/* Progress arc */}
-                                    <circle
-                                        cx="24" cy="24" r={radius}
-                                        fill="none"
-                                        stroke="#00C8B3"
-                                        strokeWidth="4"
-                                        strokeLinecap="round"
-                                        strokeDasharray={circumference}
-                                        strokeDashoffset={strokeDashoffset}
-                                        transform="rotate(-90 24 24)"
-                                    />
-                                    <text x="24" y="24" textAnchor="middle" dominantBaseline="central" fill="#4B5563" fontSize="14" fontFamily="Gellix, Inter, sans-serif" fontWeight="400">
-                                        {matchPct}%
-                                    </text>
-                                </svg>
+                            <div className="grid grid-cols-3 gap-8 mb-8 pb-8 border-b border-[#AEAEB2]">
+                                {[...Array(6)].map((_, i) => (
+                                    <div key={i} className="space-y-2">
+                                        <div className="h-3 w-16 bg-gray-100 rounded" />
+                                        <div className="h-4 w-24 bg-gray-200 rounded" />
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="space-y-4">
+                                <div className="h-4 w-32 bg-gray-100 rounded" />
+                                <div className="flex gap-2">
+                                    {[...Array(4)].map((_, i) => (
+                                        <div key={i} className="h-8 w-20 bg-gray-100 rounded-full" />
+                                    ))}
+                                </div>
                             </div>
                         </div>
-
-                        {/* Details Grid — 3 columns × 2 rows */}
-                        {/* Row 1: Experience, Current CTC, Expected */}
-                        <div className="flex items-start justify-between" style={{ gap: 67, marginBottom: 20 }}>
-                            <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
-                                <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Experience</span>
-                                <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.experience}</span>
-                            </div>
-                            <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
-                                <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Current CTC</span>
-                                <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.currentCTC}</span>
-                            </div>
-                            <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
-                                <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Expected</span>
-                                <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.expectedCTC}</span>
-                            </div>
-                        </div>
-                        {/* Row 2: Notice Period, Location, Source */}
-                        <div className="flex items-start justify-between" style={{ gap: 67 }}>
-                            <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
-                                <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Notice Period</span>
-                                <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.noticePeriod}</span>
-                            </div>
-                            <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
-                                <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Location</span>
-                                <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.location}</span>
-                            </div>
-                            <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
-                                <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Source</span>
-                                <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.source}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* ─── Quick Fit Summary + AI Summary ─── */}
-                    <div className="w-full shrink-0" style={{ padding: '20px 24px' }}>
-                        {/* Quick Fit Summary Header */}
-                        <h4 className="m-0 font-medium text-sm uppercase text-gray-600" style={{ lineHeight: '17px', marginBottom: 20 }}>
-                            Quick Fit Summary
-                        </h4>
-
-                        {/* Quick Fit Tags */}
-                        <div className="flex flex-wrap items-center" style={{ gap: 10, marginBottom: 30 }}>
-                            {candidate.quickFitSkills.map((skill) => (
-                                <span
-                                    key={skill.name}
-                                    className="inline-flex items-center text-sm font-normal"
-                                    style={{
-                                        padding: '10px 12px',
-                                        background: '#F5F9FB',
-                                        borderRadius: 20,
-                                        gap: 5,
-                                        color: skill.match ? '#009951' : '#CF272D',
-                                        lineHeight: '17px',
-                                    }}
-                                >
-                                    {skill.name}
-                                    {skill.match ? (
-                                        <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
-                                            <circle cx="8.5" cy="8.5" r="8" stroke="#009951" strokeWidth="1" />
-                                            <path d="M5 8.5L7.5 11L12 6" stroke="#009951" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                    ) : (
+                        <>
+                            {/* ─── Candidate Info ─── */}
+                            <div className="w-full" style={{ borderBottom: '0.5px solid #AEAEB2', padding: '20px 24px' }}>
+                                <div className="flex items-center justify-between" style={{ marginBottom: 30 }}>
+                                    <div className="flex flex-col" style={{ gap: 10 }}>
+                                        <h3 className="m-0 font-medium text-black" style={{ fontSize: 20, lineHeight: '24px' }}>
+                                            {candidateName}
+                                        </h3>
+                                        <p className="m-0 text-xs font-normal" style={{ color: '#0F47F2', lineHeight: '14px' }}>
+                                            {role} · {company}
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-col items-center justify-center relative" style={{ width: 48, height: 48 }}>
+                                        <svg width="48" height="48" viewBox="0 0 48 48">
+                                            <circle cx="24" cy="24" r={radius} fill="none" stroke="rgba(116,116,128,0.08)" strokeWidth="4" />
+                                            <circle
+                                                cx="24" cy="24" r={radius}
+                                                fill="none"
+                                                stroke="#00C8B3"
+                                                strokeWidth="4"
+                                                strokeLinecap="round"
+                                                strokeDasharray={circumference}
+                                                strokeDashoffset={strokeDashoffset}
+                                                transform="rotate(-90 24 24)"
+                                            />
                                         </svg>
-                                    ) : (
-                                        <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
-                                            <circle cx="8.5" cy="8.5" r="8" stroke="#CF272D" strokeWidth="1" />
-                                            <path d="M6 6L11 11M11 6L6 11" stroke="#CF272D" strokeWidth="1.2" strokeLinecap="round" />
-                                        </svg>
-                                    )}
-                                </span>
-                            ))}
-                        </div>
+                                        <span className="absolute inset-0 flex items-center justify-center text-sm font-normal text-gray-600">
+                                            {matchPercentage}%
+                                        </span>
+                                    </div>
+                                </div>
 
-                        {/* AI Summary Header */}
-                        <h4 className="m-0 font-medium text-sm uppercase text-gray-600" style={{ lineHeight: '17px', marginBottom: 10 }}>
-                            AI Summary
-                        </h4>
+                                <div className="flex items-start justify-between" style={{ gap: 67, marginBottom: 20 }}>
+                                    <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                                        <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Experience</span>
+                                        <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{experience}</span>
+                                    </div>
+                                    <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                                        <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Current CTC</span>
+                                        <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{currentCTC}</span>
+                                    </div>
+                                    <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                                        <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Expected</span>
+                                        <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{expectedCTC}</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-start justify-between" style={{ gap: 67 }}>
+                                    <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                                        <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Notice Period</span>
+                                        <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{noticePeriod}</span>
+                                    </div>
+                                    <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                                        <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Location</span>
+                                        <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{location}</span>
+                                    </div>
+                                    <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                                        <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Source</span>
+                                        <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{source}</span>
+                                    </div>
+                                </div>
+                            </div>
 
-                        {/* AI Summary Box */}
-                        <div className="bg-gray-50" style={{ borderRadius: 10, padding: '8px 0 6px 8px' }}>
-                            <p className="m-0 text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '25px' }}>
-                                {candidate.aiSummary}
-                            </p>
-                        </div>
-                    </div>
+                            {/* ─── Summaries ─── */}
+                            <div className="w-full" style={{ padding: '20px 24px' }}>
+                                {quickFitSummary.length > 0 && (
+                                    <>
+                                        <h4 className="m-0 font-medium text-sm uppercase text-gray-600" style={{ lineHeight: '17px', marginBottom: 20 }}>
+                                            Quick Fit Summary
+                                        </h4>
+                                        <div className="flex flex-wrap items-center" style={{ gap: 10, marginBottom: 30 }}>
+                                            {quickFitSummary.map((item, idx) => {
+                                                const badgeStyle = getBadgeStyle(item.color);
+                                                return (
+                                                    <span
+                                                        key={`${item.badge}-${idx}`}
+                                                        className="inline-flex items-center text-sm font-normal"
+                                                        style={{
+                                                            padding: '10px 12px',
+                                                            background: '#F5F9FB',
+                                                            borderRadius: 20,
+                                                            gap: 5,
+                                                            color: badgeStyle.textColor,
+                                                            lineHeight: '17px',
+                                                        }}
+                                                    >
+                                                        {item.badge}
+                                                        {badgeStyle.iconType === 'check' && (
+                                                            <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+                                                                <circle cx="8.5" cy="8.5" r="8" stroke={badgeStyle.textColor} strokeWidth="1" />
+                                                                <path d="M5 8.5L7.5 11L12 6" stroke={badgeStyle.textColor} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                                            </svg>
+                                                        )}
+                                                        {badgeStyle.iconType === 'warn' && (
+                                                            <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+                                                                <circle cx="8.5" cy="8.5" r="8" stroke={badgeStyle.textColor} strokeWidth="1" />
+                                                                <path d="M8.5 5.5V9.5" stroke={badgeStyle.textColor} strokeWidth="1.2" strokeLinecap="round" />
+                                                                <circle cx="8.5" cy="11.5" r="0.75" fill={badgeStyle.textColor} />
+                                                            </svg>
+                                                        )}
+                                                        {badgeStyle.iconType === 'cross' && (
+                                                            <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+                                                                <circle cx="8.5" cy="8.5" r="8" stroke={badgeStyle.textColor} strokeWidth="1" />
+                                                                <path d="M6 6L11 11M11 6L6 11" stroke={badgeStyle.textColor} strokeWidth="1.2" strokeLinecap="round" />
+                                                            </svg>
+                                                        )}
+                                                    </span>
+                                                );
+                                            })}
+                                        </div>
+                                    </>
+                                )}
+
+                                <h4 className="m-0 font-medium text-sm uppercase text-gray-600" style={{ lineHeight: '17px', marginBottom: 10 }}>
+                                    AI Summary
+                                    {matchLabel && <span className="ml-2 lowercase font-normal text-gray-400">({matchLabel})</span>}
+                                </h4>
+                                <div className="bg-gray-50" style={{ borderRadius: 10, padding: '12px' }}>
+                                    <p className="m-0 text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '25px' }}>
+                                        {aiSummary}
+                                    </p>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* ─── Footer Actions ─── */}
-                <div className="flex items-center justify-between shrink-0" style={{ padding: '20px 24px', gap: 76 }}>
-                    {/* Skip button */}
+                <div className="flex items-center justify-between shrink-0" style={{ padding: '20px 24px', borderTop: '0.5px solid #AEAEB2' }}>
                     <button
-                        className="flex items-center justify-center cursor-pointer bg-white text-sm font-normal"
+                        className="flex items-center justify-center cursor-pointer bg-white text-sm font-normal hover:opacity-80 transition-opacity"
                         style={{ height: 37, border: '0.5px solid #FF383C', borderRadius: 5, padding: 10, gap: 5, color: '#FF383C' }}
                     >
-                        {/* Trash icon */}
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                             <path d="M9.17 4H14.83L15.5 2H8.5L9.17 4Z" stroke="#FF383C" strokeWidth="1.2" />
-                            <path d="M3.5 6H20.5" stroke="#FF383C" strokeWidth="1.2" strokeLinecap="round" />
+                            <path d="M3.5 6H20.5" stroke="#FF383C" strokeLinecap="round" />
                             <path d="M5.5 6V19C5.5 20.1 6.4 21 7.5 21H16.5C17.6 21 18.5 20.1 18.5 19V6" stroke="#FF383C" strokeWidth="1.2" />
-                            <path d="M9.5 11V16" stroke="#FF383C" strokeWidth="1.2" strokeLinecap="round" />
-                            <path d="M14.5 11V16" stroke="#FF383C" strokeWidth="1.2" strokeLinecap="round" />
                         </svg>
                         Skip
                     </button>
 
-                    {/* Right side buttons */}
                     <div className="flex items-center" style={{ gap: 10 }}>
-                        {/* View Profile */}
                         <button
-                            className="flex items-center justify-center cursor-pointer bg-transparent text-sm font-normal"
-                            style={{ height: 37, border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, gap: 5, color: '#0F47F2' }}
+                            className="flex items-center justify-center cursor-pointer bg-transparent text-sm font-normal hover:bg-gray-50 transition-colors"
+                            style={{ height: 37, border: '0.5px solid #9CA3AF', borderRadius: 5, padding: 10, gap: 5, color: '#9CA3AF' }}
+                            onClick={() => {
+                                const candId = candidate?.id || currentItem?.id;
+                                if (candId) window.open(`/candidate-profiles/${candId}`, '_blank');
+                            }}
                         >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                <circle cx="12" cy="10" r="3.5" stroke="#0F47F2" strokeWidth="1.5" />
-                                <path d="M5.5 19.5C5.5 16.5 8.5 14.5 12 14.5C15.5 14.5 18.5 16.5 18.5 19.5" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
-                                <circle cx="12" cy="12" r="10" stroke="#0F47F2" strokeWidth="1.5" />
-                            </svg>
                             View Profile
                         </button>
 
-                        {/* Call */}
                         <button
-                            className="flex items-center justify-center cursor-pointer bg-transparent text-sm font-normal"
+                            className="flex items-center justify-center cursor-pointer bg-transparent text-sm font-normal hover:bg-blue-50 transition-colors"
                             style={{ height: 37, border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, gap: 5, color: '#0F47F2' }}
+                            onClick={() => {
+                                const phone = candidate?.phone || candidate?.premium_data?.phone;
+                                if (phone) window.open(`tel:${phone}`, '_self');
+                            }}
                         >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                <path d="M14.5 2C14.5 2 16.5 2.5 19 5C21.5 7.5 22 9.5 22 9.5" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
-                                <path d="M14.5 5.5C14.5 5.5 15.5 6 17 7.5C18.5 9 19 10 19 10" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
-                                <path d="M22 16.92V19.92C22 20.97 21.18 21.85 20.13 21.97C19.05 22.1 16.8 22 14 20C11.51 18.22 9.37 16.08 7.78 13.78C5.69 10.96 5.5 8.78 5.5 7.5C5.5 5.5 7 4 8.5 4C9 4 9.5 4.5 10 5L11.5 7.5C12 8.5 11 9.5 10.5 10C10 10.5 10 11 11 12.5C12 14 13 15 14.5 14C15 13.5 16 12.5 17 13L19.5 14.5C20.5 15 21 15.5 21 16C21.5 16.25 22 16.42 22 16.92Z" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
                             Call
                         </button>
 
-                        {/* Send Nvites — primary */}
                         <button
-                            className="flex items-center justify-center cursor-pointer text-sm font-normal text-white"
-                            style={{ height: 37, background: '#0F47F2', border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, gap: 5 }}
+                            className="flex items-center justify-center cursor-pointer text-sm font-normal text-white hover:opacity-90 transition-opacity"
+                            style={{ height: 37, background: '#0F47F2', border: '1px solid #0F47F2', borderRadius: 5, padding: '0 15px' }}
                         >
-                            {/* Send icon */}
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                <path d="M5.4 12L3 21L21 12L3 3L5.4 12Z" stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
-                                <path d="M5.4 12H12" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-                            </svg>
                             Send Nvites
                         </button>
                     </div>

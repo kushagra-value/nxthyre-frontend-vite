@@ -108,6 +108,8 @@ export interface NewMatchCandidate {
     currentCTC: string;
     expectedCTC: string;
     location: string;
+    matchId?: number;
+    jobId?: number;
 }
 
 export interface ScheduleEventData {

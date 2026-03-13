@@ -198,7 +198,9 @@ export default function Dashboard() {
   const [actionModalCurrentIndex, setActionModalCurrentIndex] = useState(0);
 
   const [isNewMatchModalOpen, setIsNewMatchModalOpen] = useState(false);
-  const [newMatchInitialIndex, setNewMatchInitialIndex] = useState(0);
+  const [newMatchCurrentIndex, setNewMatchCurrentIndex] = useState(0);
+  const [newMatchCandidateData, setNewMatchCandidateData] = useState<any>(null);
+  const [newMatchLoading, setNewMatchLoading] = useState(false);
 
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [scheduleInitialIndex, setScheduleInitialIndex] = useState(0);
@@ -435,6 +437,8 @@ export default function Dashboard() {
           source: mapSource(m.source?.source),
           quickFitSkills,
           aiSummary: m.job_score_object?.recommended_message || m.job_score_object?.candidate_match_score?.description || '',
+          matchId: m.match_id,
+          jobId: m.job_id,
         };
       })
     : [];
@@ -496,10 +500,47 @@ export default function Dashboard() {
     }
   };
 
-  const handleTalentMatchClick = (name: string) => {
+  const handleTalentMatchClick = async (name: string) => {
     const idx = modalCandidates.findIndex((c: any) => c.name === name);
-    setNewMatchInitialIndex(idx >= 0 ? idx : 0);
+    const indexToUse = idx >= 0 ? idx : 0;
+    
+    setNewMatchCurrentIndex(indexToUse);
     setIsNewMatchModalOpen(true);
+
+    const item = modalCandidates[indexToUse];
+    if (item && item.matchId) {
+      setNewMatchLoading(true);
+      try {
+        const data = await dashboardService.getCandidateDetails(item.matchId, item.jobId);
+        setNewMatchCandidateData(data);
+      } catch (err) {
+        console.error('Failed to fetch talent match details:', err);
+        setNewMatchCandidateData(null);
+      } finally {
+        setNewMatchLoading(false);
+      }
+    }
+  };
+
+  const handleNewMatchModalNavigate = async (newIndex: number) => {
+    if (newIndex < 0 || newIndex >= modalCandidates.length) return;
+    setNewMatchCurrentIndex(newIndex);
+    const item = modalCandidates[newIndex];
+
+    if (item && item.matchId) {
+      setNewMatchLoading(true);
+      try {
+        const data = await dashboardService.getCandidateDetails(item.matchId, item.jobId);
+        setNewMatchCandidateData(data);
+      } catch (err) {
+        console.error('Failed to fetch talent match details:', err);
+        setNewMatchCandidateData(null);
+      } finally {
+        setNewMatchLoading(false);
+      }
+    } else {
+      setNewMatchCandidateData(null);
+    }
   };
 
   const handleScheduleEventClick = (item: ScheduleItemData) => {
@@ -826,9 +867,15 @@ export default function Dashboard() {
       {/* New Match Candidate Modal */}
       <NewMatchCandidateModal
         isOpen={isNewMatchModalOpen}
-        onClose={() => setIsNewMatchModalOpen(false)}
+        onClose={() => {
+          setIsNewMatchModalOpen(false);
+          setNewMatchCandidateData(null);
+        }}
         candidates={modalCandidates}
-        initialIndex={newMatchInitialIndex}
+        candidateData={newMatchCandidateData}
+        isLoading={newMatchLoading}
+        currentIndex={newMatchCurrentIndex}
+        onNavigate={handleNewMatchModalNavigate}
       />
       {/* Schedule Event Modal */}
       <ScheduleEventModal
