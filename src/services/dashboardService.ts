@@ -21,7 +21,6 @@ export interface DashboardPriorityCard {
   candidate_id: string;
   name: string;
   role: string;
-  company?: string;
   days_ago: number;
   status: string;
   status_color: string;
