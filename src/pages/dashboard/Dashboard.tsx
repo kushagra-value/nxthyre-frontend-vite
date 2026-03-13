@@ -95,7 +95,8 @@ const mapIconType = (apiIconType: string): string => {
 
 
 // Map API source to internal CandidateSource
-const mapSource = (src: string): CandidateSource | undefined => {
+const mapSource = (src: any): CandidateSource | undefined => {
+  if (typeof src !== 'string') return 'external';
   const mapping: Record<string, CandidateSource> = {
     autopilot: 'nxt',
     nxthyre: 'nxt',
@@ -123,7 +124,8 @@ const formatDateToYMD = (date: Date): string => {
 };
 
 // Map tag string from API to a display status and color
-const mapTagToStatus = (tag: string): { status: string; statusColor: 'blue' | 'rose' | 'amber' | 'indigo' | 'grey' | 'green' } => {
+const mapTagToStatus = (tag: any): { status: string; statusColor: 'blue' | 'rose' | 'amber' | 'indigo' | 'grey' | 'green' } => {
+  if (typeof tag !== 'string') return { status: String(tag || 'Unknown'), statusColor: 'grey' };
   const lower = tag.toLowerCase();
   if (lower.includes('follow up')) {
     return { status: tag, statusColor: 'blue' };
@@ -379,9 +381,11 @@ export default function Dashboard() {
       };
     });
 
-    const urgentCount = items.filter(item =>
-      item.tags.some(tag => tag.toLowerCase().includes('follow up') || tag.toLowerCase().includes('not called'))
-    ).length;
+    const urgentCount = Array.isArray(items) ? items.filter(item =>
+      Array.isArray(item.tags) && item.tags.some(tag => 
+        typeof tag === 'string' && (tag.toLowerCase().includes('follow up') || tag.toLowerCase().includes('not called'))
+      )
+    ).length : 0;
 
     return {
       id: `col-${tabInfo.key}`,
@@ -518,7 +522,7 @@ export default function Dashboard() {
   const handleDateRangeApply = (range: { start?: Date; end?: Date; label: string }) => {
     setDateRange(range.label);
 
-    const labelLower = range.label.toLowerCase();
+    const labelLower = typeof range.label === 'string' ? range.label.toLowerCase() : '';
     if (labelLower === 'today') {
       setDateRangePreset('today');
       setCustomStartDate(undefined);
@@ -542,7 +546,7 @@ export default function Dashboard() {
   // Handle talent match date range selection
   const handleTalentMatchDateRangeApply = (range: { start?: Date; end?: Date; label: string }) => {
     setTalentMatchDateRange(range.label);
-    const labelLower = range.label.toLowerCase();
+    const labelLower = typeof range.label === 'string' ? range.label.toLowerCase() : '';
     
     if (labelLower === 'today' || labelLower === 'last 24 hours') {
       setTalentMatchDateRangePreset('today');
