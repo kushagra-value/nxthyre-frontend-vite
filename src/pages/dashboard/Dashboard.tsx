@@ -8,6 +8,7 @@ import ScheduleWidget from './components/ScheduleWidget';
 import RecentActivities from './components/RecentActivities';
 import ActionReviewModal from './components/ActionReviewModal';
 import NewMatchCandidateModal from './components/NewMatchCandidateModal';
+import CustomDateSelector from './components/CustomDateSelector';
 import ScheduleEventModal from './components/ScheduleEventModal';
 import DateWiseAgendaModal from './components/DateWiseAgendaModal';
 import { useAuth } from '../../hooks/useAuth';
@@ -135,6 +136,8 @@ export default function Dashboard() {
   const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
   const [dateRange, setDateRange] = useState('Today');
   const [showDateDropdown, setShowDateDropdown] = useState(false);
+  const [talentMatchDateRange, setTalentMatchDateRange] = useState('Last 24 Hours');
+  const [showTalentMatchDateDropdown, setShowTalentMatchDateDropdown] = useState(false);
 
   // Modal states
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
@@ -391,19 +394,11 @@ export default function Dashboard() {
                     {dateRange}
                   </button>
                   {showDateDropdown && (
-                    <div className="absolute top-full mt-1 right-0 w-[200px] bg-white border border-[#D1D1D6] rounded-[10px] shadow-lg z-10 overflow-hidden">
-                      {['Today', 'Yesterday', 'Last 7 Days', 'Last 30 Days', 'Custom Range'].map(range => (
-                        <button
-                          key={range}
-                          className="w-full text-left px-4 py-2 hover:bg-[#F3F5F7] text-sm text-[#4B5563]"
-                          onClick={() => {
-                            setDateRange(range);
-                            setShowDateDropdown(false);
-                          }}
-                        >
-                          {range}
-                        </button>
-                      ))}
+                    <div className="absolute top-full mt-1 right-0 z-20">
+                      <CustomDateSelector 
+                        onApply={(range: { label: string }) => setDateRange(range.label)}
+                        onClose={() => setShowDateDropdown(false)}
+                      />
                     </div>
                   )}
                 </div>
@@ -468,11 +463,21 @@ export default function Dashboard() {
                 >
                   All Jobs <ChevronDown className="w-5 h-5 opacity-60" />
                 </div>
-                <div
-                  className="flex items-center px-[18px] py-[11px] rounded-lg text-sm font-normal text-[#4B5563] leading-[17px]"
-                  style={{ border: '0.5px solid #D1D1D6' }}
-                >
-                  Last 24 Hours
+                <div className="relative">
+                  <button
+                    onClick={() => setShowTalentMatchDateDropdown(!showTalentMatchDateDropdown)}
+                    className="flex items-center px-[18px] py-[11px] rounded-lg text-sm font-normal text-[#4B5563] leading-[17px] bg-white border-[0.5px] border-[#D1D1D6] whitespace-nowrap min-w-[140px]"
+                  >
+                    {talentMatchDateRange}
+                  </button>
+                  {showTalentMatchDateDropdown && (
+                    <div className="absolute top-full mt-1 right-0 z-20">
+                      <CustomDateSelector 
+                        onApply={(range: { label: string }) => setTalentMatchDateRange(range.label)}
+                        onClose={() => setShowTalentMatchDateDropdown(false)}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -507,7 +512,7 @@ export default function Dashboard() {
         <aside className="w-96 flex flex-col gap-4 shrink-0">
           <CalendarWidget onDateClick={handleDateClick} />
           <ScheduleWidget items={dynamicScheduleItems} isLoading={loading} onEventClick={handleScheduleEventClick} />
-          <RecentActivities activities={dynamicRecentActivities} isLoading={loading} />
+          <RecentActivities/>
         </aside>
       </div>
 
