@@ -295,9 +295,13 @@ class DashboardService {
     }
   }
 
-  async getCandidateDetails(applicationId: number): Promise<any> {
+  async getCandidateDetails(applicationId: number, jobId?: number): Promise<any> {
     try {
-      const response = await apiClient.get(`/jobs/applications/${applicationId}/`);
+      let url = `/jobs/applications/${applicationId}/`;
+      if (jobId) {
+        url += `?job_id=${jobId}`;
+      }
+      const response = await apiClient.get(url);
       return response.data;
     } catch (error: any) {
       throw new Error(

@@ -339,7 +339,7 @@ export default function Dashboard() {
       return {
         id: `pa-${item.application_id}`,
         name: item.candidate_full_name,
-        role: item.role || item.job_role,
+        role: item.job_role,
         company: item.workspace_name,
         daysAgo: item.days_in_current_stage,
         status: isDone ? (item.action_taken || tagInfo.status) : tagInfo.status,
@@ -348,6 +348,7 @@ export default function Dashboard() {
         applicationId: item.application_id,
         candidateId: item.candidate_id,
         jobRole: item.job_role,
+        jobRoleId: item.job_role_id,
       };
     });
 
@@ -418,7 +419,7 @@ export default function Dashboard() {
     // Fetch full candidate details
     setActionModalLoading(true);
     try {
-      const data = await dashboardService.getCandidateDetails(card.applicationId);
+      const data = await dashboardService.getCandidateDetails(card.applicationId, card.jobRoleId);
       setActionModalCandidateData(data);
     } catch (err) {
       console.error('Failed to fetch candidate details:', err);
@@ -436,7 +437,7 @@ export default function Dashboard() {
 
     setActionModalLoading(true);
     try {
-      const data = await dashboardService.getCandidateDetails(item.application_id);
+      const data = await dashboardService.getCandidateDetails(item.application_id, item.job_role_id);
       setActionModalCandidateData(data);
     } catch (err) {
       console.error('Failed to fetch candidate details:', err);
