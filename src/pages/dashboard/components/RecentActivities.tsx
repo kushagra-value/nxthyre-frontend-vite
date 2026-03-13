@@ -200,6 +200,7 @@ const RecentActivities = () => {
       const data = await dashboardService.fetchRecentActivities(
         startDateStr,
         endDateStr,
+        selectedCategories,
       );
       setActivities(data);
       setLoading(false);
