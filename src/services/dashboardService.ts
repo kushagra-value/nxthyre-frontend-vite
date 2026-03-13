@@ -138,6 +138,20 @@ export interface CompletePriorityActionPayload {
 }
 
 // ──────────────────────────────────────────────
+//  Talent Matches API Types
+// ──────────────────────────────────────────────
+
+export interface TalentMatchesParams {
+  job_id?: number;
+  date_range?: string;
+  start_date?: string;
+  end_date?: string;
+  source_type?: string;
+  page?: number;
+  page_size?: number;
+}
+
+// ──────────────────────────────────────────────
 //  Sidebar API Types
 // ──────────────────────────────────────────────
 
@@ -307,6 +321,23 @@ class DashboardService {
       throw new Error(
         error.response?.data?.error || "Failed to fetch candidate details",
       );
+    }
+  }
+
+  async getTalentMatches(params?: TalentMatchesParams): Promise<any> {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+      const response = await apiClient.get(`/candidates/talent-matches/?${queryParams.toString()}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to fetch talent matches");
     }
   }
 }

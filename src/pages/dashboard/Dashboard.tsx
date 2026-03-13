@@ -26,7 +26,6 @@ import {
   statCardsData,
   talentMatchesData,
   scheduleItemsData,
-  recentActivitiesData,
   newMatchCandidates,
   scheduleEventsData,
   dailyAgendaData,
@@ -34,10 +33,9 @@ import {
   StatCardData,
   PriorityColumnData,
   TalentMatchData,
-  ActivitySection,
+
   CandidateSource,
 } from './dashboardData';
-import apiClient from '../../services/api';
 
 const BriefcaseIcon = (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -185,8 +183,13 @@ export default function Dashboard() {
   const [showDateDropdown, setShowDateDropdown] = useState(false);
 
   const [talentMatchDateRange, setTalentMatchDateRange] = useState('Last 24 Hours');
+  const [talentMatchDateRangePreset, setTalentMatchDateRangePreset] = useState<DateRangePreset>('today');
+  const [talentMatchCustomStartDate, setTalentMatchCustomStartDate] = useState<string | undefined>(undefined);
+  const [talentMatchCustomEndDate, setTalentMatchCustomEndDate] = useState<string | undefined>(undefined);
   const [showTalentMatchDateDropdown, setShowTalentMatchDateDropdown] = useState(false);
-
+  
+  const [talentMatchesResponse, setTalentMatchesResponse] = useState<any>(null);
+  const [talentMatchesLoading, setTalentMatchesLoading] = useState(true);
   // Modal states
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [actionModalCandidateData, setActionModalCandidateData] = useState<any>(null);
@@ -275,10 +278,28 @@ export default function Dashboard() {
         if (!cancelled) setLoading(false);
       });
 
-    apiClient
-      .get('/candidates/talent-matches/')
-      .then((res) => console.log('✅ NEW TALENT MATCHES API RESPONSE:', res.data))
-      .catch((err) => console.error('Talent Matches failed:', err));
+  // Fetch talent matches from API
+  const fetchTalentMatches = useCallback(async () => {
+    if (!isAuthenticated) return;
+    setTalentMatchesLoading(true);
+    try {
+      const data = await dashboardService.getTalentMatches({
+        date_range: talentMatchDateRangePreset,
+        start_date: talentMatchCustomStartDate,
+        end_date: talentMatchCustomEndDate,
+        page_size: 10,
+      });
+      setTalentMatchesResponse(data);
+    } catch (err) {
+      console.error('Failed to fetch talent matches:', err);
+    } finally {
+      setTalentMatchesLoading(false);
+    }
+  }, [isAuthenticated, talentMatchDateRangePreset, talentMatchCustomStartDate, talentMatchCustomEndDate]);
+
+  useEffect(() => {
+    fetchTalentMatches();
+  }, [fetchTalentMatches]);
     
     return () => {
       cancelled = true;
@@ -373,28 +394,52 @@ export default function Dashboard() {
     };
   });
 
-  const dynamicTalentMatches: TalentMatchData[] = Array.isArray(dashboardData?.dashboard?.new_talent_matches?.matches)
-    ? dashboardData!.dashboard.new_talent_matches.matches.map((m: DashboardTalentMatch) => ({
-      id: m.id,
-      name: m.name,
-      company: m.company || 'N/A',
-      position: m.position,
-      experience: m.experience,
-      matchPercentage: m.match_percentage,
-      source: mapSource(m.source),
-    }))
-    : talentMatchesData;
+  const mapMatchPercentage = (match: any): number => {
+    if (typeof match.match_percentage === 'number') return match.match_percentage;
+    if (typeof match.match_score === 'number') return match.match_score;
+    const scoreRaw = match.match_percentage || match.match_score;
+    if (typeof scoreRaw === 'string') return parseInt(scoreRaw.replace('%', ''), 10) || 0;
+    return 0;
+  };
 
-  const dynamicRecentActivities: ActivitySection[] = Array.isArray(dashboardData?.dashboard?.recent_activities)
-    ? dashboardData!.dashboard.recent_activities.map((group) => ({
-      label: group.label,
-      items: Array.isArray(group.items) ? group.items.map((item) => ({
-        icon: item.icon as 'calendar' | 'phone' | 'check',
-        text: item.text,
-        time: item.time,
-      })) : [],
+  const dynamicTalentMatches: TalentMatchData[] = talentMatchesResponse?.results
+    ? talentMatchesResponse.results.map((m: any) => ({
+      id: m.id || m.candidate_id || Math.random().toString(),
+      name: m.name || m.candidate_full_name || 'Unknown',
+      company: m.company || m.workspace_name || 'N/A',
+      position: m.position || m.job_role || m.title || '',
+      experience: m.experience || m.total_experience || '',
+      matchPercentage: mapMatchPercentage(m),
+      source: mapSource(m.source || m.source_type || ''),
     }))
-    : recentActivitiesData;
+    : Array.isArray(dashboardData?.dashboard?.new_talent_matches?.matches)
+      ? dashboardData!.dashboard.new_talent_matches.matches.map((m: DashboardTalentMatch) => ({
+        id: m.id,
+        name: m.name,
+        company: m.company || 'N/A',
+        position: m.position,
+        experience: m.experience,
+        matchPercentage: m.match_percentage,
+        source: mapSource(m.source),
+      }))
+      : talentMatchesData;
+
+  const modalCandidates = talentMatchesResponse?.results 
+    ? talentMatchesResponse.results.map((m: any) => ({
+        name: m.name || m.candidate_full_name || 'Unknown',
+        role: m.position || m.job_role || m.title || '',
+        company: m.company || m.workspace_name || 'N/A',
+        matchPercentage: mapMatchPercentage(m),
+        experience: m.experience || m.total_experience || '',
+        currentCTC: m.current_salary || m.currentCTC || '-',
+        expectedCTC: m.expected_ctc || m.expectedCTC || '-',
+        noticePeriod: m.notice_period_days ? `${m.notice_period_days} Days` : m.noticePeriod || '-',
+        location: m.location || m.city || 'N/A',
+        source: mapSource(m.source || m.source_type || 'external'),
+        quickFitSkills: m.quick_fit_summary ? m.quick_fit_summary.map((q: any) => ({ name: q.skill_name || q.name, match: q.is_match || q.match })) : [],
+        aiSummary: m.description || m.aiSummary || '',
+      }))
+    : newMatchCandidates;
 
   // For schedule, use API data if available; map to ScheduleItemData from dashboardData types
   const dynamicScheduleItems: ScheduleItemData[] = Array.isArray(dashboardData?.dashboard?.schedule?.items)
@@ -454,7 +499,7 @@ export default function Dashboard() {
   };
 
   const handleTalentMatchClick = (name: string) => {
-    const idx = newMatchCandidates.findIndex((c) => c.name === name);
+    const idx = modalCandidates.findIndex((c: any) => c.name === name);
     setNewMatchInitialIndex(idx >= 0 ? idx : 0);
     setIsNewMatchModalOpen(true);
   };
@@ -491,6 +536,30 @@ export default function Dashboard() {
       setDateRangePreset('custom');
       if (range.start) setCustomStartDate(formatDateToYMD(range.start));
       if (range.end) setCustomEndDate(formatDateToYMD(range.end));
+    }
+  };
+
+  // Handle talent match date range selection
+  const handleTalentMatchDateRangeApply = (range: { start?: Date; end?: Date; label: string }) => {
+    setTalentMatchDateRange(range.label);
+    const labelLower = range.label.toLowerCase();
+    
+    if (labelLower === 'today' || labelLower === 'last 24 hours') {
+      setTalentMatchDateRangePreset('today');
+      setTalentMatchCustomStartDate(undefined);
+      setTalentMatchCustomEndDate(undefined);
+    } else if (labelLower === 'last week') {
+      setTalentMatchDateRangePreset('last_week');
+      setTalentMatchCustomStartDate(undefined);
+      setTalentMatchCustomEndDate(undefined);
+    } else if (labelLower === 'last month') {
+      setTalentMatchDateRangePreset('last_month');
+      setTalentMatchCustomStartDate(undefined);
+      setTalentMatchCustomEndDate(undefined);
+    } else {
+      setTalentMatchDateRangePreset('custom');
+      if (range.start) setTalentMatchCustomStartDate(formatDateToYMD(range.start));
+      if (range.end) setTalentMatchCustomEndDate(formatDateToYMD(range.end));
     }
   };
 
@@ -679,7 +748,7 @@ export default function Dashboard() {
                   {showTalentMatchDateDropdown && (
                     <div className="absolute top-full mt-1 right-0 z-20">
                       <CustomDateSelector
-                        onApply={(range: { label: string }) => setTalentMatchDateRange(range.label)}
+                        onApply={handleTalentMatchDateRangeApply}
                         onClose={() => setShowTalentMatchDateDropdown(false)}
                       />
                     </div>
@@ -688,7 +757,7 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex flex-col gap-5">
-              {loading
+              {talentMatchesLoading
                 ? [...Array(3)].map((_, i) => (
                   <div key={`tm-skel-${i}`} className="bg-white p-5 rounded-[10px] flex items-center justify-between animate-pulse" style={{ border: '1px solid #D1D1D6' }}>
                     <div className="flex flex-col gap-2">
@@ -698,18 +767,24 @@ export default function Dashboard() {
                     <div className="w-10 h-10 rounded-full bg-gray-200" />
                   </div>
                 ))
-                : dynamicTalentMatches.map((match) => (
-                  <TalentMatchCard
-                    key={match.id}
-                    name={match.name}
-                    company={match.company}
-                    position={match.position}
-                    experience={match.experience}
-                    matchPercentage={match.matchPercentage}
-                    source={match.source}
-                    onClick={() => handleTalentMatchClick(match.name)}
-                  />
-                ))}
+                : dynamicTalentMatches.length > 0 ? (
+                  dynamicTalentMatches.map((match) => (
+                    <TalentMatchCard
+                      key={match.id}
+                      name={match.name}
+                      company={match.company}
+                      position={match.position}
+                      experience={match.experience}
+                      matchPercentage={match.matchPercentage}
+                      source={match.source}
+                      onClick={() => handleTalentMatchClick(match.name)}
+                    />
+                  ))
+                ) : (
+                  <div className="flex items-center justify-center py-8 text-sm text-[#8E8E93]">
+                    No immediate talent matches
+                  </div>
+                )}
             </div>
           </section>
         </div>
@@ -754,7 +829,7 @@ export default function Dashboard() {
       <NewMatchCandidateModal
         isOpen={isNewMatchModalOpen}
         onClose={() => setIsNewMatchModalOpen(false)}
-        candidates={newMatchCandidates}
+        candidates={modalCandidates}
         initialIndex={newMatchInitialIndex}
       />
       {/* Schedule Event Modal */}
