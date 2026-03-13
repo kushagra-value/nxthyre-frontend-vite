@@ -14,7 +14,6 @@ import DateWiseAgendaModal from './components/DateWiseAgendaModal';
 import { useAuth } from '../../hooks/useAuth';
 import dashboardService, {
   DashboardData,
-  DashboardTalentMatch,
   PriorityActionItem,
   PriorityActionsResponse,
   PriorityTab,
@@ -24,9 +23,7 @@ import organizationService from '../../services/organizationService';
 import type { DiscoverWorkspace } from '../../services/organizationService';
 import {
   statCardsData,
-  talentMatchesData,
   scheduleItemsData,
-  newMatchCandidates,
   scheduleEventsData,
   dailyAgendaData,
   ScheduleItemData,
@@ -399,51 +396,48 @@ export default function Dashboard() {
   });
 
   const mapMatchPercentage = (match: any): number => {
-    if (typeof match.match_percentage === 'number') return match.match_percentage;
-    if (typeof match.match_score === 'number') return match.match_score;
-    const scoreRaw = match.match_percentage || match.match_score;
+    const scoreRaw = match.score ?? match.match_percentage ?? match.match_score;
+    if (typeof scoreRaw === 'number') return scoreRaw;
     if (typeof scoreRaw === 'string') return parseInt(scoreRaw.replace('%', ''), 10) || 0;
     return 0;
   };
 
   const dynamicTalentMatches: TalentMatchData[] = talentMatchesResponse?.results
     ? talentMatchesResponse.results.map((m: any) => ({
-      id: m.id || m.candidate_id || Math.random().toString(),
-      name: m.name || m.candidate_full_name || 'Unknown',
-      company: m.company || m.workspace_name || 'N/A',
-      position: m.position || m.job_role || m.title || '',
-      experience: m.experience || m.total_experience || '',
-      matchPercentage: mapMatchPercentage(m),
-      source: mapSource(m.source || m.source_type || ''),
+      id: m.candidate_id,
+      name: m.candidate_details || 'Unknown',
+      company: m.current_company || 'N/A',
+      position: m.job_title || '',
+      experience: m.total_exp != null ? `${m.total_exp} yrs` : '',
+      matchPercentage: mapMatchPercentage({ score: m.score }),
+      source: mapSource(m.source?.source),
     }))
-    : Array.isArray(dashboardData?.dashboard?.new_talent_matches?.matches)
-      ? dashboardData!.dashboard.new_talent_matches.matches.map((m: DashboardTalentMatch) => ({
-        id: m.id,
-        name: m.name,
-        company: m.company || 'N/A',
-        position: m.position,
-        experience: m.experience,
-        matchPercentage: m.match_percentage,
-        source: mapSource(m.source),
-      }))
-      : talentMatchesData;
+    : [];
 
   const modalCandidates = talentMatchesResponse?.results 
-    ? talentMatchesResponse.results.map((m: any) => ({
-        name: m.name || m.candidate_full_name || 'Unknown',
-        role: m.position || m.job_role || m.title || '',
-        company: m.company || m.workspace_name || 'N/A',
-        matchPercentage: mapMatchPercentage(m),
-        experience: m.experience || m.total_experience || '',
-        currentCTC: m.current_salary || m.currentCTC || '-',
-        expectedCTC: m.expected_ctc || m.expectedCTC || '-',
-        noticePeriod: m.notice_period_days ? `${m.notice_period_days} Days` : m.noticePeriod || '-',
-        location: m.location || m.city || 'N/A',
-        source: mapSource(m.source || m.source_type || 'external'),
-        quickFitSkills: m.quick_fit_summary ? m.quick_fit_summary.map((q: any) => ({ name: q.skill_name || q.name, match: q.is_match || q.match })) : [],
-        aiSummary: m.description || m.aiSummary || '',
-      }))
-    : newMatchCandidates;
+    ? talentMatchesResponse.results.map((m: any) => {
+        const quickFitSource = m.job_score_object?.quick_fit_summary || [];
+        const quickFitSkills = quickFitSource.map((q: any) => ({
+          name: q.badge,
+          match: q.color === 'green'
+        }));
+
+        return {
+          name: m.candidate_details || 'Unknown',
+          role: m.job_title || '',
+          company: m.current_company || 'N/A',
+          matchPercentage: mapMatchPercentage({ score: m.score }),
+          experience: m.total_exp != null ? `${m.total_exp} yrs` : '',
+          currentCTC: m.current_salary || '-',
+          expectedCTC: '-', // API JSON didn't show expectedCTC
+          noticePeriod: '-', // API JSON didn't show noticePeriod explicitly as days
+          location: '-', // API JSON didn't show location
+          source: mapSource(m.source?.source),
+          quickFitSkills,
+          aiSummary: m.job_score_object?.recommended_message || m.job_score_object?.candidate_match_score?.description || '',
+        };
+      })
+    : [];
 
   // For schedule, use API data if available; map to ScheduleItemData from dashboardData types
   const dynamicScheduleItems: ScheduleItemData[] = Array.isArray(dashboardData?.dashboard?.schedule?.items)
