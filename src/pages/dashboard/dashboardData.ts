@@ -16,9 +16,11 @@ export interface PriorityCardData {
     id: string;
     name: string;
     role: string;
+    company?: string;
     daysAgo: number;
     status: string;
-    statusColor: 'blue' | 'rose' | 'amber' | 'indigo' | 'grey';
+    statusColor: 'blue' | 'rose' | 'amber' | 'indigo' | 'grey' | 'green';
+    isDone?: boolean;
 }
 
 export interface PriorityColumnData {

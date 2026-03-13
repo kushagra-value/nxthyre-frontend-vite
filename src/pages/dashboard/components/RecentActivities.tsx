@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import type { ActivitySection } from "../../../services/dashboardService";
 import DailyActivitiesModal from "./DailyActivitiesModal";
 
-import dashboardService from "../../../services/dashboardService";
+
 
 const CalendarIcon = (
   <svg
@@ -127,49 +127,18 @@ const CalendarFilterIcon = () => (
   </svg>
 );
 
-const RecentActivities = () => {
-  const [activities, setActivities] = useState<ActivitySection[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // Date State
+interface RecentActivitiesProps {
+  activities: ActivitySection[];
+  isLoading?: boolean;
+}
+
+const RecentActivities = ({ activities, isLoading }: RecentActivitiesProps) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterMode, setFilterMode] = useState<
     "All" | "Today" | "This Week" | "This Month" | "Custom"
-  >("All");
+  >("Today");
   const [showDropdown, setShowDropdown] = useState(false);
-
-  useEffect(() => {
-    const loadActivities = async () => {
-      setLoading(true);
-
-      let startDateStr = "";
-      let endDateStr = "";
-
-      const today = new Date();
-      if (filterMode === "Today") {
-        startDateStr = today.toISOString().split("T")[0];
-        endDateStr = startDateStr;
-      } else if (filterMode === "This Week") {
-        const firstDay = new Date(
-          today.setDate(today.getDate() - today.getDay()),
-        );
-        startDateStr = firstDay.toISOString().split("T")[0];
-        endDateStr = new Date().toISOString().split("T")[0];
-      } else if (filterMode === "This Month") {
-        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-        startDateStr = firstDay.toISOString().split("T")[0];
-        endDateStr = new Date().toISOString().split("T")[0];
-      }
-
-      const data = await dashboardService.fetchRecentActivities(
-        startDateStr,
-        endDateStr,
-      );
-      setActivities(data);
-      setLoading(false);
-    };
-
-    loadActivities();
-  }, [filterMode]);
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
@@ -183,8 +152,9 @@ const RecentActivities = () => {
         return CheckIcon;
     }
   };
+
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden">
       <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center relative">
         <h3 className="text-[16px] font-semibold text-gray-900 font-inter">
           Recent Activities
@@ -198,9 +168,10 @@ const RecentActivities = () => {
           <div className="relative">
             <button
               onClick={() => setShowDropdown(!showDropdown)}
-              className="p-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition shadow-sm"
+              className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition shadow-sm text-sm font-medium text-gray-700 flex items-center gap-2"
             >
               <CalendarFilterIcon />
+              {filterMode}
             </button>
 
             {showDropdown && (
@@ -212,8 +183,9 @@ const RecentActivities = () => {
                       onClick={() => {
                         setFilterMode(f as any);
                         setShowDropdown(false);
+                        if (f === "Today") setIsModalOpen(true);
                       }}
-                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 \${filterMode === f ? 'text-blue-600 font-medium bg-blue-50/50' : 'text-gray-700'}`}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${filterMode === f ? 'text-blue-600 font-medium bg-blue-50/50' : 'text-gray-700'}`}
                     >
                       {f}
                     </button>
@@ -225,9 +197,19 @@ const RecentActivities = () => {
         </div>
       </div>
       <div className="p-5 h-[360px] overflow-y-auto no-scrollbar relative min-h-[150px]">
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center items-center h-full text-gray-400">
-            Loading activities...
+            <div className="animate-pulse flex flex-col w-full gap-4">
+               {[1,2,3].map(i => (
+                 <div key={i} className="flex gap-3">
+                   <div className="w-8 h-8 rounded-lg bg-gray-100" />
+                   <div className="flex-1 space-y-2">
+                      <div className="h-3 bg-gray-100 rounded w-full" />
+                      <div className="h-2 bg-gray-100 rounded w-1/4" />
+                   </div>
+                 </div>
+               ))}
+            </div>
           </div>
         ) : activities.length === 0 ? (
           <div className="text-gray-500 text-sm py-4 text-center h-full flex items-center justify-center">
@@ -235,14 +217,14 @@ const RecentActivities = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {activities.map((section, sectionIndex) => (
-              <div key={sectionIndex}>
+            {activities.map((section, sectionIdx) => (
+              <div key={sectionIdx}>
                 <h4 className="text-sm font-medium text-gray-500 mb-4 font-inter">
                   {section.label}
                 </h4>
                 <div className="space-y-[18px]">
-                  {section.items.map((item, itemIndex) => (
-                    <div key={itemIndex} className="flex gap-3">
+                  {section.items.map((item, itemIdx) => (
+                    <div key={itemIdx} className="flex gap-3">
                       <div className="mt-0.5 min-w-[32px]">
                         <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100/50 flex items-center justify-center shadow-sm">
                           {getIcon(item.icon)}
@@ -260,7 +242,7 @@ const RecentActivities = () => {
                   ))}
 
                   {/* Subtle Separator */}
-                  {sectionIndex < activities.length - 1 && (
+                  {sectionIdx < activities.length - 1 && (
                     <div className="border-b border-dashed border-gray-200 pt-2"></div>
                   )}
                 </div>
@@ -269,117 +251,12 @@ const RecentActivities = () => {
           </div>
         )}
       </div>
+      
+      <DailyActivitiesModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };
 export default RecentActivities;
-
-// interface RecentActivitiesProps {
-//   activities: ActivitySection[];
-//   isLoading?: boolean;
-// }
-
-// export default function RecentActivities({
-//   activities,
-//   isLoading,
-// }: RecentActivitiesProps) {
-//   const [isModalOpen, setIsModalOpen] = useState(false);
-
-//   const getIcon = (icon: string): React.ReactNode => {
-//     switch (icon) {
-//       case "calendar":
-//         return CalendarIcon;
-//       case "phone":
-//         return PhoneIcon;
-//       case "check":
-//         return CheckIcon;
-//       default:
-//         return null;
-//     }
-//   };
-
-//   return (
-//     <>
-//       <div className="bg-white rounded-[10px] flex flex-col overflow-hidden">
-//         <div className="flex items-center justify-between px-5 pt-5 pb-3">
-//           <span className="text-sm font-normal text-black leading-[17px]">
-//             Recent Activities
-//           </span>
-//           <button
-//             onClick={() => setIsModalOpen(true)}
-//             className="px-3 py-1 text-sm font-normal text-[#4B5563] leading-[17px] rounded-md cursor-pointer hover:bg-gray-50 transition-colors bg-white"
-//             style={{ border: "0.5px solid #D1D1D6" }}
-//           >
-//             Today
-//           </button>
-//         </div>
-
-//         <div className="overflow-y-auto max-h-[260px] hide-scrollbar px-5 pb-5">
-//           <div className="flex flex-col gap-4">
-//             {isLoading
-//               ? [...Array(3)].map((_, sectionIdx) => (
-//                   <div key={`recent-skel-${sectionIdx}`}>
-//                     <div className="w-20 h-3 rounded bg-gray-200 mb-3" />
-//                     <div className="flex flex-col gap-3">
-//                       {[...Array(2)].map((_, idx) => (
-//                         <div
-//                           key={`item-skel-${idx}`}
-//                           className="flex items-start gap-2.5 pb-2"
-//                           style={{ borderBottom: "0.5px dashed #C7C7CC" }}
-//                         >
-//                           <div className="w-6 h-6 rounded bg-gray-200 shrink-0" />
-//                           <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-//                             <div className="w-full h-3 rounded bg-gray-200" />
-//                             <div className="w-3/4 h-3 rounded bg-gray-200" />
-//                             <div className="w-16 h-2.5 rounded bg-gray-200 mt-0.5" />
-//                           </div>
-//                         </div>
-//                       ))}
-//                     </div>
-//                   </div>
-//                 ))
-//               : activities.map((section, sectionIdx) => (
-//                   <div key={sectionIdx}>
-//                     <p className="text-sm font-normal text-[#4B5563] leading-[17px] mb-3">
-//                       {section.label}
-//                     </p>
-//                     <div className="flex flex-col">
-//                       {section.items.map((activity, idx) => (
-//                         <div
-//                           key={idx}
-//                           className="flex items-start gap-1.5 rounded-[5px] px-2.5 py-1.5"
-//                           style={{ borderBottom: "0.5px dashed #C7C7CC" }}
-//                         >
-//                           <div
-//                             className="w-6 h-6 rounded-[5px] flex items-center justify-center shrink-0"
-//                             style={{
-//                               backgroundColor: "#E7EDFF",
-//                               border: "0.5px solid #FFFFFF",
-//                             }}
-//                           >
-//                             {getIcon(activity.icon)}
-//                           </div>
-//                           <div className="flex flex-col gap-1 flex-1 min-w-0">
-//                             <span className="text-sm font-normal text-[#4B5563] leading-[17px]">
-//                               {activity.text}
-//                             </span>
-//                             <span className="text-xs font-normal text-[#AEAEB2] leading-[14px]">
-//                               {activity.time}
-//                             </span>
-//                           </div>
-//                         </div>
-//                       ))}
-//                     </div>
-//                   </div>
-//                 ))}
-//           </div>
-//         </div>
-//       </div>
-
-//       <DailyActivitiesModal
-//         isOpen={isModalOpen}
-//         onClose={() => setIsModalOpen(false)}
-//       />
-//     </>
-//   );
-// }

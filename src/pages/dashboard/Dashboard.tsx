@@ -129,6 +129,13 @@ export default function Dashboard() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Filter and View States
+  const [viewMode, setViewMode] = useState<'active' | 'history'>('active');
+  const [selectedCompany, setSelectedCompany] = useState('All Companies');
+  const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
+  const [dateRange, setDateRange] = useState('Today');
+  const [showDateDropdown, setShowDateDropdown] = useState(false);
+
   // Modal states
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [actionInitialIndex, setActionInitialIndex] = useState(0);
@@ -184,24 +191,53 @@ export default function Dashboard() {
   const dynamicPriorityColumns: PriorityColumnData[] = Array.isArray(dashboardData?.dashboard?.priority_actions?.columns)
     ? dashboardData!.dashboard.priority_actions.columns.map((col: DashboardPriorityColumn) => {
         const colors = columnColors[col.id] || { dotColor: '#6155F5', accentColor: '#6155F5' };
+        
+        // Dummy history data if viewMode is 'history'
+        const historyCards = [
+          {
+            id: `done-${col.id}-1`,
+            name: 'Dwija Patel',
+            role: 'Senior Product Designer',
+            company: 'Jupiter',
+            daysAgo: 4,
+            status: col.id === 'sourcing' ? 'Follow up required' : col.id === 'screening' ? 'Moved to Screening' : 'Move to Next Round',
+            statusColor: 'green' as const,
+            isDone: true,
+          }
+        ];
+
+        const cards = viewMode === 'history' 
+          ? historyCards 
+          : (Array.isArray(col.cards) ? col.cards.map((c) => ({
+              id: `pa-${c.id}`,
+              name: c.name,
+              role: c.role,
+              company: c.company || 'Jupiter', // Dummy company for now
+              daysAgo: c.days_ago,
+              status: c.status,
+              statusColor: mapStatusColor(c.status_color),
+              isDone: false,
+            })) : []);
+
+        // Filter by company if selected
+        const filteredCards = selectedCompany === 'All Companies' 
+          ? cards 
+          : cards.filter(c => c.company === selectedCompany);
+
         return {
           id: `col-${col.id}`,
           title: col.title,
           dotColor: colors.dotColor,
           accentColor: colors.accentColor,
-          urgentCount: col.urgent_count,
-          totalCount: col.count,
-          cards: Array.isArray(col.cards) ? col.cards.map((c) => ({
-            id: `pa-${c.id}`,
-            name: c.name,
-            role: c.role,
-            daysAgo: c.days_ago,
-            status: c.status,
-            statusColor: mapStatusColor(c.status_color),
-          })) : [],
+          urgentCount: viewMode === 'history' ? 0 : col.urgent_count,
+          totalCount: filteredCards.length,
+          cards: filteredCards,
         };
       })
-    : priorityColumnsData;
+    : priorityColumnsData.map(col => ({
+        ...col,
+        cards: col.cards.map(c => ({ ...c, company: 'Jupiter' }))
+      }));
 
   const dynamicTalentMatches: TalentMatchData[] = Array.isArray(dashboardData?.dashboard?.new_talent_matches?.matches)
     ? dashboardData!.dashboard.new_talent_matches.matches.map((m: DashboardTalentMatch) => ({
@@ -302,19 +338,74 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <h2 className="text-[22px] font-medium leading-6 text-black">Priority Actions</h2>
               <div className="flex items-center gap-2.5">
-                <div className="flex items-center gap-2 px-[18px] py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563]" style={{ border: '0.5px solid #D1D1D6' }}>
-                  All Companies <ChevronDown className="w-5 h-5 opacity-60" />
-                </div>
-                <div className="flex items-center gap-3 px-[18px] py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563]" style={{ border: '0.5px solid #D1D1D6' }}>
+                {/* History Toggle */}
+                <button 
+                  onClick={() => setViewMode(prev => prev === 'active' ? 'history' : 'active')}
+                  className={`flex items-center justify-center w-10 h-10 rounded-lg border-[0.5px] transition-all ${viewMode === 'history' ? 'bg-[#0F47F2] border-[#0F47F2]' : 'bg-white border-[#D1D1D6]'}`}
+                >
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 1.66666V3.33332M5 1.66666V3.33332" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    <path d="M8.33333 14.1667L8.33332 11.1227C8.33332 10.9629 8.21938 10.8333 8.07882 10.8333H7.5M11.358 14.1667L12.4868 11.1243C12.5396 10.9821 12.4274 10.8333 12.2672 10.8333H10.8333" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" />
-                    <path d="M2.08325 10.2027C2.08325 6.57161 2.08325 4.75607 3.12668 3.62803C4.17012 2.5 5.84949 2.5 9.20825 2.5H10.7916C14.1503 2.5 15.8297 2.5 16.8732 3.62803C17.9166 4.75607 17.9166 6.57161 17.9166 10.2027V10.6306C17.9166 14.2617 17.9166 16.0773 16.8732 17.2053C15.8297 18.3333 14.1503 18.3333 10.7916 18.3333H9.20825C5.84949 18.3333 4.17012 18.3333 3.12668 17.2053C2.08325 16.0773 2.08325 14.2617 2.08325 10.6306V10.2027Z" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    <path d="M5 6.66666H15" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M10 5.83333V9.99999L12.5 11.6667M10 2.5C8.01088 2.5 6.10322 3.29018 4.6967 4.6967C3.29018 6.10322 2.5 8.01088 2.5 10C2.5 11.9891 3.29018 13.8968 4.6967 15.3033C6.10322 16.7098 8.01088 17.5 10 17.5C11.9891 17.5 13.8968 16.7098 15.3033 15.3033C16.7098 13.8968 17.5 11.9891 17.5 10M4.16667 4.16667V7.5H7.5" stroke={viewMode === 'history' ? 'white' : '#4B5563'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  {dashboardData?.dashboard?.current_date
-                    ? new Date(dashboardData.dashboard.current_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-                    : '13 Jan, 2024'}
+                </button>
+
+                {/* Company Filter Dropdown */}
+                <div className="relative">
+                  <button 
+                    onClick={() => setShowCompanyDropdown(!showCompanyDropdown)}
+                    className="flex items-center gap-2 px-[18px] py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563] bg-white border-[0.5px] border-[#D1D1D6] min-w-[150px] justify-between"
+                  >
+                    {selectedCompany} <ChevronDown className={`w-4 h-4 opacity-60 transition-transform ${showCompanyDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showCompanyDropdown && (
+                    <div className="absolute top-full mt-1 left-0 w-full bg-white border border-[#D1D1D6] rounded-[10px] shadow-lg z-10 overflow-hidden">
+                      {['All Companies', 'Jupiter', 'Deloitte', 'HGS'].map(company => (
+                        <button
+                          key={company}
+                          className="w-full text-left px-4 py-2 hover:bg-[#F3F5F7] text-sm text-[#4B5563]"
+                          onClick={() => {
+                            setSelectedCompany(company);
+                            setShowCompanyDropdown(false);
+                          }}
+                        >
+                          {company}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Date Filter Dropdown */}
+                <div className="relative">
+                  <button 
+                    onClick={() => setShowDateDropdown(!showDateDropdown)}
+                    className="flex items-center gap-3 px-[18px] py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563] bg-white border-[0.5px] border-[#D1D1D6] min-w-[140px]"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M15 1.66666V3.33332M5 1.66666V3.33332" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M16 3.33334H4C2.89543 3.33334 2 4.22877 2 5.33334V16.3333C2 17.4379 2.89543 18.3333 4 18.3333H16C17.1046 18.3333 18 17.4379 18 16.3333V5.33334C18 4.22877 17.1046 3.33334 16 3.33334Z" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M2 8.33334H18" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <rect x="7" y="11" width="2" height="2" rx="0.5" fill="#4B5563"/>
+                      <rect x="11" y="11" width="2" height="2" rx="0.5" fill="#4B5563"/>
+                      <rect x="7" y="14" width="2" height="2" rx="0.5" fill="#4B5563"/>
+                    </svg>
+                    {dateRange}
+                  </button>
+                  {showDateDropdown && (
+                    <div className="absolute top-full mt-1 right-0 w-[200px] bg-white border border-[#D1D1D6] rounded-[10px] shadow-lg z-10 overflow-hidden">
+                      {['Today', 'Yesterday', 'Last 7 Days', 'Last 30 Days', 'Custom Range'].map(range => (
+                        <button
+                          key={range}
+                          className="w-full text-left px-4 py-2 hover:bg-[#F3F5F7] text-sm text-[#4B5563]"
+                          onClick={() => {
+                            setDateRange(range);
+                            setShowDateDropdown(false);
+                          }}
+                        >
+                          {range}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -353,9 +444,11 @@ export default function Dashboard() {
                           key={card.id}
                           name={card.name}
                           role={card.role}
+                          company={card.company}
                           daysAgo={card.daysAgo}
                           status={card.status}
                           statusColor={card.statusColor}
+                          isDone={card.isDone}
                           onClick={() => handlePriorityCardClick(card.name)}
                         />
                       ))}
