@@ -11,6 +11,7 @@ import NewMatchCandidateModal from './components/NewMatchCandidateModal';
 import CustomDateSelector from './components/CustomDateSelector';
 import ScheduleEventModal from './components/ScheduleEventModal';
 import DateWiseAgendaModal from './components/DateWiseAgendaModal';
+import apiClient from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import dashboardService, {
   DashboardData,
@@ -171,6 +172,15 @@ export default function Dashboard() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+    apiClient
+      .get('/jobs/priority-actions/?tab=sourcing')   // tab is required
+      .then((res: { data: any; }) => console.log('✅ PRIORITY ACTIONS API RESPONSE:', res.data))
+      .catch((err: any) => console.error('Priority Actions failed:', err));
+
+    apiClient
+      .get('/candidates/talent-matches/')
+      .then((res: { data: any; }) => console.log('✅ NEW TALENT MATCHES API RESPONSE:', res.data))
+      .catch((err: any) => console.error('Talent Matches failed:', err));
 
     return () => {
       cancelled = true;
@@ -181,102 +191,102 @@ export default function Dashboard() {
 
   const dynamicStatCards: StatCardData[] = Array.isArray(dashboardData?.dashboard?.stat_cards)
     ? dashboardData!.dashboard.stat_cards.map((card) => ({
-        id: card.id,
-        iconType: mapIconType(card.icon_type) as StatCardData['iconType'],
-        label: card.label,
-        value: card.unit ? `${card.value}` : card.value,
-        trend: card.trend,
-        trendText: card.trend_text,
-        dateText: card.unit,
-      }))
+      id: card.id,
+      iconType: mapIconType(card.icon_type) as StatCardData['iconType'],
+      label: card.label,
+      value: card.unit ? `${card.value}` : card.value,
+      trend: card.trend,
+      trendText: card.trend_text,
+      dateText: card.unit,
+    }))
     : statCardsData;
 
   const dynamicPriorityColumns: PriorityColumnData[] = Array.isArray(dashboardData?.dashboard?.priority_actions?.columns)
     ? dashboardData!.dashboard.priority_actions.columns.map((col: DashboardPriorityColumn) => {
-        const colors = columnColors[col.id] || { dotColor: '#6155F5', accentColor: '#6155F5' };
-        
-        // Dummy history data if viewMode is 'history'
-        const historyCards = [
-          {
-            id: `done-${col.id}-1`,
-            name: 'Dwija Patel',
-            role: 'Senior Product Designer',
-            company: 'Jupiter',
-            daysAgo: 4,
-            status: col.id === 'sourcing' ? 'Follow up required' : col.id === 'screening' ? 'Moved to Screening' : 'Move to Next Round',
-            statusColor: 'green' as const,
-            isDone: true,
-          }
-        ];
+      const colors = columnColors[col.id] || { dotColor: '#6155F5', accentColor: '#6155F5' };
 
-        const cards = viewMode === 'history' 
-          ? historyCards 
-          : (Array.isArray(col.cards) ? col.cards.map((c) => ({
-              id: `pa-${c.id}`,
-              name: c.name,
-              role: c.role,
-              company: c.company || 'Jupiter', // Dummy company for now
-              daysAgo: c.days_ago,
-              status: c.status,
-              statusColor: mapStatusColor(c.status_color),
-              isDone: false,
-            })) : []);
+      // Dummy history data if viewMode is 'history'
+      const historyCards = [
+        {
+          id: `done-${col.id}-1`,
+          name: 'Dwija Patel',
+          role: 'Senior Product Designer',
+          company: 'Jupiter',
+          daysAgo: 4,
+          status: col.id === 'sourcing' ? 'Follow up required' : col.id === 'screening' ? 'Moved to Screening' : 'Move to Next Round',
+          statusColor: 'green' as const,
+          isDone: true,
+        }
+      ];
 
-        // Filter by company if selected
-        const filteredCards = selectedCompany === 'All Companies' 
-          ? cards 
-          : cards.filter(c => c.company === selectedCompany);
+      const cards = viewMode === 'history'
+        ? historyCards
+        : (Array.isArray(col.cards) ? col.cards.map((c) => ({
+          id: `pa-${c.id}`,
+          name: c.name,
+          role: c.role,
+          company: c.company || 'Jupiter', // Dummy company for now
+          daysAgo: c.days_ago,
+          status: c.status,
+          statusColor: mapStatusColor(c.status_color),
+          isDone: false,
+        })) : []);
 
-        return {
-          id: `col-${col.id}`,
-          title: col.title,
-          dotColor: colors.dotColor,
-          accentColor: colors.accentColor,
-          urgentCount: viewMode === 'history' ? 0 : col.urgent_count,
-          totalCount: filteredCards.length,
-          cards: filteredCards,
-        };
-      })
+      // Filter by company if selected
+      const filteredCards = selectedCompany === 'All Companies'
+        ? cards
+        : cards.filter(c => c.company === selectedCompany);
+
+      return {
+        id: `col-${col.id}`,
+        title: col.title,
+        dotColor: colors.dotColor,
+        accentColor: colors.accentColor,
+        urgentCount: viewMode === 'history' ? 0 : col.urgent_count,
+        totalCount: filteredCards.length,
+        cards: filteredCards,
+      };
+    })
     : priorityColumnsData.map(col => ({
-        ...col,
-        cards: col.cards.map(c => ({ ...c, company: 'Jupiter' }))
-      }));
+      ...col,
+      cards: col.cards.map(c => ({ ...c, company: 'Jupiter' }))
+    }));
 
   const dynamicTalentMatches: TalentMatchData[] = Array.isArray(dashboardData?.dashboard?.new_talent_matches?.matches)
     ? dashboardData!.dashboard.new_talent_matches.matches.map((m: DashboardTalentMatch) => ({
-        id: m.id,
-        name: m.name,
-        company: m.company || 'N/A',
-        position: m.position,
-        experience: m.experience,
-        matchPercentage: m.match_percentage,
-        source: mapSource(m.source),
-      }))
+      id: m.id,
+      name: m.name,
+      company: m.company || 'N/A',
+      position: m.position,
+      experience: m.experience,
+      matchPercentage: m.match_percentage,
+      source: mapSource(m.source),
+    }))
     : talentMatchesData;
 
   const dynamicRecentActivities: ActivitySection[] = Array.isArray(dashboardData?.dashboard?.recent_activities)
     ? dashboardData!.dashboard.recent_activities.map((group) => ({
-        label: group.label,
-        items: Array.isArray(group.items) ? group.items.map((item) => ({
-          icon: item.icon as 'calendar' | 'phone' | 'check',
-          text: item.text,
-          time: item.time,
-        })) : [],
-      }))
+      label: group.label,
+      items: Array.isArray(group.items) ? group.items.map((item) => ({
+        icon: item.icon as 'calendar' | 'phone' | 'check',
+        text: item.text,
+        time: item.time,
+      })) : [],
+    }))
     : recentActivitiesData;
 
   // For schedule, use API data if available; map to ScheduleItemData from dashboardData types
   const dynamicScheduleItems: ScheduleItemData[] = Array.isArray(dashboardData?.dashboard?.schedule?.items)
     ? dashboardData!.dashboard.schedule.items.map((item: any, idx: number) => ({
-        id: item.id || `sched-api-${idx}`,
-        time: item.time || '',
-        type: item.type || item.interview_type || '',
-        name: item.name || item.candidate_name || '',
-        details: item.details || '',
-        location: item.location || item.meeting_platform || '',
-        color: item.color || 'cyan',
-        isDone: item.isDone || item.is_done || false,
-      }))
+      id: item.id || `sched-api-${idx}`,
+      time: item.time || '',
+      type: item.type || item.interview_type || '',
+      name: item.name || item.candidate_name || '',
+      details: item.details || '',
+      location: item.location || item.meeting_platform || '',
+      color: item.color || 'cyan',
+      isDone: item.isDone || item.is_done || false,
+    }))
     : scheduleItemsData;
 
   const handlePriorityCardClick = (name: string) => {
@@ -309,31 +319,31 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {loading
               ? // Skeleton stat cards
-                [...Array(4)].map((_, i) => (
-                  <div
-                    key={`stat-skel-${i}`}
-                    className="bg-white rounded-xl animate-pulse"
-                    style={{ padding: '20px', gap: '8px', border: '0.5px solid #D1D1D6' }}
-                  >
-                    <div className="flex justify-between items-center w-full mb-2">
-                      <div className="w-10 h-10 rounded-lg bg-gray-200" />
-                      <div className="w-20 h-4 rounded bg-gray-200" />
-                    </div>
-                    <div className="w-16 h-3 rounded bg-gray-200 mb-1" />
-                    <div className="w-12 h-8 rounded bg-gray-200" />
+              [...Array(4)].map((_, i) => (
+                <div
+                  key={`stat-skel-${i}`}
+                  className="bg-white rounded-xl animate-pulse"
+                  style={{ padding: '20px', gap: '8px', border: '0.5px solid #D1D1D6' }}
+                >
+                  <div className="flex justify-between items-center w-full mb-2">
+                    <div className="w-10 h-10 rounded-lg bg-gray-200" />
+                    <div className="w-20 h-4 rounded bg-gray-200" />
                   </div>
-                ))
+                  <div className="w-16 h-3 rounded bg-gray-200 mb-1" />
+                  <div className="w-12 h-8 rounded bg-gray-200" />
+                </div>
+              ))
               : dynamicStatCards.map((stat) => (
-                  <StatCard
-                    key={stat.id}
-                    icon={iconMap[stat.iconType]}
-                    label={stat.label}
-                    value={stat.value}
-                    trend={stat.trend}
-                    trendText={stat.trendText}
-                    dateText={stat.dateText}
-                  />
-                ))}
+                <StatCard
+                  key={stat.id}
+                  icon={iconMap[stat.iconType]}
+                  label={stat.label}
+                  value={stat.value}
+                  trend={stat.trend}
+                  trendText={stat.trendText}
+                  dateText={stat.dateText}
+                />
+              ))}
           </div>
 
           {/* Priority Actions from API or fallback */}
@@ -342,18 +352,18 @@ export default function Dashboard() {
               <h2 className="text-[22px] font-medium leading-6 text-black">Priority Actions</h2>
               <div className="flex items-center gap-2.5">
                 {/* History Toggle */}
-                <button 
+                <button
                   onClick={() => setViewMode(prev => prev === 'active' ? 'history' : 'active')}
                   className={`flex items-center justify-center w-10 h-10 rounded-lg border-[0.5px] transition-all ${viewMode === 'history' ? 'bg-[#0F47F2] border-[#0F47F2]' : 'bg-white border-[#D1D1D6]'}`}
                 >
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 5.83333V9.99999L12.5 11.6667M10 2.5C8.01088 2.5 6.10322 3.29018 4.6967 4.6967C3.29018 6.10322 2.5 8.01088 2.5 10C2.5 11.9891 3.29018 13.8968 4.6967 15.3033C6.10322 16.7098 8.01088 17.5 10 17.5C11.9891 17.5 13.8968 16.7098 15.3033 15.3033C16.7098 13.8968 17.5 11.9891 17.5 10M4.16667 4.16667V7.5H7.5" stroke={viewMode === 'history' ? 'white' : '#4B5563'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M10 5.83333V9.99999L12.5 11.6667M10 2.5C8.01088 2.5 6.10322 3.29018 4.6967 4.6967C3.29018 6.10322 2.5 8.01088 2.5 10C2.5 11.9891 3.29018 13.8968 4.6967 15.3033C6.10322 16.7098 8.01088 17.5 10 17.5C11.9891 17.5 13.8968 16.7098 15.3033 15.3033C16.7098 13.8968 17.5 11.9891 17.5 10M4.16667 4.16667V7.5H7.5" stroke={viewMode === 'history' ? 'white' : '#4B5563'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
 
                 {/* Company Filter Dropdown */}
                 <div className="relative">
-                  <button 
+                  <button
                     onClick={() => setShowCompanyDropdown(!showCompanyDropdown)}
                     className="flex items-center gap-2 px-[18px] py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563] bg-white border-[0.5px] border-[#D1D1D6] min-w-[150px] justify-between"
                   >
@@ -379,7 +389,7 @@ export default function Dashboard() {
 
                 {/* Date Filter Dropdown */}
                 <div className="relative">
-                  <button 
+                  <button
                     onClick={() => setShowDateDropdown(!showDateDropdown)}
                     className="flex items-center gap-3 px-[18px] py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563] bg-white border-[0.5px] border-[#D1D1D6] min-w-[140px]"
                   >
@@ -387,15 +397,15 @@ export default function Dashboard() {
                       <path d="M15 1.66666V3.33332M5 1.66666V3.33332" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       <path d="M16 3.33334H4C2.89543 3.33334 2 4.22877 2 5.33334V16.3333C2 17.4379 2.89543 18.3333 4 18.3333H16C17.1046 18.3333 18 17.4379 18 16.3333V5.33334C18 4.22877 17.1046 3.33334 16 3.33334Z" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       <path d="M2 8.33334H18" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      <rect x="7" y="11" width="2" height="2" rx="0.5" fill="#4B5563"/>
-                      <rect x="11" y="11" width="2" height="2" rx="0.5" fill="#4B5563"/>
-                      <rect x="7" y="14" width="2" height="2" rx="0.5" fill="#4B5563"/>
+                      <rect x="7" y="11" width="2" height="2" rx="0.5" fill="#4B5563" />
+                      <rect x="11" y="11" width="2" height="2" rx="0.5" fill="#4B5563" />
+                      <rect x="7" y="14" width="2" height="2" rx="0.5" fill="#4B5563" />
                     </svg>
                     {dateRange}
                   </button>
                   {showDateDropdown && (
                     <div className="absolute top-full mt-1 right-0 z-20">
-                      <CustomDateSelector 
+                      <CustomDateSelector
                         onApply={(range: { label: string }) => setDateRange(range.label)}
                         onClose={() => setShowDateDropdown(false)}
                       />
@@ -408,47 +418,47 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {loading
                 ? [...Array(3)].map((_, i) => (
-                    <div key={`col-skel-${i}`} className="bg-[#F3F5F7] rounded-xl p-2.5 animate-pulse min-h-[200px]">
-                      <div className="flex items-center justify-between px-1 py-1 mb-2">
-                        <div className="w-20 h-4 rounded bg-gray-200" />
-                        <div className="w-12 h-4 rounded bg-gray-200" />
-                      </div>
-                      {[...Array(2)].map((_, j) => (
-                        <div key={j} className="bg-white rounded-lg p-3 mb-2">
-                          <div className="w-24 h-3 rounded bg-gray-200 mb-2" />
-                          <div className="w-32 h-3 rounded bg-gray-200 mb-2" />
-                          <div className="w-16 h-3 rounded bg-gray-200" />
-                        </div>
-                      ))}
+                  <div key={`col-skel-${i}`} className="bg-[#F3F5F7] rounded-xl p-2.5 animate-pulse min-h-[200px]">
+                    <div className="flex items-center justify-between px-1 py-1 mb-2">
+                      <div className="w-20 h-4 rounded bg-gray-200" />
+                      <div className="w-12 h-4 rounded bg-gray-200" />
                     </div>
-                  ))
+                    {[...Array(2)].map((_, j) => (
+                      <div key={j} className="bg-white rounded-lg p-3 mb-2">
+                        <div className="w-24 h-3 rounded bg-gray-200 mb-2" />
+                        <div className="w-32 h-3 rounded bg-gray-200 mb-2" />
+                        <div className="w-16 h-3 rounded bg-gray-200" />
+                      </div>
+                    ))}
+                  </div>
+                ))
                 : dynamicPriorityColumns.map((column) => (
-                    <div key={column.id} className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 overflow-y-auto max-h-[400px] hide-scrollbar">
-                      <div className="flex items-center justify-between px-1 py-1">
-                        <div className="flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: column.dotColor }}></div>
-                          <span className="text-sm font-normal text-[#4B5563] leading-[17px]">{column.title}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#4B5563]">{column.urgentCount}</span>
-                          <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal" style={{ color: column.accentColor }}>{column.totalCount}</span>
-                        </div>
+                  <div key={column.id} className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 overflow-y-auto max-h-[400px] hide-scrollbar">
+                    <div className="flex items-center justify-between px-1 py-1">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: column.dotColor }}></div>
+                        <span className="text-sm font-normal text-[#4B5563] leading-[17px]">{column.title}</span>
                       </div>
-                      {column.cards.map((card) => (
-                        <PriorityCard
-                          key={card.id}
-                          name={card.name}
-                          role={card.role}
-                          company={card.company}
-                          daysAgo={card.daysAgo}
-                          status={card.status}
-                          statusColor={card.statusColor}
-                          isDone={card.isDone}
-                          onClick={() => handlePriorityCardClick(card.name)}
-                        />
-                      ))}
+                      <div className="flex items-center gap-1">
+                        <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#4B5563]">{column.urgentCount}</span>
+                        <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal" style={{ color: column.accentColor }}>{column.totalCount}</span>
+                      </div>
                     </div>
-                  ))}
+                    {column.cards.map((card) => (
+                      <PriorityCard
+                        key={card.id}
+                        name={card.name}
+                        role={card.role}
+                        company={card.company}
+                        daysAgo={card.daysAgo}
+                        status={card.status}
+                        statusColor={card.statusColor}
+                        isDone={card.isDone}
+                        onClick={() => handlePriorityCardClick(card.name)}
+                      />
+                    ))}
+                  </div>
+                ))}
             </div>
           </section>
 
@@ -472,7 +482,7 @@ export default function Dashboard() {
                   </button>
                   {showTalentMatchDateDropdown && (
                     <div className="absolute top-full mt-1 right-0 z-20">
-                      <CustomDateSelector 
+                      <CustomDateSelector
                         onApply={(range: { label: string }) => setTalentMatchDateRange(range.label)}
                         onClose={() => setShowTalentMatchDateDropdown(false)}
                       />
@@ -484,26 +494,26 @@ export default function Dashboard() {
             <div className="flex flex-col gap-5">
               {loading
                 ? [...Array(3)].map((_, i) => (
-                    <div key={`tm-skel-${i}`} className="bg-white p-5 rounded-[10px] flex items-center justify-between animate-pulse" style={{ border: '1px solid #D1D1D6' }}>
-                      <div className="flex flex-col gap-2">
-                        <div className="w-32 h-4 rounded bg-gray-200" />
-                        <div className="w-48 h-3 rounded bg-gray-200" />
-                      </div>
-                      <div className="w-10 h-10 rounded-full bg-gray-200" />
+                  <div key={`tm-skel-${i}`} className="bg-white p-5 rounded-[10px] flex items-center justify-between animate-pulse" style={{ border: '1px solid #D1D1D6' }}>
+                    <div className="flex flex-col gap-2">
+                      <div className="w-32 h-4 rounded bg-gray-200" />
+                      <div className="w-48 h-3 rounded bg-gray-200" />
                     </div>
-                  ))
+                    <div className="w-10 h-10 rounded-full bg-gray-200" />
+                  </div>
+                ))
                 : dynamicTalentMatches.map((match) => (
-                    <TalentMatchCard
-                      key={match.id}
-                      name={match.name}
-                      company={match.company}
-                      position={match.position}
-                      experience={match.experience}
-                      matchPercentage={match.matchPercentage}
-                      source={match.source}
-                      onClick={() => handleTalentMatchClick(match.name)}
-                    />
-                  ))}
+                  <TalentMatchCard
+                    key={match.id}
+                    name={match.name}
+                    company={match.company}
+                    position={match.position}
+                    experience={match.experience}
+                    matchPercentage={match.matchPercentage}
+                    source={match.source}
+                    onClick={() => handleTalentMatchClick(match.name)}
+                  />
+                ))}
             </div>
           </section>
         </div>
@@ -512,7 +522,7 @@ export default function Dashboard() {
         <aside className="w-96 flex flex-col gap-4 shrink-0">
           <CalendarWidget onDateClick={handleDateClick} />
           <ScheduleWidget items={dynamicScheduleItems} isLoading={loading} onEventClick={handleScheduleEventClick} />
-          <RecentActivities/>
+          <RecentActivities />
         </aside>
       </div>
 
