@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import type { ActivitySection } from "../../../services/dashboardService";
 import DailyActivitiesModal from "./DailyActivitiesModal";
 
@@ -137,8 +137,102 @@ const RecentActivities = ({ activities, isLoading }: RecentActivitiesProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterMode, setFilterMode] = useState<
     "All" | "Today" | "This Week" | "This Month" | "Custom"
-  >("Today");
-  const [showDropdown, setShowDropdown] = useState(false);
+  >("All");
+  // const [showDropdown, setShowDropdown] = useState(false);
+  const [showDateDropdown, setShowDateDropdown] = useState(false);
+
+  // Custom Date Range Pickers
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
+
+  // Category State
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([
+    "All",
+  ]);
+
+  const categoryOptions = ["Mail Reader", "Calls", "Shortlist", "Followup"];
+  const dropdownRefDate = useRef<HTMLDivElement>(null);
+  const dropdownRefCategory = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRefDate.current &&
+        !dropdownRefDate.current.contains(event.target as Node)
+      ) {
+        setShowDateDropdown(false);
+      }
+      if (
+        dropdownRefCategory.current &&
+        !dropdownRefCategory.current.contains(event.target as Node)
+      ) {
+        setShowCategoryDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const loadActivities = async () => {
+      setLoading(true);
+
+      let startDateStr = "";
+      let endDateStr = "";
+
+      const today = new Date();
+      if (filterMode === "Today") {
+        startDateStr = today.toISOString().split("T")[0];
+        endDateStr = startDateStr;
+      } else if (filterMode === "This Week") {
+        const firstDay = new Date(
+          today.setDate(today.getDate() - today.getDay()),
+        );
+        startDateStr = firstDay.toISOString().split("T")[0];
+        endDateStr = new Date().toISOString().split("T")[0];
+      } else if (filterMode === "This Month") {
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        startDateStr = firstDay.toISOString().split("T")[0];
+        endDateStr = new Date().toISOString().split("T")[0];
+      } else if (filterMode === "Custom") {
+        startDateStr = customStartDate;
+        endDateStr = customEndDate;
+      }
+
+      const data = await dashboardService.fetchRecentActivities(
+        startDateStr,
+        endDateStr,
+        selectedCategories,
+      );
+      setActivities(data);
+      setLoading(false);
+    };
+
+    // Defer loading for custom dates until dates are picked
+    if (filterMode === "Custom" && (!customStartDate || !customEndDate)) {
+      setLoading(false);
+      return;
+    }
+
+    loadActivities();
+  }, [filterMode, customStartDate, customEndDate, selectedCategories]);
+
+  const toggleCategory = (cat: string) => {
+    if (cat === "All") {
+      setSelectedCategories(["All"]);
+      return;
+    }
+
+    let newSelection = [...selectedCategories].filter((c) => c !== "All");
+    if (newSelection.includes(cat)) {
+      newSelection = newSelection.filter((c) => c !== cat);
+      if (newSelection.length === 0) newSelection = ["All"];
+    } else {
+      newSelection.push(cat);
+    }
+    setSelectedCategories(newSelection);
+  };
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
@@ -160,36 +254,110 @@ const RecentActivities = ({ activities, isLoading }: RecentActivitiesProps) => {
           Recent Activities
         </h3>
 
-        {/* Figma Header Buttons */}
+        {/* Header Buttons */}
         <div className="flex space-x-2">
-          <button className="p-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition shadow-sm">
-            <FilterIcon />
-          </button>
-          <div className="relative">
+          {/* Category Dropdown */}
+          <div className="relative" ref={dropdownRefCategory}>
             <button
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition shadow-sm text-sm font-medium text-gray-700 flex items-center gap-2"
+              onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+              className="p-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition shadow-sm"
+            >
+              <FilterIcon />
+            </button>
+
+            {showCategoryDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 z-10 py-2 px-3">
+                <div className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">
+                  Filters
+                </div>
+
+                <label className="flex items-center space-x-2 py-1 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.includes("All")}
+                    onChange={() => toggleCategory("All")}
+                    className="rounded text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">All</span>
+                </label>
+
+                {categoryOptions.map((cat) => (
+                  <label
+                    key={cat}
+                    className="flex items-center space-x-2 py-1 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedCategories.includes(cat)}
+                      onChange={() => toggleCategory(cat)}
+                      className="rounded text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700">{cat}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Date Dropdown */}
+          <div className="relative" ref={dropdownRefDate}>
+            <button
+              onClick={() => setShowDateDropdown(!showDateDropdown)}
+              className="p-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition shadow-sm"
             >
               <CalendarFilterIcon />
               {filterMode}
             </button>
 
-            {showDropdown && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 z-10 py-1">
+            {showDateDropdown && (
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 z-10 p-2">
                 {["All", "Today", "This Week", "This Month", "Custom"].map(
                   (f) => (
                     <button
                       key={f}
                       onClick={() => {
                         setFilterMode(f as any);
-                        setShowDropdown(false);
-                        if (f === "Today") setIsModalOpen(true);
+                        if (f !== "Custom") setShowDateDropdown(false);
                       }}
-                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${filterMode === f ? 'text-blue-600 font-medium bg-blue-50/50' : 'text-gray-700'}`}
+                      className={`w-full text-left px-3 py-2 rounded-md text-sm hover:bg-gray-50 \${filterMode === f ? 'text-blue-600 font-medium bg-blue-50/50' : 'text-gray-700'}`}
                     >
                       {f}
                     </button>
                   ),
+                )}
+
+                {/* Custom Date Inputs */}
+                {filterMode === "Custom" && (
+                  <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Start Date
+                      </label>
+                      <input
+                        type="date"
+                        value={customStartDate}
+                        onChange={(e) => setCustomStartDate(e.target.value)}
+                        className="w-full text-sm p-1.5 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        End Date
+                      </label>
+                      <input
+                        type="date"
+                        value={customEndDate}
+                        onChange={(e) => setCustomEndDate(e.target.value)}
+                        className="w-full text-sm p-1.5 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <button
+                      onClick={() => setShowDateDropdown(false)}
+                      className="w-full mt-2 bg-blue-600 text-white py-1.5 rounded-md text-sm font-medium hover:bg-blue-700"
+                    >
+                      Apply
+                    </button>
+                  </div>
                 )}
               </div>
             )}
