@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ActivitySection } from "../dashboardData";
+import type { ActivitySection } from "../../../services/dashboardService";
 import DailyActivitiesModal from "./DailyActivitiesModal";
 
 import dashboardService from "../../../services/dashboardService";
@@ -85,32 +85,92 @@ const CheckIcon = (
   </svg>
 );
 
+const FilterIcon = () => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="text-gray-600"
+  >
+    <line x1="4" y1="21" x2="4" y2="14"></line>
+    <line x1="4" y1="10" x2="4" y2="3"></line>
+    <line x1="12" y1="21" x2="12" y2="12"></line>
+    <line x1="12" y1="8" x2="12" y2="3"></line>
+    <line x1="20" y1="21" x2="20" y2="16"></line>
+    <line x1="20" y1="12" x2="20" y2="3"></line>
+    <line x1="1" y1="14" x2="7" y2="14"></line>
+    <line x1="9" y1="8" x2="15" y2="8"></line>
+    <line x1="17" y1="16" x2="23" y2="16"></line>
+  </svg>
+);
+const CalendarFilterIcon = () => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="text-gray-600"
+  >
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+    <line x1="16" y1="2" x2="16" y2="6"></line>
+    <line x1="8" y1="2" x2="8" y2="6"></line>
+    <line x1="3" y1="10" x2="21" y2="10"></line>
+  </svg>
+);
+
 const RecentActivities = () => {
   const [activities, setActivities] = useState<ActivitySection[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Date State
+  const [filterMode, setFilterMode] = useState<
+    "All" | "Today" | "This Week" | "This Month" | "Custom"
+  >("All");
+  const [showDropdown, setShowDropdown] = useState(false);
+
   useEffect(() => {
     const loadActivities = async () => {
       setLoading(true);
-      const data = await dashboardService.fetchRecentActivities();
-      // Map icon to the expected union type
-      const mappedData = data.map((section: any) => ({
-        ...section,
-        items: section.items.map((item: any) => ({
-          ...item,
-          icon:
-            item.icon === "calendar" ||
-            item.icon === "check" ||
-            item.icon === "phone"
-              ? item.icon
-              : "check",
-        })),
-      }));
-      setActivities(mappedData);
+
+      let startDateStr = "";
+      let endDateStr = "";
+
+      const today = new Date();
+      if (filterMode === "Today") {
+        startDateStr = today.toISOString().split("T")[0];
+        endDateStr = startDateStr;
+      } else if (filterMode === "This Week") {
+        const firstDay = new Date(
+          today.setDate(today.getDate() - today.getDay()),
+        );
+        startDateStr = firstDay.toISOString().split("T")[0];
+        endDateStr = new Date().toISOString().split("T")[0];
+      } else if (filterMode === "This Month") {
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        startDateStr = firstDay.toISOString().split("T")[0];
+        endDateStr = new Date().toISOString().split("T")[0];
+      }
+
+      const data = await dashboardService.fetchRecentActivities(
+        startDateStr,
+        endDateStr,
+      );
+      setActivities(data);
       setLoading(false);
     };
 
     loadActivities();
-  }, []);
+  }, [filterMode]);
+
   const getIcon = (iconName: string) => {
     switch (iconName) {
       case "calendar":
@@ -123,49 +183,86 @@ const RecentActivities = () => {
         return CheckIcon;
     }
   };
-  if (loading) {
-    return <div className="p-4">Loading activities...</div>;
-  }
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-      <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
+      <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center relative">
         <h3 className="text-[16px] font-semibold text-gray-900 font-inter">
-          Recent Activity
+          Recent Activities
         </h3>
-        <button className="text-sm font-medium text-blue-600 hover:text-blue-700 font-inter select-none">
-          View All
-        </button>
+
+        {/* Figma Header Buttons */}
+        <div className="flex space-x-2">
+          <button className="p-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition shadow-sm">
+            <FilterIcon />
+          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="p-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition shadow-sm"
+            >
+              <CalendarFilterIcon />
+            </button>
+
+            {showDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 z-10 py-1">
+                {["All", "Today", "This Week", "This Month", "Custom"].map(
+                  (f) => (
+                    <button
+                      key={f}
+                      onClick={() => {
+                        setFilterMode(f as any);
+                        setShowDropdown(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 \${filterMode === f ? 'text-blue-600 font-medium bg-blue-50/50' : 'text-gray-700'}`}
+                    >
+                      {f}
+                    </button>
+                  ),
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-      <div className="p-5 h-[360px] overflow-y-auto no-scrollbar">
-        {activities.length === 0 ? (
-          <div className="text-gray-500 text-sm py-4">
+      <div className="p-5 h-[360px] overflow-y-auto no-scrollbar relative min-h-[150px]">
+        {loading ? (
+          <div className="flex justify-center items-center h-full text-gray-400">
+            Loading activities...
+          </div>
+        ) : activities.length === 0 ? (
+          <div className="text-gray-500 text-sm py-4 text-center h-full flex items-center justify-center">
             No recent activities available.
           </div>
         ) : (
           <div className="space-y-6">
             {activities.map((section, sectionIndex) => (
               <div key={sectionIndex}>
-                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 font-inter">
+                <h4 className="text-sm font-medium text-gray-500 mb-4 font-inter">
                   {section.label}
                 </h4>
-                <div className="space-y-4">
+                <div className="space-y-[18px]">
                   {section.items.map((item, itemIndex) => (
                     <div key={itemIndex} className="flex gap-3">
                       <div className="mt-0.5 min-w-[32px]">
-                        <div className="w-8 h-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100/50 flex items-center justify-center shadow-sm">
                           {getIcon(item.icon)}
                         </div>
                       </div>
                       <div className="flex-1">
-                        <p className="text-[13px] text-gray-800 font-inter leading-relaxed">
+                        <p className="text-[14px] text-gray-800 font-inter leading-relaxed">
                           {item.text}
                         </p>
-                        <span className="text-xs text-gray-500 mt-1 block font-inter">
+                        <span className="text-xs text-gray-400 mt-1 block font-inter uppercase tracking-wide">
                           {item.time}
                         </span>
                       </div>
                     </div>
                   ))}
+
+                  {/* Subtle Separator */}
+                  {sectionIndex < activities.length - 1 && (
+                    <div className="border-b border-dashed border-gray-200 pt-2"></div>
+                  )}
                 </div>
               </div>
             ))}

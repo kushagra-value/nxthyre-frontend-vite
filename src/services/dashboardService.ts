@@ -191,9 +191,21 @@ class DashboardService {
     }
   }
 
-  async fetchRecentActivities(): Promise<ActivitySection[]> {
+  async fetchRecentActivities(
+    startDate?: string,
+    endDate?: string,
+  ): Promise<ActivitySection[]> {
     try {
-      const response = await apiClient.get("/candidates/recent-activities/");
+      let url = "/candidates/recent-activities/";
+      const params = new URLSearchParams();
+      if (startDate) params.append("start_date", startDate);
+      if (endDate) params.append("end_date", endDate);
+
+      if (params.toString()) {
+        url += `?${params.toString()}`;
+      }
+
+      const response = await apiClient.get(url);
       return response.data; // Already formatted correctly by the backend
     } catch (error) {
       console.error("Error fetching recent activities", error);
