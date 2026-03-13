@@ -92,6 +92,52 @@ export interface DashboardData {
 }
 
 // ──────────────────────────────────────────────
+//  Priority Actions API Types
+// ──────────────────────────────────────────────
+
+export interface PriorityActionItem {
+  candidate_id: string;
+  application_id: number;
+  candidate_full_name: string;
+  role: string;
+  job_role: string;
+  job_role_id: number;
+  workspace_name: string;
+  workspace_id: number;
+  tags: string[];
+  days_in_current_stage: number;
+  current_stage_name: string;
+  action_taken: string | null;
+}
+
+export interface PriorityActionsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: PriorityActionItem[];
+}
+
+export type PriorityTab = 'sourcing' | 'screening' | 'interview';
+export type DateRangePreset = 'today' | 'last_week' | 'last_month' | 'custom';
+
+export interface PriorityActionsParams {
+  tab: PriorityTab;
+  workspace_id?: number;
+  date_range?: DateRangePreset;
+  start_date?: string; // YYYY-MM-DD
+  end_date?: string;   // YYYY-MM-DD
+  history?: boolean;
+  page?: number;
+  page_size?: number;
+}
+
+export interface CompletePriorityActionPayload {
+  application_id: number;
+  tab: PriorityTab;
+  action_taken: string;
+}
+
+// ──────────────────────────────────────────────
 //  Sidebar API Types
 // ──────────────────────────────────────────────
 
@@ -215,6 +261,48 @@ class DashboardService {
     } catch (error) {
       console.error("Error fetching recent activities", error);
       return [];
+    }
+  }
+  async getPriorityActions(params: PriorityActionsParams): Promise<PriorityActionsResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append('tab', params.tab);
+      if (params.workspace_id !== undefined) queryParams.append('workspace_id', params.workspace_id.toString());
+      if (params.date_range) queryParams.append('date_range', params.date_range);
+      if (params.start_date) queryParams.append('start_date', params.start_date);
+      if (params.end_date) queryParams.append('end_date', params.end_date);
+      if (params.history !== undefined) queryParams.append('history', params.history.toString());
+      if (params.page !== undefined) queryParams.append('page', params.page.toString());
+      if (params.page_size !== undefined) queryParams.append('page_size', params.page_size.toString());
+
+      const response = await apiClient.get(`/jobs/priority-actions/?${queryParams.toString()}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch priority actions",
+      );
+    }
+  }
+
+  async completePriorityAction(payload: CompletePriorityActionPayload): Promise<any> {
+    try {
+      const response = await apiClient.post("/jobs/priority-actions/complete/", payload);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to complete priority action",
+      );
+    }
+  }
+
+  async getCandidateDetails(applicationId: number): Promise<any> {
+    try {
+      const response = await apiClient.get(`/jobs/applications/${applicationId}/`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to fetch candidate details",
+      );
     }
   }
 }

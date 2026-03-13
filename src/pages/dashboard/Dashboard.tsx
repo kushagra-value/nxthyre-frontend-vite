@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
 import StatCard from './components/StatCard';
 import PriorityCard from './components/PriorityCard';
@@ -11,20 +11,22 @@ import NewMatchCandidateModal from './components/NewMatchCandidateModal';
 import CustomDateSelector from './components/CustomDateSelector';
 import ScheduleEventModal from './components/ScheduleEventModal';
 import DateWiseAgendaModal from './components/DateWiseAgendaModal';
-import apiClient from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import dashboardService, {
   DashboardData,
-  DashboardPriorityColumn,
   DashboardTalentMatch,
+  PriorityActionItem,
+  PriorityActionsResponse,
+  PriorityTab,
+  DateRangePreset,
 } from '../../services/dashboardService';
+import organizationService from '../../services/organizationService';
+import type { DiscoverWorkspace } from '../../services/organizationService';
 import {
   statCardsData,
-  priorityColumnsData,
   talentMatchesData,
   scheduleItemsData,
   recentActivitiesData,
-  actionReviewCandidates,
   newMatchCandidates,
   scheduleEventsData,
   dailyAgendaData,
@@ -90,19 +92,8 @@ const mapIconType = (apiIconType: string): string => {
   return mapping[apiIconType] || apiIconType;
 };
 
-// Map API status_color to internal format
-const mapStatusColor = (color: string): 'blue' | 'rose' | 'amber' | 'indigo' | 'grey' => {
-  const mapping: Record<string, 'blue' | 'rose' | 'amber' | 'indigo' | 'grey'> = {
-    blue: 'blue',
-    rose: 'rose',
-    amber: 'amber',
-    indigo: 'indigo',
-    grey: 'grey',
-    red: 'rose',
-    green: 'blue',
-  };
-  return mapping[color] || 'grey';
-};
+
+
 
 // Map API source to internal CandidateSource
 const mapSource = (src: string): CandidateSource | undefined => {
@@ -124,6 +115,44 @@ const columnColors: Record<string, { dotColor: string; accentColor: string }> = 
   interview: { dotColor: '#00C3D0', accentColor: '#00C3D0' },
 };
 
+// Helper to format Date to YYYY-MM-DD
+const formatDateToYMD = (date: Date): string => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
+// Map tag string from API to a display status and color
+const mapTagToStatus = (tag: string): { status: string; statusColor: 'blue' | 'rose' | 'amber' | 'indigo' | 'grey' | 'green' } => {
+  const lower = tag.toLowerCase();
+  if (lower.includes('follow up')) {
+    return { status: tag, statusColor: 'blue' };
+  }
+  if (lower.includes('not called')) {
+    return { status: tag, statusColor: 'amber' };
+  }
+  if (lower.includes('not moved')) {
+    return { status: tag, statusColor: 'rose' };
+  }
+  if (lower.includes('feedback pending')) {
+    return { status: tag, statusColor: 'indigo' };
+  }
+  return { status: tag, statusColor: 'grey' };
+};
+
+// Priority column tabs
+const PRIORITY_TABS: { key: PriorityTab; title: string }[] = [
+  { key: 'sourcing', title: 'Sourcing' },
+  { key: 'screening', title: 'Screening' },
+  { key: 'interview', title: 'Interview' },
+];
+
+interface CompanyOption {
+  id: number | null;
+  name: string;
+}
+
 export default function Dashboard() {
   const { isAuthenticated } = useAuth();
 
@@ -131,18 +160,39 @@ export default function Dashboard() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Priority Actions state — separate from main dashboard
+  const [priorityData, setPriorityData] = useState<Record<PriorityTab, PriorityActionsResponse | null>>({
+    sourcing: null,
+    screening: null,
+    interview: null,
+  });
+  const [priorityLoading, setPriorityLoading] = useState(true);
+
   // Filter and View States
   const [viewMode, setViewMode] = useState<'active' | 'history'>('active');
-  const [selectedCompany, setSelectedCompany] = useState('All Companies');
+  const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
+  const [selectedCompanyName, setSelectedCompanyName] = useState('All Companies');
   const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
+  const [companyOptions, setCompanyOptions] = useState<CompanyOption[]>([]);
+  const companyDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Date range state
   const [dateRange, setDateRange] = useState('Today');
+  const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>('today');
+  const [customStartDate, setCustomStartDate] = useState<string | undefined>(undefined);
+  const [customEndDate, setCustomEndDate] = useState<string | undefined>(undefined);
   const [showDateDropdown, setShowDateDropdown] = useState(false);
+
   const [talentMatchDateRange, setTalentMatchDateRange] = useState('Last 24 Hours');
   const [showTalentMatchDateDropdown, setShowTalentMatchDateDropdown] = useState(false);
 
   // Modal states
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
-  const [actionInitialIndex, setActionInitialIndex] = useState(0);
+  const [actionModalCandidateData, setActionModalCandidateData] = useState<any>(null);
+  const [actionModalLoading, setActionModalLoading] = useState(false);
+  const [actionModalTab, setActionModalTab] = useState<PriorityTab>('sourcing');
+  const [actionModalCards, setActionModalCards] = useState<PriorityActionItem[]>([]);
+  const [actionModalCurrentIndex, setActionModalCurrentIndex] = useState(0);
 
   const [isNewMatchModalOpen, setIsNewMatchModalOpen] = useState(false);
   const [newMatchInitialIndex, setNewMatchInitialIndex] = useState(0);
@@ -152,7 +202,58 @@ export default function Dashboard() {
 
   const [isAgendaModalOpen, setIsAgendaModalOpen] = useState(false);
 
-  // Fetch dashboard data
+  // Close company dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (companyDropdownRef.current && !companyDropdownRef.current.contains(event.target as Node)) {
+        setShowCompanyDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Fetch company list from workspaces
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const loadCompanies = async () => {
+      try {
+        const [myWsData, discoverWs] = await Promise.all([
+          organizationService.getMyWorkspacesData(),
+          organizationService.getDiscoverWorkspaces().catch(() => [] as DiscoverWorkspace[]),
+        ]);
+
+        const options: CompanyOption[] = [{ id: null, name: 'All Companies' }];
+        const seen = new Set<number>();
+
+        // Add my workspaces
+        if (myWsData.workspaces) {
+          for (const ws of myWsData.workspaces) {
+            if (!seen.has(ws.id)) {
+              seen.add(ws.id);
+              options.push({ id: ws.id, name: ws.name });
+            }
+          }
+        }
+
+        // Add discover workspaces
+        for (const ws of discoverWs) {
+          if (!seen.has(ws.id)) {
+            seen.add(ws.id);
+            options.push({ id: ws.id, name: ws.name });
+          }
+        }
+
+        setCompanyOptions(options);
+      } catch (err) {
+        console.error('Failed to fetch company list:', err);
+        setCompanyOptions([{ id: null, name: 'All Companies' }]);
+      }
+    };
+    loadCompanies();
+  }, [isAuthenticated]);
+
+  // Fetch dashboard data (stat cards, talent matches, schedule, etc.)
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -172,20 +273,44 @@ export default function Dashboard() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    apiClient
-      .get('/jobs/priority-actions/?tab=sourcing')   // tab is required
-      .then((res: { data: any; }) => console.log('✅ PRIORITY ACTIONS API RESPONSE:', res.data))
-      .catch((err: any) => console.error('Priority Actions failed:', err));
-
-    apiClient
-      .get('/candidates/talent-matches/')
-      .then((res: { data: any; }) => console.log('✅ NEW TALENT MATCHES API RESPONSE:', res.data))
-      .catch((err: any) => console.error('Talent Matches failed:', err));
-
+    
     return () => {
       cancelled = true;
     };
   }, [isAuthenticated]);
+
+  // Fetch priority actions from the new API
+  const fetchPriorityActions = useCallback(async () => {
+    if (!isAuthenticated) return;
+
+    setPriorityLoading(true);
+    try {
+      const commonParams = {
+        date_range: dateRangePreset,
+        start_date: dateRangePreset === 'custom' ? customStartDate : undefined,
+        end_date: dateRangePreset === 'custom' ? customEndDate : undefined,
+        workspace_id: selectedCompanyId ?? undefined,
+        history: viewMode === 'history' ? true : undefined,
+        page_size: 50,
+      };
+
+      const [sourcing, screening, interview] = await Promise.all([
+        dashboardService.getPriorityActions({ tab: 'sourcing', ...commonParams }),
+        dashboardService.getPriorityActions({ tab: 'screening', ...commonParams }),
+        dashboardService.getPriorityActions({ tab: 'interview', ...commonParams }),
+      ]);
+
+      setPriorityData({ sourcing, screening, interview });
+    } catch (err) {
+      console.error('Failed to fetch priority actions:', err);
+    } finally {
+      setPriorityLoading(false);
+    }
+  }, [isAuthenticated, dateRangePreset, customStartDate, customEndDate, selectedCompanyId, viewMode]);
+
+  useEffect(() => {
+    fetchPriorityActions();
+  }, [fetchPriorityActions]);
 
   // ── Derive display data from API or fall back to static data ──
 
@@ -201,56 +326,45 @@ export default function Dashboard() {
     }))
     : statCardsData;
 
-  const dynamicPriorityColumns: PriorityColumnData[] = Array.isArray(dashboardData?.dashboard?.priority_actions?.columns)
-    ? dashboardData!.dashboard.priority_actions.columns.map((col: DashboardPriorityColumn) => {
-      const colors = columnColors[col.id] || { dotColor: '#6155F5', accentColor: '#6155F5' };
+  // Build priority columns from new API data
+  const dynamicPriorityColumns: PriorityColumnData[] = PRIORITY_TABS.map((tabInfo) => {
+    const colors = columnColors[tabInfo.key] || { dotColor: '#6155F5', accentColor: '#6155F5' };
+    const response = priorityData[tabInfo.key];
+    const items: PriorityActionItem[] = response?.results || [];
 
-      // Dummy history data if viewMode is 'history'
-      const historyCards = [
-        {
-          id: `done-${col.id}-1`,
-          name: 'Dwija Patel',
-          role: 'Senior Product Designer',
-          company: 'Jupiter',
-          daysAgo: 4,
-          status: col.id === 'sourcing' ? 'Follow up required' : col.id === 'screening' ? 'Moved to Screening' : 'Move to Next Round',
-          statusColor: 'green' as const,
-          isDone: true,
-        }
-      ];
-
-      const cards = viewMode === 'history'
-        ? historyCards
-        : (Array.isArray(col.cards) ? col.cards.map((c) => ({
-          id: `pa-${c.id}`,
-          name: c.name,
-          role: c.role,
-          company: c.company || 'Jupiter', // Dummy company for now
-          daysAgo: c.days_ago,
-          status: c.status,
-          statusColor: mapStatusColor(c.status_color),
-          isDone: false,
-        })) : []);
-
-      // Filter by company if selected
-      const filteredCards = selectedCompany === 'All Companies'
-        ? cards
-        : cards.filter(c => c.company === selectedCompany);
+    const cards = items.map((item) => {
+      const tagInfo = item.tags.length > 0 ? mapTagToStatus(item.tags[0]) : { status: item.current_stage_name, statusColor: 'grey' as const };
+      const isDone = viewMode === 'history' || item.action_taken !== null;
 
       return {
-        id: `col-${col.id}`,
-        title: col.title,
-        dotColor: colors.dotColor,
-        accentColor: colors.accentColor,
-        urgentCount: viewMode === 'history' ? 0 : col.urgent_count,
-        totalCount: filteredCards.length,
-        cards: filteredCards,
+        id: `pa-${item.application_id}`,
+        name: item.candidate_full_name,
+        role: item.role || item.job_role,
+        company: item.workspace_name,
+        daysAgo: item.days_in_current_stage,
+        status: isDone ? (item.action_taken || tagInfo.status) : tagInfo.status,
+        statusColor: isDone ? 'green' as const : tagInfo.statusColor,
+        isDone,
+        applicationId: item.application_id,
+        candidateId: item.candidate_id,
+        jobRole: item.job_role,
       };
-    })
-    : priorityColumnsData.map(col => ({
-      ...col,
-      cards: col.cards.map(c => ({ ...c, company: 'Jupiter' }))
-    }));
+    });
+
+    const urgentCount = items.filter(item =>
+      item.tags.some(tag => tag.toLowerCase().includes('follow up') || tag.toLowerCase().includes('not called'))
+    ).length;
+
+    return {
+      id: `col-${tabInfo.key}`,
+      title: tabInfo.title,
+      dotColor: colors.dotColor,
+      accentColor: colors.accentColor,
+      urgentCount: viewMode === 'history' ? 0 : urgentCount,
+      totalCount: response?.count || cards.length,
+      cards,
+    };
+  });
 
   const dynamicTalentMatches: TalentMatchData[] = Array.isArray(dashboardData?.dashboard?.new_talent_matches?.matches)
     ? dashboardData!.dashboard.new_talent_matches.matches.map((m: DashboardTalentMatch) => ({
@@ -289,10 +403,47 @@ export default function Dashboard() {
     }))
     : scheduleItemsData;
 
-  const handlePriorityCardClick = (name: string) => {
-    const idx = actionReviewCandidates.findIndex((c) => c.name === name);
-    setActionInitialIndex(idx >= 0 ? idx : 0);
+  // Handle priority card click — fetch candidate details from API
+  const handlePriorityCardClick = async (card: any, tabKey: PriorityTab) => {
+    // Get all cards for this tab from the priority data
+    const response = priorityData[tabKey];
+    const allCards = response?.results || [];
+    const clickedIndex = allCards.findIndex(c => c.application_id === card.applicationId);
+
+    setActionModalTab(tabKey);
+    setActionModalCards(allCards);
+    setActionModalCurrentIndex(clickedIndex >= 0 ? clickedIndex : 0);
     setIsActionModalOpen(true);
+
+    // Fetch full candidate details
+    setActionModalLoading(true);
+    try {
+      const data = await dashboardService.getCandidateDetails(card.applicationId);
+      setActionModalCandidateData(data);
+    } catch (err) {
+      console.error('Failed to fetch candidate details:', err);
+      setActionModalCandidateData(null);
+    } finally {
+      setActionModalLoading(false);
+    }
+  };
+
+  // Navigate within the action modal
+  const handleActionModalNavigate = async (newIndex: number) => {
+    if (newIndex < 0 || newIndex >= actionModalCards.length) return;
+    setActionModalCurrentIndex(newIndex);
+    const item = actionModalCards[newIndex];
+
+    setActionModalLoading(true);
+    try {
+      const data = await dashboardService.getCandidateDetails(item.application_id);
+      setActionModalCandidateData(data);
+    } catch (err) {
+      console.error('Failed to fetch candidate details:', err);
+      setActionModalCandidateData(null);
+    } finally {
+      setActionModalLoading(false);
+    }
   };
 
   const handleTalentMatchClick = (name: string) => {
@@ -309,6 +460,38 @@ export default function Dashboard() {
 
   const handleDateClick = () => {
     setIsAgendaModalOpen(true);
+  };
+
+  // Handle date range selection from CustomDateSelector
+  const handleDateRangeApply = (range: { start?: Date; end?: Date; label: string }) => {
+    setDateRange(range.label);
+
+    const labelLower = range.label.toLowerCase();
+    if (labelLower === 'today') {
+      setDateRangePreset('today');
+      setCustomStartDate(undefined);
+      setCustomEndDate(undefined);
+    } else if (labelLower === 'last week') {
+      setDateRangePreset('last_week');
+      setCustomStartDate(undefined);
+      setCustomEndDate(undefined);
+    } else if (labelLower === 'last month') {
+      setDateRangePreset('last_month');
+      setCustomStartDate(undefined);
+      setCustomEndDate(undefined);
+    } else {
+      // Custom date range
+      setDateRangePreset('custom');
+      if (range.start) setCustomStartDate(formatDateToYMD(range.start));
+      if (range.end) setCustomEndDate(formatDateToYMD(range.end));
+    }
+  };
+
+  // Handle company selection
+  const handleCompanySelect = (option: CompanyOption) => {
+    setSelectedCompanyId(option.id);
+    setSelectedCompanyName(option.name);
+    setShowCompanyDropdown(false);
   };
 
   return (
@@ -346,7 +529,7 @@ export default function Dashboard() {
               ))}
           </div>
 
-          {/* Priority Actions from API or fallback */}
+          {/* Priority Actions from new API */}
           <section className="bg-white rounded-xl p-5 flex flex-col gap-5">
             <div className="flex items-center justify-between">
               <h2 className="text-[22px] font-medium leading-6 text-black">Priority Actions</h2>
@@ -362,25 +545,23 @@ export default function Dashboard() {
                 </button>
 
                 {/* Company Filter Dropdown */}
-                <div className="relative">
+                <div className="relative" ref={companyDropdownRef}>
                   <button
                     onClick={() => setShowCompanyDropdown(!showCompanyDropdown)}
                     className="flex items-center gap-2 px-[18px] py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563] bg-white border-[0.5px] border-[#D1D1D6] min-w-[150px] justify-between"
                   >
-                    {selectedCompany} <ChevronDown className={`w-4 h-4 opacity-60 transition-transform ${showCompanyDropdown ? 'rotate-180' : ''}`} />
+                    <span className="truncate max-w-[120px]">{selectedCompanyName}</span>
+                    <ChevronDown className={`w-4 h-4 opacity-60 transition-transform flex-shrink-0 ${showCompanyDropdown ? 'rotate-180' : ''}`} />
                   </button>
                   {showCompanyDropdown && (
-                    <div className="absolute top-full mt-1 left-0 w-full bg-white border border-[#D1D1D6] rounded-[10px] shadow-lg z-10 overflow-hidden">
-                      {['All Companies', 'Jupiter', 'Deloitte', 'HGS'].map(company => (
+                    <div className="absolute top-full mt-1 left-0 w-full bg-white border border-[#D1D1D6] rounded-[10px] shadow-lg z-10 overflow-hidden max-h-[250px] overflow-y-auto">
+                      {companyOptions.map(option => (
                         <button
-                          key={company}
-                          className="w-full text-left px-4 py-2 hover:bg-[#F3F5F7] text-sm text-[#4B5563]"
-                          onClick={() => {
-                            setSelectedCompany(company);
-                            setShowCompanyDropdown(false);
-                          }}
+                          key={option.id ?? 'all'}
+                          className={`w-full text-left px-4 py-2 hover:bg-[#F3F5F7] text-sm text-[#4B5563] ${selectedCompanyId === option.id ? 'bg-[#E7EDFF] text-[#0F47F2]' : ''}`}
+                          onClick={() => handleCompanySelect(option)}
                         >
-                          {company}
+                          {option.name}
                         </button>
                       ))}
                     </div>
@@ -406,7 +587,7 @@ export default function Dashboard() {
                   {showDateDropdown && (
                     <div className="absolute top-full mt-1 right-0 z-20">
                       <CustomDateSelector
-                        onApply={(range: { label: string }) => setDateRange(range.label)}
+                        onApply={handleDateRangeApply}
                         onClose={() => setShowDateDropdown(false)}
                       />
                     </div>
@@ -416,7 +597,7 @@ export default function Dashboard() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {loading
+              {priorityLoading
                 ? [...Array(3)].map((_, i) => (
                   <div key={`col-skel-${i}`} className="bg-[#F3F5F7] rounded-xl p-2.5 animate-pulse min-h-[200px]">
                     <div className="flex items-center justify-between px-1 py-1 mb-2">
@@ -432,33 +613,41 @@ export default function Dashboard() {
                     ))}
                   </div>
                 ))
-                : dynamicPriorityColumns.map((column) => (
-                  <div key={column.id} className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 overflow-y-auto max-h-[400px] hide-scrollbar">
-                    <div className="flex items-center justify-between px-1 py-1">
-                      <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: column.dotColor }}></div>
-                        <span className="text-sm font-normal text-[#4B5563] leading-[17px]">{column.title}</span>
+                : dynamicPriorityColumns.map((column, colIndex) => {
+                  const tabKey = PRIORITY_TABS[colIndex]?.key || 'sourcing';
+                  return (
+                    <div key={column.id} className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 overflow-y-auto max-h-[400px] hide-scrollbar">
+                      <div className="flex items-center justify-between px-1 py-1">
+                        <div className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: column.dotColor }}></div>
+                          <span className="text-sm font-normal text-[#4B5563] leading-[17px]">{column.title}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#4B5563]">{column.urgentCount}</span>
+                          <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal" style={{ color: column.accentColor }}>{column.totalCount}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#4B5563]">{column.urgentCount}</span>
-                        <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal" style={{ color: column.accentColor }}>{column.totalCount}</span>
-                      </div>
+                      {column.cards.length === 0 && (
+                        <div className="flex items-center justify-center py-8 text-sm text-[#8E8E93]">
+                          No items
+                        </div>
+                      )}
+                      {column.cards.map((card) => (
+                        <PriorityCard
+                          key={card.id}
+                          name={card.name}
+                          role={card.role}
+                          company={card.company}
+                          daysAgo={card.daysAgo}
+                          status={card.status}
+                          statusColor={card.statusColor}
+                          isDone={card.isDone}
+                          onClick={() => handlePriorityCardClick(card, tabKey)}
+                        />
+                      ))}
                     </div>
-                    {column.cards.map((card) => (
-                      <PriorityCard
-                        key={card.id}
-                        name={card.name}
-                        role={card.role}
-                        company={card.company}
-                        daysAgo={card.daysAgo}
-                        status={card.status}
-                        statusColor={card.statusColor}
-                        isDone={card.isDone}
-                        onClick={() => handlePriorityCardClick(card.name)}
-                      />
-                    ))}
-                  </div>
-                ))}
+                  );
+                })}
             </div>
           </section>
 
@@ -526,12 +715,33 @@ export default function Dashboard() {
         </aside>
       </div>
 
-      {/* Action Review Modal */}
+      {/* Action Review Modal — now driven by real API data */}
       <ActionReviewModal
         isOpen={isActionModalOpen}
-        onClose={() => setIsActionModalOpen(false)}
-        candidates={actionReviewCandidates}
-        initialIndex={actionInitialIndex}
+        onClose={() => {
+          setIsActionModalOpen(false);
+          setActionModalCandidateData(null);
+        }}
+        candidateData={actionModalCandidateData}
+        isLoading={actionModalLoading}
+        currentIndex={actionModalCurrentIndex}
+        totalCount={actionModalCards.length}
+        currentItem={actionModalCards[actionModalCurrentIndex] || null}
+        onNavigate={handleActionModalNavigate}
+        tab={actionModalTab}
+        onComplete={async (applicationId: number, actionTaken: string) => {
+          try {
+            await dashboardService.completePriorityAction({
+              application_id: applicationId,
+              tab: actionModalTab,
+              action_taken: actionTaken,
+            });
+            // Refresh priority actions
+            fetchPriorityActions();
+          } catch (err) {
+            console.error('Failed to complete action:', err);
+          }
+        }}
       />
       {/* New Match Candidate Modal */}
       <NewMatchCandidateModal

@@ -1,39 +1,164 @@
 import React, { useState } from 'react';
-import { ActionReviewCandidate } from '../dashboardData';
+import { PriorityActionItem, PriorityTab } from '../../../services/dashboardService';
 
 interface ActionReviewModalProps {
     isOpen?: boolean;
     onClose?: () => void;
-    candidates: ActionReviewCandidate[];
-    initialIndex?: number;
+    candidateData?: any; // Full candidate details from /jobs/applications/{id}/
+    isLoading?: boolean;
+    currentIndex: number;
+    totalCount: number;
+    currentItem: PriorityActionItem | null;
+    onNavigate: (newIndex: number) => void;
+    tab: PriorityTab;
+    onComplete?: (applicationId: number, actionTaken: string) => Promise<void>;
 }
 
 const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
     isOpen = true,
     onClose = () => { },
-    candidates = [],
-    initialIndex = 0,
+    candidateData,
+    isLoading = false,
+    currentIndex,
+    totalCount,
+    currentItem,
+    onNavigate,
+    tab,
+    onComplete,
 }) => {
-    const [currentIndex, setCurrentIndex] = useState(initialIndex);
+    const [completing, setCompleting] = useState(false);
 
-    React.useEffect(() => {
-        if (isOpen && candidates.length > 0) {
-            setCurrentIndex(initialIndex < candidates.length ? initialIndex : 0);
-        }
-    }, [isOpen, initialIndex, candidates.length]);
+    if (!isOpen) return null;
 
-    if (!isOpen || candidates.length === 0) return null;
+    const goNext = () => onNavigate(Math.min(currentIndex + 1, totalCount - 1));
+    const goPrev = () => onNavigate(Math.max(currentIndex - 1, 0));
 
-    const candidate = candidates[currentIndex];
-    const total = candidates.length;
+    // Extract candidate info from the full API response
+    const candidate = candidateData?.candidate;
+    const contextual = candidateData?.contextual_details;
+    const stageDetails = candidateData?.current_stage_details;
+    const jobScore = contextual?.job_score_obj;
 
-    const goNext = () => setCurrentIndex((prev) => Math.min(prev + 1, total - 1));
-    const goPrev = () => setCurrentIndex((prev) => Math.max(prev - 1, 0));
+    // Build display data from API response
+    const candidateName = candidate?.full_name || currentItem?.candidate_full_name || 'Loading...';
+    const candidateRole = candidate?.headline || currentItem?.role || '';
+    const companyName = currentItem?.workspace_name || '';
+    const matchPercentage = jobScore?.overall_score || jobScore?.match_percentage || contextual?.match_analysis?.overall_match_percentage || 0;
+    const experience = candidate?.experience_years ? `${candidate.experience_years} yrs` : 'N/A';
+    const noticePeriod = candidate?.notice_period_summary || 'N/A';
+    const currentCTC = candidate?.premium_data?.current_ctc || candidate?.current_ctc || 'N/A';
+    const expectedCTC = candidate?.premium_data?.expected_ctc || candidate?.expected_ctc || 'N/A';
+    const location = candidate?.location || 'N/A';
+    const source = candidate?.source || 'N/A';
+    const status = currentItem?.tags?.[0] || currentItem?.current_stage_name || stageDetails?.name || '';
+    const jobRole = currentItem?.job_role || '';
+
+    // Quick fit skills from match analysis
+    const matchedSkills: string[] = contextual?.match_analysis?.matched_skills || candidate?.skills_list || [];
+    const missingSkills: string[] = contextual?.match_analysis?.missing_skills || [];
+    const quickFitSkills = [
+        ...matchedSkills.slice(0, 6).map((s: string) => ({ name: s, match: true })),
+        ...missingSkills.slice(0, 2).map((s: string) => ({ name: s, match: false })),
+    ];
+
+    // AI summary
+    const aiSummary = contextual?.match_analysis?.summary ||
+        contextual?.ai_summary ||
+        candidate?.ai_summary ||
+        jobScore?.summary ||
+        'No AI summary available for this candidate.';
 
     // Circular progress ring
     const radius = 20;
     const circumference = 2 * Math.PI * radius;
-    const progressOffset = circumference - (candidate.matchPercentage / 100) * circumference;
+    const progressOffset = circumference - (matchPercentage / 100) * circumference;
+
+    const handleComplete = async (actionLabel: string) => {
+        if (!currentItem || !onComplete) return;
+        setCompleting(true);
+        try {
+            await onComplete(currentItem.application_id, actionLabel);
+            // Navigate to next if available
+            if (currentIndex < totalCount - 1) {
+                goNext();
+            } else {
+                onClose();
+            }
+        } catch (err) {
+            console.error('Complete action failed:', err);
+        } finally {
+            setCompleting(false);
+        }
+    };
+
+    // Determine action buttons based on tab
+    const renderActionButtons = () => {
+        switch (tab) {
+            case 'sourcing':
+                return (
+                    <>
+                        <button
+                            className="inline-flex items-center hover:opacity-80 transition-opacity"
+                            style={{ padding: 10, gap: 5, border: '0.5px solid #0F47F2', borderRadius: 5 }}
+                            onClick={() => handleComplete('Call done')}
+                            disabled={completing}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9.33398 1.33337C9.33398 1.33337 10.8007 1.46671 12.6673 3.33337C14.534 5.20004 14.6673 6.66671 14.6673 6.66671" stroke="#0F47F2" strokeLinecap="round" />
+                                <path d="M9.4707 3.69043C9.4707 3.69043 10.1307 3.879 11.1206 4.86894C12.1106 5.8589 12.2992 6.51886 12.2992 6.51886" stroke="#0F47F2" strokeLinecap="round" />
+                                <path d="M6.69108 3.54407L7.12375 4.31936C7.51422 5.01901 7.35748 5.93684 6.74248 6.55183C6.74248 6.55183 5.9966 7.29783 7.34902 8.65029C8.70102 10.0023 9.44748 9.25683 9.44748 9.25683C10.0625 8.64183 10.9803 8.48509 11.68 8.87556L12.4552 9.30823C13.5117 9.89783 13.6365 11.3794 12.7079 12.3081C12.1499 12.8661 11.4663 13.3003 10.7106 13.3289C9.43855 13.3772 7.27822 13.0552 5.11115 10.8882C2.9441 8.72109 2.62216 6.56077 2.67038 5.28869C2.69903 4.53303 3.13322 3.84945 3.69122 3.29145C4.61986 2.36281 6.10146 2.48759 6.69108 3.54407Z" stroke="#0F47F2" strokeLinecap="round" />
+                            </svg>
+                            <span style={{ fontSize: 14, lineHeight: '17px', fontWeight: 400, color: '#0F47F2' }}>Call</span>
+                        </button>
+                        <button
+                            className="inline-flex items-center hover:opacity-90 transition-opacity"
+                            style={{ padding: 10, gap: 5, background: '#0F47F2', border: '0.5px solid #0F47F2', borderRadius: 5 }}
+                            onClick={() => handleComplete('Moved to Screening')}
+                            disabled={completing}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2.66602 8H13.3327M13.3327 8L9.33268 4M13.3327 8L9.33268 12" stroke="white" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            <span style={{ fontSize: 14, lineHeight: '17px', fontWeight: 400, color: '#FFFFFF' }}>Move to Screening</span>
+                        </button>
+                    </>
+                );
+            case 'screening':
+                return (
+                    <>
+                        <button
+                            className="inline-flex items-center hover:opacity-90 transition-opacity"
+                            style={{ padding: 10, gap: 5, background: '#0F47F2', border: '0.5px solid #0F47F2', borderRadius: 5 }}
+                            onClick={() => handleComplete('Moved to Next Round')}
+                            disabled={completing}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2.66602 8H13.3327M13.3327 8L9.33268 4M13.3327 8L9.33268 12" stroke="white" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            <span style={{ fontSize: 14, lineHeight: '17px', fontWeight: 400, color: '#FFFFFF' }}>Move to Next Round</span>
+                        </button>
+                    </>
+                );
+            case 'interview':
+                return (
+                    <>
+                        <button
+                            className="inline-flex items-center hover:opacity-90 transition-opacity"
+                            style={{ padding: 10, gap: 5, background: '#0F47F2', border: '0.5px solid #0F47F2', borderRadius: 5 }}
+                            onClick={() => handleComplete('Moved to Next Round')}
+                            disabled={completing}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2.66602 8H13.3327M13.3327 8L9.33268 4M13.3327 8L9.33268 12" stroke="white" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            <span style={{ fontSize: 14, lineHeight: '17px', fontWeight: 400, color: '#FFFFFF' }}>Move to Next Round</span>
+                        </button>
+                    </>
+                );
+            default:
+                return null;
+        }
+    };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6" onClick={onClose}>
@@ -54,7 +179,7 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                         className="inline-flex items-center"
                         style={{ padding: '4px 8px', borderRadius: 4, background: '#E7EDFF', color: '#0088FF', fontSize: 14, lineHeight: '17px', fontWeight: 400 }}
                     >
-                        {candidate.status}
+                        {status}
                     </span>
 
                     <div className="flex items-center" style={{ gap: 20 }}>
@@ -71,13 +196,13 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                                 </svg>
                             </button>
                             <span style={{ fontSize: 12, lineHeight: '14px', fontWeight: 400, color: '#4B5563', minWidth: 22, textAlign: 'center' }}>
-                                {currentIndex + 1}/{total}
+                                {totalCount > 0 ? `${currentIndex + 1}/${totalCount}` : '0/0'}
                             </span>
                             <button
                                 className="flex items-center justify-center hover:bg-slate-50 transition-colors disabled:opacity-30"
                                 style={{ width: 30, height: 30, background: '#FFFFFF', border: '0.5px solid #D1D1D6', borderRadius: 7 }}
                                 onClick={goNext}
-                                disabled={currentIndex === total - 1}
+                                disabled={currentIndex === totalCount - 1}
                             >
                                 <svg width="7" height="6" viewBox="0 0 7 6" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M3.19336 5.57812L6.46875 3.09375V2.48438L3.19336 0V0.925781L5.66602 2.79492L3.19336 4.64648V5.57812ZM0 5.57812L3.28711 3.09375V2.48438L0 0V0.925781L2.48438 2.79492L0 4.64648V5.57812Z" fill="#4B5563" />
@@ -101,140 +226,186 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
 
                 {/* ── Scrollable Content ── */}
                 <div className="flex-1 overflow-y-auto" style={{ padding: '20px 24px 0 24px' }}>
-
-                    {/* Candidate Name + Role + Match % — inside bordered section */}
-                    <div
-                        className="flex items-start justify-between"
-                        style={{ paddingBottom: 20 }}
-                    >
-                        <div style={{ gap: 10, display: 'flex', flexDirection: 'column' }}>
-                            <h2 style={{ fontSize: 20, lineHeight: '24px', fontWeight: 500, color: '#000000', margin: 0 }}>
-                                {candidate.name}
-                            </h2>
-                            <p style={{ fontSize: 12, lineHeight: '14px', fontWeight: 400, color: '#0F47F2', margin: 0 }}>
-                                {candidate.role} · {candidate.company}
-                            </p>
+                    {isLoading ? (
+                        // Loading skeleton
+                        <div className="animate-pulse">
+                            <div className="flex items-start justify-between mb-5">
+                                <div className="flex flex-col gap-2">
+                                    <div className="w-40 h-6 rounded bg-gray-200" />
+                                    <div className="w-60 h-4 rounded bg-gray-200" />
+                                </div>
+                                <div className="w-12 h-12 rounded-full bg-gray-200" />
+                            </div>
+                            <div className="flex gap-4 mb-5">
+                                {[...Array(3)].map((_, i) => (
+                                    <div key={i} className="flex flex-col gap-2 w-28">
+                                        <div className="w-16 h-3 rounded bg-gray-200" />
+                                        <div className="w-12 h-5 rounded bg-gray-200" />
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="flex gap-4 mb-5 pb-5 border-b border-[#AEAEB2]">
+                                {[...Array(3)].map((_, i) => (
+                                    <div key={i} className="flex flex-col gap-2 w-28">
+                                        <div className="w-16 h-3 rounded bg-gray-200" />
+                                        <div className="w-12 h-5 rounded bg-gray-200" />
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mb-5">
+                                <div className="w-32 h-4 rounded bg-gray-200 mb-4" />
+                                <div className="flex flex-wrap gap-2">
+                                    {[...Array(5)].map((_, i) => (
+                                        <div key={i} className="w-20 h-8 rounded-full bg-gray-200" />
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="mb-5">
+                                <div className="w-24 h-4 rounded bg-gray-200 mb-3" />
+                                <div className="w-full h-20 rounded-lg bg-gray-200" />
+                            </div>
                         </div>
-
-                        {/* Circular Match Percentage — 48×48 */}
-                        <div className="flex-shrink-0 relative" style={{ width: 48, height: 48 }}>
-                            <svg width="48" height="48" viewBox="0 0 48 48" className="-rotate-90">
-                                <circle
-                                    cx="24" cy="24" r={radius}
-                                    stroke="rgba(116,116,128,0.08)"
-                                    strokeWidth="3"
-                                    fill="none"
-                                />
-                                <circle
-                                    cx="24" cy="24" r={radius}
-                                    stroke="#00C8B3"
-                                    strokeWidth="3"
-                                    fill="none"
-                                    strokeLinecap="round"
-                                    strokeDasharray={circumference}
-                                    strokeDashoffset={progressOffset}
-                                    className="transition-all duration-500"
-                                />
-                            </svg>
-                            <span
-                                className="absolute inset-0 flex items-center justify-center"
-                                style={{ fontSize: 14, lineHeight: '17px', fontWeight: 400, color: '#4B5563' }}
+                    ) : (
+                        <>
+                            {/* Candidate Name + Role + Match % */}
+                            <div
+                                className="flex items-start justify-between"
+                                style={{ paddingBottom: 20 }}
                             >
-                                {candidate.matchPercentage}%
-                            </span>
-                        </div>
-                    </div>
+                                <div style={{ gap: 10, display: 'flex', flexDirection: 'column' }}>
+                                    <h2 style={{ fontSize: 20, lineHeight: '24px', fontWeight: 500, color: '#000000', margin: 0 }}>
+                                        {candidateName}
+                                    </h2>
+                                    <p style={{ fontSize: 12, lineHeight: '14px', fontWeight: 400, color: '#0F47F2', margin: 0 }}>
+                                        {candidateRole}{companyName ? ` · ${companyName}` : ''}{jobRole ? ` · ${jobRole}` : ''}
+                                    </p>
+                                </div>
 
-                    {/* Key Stats — Row 1 */}
-                    <div className="flex justify-between" style={{ marginBottom: 20, gap: 67 }}>
-                        {[
-                            { label: 'Experience', value: candidate.experience },
-                            { label: 'Current CTC', value: candidate.currentCTC },
-                            { label: 'Expected', value: candidate.expectedCTC },
-                        ].map((stat) => (
-                            <div key={stat.label} style={{ width: 120, display: 'flex', flexDirection: 'column', gap: 5 }}>
-                                <p style={{ fontSize: 14, lineHeight: '17px', fontWeight: 400, color: '#8E8E93', margin: 0 }}>
-                                    {stat.label}
-                                </p>
-                                <p style={{ fontSize: 16, lineHeight: '19px', fontWeight: 500, color: '#4B5563', margin: 0 }}>
-                                    {stat.value}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Key Stats — Row 2 */}
-                    <div
-                        className="flex justify-between"
-                        style={{ paddingBottom: 20, gap: 67, borderBottom: '0.5px solid #AEAEB2' }}
-                    >
-                        {[
-                            { label: 'Notice Period', value: candidate.noticePeriod },
-                            { label: 'Location', value: candidate.location },
-                            { label: 'Source', value: candidate.source },
-                        ].map((stat) => (
-                            <div key={stat.label} style={{ width: 120, display: 'flex', flexDirection: 'column', gap: 5 }}>
-                                <p style={{ fontSize: 14, lineHeight: '17px', fontWeight: 400, color: '#8E8E93', margin: 0 }}>
-                                    {stat.label}
-                                </p>
-                                <p style={{ fontSize: 16, lineHeight: '19px', fontWeight: 500, color: '#4B5563', margin: 0 }}>
-                                    {stat.value}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Quick Fit Summary */}
-                    <div style={{ marginTop: 20, marginBottom: 20 }}>
-                        <h4 style={{ fontSize: 14, lineHeight: '17px', fontWeight: 500, color: '#4B5563', textTransform: 'uppercase', margin: '0 0 16px 0' }}>
-                            QUICK FIT SUMMARY
-                        </h4>
-                        <div className="flex flex-wrap" style={{ gap: 10 }}>
-                            {candidate.quickFitSkills.map((skill) => (
-                                <span
-                                    key={skill.name}
-                                    className="inline-flex items-center"
-                                    style={{
-                                        padding: '10px 12px',
-                                        gap: skill.match ? 2 : 3,
-                                        background: '#F5F9FB',
-                                        borderRadius: 20,
-                                        fontSize: 14,
-                                        lineHeight: '17px',
-                                        fontWeight: 400,
-                                        color: skill.match ? '#009951' : '#CF272D',
-                                    }}
-                                >
-                                    {skill.name}
-                                    {skill.match ? (
-                                        <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
-                                            <rect width="17" height="17" rx="8.5" fill="transparent" />
-                                            <circle cx="8.5" cy="8.5" r="7" stroke="#009951" strokeWidth="1.5" />
-                                            <path d="M5.5 8.5L7.5 10.5L11.5 6.5" stroke="#009951" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                {/* Circular Match Percentage — 48×48 */}
+                                {matchPercentage > 0 && (
+                                    <div className="flex-shrink-0 relative" style={{ width: 48, height: 48 }}>
+                                        <svg width="48" height="48" viewBox="0 0 48 48" className="-rotate-90">
+                                            <circle
+                                                cx="24" cy="24" r={radius}
+                                                stroke="rgba(116,116,128,0.08)"
+                                                strokeWidth="3"
+                                                fill="none"
+                                            />
+                                            <circle
+                                                cx="24" cy="24" r={radius}
+                                                stroke="#00C8B3"
+                                                strokeWidth="3"
+                                                fill="none"
+                                                strokeLinecap="round"
+                                                strokeDasharray={circumference}
+                                                strokeDashoffset={progressOffset}
+                                                className="transition-all duration-500"
+                                            />
                                         </svg>
-                                    ) : (
-                                        <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
-                                            <rect width="17" height="17" rx="8.5" fill="transparent" />
-                                            <circle cx="8.5" cy="8.5" r="7" stroke="#CF272D" strokeWidth="1.5" />
-                                            <path d="M6 6L11 11M11 6L6 11" stroke="#CF272D" strokeWidth="1.5" strokeLinecap="round" />
-                                        </svg>
-                                    )}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
+                                        <span
+                                            className="absolute inset-0 flex items-center justify-center"
+                                            style={{ fontSize: 14, lineHeight: '17px', fontWeight: 400, color: '#4B5563' }}
+                                        >
+                                            {Math.round(matchPercentage)}%
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
 
-                    {/* AI Summary */}
-                    <div style={{ marginBottom: 20 }}>
-                        <h4 style={{ fontSize: 14, lineHeight: '17px', fontWeight: 500, color: '#4B5563', textTransform: 'uppercase', margin: '0 0 10px 0' }}>
-                            AI SUMMARY
-                        </h4>
-                        <div style={{ background: '#F9FAFB', borderRadius: 10, padding: '8px 0 6px 8px' }}>
-                            <p style={{ fontSize: 14, lineHeight: '25px', fontWeight: 400, color: '#8E8E93', margin: 0 }}>
-                                {candidate.aiSummary}
-                            </p>
-                        </div>
-                    </div>
+                            {/* Key Stats — Row 1 */}
+                            <div className="flex justify-between" style={{ marginBottom: 20, gap: 67 }}>
+                                {[
+                                    { label: 'Experience', value: experience },
+                                    { label: 'Current CTC', value: currentCTC },
+                                    { label: 'Expected', value: expectedCTC },
+                                ].map((stat) => (
+                                    <div key={stat.label} style={{ width: 120, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                                        <p style={{ fontSize: 14, lineHeight: '17px', fontWeight: 400, color: '#8E8E93', margin: 0 }}>
+                                            {stat.label}
+                                        </p>
+                                        <p style={{ fontSize: 16, lineHeight: '19px', fontWeight: 500, color: '#4B5563', margin: 0 }}>
+                                            {stat.value}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Key Stats — Row 2 */}
+                            <div
+                                className="flex justify-between"
+                                style={{ paddingBottom: 20, gap: 67, borderBottom: '0.5px solid #AEAEB2' }}
+                            >
+                                {[
+                                    { label: 'Notice Period', value: noticePeriod },
+                                    { label: 'Location', value: location },
+                                    { label: 'Source', value: source },
+                                ].map((stat) => (
+                                    <div key={stat.label} style={{ width: 120, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                                        <p style={{ fontSize: 14, lineHeight: '17px', fontWeight: 400, color: '#8E8E93', margin: 0 }}>
+                                            {stat.label}
+                                        </p>
+                                        <p style={{ fontSize: 16, lineHeight: '19px', fontWeight: 500, color: '#4B5563', margin: 0 }}>
+                                            {stat.value}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Quick Fit Summary */}
+                            {quickFitSkills.length > 0 && (
+                                <div style={{ marginTop: 20, marginBottom: 20 }}>
+                                    <h4 style={{ fontSize: 14, lineHeight: '17px', fontWeight: 500, color: '#4B5563', textTransform: 'uppercase', margin: '0 0 16px 0' }}>
+                                        QUICK FIT SUMMARY
+                                    </h4>
+                                    <div className="flex flex-wrap" style={{ gap: 10 }}>
+                                        {quickFitSkills.map((skill) => (
+                                            <span
+                                                key={skill.name}
+                                                className="inline-flex items-center"
+                                                style={{
+                                                    padding: '10px 12px',
+                                                    gap: skill.match ? 2 : 3,
+                                                    background: '#F5F9FB',
+                                                    borderRadius: 20,
+                                                    fontSize: 14,
+                                                    lineHeight: '17px',
+                                                    fontWeight: 400,
+                                                    color: skill.match ? '#009951' : '#CF272D',
+                                                }}
+                                            >
+                                                {skill.name}
+                                                {skill.match ? (
+                                                    <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+                                                        <rect width="17" height="17" rx="8.5" fill="transparent" />
+                                                        <circle cx="8.5" cy="8.5" r="7" stroke="#009951" strokeWidth="1.5" />
+                                                        <path d="M5.5 8.5L7.5 10.5L11.5 6.5" stroke="#009951" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                    </svg>
+                                                ) : (
+                                                    <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+                                                        <rect width="17" height="17" rx="8.5" fill="transparent" />
+                                                        <circle cx="8.5" cy="8.5" r="7" stroke="#CF272D" strokeWidth="1.5" />
+                                                        <path d="M6 6L11 11M11 6L6 11" stroke="#CF272D" strokeWidth="1.5" strokeLinecap="round" />
+                                                    </svg>
+                                                )}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* AI Summary */}
+                            <div style={{ marginBottom: 20 }}>
+                                <h4 style={{ fontSize: 14, lineHeight: '17px', fontWeight: 500, color: '#4B5563', textTransform: 'uppercase', margin: '0 0 10px 0' }}>
+                                    AI SUMMARY
+                                </h4>
+                                <div style={{ background: '#F9FAFB', borderRadius: 10, padding: '8px 0 6px 8px' }}>
+                                    <p style={{ fontSize: 14, lineHeight: '25px', fontWeight: 400, color: '#8E8E93', margin: 0 }}>
+                                        {aiSummary}
+                                    </p>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* ── Footer ── */}
@@ -246,6 +417,8 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                     <button
                         className="inline-flex items-center hover:opacity-80 transition-opacity"
                         style={{ padding: 10, gap: 5, background: '#FFFFFF', border: '0.5px solid #FF383C', borderRadius: 5 }}
+                        onClick={() => handleComplete('Skipped')}
+                        disabled={completing}
                     >
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M6.11328 2.66671C6.38783 1.88991 7.12868 1.33337 7.99948 1.33337C8.87028 1.33337 9.61115 1.88991 9.88568 2.66671" stroke="#FF383C" strokeLinecap="round" />
@@ -263,6 +436,11 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                         <button
                             className="inline-flex items-center hover:opacity-80 transition-opacity"
                             style={{ padding: 10, gap: 5, border: '0.5px solid #9CA3AF', borderRadius: 5 }}
+                            onClick={() => {
+                                if (currentItem?.candidate_id) {
+                                    window.open(`/candidate-profiles/${currentItem.candidate_id}`, '_blank');
+                                }
+                            }}
                         >
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M8.07992 8.52C8.03325 8.51333 7.97325 8.51333 7.91992 8.52C6.74659 8.48 5.81323 7.52 5.81323 6.33999C5.81323 5.13332 6.78659 4.15332 7.99992 4.15332C9.20659 4.15332 10.1866 5.13332 10.1866 6.33999C10.1799 7.52 9.25325 8.48 8.07992 8.52Z" stroke="#9CA3AF" strokeLinecap="round" strokeLinejoin="round" />
@@ -272,29 +450,8 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                             <span style={{ fontSize: 14, lineHeight: '17px', fontWeight: 400, color: '#9CA3AF' }}>View Profile</span>
                         </button>
 
-                        {/* Call */}
-                        <button
-                            className="inline-flex items-center hover:opacity-80 transition-opacity"
-                            style={{ padding: 10, gap: 5, border: '0.5px solid #0F47F2', borderRadius: 5 }}
-                        >
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M9.33398 1.33337C9.33398 1.33337 10.8007 1.46671 12.6673 3.33337C14.534 5.20004 14.6673 6.66671 14.6673 6.66671" stroke="#0F47F2" strokeLinecap="round" />
-                                <path d="M9.4707 3.69043C9.4707 3.69043 10.1307 3.879 11.1206 4.86894C12.1106 5.8589 12.2992 6.51886 12.2992 6.51886" stroke="#0F47F2" strokeLinecap="round" />
-                                <path d="M6.69108 3.54407L7.12375 4.31936C7.51422 5.01901 7.35748 5.93684 6.74248 6.55183C6.74248 6.55183 5.9966 7.29783 7.34902 8.65029C8.70102 10.0023 9.44748 9.25683 9.44748 9.25683C10.0625 8.64183 10.9803 8.48509 11.68 8.87556L12.4552 9.30823C13.5117 9.89783 13.6365 11.3794 12.7079 12.3081C12.1499 12.8661 11.4663 13.3003 10.7106 13.3289C9.43855 13.3772 7.27822 13.0552 5.11115 10.8882C2.9441 8.72109 2.62216 6.56077 2.67038 5.28869C2.69903 4.53303 3.13322 3.84945 3.69122 3.29145C4.61986 2.36281 6.10146 2.48759 6.69108 3.54407Z" stroke="#0F47F2" strokeLinecap="round" />
-                            </svg>
-                            <span style={{ fontSize: 14, lineHeight: '17px', fontWeight: 400, color: '#0F47F2' }}>Call</span>
-                        </button>
-
-                        {/* Move to Screening */}
-                        <button
-                            className="inline-flex items-center hover:opacity-90 transition-opacity"
-                            style={{ padding: 10, gap: 5, background: '#0F47F2', border: '0.5px solid #0F47F2', borderRadius: 5 }}
-                        >
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M2.66602 8H13.3327M13.3327 8L9.33268 4M13.3327 8L9.33268 12" stroke="white" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                            <span style={{ fontSize: 14, lineHeight: '17px', fontWeight: 400, color: '#FFFFFF' }}>Move to Screening</span>
-                        </button>
+                        {/* Tab-specific action buttons */}
+                        {renderActionButtons()}
                     </div>
                 </div>
             </div>
