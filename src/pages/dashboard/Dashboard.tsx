@@ -278,6 +278,11 @@ export default function Dashboard() {
         if (!cancelled) setLoading(false);
       });
 
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
+
   // Fetch talent matches from API
   const fetchTalentMatches = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -300,11 +305,6 @@ export default function Dashboard() {
   useEffect(() => {
     fetchTalentMatches();
   }, [fetchTalentMatches]);
-    
-    return () => {
-      cancelled = true;
-    };
-  }, [isAuthenticated]);
 
   // Fetch priority actions from the new API
   const fetchPriorityActions = useCallback(async () => {
