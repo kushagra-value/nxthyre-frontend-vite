@@ -98,9 +98,9 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
                     </div>
                 </div>
                 {/* Scrollable */}
-                <div className="flex-1 overflow-y-auto" style={{ padding: '20px 24px 0 24px' }}>
+                <div className="flex-1 overflow-y-auto" style={{ padding: '20px 24px' }}>
                     {/* ─── Candidate Info + Details Section ─── */}
-                    <div className="w-full shrink-0 " style={{ borderBottom: '0.5px solid #AEAEB2' }}>
+                    <div className="w-full shrink-0 " style={{ borderBottom: '0.5px solid #AEAEB2', padding: '20px 24px' }}>
                         {/* Candidate Name + Match Ring */}
                         <div className="flex items-center justify-between" style={{ marginBottom: 30 }}>
                             <div className="flex flex-col" style={{ gap: 10 }}>
@@ -168,7 +168,7 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
                     </div>
 
                     {/* ─── Quick Fit Summary + AI Summary ─── */}
-                    <div className="w-full shrink-0">
+                    <div className="w-full shrink-0" style={{ padding: '20px 24px' }}>
                         {/* Quick Fit Summary Header */}
                         <h4 className="m-0 font-medium text-sm uppercase text-gray-600" style={{ lineHeight: '17px', marginBottom: 20 }}>
                             Quick Fit Summary
