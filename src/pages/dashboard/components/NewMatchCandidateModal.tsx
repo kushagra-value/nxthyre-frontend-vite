@@ -43,7 +43,7 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
         >
             {/* Modal Container */}
             <div
-                className="bg-white flex flex-col overflow-y-auto"
+                className="bg-white flex flex-col"
                 style={{ width: 553, maxHeight: 727, borderRadius: 10, boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}
                 onClick={(e) => e.stopPropagation()}
             >
@@ -97,123 +97,125 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
                         </div>
                     </div>
                 </div>
+                {/* Scrollable */}
+                <div className="flex-1 overflow-y-auto" style={{ padding: '20px 24px 0 24px' }}>
+                    {/* ─── Candidate Info + Details Section ─── */}
+                    <div className="w-full shrink-0 " style={{ borderBottom: '0.5px solid #AEAEB2' }}>
+                        {/* Candidate Name + Match Ring */}
+                        <div className="flex items-center justify-between" style={{ marginBottom: 30 }}>
+                            <div className="flex flex-col" style={{ gap: 10 }}>
+                                <h3 className="m-0 font-medium text-black" style={{ fontSize: 20, lineHeight: '24px' }}>
+                                    {candidate.name}
+                                </h3>
+                                <p className="m-0 text-xs font-normal" style={{ color: '#0F47F2', lineHeight: '14px' }}>
+                                    {candidate.role} · {candidate.company}
+                                </p>
+                            </div>
+                            {/* Match Percentage Ring */}
+                            <div className="flex flex-col items-center justify-center" style={{ width: 48, height: 48 }}>
+                                <svg width="48" height="48" viewBox="0 0 48 48">
+                                    {/* Background circle */}
+                                    <circle cx="24" cy="24" r={radius} fill="none" stroke="rgba(116,116,128,0.08)" strokeWidth="4" />
+                                    {/* Progress arc */}
+                                    <circle
+                                        cx="24" cy="24" r={radius}
+                                        fill="none"
+                                        stroke="#00C8B3"
+                                        strokeWidth="4"
+                                        strokeLinecap="round"
+                                        strokeDasharray={circumference}
+                                        strokeDashoffset={strokeDashoffset}
+                                        transform="rotate(-90 24 24)"
+                                    />
+                                    <text x="24" y="24" textAnchor="middle" dominantBaseline="central" fill="#4B5563" fontSize="14" fontFamily="Gellix, Inter, sans-serif" fontWeight="400">
+                                        {matchPct}%
+                                    </text>
+                                </svg>
+                            </div>
+                        </div>
 
-                {/* ─── Candidate Info + Details Section ─── */}
-                <div className="w-full shrink-0" style={{ borderBottom: '0.5px solid #AEAEB2', padding: '20px 24px' }}>
-                    {/* Candidate Name + Match Ring */}
-                    <div className="flex items-center justify-between" style={{ marginBottom: 30 }}>
-                        <div className="flex flex-col" style={{ gap: 10 }}>
-                            <h3 className="m-0 font-medium text-black" style={{ fontSize: 20, lineHeight: '24px' }}>
-                                {candidate.name}
-                            </h3>
-                            <p className="m-0 text-xs font-normal" style={{ color: '#0F47F2', lineHeight: '14px' }}>
-                                {candidate.role} · {candidate.company}
+                        {/* Details Grid — 3 columns × 2 rows */}
+                        {/* Row 1: Experience, Current CTC, Expected */}
+                        <div className="flex items-start justify-between" style={{ gap: 67, marginBottom: 20 }}>
+                            <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                                <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Experience</span>
+                                <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.experience}</span>
+                            </div>
+                            <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                                <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Current CTC</span>
+                                <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.currentCTC}</span>
+                            </div>
+                            <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                                <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Expected</span>
+                                <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.expectedCTC}</span>
+                            </div>
+                        </div>
+                        {/* Row 2: Notice Period, Location, Source */}
+                        <div className="flex items-start justify-between" style={{ gap: 67 }}>
+                            <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                                <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Notice Period</span>
+                                <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.noticePeriod}</span>
+                            </div>
+                            <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                                <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Location</span>
+                                <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.location}</span>
+                            </div>
+                            <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                                <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Source</span>
+                                <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.source}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ─── Quick Fit Summary + AI Summary ─── */}
+                    <div className="w-full shrink-0">
+                        {/* Quick Fit Summary Header */}
+                        <h4 className="m-0 font-medium text-sm uppercase text-gray-600" style={{ lineHeight: '17px', marginBottom: 20 }}>
+                            Quick Fit Summary
+                        </h4>
+
+                        {/* Quick Fit Tags */}
+                        <div className="flex flex-wrap items-center" style={{ gap: 10, marginBottom: 30 }}>
+                            {candidate.quickFitSkills.map((skill) => (
+                                <span
+                                    key={skill.name}
+                                    className="inline-flex items-center text-sm font-normal"
+                                    style={{
+                                        padding: '10px 12px',
+                                        background: '#F5F9FB',
+                                        borderRadius: 20,
+                                        gap: 5,
+                                        color: skill.match ? '#009951' : '#CF272D',
+                                        lineHeight: '17px',
+                                    }}
+                                >
+                                    {skill.name}
+                                    {skill.match ? (
+                                        <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+                                            <circle cx="8.5" cy="8.5" r="8" stroke="#009951" strokeWidth="1" />
+                                            <path d="M5 8.5L7.5 11L12 6" stroke="#009951" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    ) : (
+                                        <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+                                            <circle cx="8.5" cy="8.5" r="8" stroke="#CF272D" strokeWidth="1" />
+                                            <path d="M6 6L11 11M11 6L6 11" stroke="#CF272D" strokeWidth="1.2" strokeLinecap="round" />
+                                        </svg>
+                                    )}
+                                </span>
+                            ))}
+                        </div>
+
+                        {/* AI Summary Header */}
+                        <h4 className="m-0 font-medium text-sm uppercase text-gray-600" style={{ lineHeight: '17px', marginBottom: 10 }}>
+                            AI Summary
+                        </h4>
+
+                        {/* AI Summary Box */}
+                        <div className="bg-gray-50" style={{ borderRadius: 10, padding: '8px 0 6px 8px' }}>
+                            <p className="m-0 text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '25px' }}>
+                                {candidate.aiSummary}
                             </p>
                         </div>
-                        {/* Match Percentage Ring */}
-                        <div className="flex flex-col items-center justify-center" style={{ width: 48, height: 48 }}>
-                            <svg width="48" height="48" viewBox="0 0 48 48">
-                                {/* Background circle */}
-                                <circle cx="24" cy="24" r={radius} fill="none" stroke="rgba(116,116,128,0.08)" strokeWidth="4" />
-                                {/* Progress arc */}
-                                <circle
-                                    cx="24" cy="24" r={radius}
-                                    fill="none"
-                                    stroke="#00C8B3"
-                                    strokeWidth="4"
-                                    strokeLinecap="round"
-                                    strokeDasharray={circumference}
-                                    strokeDashoffset={strokeDashoffset}
-                                    transform="rotate(-90 24 24)"
-                                />
-                                <text x="24" y="24" textAnchor="middle" dominantBaseline="central" fill="#4B5563" fontSize="14" fontFamily="Gellix, Inter, sans-serif" fontWeight="400">
-                                    {matchPct}%
-                                </text>
-                            </svg>
-                        </div>
-                    </div>
-
-                    {/* Details Grid — 3 columns × 2 rows */}
-                    {/* Row 1: Experience, Current CTC, Expected */}
-                    <div className="flex items-start justify-between" style={{ gap: 67, marginBottom: 20 }}>
-                        <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
-                            <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Experience</span>
-                            <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.experience}</span>
-                        </div>
-                        <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
-                            <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Current CTC</span>
-                            <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.currentCTC}</span>
-                        </div>
-                        <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
-                            <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Expected</span>
-                            <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.expectedCTC}</span>
-                        </div>
-                    </div>
-                    {/* Row 2: Notice Period, Location, Source */}
-                    <div className="flex items-start justify-between" style={{ gap: 67 }}>
-                        <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
-                            <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Notice Period</span>
-                            <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.noticePeriod}</span>
-                        </div>
-                        <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
-                            <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Location</span>
-                            <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.location}</span>
-                        </div>
-                        <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
-                            <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Source</span>
-                            <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{candidate.source}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* ─── Quick Fit Summary + AI Summary ─── */}
-                <div className="w-full shrink-0" style={{ padding: '20px 24px' }}>
-                    {/* Quick Fit Summary Header */}
-                    <h4 className="m-0 font-medium text-sm uppercase text-gray-600" style={{ lineHeight: '17px', marginBottom: 20 }}>
-                        Quick Fit Summary
-                    </h4>
-
-                    {/* Quick Fit Tags */}
-                    <div className="flex flex-wrap items-center" style={{ gap: 10, marginBottom: 30 }}>
-                        {candidate.quickFitSkills.map((skill) => (
-                            <span
-                                key={skill.name}
-                                className="inline-flex items-center text-sm font-normal"
-                                style={{
-                                    padding: '10px 12px',
-                                    background: '#F5F9FB',
-                                    borderRadius: 20,
-                                    gap: 5,
-                                    color: skill.match ? '#009951' : '#CF272D',
-                                    lineHeight: '17px',
-                                }}
-                            >
-                                {skill.name}
-                                {skill.match ? (
-                                    <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
-                                        <circle cx="8.5" cy="8.5" r="8" stroke="#009951" strokeWidth="1" />
-                                        <path d="M5 8.5L7.5 11L12 6" stroke="#009951" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                ) : (
-                                    <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
-                                        <circle cx="8.5" cy="8.5" r="8" stroke="#CF272D" strokeWidth="1" />
-                                        <path d="M6 6L11 11M11 6L6 11" stroke="#CF272D" strokeWidth="1.2" strokeLinecap="round" />
-                                    </svg>
-                                )}
-                            </span>
-                        ))}
-                    </div>
-
-                    {/* AI Summary Header */}
-                    <h4 className="m-0 font-medium text-sm uppercase text-gray-600" style={{ lineHeight: '17px', marginBottom: 10 }}>
-                        AI Summary
-                    </h4>
-
-                    {/* AI Summary Box */}
-                    <div className="bg-gray-50" style={{ borderRadius: 10, padding: '8px 0 6px 8px' }}>
-                        <p className="m-0 text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '25px' }}>
-                            {candidate.aiSummary}
-                        </p>
                     </div>
                 </div>
 
