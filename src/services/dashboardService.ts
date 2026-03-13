@@ -154,6 +154,16 @@ export interface SidebarData {
   };
 }
 
+export interface ActivityItem {
+  icon: string;
+  text: string;
+  time: string;
+}
+export interface ActivitySection {
+  label: string;
+  items: ActivityItem[];
+}
+
 // ──────────────────────────────────────────────
 //  Service
 // ──────────────────────────────────────────────
@@ -165,7 +175,7 @@ class DashboardService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch dashboard data"
+        error.response?.data?.error || "Failed to fetch dashboard data",
       );
     }
   }
@@ -176,8 +186,18 @@ class DashboardService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch sidebar data"
+        error.response?.data?.error || "Failed to fetch sidebar data",
       );
+    }
+  }
+
+  async fetchRecentActivities(): Promise<ActivitySection[]> {
+    try {
+      const response = await apiClient.get("/candidates/recent-activities/");
+      return response.data; // Already formatted correctly by the backend
+    } catch (error) {
+      console.error("Error fetching recent activities", error);
+      return [];
     }
   }
 }
