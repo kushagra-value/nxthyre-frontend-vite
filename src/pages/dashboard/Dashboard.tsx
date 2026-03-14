@@ -196,6 +196,7 @@ export default function Dashboard() {
 
   const [talentMatchesResponse, setTalentMatchesResponse] = useState<any>(null);
   const [talentMatchesLoading, setTalentMatchesLoading] = useState(true);
+  const talentMatchFetchIdRef = useRef(0);
   // Modal states
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [actionModalCandidateData, setActionModalCandidateData] = useState<any>(null);
@@ -309,15 +310,17 @@ export default function Dashboard() {
   }, [isAuthenticated]);
 
   // Fetch talent matches from API
-  // Inside the fetchTalentMatches useCallback
   const fetchTalentMatches = useCallback(async () => {
     if (!isAuthenticated) return;
+
+    // Increment fetch ID so we can ignore stale responses
+    const fetchId = ++talentMatchFetchIdRef.current;
 
     setTalentMatchesLoading(true);
     setTalentMatchesResponse(null);
 
     try {
-      console.log('Fetching talent matches for job_id:', talentMatchSelectedJob.id);
+      console.log('[TalentMatch] fetchId:', fetchId, '| Fetching for job_id:', talentMatchSelectedJob.id);
       const data = await dashboardService.getTalentMatches({
         job_id: talentMatchSelectedJob.id ?? undefined,
         date_range: talentMatchDateRangePreset,
@@ -326,14 +329,25 @@ export default function Dashboard() {
         page_size: 10,
       });
 
-      console.log('Received talent match data:', data);
+      // Discard if a newer request has been fired
+      if (fetchId !== talentMatchFetchIdRef.current) {
+        console.log('[TalentMatch] fetchId:', fetchId, 'is STALE (current:', talentMatchFetchIdRef.current, ') — discarding');
+        return;
+      }
 
-      setTalentMatchesResponse(data ?? { count: 0, results: [] });
+      const responseToSet = data ?? { count: 0, results: [] };
+      console.log('[TalentMatch] fetchId:', fetchId, '| Setting response with', responseToSet?.results?.length ?? 0, 'results. Full data:', responseToSet);
+
+      setTalentMatchesResponse(responseToSet);
     } catch (err) {
-      console.error('Failed to fetch talent matches:', err);
-      // already cleared above → no need to set again
+      if (fetchId !== talentMatchFetchIdRef.current) return;
+      console.error('[TalentMatch] fetchId:', fetchId, '| FAILED:', err);
+      setTalentMatchesResponse({ count: 0, results: [] });
     } finally {
-      setTalentMatchesLoading(false);
+      if (fetchId === talentMatchFetchIdRef.current) {
+        console.log('[TalentMatch] fetchId:', fetchId, '| Setting loading=false');
+        setTalentMatchesLoading(false);
+      }
     }
   }, [
     isAuthenticated,
