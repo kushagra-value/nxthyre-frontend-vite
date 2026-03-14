@@ -108,6 +108,9 @@ export interface PriorityActionItem {
   days_in_current_stage: number;
   current_stage_name: string;
   action_taken: string | null;
+  archive_stage_id?: number;
+  next_stage_id?: number;
+  current_stage_id?: number;
 }
 
 export interface PriorityActionsResponse {
