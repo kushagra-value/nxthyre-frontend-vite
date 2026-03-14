@@ -19,6 +19,7 @@ import dashboardService, {
   PriorityTab,
   DateRangePreset,
 } from '../../services/dashboardService';
+import { jobPostService, Job } from '../../services/jobPostService';
 import organizationService from '../../services/organizationService';
 import type { DiscoverWorkspace } from '../../services/organizationService';
 import {
@@ -186,6 +187,12 @@ export default function Dashboard() {
   const [talentMatchCustomStartDate, setTalentMatchCustomStartDate] = useState<string | undefined>(undefined);
   const [talentMatchCustomEndDate, setTalentMatchCustomEndDate] = useState<string | undefined>(undefined);
   const [showTalentMatchDateDropdown, setShowTalentMatchDateDropdown] = useState(false);
+
+  // Talent Matches Job Filter
+  const [talentMatchJobs, setTalentMatchJobs] = useState<Job[]>([]);
+  const [talentMatchSelectedJob, setTalentMatchSelectedJob] = useState<{ id: number | null, title: string }>({ id: null, title: 'All Jobs' });
+  const [showTalentMatchJobDropdown, setShowTalentMatchJobDropdown] = useState(false);
+  const talentMatchJobDropdownRef = useRef<HTMLDivElement>(null);
   
   const [talentMatchesResponse, setTalentMatchesResponse] = useState<any>(null);
   const [talentMatchesLoading, setTalentMatchesLoading] = useState(true);
@@ -212,6 +219,9 @@ export default function Dashboard() {
     const handleClickOutside = (event: MouseEvent) => {
       if (companyDropdownRef.current && !companyDropdownRef.current.contains(event.target as Node)) {
         setShowCompanyDropdown(false);
+      }
+      if (talentMatchJobDropdownRef.current && !talentMatchJobDropdownRef.current.contains(event.target as Node)) {
+        setShowTalentMatchJobDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -258,6 +268,20 @@ export default function Dashboard() {
     loadCompanies();
   }, [isAuthenticated]);
 
+  // Fetch jobs list for Talent Matches filter
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const loadJobs = async () => {
+      try {
+        const jobs = await jobPostService.getJobs();
+        setTalentMatchJobs(jobs);
+      } catch (err) {
+        console.error('Failed to fetch jobs for filter:', err);
+      }
+    };
+    loadJobs();
+  }, [isAuthenticated]);
+
   // Fetch dashboard data (stat cards, talent matches, schedule, etc.)
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -290,6 +314,7 @@ export default function Dashboard() {
     setTalentMatchesLoading(true);
     try {
       const data = await dashboardService.getTalentMatches({
+        job_id: talentMatchSelectedJob.id ?? undefined,
         date_range: talentMatchDateRangePreset,
         start_date: talentMatchCustomStartDate,
         end_date: talentMatchCustomEndDate,
@@ -301,7 +326,7 @@ export default function Dashboard() {
     } finally {
       setTalentMatchesLoading(false);
     }
-  }, [isAuthenticated, talentMatchDateRangePreset, talentMatchCustomStartDate, talentMatchCustomEndDate]);
+  }, [isAuthenticated, talentMatchSelectedJob.id, talentMatchDateRangePreset, talentMatchCustomStartDate, talentMatchCustomEndDate]);
 
   useEffect(() => {
     fetchTalentMatches();
@@ -784,11 +809,39 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <h2 className="text-[22px] font-medium leading-6 text-black">New Talent Matches</h2>
               <div className="flex items-end gap-3">
-                <div
-                  className="flex items-center gap-2 px-3.5 py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563] leading-[17px]"
-                  style={{ border: '0.5px solid #D1D1D6' }}
-                >
-                  All Jobs <ChevronDown className="w-5 h-5 opacity-60" />
+                <div className="relative" ref={talentMatchJobDropdownRef}>
+                  <button
+                    onClick={() => setShowTalentMatchJobDropdown(!showTalentMatchJobDropdown)}
+                    className="flex items-center gap-2 px-3.5 py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563] leading-[17px] bg-white border border-[#D1D1D6] min-w-[140px] justify-between transition-colors hover:bg-gray-50"
+                  >
+                    <span className="truncate max-w-[150px]">{talentMatchSelectedJob.title}</span>
+                    <ChevronDown className={`w-4 h-4 opacity-60 transition-transform flex-shrink-0 ${showTalentMatchJobDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showTalentMatchJobDropdown && (
+                    <div className="absolute top-full mt-1 left-0 w-full min-w-[200px] bg-white border border-[#D1D1D6] rounded-[10px] shadow-lg z-10 max-h-[280px] overflow-y-auto">
+                      <button
+                        className={`w-full text-left px-4 py-2.5 hover:bg-[#F3F5F7] text-sm transition-colors ${talentMatchSelectedJob.id === null ? 'bg-[#E7EDFF] text-[#0F47F2]' : 'text-[#4B5563]'}`}
+                        onClick={() => {
+                          setTalentMatchSelectedJob({ id: null, title: 'All Jobs' });
+                          setShowTalentMatchJobDropdown(false);
+                        }}
+                      >
+                        All Jobs
+                      </button>
+                      {talentMatchJobs.map(job => (
+                        <button
+                          key={job.id}
+                          className={`w-full text-left px-4 py-2.5 hover:bg-[#F3F5F7] text-sm transition-colors ${talentMatchSelectedJob.id === job.id ? 'bg-[#E7EDFF] text-[#0F47F2]' : 'text-[#4B5563]'}`}
+                          onClick={() => {
+                            setTalentMatchSelectedJob({ id: job.id, title: job.title });
+                            setShowTalentMatchJobDropdown(false);
+                          }}
+                        >
+                          {job.title}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="relative">
                   <button
