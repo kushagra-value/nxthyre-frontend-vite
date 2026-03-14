@@ -309,13 +309,17 @@ export default function Dashboard() {
   }, [isAuthenticated]);
 
   // Fetch talent matches from API
+  // Inside the fetchTalentMatches useCallback
   const fetchTalentMatches = useCallback(async () => {
     if (!isAuthenticated) return;
 
     setTalentMatchesLoading(true);
+
+    // UPDATED: Clear previous results immediately (optimistic UI → same behavior as Priority Actions)
+    setTalentMatchesResponse({ count: 0, next_page: null, prev_page: null, results: [] });
+
     try {
       console.log('Fetching talent matches for job_id:', talentMatchSelectedJob.id);
-      console.log("Fetching talent matches — job:", talentMatchSelectedJob.id ?? "all");
       const data = await dashboardService.getTalentMatches({
         job_id: talentMatchSelectedJob.id ?? undefined,
         date_range: talentMatchDateRangePreset,
@@ -326,24 +330,20 @@ export default function Dashboard() {
 
       console.log('Received talent match data:', data);
 
-      // If the API somehow doesn't return an explicit array, default it so it clears properly.
-      if (!data || !data.results) {
-        data.results = [];
-      }
-
-      setTalentMatchesResponse(data);
+      setTalentMatchesResponse(data ?? { count: 0, results: [] });
     } catch (err) {
       console.error('Failed to fetch talent matches:', err);
-      // Ensure we clear out response on error so stale data is removed
-      setTalentMatchesResponse({ count: 0, results: [] });
+      // already cleared above → no need to set again
     } finally {
       setTalentMatchesLoading(false);
     }
-  }, [isAuthenticated, talentMatchSelectedJob.id, talentMatchDateRangePreset, talentMatchCustomStartDate, talentMatchCustomEndDate]);
-
-  useEffect(() => {
-    fetchTalentMatches();
-  }, [fetchTalentMatches]);
+  }, [
+    isAuthenticated,
+    talentMatchSelectedJob.id,
+    talentMatchDateRangePreset,
+    talentMatchCustomStartDate,
+    talentMatchCustomEndDate,
+  ]);
 
   // Fetch priority actions from the new API
   const fetchPriorityActions = useCallback(async () => {
@@ -562,19 +562,22 @@ export default function Dashboard() {
   };
 
   const handleSkipTalentMatch = async (nbcId: string) => {
-    console.log("Skipping", nbcId);
     try {
-      await import('../../services/naukbotService').then(({ naukbotService }) =>
-        naukbotService.skipCandidates([nbcId])
+      const { naukbotService } = await import('../../services/naukbotService');
+      await naukbotService.skipCandidates([nbcId]);
+
+      // UPDATED: show success and force refresh (critical to match Priority Actions behavior)
+      import('react-hot-toast').then(({ default: toast }) =>
+        toast.success('Candidate skipped')
       );
-      import('react-hot-toast').then(({ default: toast }) => toast.success('Candidate skipped'));
-      console.log("Will refetch talent matches now");
-      await fetchTalentMatches();           // ← make sure this runs
-      console.log("Refetch completed");
-      fetchTalentMatches();
+
+      await fetchTalentMatches();   // ← this line was missing or not awaited → main cause of stale data
+
     } catch (err: any) {
-      console.error("Skip failed", err);
-      import('react-hot-toast').then(({ default: toast }) => toast.error(err.message || 'Failed to skip'));
+      console.error('Skip failed:', err);
+      import('react-hot-toast').then(({ default: toast }) =>
+        toast.error(err.message || 'Failed to skip candidate')
+      );
     }
   };
 
@@ -853,6 +856,7 @@ export default function Dashboard() {
                           onClick={() => {
                             setTalentMatchSelectedJob({ id: job.id, title: job.title });
                             setShowTalentMatchJobDropdown(false);
+                            console.log("Job filter changed to:", job.id, "— refetch should trigger automatically");
                           }}
                         >
                           {job.title}
