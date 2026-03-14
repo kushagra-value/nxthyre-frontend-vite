@@ -315,9 +315,6 @@ export default function Dashboard() {
 
     setTalentMatchesLoading(true);
 
-    // UPDATED: Clear previous results immediately (optimistic UI → same behavior as Priority Actions)
-    setTalentMatchesResponse({ count: 0, next_page: null, prev_page: null, results: [] });
-
     try {
       console.log('Fetching talent matches for job_id:', talentMatchSelectedJob.id);
       const data = await dashboardService.getTalentMatches({
