@@ -43,6 +43,15 @@ export default function NViteModal({
   const [result, setResult] = useState<SendResult | null>(null);
   const [sendError, setSendError] = useState<string | null>(null);
 
+  // ── Detect Naukri cookie / auth expiry errors ──────────
+  const isCookieError = (msg: string | null) =>
+    !!msg &&
+    (msg.toLowerCase().includes('auth failure') ||
+      msg.toLowerCase().includes('401') ||
+      msg.toLowerCase().includes('naukri_cookies') ||
+      msg.toLowerCase().includes('re-login') ||
+      msg.toLowerCase().includes('cookies'));
+
   /* ── Fetch Naukri Jobs ───────────────────────────── */
   useEffect(() => {
     (async () => {
@@ -174,9 +183,13 @@ export default function NViteModal({
                 <Loader2 className="w-4 h-4 animate-spin" /> Loading jobs…
               </div>
             ) : jobsError ? (
-              <div className="flex items-center gap-2 text-[13px] text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5">
-                <AlertCircle className="w-4 h-4 shrink-0" /> {jobsError}
-              </div>
+              isCookieError(jobsError) ? (
+                <CookieExpiredBanner />
+              ) : (
+                <div className="flex items-center gap-2 text-[13px] text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5">
+                  <AlertCircle className="w-4 h-4 shrink-0" /> {jobsError}
+                </div>
+              )
             ) : (
               <div className="relative">
                 <select
@@ -242,9 +255,13 @@ export default function NViteModal({
 
           {/* Send Error */}
           {sendError && (
-            <div className="flex items-start gap-2 text-[13px] text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5">
-              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" /> {sendError}
-            </div>
+            isCookieError(sendError) ? (
+              <CookieExpiredBanner />
+            ) : (
+              <div className="flex items-start gap-2 text-[13px] text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5">
+                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" /> {sendError}
+              </div>
+            )
           )}
 
           {/* Actions */}
@@ -301,6 +318,74 @@ function StatCard({
       <span className="text-lg font-bold" style={{ color }}>
         {value}
       </span>
+    </div>
+  );
+}
+
+// ── Cookie-expiry error panel ─────────────────────────
+function CookieExpiredBanner() {
+  return (
+    <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3">
+      {/* Title row */}
+      <div className="flex items-center gap-2">
+        <span className="text-base">🔑</span>
+        <span className="text-[13px] font-semibold text-amber-800">
+          Naukri session expired — cookies need to be refreshed
+        </span>
+      </div>
+
+      {/* Explanation */}
+      <p className="text-[12px] text-amber-700 leading-relaxed">
+        Naukri Resdex cookies expire daily. The stored credentials are no longer
+        valid and must be refreshed before NVite can be used.
+      </p>
+
+      {/* Steps */}
+      <ol className="space-y-1.5 text-[12px] text-amber-800">
+        <li className="flex gap-2">
+          <span className="font-bold shrink-0">1.</span>
+          <span>
+            Open{" "}
+            <a
+              href="https://resdex.naukri.com"
+              target="_blank"
+              rel="noreferrer"
+              className="underline font-medium hover:text-amber-900"
+            >
+              resdex.naukri.com
+            </a>{" "}
+            in Chrome and log in.
+          </span>
+        </li>
+        <li className="flex gap-2">
+          <span className="font-bold shrink-0">2.</span>
+          <span>
+            Open DevTools <kbd className="bg-amber-100 px-1 rounded text-[11px]">F12</kbd> → Network tab → run any search.
+          </span>
+        </li>
+        <li className="flex gap-2">
+          <span className="font-bold shrink-0">3.</span>
+          <span>
+            Find a <code className="bg-amber-100 px-1 rounded">refineWithoutClusters</code> request → copy
+            the <strong>Cookie</strong> header value, <strong>sid</strong>, and{" "}
+            <strong>sidGroupId</strong> from the payload.
+          </span>
+        </li>
+        <li className="flex gap-2">
+          <span className="font-bold shrink-0">4.</span>
+          <span>
+            Call{" "}
+            <code className="bg-amber-100 px-1 rounded">
+              POST /api/candidates/naukri-bot/config/
+            </code>{" "}
+            with the new values to update the stored credentials.
+          </span>
+        </li>
+      </ol>
+
+      <p className="text-[11px] text-amber-600 italic">
+        Once updated, close this modal and try again.
+      </p>
     </div>
   );
 }
