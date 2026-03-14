@@ -110,6 +110,8 @@ export interface NewMatchCandidate {
     location: string;
     matchId?: number;
     jobId?: number;
+    /** NaukriBotCandidate UUID — present when source is naukri_bot. Required for Skip and NVite. */
+    nbcId?: string;
 }
 
 export interface ScheduleEventData {

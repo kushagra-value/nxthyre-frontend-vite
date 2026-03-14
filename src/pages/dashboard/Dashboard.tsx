@@ -437,6 +437,7 @@ export default function Dashboard() {
           source: mapSource(m.source?.source),
           quickFitSkills,
           aiSummary: m.job_score_object?.recommended_message || m.job_score_object?.candidate_match_score?.description || '',
+          nbcId: m.nbc_id || m.match_id?.toString(),  // NaukriBotCandidate UUID for Skip/NVite
           matchId: m.match_id,
           jobId: m.job_id,
         };
@@ -519,6 +520,18 @@ export default function Dashboard() {
       } finally {
         setNewMatchLoading(false);
       }
+    }
+  };
+
+  const handleSkipTalentMatch = async (nbcId: string) => {
+    try {
+      await import('../../services/naukbotService').then(({ naukbotService }) =>
+        naukbotService.skipCandidates([nbcId])
+      );
+      import('react-hot-toast').then(({ default: toast }) => toast.success('Candidate skipped'));
+      fetchTalentMatches();
+    } catch (err: any) {
+      import('react-hot-toast').then(({ default: toast }) => toast.error(err.message || 'Failed to skip'));
     }
   };
 
@@ -817,6 +830,10 @@ export default function Dashboard() {
                       matchPercentage={match.matchPercentage}
                       source={match.source}
                       onClick={() => handleTalentMatchClick(match.name)}
+                      onSkip={() => {
+                        const mc = modalCandidates.find((c: any) => c.name === match.name);
+                        if (mc?.nbcId) handleSkipTalentMatch(mc.nbcId);
+                      }}
                     />
                   ))
                 ) : (
@@ -876,6 +893,7 @@ export default function Dashboard() {
         isLoading={newMatchLoading}
         currentIndex={newMatchCurrentIndex}
         onNavigate={handleNewMatchModalNavigate}
+        onSkipped={fetchTalentMatches}
       />
       {/* Schedule Event Modal */}
       <ScheduleEventModal

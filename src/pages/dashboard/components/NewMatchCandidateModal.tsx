@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NewMatchCandidate } from '../dashboardData';
+import { naukbotService } from '../../../services/naukbotService';
+import NViteModal from '../../companies/components/NViteModal';
+import toast from 'react-hot-toast';
 
 interface NewMatchCandidateModalProps {
     isOpen?: boolean;
@@ -9,6 +12,8 @@ interface NewMatchCandidateModalProps {
     isLoading?: boolean;
     currentIndex: number;
     onNavigate: (newIndex: number) => void;
+    /** Called after a candidate is skipped so parent can refresh */
+    onSkipped?: () => void;
 }
 
 // quick_fit_summary item shape from the API
@@ -28,7 +33,11 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
     isLoading = false,
     currentIndex,
     onNavigate,
+    onSkipped,
 }) => {
+    const [isSkipping, setIsSkipping] = useState(false);
+    const [nviteModal, setNviteModal] = useState(false);
+
     if (!isOpen || candidates.length === 0) return null;
 
     const goNext = () => onNavigate(Math.min(currentIndex + 1, candidates.length - 1));
@@ -42,6 +51,11 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
 
     // FALLBACKS from the 'candidates' array prop if API data is loading or missing
     const currentItem = candidates[currentIndex];
+
+    // NBC id for skip & nvite (populated when source=naukri_bot)
+    const nbcId = currentItem?.nbcId;
+    const isNaukriBot = !!nbcId;
+
     const candidateName = candidate?.full_name || currentItem?.name || 'Loading...';
 
     // ── Subtitle: role · company ──
@@ -114,7 +128,32 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
         }
     };
 
+    // ── Skip handler ──
+    const handleSkip = async () => {
+        if (!nbcId) {
+            toast.error('Skip is only available for Naukri Bot candidates');
+            return;
+        }
+        setIsSkipping(true);
+        try {
+            await naukbotService.skipCandidates([nbcId]);
+            toast.success('Candidate skipped');
+            onSkipped?.();
+            // Move to next if possible, otherwise close
+            if (currentIndex < candidates.length - 1) {
+                onNavigate(currentIndex + 1);
+            } else {
+                onClose();
+            }
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to skip candidate');
+        } finally {
+            setIsSkipping(false);
+        }
+    };
+
     return (
+        <>
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 backdrop-blur-sm"
             onClick={onClose}
@@ -329,16 +368,33 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
 
                 {/* ─── Footer Actions ─── */}
                 <div className="flex items-center justify-between shrink-0" style={{ padding: '20px 24px', borderTop: '0.5px solid #AEAEB2' }}>
+                    {/* Skip button — only active for Naukri Bot candidates */}
                     <button
-                        className="flex items-center justify-center cursor-pointer bg-white text-sm font-normal hover:opacity-80 transition-opacity"
-                        style={{ height: 37, border: '0.5px solid #FF383C', borderRadius: 5, padding: 10, gap: 5, color: '#FF383C' }}
+                        className="flex items-center justify-center cursor-pointer bg-white text-sm font-normal transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+                        style={{
+                            height: 37,
+                            border: `0.5px solid ${isNaukriBot ? '#FF383C' : '#D1D1D6'}`,
+                            borderRadius: 5,
+                            padding: 10,
+                            gap: 5,
+                            color: isNaukriBot ? '#FF383C' : '#9CA3AF',
+                        }}
+                        onClick={handleSkip}
+                        disabled={!isNaukriBot || isSkipping}
+                        title={isNaukriBot ? 'Skip this candidate' : 'Skip is only available for Naukri Bot candidates'}
                     >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                            <path d="M9.17 4H14.83L15.5 2H8.5L9.17 4Z" stroke="#FF383C" strokeWidth="1.2" />
-                            <path d="M3.5 6H20.5" stroke="#FF383C" strokeLinecap="round" />
-                            <path d="M5.5 6V19C5.5 20.1 6.4 21 7.5 21H16.5C17.6 21 18.5 20.1 18.5 19V6" stroke="#FF383C" strokeWidth="1.2" />
-                        </svg>
-                        Skip
+                        {isSkipping ? (
+                            <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="31.4" strokeDashoffset="10" />
+                            </svg>
+                        ) : (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M9.17 4H14.83L15.5 2H8.5L9.17 4Z" stroke="currentColor" strokeWidth="1.2" />
+                                <path d="M3.5 6H20.5" stroke="currentColor" strokeLinecap="round" />
+                                <path d="M5.5 6V19C5.5 20.1 6.4 21 7.5 21H16.5C17.6 21 18.5 20.1 18.5 19V6" stroke="currentColor" strokeWidth="1.2" />
+                            </svg>
+                        )}
+                        {isSkipping ? 'Skipping…' : 'Skip'}
                     </button>
 
                     <div className="flex items-center" style={{ gap: 10 }}>
@@ -364,16 +420,44 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
                             Call
                         </button>
 
+                        {/* Send Nvites — only for Naukri Bot candidates */}
                         <button
-                            className="flex items-center justify-center cursor-pointer text-sm font-normal text-white hover:opacity-90 transition-opacity"
-                            style={{ height: 37, background: '#0F47F2', border: '1px solid #0F47F2', borderRadius: 5, padding: '0 15px' }}
+                            className="flex items-center justify-center cursor-pointer text-sm font-normal transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+                            style={{
+                                height: 37,
+                                background: isNaukriBot ? '#0F47F2' : '#9CA3AF',
+                                border: `1px solid ${isNaukriBot ? '#0F47F2' : '#9CA3AF'}`,
+                                borderRadius: 5,
+                                padding: '0 15px',
+                                color: 'white',
+                            }}
+                            onClick={() => {
+                                if (isNaukriBot) setNviteModal(true);
+                                else toast('NVite is only available for Naukri Bot candidates', { icon: 'ℹ️' });
+                            }}
+                            title={isNaukriBot ? 'Send NVite to this candidate' : 'NVite is only available for Naukri Bot candidates'}
                         >
-                            Send Nvites
+                            Send NVite
                         </button>
                     </div>
                 </div>
             </div>
         </div>
+
+        {/* NVite Modal — rendered outside the main modal to avoid stacking issues */}
+        {nviteModal && nbcId && (
+            <NViteModal
+                candidateIds={[nbcId]}
+                nxthyreJobId={currentItem?.jobId}
+                jobTitle={currentItem?.role}
+                onClose={() => setNviteModal(false)}
+                onSuccess={() => {
+                    // The NViteModal shows results inline; parent list will refresh on close
+                    onSkipped?.();
+                }}
+            />
+        )}
+        </>
     );
 };
 
