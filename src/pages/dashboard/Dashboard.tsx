@@ -193,6 +193,7 @@ export default function Dashboard() {
   const [talentMatchSelectedJob, setTalentMatchSelectedJob] = useState<{ id: number | null, title: string }>({ id: null, title: 'All Jobs' });
   const [showTalentMatchJobDropdown, setShowTalentMatchJobDropdown] = useState(false);
   const talentMatchJobDropdownRef = useRef<HTMLDivElement>(null);
+  const talentMatchFetchId = useRef<number>(0);
   
   const [talentMatchesResponse, setTalentMatchesResponse] = useState<any>(null);
   const [talentMatchesLoading, setTalentMatchesLoading] = useState(true);
@@ -311,6 +312,8 @@ export default function Dashboard() {
   // Fetch talent matches from API
   const fetchTalentMatches = useCallback(async () => {
     if (!isAuthenticated) return;
+    const currentFetchId = ++talentMatchFetchId.current;
+
     setTalentMatchesLoading(true);
     try {
       const data = await dashboardService.getTalentMatches({
@@ -320,11 +323,18 @@ export default function Dashboard() {
         end_date: talentMatchCustomEndDate,
         page_size: 10,
       });
-      setTalentMatchesResponse(data);
+
+      if (currentFetchId === talentMatchFetchId.current) {
+        setTalentMatchesResponse(data);
+      }
     } catch (err) {
-      console.error('Failed to fetch talent matches:', err);
+      if (currentFetchId === talentMatchFetchId.current) {
+        console.error('Failed to fetch talent matches:', err);
+      }
     } finally {
-      setTalentMatchesLoading(false);
+      if (currentFetchId === talentMatchFetchId.current) {
+        setTalentMatchesLoading(false);
+      }
     }
   }, [isAuthenticated, talentMatchSelectedJob.id, talentMatchDateRangePreset, talentMatchCustomStartDate, talentMatchCustomEndDate]);
 
