@@ -314,6 +314,7 @@ export default function Dashboard() {
     if (!isAuthenticated) return;
 
     setTalentMatchesLoading(true);
+    setTalentMatchesResponse(null);
 
     try {
       console.log('Fetching talent matches for job_id:', talentMatchSelectedJob.id);
@@ -444,8 +445,8 @@ export default function Dashboard() {
   };
 
   const dynamicTalentMatches: TalentMatchData[] = talentMatchesResponse?.results
-    ? talentMatchesResponse.results.map((m: any) => ({
-      id: m.job_score_object?.candidate_id || String(m.match_id),
+    ? talentMatchesResponse.results.map((m: any, idx: number) => ({
+      id: `${m.match_id || idx}-${m.job_score_object?.candidate_id || idx}`,
       name: m.candidate_details || 'Unknown',
       company: m.current_company || 'N/A',
       position: m.job_title || '',
