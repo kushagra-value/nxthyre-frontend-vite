@@ -372,6 +372,10 @@ export default function Dashboard() {
   }, [isAuthenticated, dateRangePreset, customStartDate, customEndDate, selectedCompanyId, viewMode]);
 
   useEffect(() => {
+    fetchTalentMatches();
+  }, [fetchTalentMatches]);
+
+  useEffect(() => {
     fetchPriorityActions();
   }, [fetchPriorityActions]);
 
