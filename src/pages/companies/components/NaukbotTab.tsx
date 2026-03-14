@@ -3,6 +3,7 @@ import { Search, SlidersHorizontal, X, Send, Trash2, ArrowRight, ArrowLeft, Chec
 import { naukbotService, NaukbotCandidate, NaukbotCandidateSummary } from "../../../services/naukbotService";
 import { showToast } from "../../../utils/toast";
 import toast from "react-hot-toast";
+import NViteModal from "./NViteModal";
 
 interface NaukbotTabProps {
   jobId: number | null;
@@ -30,6 +31,9 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
 
   // Selection
   const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
+
+  // NVite modal state: null = closed, object with candidateIds = open
+  const [nviteModal, setNviteModal] = useState<{ candidateIds: string[] } | null>(null);
 
   const fetchCandidates = useCallback(async () => {
     if (!jobId) return;
@@ -104,11 +108,25 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
     }
   };
 
-  const triggerNvite = () => {
-     // Placeholder for actual NVite modal
-     // toast("NVite flow requires selecting a Naukri Job, implement modal if needed.", { icon: "ℹ️" });
-     // We will mock this or you can add the modal depending on requirements
-     showToast.error("NVite action requires selecting a job ID in production. Action currently pending modal.");
+  /**
+   * Opens the NVite modal for one or more candidates.
+   * If called with a single id string: per-row nVite button.
+   * If called with no arguments: uses the current selectedCandidates set.
+   */
+  const openNviteModal = (singleId?: string) => {
+    const ids = singleId ? [singleId] : Array.from(selectedCandidates);
+    if (ids.length === 0) return;
+    setNviteModal({ candidateIds: ids });
+  };
+
+  const closeNviteModal = () => setNviteModal(null);
+
+  const handleNviteSuccess = () => {
+    // Keep modal open — it will show the result screen.
+    // After the recruiter dismisses it, refresh the list.
+    fetchCandidates();
+    // Also clear selection since those candidates are now nvited
+    setSelectedCandidates(new Set());
   };
 
   const getPageNumbers = () => {
@@ -137,6 +155,7 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
 
 
   return (
+    <>
     <div className="pb-12">
       <div className="mx-8 mt-4">
         {/* Blue Header */}
@@ -225,9 +244,17 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
               <option value="ctc_desc">CTC ↓</option>
             </select>
             {selectedCandidates.size > 0 && (
+              <>
+                <button
+                  onClick={() => openNviteModal()}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#0F47F2] text-white rounded-lg text-sm font-medium hover:bg-[#0A3BCC] transition-colors"
+                >
+                  <Send className="w-4 h-4" /> nVite Selected ({selectedCandidates.size})
+                </button>
                 <button onClick={handleBulkSkip} className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors">
                   <Trash2 className="w-4 h-4" /> Skip Selected ({selectedCandidates.size})
                 </button>
+              </>
             )}
           </div>
         </div>
@@ -297,7 +324,7 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
                     <td className="px-6 py-6 border-transparent">
                       <div className="flex justify-end gap-2">
                         <button 
-                           onClick={() => triggerNvite()}
+                           onClick={() => openNviteModal(item.id)}
                            disabled={item.is_nvited}
                            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${item.is_nvited ? 'bg-gray-100 text-gray-400' : 'bg-[#0F47F2] text-white hover:bg-[#0A3BCC]'}`}>
                            {item.is_nvited ? <><Check className="w-3.5 h-3.5" /> nVited</> : <><Send className="w-3.5 h-3.5" /> nVite</>}
@@ -341,5 +368,16 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
         </div>
       </div>
     </div>
+
+      {nviteModal && (
+        <NViteModal
+          candidateIds={nviteModal.candidateIds}
+          nxthyreJobId={jobId}
+          jobTitle={undefined}
+          onClose={closeNviteModal}
+          onSuccess={handleNviteSuccess}
+        />
+      )}
+    </>
   );
 }

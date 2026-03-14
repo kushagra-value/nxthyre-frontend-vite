@@ -1,5 +1,20 @@
 import apiClient from "./api";
 
+export interface NaukriJob {
+  job_id: string;
+  title: string;
+  locations: string[];
+  min_experience: number;
+  max_experience: number;
+  state: string;
+  key_skills: string[];
+}
+
+export interface NaukriJobsResponse {
+  count: number;
+  jobs: NaukriJob[];
+}
+
 export interface NaukbotCandidateSummary {
   total_sourced: number;
   above_80_pct: number;
@@ -95,6 +110,15 @@ class NaukbotService {
       return response.data;
     } catch (error: any) {
        throw new Error(error.response?.data?.error || "Failed to send nvite");
+    }
+  }
+
+  async getNaukriJobs(): Promise<NaukriJobsResponse> {
+    try {
+      const response = await apiClient.get("/candidates/naukri-bot/naukri-jobs/");
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to fetch Naukri jobs");
     }
   }
 
