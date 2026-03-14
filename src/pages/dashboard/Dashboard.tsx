@@ -309,18 +309,16 @@ export default function Dashboard() {
     };
   }, [isAuthenticated]);
 
-  // Fetch talent matches from API
-  const fetchTalentMatches = useCallback(async () => {
+  // Fetch talent matches — uses useEffect with cleanup to handle StrictMode double-invocation
+  const fetchTalentMatches = useCallback(async (signal?: { cancelled: boolean }) => {
     if (!isAuthenticated) return;
 
-    // Increment fetch ID so we can ignore stale responses
     const fetchId = ++talentMatchFetchIdRef.current;
 
     setTalentMatchesLoading(true);
     setTalentMatchesResponse(null);
 
     try {
-      console.log('[TalentMatch] fetchId:', fetchId, '| Fetching for job_id:', talentMatchSelectedJob.id);
       const data = await dashboardService.getTalentMatches({
         job_id: talentMatchSelectedJob.id ?? undefined,
         date_range: talentMatchDateRangePreset,
@@ -329,23 +327,16 @@ export default function Dashboard() {
         page_size: 10,
       });
 
-      // Discard if a newer request has been fired
-      if (fetchId !== talentMatchFetchIdRef.current) {
-        console.log('[TalentMatch] fetchId:', fetchId, 'is STALE (current:', talentMatchFetchIdRef.current, ') — discarding');
-        return;
-      }
+      // Discard if this effect was cleaned up (StrictMode) or a newer request fired
+      if (signal?.cancelled || fetchId !== talentMatchFetchIdRef.current) return;
 
-      const responseToSet = data ?? { count: 0, results: [] };
-      console.log('[TalentMatch] fetchId:', fetchId, '| Setting response with', responseToSet?.results?.length ?? 0, 'results. Full data:', responseToSet);
-
-      setTalentMatchesResponse(responseToSet);
+      setTalentMatchesResponse(data ?? { count: 0, results: [] });
     } catch (err) {
-      if (fetchId !== talentMatchFetchIdRef.current) return;
-      console.error('[TalentMatch] fetchId:', fetchId, '| FAILED:', err);
+      if (signal?.cancelled || fetchId !== talentMatchFetchIdRef.current) return;
+      console.error('Failed to fetch talent matches:', err);
       setTalentMatchesResponse({ count: 0, results: [] });
     } finally {
-      if (fetchId === talentMatchFetchIdRef.current) {
-        console.log('[TalentMatch] fetchId:', fetchId, '| Setting loading=false');
+      if (!signal?.cancelled && fetchId === talentMatchFetchIdRef.current) {
         setTalentMatchesLoading(false);
       }
     }
@@ -387,7 +378,9 @@ export default function Dashboard() {
   }, [isAuthenticated, dateRangePreset, customStartDate, customEndDate, selectedCompanyId, viewMode]);
 
   useEffect(() => {
-    fetchTalentMatches();
+    const signal = { cancelled: false };
+    fetchTalentMatches(signal);
+    return () => { signal.cancelled = true; };
   }, [fetchTalentMatches]);
 
   useEffect(() => {
