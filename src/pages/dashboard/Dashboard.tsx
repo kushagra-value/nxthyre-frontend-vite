@@ -193,7 +193,7 @@ export default function Dashboard() {
   const [talentMatchSelectedJob, setTalentMatchSelectedJob] = useState<{ id: number | null, title: string }>({ id: null, title: 'All Jobs' });
   const [showTalentMatchJobDropdown, setShowTalentMatchJobDropdown] = useState(false);
   const talentMatchJobDropdownRef = useRef<HTMLDivElement>(null);
-  
+
   const [talentMatchesResponse, setTalentMatchesResponse] = useState<any>(null);
   const [talentMatchesLoading, setTalentMatchesLoading] = useState(true);
   // Modal states
@@ -311,10 +311,11 @@ export default function Dashboard() {
   // Fetch talent matches from API
   const fetchTalentMatches = useCallback(async () => {
     if (!isAuthenticated) return;
-    
+
     setTalentMatchesLoading(true);
     try {
       console.log('Fetching talent matches for job_id:', talentMatchSelectedJob.id);
+      console.log("Fetching talent matches — job:", talentMatchSelectedJob.id ?? "all");
       const data = await dashboardService.getTalentMatches({
         job_id: talentMatchSelectedJob.id ?? undefined,
         date_range: talentMatchDateRangePreset,
@@ -324,12 +325,12 @@ export default function Dashboard() {
       });
 
       console.log('Received talent match data:', data);
-      
+
       // If the API somehow doesn't return an explicit array, default it so it clears properly.
       if (!data || !data.results) {
         data.results = [];
       }
-      
+
       setTalentMatchesResponse(data);
     } catch (err) {
       console.error('Failed to fetch talent matches:', err);
@@ -418,7 +419,7 @@ export default function Dashboard() {
     });
 
     const urgentCount = Array.isArray(items) ? items.filter(item =>
-      Array.isArray(item.tags) && item.tags.some(tag => 
+      Array.isArray(item.tags) && item.tags.some(tag =>
         typeof tag === 'string' && (tag.toLowerCase().includes('follow up') || tag.toLowerCase().includes('not called'))
       )
     ).length : 0;
@@ -453,32 +454,32 @@ export default function Dashboard() {
     }))
     : [];
 
-  const modalCandidates = talentMatchesResponse?.results 
+  const modalCandidates = talentMatchesResponse?.results
     ? talentMatchesResponse.results.map((m: any) => {
-        const quickFitSource = m.job_score_object?.quick_fit_summary || [];
-        const quickFitSkills = quickFitSource.map((q: any) => ({
-          name: q.badge,
-          match: q.color === 'green'
-        }));
+      const quickFitSource = m.job_score_object?.quick_fit_summary || [];
+      const quickFitSkills = quickFitSource.map((q: any) => ({
+        name: q.badge,
+        match: q.color === 'green'
+      }));
 
-        return {
-          name: m.candidate_details || 'Unknown',
-          role: m.job_title || '',
-          company: m.current_company || 'N/A',
-          matchPercentage: mapMatchPercentage({ score: m.score }),
-          experience: m.total_exp != null ? `${m.total_exp} yrs` : '',
-          currentCTC: m.current_salary || '-',
-          expectedCTC: '-', // API JSON didn't show expectedCTC
-          noticePeriod: '-', // API JSON didn't show noticePeriod explicitly as days
-          location: '-', // API JSON didn't show location
-          source: mapSource(m.source?.source),
-          quickFitSkills,
-          aiSummary: m.job_score_object?.recommended_message || m.job_score_object?.candidate_match_score?.description || '',
-          nbcId: m.job_score_object?.candidate_id,  // CandidateProfile UUID — used for Skip/NVite
-          matchId: m.match_id,
-          jobId: m.job_id,
-        };
-      })
+      return {
+        name: m.candidate_details || 'Unknown',
+        role: m.job_title || '',
+        company: m.current_company || 'N/A',
+        matchPercentage: mapMatchPercentage({ score: m.score }),
+        experience: m.total_exp != null ? `${m.total_exp} yrs` : '',
+        currentCTC: m.current_salary || '-',
+        expectedCTC: '-', // API JSON didn't show expectedCTC
+        noticePeriod: '-', // API JSON didn't show noticePeriod explicitly as days
+        location: '-', // API JSON didn't show location
+        source: mapSource(m.source?.source),
+        quickFitSkills,
+        aiSummary: m.job_score_object?.recommended_message || m.job_score_object?.candidate_match_score?.description || '',
+        nbcId: m.job_score_object?.candidate_id,  // CandidateProfile UUID — used for Skip/NVite
+        matchId: m.match_id,
+        jobId: m.job_id,
+      };
+    })
     : [];
 
   // For schedule, use API data if available; map to ScheduleItemData from dashboardData types
@@ -541,7 +542,7 @@ export default function Dashboard() {
   const handleTalentMatchClick = async (name: string) => {
     const idx = modalCandidates.findIndex((c: any) => c.name === name);
     const indexToUse = idx >= 0 ? idx : 0;
-    
+
     setNewMatchCurrentIndex(indexToUse);
     setIsNewMatchModalOpen(true);
 
@@ -561,13 +562,18 @@ export default function Dashboard() {
   };
 
   const handleSkipTalentMatch = async (nbcId: string) => {
+    console.log("Skipping", nbcId);
     try {
       await import('../../services/naukbotService').then(({ naukbotService }) =>
         naukbotService.skipCandidates([nbcId])
       );
       import('react-hot-toast').then(({ default: toast }) => toast.success('Candidate skipped'));
+      console.log("Will refetch talent matches now");
+      await fetchTalentMatches();           // ← make sure this runs
+      console.log("Refetch completed");
       fetchTalentMatches();
     } catch (err: any) {
+      console.error("Skip failed", err);
       import('react-hot-toast').then(({ default: toast }) => toast.error(err.message || 'Failed to skip'));
     }
   };
@@ -632,7 +638,7 @@ export default function Dashboard() {
   const handleTalentMatchDateRangeApply = (range: { start?: Date; end?: Date; label: string }) => {
     setTalentMatchDateRange(range.label);
     const labelLower = typeof range.label === 'string' ? range.label.toLowerCase() : '';
-    
+
     if (labelLower === 'today' || labelLower === 'last 24 hours') {
       setTalentMatchDateRangePreset('today');
       setTalentMatchCustomStartDate(undefined);
