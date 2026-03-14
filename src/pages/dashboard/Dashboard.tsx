@@ -406,7 +406,7 @@ export default function Dashboard() {
 
   const dynamicTalentMatches: TalentMatchData[] = talentMatchesResponse?.results
     ? talentMatchesResponse.results.map((m: any) => ({
-      id: m.candidate_id,
+      id: m.job_score_object?.candidate_id || String(m.match_id),
       name: m.candidate_details || 'Unknown',
       company: m.current_company || 'N/A',
       position: m.job_title || '',
@@ -437,7 +437,7 @@ export default function Dashboard() {
           source: mapSource(m.source?.source),
           quickFitSkills,
           aiSummary: m.job_score_object?.recommended_message || m.job_score_object?.candidate_match_score?.description || '',
-          nbcId: m.nbc_id || m.match_id?.toString(),  // NaukriBotCandidate UUID for Skip/NVite
+          nbcId: m.job_score_object?.candidate_id,  // CandidateProfile UUID — used for Skip/NVite
           matchId: m.match_id,
           jobId: m.job_id,
         };
