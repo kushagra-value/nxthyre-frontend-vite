@@ -196,7 +196,6 @@ export default function Dashboard() {
 
   const [talentMatchesResponse, setTalentMatchesResponse] = useState<any>(null);
   const [talentMatchesLoading, setTalentMatchesLoading] = useState(true);
-  const talentMatchFetchIdRef = useRef(0);
   // Modal states
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [actionModalCandidateData, setActionModalCandidateData] = useState<any>(null);
@@ -309,37 +308,41 @@ export default function Dashboard() {
     };
   }, [isAuthenticated]);
 
-  // Fetch talent matches — uses useEffect with cleanup to handle StrictMode double-invocation
-  const fetchTalentMatches = useCallback(async (signal?: { cancelled: boolean }) => {
+  // Fetch talent matches — direct useEffect, no useCallback
+  useEffect(() => {
     if (!isAuthenticated) return;
 
-    const fetchId = ++talentMatchFetchIdRef.current;
-
+    let cancelled = false;
     setTalentMatchesLoading(true);
-    setTalentMatchesResponse(null);
 
-    try {
-      const data = await dashboardService.getTalentMatches({
+    dashboardService
+      .getTalentMatches({
         job_id: talentMatchSelectedJob.id ?? undefined,
         date_range: talentMatchDateRangePreset,
         start_date: talentMatchCustomStartDate,
         end_date: talentMatchCustomEndDate,
         page_size: 10,
+      })
+      .then((data) => {
+        if (!cancelled) {
+          setTalentMatchesResponse(data ?? { count: 0, results: [] });
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.error('Failed to fetch talent matches:', err);
+          setTalentMatchesResponse({ count: 0, results: [] });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setTalentMatchesLoading(false);
+        }
       });
 
-      // Discard if this effect was cleaned up (StrictMode) or a newer request fired
-      if (signal?.cancelled || fetchId !== talentMatchFetchIdRef.current) return;
-
-      setTalentMatchesResponse(data ?? { count: 0, results: [] });
-    } catch (err) {
-      if (signal?.cancelled || fetchId !== talentMatchFetchIdRef.current) return;
-      console.error('Failed to fetch talent matches:', err);
-      setTalentMatchesResponse({ count: 0, results: [] });
-    } finally {
-      if (!signal?.cancelled && fetchId === talentMatchFetchIdRef.current) {
-        setTalentMatchesLoading(false);
-      }
-    }
+    return () => {
+      cancelled = true;
+    };
   }, [
     isAuthenticated,
     talentMatchSelectedJob.id,
@@ -347,6 +350,26 @@ export default function Dashboard() {
     talentMatchCustomStartDate,
     talentMatchCustomEndDate,
   ]);
+
+  // Simple refresh for imperative calls (skip, modal actions)
+  const refreshTalentMatches = async () => {
+    try {
+      setTalentMatchesLoading(true);
+      const data = await dashboardService.getTalentMatches({
+        job_id: talentMatchSelectedJob.id ?? undefined,
+        date_range: talentMatchDateRangePreset,
+        start_date: talentMatchCustomStartDate,
+        end_date: talentMatchCustomEndDate,
+        page_size: 10,
+      });
+      setTalentMatchesResponse(data ?? { count: 0, results: [] });
+    } catch (err) {
+      console.error('Failed to refresh talent matches:', err);
+      setTalentMatchesResponse({ count: 0, results: [] });
+    } finally {
+      setTalentMatchesLoading(false);
+    }
+  };
 
   // Fetch priority actions from the new API
   const fetchPriorityActions = useCallback(async () => {
@@ -376,12 +399,6 @@ export default function Dashboard() {
       setPriorityLoading(false);
     }
   }, [isAuthenticated, dateRangePreset, customStartDate, customEndDate, selectedCompanyId, viewMode]);
-
-  useEffect(() => {
-    const signal = { cancelled: false };
-    fetchTalentMatches(signal);
-    return () => { signal.cancelled = true; };
-  }, [fetchTalentMatches]);
 
   useEffect(() => {
     fetchPriorityActions();
@@ -575,12 +592,11 @@ export default function Dashboard() {
       const { naukbotService } = await import('../../services/naukbotService');
       await naukbotService.skipCandidates([nbcId]);
 
-      // UPDATED: show success and force refresh (critical to match Priority Actions behavior)
       import('react-hot-toast').then(({ default: toast }) =>
         toast.success('Candidate skipped')
       );
 
-      await fetchTalentMatches();   // ← this line was missing or not awaited → main cause of stale data
+      await refreshTalentMatches();
 
     } catch (err: any) {
       console.error('Skip failed:', err);
@@ -977,7 +993,7 @@ export default function Dashboard() {
         isLoading={newMatchLoading}
         currentIndex={newMatchCurrentIndex}
         onNavigate={handleNewMatchModalNavigate}
-        onSkipped={fetchTalentMatches}
+        onSkipped={refreshTalentMatches}
       />
       {/* Schedule Event Modal */}
       <ScheduleEventModal
