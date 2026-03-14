@@ -193,7 +193,6 @@ export default function Dashboard() {
   const [talentMatchSelectedJob, setTalentMatchSelectedJob] = useState<{ id: number | null, title: string }>({ id: null, title: 'All Jobs' });
   const [showTalentMatchJobDropdown, setShowTalentMatchJobDropdown] = useState(false);
   const talentMatchJobDropdownRef = useRef<HTMLDivElement>(null);
-  const talentMatchFetchId = useRef<number>(0);
   
   const [talentMatchesResponse, setTalentMatchesResponse] = useState<any>(null);
   const [talentMatchesLoading, setTalentMatchesLoading] = useState(true);
@@ -312,10 +311,10 @@ export default function Dashboard() {
   // Fetch talent matches from API
   const fetchTalentMatches = useCallback(async () => {
     if (!isAuthenticated) return;
-    const currentFetchId = ++talentMatchFetchId.current;
-
+    
     setTalentMatchesLoading(true);
     try {
+      console.log('Fetching talent matches for job_id:', talentMatchSelectedJob.id);
       const data = await dashboardService.getTalentMatches({
         job_id: talentMatchSelectedJob.id ?? undefined,
         date_range: talentMatchDateRangePreset,
@@ -324,17 +323,20 @@ export default function Dashboard() {
         page_size: 10,
       });
 
-      if (currentFetchId === talentMatchFetchId.current) {
-        setTalentMatchesResponse(data);
+      console.log('Received talent match data:', data);
+      
+      // If the API somehow doesn't return an explicit array, default it so it clears properly.
+      if (!data || !data.results) {
+        data.results = [];
       }
+      
+      setTalentMatchesResponse(data);
     } catch (err) {
-      if (currentFetchId === talentMatchFetchId.current) {
-        console.error('Failed to fetch talent matches:', err);
-      }
+      console.error('Failed to fetch talent matches:', err);
+      // Ensure we clear out response on error so stale data is removed
+      setTalentMatchesResponse({ count: 0, results: [] });
     } finally {
-      if (currentFetchId === talentMatchFetchId.current) {
-        setTalentMatchesLoading(false);
-      }
+      setTalentMatchesLoading(false);
     }
   }, [isAuthenticated, talentMatchSelectedJob.id, talentMatchDateRangePreset, talentMatchCustomStartDate, talentMatchCustomEndDate]);
 
