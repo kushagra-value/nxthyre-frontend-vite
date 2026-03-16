@@ -34,7 +34,7 @@ import CompanyInfoDrawer from "./CompanyInfoDrawer";
 interface JobListingProps {
     selectedWorkspace: MyWorkspace;
     setSelectedWorkspace: (ws: MyWorkspace | null) => void;
-    logos: Record<string, string | null | undefined>;
+    logos: Record<string, string | null>;
     workspaceJobs: Job[];
     activeJobFilter: "All" | "Active" | "Paused" | "Closed" | "Draft";
     setActiveJobFilter: (filter: "All" | "Active" | "Paused" | "Closed" | "Draft") => void;

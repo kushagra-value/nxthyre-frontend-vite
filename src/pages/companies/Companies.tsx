@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import {
     organizationService,
@@ -92,7 +92,8 @@ export default function Companies() {
     const [statsCount, setStatsCount] = useState<WorkspaceStatsCount | null>(null);
     const [loading, setLoading] = useState(true);
     const [statusUpdating, setStatusUpdating] = useState<number | null>(null);
-    const [logos, setLogos] = useState<Record<string, string | null | undefined>>({});
+    const [logos, setLogos] = useState<Record<string, string | null>>({});
+    const logoRequestedRef = useRef<Set<string>>(new Set());
 
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showJoinModal, setShowJoinModal] = useState(false);
@@ -206,7 +207,8 @@ export default function Companies() {
     const [sortConfig, setSortConfig] = useState<SortConfig>(null);
 
     const fetchLogo = async (query: string) => {
-        if (!query || logos[query] !== undefined) return;
+        if (!query || logoRequestedRef.current.has(query)) return;
+        logoRequestedRef.current.add(query);
         try {
             const response = await fetch(
                 `https://api.logo.dev/search?q=${encodeURIComponent(query)}`,
@@ -220,7 +222,7 @@ export default function Companies() {
             const logoUrl = data.length > 0 ? data[0].logo_url : null;
             setLogos((prev) => ({ ...prev, [query]: logoUrl }));
         } catch (error) {
-            setLogos((prev) => ({ ...prev, [query]: undefined }));
+            setLogos((prev) => ({ ...prev, [query]: null }));
         }
     };
 
@@ -324,11 +326,11 @@ export default function Companies() {
     useEffect(() => {
         const uniqueCompanies = Array.from(new Set(allRows.map((r) => r.name)));
         uniqueCompanies.forEach((company) => {
-            if (company && logos[company] === undefined) {
+            if (company && !logoRequestedRef.current.has(company)) {
                 fetchLogo(company);
             }
         });
-    }, [allRows, logos]);
+    }, [allRows]);
 
     const searchedRows = searchQuery.trim()
         ? allRows.filter(
