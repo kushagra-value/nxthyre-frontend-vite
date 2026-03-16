@@ -130,6 +130,18 @@ class NaukbotService {
         throw new Error(error.response?.data?.error || "Failed to fetch nvite logs");
       }
   }
+
+  async enrichAndMoveToPipeline(candidate_ids: string[], job_id: number): Promise<any> {
+    try {
+      const response = await apiClient.post("/candidates/naukri-bot/enrich/", {
+        candidate_ids,
+        job_id,
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to move candidates to pipeline");
+    }
+  }
 }
 
 export const naukbotService = new NaukbotService();

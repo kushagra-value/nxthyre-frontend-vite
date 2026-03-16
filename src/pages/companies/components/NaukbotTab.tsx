@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Search, SlidersHorizontal, X, Send, Trash2, ArrowRight, ArrowLeft, Check } from "lucide-react";
+import { Search, SlidersHorizontal, X, Send, Trash2, ArrowRight, ArrowLeft, Check, ArrowUpRight } from "lucide-react";
 import { naukbotService, NaukbotCandidate, NaukbotCandidateSummary } from "../../../services/naukbotService";
 import { showToast } from "../../../utils/toast";
 import toast from "react-hot-toast";
@@ -34,6 +34,7 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
 
   // NVite modal state: null = closed, object with candidateIds = open
   const [nviteModal, setNviteModal] = useState<{ candidateIds: string[] } | null>(null);
+  const [movingToPipeline, setMovingToPipeline] = useState(false);
 
   const fetchCandidates = useCallback(async () => {
     if (!jobId) return;
@@ -127,6 +128,37 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
     fetchCandidates();
     // Also clear selection since those candidates are now nvited
     setSelectedCandidates(new Set());
+  };
+
+  const handleMoveToPipeline = async (id: string) => {
+    if (!jobId) return;
+    setMovingToPipeline(true);
+    try {
+      const res = await naukbotService.enrichAndMoveToPipeline([id], jobId);
+      toast.success(res.message || "Candidate queued for pipeline move");
+      fetchCandidates();
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to move candidate to pipeline");
+    } finally {
+      setMovingToPipeline(false);
+    }
+  };
+
+  const handleBulkMoveToPipeline = async () => {
+    if (selectedCandidates.size === 0 || !jobId) return;
+    setMovingToPipeline(true);
+    try {
+      const res = await naukbotService.enrichAndMoveToPipeline(Array.from(selectedCandidates), jobId);
+      toast.success(res.message || `Queued ${selectedCandidates.size} candidates for pipeline move`);
+      setSelectedCandidates(new Set());
+      fetchCandidates();
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to move candidates to pipeline");
+    } finally {
+      setMovingToPipeline(false);
+    }
   };
 
   const getPageNumbers = () => {
@@ -251,6 +283,13 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
                 >
                   <Send className="w-4 h-4" /> nVite Selected ({selectedCandidates.size})
                 </button>
+                <button
+                  onClick={handleBulkMoveToPipeline}
+                  disabled={movingToPipeline}
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ArrowUpRight className="w-4 h-4" /> {movingToPipeline ? 'Moving...' : `Move to Pipeline (${selectedCandidates.size})`}
+                </button>
                 <button onClick={handleBulkSkip} className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors">
                   <Trash2 className="w-4 h-4" /> Skip Selected ({selectedCandidates.size})
                 </button>
@@ -328,6 +367,12 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
                            disabled={item.is_nvited}
                            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${item.is_nvited ? 'bg-gray-100 text-gray-400' : 'bg-[#0F47F2] text-white hover:bg-[#0A3BCC]'}`}>
                            {item.is_nvited ? <><Check className="w-3.5 h-3.5" /> nVited</> : <><Send className="w-3.5 h-3.5" /> nVite</>}
+                        </button>
+                        <button 
+                           onClick={() => handleMoveToPipeline(item.id)}
+                           disabled={item.is_moved_to_pipeline || movingToPipeline}
+                           className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${item.is_moved_to_pipeline ? 'bg-gray-100 text-gray-400' : 'bg-emerald-600 text-white hover:bg-emerald-700'} disabled:opacity-50 disabled:cursor-not-allowed`}>
+                           {item.is_moved_to_pipeline ? <><Check className="w-3.5 h-3.5" /> Moved</> : <><ArrowUpRight className="w-3.5 h-3.5" /> Move</>}
                         </button>
                         <button 
                            onClick={() => handleSkip(item.id)}
