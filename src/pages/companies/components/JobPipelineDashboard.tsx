@@ -324,16 +324,28 @@ export default function JobPipelineDashboard({
     });
   };
 
+  // Primary list for active candidates
   let combinedCands = candidates;
-  if (archivedCandidates.length > 0) {
-    const existingIds = new Set(candidates.map(c => c.id));
-    const uniqueArchived = archivedCandidates.filter(c => !existingIds.has(c.id));
-    combinedCands = [...candidates, ...uniqueArchived];
-  }
+  
   if (activeStageSlug) {
     combinedCands = combinedCands.filter(c => (c.current_stage?.slug || c.stage_slug) === activeStageSlug);
   }
   const sortedCandidates = getSortedCandidates(combinedCands);
+
+  // Derived list for archived candidates (separated to avoid duplication in the main active list)
+  const filteredArchivedTable = archivedCandidates.filter(item => {
+    // 1. Filter by associated stage (tab) if one is active
+    if (activeStageSlug && (item.current_stage?.slug || item.stage_slug) !== activeStageSlug) return false;
+    
+    // 2. Filter by search query if present
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const name = item.candidate.full_name?.toLowerCase() || "";
+      const headline = item.candidate.headline?.toLowerCase() || "";
+      if (!name.includes(q) && !headline.includes(q)) return false;
+    }
+    return true;
+  });
 
   // ── Active tab
   const [activeTab, setActiveTab] = useState<"pipeline" | "naukbot" | "inbound">("pipeline");
@@ -1584,7 +1596,7 @@ export default function JobPipelineDashboard({
                         <td className="px-6 py-5"><div className="flex gap-2 justify-end"><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /></div></td>
                       </tr>
                     ))
-                    ) : candidates.length === 0 && archivedCandidates.length === 0 ? (
+                    ) : sortedCandidates.length === 0 && filteredArchivedTable.length === 0 ? (
                       <tr>
                         <td colSpan={11} className="px-6 py-12 text-center text-sm text-[#AEAEB2]">
                           No candidates found{activeStageSlug ? " in this stage" : ""}
@@ -1711,7 +1723,7 @@ export default function JobPipelineDashboard({
                         })}
 
                         {/* Archived Candidates in Table View */}
-                        {archivedCandidates.length > 0 && (
+                        {filteredArchivedTable.length > 0 && (
                           <>
                             <tr className="bg-[#F9FAFB]">
                               <td colSpan={11} className="px-6 py-3 border-y border-[#E5E7EB]">
@@ -1722,7 +1734,7 @@ export default function JobPipelineDashboard({
                                 </div>
                               </td>
                             </tr>
-                            {archivedCandidates.map((item, index) => {
+                            {filteredArchivedTable.map((item, index) => {
                               const cand = item.candidate;
                               const isDisabled = selectionType === "ACTIVE";
 
