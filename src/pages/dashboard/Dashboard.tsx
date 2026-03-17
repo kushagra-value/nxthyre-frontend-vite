@@ -837,7 +837,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                       {/* Options list */}
-                      <div className="max-h-[220px] overflow-y-auto px-1.5">
+                      <div className="min-w-[220px] max-h-[220px] overflow-y-auto px-1.5">
                         {companyOptions
                           .filter(option =>
                             companySearchQuery.trim() === '' ||
@@ -849,11 +849,10 @@ export default function Dashboard() {
                             return (
                               <button
                                 key={option.id ?? 'all'}
-                                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                                  isSelected
+                                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${isSelected
                                     ? 'bg-[#E7EDFF] text-[#0F47F2]'
                                     : 'text-[#4B5563] hover:bg-[#F3F5F7]'
-                                }`}
+                                  }`}
                                 onClick={() => handleCompanySelect(option)}
                               >
                                 {/* Logo or initial */}
@@ -1007,11 +1006,10 @@ export default function Dashboard() {
                         {/* All Jobs option */}
                         {(jobSearchQuery.trim() === '' || 'all jobs'.includes(jobSearchQuery.toLowerCase())) && (
                           <button
-                            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                              pendingJobId === null
+                            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${pendingJobId === null
                                 ? 'bg-[#E7EDFF] text-[#0F47F2]'
                                 : 'text-[#4B5563] hover:bg-[#F3F5F7]'
-                            }`}
+                              }`}
                             onClick={() => {
                               setPendingJobId(null);
                               setPendingJobTitle('All Jobs');
@@ -1028,11 +1026,10 @@ export default function Dashboard() {
                           .map(job => (
                             <button
                               key={job.id}
-                              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                                pendingJobId === job.id
+                              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${pendingJobId === job.id
                                   ? 'bg-[#E7EDFF] text-[#0F47F2]'
                                   : 'text-[#4B5563] hover:bg-[#F3F5F7]'
-                              }`}
+                                }`}
                               onClick={() => {
                                 setPendingJobId(job.id);
                                 setPendingJobTitle(job.title);

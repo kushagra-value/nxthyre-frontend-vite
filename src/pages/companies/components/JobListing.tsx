@@ -386,7 +386,7 @@ const JobListing: React.FC<JobListingProps> = ({
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto overflow-y-hidden">
                     <table className="w-full text-left border-collapse">
                         <colgroup>
                             <col style={{ width: '22%' }} /> {/* Job Title */}
