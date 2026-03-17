@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { Search, ChevronDown } from 'lucide-react';
 import StatCard from './components/StatCard';
 import PriorityCard from './components/PriorityCard';
 import TalentMatchCard from './components/TalentMatchCard';
@@ -175,6 +175,17 @@ export default function Dashboard() {
   const [companyOptions, setCompanyOptions] = useState<CompanyOption[]>([]);
   const companyDropdownRef = useRef<HTMLDivElement>(null);
 
+  // Company logos (same pattern as Companies page)
+  const [companyLogos, setCompanyLogos] = useState<Record<string, string | null>>({});
+  const logoRequestedRef = useRef<Set<string>>(new Set());
+
+  // Staged company selection (applied on "Apply" click)
+  const [pendingCompanyId, setPendingCompanyId] = useState<number | null>(null);
+  const [pendingCompanyName, setPendingCompanyName] = useState('All Companies');
+
+  // Company search within dropdown
+  const [companySearchQuery, setCompanySearchQuery] = useState('');
+
   // Date range state
   const [dateRange, setDateRange] = useState('Today');
   const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>('today');
@@ -267,6 +278,36 @@ export default function Dashboard() {
     };
     loadCompanies();
   }, [isAuthenticated]);
+
+  // Fetch company logo (same as Companies.tsx)
+  const fetchCompanyLogo = async (query: string) => {
+    if (!query || logoRequestedRef.current.has(query)) return;
+    logoRequestedRef.current.add(query);
+    try {
+      const response = await fetch(
+        `https://api.logo.dev/search?q=${encodeURIComponent(query)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${import.meta.env.VITE_LOGO_DEV_API_KEY}`,
+          },
+        }
+      );
+      const data = await response.json();
+      const logoUrl = data.length > 0 ? data[0].logo_url : null;
+      setCompanyLogos((prev) => ({ ...prev, [query]: logoUrl }));
+    } catch (error) {
+      setCompanyLogos((prev) => ({ ...prev, [query]: null }));
+    }
+  };
+
+  // Fetch logos when company options load
+  useEffect(() => {
+    companyOptions.forEach((option) => {
+      if (option.name && option.id !== null && !logoRequestedRef.current.has(option.name)) {
+        fetchCompanyLogo(option.name);
+      }
+    });
+  }, [companyOptions]);
 
   // Fetch jobs list for Talent Matches filter
   useEffect(() => {
@@ -686,11 +727,28 @@ export default function Dashboard() {
     }
   };
 
-  // Handle company selection
+  // Handle company selection (stage it for Apply)
   const handleCompanySelect = (option: CompanyOption) => {
-    setSelectedCompanyId(option.id);
-    setSelectedCompanyName(option.name);
+    setPendingCompanyId(option.id);
+    setPendingCompanyName(option.name);
+  };
+
+  // Apply staged company filter
+  const handleCompanyApply = () => {
+    setSelectedCompanyId(pendingCompanyId);
+    setSelectedCompanyName(pendingCompanyName);
     setShowCompanyDropdown(false);
+    setCompanySearchQuery('');
+  };
+
+  // Sync pending state when dropdown opens
+  const handleToggleCompanyDropdown = () => {
+    if (!showCompanyDropdown) {
+      setPendingCompanyId(selectedCompanyId);
+      setPendingCompanyName(selectedCompanyName);
+      setCompanySearchQuery('');
+    }
+    setShowCompanyDropdown(!showCompanyDropdown);
   };
 
   return (
@@ -737,32 +795,88 @@ export default function Dashboard() {
                 <button
                   onClick={() => setViewMode(prev => prev === 'active' ? 'history' : 'active')}
                   className={`flex items-center justify-center w-10 h-10 rounded-lg border-[0.5px] transition-all ${viewMode === 'history' ? 'bg-[#0F47F2] border-[#0F47F2]' : 'bg-white border-[#D1D1D6]'}`}
+                  title={viewMode === 'history' ? 'View Active' : 'View History'}
                 >
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 5.83333V9.99999L12.5 11.6667M10 2.5C8.01088 2.5 6.10322 3.29018 4.6967 4.6967C3.29018 6.10322 2.5 8.01088 2.5 10C2.5 11.9891 3.29018 13.8968 4.6967 15.3033C6.10322 16.7098 8.01088 17.5 10 17.5C11.9891 17.5 13.8968 16.7098 15.3033 15.3033C16.7098 13.8968 17.5 11.9891 17.5 10M4.16667 4.16667V7.5H7.5" stroke={viewMode === 'history' ? 'white' : '#4B5563'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M4.23223 4.22409C7.39502 1.06578 12.5364 1.09936 15.7185 4.28148C18.902 7.46497 18.9342 12.6094 15.7718 15.7718C12.6093 18.9342 7.46494 18.902 4.28145 15.7185C2.39491 13.832 1.61587 11.2582 1.95039 8.81767C1.99727 8.47567 2.3125 8.23647 2.65447 8.28335C2.99646 8.33022 3.23568 8.64542 3.18882 8.98742C2.9055 11.0543 3.56485 13.2342 5.16533 14.8347C7.86907 17.5384 12.222 17.5538 14.8879 14.8879C17.5538 12.222 17.5383 7.8691 14.8346 5.16537C12.1322 2.46301 7.78241 2.44616 5.11612 5.10798L5.73921 5.11111C6.08438 5.11284 6.36279 5.39407 6.36106 5.73924C6.35932 6.08442 6.0781 6.36282 5.73292 6.36109L3.61163 6.35043C3.26891 6.34871 2.99151 6.0713 2.98978 5.72858L2.97912 3.60728C2.97738 3.26212 3.2558 2.98089 3.60097 2.97915C3.94615 2.97742 4.22737 3.25583 4.22911 3.60101L4.23223 4.22409Z" fill="#4B5563" />
+                    <path opacity="0.5" d="M10 6.04175C10.3452 6.04175 10.625 6.32157 10.625 6.66675V9.74116L12.5252 11.6415C12.7693 11.8856 12.7693 12.2812 12.5252 12.5253C12.2812 12.7694 11.8855 12.7694 11.6414 12.5253L9.61908 10.5031C9.46283 10.3467 9.375 10.1348 9.375 9.91375V6.66675C9.375 6.32157 9.65483 6.04175 10 6.04175Z" fill="#4B5563" />
                   </svg>
+
                 </button>
 
                 {/* Company Filter Dropdown */}
                 <div className="relative" ref={companyDropdownRef}>
                   <button
-                    onClick={() => setShowCompanyDropdown(!showCompanyDropdown)}
+                    onClick={handleToggleCompanyDropdown}
                     className="flex items-center gap-2 px-[18px] py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563] bg-white border-[0.5px] border-[#D1D1D6] min-w-[150px] justify-between"
                   >
+                    {selectedCompanyId !== null && companyLogos[selectedCompanyName] ? (
+                      <img src={companyLogos[selectedCompanyName]!} alt="" className="w-5 h-5 rounded-full object-contain flex-shrink-0" />
+                    ) : null}
                     <span className="truncate max-w-[120px]">{selectedCompanyName}</span>
                     <ChevronDown className={`w-4 h-4 opacity-60 transition-transform flex-shrink-0 ${showCompanyDropdown ? 'rotate-180' : ''}`} />
                   </button>
                   {showCompanyDropdown && (
-                    <div className="absolute top-full mt-1 left-0 w-full bg-white border border-[#D1D1D6] rounded-[10px] shadow-lg z-10 overflow-hidden max-h-[250px] overflow-y-auto">
-                      {companyOptions.map(option => (
+                    <div className="absolute top-full mt-1 right-0 min-w-[220px] bg-white border border-[#D1D1D6] rounded-[12px] shadow-lg z-10 flex flex-col">
+                      {/* Search */}
+                      <div className="px-3 pt-3 pb-2">
+                        <div className="relative">
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#AEAEB2]" />
+                          <input
+                            type="text"
+                            placeholder="Search company"
+                            value={companySearchQuery}
+                            onChange={(e) => setCompanySearchQuery(e.target.value)}
+                            className="w-full h-8 pl-8 pr-3 rounded-lg text-xs text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 border border-[#E5E7EB]"
+                          />
+                        </div>
+                      </div>
+                      {/* Options list */}
+                      <div className="max-h-[220px] overflow-y-auto px-1.5">
+                        {companyOptions
+                          .filter(option =>
+                            companySearchQuery.trim() === '' ||
+                            option.name.toLowerCase().includes(companySearchQuery.toLowerCase())
+                          )
+                          .map(option => {
+                            const logo = option.id !== null ? companyLogos[option.name] : null;
+                            const isSelected = pendingCompanyId === option.id;
+                            return (
+                              <button
+                                key={option.id ?? 'all'}
+                                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                                  isSelected
+                                    ? 'bg-[#E7EDFF] text-[#0F47F2]'
+                                    : 'text-[#4B5563] hover:bg-[#F3F5F7]'
+                                }`}
+                                onClick={() => handleCompanySelect(option)}
+                              >
+                                {/* Logo or initial */}
+                                {option.id !== null ? (
+                                  <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-gray-50 border border-[#E5E7EB]">
+                                    {logo ? (
+                                      <img src={logo} alt={option.name} className="w-full h-full object-contain" />
+                                    ) : (
+                                      <span className="text-[10px] font-semibold text-[#8E8E93]">
+                                        {option.name.charAt(0).toUpperCase()}
+                                      </span>
+                                    )}
+                                  </div>
+                                ) : null}
+                                <span className="truncate">{option.name}</span>
+                              </button>
+                            );
+                          })}
+                      </div>
+                      {/* Apply button */}
+                      <div className="px-3 py-2.5 border-t border-[#E5E7EB]">
                         <button
-                          key={option.id ?? 'all'}
-                          className={`w-full text-left px-4 py-2 hover:bg-[#F3F5F7] text-sm text-[#4B5563] ${selectedCompanyId === option.id ? 'bg-[#E7EDFF] text-[#0F47F2]' : ''}`}
-                          onClick={() => handleCompanySelect(option)}
+                          onClick={handleCompanyApply}
+                          className="w-full py-2 rounded-lg bg-[#0F47F2] text-white text-sm font-medium hover:bg-[#0D3ED4] transition-colors"
                         >
-                          {option.name}
+                          Apply
                         </button>
-                      ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -774,13 +888,12 @@ export default function Dashboard() {
                     className="flex items-center gap-3 px-[18px] py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563] bg-white border-[0.5px] border-[#D1D1D6] min-w-[140px]"
                   >
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M15 1.66666V3.33332M5 1.66666V3.33332" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M16 3.33334H4C2.89543 3.33334 2 4.22877 2 5.33334V16.3333C2 17.4379 2.89543 18.3333 4 18.3333H16C17.1046 18.3333 18 17.4379 18 16.3333V5.33334C18 4.22877 17.1046 3.33334 16 3.33334Z" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M2 8.33334H18" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      <rect x="7" y="11" width="2" height="2" rx="0.5" fill="#4B5563" />
-                      <rect x="11" y="11" width="2" height="2" rx="0.5" fill="#4B5563" />
-                      <rect x="7" y="14" width="2" height="2" rx="0.5" fill="#4B5563" />
+                      <path d="M15 1.66675V3.33341M5 1.66675V3.33341" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                      <path d="M8.33333 14.1666L8.33332 11.1226C8.33332 10.9628 8.21938 10.8333 8.07882 10.8333H7.5M11.358 14.1666L12.4868 11.1242C12.5396 10.982 12.4274 10.8333 12.2672 10.8333H10.8333" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" />
+                      <path d="M2.08301 10.2027C2.08301 6.57161 2.08301 4.75607 3.12644 3.62803C4.16987 2.5 5.84925 2.5 9.20801 2.5H10.7913C14.1501 2.5 15.8295 2.5 16.8729 3.62803C17.9163 4.75607 17.9163 6.57161 17.9163 10.2027V10.6306C17.9163 14.2617 17.9163 16.0773 16.8729 17.2053C15.8295 18.3333 14.1501 18.3333 10.7913 18.3333H9.20801C5.84925 18.3333 4.16987 18.3333 3.12644 17.2053C2.08301 16.0773 2.08301 14.2617 2.08301 10.6306V10.2027Z" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                      <path d="M5 6.66675H15" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
+
                     {dateRange}
                   </button>
                   {showDateDropdown && (
@@ -822,7 +935,6 @@ export default function Dashboard() {
                           <span className="text-sm font-normal text-[#4B5563] leading-[17px]">{column.title}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal text-[#4B5563]">{column.urgentCount}</span>
                           <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal" style={{ color: column.accentColor }}>{column.totalCount}</span>
                         </div>
                       </div>
@@ -893,8 +1005,14 @@ export default function Dashboard() {
                 <div className="relative">
                   <button
                     onClick={() => setShowTalentMatchDateDropdown(!showTalentMatchDateDropdown)}
-                    className="flex items-center px-[18px] py-[11px] rounded-lg text-sm font-normal text-[#4B5563] leading-[17px] bg-white border-[0.5px] border-[#D1D1D6] whitespace-nowrap min-w-[140px]"
+                    className="flex items-center gap-3 px-[18px] py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563] bg-white border-[0.5px] border-[#D1D1D6] min-w-[140px]"
                   >
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M15 1.66675V3.33341M5 1.66675V3.33341" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                      <path d="M8.33333 14.1666L8.33332 11.1226C8.33332 10.9628 8.21938 10.8333 8.07882 10.8333H7.5M11.358 14.1666L12.4868 11.1242C12.5396 10.982 12.4274 10.8333 12.2672 10.8333H10.8333" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" />
+                      <path d="M2.08301 10.2027C2.08301 6.57161 2.08301 4.75607 3.12644 3.62803C4.16987 2.5 5.84925 2.5 9.20801 2.5H10.7913C14.1501 2.5 15.8295 2.5 16.8729 3.62803C17.9163 4.75607 17.9163 6.57161 17.9163 10.2027V10.6306C17.9163 14.2617 17.9163 16.0773 16.8729 17.2053C15.8295 18.3333 14.1501 18.3333 10.7913 18.3333H9.20801C5.84925 18.3333 4.16987 18.3333 3.12644 17.2053C2.08301 16.0773 2.08301 14.2617 2.08301 10.6306V10.2027Z" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                      <path d="M5 6.66675H15" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
                     {talentMatchDateRange}
                   </button>
                   {showTalentMatchDateDropdown && (
