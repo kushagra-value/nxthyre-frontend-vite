@@ -11,6 +11,7 @@ import NewMatchCandidateModal from './components/NewMatchCandidateModal';
 import CustomDateSelector from './components/CustomDateSelector';
 import ScheduleEventModal from './components/ScheduleEventModal';
 import DateWiseAgendaModal from './components/DateWiseAgendaModal';
+import DailyActivitiesModal from './components/DailyActivitiesModal';
 import { useAuth } from '../../hooks/useAuth';
 import dashboardService, {
   DashboardData,
@@ -229,6 +230,8 @@ export default function Dashboard() {
   const [scheduleInitialIndex, setScheduleInitialIndex] = useState(0);
 
   const [isAgendaModalOpen, setIsAgendaModalOpen] = useState(false);
+  const [isDailyActivitiesModalOpen, setIsDailyActivitiesModalOpen] = useState(false);
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
 
   // Close company dropdown on outside click
   useEffect(() => {
@@ -679,8 +682,13 @@ export default function Dashboard() {
     setIsScheduleModalOpen(true);
   };
 
-  const handleDateClick = () => {
-    setIsAgendaModalOpen(true);
+  const handleDateClick = (date: Date, isTodayOrFuture: boolean) => {
+    setSelectedCalendarDate(date);
+    if (isTodayOrFuture) {
+      setIsAgendaModalOpen(true);
+    } else {
+      setIsDailyActivitiesModalOpen(true);
+    }
   };
 
   // Handle date range selection from CustomDateSelector
@@ -1118,7 +1126,10 @@ export default function Dashboard() {
 
         {/* Right Sidebar */}
         <aside className="w-96 flex flex-col gap-4 shrink-0">
-          <CalendarWidget onDateClick={handleDateClick} />
+          <CalendarWidget
+            onDateClick={handleDateClick}
+            activities={[]} /* TODO: replace with API data — see suggested API structure */
+          />
           <ScheduleWidget items={dynamicScheduleItems} isLoading={loading} onEventClick={handleScheduleEventClick} />
           <RecentActivities />
         </aside>
@@ -1178,6 +1189,11 @@ export default function Dashboard() {
         isOpen={isAgendaModalOpen}
         onClose={() => setIsAgendaModalOpen(false)}
         agenda={dailyAgendaData}
+      />
+      {/* Daily Activities Modal — for past dates */}
+      <DailyActivitiesModal
+        isOpen={isDailyActivitiesModalOpen}
+        onClose={() => setIsDailyActivitiesModalOpen(false)}
       />
     </div>
   );
