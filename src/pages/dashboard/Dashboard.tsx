@@ -853,7 +853,7 @@ export default function Dashboard() {
           {/* Talent Matches from API or fallback */}
           <section className="bg-white rounded-[10px] p-5 flex flex-col gap-5">
             <div className="flex items-center justify-between">
-              <h2 className="text-[22px] font-medium leading-6 text-black">New Talent Matches</h2>
+              <h2 className="text-[22px] font-medium leading-6 text-black">Auto Pilot</h2>
               <div className="flex items-end gap-3">
                 <div className="relative" ref={talentMatchJobDropdownRef}>
                   <button
