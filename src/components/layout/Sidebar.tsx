@@ -197,55 +197,57 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
           justifyContent: isCollapsed ? 'center' : 'space-between',
         }}
       >
-        {isCollapsed ? <LogoCollapsed /> : <LogoExpanded />}
-
-        {/* ── Collapse / Expand Toggle ── */}
+        {/* Logo — clickable to expand when collapsed */}
         <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="cursor-pointer hover:bg-neutral-100 rounded-lg flex items-center justify-center"
-          style={{
-            width: 24,
-            height: 24,
-            transition: 'all 0.3s ease',
-            ...(isCollapsed
-              ? { position: 'absolute' as const, bottom: 6, right: 6 }
-              : { position: 'relative' as const }),
-          }}
-          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          onClick={() => { if (isCollapsed) setIsCollapsed(false); }}
+          className={`flex items-center justify-center bg-transparent border-none outline-none ${isCollapsed ? 'cursor-pointer' : 'cursor-default'}`}
+          title={isCollapsed ? 'Expand sidebar' : undefined}
         >
-          <svg
-            width={24}
-            height={24}
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{
-              transition: 'transform 0.3s ease, width 0.3s ease, height 0.3s ease',
-              transform: isCollapsed ? 'rotate(180deg)' : 'none',
-            }}
-          >
-            <path
-              d="M21.9707 15V9C21.9707 4 19.9707 2 14.9707 2H8.9707C3.9707 2 1.9707 4 1.9707 9V15C1.9707 20 3.9707 22 8.9707 22H14.9707C19.9707 22 21.9707 20 21.9707 15Z"
-              stroke="#4B5563"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              opacity="0.4"
-              d="M7.9707 2V22"
-              stroke="#4B5563"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              opacity="0.4"
-              d="M14.9702 9.43994L12.4102 11.9999L14.9702 14.5599"
-              stroke="#4B5563"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          {isCollapsed ? <LogoCollapsed /> : <LogoExpanded />}
         </button>
+
+        {/* ── Collapse Toggle (only visible when expanded) ── */}
+        {!isCollapsed && (
+          <button
+            onClick={() => setIsCollapsed(true)}
+            className="cursor-pointer hover:bg-neutral-100 rounded-lg flex items-center justify-center"
+            style={{
+              width: 24,
+              height: 24,
+              transition: 'all 0.3s ease',
+            }}
+            aria-label="Collapse sidebar"
+          >
+            <svg
+              width={24}
+              height={24}
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M21.9707 15V9C21.9707 4 19.9707 2 14.9707 2H8.9707C3.9707 2 1.9707 4 1.9707 9V15C1.9707 20 3.9707 22 8.9707 22H14.9707C19.9707 22 21.9707 20 21.9707 15Z"
+                stroke="#4B5563"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                opacity="0.4"
+                d="M7.9707 2V22"
+                stroke="#4B5563"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                opacity="0.4"
+                d="M14.9702 9.43994L12.4102 11.9999L14.9702 14.5599"
+                stroke="#4B5563"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* ── Separator ── */}

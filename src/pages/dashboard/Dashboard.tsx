@@ -205,6 +205,11 @@ export default function Dashboard() {
   const [showTalentMatchJobDropdown, setShowTalentMatchJobDropdown] = useState(false);
   const talentMatchJobDropdownRef = useRef<HTMLDivElement>(null);
 
+  // Staged job selection (applied on "Apply" click)
+  const [pendingJobId, setPendingJobId] = useState<number | null>(null);
+  const [pendingJobTitle, setPendingJobTitle] = useState('All Jobs');
+  const [jobSearchQuery, setJobSearchQuery] = useState('');
+
   const [talentMatchesResponse, setTalentMatchesResponse] = useState<any>(null);
   const [talentMatchesLoading, setTalentMatchesLoading] = useState(true);
   // Modal states
@@ -969,36 +974,87 @@ export default function Dashboard() {
               <div className="flex items-end gap-3">
                 <div className="relative" ref={talentMatchJobDropdownRef}>
                   <button
-                    onClick={() => setShowTalentMatchJobDropdown(!showTalentMatchJobDropdown)}
+                    onClick={() => {
+                      if (!showTalentMatchJobDropdown) {
+                        setPendingJobId(talentMatchSelectedJob.id);
+                        setPendingJobTitle(talentMatchSelectedJob.title);
+                        setJobSearchQuery('');
+                      }
+                      setShowTalentMatchJobDropdown(!showTalentMatchJobDropdown);
+                    }}
                     className="flex items-center gap-2 px-3.5 py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563] leading-[17px] bg-white border border-[#D1D1D6] min-w-[140px] justify-between transition-colors hover:bg-gray-50"
                   >
                     <span className="truncate max-w-[150px]">{talentMatchSelectedJob.title}</span>
                     <ChevronDown className={`w-4 h-4 opacity-60 transition-transform flex-shrink-0 ${showTalentMatchJobDropdown ? 'rotate-180' : ''}`} />
                   </button>
                   {showTalentMatchJobDropdown && (
-                    <div className="absolute top-full mt-1 left-0 w-full min-w-[200px] bg-white border border-[#D1D1D6] rounded-[10px] shadow-lg z-10 max-h-[280px] overflow-y-auto">
-                      <button
-                        className={`w-full text-left px-4 py-2.5 hover:bg-[#F3F5F7] text-sm transition-colors ${talentMatchSelectedJob.id === null ? 'bg-[#E7EDFF] text-[#0F47F2]' : 'text-[#4B5563]'}`}
-                        onClick={() => {
-                          setTalentMatchSelectedJob({ id: null, title: 'All Jobs' });
-                          setShowTalentMatchJobDropdown(false);
-                        }}
-                      >
-                        All Jobs
-                      </button>
-                      {talentMatchJobs.map(job => (
+                    <div className="absolute top-full mt-1 right-0 min-w-[220px] bg-white border border-[#D1D1D6] rounded-[12px] shadow-lg z-10 flex flex-col">
+                      {/* Search */}
+                      <div className="px-3 pt-3 pb-2">
+                        <div className="relative">
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#AEAEB2]" />
+                          <input
+                            type="text"
+                            placeholder="Search job"
+                            value={jobSearchQuery}
+                            onChange={(e) => setJobSearchQuery(e.target.value)}
+                            className="w-full h-8 pl-8 pr-3 rounded-lg text-xs text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 border border-[#E5E7EB]"
+                          />
+                        </div>
+                      </div>
+                      {/* Options list */}
+                      <div className="max-h-[220px] overflow-y-auto px-1.5">
+                        {/* All Jobs option */}
+                        {(jobSearchQuery.trim() === '' || 'all jobs'.includes(jobSearchQuery.toLowerCase())) && (
+                          <button
+                            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                              pendingJobId === null
+                                ? 'bg-[#E7EDFF] text-[#0F47F2]'
+                                : 'text-[#4B5563] hover:bg-[#F3F5F7]'
+                            }`}
+                            onClick={() => {
+                              setPendingJobId(null);
+                              setPendingJobTitle('All Jobs');
+                            }}
+                          >
+                            <span className="truncate">All Jobs</span>
+                          </button>
+                        )}
+                        {talentMatchJobs
+                          .filter(job =>
+                            jobSearchQuery.trim() === '' ||
+                            job.title.toLowerCase().includes(jobSearchQuery.toLowerCase())
+                          )
+                          .map(job => (
+                            <button
+                              key={job.id}
+                              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                                pendingJobId === job.id
+                                  ? 'bg-[#E7EDFF] text-[#0F47F2]'
+                                  : 'text-[#4B5563] hover:bg-[#F3F5F7]'
+                              }`}
+                              onClick={() => {
+                                setPendingJobId(job.id);
+                                setPendingJobTitle(job.title);
+                              }}
+                            >
+                              <span className="truncate">{job.title}</span>
+                            </button>
+                          ))}
+                      </div>
+                      {/* Apply button */}
+                      <div className="px-3 py-2.5 border-t border-[#E5E7EB]">
                         <button
-                          key={job.id}
-                          className={`w-full text-left px-4 py-2.5 hover:bg-[#F3F5F7] text-sm transition-colors ${talentMatchSelectedJob.id === job.id ? 'bg-[#E7EDFF] text-[#0F47F2]' : 'text-[#4B5563]'}`}
                           onClick={() => {
-                            setTalentMatchSelectedJob({ id: job.id, title: job.title });
+                            setTalentMatchSelectedJob({ id: pendingJobId, title: pendingJobTitle });
                             setShowTalentMatchJobDropdown(false);
-                            console.log("Job filter changed to:", job.id, "— refetch should trigger automatically");
+                            setJobSearchQuery('');
                           }}
+                          className="w-full py-2 rounded-lg bg-[#0F47F2] text-white text-sm font-medium hover:bg-[#0D3ED4] transition-colors"
                         >
-                          {job.title}
+                          Apply
                         </button>
-                      ))}
+                      </div>
                     </div>
                   )}
                 </div>
