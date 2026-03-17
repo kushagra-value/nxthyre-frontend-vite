@@ -700,8 +700,8 @@ export default function JobPipelineDashboard({
 
   useEffect(() => {
     if (jobId != null && searchQuery === "") {
-        fetchCandidates(jobId, activeStageSlug, currentPage, "");
-        fetchArchivedCandidates(jobId);
+      fetchCandidates(jobId, activeStageSlug, currentPage, "");
+      fetchArchivedCandidates(jobId);
     }
   }, [jobId, activeStageSlug, currentPage, searchQuery, fetchCandidates, fetchArchivedCandidates]);
 
@@ -1108,490 +1108,490 @@ export default function JobPipelineDashboard({
         <>
           <div className="mx-8 mt-4 flex items-center justify-between bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
             <div className="flex items-center gap-2 flex-wrap">
-          {!isKanbanView && (
-            <>
-              <button
-                onClick={() => setActiveStageSlug(null)}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === null
-                  ? "bg-[#0F47F2] text-white"
-                  : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
-                  }`}
-              >
-                All ({totalPipelineCandidates})
-              </button>
-
-              {loadingStages ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="w-28 h-8 bg-gray-200 rounded-full animate-pulse" />
-                ))
-              ) : (
-                stages.map((stage) => (
+              {!isKanbanView && (
+                <>
                   <button
-                    key={stage.id}
-                    onClick={() => setActiveStageSlug(stage.slug)}
-                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === stage.slug
+                    onClick={() => setActiveStageSlug(null)}
+                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === null
                       ? "bg-[#0F47F2] text-white"
                       : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
                       }`}
                   >
-                    {stage.name} ({stage.candidate_count})
+                    All ({totalPipelineCandidates})
                   </button>
-                ))
+
+                  {loadingStages ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="w-28 h-8 bg-gray-200 rounded-full animate-pulse" />
+                    ))
+                  ) : (
+                    stages.map((stage) => (
+                      <button
+                        key={stage.id}
+                        onClick={() => setActiveStageSlug(stage.slug)}
+                        className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === stage.slug
+                          ? "bg-[#0F47F2] text-white"
+                          : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
+                          }`}
+                      >
+                        {stage.name} ({stage.candidate_count})
+                      </button>
+                    ))
+                  )}
+                </>
               )}
-            </>
-          )}
-        </div>
+            </div>
 
-        <div className="flex items-center gap-2">
-          {!isKanbanView && (
-            <button onClick={() => setShowAddStageForm(true)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#E7EDFF] text-[#0F47F2] rounded-full hover:bg-[#D5E1FF] transition-colors border border-transparent mr-2">
-              <Plus className="w-3.5 h-3.5" /> Add Stage
-            </button>
-          )}
-          <button
-            onClick={() => setIsKanbanView(!isKanbanView)}
-            className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs"
-          >
-            {isKanbanView ? <><List className="w-4 h-4" /> Table View</> : <><Grid3X3 className="w-4 h-4" /> Kanban</>}
-          </button>
-        </div>
-      </div>
+            <div className="flex items-center gap-2">
+              {!isKanbanView && (
+                <button onClick={() => setShowAddStageForm(true)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#E7EDFF] text-[#0F47F2] rounded-full hover:bg-[#D5E1FF] transition-colors border border-transparent mr-2">
+                  <Plus className="w-3.5 h-3.5" /> Add Stage
+                </button>
+              )}
+              <button
+                onClick={() => setIsKanbanView(!isKanbanView)}
+                className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs"
+              >
+                {isKanbanView ? <><List className="w-4 h-4" /> Table View</> : <><Grid3X3 className="w-4 h-4" /> Kanban</>}
+              </button>
+            </div>
+          </div>
 
-      {/* ═══════════════════════════════════════════════════════
+          {/* ═══════════════════════════════════════════════════════
           Toolbar: Search + Actions
          ═══════════════════════════════════════════════════════ */}
-      <div className="mx-8 flex flex-wrap items-center justify-between bg-white p-4 border border-b-0 border-[#E5E7EB]">
-        <div className="flex items-center gap-3">
-          <div className="relative w-[240px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
-            <input
-              type="text"
-              placeholder="Search for Candidates"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-9 pl-9 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow border border-[#E5E7EB]"
-            />
-            {suggestions.length > 0 && (
-              <div className="absolute top-10 z-[100] w-full bg-white shadow-lg rounded-lg max-h-60 overflow-y-auto border border-gray-200">
-                {suggestions.map((sug) => (
-                  <div
-                    key={sug.id}
-                    className="p-2 hover:bg-gray-100 cursor-pointer text-sm text-[#4B5563]"
-                    onClick={() => handleSuggestionSelect(sug)}
-                  >
-                    {sug.name}
+          <div className="mx-8 flex flex-wrap items-center justify-between bg-white p-4 border border-b-0 border-[#E5E7EB]">
+            <div className="flex items-center gap-3">
+              <div className="relative w-[240px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
+                <input
+                  type="text"
+                  placeholder="Search for Candidates"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-9 pl-9 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow border border-[#E5E7EB]"
+                />
+                {suggestions.length > 0 && (
+                  <div className="absolute top-10 z-[100] w-full bg-white shadow-lg rounded-lg max-h-60 overflow-y-auto border border-gray-200">
+                    {suggestions.map((sug) => (
+                      <div
+                        key={sug.id}
+                        className="p-2 hover:bg-gray-100 cursor-pointer text-sm text-[#4B5563]"
+                        onClick={() => handleSuggestionSelect(sug)}
+                      >
+                        {sug.name}
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
-            )}
+              <button className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors">
+                <SlidersHorizontal className="w-4 h-4" /> Filters
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  const url = `${window.location.origin}/public/workspaces/${workspaceId}/applications`;
+                  window.open(url, "_blank");
+                }}
+                className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#E7EDFF] hover:text-[#0F47F2] hover:border-[#0F47F2] transition-colors">
+                <Share2 className="w-4 h-4" /> Share Pipeline
+              </button>
+              <button
+                onClick={() => {
+                  if (selectedIds.size === 0) {
+                    showToast.error("Please select at least one candidate to export");
+                    return;
+                  }
+                  setShowExportDialog(true);
+                }}
+                className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors">
+                <Download className="w-4 h-4" /> Export CSV
+              </button>
+              <button className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors" title="Feature Coming Soon" disabled>
+                <Calendar className="w-4 h-4" /> {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })}
+              </button>
+            </div>
           </div>
-          <button className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors">
-            <SlidersHorizontal className="w-4 h-4" /> Filters
-          </button>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              const url = `${window.location.origin}/public/workspaces/${workspaceId}/applications`;
-              window.open(url, "_blank");
-            }}
-            className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#E7EDFF] hover:text-[#0F47F2] hover:border-[#0F47F2] transition-colors">
-            <Share2 className="w-4 h-4" /> Share Pipeline
-          </button>
-          <button
-            onClick={() => {
-              if (selectedIds.size === 0) {
-                showToast.error("Please select at least one candidate to export");
-                return;
-              }
-              setShowExportDialog(true);
-            }}
-            className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors">
-            <Download className="w-4 h-4" /> Export CSV
-          </button>
-          <button className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors" title="Feature Coming Soon" disabled>
-            <Calendar className="w-4 h-4" /> {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })}
-          </button>
-        </div>
-      </div>
 
-      {/* ═══════════════════════════════════════════════════════
+          {/* ═══════════════════════════════════════════════════════
           Bulk Action Bar
          ═══════════════════════════════════════════════════════ */}
-      {selectedIds.size > 0 && (
-        <div className="mx-8 bg-blue-50/50 border-x border-[#E5E7EB] px-6 py-3 flex items-center justify-between">
-          <div className="text-sm font-medium text-[#0F47F2]">
-            {selectedIds.size} Candidate{selectedIds.size !== 1 ? "s" : ""} Selected
-          </div>
-          <div className="flex items-center gap-3 text-sm">
-            <button
-              onClick={() => {
-                let nextStageId: number | undefined;
-                if (activeStageSlug) {
-                  const currentIdx = stages.findIndex(s => s.slug === activeStageSlug);
-                  if (currentIdx !== -1 && currentIdx + 1 < stages.length) {
-                    // Check if next stage is 'archives', if so skip or just use it. Typically archives is not a 'next' stage
-                    const nextStage = stages[currentIdx + 1];
-                    if (nextStage.slug !== 'archives') {
-                      nextStageId = nextStage.id;
-                    } else if (currentIdx + 2 < stages.length) {
-                      nextStageId = stages[currentIdx + 2].id;
+          {selectedIds.size > 0 && (
+            <div className="mx-8 bg-blue-50/50 border-x border-[#E5E7EB] px-6 py-3 flex items-center justify-between">
+              <div className="text-sm font-medium text-[#0F47F2]">
+                {selectedIds.size} Candidate{selectedIds.size !== 1 ? "s" : ""} Selected
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <button
+                  onClick={() => {
+                    let nextStageId: number | undefined;
+                    if (activeStageSlug) {
+                      const currentIdx = stages.findIndex(s => s.slug === activeStageSlug);
+                      if (currentIdx !== -1 && currentIdx + 1 < stages.length) {
+                        // Check if next stage is 'archives', if so skip or just use it. Typically archives is not a 'next' stage
+                        const nextStage = stages[currentIdx + 1];
+                        if (nextStage.slug !== 'archives') {
+                          nextStageId = nextStage.id;
+                        } else if (currentIdx + 2 < stages.length) {
+                          nextStageId = stages[currentIdx + 2].id;
+                        }
+                      }
+                    } else {
+                      const firstCandId = Array.from(selectedIds)[0];
+                      const firstCand = candidates.find(c => c.id === firstCandId);
+                      const currentSlug = firstCand?.current_stage?.slug || firstCand?.stage_slug;
+                      const currentIdx = stages.findIndex(s => s.slug === currentSlug);
+                      if (currentIdx !== -1 && currentIdx + 1 < stages.length) {
+                        const nextStage = stages[currentIdx + 1];
+                        if (nextStage.slug !== 'archives') {
+                          nextStageId = nextStage.id;
+                        } else if (currentIdx + 2 < stages.length) {
+                          nextStageId = stages[currentIdx + 2].id;
+                        }
+                      }
                     }
-                  }
-                } else {
-                  const firstCandId = Array.from(selectedIds)[0];
-                  const firstCand = candidates.find(c => c.id === firstCandId);
-                  const currentSlug = firstCand?.current_stage?.slug || firstCand?.stage_slug;
-                  const currentIdx = stages.findIndex(s => s.slug === currentSlug);
-                  if (currentIdx !== -1 && currentIdx + 1 < stages.length) {
-                    const nextStage = stages[currentIdx + 1];
-                    if (nextStage.slug !== 'archives') {
-                      nextStageId = nextStage.id;
-                    } else if (currentIdx + 2 < stages.length) {
-                      nextStageId = stages[currentIdx + 2].id;
+
+                    if (nextStageId) {
+                      bulkMoveCandidates(Array.from(selectedIds), nextStageId);
+                    } else {
+                      showToast.error("No next stage available");
                     }
-                  }
-                }
+                  }}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-white text-[#4B5563] border border-[#D1D1D6] rounded-md hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Move to Next Stage
+                </button>
 
-                if (nextStageId) {
-                  bulkMoveCandidates(Array.from(selectedIds), nextStageId);
-                } else {
-                  showToast.error("No next stage available");
-                }
-              }}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white text-[#4B5563] border border-[#D1D1D6] rounded-md hover:bg-gray-50 transition-colors font-medium"
-            >
-              Move to Next Stage
-            </button>
+                <button
+                  onClick={() => setShowExportDialog(true)}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-white text-[#4B5563] border border-[#D1D1D6] rounded-md hover:bg-gray-50 transition-colors font-medium"
+                >
+                  <Download className="w-4 h-4" /> Export CSV
+                </button>
 
-            <button
-              onClick={() => setShowExportDialog(true)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white text-[#4B5563] border border-[#D1D1D6] rounded-md hover:bg-gray-50 transition-colors font-medium"
-            >
-              <Download className="w-4 h-4" /> Export CSV
-            </button>
+                <button
+                  onClick={() => bulkArchive(Array.from(selectedIds))}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-white text-red-600 border border-red-200 rounded-md hover:bg-red-50 transition-colors font-medium"
+                >
+                  <Archive className="w-4 h-4" /> Archive Candidates
+                </button>
+              </div>
+            </div>
+          )}
 
-            <button
-              onClick={() => bulkArchive(Array.from(selectedIds))}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white text-red-600 border border-red-200 rounded-md hover:bg-red-50 transition-colors font-medium"
-            >
-              <Archive className="w-4 h-4" /> Archive Candidates
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ═══════════════════════════════════════════════════════
+          {/* ═══════════════════════════════════════════════════════
           Content View (Table or Kanban)
          ═══════════════════════════════════════════════════════ */}
-      {isKanbanView ? (
-        <div className="mx-8 bg-[#F3F5F7] border border-[#E5E7EB] rounded-b-2xl overflow-x-auto p-6 flex gap-6 min-h-[500px] items-start">
-          {stages.map((stage) => {
-            const activeColumnCandidates = candidates.filter((item) => {
-              const itemStageSlug = item.current_stage?.slug || item.stage_slug;
-              return itemStageSlug === stage.slug;
-            });
-            const archivedColumnCandidates = archivedCandidates.filter((item) => {
-              const itemStageSlug = item.current_stage?.slug || item.stage_slug;
-              return itemStageSlug === stage.slug;
-            });
-            
-            // deduplicate across arrays in case
-            const existingIds = new Set(activeColumnCandidates.map(c => c.id));
-            const uniqueArchived = archivedColumnCandidates.filter(c => !existingIds.has(c.id));
-            const columnCandidates = [...activeColumnCandidates, ...uniqueArchived];
+          {isKanbanView ? (
+            <div className="mx-8 bg-[#F3F5F7] border border-[#E5E7EB] rounded-b-2xl overflow-x-auto p-6 flex gap-6 min-h-[500px] items-start">
+              {stages.map((stage) => {
+                const activeColumnCandidates = candidates.filter((item) => {
+                  const itemStageSlug = item.current_stage?.slug || item.stage_slug;
+                  return itemStageSlug === stage.slug;
+                });
+                const archivedColumnCandidates = archivedCandidates.filter((item) => {
+                  const itemStageSlug = item.current_stage?.slug || item.stage_slug;
+                  return itemStageSlug === stage.slug;
+                });
 
-            return (
-              <div
-                key={stage.id}
-                className="min-w-[320px] w-[320px] bg-white border border-[#E5E7EB] rounded-xl flex flex-col pt-3 pb-2 h-full max-h-[70vh]"
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, stage.slug)}
-              >
-                <div className="px-5 pb-3 border-b border-[#E5E7EB] flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-[#4B5563] capitalize">{stage.name}</h3>
-                  <span className="text-xs bg-[#F9FAFB] border border-[#D1D1D6] text-[#8E8E93] rounded-full px-2 py-0.5 font-bold">{columnCandidates.length}</span>
-                </div>
+                // deduplicate across arrays in case
+                const existingIds = new Set(activeColumnCandidates.map(c => c.id));
+                const uniqueArchived = archivedColumnCandidates.filter(c => !existingIds.has(c.id));
+                const columnCandidates = [...activeColumnCandidates, ...uniqueArchived];
 
-                <div className="flex-1 p-3 space-y-3 overflow-y-auto mt-1 custom-scrollbar">
-                  {columnCandidates.length > 0 ? columnCandidates.map((item, idx) => {
-                    const cand = item.candidate;
-                    const aiScoreRaw = item.job_score?.candidate_match_score?.score || "--%";
-
-                    return (
-                      <div
-                        key={item.id}
-                        draggable
-                        onDragStart={() => handleDragStart(item.id)}
-                        className="bg-white border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/50 transition-all flex flex-col gap-1 relative"
-                      >
-                        <div className="absolute top-3 right-3 z-10">
-                          <input
-                            type="checkbox"
-                            className="w-4 h-4 accent-[#0F47F2]"
-                            checked={selectedIds.has(item.id)}
-                            onChange={() => handleToggleCandidate(item.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        </div>
-                        <div className="flex items-start justify-between gap-2 pr-6">
-                          <h4
-                            className="font-bold text-[14px] text-slate-800 line-clamp-1 cursor-pointer hover:underline"
-                            onClick={() => onSelectCandidate?.(item, columnCandidates, idx)}
-                          >
-                            {cand.full_name || "--"}
-                          </h4>
-                        </div>
-                        <div className="inline-flex">
-                          <span className="text-[10px] font-bold px-2 py-0.5 mt-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100 flex-shrink-0">{aiScoreRaw}</span>
-                        </div>
-                        <p className="text-xs text-slate-500 line-clamp-1">{cand.headline || "--"}</p>
-
-                        <div className="flex flex-wrap items-center mt-3 gap-y-2 gap-x-4 text-[11px] text-[#8E8E93] font-medium">
-                          {cand.location && (
-                            <span className="flex items-center gap-1.5"><LocateIcon className="w-3.5 h-3.5" /> {cand.location.split(',')[0]}</span>
-                          )}
-                          {(cand.total_experience || cand.experience_years) && (
-                            <span className="flex items-center gap-1.5"><Briefcase className="w-3.5 h-3.5" /> {cand.total_experience != null ? `${cand.total_experience} Yrs` : cand.experience_years.replace(/\s*exp$/i, "")}</span>
-                          )}
-                          {cand.current_salary_lpa && (
-                            <span className="flex items-center gap-1.5"><Target className="w-3.5 h-3.5" /> {cand.current_salary_lpa} LPA</span>
-                          )}
-                        </div>
-
-                        {item.status_tags && item.status_tags.find((t: any) => t.text) && (
-                          <div className="mt-2 pt-2 border-t border-slate-50 flex gap-1">
-                            {item.status_tags.map((tag: any, i: number) => (
-                              <span key={i} style={{
-                                backgroundColor: tag.color === "red" ? "#FEE9E7" : tag.color === "yellow" ? "#FFF7D6" : "#FEE9E7",
-                                color: tag.color === "red" ? "#FF383C" : tag.color === "yellow" ? "#92400E" : "#FF383C",
-                              }} className="text-[10px] font-semibold px-2 py-0.5 rounded inline-block">
-                                {tag.text}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  }) : (
-                    <div className="flex items-center justify-center p-6 border-2 border-dashed border-[#E5E7EB] rounded-lg">
-                      <span className="text-xs text-[#AEAEB2] font-medium">Drop candidates here</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-          
-          {/* Add Custom Stage Kanban Button */}
-          <div className="min-w-[320px] w-[320px] bg-[#F5F9FB] rounded-xl flex flex-col items-center justify-center relative border border-[#E5E7EB] border-dashed hover:bg-black/5 transition-colors cursor-pointer" onClick={() => setShowAddStageForm(true)}>
-            <div className="flex flex-col items-center gap-4 z-10 p-6 opacity-60">
-              <div className="w-[62px] h-[62px]">
-                <svg width="62" height="62" viewBox="0 0 62 62" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M32.9375 23.25C32.9375 22.18 32.07 21.3125 31 21.3125C29.93 21.3125 29.0625 22.18 29.0625 23.25V29.0625H23.25C22.18 29.0625 21.3125 29.93 21.3125 31C21.3125 32.07 22.18 32.9375 23.25 32.9375H29.0625V38.75C29.0625 39.82 29.93 40.6875 31 40.6875C32.07 40.6875 32.9375 39.82 32.9375 38.75V32.9375H38.75C39.82 32.9375 40.6875 32.07 40.6875 31C40.6875 29.93 39.82 29.0625 38.75 29.0625H32.9375V23.25Z" fill="#818283"/>
-                  <path fillRule="evenodd" clipRule="evenodd" d="M31.1496 3.23047H30.853C24.8898 3.23044 20.2164 3.23042 16.5701 3.72066C12.8378 4.22244 9.89276 5.26957 7.58116 7.58116C5.26957 9.89276 4.22244 12.8378 3.72066 16.5701C3.23042 20.2164 3.23044 24.8897 3.23047 30.853V31.1496C3.23044 37.1129 3.23042 41.7862 3.72066 45.4326C4.22244 49.1647 5.26957 52.11 7.58116 54.4215C9.89276 56.7331 12.8378 57.7801 16.5701 58.2821C20.2164 58.7721 24.8897 58.7721 30.853 58.7721H31.1496C37.1129 58.7721 41.7862 58.7721 45.4326 58.2821C49.1647 57.7801 52.11 56.7331 54.4215 54.4215C56.7331 52.11 57.7801 49.1647 58.2821 45.4326C58.7721 41.7862 58.7721 37.1129 58.7721 31.1496V30.853C58.7721 24.8897 58.7721 20.2164 58.2821 16.5701C57.7801 12.8378 56.7331 9.89276 54.4215 7.58116C52.11 5.26957 49.1647 4.22244 45.4326 3.72066C41.7862 3.23042 37.1129 3.23044 31.1496 3.23047ZM10.3212 10.3212C11.7928 8.84958 13.7838 8.00511 17.0864 7.56109C20.4447 7.10958 24.8575 7.10547 31.0013 7.10547C37.145 7.10547 41.5578 7.10958 44.9162 7.56109C48.2187 8.00511 50.2097 8.84958 51.6814 10.3212C53.1531 11.7928 53.9976 13.7838 54.4414 17.0864C54.893 20.4447 54.8971 24.8575 54.8971 31.0013C54.8971 37.145 54.893 41.5578 54.4414 44.9162C53.9976 48.2187 53.1531 50.2097 51.6814 51.6814C50.2097 53.1531 48.2187 53.9976 44.9162 54.4414C41.5578 54.893 37.145 54.8971 31.0013 54.8971C24.8575 54.8971 20.4447 54.893 17.0864 54.4414C13.7838 53.9976 11.7928 53.1531 10.3212 51.6814C8.84958 50.2097 8.00511 48.2187 7.56109 44.9162C7.10958 41.5578 7.10547 37.145 7.10547 31.0013C7.10547 24.8575 7.10958 20.4447 7.56109 17.0864C8.00511 13.7838 8.84958 11.7928 10.3212 10.3212Z" fill="#818283"/>
-                </svg>
-              </div>
-              <h3 className="font-medium text-xl leading-6 text-[#818283]">Add Custom Stage</h3>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="mx-8 bg-white border border-[#E5E7EB] rounded-b-2xl overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-              <tr>
-                <th className="w-10 px-6 py-4">
-                  <input type="checkbox" className="w-4 h-4 accent-[#0F47F2]" checked={selectAll} onChange={handleSelectAll} />
-                </th>
-                {["Name", "AI Score", "Location", "Exp", "CTC", "Expected CTC", "Notice Period", "Stage", "Attention"].map((h) => (
-                  <th
-                    key={h}
-                    className="text-left px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors select-none whitespace-nowrap"
-                    onClick={() => handleSort(h as CandidateSortKey)}
+                return (
+                  <div
+                    key={stage.id}
+                    className="min-w-[320px] w-[320px] bg-white border border-[#E5E7EB] rounded-xl flex flex-col pt-3 pb-2 h-full max-h-[70vh]"
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, stage.slug)}
                   >
-                    <div className="flex items-center">
-                      {h} <SortIcon columnKey={h as CandidateSortKey} />
+                    <div className="px-5 pb-3 border-b border-[#E5E7EB] flex items-center justify-between">
+                      <h3 className="text-sm font-bold text-[#4B5563] capitalize">{stage.name}</h3>
+                      <span className="text-xs bg-[#F9FAFB] border border-[#D1D1D6] text-[#8E8E93] rounded-full px-2 py-0.5 font-bold">{columnCandidates.length}</span>
                     </div>
-                  </th>
-                ))}
-                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-right select-none whitespace-nowrap">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#F3F5F7]">
-              {loadingCandidates ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={`skel-${i}`} className="animate-pulse">
-                    <td className="px-6 py-5"><div className="w-4 h-4 bg-gray-200 rounded" /></td>
-                    <td className="px-6 py-5"><div className="space-y-2"><div className="h-4 bg-gray-200 rounded w-32" /><div className="h-3 bg-gray-200 rounded w-40" /></div></td>
-                    <td className="px-6 py-5"><div className="w-9 h-9 bg-gray-200 rounded-full" /></td>
-                    <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-20" /></td>
-                    <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
-                    <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
-                    <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-20" /></td>
-                    <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
-                    <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-24" /></td>
-                    <td className="px-6 py-5"><div className="h-5 bg-gray-200 rounded-full w-16" /></td>
-                    <td className="px-6 py-5"><div className="flex gap-2 justify-end"><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /></div></td>
+
+                    <div className="flex-1 p-3 space-y-3 overflow-y-auto mt-1 custom-scrollbar">
+                      {columnCandidates.length > 0 ? columnCandidates.map((item, idx) => {
+                        const cand = item.candidate;
+                        const aiScoreRaw = item.job_score?.candidate_match_score?.score || "--%";
+
+                        return (
+                          <div
+                            key={item.id}
+                            draggable
+                            onDragStart={() => handleDragStart(item.id)}
+                            className="bg-white border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/50 transition-all flex flex-col gap-1 relative"
+                          >
+                            <div className="absolute top-3 right-3 z-10">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 accent-[#0F47F2]"
+                                checked={selectedIds.has(item.id)}
+                                onChange={() => handleToggleCandidate(item.id)}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                            <div className="flex items-start justify-between gap-2 pr-6">
+                              <h4
+                                className="font-bold text-[14px] text-slate-800 line-clamp-1 cursor-pointer hover:underline"
+                                onClick={() => onSelectCandidate?.(item, columnCandidates, idx)}
+                              >
+                                {cand.full_name || "--"}
+                              </h4>
+                            </div>
+                            <div className="inline-flex">
+                              <span className="text-[10px] font-bold px-2 py-0.5 mt-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100 flex-shrink-0">{aiScoreRaw}</span>
+                            </div>
+                            <p className="text-xs text-slate-500 line-clamp-1">{cand.headline || "--"}</p>
+
+                            <div className="flex flex-wrap items-center mt-3 gap-y-2 gap-x-4 text-[11px] text-[#8E8E93] font-medium">
+                              {cand.location && (
+                                <span className="flex items-center gap-1.5"><LocateIcon className="w-3.5 h-3.5" /> {cand.location.split(',')[0]}</span>
+                              )}
+                              {(cand.total_experience || cand.experience_years) && (
+                                <span className="flex items-center gap-1.5"><Briefcase className="w-3.5 h-3.5" /> {cand.total_experience != null ? `${cand.total_experience} Yrs` : cand.experience_years.replace(/\s*exp$/i, "")}</span>
+                              )}
+                              {cand.current_salary_lpa && (
+                                <span className="flex items-center gap-1.5"><Target className="w-3.5 h-3.5" /> {cand.current_salary_lpa} LPA</span>
+                              )}
+                            </div>
+
+                            {item.status_tags && item.status_tags.find((t: any) => t.text) && (
+                              <div className="mt-2 pt-2 border-t border-slate-50 flex gap-1">
+                                {item.status_tags.map((tag: any, i: number) => (
+                                  <span key={i} style={{
+                                    backgroundColor: tag.color === "red" ? "#FEE9E7" : tag.color === "yellow" ? "#FFF7D6" : "#FEE9E7",
+                                    color: tag.color === "red" ? "#FF383C" : tag.color === "yellow" ? "#92400E" : "#FF383C",
+                                  }} className="text-[10px] font-semibold px-2 py-0.5 rounded inline-block">
+                                    {tag.text}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }) : (
+                        <div className="flex items-center justify-center p-6 border-2 border-dashed border-[#E5E7EB] rounded-lg">
+                          <span className="text-xs text-[#AEAEB2] font-medium">Drop candidates here</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Add Custom Stage Kanban Button */}
+              <div className="min-w-[320px] w-[320px] bg-[#F5F9FB] rounded-xl flex flex-col items-center justify-center relative border border-[#E5E7EB] border-dashed hover:bg-black/5 transition-colors cursor-pointer" onClick={() => setShowAddStageForm(true)}>
+                <div className="flex flex-col items-center gap-4 z-10 p-6 opacity-60">
+                  <div className="w-[62px] h-[62px]">
+                    <svg width="62" height="62" viewBox="0 0 62 62" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M32.9375 23.25C32.9375 22.18 32.07 21.3125 31 21.3125C29.93 21.3125 29.0625 22.18 29.0625 23.25V29.0625H23.25C22.18 29.0625 21.3125 29.93 21.3125 31C21.3125 32.07 22.18 32.9375 23.25 32.9375H29.0625V38.75C29.0625 39.82 29.93 40.6875 31 40.6875C32.07 40.6875 32.9375 39.82 32.9375 38.75V32.9375H38.75C39.82 32.9375 40.6875 32.07 40.6875 31C40.6875 29.93 39.82 29.0625 38.75 29.0625H32.9375V23.25Z" fill="#818283" />
+                      <path fillRule="evenodd" clipRule="evenodd" d="M31.1496 3.23047H30.853C24.8898 3.23044 20.2164 3.23042 16.5701 3.72066C12.8378 4.22244 9.89276 5.26957 7.58116 7.58116C5.26957 9.89276 4.22244 12.8378 3.72066 16.5701C3.23042 20.2164 3.23044 24.8897 3.23047 30.853V31.1496C3.23044 37.1129 3.23042 41.7862 3.72066 45.4326C4.22244 49.1647 5.26957 52.11 7.58116 54.4215C9.89276 56.7331 12.8378 57.7801 16.5701 58.2821C20.2164 58.7721 24.8897 58.7721 30.853 58.7721H31.1496C37.1129 58.7721 41.7862 58.7721 45.4326 58.2821C49.1647 57.7801 52.11 56.7331 54.4215 54.4215C56.7331 52.11 57.7801 49.1647 58.2821 45.4326C58.7721 41.7862 58.7721 37.1129 58.7721 31.1496V30.853C58.7721 24.8897 58.7721 20.2164 58.2821 16.5701C57.7801 12.8378 56.7331 9.89276 54.4215 7.58116C52.11 5.26957 49.1647 4.22244 45.4326 3.72066C41.7862 3.23042 37.1129 3.23044 31.1496 3.23047ZM10.3212 10.3212C11.7928 8.84958 13.7838 8.00511 17.0864 7.56109C20.4447 7.10958 24.8575 7.10547 31.0013 7.10547C37.145 7.10547 41.5578 7.10958 44.9162 7.56109C48.2187 8.00511 50.2097 8.84958 51.6814 10.3212C53.1531 11.7928 53.9976 13.7838 54.4414 17.0864C54.893 20.4447 54.8971 24.8575 54.8971 31.0013C54.8971 37.145 54.893 41.5578 54.4414 44.9162C53.9976 48.2187 53.1531 50.2097 51.6814 51.6814C50.2097 53.1531 48.2187 53.9976 44.9162 54.4414C41.5578 54.893 37.145 54.8971 31.0013 54.8971C24.8575 54.8971 20.4447 54.893 17.0864 54.4414C13.7838 53.9976 11.7928 53.1531 10.3212 51.6814C8.84958 50.2097 8.00511 48.2187 7.56109 44.9162C7.10958 41.5578 7.10547 37.145 7.10547 31.0013C7.10547 24.8575 7.10958 20.4447 7.56109 17.0864C8.00511 13.7838 8.84958 11.7928 10.3212 10.3212Z" fill="#818283" />
+                    </svg>
+                  </div>
+                  <h3 className="font-medium text-xl leading-6 text-[#818283]">Add Custom Stage</h3>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="overflow-x-auto overflow-y-hidden mx-8 bg-white border border-[#E5E7EB] rounded-b-2xl">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
+                  <tr>
+                    <th className="w-10 px-6 py-4">
+                      <input type="checkbox" className="w-4 h-4 accent-[#0F47F2]" checked={selectAll} onChange={handleSelectAll} />
+                    </th>
+                    {["Name", "AI Score", "Location", "Exp", "CTC", "Expected CTC", "Notice Period", "Stage", "Attention"].map((h) => (
+                      <th
+                        key={h}
+                        className="text-left px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors select-none whitespace-nowrap"
+                        onClick={() => handleSort(h as CandidateSortKey)}
+                      >
+                        <div className="flex items-center">
+                          {h} <SortIcon columnKey={h as CandidateSortKey} />
+                        </div>
+                      </th>
+                    ))}
+                    <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-right select-none whitespace-nowrap">Actions</th>
                   </tr>
-                ))
-              ) : candidates.length === 0 ? (
-                <tr>
-                  <td colSpan={11} className="px-6 py-12 text-center text-sm text-[#AEAEB2]">
-                    No candidates found{activeStageSlug ? " in this stage" : ""}
-                  </td>
-                </tr>
-              ) : (
-                sortedCandidates.map((item, index) => {
-                  const cand = item.candidate;
-
-                  // Experience — handle both numeric total_experience and string like "1+ years exp"
-                  const expYears = cand.total_experience != null
-                    ? `${cand.total_experience} Years`
-                    : cand.experience_years
-                      ? cand.experience_years.replace(/\s*exp$/i, "")
-                      : "--";
-
-                  // CTC
-                  const ctc = cand.current_salary_lpa ? `${cand.current_salary_lpa} LPA` : "--";
-
-                  // Expected CTC
-                  const expectedCtc = cand.expected_ctc ? `${cand.expected_ctc} LPA` : "--";
-
-                  // Notice period
-                  const noticePeriod = cand.notice_period_summary || (cand.notice_period_days != null ? `${cand.notice_period_days} Days` : "--");
-
-                  // Attention tag from status_tags
-                  const attentionTag = item.status_tags?.find((t) => t.text);
-
-                  // AI Score — read from item.job_score (top-level), not cand.job_score
-                  const aiScoreRaw = item.job_score?.candidate_match_score?.score;
-                  const aiScoreLabel = aiScoreRaw || "--%";
-                  const aiScoreNum = aiScoreRaw ? parseInt(aiScoreRaw.replace("%", ""), 10) : 0;
-                  const aiScoreColor = aiScoreNum >= 70 ? "#00C8B3" : aiScoreNum >= 40 ? "#FFCC00" : aiScoreNum > 0 ? "#FF383C" : "#E5E7EB";
-
-                  return (
-                    <tr key={item.id} className="hover:bg-[#F9FAFB] transition-colors">
-                      <td className="px-6 py-5">
-                        <input type="checkbox" className="w-4 h-4 accent-[#0F47F2]" checked={selectedIds.has(item.id)} onChange={() => handleToggleCandidate(item.id)} />
-                      </td>
-                      <td className="px-6 py-5">
-                        <div
-                          className="cursor-pointer group"
-                          onClick={() => onSelectCandidate?.(item, candidates, index)}
-                        >
-                          <div className="font-medium text-[#4B5563] group-hover:underline group-hover:text-blue-600 transition">{cand.full_name || "--"}</div>
-                          <div className="text-xs text-[#727272]">{cand.headline || "--"}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="relative w-9 h-9">
-                          <svg className="w-9 h-9 -rotate-90" viewBox="0 0 36 36">
-                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#E5E7EB" strokeWidth="3.5" />
-                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={aiScoreColor} strokeWidth="3.5" strokeDasharray={`${aiScoreNum}, 100`} />
-                          </svg>
-                          <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[#4B5563]">{aiScoreLabel}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-5 text-sm text-[#4B5563]">{cand.location || "--"}</td>
-                      <td className="px-6 py-5 text-sm text-[#4B5563]">{expYears}</td>
-                      <td className="px-6 py-5 text-sm text-[#4B5563]">{ctc}</td>
-                      <td className="px-6 py-5 text-sm text-[#4B5563]">{expectedCtc}</td>
-                      <td className="px-6 py-5 text-sm text-[#4B5563]">{noticePeriod}</td>
-                      <td className="px-6 py-5">
-                        <div>
-                          <div className="text-[#6155F5] text-sm font-medium">{item.current_stage?.name || "--"}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-5">
-                        {attentionTag ? (
-                          <span className="inline-block text-xs font-medium px-3 py-0.5 rounded-full"
-                            style={{
-                              backgroundColor: attentionTag.color === "red" ? "#FEE9E7" : attentionTag.color === "yellow" ? "#FFF7D6" : "#FEE9E7",
-                              color: attentionTag.color === "red" ? "#FF383C" : attentionTag.color === "yellow" ? "#92400E" : "#FF383C",
-                            }}>
-                            {attentionTag.text}
-                          </span>
-                        ) : <span className="text-xs text-[#8E8E93]">--</span>}
-                      </td>
-                      <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => shortlistCandidate(item.id)}
-                            className="w-8 h-8 flex items-center justify-center bg-[#E7E5FF] rounded-full hover:bg-[#D5D2FF] transition-colors"
-                            title="Shortlist Candidate"
-                          >
-                            <Check className="w-4 h-4 text-[#6155F5]" />
-                          </button>
-                          <button
-                            onClick={() => archiveCandidate(item.id)}
-                            className="w-8 h-8 flex items-center justify-center bg-[#FEE9E7] rounded-full hover:bg-[#FDD2D0] transition-colors"
-                            title="Archive Candidate"
-                          >
-                            <Archive className="w-4 h-4 text-[#FF383C]" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setCallModalCandidate({
-                                id: cand.id,
-                                name: cand.full_name || "Unknown",
-                                avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN",
-                                headline: cand.headline || "--",
-                                phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", // Fallback for UI testing
-                                experience: expYears,
-                                expectedCtc: expectedCtc,
-                                location: cand.location || "--",
-                                noticePeriod: noticePeriod
-                              });
-                            }}
-                            className="w-8 h-8 flex items-center justify-center bg-[#E3E1FF] rounded-full hover:bg-[#D5D2FF] transition-colors"
-                            title="Call Candidate"
-                          >
-                            <span className="text-[#6155F5]">☎</span>
-                          </button>
-                          <button className="w-8 h-8 flex items-center justify-center bg-[#FFF2E6] rounded-full hover:bg-[#FFE8D4] transition-colors" title="Email Candidate">
-                            <span className="text-[#FF8D28]">✉</span>
-                          </button>
-                        </div>
+                </thead>
+                <tbody className="divide-y divide-[#F3F5F7]">
+                  {loadingCandidates ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <tr key={`skel-${i}`} className="animate-pulse">
+                        <td className="px-6 py-5"><div className="w-4 h-4 bg-gray-200 rounded" /></td>
+                        <td className="px-6 py-5"><div className="space-y-2"><div className="h-4 bg-gray-200 rounded w-32" /><div className="h-3 bg-gray-200 rounded w-40" /></div></td>
+                        <td className="px-6 py-5"><div className="w-9 h-9 bg-gray-200 rounded-full" /></td>
+                        <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-20" /></td>
+                        <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
+                        <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
+                        <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-20" /></td>
+                        <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
+                        <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-24" /></td>
+                        <td className="px-6 py-5"><div className="h-5 bg-gray-200 rounded-full w-16" /></td>
+                        <td className="px-6 py-5"><div className="flex gap-2 justify-end"><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /></div></td>
+                      </tr>
+                    ))
+                  ) : candidates.length === 0 ? (
+                    <tr>
+                      <td colSpan={11} className="px-6 py-12 text-center text-sm text-[#AEAEB2]">
+                        No candidates found{activeStageSlug ? " in this stage" : ""}
                       </td>
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-
-          {/* Pagination */}
-          <div className="px-8 py-5 border-t border-[#E5E7EB] flex items-center justify-between bg-[#F9FAFB]">
-            <div className="text-xs text-[#6B7280]">
-              Showing {candidates.length > 0 ? startIndex + 1 : 0}–{Math.min(startIndex + pageSize, totalCandidates)} of {totalCandidates} candidates
-            </div>
-            {totalPages > 1 && (
-              <div className="flex items-center gap-1">
-                <button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1}
-                  className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#6B7280] disabled:opacity-30 hover:bg-gray-50 transition-colors">
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                {getPageNumbers().map((p, i) =>
-                  p === "..." ? (
-                    <span key={`e-${i}`} className="w-8 h-8 flex items-center justify-center text-[#6B7280] text-xs">…</span>
                   ) : (
-                    <button key={p} onClick={() => setCurrentPage(p as number)}
-                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${currentPage === p ? "bg-[#0F47F2] text-white" : "border border-[#E5E7EB] text-[#4B5563] hover:bg-gray-50"}`}>
-                      {p}
+                    sortedCandidates.map((item, index) => {
+                      const cand = item.candidate;
+
+                      // Experience — handle both numeric total_experience and string like "1+ years exp"
+                      const expYears = cand.total_experience != null
+                        ? `${cand.total_experience} Years`
+                        : cand.experience_years
+                          ? cand.experience_years.replace(/\s*exp$/i, "")
+                          : "--";
+
+                      // CTC
+                      const ctc = cand.current_salary_lpa ? `${cand.current_salary_lpa} LPA` : "--";
+
+                      // Expected CTC
+                      const expectedCtc = cand.expected_ctc ? `${cand.expected_ctc} LPA` : "--";
+
+                      // Notice period
+                      const noticePeriod = cand.notice_period_summary || (cand.notice_period_days != null ? `${cand.notice_period_days} Days` : "--");
+
+                      // Attention tag from status_tags
+                      const attentionTag = item.status_tags?.find((t) => t.text);
+
+                      // AI Score — read from item.job_score (top-level), not cand.job_score
+                      const aiScoreRaw = item.job_score?.candidate_match_score?.score;
+                      const aiScoreLabel = aiScoreRaw || "--%";
+                      const aiScoreNum = aiScoreRaw ? parseInt(aiScoreRaw.replace("%", ""), 10) : 0;
+                      const aiScoreColor = aiScoreNum >= 70 ? "#00C8B3" : aiScoreNum >= 40 ? "#FFCC00" : aiScoreNum > 0 ? "#FF383C" : "#E5E7EB";
+
+                      return (
+                        <tr key={item.id} className="hover:bg-[#F9FAFB] transition-colors">
+                          <td className="px-6 py-5">
+                            <input type="checkbox" className="w-4 h-4 accent-[#0F47F2]" checked={selectedIds.has(item.id)} onChange={() => handleToggleCandidate(item.id)} />
+                          </td>
+                          <td className="px-6 py-5">
+                            <div
+                              className="cursor-pointer group"
+                              onClick={() => onSelectCandidate?.(item, candidates, index)}
+                            >
+                              <div className="font-medium text-[#4B5563] group-hover:underline group-hover:text-blue-600 transition">{cand.full_name || "--"}</div>
+                              <div className="text-xs text-[#727272]">{cand.headline || "--"}</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-5">
+                            <div className="relative w-9 h-9">
+                              <svg className="w-9 h-9 -rotate-90" viewBox="0 0 36 36">
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#E5E7EB" strokeWidth="3.5" />
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={aiScoreColor} strokeWidth="3.5" strokeDasharray={`${aiScoreNum}, 100`} />
+                              </svg>
+                              <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[#4B5563]">{aiScoreLabel}</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-5 text-sm text-[#4B5563]">{cand.location || "--"}</td>
+                          <td className="px-6 py-5 text-sm text-[#4B5563]">{expYears}</td>
+                          <td className="px-6 py-5 text-sm text-[#4B5563]">{ctc}</td>
+                          <td className="px-6 py-5 text-sm text-[#4B5563]">{expectedCtc}</td>
+                          <td className="px-6 py-5 text-sm text-[#4B5563]">{noticePeriod}</td>
+                          <td className="px-6 py-5">
+                            <div>
+                              <div className="text-[#6155F5] text-sm font-medium">{item.current_stage?.name || "--"}</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-5">
+                            {attentionTag ? (
+                              <span className="inline-block text-xs font-medium px-3 py-0.5 rounded-full"
+                                style={{
+                                  backgroundColor: attentionTag.color === "red" ? "#FEE9E7" : attentionTag.color === "yellow" ? "#FFF7D6" : "#FEE9E7",
+                                  color: attentionTag.color === "red" ? "#FF383C" : attentionTag.color === "yellow" ? "#92400E" : "#FF383C",
+                                }}>
+                                {attentionTag.text}
+                              </span>
+                            ) : <span className="text-xs text-[#8E8E93]">--</span>}
+                          </td>
+                          <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex justify-end gap-2">
+                              <button
+                                onClick={() => shortlistCandidate(item.id)}
+                                className="w-8 h-8 flex items-center justify-center bg-[#E7E5FF] rounded-full hover:bg-[#D5D2FF] transition-colors"
+                                title="Shortlist Candidate"
+                              >
+                                <Check className="w-4 h-4 text-[#6155F5]" />
+                              </button>
+                              <button
+                                onClick={() => archiveCandidate(item.id)}
+                                className="w-8 h-8 flex items-center justify-center bg-[#FEE9E7] rounded-full hover:bg-[#FDD2D0] transition-colors"
+                                title="Archive Candidate"
+                              >
+                                <Archive className="w-4 h-4 text-[#FF383C]" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setCallModalCandidate({
+                                    id: cand.id,
+                                    name: cand.full_name || "Unknown",
+                                    avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN",
+                                    headline: cand.headline || "--",
+                                    phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", // Fallback for UI testing
+                                    experience: expYears,
+                                    expectedCtc: expectedCtc,
+                                    location: cand.location || "--",
+                                    noticePeriod: noticePeriod
+                                  });
+                                }}
+                                className="w-8 h-8 flex items-center justify-center bg-[#E3E1FF] rounded-full hover:bg-[#D5D2FF] transition-colors"
+                                title="Call Candidate"
+                              >
+                                <span className="text-[#6155F5]">☎</span>
+                              </button>
+                              <button className="w-8 h-8 flex items-center justify-center bg-[#FFF2E6] rounded-full hover:bg-[#FFE8D4] transition-colors" title="Email Candidate">
+                                <span className="text-[#FF8D28]">✉</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+
+              {/* Pagination */}
+              <div className="px-8 py-5 border-t border-[#E5E7EB] flex items-center justify-between bg-[#F9FAFB]">
+                <div className="text-xs text-[#6B7280]">
+                  Showing {candidates.length > 0 ? startIndex + 1 : 0}–{Math.min(startIndex + pageSize, totalCandidates)} of {totalCandidates} candidates
+                </div>
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1}
+                      className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#6B7280] disabled:opacity-30 hover:bg-gray-50 transition-colors">
+                      <ChevronLeft className="w-4 h-4" />
                     </button>
-                  )
+                    {getPageNumbers().map((p, i) =>
+                      p === "..." ? (
+                        <span key={`e-${i}`} className="w-8 h-8 flex items-center justify-center text-[#6B7280] text-xs">…</span>
+                      ) : (
+                        <button key={p} onClick={() => setCurrentPage(p as number)}
+                          className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${currentPage === p ? "bg-[#0F47F2] text-white" : "border border-[#E5E7EB] text-[#4B5563] hover:bg-gray-50"}`}>
+                          {p}
+                        </button>
+                      )
+                    )}
+                    <button onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages}
+                      className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#6B7280] disabled:opacity-30 hover:bg-gray-50 transition-colors">
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 )}
-                <button onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages}
-                  className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#6B7280] disabled:opacity-30 hover:bg-gray-50 transition-colors">
-                  <ChevronRight className="w-4 h-4" />
-                </button>
               </div>
-            )}
-          </div>
-        </div>
-      )}
-      </>
+            </div>
+          )}
+        </>
       )}
 
       {activeTab === "naukbot" && <NaukbotTab jobId={jobId} />}
