@@ -23,7 +23,6 @@ export default function PriorityCard({ name, role, company, daysAgo, status, sta
   const colors = isDone ? statusStyles.green : (statusStyles[statusColor] || statusStyles.grey);
   // const status = split the status string by "-" and store the first one 
   const status_tag = status.split("-")[0];
-  const status_done_tag = status.split("-")[1];
 
   return (
     <div className={`bg-white rounded-lg p-2.5 flex flex-col gap-2.5 cursor-pointer ${isDone ? 'border-[0.5px] border-[#00B69B]/20' : ''}`} onClick={onClick}>
@@ -42,7 +41,7 @@ export default function PriorityCard({ name, role, company, daysAgo, status, sta
       {/* Bottom row: status + arrow/check */}
       <div className="flex items-center justify-between">
         <span className={`px-2 py-1 text-[10px] font-normal leading-3 rounded ${colors.bg} ${colors.text}`}>
-          {isDone ? `${status_done_tag} is done` : status_tag}
+          {isDone ? `${status_tag} is done` : status_tag}
         </span>
         <div className="w-5 h-5 flex items-center justify-center rounded-[3px]">
           {isDone ? (
