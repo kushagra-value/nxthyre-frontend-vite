@@ -239,6 +239,8 @@ export default function JobPipelineDashboard({
   // ── Selection
   const [selectAll, setSelectAll] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [selectionStage, setSelectionStage] = useState<string | null>(null);
+  const [selectionType, setSelectionType] = useState<"ACTIVE" | "ARCHIVED" | null>(null);
 
   // ── Sorting
   type CandidateSortKey = "Name" | "AI Score" | "Location" | "Exp" | "CTC" | "Expected CTC" | "Notice Period" | "Stage" | "Attention";
@@ -743,14 +745,51 @@ export default function JobPipelineDashboard({
   // ── Selection Logic ──────────────────────────────────────────
 
   const handleSelectAll = () => {
-    if (selectAll) { setSelectedIds(new Set()); }
-    else { setSelectedIds(new Set(candidates.map((c) => c.id))); }
+    if (selectAll) {
+      setSelectedIds(new Set());
+      setSelectionStage(null);
+      setSelectionType(null);
+    }
+    else {
+      setSelectedIds(new Set(candidates.map((c) => c.id)));
+      setSelectionType("ACTIVE");
+      setSelectionStage(null); // All stages selected
+    }
     setSelectAll(!selectAll);
   };
 
-  const handleToggleCandidate = (id: number) => {
+  const handleToggleCandidate = (item: any) => {
+    const id = item.id;
+    const isArchived = !!item.is_archived;
+    const itemType = isArchived ? "ARCHIVED" : "ACTIVE";
+    const itemStage = item.current_stage?.slug || item.stage_slug;
+
     const next = new Set(selectedIds);
-    if (next.has(id)) next.delete(id); else next.add(id);
+
+    // Exclusive selection logic
+    if (next.size > 0) {
+      if (selectionType !== itemType) {
+        showToast.error(`Cannot select ${itemType.toLowerCase()} candidate while ${selectionType?.toLowerCase()} candidates are selected`);
+        return;
+      }
+      if (isKanbanView && selectionStage && selectionStage !== itemStage) {
+        showToast.error("Selection is restricted to one stage in Kanban view");
+        return;
+      }
+    }
+
+    if (next.has(id)) {
+      next.delete(id);
+      if (next.size === 0) {
+        setSelectionType(null);
+        setSelectionStage(null);
+      }
+    } else {
+      next.add(id);
+      setSelectionType(itemType);
+      if (isKanbanView) setSelectionStage(itemStage);
+    }
+
     setSelectedIds(next);
     setSelectAll(next.size === candidates.length && candidates.length > 0);
   };
@@ -1285,7 +1324,7 @@ export default function JobPipelineDashboard({
           Content View (Table or Kanban)
          ═══════════════════════════════════════════════════════ */}
           {isKanbanView ? (
-            <div className="mx-8 bg-[#F3F5F7] border border-[#E5E7EB] rounded-b-2xl overflow-x-auto p-6 flex gap-6 min-h-[500px] items-start">
+            <div className="mx-8 bg-[#F3F5F7] border border-[#E5E7EB] rounded-b-2xl overflow-x-auto p-6 flex gap-6 h-[75vh] items-stretch">
               {stages.map((stage) => {
                 const activeColumnCandidates = candidates.filter((item) => {
                   const itemStageSlug = item.current_stage?.slug || item.stage_slug;
@@ -1296,48 +1335,48 @@ export default function JobPipelineDashboard({
                   return itemStageSlug === stage.slug;
                 });
 
-                // deduplicate across arrays in case
-                const existingIds = new Set(activeColumnCandidates.map(c => c.id));
-                const uniqueArchived = archivedColumnCandidates.filter(c => !existingIds.has(c.id));
-                const columnCandidates = [...activeColumnCandidates, ...uniqueArchived];
-
                 return (
                   <div
                     key={stage.id}
-                    className="min-w-[320px] w-[320px] bg-white border border-[#E5E7EB] rounded-xl flex flex-col pt-3 pb-2 h-full max-h-[70vh]"
+                    className="min-w-[320px] w-[320px] bg-white border border-[#E5E7EB] rounded-xl flex flex-col pt-3 pb-2 h-full relative"
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, stage.slug)}
                   >
-                    <div className="px-5 pb-3 border-b border-[#E5E7EB] flex items-center justify-between">
+                    <div className="px-5 pb-3 border-b border-[#E5E7EB] flex items-center justify-between shrink-0">
                       <h3 className="text-sm font-bold text-[#4B5563] capitalize">{stage.name}</h3>
-                      <span className="text-xs bg-[#F9FAFB] border border-[#D1D1D6] text-[#8E8E93] rounded-full px-2 py-0.5 font-bold">{columnCandidates.length}</span>
+                      <span className="text-xs bg-[#F9FAFB] border border-[#D1D1D6] text-[#8E8E93] rounded-full px-2 py-0.5 font-bold">
+                        {activeColumnCandidates.length + archivedColumnCandidates.length}
+                      </span>
                     </div>
 
-                    <div className="flex-1 p-3 space-y-3 overflow-y-auto mt-1 custom-scrollbar">
-                      {columnCandidates.length > 0 ? columnCandidates.map((item, idx) => {
+                    <div className="flex-1 p-3 space-y-3 overflow-y-auto mt-1 custom-scrollbar pb-24">
+                      {/* Pipeline Candidates */}
+                      {activeColumnCandidates.map((item, idx) => {
                         const cand = item.candidate;
                         const aiScoreRaw = item.job_score?.candidate_match_score?.score || "--%";
+                        const isDisabled = selectionType === "ARCHIVED" || (selectionStage && selectionStage !== stage.slug);
 
                         return (
                           <div
                             key={item.id}
                             draggable
                             onDragStart={() => handleDragStart(item.id)}
-                            className="bg-white border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/50 transition-all flex flex-col gap-1 relative"
+                            className={`bg-white border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/50 transition-all flex flex-col gap-1 relative ${isDisabled ? "opacity-60" : ""}`}
                           >
                             <div className="absolute top-3 right-3 z-10">
                               <input
                                 type="checkbox"
                                 className="w-4 h-4 accent-[#0F47F2]"
                                 checked={selectedIds.has(item.id)}
-                                onChange={() => handleToggleCandidate(item.id)}
+                                onChange={() => handleToggleCandidate(item)}
+                                disabled={!!isDisabled}
                                 onClick={(e) => e.stopPropagation()}
                               />
                             </div>
                             <div className="flex items-start justify-between gap-2 pr-6">
                               <h4
                                 className="font-bold text-[14px] text-slate-800 line-clamp-1 cursor-pointer hover:underline"
-                                onClick={() => onSelectCandidate?.(item, columnCandidates, idx)}
+                                onClick={() => onSelectCandidate?.(item, activeColumnCandidates, idx)}
                               >
                                 {cand.full_name || "--"}
                               </h4>
@@ -1358,27 +1397,133 @@ export default function JobPipelineDashboard({
                                 <span className="flex items-center gap-1.5"><Target className="w-3.5 h-3.5" /> {cand.current_salary_lpa} LPA</span>
                               )}
                             </div>
-
-                            {item.status_tags && item.status_tags.find((t: any) => t.text) && (
-                              <div className="mt-2 pt-2 border-t border-slate-50 flex gap-1">
-                                {item.status_tags.map((tag: any, i: number) => (
-                                  <span key={i} style={{
-                                    backgroundColor: tag.color === "red" ? "#FEE9E7" : tag.color === "yellow" ? "#FFF7D6" : "#FEE9E7",
-                                    color: tag.color === "red" ? "#FF383C" : tag.color === "yellow" ? "#92400E" : "#FF383C",
-                                  }} className="text-[10px] font-semibold px-2 py-0.5 rounded inline-block">
-                                    {tag.text}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
                           </div>
                         );
-                      }) : (
-                        <div className="flex items-center justify-center p-6 border-2 border-dashed border-[#E5E7EB] rounded-lg">
+                      })}
+
+                      {/* Archives Section */}
+                      {archivedColumnCandidates.length > 0 && (
+                        <div className="mt-6">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="h-px bg-[#E5E7EB] flex-1"></div>
+                            <span className="text-[10px] font-bold text-[#AEAEB2] uppercase tracking-wider">Archives</span>
+                            <div className="h-px bg-[#E5E7EB] flex-1"></div>
+                          </div>
+                          <div className="space-y-3">
+                            {archivedColumnCandidates.map((item, idx) => {
+                              const cand = item.candidate;
+                              const isDisabled = selectionType === "ACTIVE" || (selectionStage && selectionStage !== stage.slug);
+
+                              return (
+                                <div
+                                  key={item.id}
+                                  className={`bg-[#F9FAFB] border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm grayscale opacity-60 flex flex-col gap-1 relative ${isDisabled ? "pointer-events-none opacity-40" : ""}`}
+                                >
+                                  <div className="absolute top-3 right-3 z-10">
+                                    <input
+                                      type="checkbox"
+                                      className="w-4 h-4 accent-[#4B5563]"
+                                      checked={selectedIds.has(item.id)}
+                                      onChange={() => handleToggleCandidate(item)}
+                                      disabled={!!isDisabled}
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                  </div>
+                                  <div className="flex items-start justify-between gap-2 pr-6">
+                                    <h4
+                                      className="font-bold text-[14px] text-[#8E8E93] line-clamp-1 cursor-pointer"
+                                      onClick={() => onSelectCandidate?.(item, archivedColumnCandidates, idx)}
+                                    >
+                                      {cand.full_name || "--"}
+                                    </h4>
+                                  </div>
+                                  <p className="text-[10px] text-[#AEAEB2] line-clamp-1">{cand.headline || "--"}</p>
+                                  <div className="flex flex-wrap items-center mt-2 gap-y-1 gap-x-3 text-[10px] text-[#AEAEB2]">
+                                    {cand.location && <span>{cand.location.split(',')[0]}</span>}
+                                    {(cand.total_experience || cand.experience_years) && <span>{cand.total_experience != null ? `${cand.total_experience} Yrs` : cand.experience_years.replace(/\s*exp$/i, "")}</span>}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {activeColumnCandidates.length === 0 && archivedColumnCandidates.length === 0 && (
+                        <div className="flex items-center justify-center p-6 border-2 border-dashed border-[#E5E7EB] rounded-lg h-32">
                           <span className="text-xs text-[#AEAEB2] font-medium">Drop candidates here</span>
                         </div>
                       )}
                     </div>
+
+                    {/* Stage Action Footer */}
+                    {selectedIds.size > 0 && selectionStage === stage.slug && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] p-3 rounded-b-xl shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-20">
+                        <div className="flex flex-col gap-2">
+                          <div className="text-[11px] font-bold text-[#0F47F2] text-center mb-1">
+                            {selectedIds.size} Selected
+                          </div>
+                          {selectionType === "ACTIVE" ? (
+                            <>
+                              <button
+                                onClick={() => {
+                                  const currentIdx = stages.findIndex(s => s.slug === stage.slug);
+                                  if (currentIdx !== -1 && currentIdx + 1 < stages.length) {
+                                    const nextStage = stages[currentIdx + 1];
+                                    bulkMoveCandidates(Array.from(selectedIds), nextStage.id);
+                                  } else {
+                                    showToast.error("No next stage available");
+                                  }
+                                }}
+                                className="w-full py-2 bg-[#0F47F2] text-white text-xs font-bold rounded-lg hover:bg-[#0A3BCC] transition-colors"
+                              >
+                                Move to Next Round
+                              </button>
+                              <button
+                                onClick={() => bulkArchive(Array.from(selectedIds))}
+                                className="w-full py-2 bg-white text-red-600 border border-red-100 text-xs font-bold rounded-lg hover:bg-red-50 transition-colors"
+                              >
+                                Archive Candidates
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  // Simplified unarchive: move back to first stage or 'shortlisted'
+                                  const targetStage = stages.find(s => s.slug === "shortlisted") || stages[0];
+                                  await apiClient.post("/jobs/bulk-move-stage/", {
+                                    application_ids: Array.from(selectedIds),
+                                    current_stage: targetStage.id,
+                                  });
+                                  showToast.success(`Unarchived ${selectedIds.size} candidate(s)`);
+                                  setSelectedIds(new Set());
+                                  setSelectionStage(null);
+                                  setSelectionType(null);
+                                  fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery);
+                                  fetchArchivedCandidates(jobId);
+                                } catch (error) {
+                                  showToast.error("Failed to unarchive");
+                                }
+                              }}
+                              className="w-full py-2 bg-[#E7E5FF] text-[#6155F5] text-xs font-bold rounded-lg hover:bg-[#D5D2FF] transition-colors"
+                            >
+                              Unarchive Candidates
+                            </button>
+                          )}
+                          <button
+                            onClick={() => {
+                              setSelectedIds(new Set());
+                              setSelectionStage(null);
+                              setSelectionType(null);
+                            }}
+                            className="w-full py-1.5 text-[#AEAEB2] text-[10px] font-medium hover:text-[#4B5563]"
+                          >
+                            Cancel Selection
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -1473,7 +1618,7 @@ export default function JobPipelineDashboard({
                       return (
                         <tr key={item.id} className="hover:bg-[#F9FAFB] transition-colors">
                           <td className="px-6 py-5">
-                            <input type="checkbox" className="w-4 h-4 accent-[#0F47F2]" checked={selectedIds.has(item.id)} onChange={() => handleToggleCandidate(item.id)} />
+                            <input type="checkbox" className="w-4 h-4 accent-[#0F47F2]" checked={selectedIds.has(item.id)} onChange={() => handleToggleCandidate(item)} />
                           </td>
                           <td className="px-6 py-5">
                             <div
