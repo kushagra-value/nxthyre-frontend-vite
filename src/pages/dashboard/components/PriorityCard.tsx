@@ -41,7 +41,7 @@ export default function PriorityCard({ name, role, company, daysAgo, status, sta
       {/* Bottom row: status + arrow/check */}
       <div className="flex items-center justify-between">
         <span className={`px-2 py-1 text-[10px] font-normal leading-3 rounded ${colors.bg} ${colors.text}`}>
-          {isDone ? `${status_tag} is done` : status_tag}
+          {isDone ? `${status_tag}` : status_tag}
         </span>
         <div className="w-5 h-5 flex items-center justify-center rounded-[3px]">
           {isDone ? (
