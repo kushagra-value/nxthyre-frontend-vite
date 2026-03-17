@@ -8,10 +8,12 @@ import { useParams } from 'react-router-dom';
 interface AddNewStageFormProps {
   onClose: () => void;
   onStageCreated?: () => void;
+  pipelineId?: string | number;
 }
 
-export default function AddNewStageForm({ onClose, onStageCreated }: AddNewStageFormProps) {
-  const { pipelineId } = useParams<{ pipelineId: string }>();
+export default function AddNewStageForm({ onClose, onStageCreated, pipelineId: propPipelineId }: AddNewStageFormProps) {
+  const { pipelineId: paramPipelineId } = useParams<{ pipelineId: string }>();
+  const pipelineId = propPipelineId || paramPipelineId;
   const [stageName, setStageName] = useState('F2F1');
   const [stageType, setStageType] = useState('face-to-face');
   const [calendarInvite, setCalendarInvite] = useState(false);
