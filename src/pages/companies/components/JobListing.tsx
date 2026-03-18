@@ -23,6 +23,7 @@ import {
     ArrowUp,
     ArrowDown,
     ArrowUpDown,
+    Copy,
 } from "lucide-react";
 import { MyWorkspace } from "../../../services/organizationService";
 import { Job, jobPostService } from "../../../services/jobPostService";
@@ -447,9 +448,21 @@ const JobListing: React.FC<JobListingProps> = ({
                                                     <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563] whitespace-nowrap">
                                                         {job.salary_display || `${formatSalaryToLPA(job.salary_min)} - ${formatSalaryToLPA(job.salary_max)} LPA`}
                                                     </span>
+                                                    {/* add a copy button in the jon id and if clicked copy to clipboard and avoid propagating to that job  */}
                                                     <span className="px-2 py-0.5 bg-[#F2F2F7] rounded-full text-[10px] text-[#8E8E93] whitespace-nowrap">
                                                         {job.jd_code || `JD-${job.id}`}
                                                     </span>
+                                                    <button
+                                                        className="ml-2 text-[#8E8E93] hover:text-[#0F47F2] transition-colors"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            navigator.clipboard.writeText(`${job.title}, ${job.location} (Job ID: ${job.id})`).then(() => showToast.success("Job ID copied"));
+
+                                                        }}
+                                                    >
+                                                        <Copy className="w-3 h-3" />
+                                                    </button>
+
                                                 </div>
                                             </div>
                                         </td>
