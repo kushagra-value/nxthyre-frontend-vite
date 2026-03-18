@@ -1563,28 +1563,27 @@ export default function JobPipelineDashboard({
                 {/* width of columns according to the space needed so it looks good using col group make sure total sum of width is 100%*/}
                 <colgroup>
                   <col style={{ width: '2%' }} /> {/* checkbox */}
-                  <col style={{ width: '20%' }} /> {/* name */}
-                  <col style={{ width: '8%' }} />  {/* ai score */}
-                  <col style={{ width: '10%' }} />  {/* location */}
+                  <col style={{ width: '30%' }} /> {/* name & headline */}
+                  <col style={{ width: '6%' }} />  {/* ai score */}
+                  <col style={{ width: '8%' }} />  {/* location */}
                   <col style={{ width: '5%' }} />  {/* exp */}
-                  <col style={{ width: '8%' }} />  {/* ctc */}
-                  <col style={{ width: '8%' }} /> {/* expected ctc */}
-                  <col style={{ width: '8%' }} /> {/* notice period */}
-                  <col style={{ width: '15%' }} />  {/* stage */}
-                  <col style={{ width: '8%' }} />  {/* attention */}
-                  <col style={{ width: '8%' }} />  {/* actions */}
-
+                  <col style={{ width: '6%' }} />  {/* ctc */}
+                  <col style={{ width: '7%' }} /> {/* expected ctc */}
+                  <col style={{ width: '7%' }} /> {/* notice period */}
+                  <col style={{ width: '9%' }} />  {/* stage */}
+                  <col style={{ width: '9%' }} />  {/* attention */}
+                  <col style={{ width: '11%' }} />  {/* actions */}
                 </colgroup>
 
                 <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
                   <tr>
-                    <th className="w-10 px-6 py-4">
+                    <th className="w-10 px-4 py-4">
                       <input type="checkbox" className="w-4 h-4 accent-[#0F47F2]" checked={selectAll} onChange={handleSelectAll} />
                     </th>
                     {["Name", "AI Score", "Location", "Exp", "CTC", "Expected CTC", "Notice Period", "Stage", "Attention"].map((h) => (
                       <th
                         key={h}
-                        className="text-left px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors select-none whitespace-nowrap"
+                        className="text-left px-4 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors select-none whitespace-nowrap"
                         onClick={() => handleSort(h as CandidateSortKey)}
                       >
                         <div className="flex items-center">
@@ -1592,24 +1591,24 @@ export default function JobPipelineDashboard({
                         </div>
                       </th>
                     ))}
-                    <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-right select-none whitespace-nowrap">Actions</th>
+                    <th className="px-4 py-4 text-[13px] font-normal text-[#AEAEB2] text-right select-none whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#F3F5F7]">
                   {loadingCandidates ? (
                     Array.from({ length: 5 }).map((_, i) => (
                       <tr key={`skel-${i}`} className="animate-pulse">
-                        <td className="px-6 py-5"><div className="w-4 h-4 bg-gray-200 rounded" /></td>
-                        <td className="px-6 py-5"><div className="space-y-2"><div className="h-4 bg-gray-200 rounded w-32" /><div className="h-3 bg-gray-200 rounded w-40" /></div></td>
-                        <td className="px-6 py-5"><div className="w-9 h-9 bg-gray-200 rounded-full" /></td>
-                        <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-20" /></td>
-                        <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
-                        <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
-                        <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-20" /></td>
-                        <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
-                        <td className="px-6 py-5"><div className="h-4 bg-gray-200 rounded w-24" /></td>
-                        <td className="px-6 py-5"><div className="h-5 bg-gray-200 rounded-full w-16" /></td>
-                        <td className="px-6 py-5"><div className="flex gap-2 justify-end"><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /></div></td>
+                        <td className="px-4 py-5"><div className="w-4 h-4 bg-gray-200 rounded" /></td>
+                        <td className="px-4 py-5"><div className="space-y-2"><div className="h-4 bg-gray-200 rounded w-32" /><div className="h-3 bg-gray-200 rounded w-40" /></div></td>
+                        <td className="px-4 py-5"><div className="w-9 h-9 bg-gray-200 rounded-full" /></td>
+                        <td className="px-4 py-5"><div className="h-4 bg-gray-200 rounded w-20" /></td>
+                        <td className="px-4 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
+                        <td className="px-4 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
+                        <td className="px-4 py-5"><div className="h-4 bg-gray-200 rounded w-20" /></td>
+                        <td className="px-4 py-5"><div className="h-4 bg-gray-200 rounded w-16" /></td>
+                        <td className="px-4 py-5"><div className="h-4 bg-gray-200 rounded w-24" /></td>
+                        <td className="px-4 py-5"><div className="h-5 bg-gray-200 rounded-full w-16" /></td>
+                        <td className="px-4 py-5"><div className="flex gap-2 justify-end"><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /><div className="w-8 h-8 bg-gray-200 rounded-full" /></div></td>
                       </tr>
                     ))
                   ) : sortedCandidates.length === 0 && filteredArchivedTable.length === 0 ? (
@@ -1652,10 +1651,10 @@ export default function JobPipelineDashboard({
 
                         return (
                           <tr key={item.id} className={`hover:bg-[#F9FAFB] transition-colors ${isDisabled ? "opacity-60" : ""}`}>
-                            <td className="px-6 py-5">
+                            <td className="px-4 py-5">
                               <input type="checkbox" className="w-4 h-4 accent-[#0F47F2]" checked={selectedIds.has(item.id)} onChange={() => handleToggleCandidate(item)} disabled={isDisabled} />
                             </td>
-                            <td className="px-6 py-5">
+                            <td className="px-4 py-5">
                               <div
                                 className="cursor-pointer group"
                                 onClick={() => onSelectCandidate?.(item, candidates, index)}
@@ -1664,7 +1663,7 @@ export default function JobPipelineDashboard({
                                 <div className="text-xs text-[#727272]">{cand.headline || "--"}</div>
                               </div>
                             </td>
-                            <td className="px-6 py-5">
+                            <td className="px-4 py-5">
                               <div className="relative w-9 h-9">
                                 <svg className="w-9 h-9 -rotate-90" viewBox="0 0 36 36">
                                   <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#E5E7EB" strokeWidth="3.5" />
@@ -1673,17 +1672,17 @@ export default function JobPipelineDashboard({
                                 <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[#4B5563]">{aiScoreLabel}</div>
                               </div>
                             </td>
-                            <td className="px-6 py-5 text-sm text-[#4B5563]">{cand.location || "--"}</td>
-                            <td className="px-6 py-5 text-sm text-[#4B5563]">{expYears}</td>
-                            <td className="px-6 py-5 text-sm text-[#4B5563]">{ctc}</td>
-                            <td className="px-6 py-5 text-sm text-[#4B5563]">{expectedCtc}</td>
-                            <td className="px-6 py-5 text-sm text-[#4B5563]">{noticePeriod}</td>
-                            <td className="px-6 py-5">
+                            <td className="px-4 py-5 text-sm text-[#4B5563]">{cand.location || "--"}</td>
+                            <td className="px-4 py-5 text-sm text-[#4B5563]">{expYears}</td>
+                            <td className="px-4 py-5 text-sm text-[#4B5563]">{ctc}</td>
+                            <td className="px-4 py-5 text-sm text-[#4B5563]">{expectedCtc}</td>
+                            <td className="px-4 py-5 text-sm text-[#4B5563]">{noticePeriod}</td>
+                            <td className="px-4 py-5">
                               <div>
                                 <div className="text-[#6155F5] text-sm font-medium">{item.current_stage?.name || "--"}</div>
                               </div>
                             </td>
-                            <td className="px-6 py-5">
+                            <td className="px-4 py-5">
                               {attentionTag ? (
                                 <span className="inline-block text-xs font-medium px-3 py-0.5 rounded-full"
                                   style={{
@@ -1694,7 +1693,7 @@ export default function JobPipelineDashboard({
                                 </span>
                               ) : <span className="text-xs text-[#8E8E93]">--</span>}
                             </td>
-                            <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
+                            <td className="px-4 py-5" onClick={(e) => e.stopPropagation()}>
                               <div className="flex justify-end gap-2">
                                 <button
                                   onClick={() => shortlistCandidate(item.id)}
@@ -1742,7 +1741,7 @@ export default function JobPipelineDashboard({
                       {filteredArchivedTable.length > 0 && (
                         <>
                           <tr className="bg-[#F9FAFB]">
-                            <td colSpan={11} className="px-6 py-3 border-y border-[#E5E7EB]">
+                            <td colSpan={11} className="px-4 py-3 border-y border-[#E5E7EB]">
                               <div className="flex items-center gap-2">
                                 <div className="h-px bg-[#D1D1D6] flex-1"></div>
                                 <span className="text-[10px] font-bold text-[#8E8E93] uppercase tracking-widest px-4">Archived Candidates</span>
@@ -1756,32 +1755,32 @@ export default function JobPipelineDashboard({
 
                             return (
                               <tr key={item.id} className={`grayscale opacity-50 bg-gray-50/50 hover:bg-gray-100 transition-colors ${isDisabled ? "pointer-events-none opacity-30" : ""}`}>
-                                <td className="px-6 py-5">
+                                <td className="px-4 py-5">
                                   <input type="checkbox" className="w-4 h-4 accent-[#4B5563]" checked={selectedIds.has(item.id)} onChange={() => handleToggleCandidate(item)} disabled={isDisabled} />
                                 </td>
-                                <td className="px-6 py-5">
+                                <td className="px-4 py-5">
                                   <div className="flex flex-col">
                                     <div className="font-medium text-[#8E8E93]">{cand.full_name || "--"}</div>
                                     <div className="text-xs text-[#AEAEB2]">{cand.headline || "--"}</div>
                                   </div>
                                 </td>
-                                <td className="px-6 py-5">
+                                <td className="px-4 py-5">
                                   <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-400">
                                     --%
                                   </div>
                                 </td>
-                                <td className="px-6 py-5 text-sm text-[#AEAEB2]">{cand.location || "--"}</td>
-                                <td className="px-6 py-5 text-sm text-[#AEAEB2]">{cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years ? cand.experience_years.replace(/\s*exp$/i, "") : "--")}</td>
-                                <td className="px-6 py-5 text-sm text-[#AEAEB2]">--</td>
-                                <td className="px-6 py-5 text-sm text-[#AEAEB2]">--</td>
-                                <td className="px-6 py-5 text-sm text-[#AEAEB2]">--</td>
-                                <td className="px-6 py-5">
+                                <td className="px-4 py-5 text-sm text-[#AEAEB2]">{cand.location || "--"}</td>
+                                <td className="px-4 py-5 text-sm text-[#AEAEB2]">{cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years ? cand.experience_years.replace(/\s*exp$/i, "") : "--")}</td>
+                                <td className="px-4 py-5 text-sm text-[#AEAEB2]">--</td>
+                                <td className="px-4 py-5 text-sm text-[#AEAEB2]">--</td>
+                                <td className="px-4 py-5 text-sm text-[#AEAEB2]">--</td>
+                                <td className="px-4 py-5">
                                   <span className="text-[10px] px-2 py-0.5 bg-gray-200 text-gray-500 rounded-full font-bold">ARCHIVED</span>
                                 </td>
-                                <td className="px-6 py-5">
+                                <td className="px-4 py-5">
                                   <span className="text-[10px] text-[#AEAEB2]">--</span>
                                 </td>
-                                <td className="px-6 py-5">
+                                <td className="px-4 py-5">
                                   <div className="flex justify-end gap-2">
                                     <button
                                       onClick={async () => {
