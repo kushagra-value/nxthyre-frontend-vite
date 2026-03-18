@@ -858,8 +858,8 @@ export default function Dashboard() {
                               <button
                                 key={option.id ?? 'all'}
                                 className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${isSelected
-                                    ? 'bg-[#E7EDFF] text-[#0F47F2]'
-                                    : 'text-[#4B5563] hover:bg-[#F3F5F7]'
+                                  ? 'bg-[#E7EDFF] text-[#0F47F2]'
+                                  : 'text-[#4B5563] hover:bg-[#F3F5F7]'
                                   }`}
                                 onClick={() => handleCompanySelect(option)}
                               >
@@ -939,6 +939,10 @@ export default function Dashboard() {
                 ))
                 : dynamicPriorityColumns.map((column, colIndex) => {
                   const tabKey = PRIORITY_TABS[colIndex]?.key || 'sourcing';
+                  // if the length or the card is greater than 0 than sort the columns based on days ago (greater to smaller)
+                  if (column.cards.length > 0) {
+                    column.cards.sort((a, b) => b.daysAgo - a.daysAgo);
+                  }
                   return (
                     <div key={column.id} className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 overflow-y-auto max-h-[400px] hide-scrollbar">
                       <div className="flex items-center justify-between px-1 py-1">
@@ -1015,8 +1019,8 @@ export default function Dashboard() {
                         {(jobSearchQuery.trim() === '' || 'all jobs'.includes(jobSearchQuery.toLowerCase())) && (
                           <button
                             className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${pendingJobId === null
-                                ? 'bg-[#E7EDFF] text-[#0F47F2]'
-                                : 'text-[#4B5563] hover:bg-[#F3F5F7]'
+                              ? 'bg-[#E7EDFF] text-[#0F47F2]'
+                              : 'text-[#4B5563] hover:bg-[#F3F5F7]'
                               }`}
                             onClick={() => {
                               setPendingJobId(null);
@@ -1035,8 +1039,8 @@ export default function Dashboard() {
                             <button
                               key={job.id}
                               className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${pendingJobId === job.id
-                                  ? 'bg-[#E7EDFF] text-[#0F47F2]'
-                                  : 'text-[#4B5563] hover:bg-[#F3F5F7]'
+                                ? 'bg-[#E7EDFF] text-[#0F47F2]'
+                                : 'text-[#4B5563] hover:bg-[#F3F5F7]'
                                 }`}
                               onClick={() => {
                                 setPendingJobId(job.id);
