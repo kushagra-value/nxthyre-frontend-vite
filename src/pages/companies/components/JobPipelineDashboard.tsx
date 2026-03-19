@@ -230,6 +230,15 @@ export default function JobPipelineDashboard({
   const [loadingCandidates, setLoadingCandidates] = useState(false);
   const [totalCandidates, setTotalCandidates] = useState(0);
 
+  // ── Candidate Edit Modal State
+  const [showCandidateEditModal, setShowCandidateEditModal] = useState(false);
+  const [candidateEditing, setCandidateEditing] = useState<CandidateListItem | null>(null);
+  const [candidateEditForm, setCandidateEditForm] = useState({
+    notice_period_days: "",
+    current_ctc_lpa: "",
+    expected_ctc_lpa: "",
+  });
+
   // ── Pagination & search
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
@@ -757,6 +766,117 @@ export default function JobPipelineDashboard({
   };
 
   useEffect(() => { setCurrentPage(1); }, [activeStageSlug, searchQuery]);
+
+  // ── Candidate Edit Handlers ──
+  useEffect(() => {
+    if (showCandidateEditModal && candidateEditing) {
+      const cand = candidateEditing.candidate;
+      setCandidateEditForm({
+        notice_period_days: cand.notice_period_days?.toString() || "",
+        current_ctc_lpa: cand.current_salary_lpa ? cand.current_salary_lpa.replace(/ LPA$/i, "").trim() : "",
+        expected_ctc_lpa: cand.expected_ctc ? cand.expected_ctc.replace(/ LPA$/i, "").trim() : "",
+      });
+    }
+  }, [showCandidateEditModal, candidateEditing]);
+
+  useEffect(() => {
+    if (!showCandidateEditModal) {
+      setCandidateEditForm({
+        notice_period_days: "",
+        current_ctc_lpa: "",
+        expected_ctc_lpa: "",
+      });
+    }
+  }, [showCandidateEditModal]);
+
+  const handleCandidateEditSave = async () => {
+    if (!candidateEditing) return;
+
+    const uuid = candidateEditing.candidate.id;
+    const payload: any = {};
+    let valid = true;
+
+    if (candidateEditForm.notice_period_days !== "") {
+      const days = parseInt(candidateEditForm.notice_period_days, 10);
+      if (isNaN(days) || days < 0) {
+        showToast.error("Notice period must be a non-negative number");
+        valid = false;
+      } else {
+        payload.notice_period_days = days;
+      }
+    }
+
+    if (candidateEditForm.current_ctc_lpa !== "") {
+      const lpa = parseFloat(candidateEditForm.current_ctc_lpa);
+      if (isNaN(lpa) || lpa < 0) {
+        showToast.error("Current CTC must be a non-negative number");
+        valid = false;
+      } else {
+        payload.current_salary = lpa;
+      }
+    }
+
+    if (candidateEditForm.expected_ctc_lpa !== "") {
+      const lpa = parseFloat(candidateEditForm.expected_ctc_lpa);
+      if (isNaN(lpa) || lpa < 0) {
+        showToast.error("Expected CTC must be a non-negative number");
+        valid = false;
+      } else {
+        payload.expected_ctc = lpa;
+      }
+    }
+
+    if (!valid) return;
+
+    if (Object.keys(payload).length === 0) {
+      showToast.info("No changes to save");
+      setShowCandidateEditModal(false);
+      return;
+    }
+
+    try {
+      await apiClient.patch(`/candidates/${uuid}/editable-fields/`, payload);
+
+      setCandidates((prev) =>
+        prev.map((c) => {
+          if (c.candidate.id === uuid) {
+            const updatedCand = { ...c.candidate };
+            if (payload.notice_period_days !== undefined) {
+              updatedCand.notice_period_days = payload.notice_period_days;
+              updatedCand.notice_period_summary =
+                payload.notice_period_days === 0
+                  ? "Immediate"
+                  : `${payload.notice_period_days} days`;
+            }
+            if (payload.current_salary !== undefined) {
+              const lpaStr =
+                payload.current_salary % 1 === 0
+                  ? `${payload.current_salary}`
+                  : payload.current_salary.toFixed(1);
+              updatedCand.current_salary_lpa = lpaStr;
+            }
+            if (payload.expected_ctc !== undefined) {
+              const lpaStr =
+                payload.expected_ctc % 1 === 0
+                  ? `${payload.expected_ctc}`
+                  : payload.expected_ctc.toFixed(1);
+              updatedCand.expected_ctc = lpaStr;
+            }
+            return { ...c, candidate: updatedCand };
+          }
+          return c;
+        }),
+      );
+
+      showToast.success("Candidate details updated successfully");
+      setShowCandidateEditModal(false);
+    } catch (error: any) {
+      console.error("Edit save error:", error);
+      showToast.error(
+        error.response?.data?.detail || "Failed to update candidate details",
+      );
+    }
+  };
 
   // ── Selection Logic ──────────────────────────────────────────
 
@@ -1396,6 +1516,17 @@ export default function JobPipelineDashboard({
                               >
                                 {cand.full_name || "--"}
                               </h4>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCandidateEditing(item);
+                                  setShowCandidateEditModal(true);
+                                }}
+                                className="p-1 hover:bg-gray-100 rounded-full transition-colors shrink-0"
+                                title="Edit Candidate Details"
+                              >
+                                <Pencil className="w-3.5 h-3.5 text-[#AEAEB2]" />
+                              </button>
                             </div>
                             <div className="inline-flex">
                               <span className="text-[10px] font-bold px-2 py-0.5 mt-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100 flex-shrink-0">{aiScoreRaw}</span>
@@ -1452,6 +1583,17 @@ export default function JobPipelineDashboard({
                                     >
                                       {cand.full_name || "--"}
                                     </h4>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setCandidateEditing(item);
+                                        setShowCandidateEditModal(true);
+                                      }}
+                                      className="p-1 hover:bg-gray-100 rounded-full transition-colors shrink-0"
+                                      title="Edit Candidate Details"
+                                    >
+                                      <Pencil className="w-3 h-3 text-[#AEAEB2]" />
+                                    </button>
                                   </div>
                                   <p className="text-[10px] text-[#AEAEB2] line-clamp-1">{cand.headline || "--"}</p>
                                   <div className="flex flex-wrap items-center mt-2 gap-y-1 gap-x-3 text-[10px] text-[#AEAEB2]">
@@ -1728,6 +1870,16 @@ export default function JobPipelineDashboard({
                                 >
                                   <span className="text-[#6155F5]">☎</span>
                                 </button>
+                                <button
+                                  onClick={() => {
+                                    setCandidateEditing(item);
+                                    setShowCandidateEditModal(true);
+                                  }}
+                                  className="w-8 h-8 flex items-center justify-center bg-[#F3F5F7] rounded-full hover:bg-gray-200 transition-colors"
+                                  title="Edit Candidate Details"
+                                >
+                                  <Pencil className="w-4 h-4 text-[#4B5563]" />
+                                </button>
                                 <button className="w-8 h-8 flex items-center justify-center bg-[#FFF2E6] rounded-full hover:bg-[#FFE8D4] transition-colors" title="Email Candidate">
                                   <span className="text-[#FF8D28]">✉</span>
                                 </button>
@@ -1749,7 +1901,7 @@ export default function JobPipelineDashboard({
                               </div>
                             </td>
                           </tr>
-                          {filteredArchivedTable.map((item, index) => {
+                          {filteredArchivedTable.map((item) => {
                             const cand = item.candidate;
                             const isDisabled = selectionType === "ACTIVE";
 
@@ -2316,6 +2468,89 @@ export default function JobPipelineDashboard({
         onClose={() => setCallModalCandidate(null)}
         candidate={callModalCandidate}
       />
+
+      {/* Candidate Edit Modal */}
+      {showCandidateEditModal && candidateEditing && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1002]">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4">
+            <h2 className="text-xl font-bold mb-4">Edit Candidate Details</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Experience</label>
+                <input
+                  type="text"
+                  value={candidateEditing.candidate.total_experience != null ? `${candidateEditing.candidate.total_experience} Years` : (candidateEditing.candidate.experience_years || "--")}
+                  disabled
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-100 cursor-not-allowed text-gray-500 sm:text-sm"
+                />
+                <p className="text-xs text-gray-500 mt-1">Calculated from resume (not editable)</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Current Company Tenure (years)</label>
+                <input
+                  type="text"
+                  value={candidateEditing.candidate.experience_summary?.duration_years?.toString() || "--"}
+                  disabled
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-100 cursor-not-allowed text-gray-500 sm:text-sm"
+                />
+                <p className="text-xs text-gray-500 mt-1">Calculated from current position (not editable)</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Notice Period (days)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={candidateEditForm.notice_period_days}
+                  onChange={(e) => setCandidateEditForm({ ...candidateEditForm, notice_period_days: e.target.value })}
+                  placeholder="0 for immediate joiner"
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#0F47F2] focus:border-[#0F47F2] sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Current CTC (LPA)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={candidateEditForm.current_ctc_lpa}
+                  onChange={(e) => setCandidateEditForm({ ...candidateEditForm, current_ctc_lpa: e.target.value })}
+                  placeholder="e.g. 15.5"
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#0F47F2] focus:border-[#0F47F2] sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Expected CTC (LPA)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={candidateEditForm.expected_ctc_lpa}
+                  onChange={(e) => setCandidateEditForm({ ...candidateEditForm, expected_ctc_lpa: e.target.value })}
+                  placeholder="e.g. 20"
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#0F47F2] focus:border-[#0F47F2] sm:text-sm"
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                onClick={() => setShowCandidateEditModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-[#0F47F2] text-white rounded-md hover:bg-[#0A3BCC] transition-colors"
+                onClick={handleCandidateEditSave}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
