@@ -15,6 +15,19 @@ export interface NaukriJobsResponse {
   jobs: NaukriJob[];
 }
 
+export interface NaukbotJobRole {
+  job_id: number;
+  title: string;
+  status: string;
+  created_at: string;
+  naukri_bot_active: boolean;
+}
+
+export interface NaukbotJobRolesResponse {
+  count: number;
+  jobs: NaukbotJobRole[];
+}
+
 export interface NaukbotCandidateSummary {
   total_sourced: number;
   above_80_pct: number;
@@ -140,6 +153,33 @@ class NaukbotService {
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to move candidates to pipeline");
+    }
+  }
+
+  async getNaukbotJobRoles(): Promise<NaukbotJobRolesResponse> {
+    try {
+      const response = await apiClient.get("/candidates/naukri-bot/job-roles/");
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to fetch Naukbot job roles");
+    }
+  }
+
+  async activateNaukbotJob(job_id: number): Promise<any> {
+    try {
+      const response = await apiClient.post(`/candidates/naukri-bot/job-roles/${job_id}/activate/`, {});
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to activate job for Naukri Bot");
+    }
+  }
+
+  async deactivateNaukbotJob(job_id: number): Promise<any> {
+    try {
+      const response = await apiClient.post(`/candidates/naukri-bot/job-roles/${job_id}/deactivate/`, {});
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to deactivate job for Naukri Bot");
     }
   }
 }

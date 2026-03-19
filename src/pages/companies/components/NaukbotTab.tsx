@@ -20,6 +20,7 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
     new: 0,
   });
   const [sourcingEnabled, setSourcingEnabled] = useState(false);
+  const [toggleLoading, setToggleLoading] = useState(false);
 
   // Pagination & Filtering
   const [page, setPage] = useState(1);
@@ -51,7 +52,8 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
       setTotalPages(res.total_pages);
       setTotalCount(res.count);
       setSummary(res.summary);
-      setSourcingEnabled(res.sourcing_enabled);
+      // We'll trust the status from the specialized job roles API instead
+      // setSourcingEnabled(res.sourcing_enabled);
     } catch (error) {
       console.error(error);
       showToast.error("Failed to load Naukbot candidates");
@@ -60,9 +62,26 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
     }
   }, [jobId, page, pageSize, searchQuery, sortBy]);
 
+  const fetchJobStatus = useCallback(async () => {
+    if (!jobId) return;
+    try {
+      const res = await naukbotService.getNaukbotJobRoles();
+      const job = res.jobs.find((j: any) => j.job_id === jobId);
+      if (job) {
+        setSourcingEnabled(job.naukri_bot_active);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }, [jobId]);
+
   useEffect(() => {
     fetchCandidates();
   }, [fetchCandidates]);
+
+  useEffect(() => {
+    fetchJobStatus();
+  }, [fetchJobStatus]);
 
   useEffect(() => {
     setPage(1);
@@ -161,6 +180,27 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
     }
   };
 
+  const handleToggleSourcing = async () => {
+    if (!jobId || toggleLoading) return;
+    setToggleLoading(true);
+    try {
+      if (sourcingEnabled) {
+        await naukbotService.deactivateNaukbotJob(jobId);
+        setSourcingEnabled(false);
+        toast.success("Naukbot sourcing deactivated");
+      } else {
+        await naukbotService.activateNaukbotJob(jobId);
+        setSourcingEnabled(true);
+        toast.success("Naukbot sourcing activated");
+      }
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "Failed to update sourcing status");
+    } finally {
+      setToggleLoading(false);
+    }
+  };
+
   const getPageNumbers = () => {
     const pageNumbers: (number | string)[] = [];
     const maxVisiblePages = 5;
@@ -215,12 +255,18 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
             </div>
             <div className="flex flex-col items-end border-l border-[#8193FE] pl-8">
               {sourcingEnabled ? (
-                <div className="flex items-center gap-2 bg-white rounded-full p-[2px] pr-3 mb-1 cursor-pointer">
+                <div 
+                  onClick={handleToggleSourcing}
+                  className={`flex items-center gap-2 bg-white rounded-full p-[2px] pr-3 mb-1 cursor-pointer ${toggleLoading ? 'opacity-50' : ''}`}
+                >
                   <div className="w-6 h-6 bg-[#4F68FC] rounded-full flex items-center justify-center"></div>
                   <span className="text-[11px] font-bold text-[#4F68FC]">ON</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 bg-white rounded-full p-[2px] pl-3 mb-1 cursor-pointer border border-[#E5E7EB]">
+                <div 
+                  onClick={handleToggleSourcing}
+                  className={`flex items-center gap-2 bg-white rounded-full p-[2px] pl-3 mb-1 cursor-pointer border border-[#E5E7EB] ${toggleLoading ? 'opacity-50' : ''}`}
+                >
                   <span className="text-[11px] font-bold text-[#8E8E93]">OFF</span>
                   <div className="w-6 h-6 bg-[#AEAEB2] rounded-full flex items-center justify-center"></div>
                 </div>
