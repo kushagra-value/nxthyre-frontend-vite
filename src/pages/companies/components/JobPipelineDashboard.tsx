@@ -771,7 +771,7 @@ export default function JobPipelineDashboard({
   useEffect(() => {
     if (showCandidateEditModal && candidateEditing) {
       const cand = candidateEditing.candidate;
-      
+
       // Robust extraction for numeric CTC/expected
       const extractNum = (val: any) => {
         if (val == null) return "";
@@ -1781,7 +1781,7 @@ export default function JobPipelineDashboard({
                             : "--";
 
                         // CTC
-                        const ctc = cand.current_salary_lpa ? `${cand.current_salary_lpa} LPA` : "--";
+                        const ctc = cand.current_salary_lpa ? `${cand.current_salary_lpa}` : "--";
 
                         // Expected CTC
                         const expectedCtc = cand.expected_ctc ? `${cand.expected_ctc} LPA` : "--";
@@ -2479,11 +2479,11 @@ export default function JobPipelineDashboard({
       {/* Candidate Edit Modal */}
       {/* Candidate Edit Modal */}
       {showCandidateEditModal && candidateEditing && (
-        <div 
+        <div
           className="fixed inset-0 z-[1002] flex items-center justify-center bg-black/25 backdrop-blur-sm"
           onClick={() => setShowCandidateEditModal(false)}
         >
-          <div 
+          <div
             className="bg-white flex flex-col"
             style={{ width: 553, maxHeight: '90vh', borderRadius: 10, boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}
             onClick={(e) => e.stopPropagation()}
@@ -2494,7 +2494,7 @@ export default function JobPipelineDashboard({
                 <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>
                   Edit Candidate Details
                 </span>
-                <button 
+                <button
                   className="flex items-center justify-center bg-transparent border-none p-0 cursor-pointer hover:opacity-60"
                   onClick={() => setShowCandidateEditModal(false)}
                 >
@@ -2519,7 +2519,7 @@ export default function JobPipelineDashboard({
                       {candidateEditing.candidate.headline || "--"}
                     </p>
                   </div>
-                  <div 
+                  <div
                     className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0"
                     style={{ background: '#0F47F2' }}
                   >
@@ -2531,8 +2531,8 @@ export default function JobPipelineDashboard({
                   <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
                     <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Experience</span>
                     <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>
-                      {candidateEditing.candidate.total_experience != null 
-                        ? `${candidateEditing.candidate.total_experience} Years` 
+                      {candidateEditing.candidate.total_experience != null
+                        ? `${candidateEditing.candidate.total_experience} Years`
                         : (candidateEditing.candidate.experience_years || "--")}
                     </span>
                   </div>
@@ -2596,20 +2596,20 @@ export default function JobPipelineDashboard({
 
             {/* ─── Footer Actions ─── */}
             <div className="flex items-center justify-end shrink-0" style={{ padding: '20px 24px', borderTop: '0.5px solid #AEAEB2', gap: 12 }}>
-                <button 
-                  className="flex items-center justify-center cursor-pointer bg-white text-sm font-normal transition-opacity hover:opacity-75"
-                  style={{ height: 37, border: '0.5px solid #D1D1D6', borderRadius: 5, padding: '0 20px', color: '#4B5563' }}
-                  onClick={() => setShowCandidateEditModal(false)}
-                >
-                  Cancel
-                </button>
-                <button 
-                  className="flex items-center justify-center cursor-pointer text-sm font-normal transition-opacity hover:opacity-90 active:scale-95 shadow-sm"
-                  style={{ height: 37, background: '#0F47F2', border: 'none', borderRadius: 5, padding: '0 24px', color: 'white' }}
-                  onClick={handleCandidateEditSave}
-                >
-                  Save Changes
-                </button>
+              <button
+                className="flex items-center justify-center cursor-pointer bg-white text-sm font-normal transition-opacity hover:opacity-75"
+                style={{ height: 37, border: '0.5px solid #D1D1D6', borderRadius: 5, padding: '0 20px', color: '#4B5563' }}
+                onClick={() => setShowCandidateEditModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="flex items-center justify-center cursor-pointer text-sm font-normal transition-opacity hover:opacity-90 active:scale-95 shadow-sm"
+                style={{ height: 37, background: '#0F47F2', border: 'none', borderRadius: 5, padding: '0 24px', color: 'white' }}
+                onClick={handleCandidateEditSave}
+              >
+                Save Changes
+              </button>
             </div>
           </div>
         </div>
