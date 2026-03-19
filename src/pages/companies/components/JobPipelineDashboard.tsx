@@ -771,10 +771,17 @@ export default function JobPipelineDashboard({
   useEffect(() => {
     if (showCandidateEditModal && candidateEditing) {
       const cand = candidateEditing.candidate;
+      
+      // Robust extraction for numeric CTC/expected
+      const extractNum = (val: any) => {
+        if (val == null) return "";
+        return val.toString().replace(/ LPA$/i, "").trim();
+      };
+
       setCandidateEditForm({
         notice_period_days: cand.notice_period_days?.toString() || "",
-        current_ctc_lpa: cand.current_salary_lpa ? cand.current_salary_lpa.replace(/ LPA$/i, "").trim() : "",
-        expected_ctc_lpa: cand.expected_ctc ? cand.expected_ctc.replace(/ LPA$/i, "").trim() : "",
+        current_ctc_lpa: extractNum(cand.current_salary_lpa || (cand as any).current_salary),
+        expected_ctc_lpa: extractNum(cand.expected_ctc),
       });
     }
   }, [showCandidateEditModal, candidateEditing]);
@@ -2470,83 +2477,139 @@ export default function JobPipelineDashboard({
       />
 
       {/* Candidate Edit Modal */}
+      {/* Candidate Edit Modal */}
       {showCandidateEditModal && candidateEditing && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1002]">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4">
-            <h2 className="text-xl font-bold mb-4">Edit Candidate Details</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Experience</label>
-                <input
-                  type="text"
-                  value={candidateEditing.candidate.total_experience != null ? `${candidateEditing.candidate.total_experience} Years` : (candidateEditing.candidate.experience_years || "--")}
-                  disabled
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-100 cursor-not-allowed text-gray-500 sm:text-sm"
-                />
-                <p className="text-xs text-gray-500 mt-1">Calculated from resume (not editable)</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Current Company Tenure (years)</label>
-                <input
-                  type="text"
-                  value={candidateEditing.candidate.experience_summary?.duration_years?.toString() || "--"}
-                  disabled
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-100 cursor-not-allowed text-gray-500 sm:text-sm"
-                />
-                <p className="text-xs text-gray-500 mt-1">Calculated from current position (not editable)</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Notice Period (days)</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={candidateEditForm.notice_period_days}
-                  onChange={(e) => setCandidateEditForm({ ...candidateEditForm, notice_period_days: e.target.value })}
-                  placeholder="0 for immediate joiner"
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#0F47F2] focus:border-[#0F47F2] sm:text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Current CTC (LPA)</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  value={candidateEditForm.current_ctc_lpa}
-                  onChange={(e) => setCandidateEditForm({ ...candidateEditForm, current_ctc_lpa: e.target.value })}
-                  placeholder="e.g. 15.5"
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#0F47F2] focus:border-[#0F47F2] sm:text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Expected CTC (LPA)</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  value={candidateEditForm.expected_ctc_lpa}
-                  onChange={(e) => setCandidateEditForm({ ...candidateEditForm, expected_ctc_lpa: e.target.value })}
-                  placeholder="e.g. 20"
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#0F47F2] focus:border-[#0F47F2] sm:text-sm"
-                />
+        <div 
+          className="fixed inset-0 z-[1002] flex items-center justify-center bg-black/25 backdrop-blur-sm"
+          onClick={() => setShowCandidateEditModal(false)}
+        >
+          <div 
+            className="bg-white flex flex-col"
+            style={{ width: 553, maxHeight: '90vh', borderRadius: 10, boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* ─── Header ─── */}
+            <div className="w-full shrink-0" style={{ borderBottom: '0.5px solid #AEAEB2' }}>
+              <div className="flex items-center justify-between" style={{ padding: '20px 24px' }}>
+                <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>
+                  Edit Candidate Details
+                </span>
+                <button 
+                  className="flex items-center justify-center bg-transparent border-none p-0 cursor-pointer hover:opacity-60"
+                  onClick={() => setShowCandidateEditModal(false)}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="#4B5563" strokeWidth="1" />
+                    <path d="M8.46 8.46L15.54 15.54M15.54 8.46L8.46 15.54" stroke="#4B5563" strokeWidth="1" strokeLinecap="round" />
+                  </svg>
+                </button>
               </div>
             </div>
-            <div className="mt-6 flex justify-end space-x-3">
-              <button
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-                onClick={() => setShowCandidateEditModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 bg-[#0F47F2] text-white rounded-md hover:bg-[#0A3BCC] transition-colors"
-                onClick={handleCandidateEditSave}
-              >
-                Save
-              </button>
+
+            {/* ─── Body (Scrollable if content overflows) ─── */}
+            <div className="flex-1 overflow-y-auto">
+              {/* Candidate Info (Inspired by NewMatchCandidateModal) */}
+              <div className="w-full" style={{ borderBottom: '0.5px solid #AEAEB2', padding: '20px 24px' }}>
+                <div className="flex items-center justify-between" style={{ marginBottom: 30 }}>
+                  <div className="flex flex-col" style={{ gap: 10 }}>
+                    <h3 className="m-0 font-medium text-black" style={{ fontSize: 20, lineHeight: '24px' }}>
+                      {candidateEditing.candidate.full_name || "Unknown Candidate"}
+                    </h3>
+                    <p className="m-0 text-xs font-normal" style={{ color: '#0F47F2', lineHeight: '14px' }}>
+                      {candidateEditing.candidate.headline || "--"}
+                    </p>
+                  </div>
+                  <div 
+                    className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0"
+                    style={{ background: '#0F47F2' }}
+                  >
+                    {candidateEditing.candidate.full_name ? candidateEditing.candidate.full_name.substring(0, 2).toUpperCase() : "CA"}
+                  </div>
+                </div>
+
+                <div className="flex items-start justify-between" style={{ gap: 67 }}>
+                  <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                    <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Experience</span>
+                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>
+                      {candidateEditing.candidate.total_experience != null 
+                        ? `${candidateEditing.candidate.total_experience} Years` 
+                        : (candidateEditing.candidate.experience_years || "--")}
+                    </span>
+                  </div>
+                  <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                    <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Location</span>
+                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>
+                      {candidateEditing.candidate.location || "N/A"}
+                    </span>
+                  </div>
+                  <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
+                    {/* Placeholder for symmetry */}
+                  </div>
+                </div>
+              </div>
+
+              {/* Editable Fields */}
+              <div className="w-full" style={{ padding: '24px' }}>
+                <h4 className="m-0 font-medium text-sm uppercase text-gray-600" style={{ lineHeight: '17px', marginBottom: 20 }}>
+                  Update Details
+                </h4>
+                <div className="grid grid-cols-2 gap-x-12 gap-y-8">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-normal uppercase text-[#8E8E93]">Current CTC (LPA)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={candidateEditForm.current_ctc_lpa}
+                      onChange={(e) => setCandidateEditForm({ ...candidateEditForm, current_ctc_lpa: e.target.value })}
+                      placeholder="e.g. 15.5"
+                      className="w-full border-b border-[#D1D1D6] py-1 text-base font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-normal uppercase text-[#8E8E93]">Expected CTC (LPA)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={candidateEditForm.expected_ctc_lpa}
+                      onChange={(e) => setCandidateEditForm({ ...candidateEditForm, expected_ctc_lpa: e.target.value })}
+                      placeholder="e.g. 20"
+                      className="w-full border-b border-[#D1D1D6] py-1 text-base font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-normal uppercase text-[#8E8E93]">Notice Period (Days)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={candidateEditForm.notice_period_days}
+                      onChange={(e) => setCandidateEditForm({ ...candidateEditForm, notice_period_days: e.target.value })}
+                      placeholder="e.g. 30"
+                      className="w-full border-b border-[#D1D1D6] py-1 text-base font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ─── Footer Actions ─── */}
+            <div className="flex items-center justify-end shrink-0" style={{ padding: '20px 24px', borderTop: '0.5px solid #AEAEB2', gap: 12 }}>
+                <button 
+                  className="flex items-center justify-center cursor-pointer bg-white text-sm font-normal transition-opacity hover:opacity-75"
+                  style={{ height: 37, border: '0.5px solid #D1D1D6', borderRadius: 5, padding: '0 20px', color: '#4B5563' }}
+                  onClick={() => setShowCandidateEditModal(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="flex items-center justify-center cursor-pointer text-sm font-normal transition-opacity hover:opacity-90 active:scale-95 shadow-sm"
+                  style={{ height: 37, background: '#0F47F2', border: 'none', borderRadius: 5, padding: '0 24px', color: 'white' }}
+                  onClick={handleCandidateEditSave}
+                >
+                  Save Changes
+                </button>
             </div>
           </div>
         </div>
