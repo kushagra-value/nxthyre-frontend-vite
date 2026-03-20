@@ -40,6 +40,7 @@ import Interviews from "./pages/interviews/Interviews";
 import CandidatesPool from "./pages/candidates/CandidatesPool";
 import JobPipeline from "./pages/companies/components/JobPipeline";
 import Companies from "./pages/companies/Companies";
+import SchedulePage from "./pages/schedules/SchedulePage";
 
 function MainApp() {
   const navigate = useNavigate();
@@ -172,6 +173,8 @@ function MainApp() {
         return "Candidate Pool";
       case "jobPipeline":
         return "Pipeline Stage";
+      case "calendar":
+        return "Schedule Interviews";
       default:
         return "Dashboard";
     }
@@ -227,6 +230,8 @@ function MainApp() {
         return <CandidatesPool initialJobId={null} />;
       case "jobPipeline":
         return <JobPipeline jobId={null} workspaceId={0} workspaces={[]} />;
+      case "calendar":
+        return <SchedulePage />;
       default:
         return <Dashboard />;
     }
