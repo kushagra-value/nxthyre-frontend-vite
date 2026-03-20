@@ -53,11 +53,11 @@ import AddNewStageForm from "./AddNewStageForm";
 import { useAuthContext } from "../../context/AuthContext";
 import candidateService from "../../services/candidateService";
 import { useParams } from "react-router-dom";
-import { Calender } from "../../pages/schedules/Calender";
-import { EventForm } from "../../pages/schedules/EventForm";
+import { Calender } from "../../pages/schedules/components/Calender";
+import { EventForm } from "../../pages/schedules/components/EventForm";
 import { CalendarEvent } from "../../data/mockEvents";
 import { PipelineCandidate } from "../../data/pipelineData";
-import EventPreview from "../../pages/schedules/EventPreview";
+import EventPreview from "../../pages/schedules/components/EventPreview";
 
 interface DraggedCandidate {
   candidate: any;
