@@ -1,6 +1,6 @@
 import { ThumbsUp } from 'lucide-react';
-import { CalendarEvent } from '../../data/mockEvents';
-import { STAGE_COLORS, getColorFromString } from '../../utils/stageColors';
+import { CalendarEvent } from '../../../data/mockEvents';
+import { STAGE_COLORS, getColorFromString } from '../../../utils/stageColors';
 
 interface EventCardProps {
   event: CalendarEvent;

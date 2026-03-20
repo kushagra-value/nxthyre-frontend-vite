@@ -1,5 +1,5 @@
-import { CalendarEvent } from '../../data/mockEvents';
-import { getColorFromString } from '../../utils/stageColors';
+import { CalendarEvent } from '../../../data/mockEvents';
+import { getColorFromString } from '../../../utils/stageColors';
 
 interface MonthViewProps {
   events: CalendarEvent[];

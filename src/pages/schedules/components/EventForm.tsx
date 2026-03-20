@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X, Calendar, Clock, MapPin, Briefcase, User } from 'lucide-react';
-import { CalendarEvent } from '../../data/mockEvents';
-import apiClient from '../../services/api';
+import { CalendarEvent } from '../../../data/mockEvents';
+import apiClient from '../../../services/api';
 
 interface EventFormProps {
   isOpen: boolean;

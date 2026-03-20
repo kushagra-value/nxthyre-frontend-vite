@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import apiClient from '../../services/api';
+import apiClient from '../../../services/api';
 import { CalendarHeader } from './CalenderHeader';
-import { EventLegend } from '../schedules/EventLegend';
-import { DayView } from '../schedules/DayView';
-import { WeekView } from '../schedules/WeekView';
-import { MonthView } from '../schedules/MonthView';
-import type { CalendarEvent } from '../../data/mockEvents';
+import { EventLegend } from './EventLegend';
+import { DayView } from './DayView';
+import { WeekView } from './WeekView';
+import { MonthView } from './MonthView';
+import type { CalendarEvent } from '../../../data/mockEvents';
 import { useParams } from 'react-router-dom';
 
 interface CalenderProps {

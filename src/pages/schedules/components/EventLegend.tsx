@@ -1,4 +1,4 @@
-import { STAGE_COLORS, getColorFromString } from '../../utils/stageColors';
+import { STAGE_COLORS, getColorFromString } from '../../../utils/stageColors';
 
 interface EventLegendProps {
   className?: string;
