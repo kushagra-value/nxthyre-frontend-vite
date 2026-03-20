@@ -6,6 +6,8 @@ import StatusTabs, { FilterDropdowns } from './components/StatusTabs';
 import ScheduleWeekGrid from './components/ScheduleWeekGrid';
 import TodaysSidebar from './components/TodaysSidebar';
 import { EventForm } from './components/EventForm';
+import ScheduleEventModal from '../dashboard/components/ScheduleEventModal';
+import type { ScheduleEventData } from '../dashboard/dashboardData';
 import type { ScheduleEvent } from './components/ScheduleWeekGrid';
 import type { CalendarDayActivity } from './components/ScheduleCalendarWidget';
 
@@ -212,6 +214,7 @@ export default function SchedulePage() {
   const [selectedJobRole, setSelectedJobRole] = useState('all');
   const [isEventFormOpen, setIsEventFormOpen] = useState(false);
   const [events] = useState<ScheduleEvent[]>(MOCK_EVENTS);
+  const [eventModalData, setEventModalData] = useState<{ events: ScheduleEventData[]; index: number } | null>(null);
 
   const activities = buildActivityMap(events);
 
@@ -235,10 +238,52 @@ export default function SchedulePage() {
     setIsEventFormOpen(true);
   }, []);
 
+  /** Convert ScheduleEvent to ScheduleEventData for the modal */
+  const toModalEvent = (ev: ScheduleEvent): ScheduleEventData => {
+    const MODE_LABELS: Record<string, string> = {
+      zoom: 'Zoom', virtual: 'Microsoft Teams', f2f: 'Face to Face',
+      overdue: 'Overdue', external: 'External Platform', bgv: 'BGV', mock: 'Mock Call',
+    };
+    const formatTime = (t: string) => {
+      const [h, m] = t.split(':').map(Number);
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const h12 = h % 12 || 12;
+      return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
+    };
+    const dateObj = new Date(ev.date + 'T00:00:00');
+    const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+
+    return {
+      id: ev.id,
+      title: ev.title || 'Interview',
+      candidateName: ev.candidateName,
+      interviewType: ev.title || 'Technical Round',
+      date: dateStr,
+      timeRange: `${formatTime(ev.startTime)} – ${formatTime(ev.endTime)}`,
+      timezone: 'IST',
+      description: `${ev.title || 'Interview'} with ${ev.candidateName}`,
+      meetingPlatform: MODE_LABELS[ev.mode] || 'Virtual',
+      statusLabel: ev.status || 'scheduled',
+      recruiterName: 'You',
+      recruiterRole: ev.position || 'Recruiter',
+      recruiterAvatar: '',
+      candidateEmail: '',
+      candidatePhone: '',
+      candidateCompany: ev.company,
+      candidatePosition: ev.position,
+      candidateExperience: ev.experience,
+      interviewer: 'You',
+      jobRole: ev.position,
+    };
+  };
+
   const handleEventClick = useCallback((event: ScheduleEvent) => {
-    // Future: open event preview/detail
-    console.log('Event clicked:', event);
-  }, []);
+    // Find all events on the same day for pagination in modal
+    const sameDayEvents = events.filter((e) => e.date === event.date);
+    const modalEvents = sameDayEvents.map(toModalEvent);
+    const clickedIndex = sameDayEvents.findIndex((e) => e.id === event.id);
+    setEventModalData({ events: modalEvents, index: Math.max(clickedIndex, 0) });
+  }, [events]);
 
   const handleEventSubmit = useCallback((data: any) => {
     console.log('Event submitted:', data);
@@ -333,6 +378,16 @@ export default function SchedulePage() {
             />
           </div>
         </div>
+      )}
+
+      {/* ─── Event Detail Modal ─── */}
+      {eventModalData && (
+        <ScheduleEventModal
+          isOpen={true}
+          events={eventModalData.events}
+          initialIndex={eventModalData.index}
+          onClose={() => setEventModalData(null)}
+        />
       )}
     </div>
   );
